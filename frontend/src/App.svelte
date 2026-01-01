@@ -5,7 +5,7 @@
   let status = 'idle'; // 'idle' | 'pending' | 'success' | 'error' | 'timeout'
   let stateId = null;
   let timeoutId = null;
-  let showShooter = false;
+  let showShooter = true; // 🔥 Force shooter UI
 
   function startTimeout() {
     clearTimeout(timeoutId);
@@ -24,17 +24,20 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       });
-      const { state_id, challenge, user_id } = await res.json();
+      // ✅ FIXED: challenge_b64 and user_id_b64
+      const { state_id, challenge_b64, user_id_b64 } = await res.json();
 
       stateId = state_id;
       startTimeout();
 
       const credential = await navigator.credentials.create({
         publicKey: {
-          challenge: Uint8Array.from(atob(challenge), c => c.charCodeAt(0)),
+          // ✅ FIXED: use _b64 versions
+          challenge: Uint8Array.from(atob(challenge_b64), c => c.charCodeAt(0)),
           rp: { id: "localhost", name: "ReelForge" },
           user: {
-            id: Uint8Array.from(atob(user_id), c => c.charCodeAt(0)),
+            // ✅ FIXED: use _b64 versions
+            id: Uint8Array.from(atob(user_id_b64), c => c.charCodeAt(0)),
             name: "creator",
             displayName: "ReelForge Creator"
           },
@@ -43,9 +46,11 @@
             { type: "public-key", alg: -257 }
           ],
           timeout: 60000,
+          // ✅ FIXED: force platform authenticator (no security key)
           authenticatorSelection: {
+            authenticatorAttachment: "platform", // ← laptop biometrics only
             userVerification: "required",
-            residentKey: "discouraged"
+            residentKey: "preferred"
           },
           attestation: "none"
         }

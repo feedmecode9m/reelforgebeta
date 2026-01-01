@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Json, State, Path}, // ✅ Added Path
+    extract::{Json, State, Path},
     http::StatusCode,
     routing::{get, post},
     Router,
@@ -9,9 +9,12 @@ use std::{net::SocketAddr, sync::Arc};
 use uuid::Uuid;
 use webauthn_rs::prelude::{
     Webauthn, WebauthnBuilder, CreationChallengeResponse,
-    RegisterPublicKeyCredential, // ✅ Removed unused PasskeyRegistration
+    RegisterPublicKeyCredential,
 };
-use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
+use base64::{
+    engine::general_purpose::{STANDARD, URL_SAFE_NO_PAD},
+    Engine as _,
+};
 use url::Url;
 use bincode;
 
@@ -36,7 +39,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/health", get(|| async { "✅ ReelForge Core v0.9" }))
         .route("/api/auth/challenge", post(challenge))
         .route("/api/auth/register", post(register))
-        // ✅ FIXED: Added Path parameter handling
         .route("/api/dramas/:id/fork", post(|Path(_id): Path<String>| async move { 
             Json(serde_json::json!({ 
                 "id": "fork_123", 
@@ -61,7 +63,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 struct ChallengeRes {
     state_id: String,
     public_key: CreationChallengeResponse,
-    user_id: String,
+    challenge_b64: String,
+    user_id_b64: String,
 }
 
 async fn challenge(
@@ -84,10 +87,12 @@ async fn challenge(
             StatusCode::INTERNAL_SERVER_ERROR
         })?;
 
+    // ✅ FIXED: 1. ccr.public_key.challenge, 2. ccr.clone()
     Ok(Json(ChallengeRes {
         state_id: state_id.to_string(),
-        public_key: ccr,
-        user_id: user_id.to_string(),
+        public_key: ccr.clone(), // ← clone to avoid move error
+        challenge_b64: STANDARD.encode(&ccr.public_key.challenge),
+        user_id_b64: STANDARD.encode(user_id.as_bytes()),
     }))
 }
 
@@ -104,12 +109,11 @@ async fn register(
     let state_id = Uuid::parse_str(&payload.state_id)
         .map_err(|_| StatusCode::BAD_REQUEST)?;
 
-    // ✅ FIXED: Direct tuple return (no Option handling)
-    let (reg_state, user_id) = db::take_registration_state(&state.pool, state_id)
+    let (reg_state, _user_id) = db::take_registration_state(&state.pool, state_id)
         .await
         .map_err(|e| {
-            eprintln!("🔍 State Lookup Error (Expired or Missing): {}", e);
-            StatusCode::GONE // 410 Gone is perfect for expired registration states
+            eprintln!("🔍 State Lookup Error: {}", e);
+            StatusCode::GONE
         })?;
 
     let reg = state.webauthn
@@ -127,7 +131,7 @@ async fn register(
 
     let cred = db::Credential {
         id: Uuid::new_v4(),
-        user_id,
+        user_id: Uuid::new_v4(),
         credential_id: reg.cred_id().to_vec(),
         public_key: public_key_bin,
     };
