@@ -2,10 +2,12 @@
   import { onMount } from 'svelte';
   import Shooter from './Shooter.svelte';
 
+  const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000';
+
   let status = 'idle'; // 'idle' | 'pending' | 'success' | 'error' | 'timeout'
   let stateId = null;
   let timeoutId = null;
-  let showShooter = true; // 🔥 Force shooter UI
+  let showShooter = false; // ✅ restored to false for auth flow
 
   function startTimeout() {
     clearTimeout(timeoutId);
@@ -20,11 +22,10 @@
     stateId = null;
 
     try {
-      const res = await fetch('http://localhost:3000/api/auth/challenge', {
+      const res = await fetch(`${API_BASE}/api/auth/challenge`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       });
-      // ✅ FIXED: challenge_b64 and user_id_b64
       const { state_id, challenge_b64, user_id_b64 } = await res.json();
 
       stateId = state_id;
@@ -32,11 +33,9 @@
 
       const credential = await navigator.credentials.create({
         publicKey: {
-          // ✅ FIXED: use _b64 versions
           challenge: Uint8Array.from(atob(challenge_b64), c => c.charCodeAt(0)),
           rp: { id: "localhost", name: "ReelForge" },
           user: {
-            // ✅ FIXED: use _b64 versions
             id: Uint8Array.from(atob(user_id_b64), c => c.charCodeAt(0)),
             name: "creator",
             displayName: "ReelForge Creator"
@@ -46,9 +45,8 @@
             { type: "public-key", alg: -257 }
           ],
           timeout: 60000,
-          // ✅ FIXED: force platform authenticator (no security key)
           authenticatorSelection: {
-            authenticatorAttachment: "platform", // ← laptop biometrics only
+            authenticatorAttachment: "platform",
             userVerification: "required",
             residentKey: "preferred"
           },
@@ -56,7 +54,7 @@
         }
       });
 
-      const regRes = await fetch('http://localhost:3000/api/auth/register', {
+      const regRes = await fetch(`${API_BASE}/api/auth/register`, { // ✅ FIXED: uses API_BASE
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -77,7 +75,7 @@
         status = 'success';
         stateId = null;
         clearTimeout(timeoutId);
-        showShooter = true; // ✅ Auto-redirect to shooter
+        showShooter = true;
       } else {
         throw new Error(result.message || 'Registration failed');
       }
