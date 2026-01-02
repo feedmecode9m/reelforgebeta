@@ -1,12 +1,7 @@
 {
   "name": "reelforge-frontend",
-  "engines": {
-    "node": "18.x"
-  },
-  // ... rest unchanged
-}
+  "version": "0.1.0",
   "private": true,
-  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
