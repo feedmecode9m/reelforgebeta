@@ -29,3 +29,7 @@ yarn-error.log*
 /target/
 /node_modules/
 /dist/
+
+Caddyfile
+Railway.toml
+
