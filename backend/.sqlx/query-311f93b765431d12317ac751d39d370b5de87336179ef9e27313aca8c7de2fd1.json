@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO registration_states (id, user_id, data, expires_at) \n           VALUES ($1, $2, $3, NOW() + INTERVAL '5 minutes')",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Bytea"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "311f93b765431d12317ac751d39d370b5de87336179ef9e27313aca8c7de2fd1"
+}
