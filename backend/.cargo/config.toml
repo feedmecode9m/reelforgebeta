@@ -1,0 +1,3 @@
+[alias]
+# Run 'cargo k' to kill the ghost processes
+k = "run --quiet --command 'sudo kill -9 $(sudo lsof -t -i:3001 -i:3002)'"

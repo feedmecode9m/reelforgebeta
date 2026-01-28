@@ -1,15 +1,35 @@
 import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
-import mkcert from 'vite-plugin-mkcert';
+import path from 'path';
 
 export default defineConfig({
-  plugins: [
-    svelte(),
-    mkcert(), // ✅ Auto HTTPS for localhost
-  ],
+  plugins: [svelte()],
   server: {
     port: 5173,
     host: true,
-    https: true, // ✅ Forces https://localhost:5173
+    cors: true,
+    hmr: {
+      overlay: false // Disable error overlay for cleaner UI
+    }
+  },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+      '@components': path.resolve(__dirname, './src/components'),
+      '@stores': path.resolve(__dirname, './src/stores'),
+      '@utils': path.resolve(__dirname, './src/utils'),
+      '@assets': path.resolve(__dirname, './src/assets')
+    }
+  },
+  build: {
+    target: 'es2020',
+    minify: 'esbuild',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['svelte']
+        }
+      }
+    }
   }
 });

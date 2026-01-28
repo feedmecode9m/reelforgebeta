@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "backend/src/$1"
+    }
+  ],
+  "functions": {
+    "backend/src/**/*.rs": {
+      "runtime": "vercel-rust@4.0.9"
+    }
+  }
+}

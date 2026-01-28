@@ -1,64 +1,104 @@
+use crate::models::Reel;
 use sqlx::PgPool;
+use sqlx::types::Json;
 use uuid::Uuid;
-// The webauthn types need to be imported specifically
-use webauthn_rs::prelude::PasskeyRegistration;
 
-pub struct Credential {
-    pub id: Uuid,
-    pub user_id: Uuid,
-    pub credential_id: Vec<u8>,
-    pub public_key: Vec<u8>,
+pub async fn fetch_all_reels(pool: &PgPool) -> Result<Vec<Reel>, sqlx::Error> {
+    sqlx::query_as!(
+        Reel,
+        r#"
+        SELECT 
+            id as "id: Uuid", 
+            title as "title!", 
+            category as "category!", 
+            episode as "episode!", 
+            video_url as "video_url!", 
+            thumbnail_url as "thumbnail_url!", 
+            likes as "likes!", 
+            COALESCE(tags, ARRAY[]::text[]) as "tags!",
+            file_name, 
+            file_size, 
+            is_auto_detected, 
+            detection_confidence::text as "detection_confidence?", 
+            ai_tags, 
+            cultural_themes, 
+            video_metadata as "video_metadata?: Json<serde_json::Value>", 
+            status, 
+            views as "views!", 
+            shares as "shares!",
+            duration::float8 as "duration?", 
+            resolution, 
+            has_thumbnail, 
+            upload_source, 
+            created_at as "created_at?", 
+            updated_at as "updated_at?"
+        FROM reels
+        ORDER BY created_at DESC
+        "#
+    )
+    .fetch_all(pool)
+    .await
 }
 
-pub async fn connect_db() -> PgPool {
-    let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    PgPool::connect(&db_url).await.expect("Failed to connect to Postgres")
-}
-
-pub async fn save_registration_state(
-    pool: &PgPool,
-    id: Uuid,
-    state: &PasskeyRegistration,
-    user_id: Uuid,
-) -> Result<(), sqlx::Error> {
-    // webauthn-rs uses internal serialization with the "danger" flag
-    let data = serde_json::to_vec(state).unwrap();
+pub async fn create_reel(pool: &PgPool, reel: Reel) -> Result<(), sqlx::Error> {
     sqlx::query!(
-        r#"INSERT INTO registration_states (id, user_id, data, expires_at) 
-           VALUES ($1, $2, $3, NOW() + INTERVAL '5 minutes')"#,
-        id, user_id, data
+        r#"
+        INSERT INTO reels (
+            id, title, category, episode, video_url, thumbnail_url, likes, tags,
+            file_name, file_size, is_auto_detected, detection_confidence, 
+            ai_tags, cultural_themes, video_metadata, status, views, shares,
+            duration, resolution, has_thumbnail, upload_source, created_at, updated_at
+        ) VALUES (
+            $1, $2, $3, $4, $5, $6, $7, $8,
+            $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,
+            $19, $20, $21, $22, $23, $24
+        )
+        "#,
+        reel.id,
+        reel.title,
+        reel.category,
+        reel.episode,
+        reel.video_url,
+        reel.thumbnail_url,
+        reel.likes,
+        &reel.tags,
+        reel.file_name,
+        reel.file_size,
+        reel.is_auto_detected,
+        reel.detection_confidence,
+        reel.ai_tags.as_deref(),
+        reel.cultural_themes.as_deref(),
+        reel.video_metadata as _, 
+        reel.status.as_deref().unwrap_or("active"),
+        reel.views,
+        reel.shares,
+        reel.duration,
+        reel.resolution,
+        reel.has_thumbnail,
+        reel.upload_source.as_deref().unwrap_or("studio"),
+        reel.created_at,
+        reel.updated_at
     )
     .execute(pool)
     .await?;
+    
     Ok(())
 }
 
-pub async fn take_registration_state(
-    pool: &PgPool,
-    id: Uuid,
-) -> Result<(PasskeyRegistration, Uuid), sqlx::Error> {
-    let row = sqlx::query!(
-        r#"DELETE FROM registration_states 
-           WHERE id = $1 AND expires_at > NOW() 
-           RETURNING user_id, data"#,
-        id
-    )
-    .fetch_one(pool)
-    .await?;
-
-    // Map the error to sqlx::Error or a custom error to avoid the anyhow issue
-    let state: PasskeyRegistration = serde_json::from_slice(&row.data)
-        .map_err(|_| sqlx::Error::RowNotFound)?; 
-
-    Ok((state, row.user_id))
-}
-
-pub async fn save_credential(pool: &PgPool, cred: &Credential) -> Result<(), sqlx::Error> {
+pub async fn sync_user_stats(
+    pool: &PgPool, 
+    _user_id: String, 
+    points: i64,       // Matched to BIGINT
+    total_reels: i64   // Matched to BIGINT
+) -> Result<(), sqlx::Error> {
     sqlx::query!(
-        "INSERT INTO credentials (id, user_id, credential_id, public_key) VALUES ($1, $2, $3, $4)",
-        cred.id, cred.user_id, cred.credential_id, cred.public_key
+        "INSERT INTO studio_stats (id, total_likes, total_uploads) VALUES (1, $1, $2) 
+         ON CONFLICT (id) DO UPDATE SET total_likes = $1, total_uploads = $2",
+        points,
+        total_reels
     )
     .execute(pool)
     .await?;
+    
     Ok(())
 }

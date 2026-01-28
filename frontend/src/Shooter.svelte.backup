@@ -1,0 +1,11 @@
+<script>
+  import { onMount } from 'svelte';
+  
+  // ... [The entire script part] ...
+</script>
+
+<style>
+  /* ... [The entire style part] ... */
+</style>
+
+<!-- ... [The entire HTML part] ... -->
