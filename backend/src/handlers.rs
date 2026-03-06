@@ -1,226 +1,230 @@
-use actix_web::{get, post, delete, web, HttpResponse, Responder};
+use actix_web::{web, HttpResponse, Responder};
+use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use uuid::Uuid;
-use crate::db;
-use crate::models::{
-    Reel, StatsPayload, CreateReelRequest, Category, StudioStats, 
-    ReelQuery, CategoryDetectionQuery, UpdateReelRequest
-};
-use crate::ai_detector::SmartCategoryDetector;
-use serde_json::json;
-use chrono::Utc;
-use rand::seq::IndexedRandom; 
-use std::process::Command;
-use serde::{Deserialize, Serialize};
+use actix_files::NamedFile;
+use actix_web::{HttpRequest, Result};
+use urlencoding::decode;
+use std::path::PathBuf;
+use std::fs;
+use crate::utils;
 
-#[derive(Deserialize, Serialize)]
-pub struct RenameRequest {
-    pub old_name: String,
-    pub new_name: String,
+#[derive(Deserialize)]
+pub struct ImportRequest {
+    pub video_url: String,
 }
 
-// --- ART VAULT ---
-const STOIC_ART_VAULT: &[&str] = &[
-    "/public/art/forgotten_mask.jpg",
-    "/public/art/terra_cotta_warrior.jpg",
-    "/public/art/bronze_monolith.jpg",
-    "/public/art/charcoal_proverbs.jpg",
-    "/public/art/stoic_sculpture.jpg"
-];
-
-pub fn extract_thumbnail(video_path: &str, output_path: &str) -> bool {
-    let status = Command::new("ffmpeg")
-        .args(["-y", "-i", video_path, "-ss", "00:00:01", "-vframes", "1", output_path])
-        .status();
-    match status {
-        Ok(s) => s.success(),
-        Err(_) => false,
-    }
+#[derive(Serialize, Deserialize)]
+pub struct LocalVideo {
+    pub name: String,
+    pub path: String,
+    pub thumbnail_url: String,
 }
 
-// 1. GET REELS
-#[get("/reels")]
-pub async fn get_reels(pool: web::Data<PgPool>, query: web::Query<ReelQuery>) -> impl Responder {
-    let limit = query.limit.unwrap_or(100);
-    let offset = query.offset.unwrap_or(0);
+#[derive(Serialize, sqlx::FromRow)]
+pub struct Reel {
+    pub id: Uuid,
+    pub title: String,
+    pub video_url: String,
+    pub category: String,
+}
 
-    // Clean SELECT * because the DB type now matches the Rust type
-    let reels_result = sqlx::query_as::<_, Reel>("SELECT * FROM reels ORDER BY created_at DESC LIMIT $1 OFFSET $2")
-        .bind(limit).bind(offset).fetch_all(pool.get_ref()).await;
+// --- GET REELS ---
+pub async fn get_reels(pool: web::Data<PgPool>) -> impl Responder {
+    let result = sqlx::query_as!(
+        Reel,
+        "SELECT id, title as \"title!\", video_url as \"video_url!\", category as \"category!\" FROM reels ORDER BY id DESC"
+    )
+    .fetch_all(pool.get_ref())
+    .await;
 
-    match reels_result {
+    match result {
         Ok(reels) => HttpResponse::Ok().json(reels),
         Err(e) => {
-            eprintln!("❌ DATABASE DECODE ERROR: {:?}", e);
-            HttpResponse::InternalServerError().json(json!({"error": e.to_string()}))
-        }
-    }
-}
-
-// 2. CREATE REEL
-#[post("/reels")]
-pub async fn create_reel(pool: web::Data<PgPool>, payload: web::Json<CreateReelRequest>) -> impl Responder {
-    let mut req = payload.into_inner();
-    let detection = SmartCategoryDetector::detect_from_title(&req.title);
-    if req.category == "Auto-Detect" || req.category.is_empty() {
-        req.category = detection.category.clone();
-    }
-    let video_url = req.video_url.unwrap_or_default();
-    
-    let mut rng = rand::rng(); 
-    let final_thumbnail = req.thumbnail_url.filter(|s| !s.is_empty())
-        .unwrap_or_else(|| STOIC_ART_VAULT.choose(&mut rng).unwrap_or(&"/public/art/default.jpg").to_string());
-
-    let insert_result = sqlx::query_as::<_, Reel>(
-        r#"INSERT INTO reels (id, title, category, episode, video_url, thumbnail_url, likes, created_at, updated_at) 
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *"#
-    )
-    .bind(Uuid::new_v4()).bind(&req.title).bind(&req.category).bind(req.episode.unwrap_or(0))
-    .bind(video_url).bind(final_thumbnail).bind(0).bind(Utc::now()).bind(Utc::now())
-    .fetch_one(pool.get_ref()).await;
-
-    match insert_result {
-        Ok(reel) => HttpResponse::Ok().json(reel),
-        Err(e) => {
-            eprintln!("❌ DATABASE DECODE ERROR (create_reel): {:?}", e);
-            HttpResponse::InternalServerError().json(json!({"error": e.to_string()}))
-        }
-    }
-}
-
-// 3. SYNC STATS
-#[post("/sync")]
-pub async fn sync_stats(pool: web::Data<PgPool>, payload: web::Json<StatsPayload>) -> impl Responder {
-    match db::sync_user_stats(pool.get_ref(), payload.user_id.clone().unwrap_or_default(), payload.points.unwrap_or(0), payload.total_reels).await {
-        Ok(_) => HttpResponse::Ok().json(json!({"status": "synced"})),
-        Err(e) => {
-            eprintln!("❌ SYNC ERROR: {:?}", e);
+            println!("❌ DB Fetch Error: {}", e);
             HttpResponse::InternalServerError().finish()
         }
     }
 }
 
-// 4. LIKE REEL
-#[post("/reels/{id}/like")]
-pub async fn like_reel(pool: web::Data<PgPool>, path: web::Path<Uuid>) -> impl Responder {
-    let id = path.into_inner();
-    match sqlx::query_as::<_, Reel>("UPDATE reels SET likes = likes + 1 WHERE id = $1 RETURNING *")
-        .bind(id).fetch_one(pool.get_ref()).await {
-        Ok(reel) => HttpResponse::Ok().json(reel),
+// --- LIST LOCAL VIDEOS (relative path) ---
+pub async fn list_local_videos() -> impl Responder {
+    let videos_dir = "./public/videos";
+    let entries = match fs::read_dir(videos_dir) {
+        Ok(entries) => entries,
         Err(e) => {
-            eprintln!("❌ LIKE ERROR: {:?}", e);
-            HttpResponse::NotFound().finish()
+            eprintln!("Failed to read videos dir: {}", e);
+            return HttpResponse::InternalServerError().json(serde_json::json!({ "error": "cannot read directory" }));
         }
-    }
-}
-
-// 5. STUDIO DASHBOARD
-#[get("/studio/dashboard")]
-pub async fn get_studio_dashboard(pool: web::Data<PgPool>) -> impl Responder {
-    let stats = sqlx::query_as::<_, StudioStats>("SELECT * FROM studio_stats WHERE id = 1")
-        .fetch_optional(pool.get_ref()).await.unwrap_or(None);
-    
-    let categories = sqlx::query_as::<_, Category>("SELECT * FROM categories ORDER BY item_count DESC")
-        .fetch_all(pool.get_ref()).await.unwrap_or_default();
-    
-    // Since you ran ALTER TABLE, SELECT * works perfectly now!
-    let recent = sqlx::query_as::<_, Reel>("SELECT * FROM reels ORDER BY created_at DESC LIMIT 5")
-        .fetch_all(pool.get_ref()).await.unwrap_or_default();
-
-    HttpResponse::Ok().json(json!({ 
-        "stats": stats, 
-        "categories": categories, 
-        "recentProductions": recent 
-    }))
-}
-
-// 6. GET CATEGORIES
-#[get("/studio/categories")]
-pub async fn get_categories(pool: web::Data<PgPool>) -> impl Responder {
-    match sqlx::query_as::<_, Category>("SELECT * FROM categories ORDER BY name").fetch_all(pool.get_ref()).await {
-        Ok(c) => HttpResponse::Ok().json(c),
-        Err(e) => {
-            eprintln!("❌ CATEGORY FETCH ERROR: {:?}", e);
-            HttpResponse::InternalServerError().finish()
-        }
-    }
-}
-
-// 7. AI DETECTION
-#[get("/studio/detect")]
-pub async fn detect_category(query: web::Query<CategoryDetectionQuery>) -> impl Responder {
-    let title = query.title.clone().unwrap_or_default();
-    let detection = SmartCategoryDetector::detect_from_title(&title);
-    HttpResponse::Ok().json(json!({ "success": true, "detection": detection }))
-}
-
-// 8. DELETE REEL
-#[delete("/studio/reels/{id}")]
-pub async fn delete_reel(pool: web::Data<PgPool>, path: web::Path<Uuid>) -> impl Responder {
-    let reel_id = path.into_inner();
-    let reel = sqlx::query_as::<_, Reel>("SELECT * FROM reels WHERE id = $1")
-        .bind(reel_id)
-        .fetch_optional(pool.get_ref())
-        .await;
-
-    if let Ok(Some(reel_data)) = reel {
-        if !reel_data.video_url.is_empty() {
-            let _ = std::fs::remove_file(reel_data.video_url.trim_start_matches('/'));
-        }
-
-        let mut tx = match pool.begin().await {
-            Ok(t) => t,
-            Err(_) => return HttpResponse::InternalServerError().json(json!({"error": "Tx Fail"})),
-        };
-
-        let delete_op = sqlx::query("DELETE FROM reels WHERE id = $1")
-            .bind(reel_id)
-            .execute(&mut *tx)
-            .await;
-
-        let _ = sqlx::query("UPDATE categories SET item_count = GREATEST(0, item_count - 1) WHERE name = $1")
-            .bind(&reel_data.category)
-            .execute(&mut *tx)
-            .await;
-
-        if delete_op.is_ok() && tx.commit().await.is_ok() {
-            println!("🤖 JANITOR AGENT: Production {} purged permanently.", reel_id);
-            return HttpResponse::Ok().json(json!({"success": true, "status": "Permanently Destroyed"}));
-        }
-    }
-    HttpResponse::NotFound().json(json!({"error": "Reel not found or already purged"}))
-}
-
-// 9. UPDATE REEL
-#[post("/studio/reels/{id}/update")]
-pub async fn update_reel(pool: web::Data<PgPool>, path: web::Path<Uuid>, req: web::Json<UpdateReelRequest>) -> impl Responder {
-    let id = path.into_inner();
-    let sql = match req.action.as_str() {
-        "like" => "UPDATE reels SET likes = likes + 1 WHERE id = $1 RETURNING *",
-        "view" => "UPDATE reels SET views = views + 1 WHERE id = $1 RETURNING *",
-        _ => return HttpResponse::BadRequest().finish(),
     };
-    match sqlx::query_as::<_, Reel>(sql).bind(id).fetch_one(pool.get_ref()).await {
-        Ok(reel) => HttpResponse::Ok().json(reel),
+
+    let mut videos = Vec::new();
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
+            if ext.eq_ignore_ascii_case("mp4") || ext.eq_ignore_ascii_case("mov") {
+                if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+                    videos.push(LocalVideo {
+                        name: name.to_string(),
+                        path: format!("/videos/{}", name),
+                        thumbnail_url: "/placeholder-thumb.jpg".to_string(),
+                    });
+                }
+            }
+        }
+    }
+
+    HttpResponse::Ok().json(videos)
+}
+
+// --- IMPORT HANDLER with entry log and all required columns ---
+pub async fn import_local_to_vault(
+    req: web::Json<LocalVideo>,
+    pool: web::Data<PgPool>,
+) -> impl Responder {
+    println!("🔥 import_local_to_vault HANDLER REACHED");
+    let filename = req.name.clone();
+    println!("🚀 Unveiling starting for: {}", filename);
+
+    let local_path = format!("./public/videos/{}", filename);
+
+    if !std::path::Path::new(&local_path).exists() {
+        let err_msg = format!("File not found: {}", local_path);
+        println!("❌ {}", err_msg);
+        return HttpResponse::InternalServerError().body(err_msg);
+    }
+
+    println!("📤 Attempting to upload to Supabase: {}", filename);
+
+    match crate::utils::upload_to_supabase(&local_path, &filename).await {
+        Ok(cloud_url) => {
+            println!("✅ Supabase upload succeeded: {}", cloud_url);
+            let id = Uuid::new_v4();
+            let thumbnail_placeholder = "/placeholder-thumb.jpg";
+            let db_result = sqlx::query!(
+                "INSERT INTO reels (id, title, video_url, category, episode, thumbnail_url) VALUES ($1, $2, $3, $4, $5, $6)",
+                id, filename, cloud_url, "Uncategorized", 0, thumbnail_placeholder
+            )
+            .execute(pool.get_ref())
+            .await;
+
+            match db_result {
+                Ok(_) => {
+                    println!("✅ DB insert succeeded for {}", filename);
+                    HttpResponse::Ok().json(serde_json::json!({ "status": "success", "url": cloud_url }))
+                },
+                Err(e) => {
+                    println!("❌ DB insert error: {}", e);
+                    HttpResponse::InternalServerError().body(format!("DB error: {}", e))
+                }
+            }
+        },
         Err(e) => {
-            eprintln!("❌ UPDATE DECODE ERROR: {:?}", e);
-            HttpResponse::InternalServerError().finish()
+            println!("❌ Supabase upload failed: {}", e);
+            HttpResponse::InternalServerError().body(format!("Upload failed: {}", e))
         }
     }
 }
 
-// 10. RENAME CATEGORY
-#[post("/studio/categories/rename")]
-pub async fn rename_category(pool: web::Data<PgPool>, req: web::Json<RenameRequest>) -> impl Responder {
-    let mut tx = pool.begin().await.unwrap();
-    let _ = sqlx::query("UPDATE categories SET name = $1 WHERE name = $2")
-        .bind(&req.new_name).bind(&req.old_name).execute(&mut *tx).await;
-    let _ = sqlx::query("UPDATE reels SET category = $1 WHERE category = $2")
-        .bind(&req.new_name).bind(&req.old_name).execute(&mut *tx).await;
+// --- DELETE REEL ---
+pub async fn delete_reel(
+    path: web::Path<Uuid>,
+    pool: web::Data<PgPool>,
+) -> impl Responder {
+    let reel_id = path.into_inner();
+    println!("🗑️ Delete request for reel ID: {}", reel_id);
 
-    if tx.commit().await.is_ok() {
-        HttpResponse::Ok().json(json!({"success": true}))
-    } else {
-        HttpResponse::InternalServerError().finish()
+    // Fetch the reel to get video_url (to extract filename)
+    let reel = match sqlx::query!("SELECT video_url FROM reels WHERE id = $1", reel_id)
+        .fetch_one(pool.get_ref())
+        .await
+    {
+        Ok(r) => r,
+        Err(e) => {
+            println!("❌ Reel not found or DB error: {}", e);
+            return HttpResponse::NotFound().body("Reel not found");
+        }
+    };
+
+    // Extract filename from video_url (Supabase public URL)
+    let video_url = reel.video_url;
+    let filename = video_url
+        .split('/')
+        .last()
+        .unwrap_or("")
+        .to_string();
+
+    if filename.is_empty() {
+        println!("❌ Could not extract filename from URL: {}", video_url);
+        return HttpResponse::InternalServerError().body("Invalid video URL");
     }
+
+    println!("📎 Extracted filename: {}", filename);
+
+    // Delete from Supabase storage
+    match utils::delete_from_supabase(&filename).await {
+        Ok(_) => println!("✅ Supabase deletion successful"),
+        Err(e) => {
+            println!("❌ Supabase deletion failed: {}", e);
+            // Continue to delete DB record even if storage delete fails
+        }
+    }
+
+    // Delete from database
+    match sqlx::query!("DELETE FROM reels WHERE id = $1", reel_id)
+        .execute(pool.get_ref())
+        .await
+    {
+        Ok(_) => {
+            println!("✅ DB deletion successful for reel ID: {}", reel_id);
+            HttpResponse::Ok().json(serde_json::json!({ "status": "deleted" }))
+        }
+        Err(e) => {
+            println!("❌ DB deletion error: {}", e);
+            HttpResponse::InternalServerError().body(format!("DB error: {}", e))
+        }
+    }
+}
+
+// --- STUBS (keep others) ---
+pub async fn register_local_video() -> impl Responder { HttpResponse::Ok().finish() }
+pub async fn upload_video() -> impl Responder { HttpResponse::Ok().finish() }
+pub async fn list_thumbnails() -> impl Responder { HttpResponse::Ok().finish() }
+pub async fn sync_stats() -> impl Responder { HttpResponse::Ok().finish() }
+pub async fn update_reel_category() -> impl Responder { HttpResponse::Ok().finish() }
+pub async fn get_category_stats() -> impl Responder { HttpResponse::Ok().finish() }
+
+// ===== FILE SERVING HANDLERS =====
+pub async fn serve_video(
+    req: HttpRequest,
+    base_dir: web::Data<PathBuf>,
+) -> Result<NamedFile> {
+    serve_file(req, base_dir).await
+}
+
+pub async fn serve_thumb(
+    req: HttpRequest,
+    base_dir: web::Data<PathBuf>,
+) -> Result<NamedFile> {
+    serve_file(req, base_dir).await
+}
+
+async fn serve_file(
+    req: HttpRequest,
+    base_dir: web::Data<PathBuf>,
+) -> Result<NamedFile> {
+    let filename: String = req.match_info().query("filename").parse()
+        .map_err(|_| actix_web::error::ErrorBadRequest("Invalid filename"))?;
+
+    let decoded = decode(&filename)
+        .map_err(|_| actix_web::error::ErrorBadRequest("Invalid encoding"))?
+        .into_owned();
+
+    let path = base_dir.join(decoded);
+
+    if !path.starts_with(base_dir.as_ref()) {
+        return Err(actix_web::error::ErrorForbidden("Access denied"));
+    }
+
+    Ok(NamedFile::open(path)?)
 }
