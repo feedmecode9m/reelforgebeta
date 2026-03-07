@@ -9,7 +9,6 @@ pub mod video_stream;
 pub mod events;
 
 use actix_cors::Cors;
-use actix_files::Files;
 use actix_web::{web, App, HttpServer, HttpResponse, middleware, HttpRequest};
 use events::EventBus;
 use tokio::sync::broadcast;
@@ -36,7 +35,7 @@ async fn main() -> std::io::Result<()> {
     let event_bus = web::Data::new(EventBus::new(100));
     println!("📡 Real-time event system initialized");
 
-    // --- PATH SETUP (relative to project root, works on Render) ---
+    // --- PATH SETUP (relative to project root) ---
     let public_path = std::path::PathBuf::from("./public");
     let thumbs_path = public_path.join("thumbs");
     let videos_path = public_path.join("videos");
@@ -51,13 +50,12 @@ async fn main() -> std::io::Result<()> {
     let videos_path_data = web::Data::new(videos_path.clone());
     let thumbs_path_data = web::Data::new(thumbs_path.clone());
 
-    // Get the port from the environment (Render sets PORT)
+    // Get the port from the environment (Render sets PORT, but we default to 8080)
     let port = env::var("PORT").unwrap_or_else(|_| "8080".to_string());
     let bind_address = format!("0.0.0.0:{}", port);
     println!("🚀 Binding to {}", bind_address);
 
     HttpServer::new(move || {
-        // CORS – allow any origin for now; replace with your frontend domain in production
         let cors = Cors::default()
             .allow_any_origin()
             .allow_any_method()
