@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+frontend/dist/
+
+# Rust
+backend/target/
+
+# Env
+.env
+.env.*.local
+!.env.example
+!frontend/.env.example
+!frontend/.env.production
+!frontend/.env.local
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
