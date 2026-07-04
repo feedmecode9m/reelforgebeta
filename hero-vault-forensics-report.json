@@ -1,0 +1,460 @@
+{
+  "phase": "PHASE HERO-VAULT-ISOLATION-FORENSICS",
+  "mode": "FORENSIC_ONLY",
+  "generatedAt": "2026-06-14T17:09:34.408120+00:00",
+  "diagnostics": {
+    "addedTags": [
+      "[HERO_UPLOAD]",
+      "[HERO_CLASSIFY]",
+      "[HERO_ROUTE]",
+      "[HERO_STORE_WRITE]",
+      "[HERO_STORE_READ]",
+      "[HERO_RENDER_TARGET]",
+      "[HERO_VAULT_INSERT]",
+      "[VIDEO_VAULT_INSERT]",
+      "[PLACEHOLDER_INSERT]"
+    ],
+    "instrumentedFiles": [
+      "frontend/src/lib/api/media.js",
+      "frontend/src/components/experiences/HeroExperience.svelte",
+      "frontend/src/lib/hero/heroIntelligence.js",
+      "frontend/src/lib/hero/heroAssetBridge.js",
+      "frontend/src/viewer/viewerContext.js",
+      "frontend/src/lib/viewer/aiCleanupAgent.js",
+      "frontend/src/components/experiences/VaultExperience.svelte"
+    ]
+  },
+  "UPLOAD": [
+    {
+      "ext": "jpg",
+      "assetId": "88880095-2cd0-4e65-9144-9ae0bcd84e5f",
+      "assetType": "jpg",
+      "mimeType": "image/jpeg",
+      "storageLocation": "http://localhost:8080/thumbs/88880095-2cd0-4e65-9144-9ae0bcd84e5f.jpg",
+      "destinationVault": "shared thumbnail vault (personal_thumbnails)",
+      "renderTarget": "image-node",
+      "apiResponse": {
+        "id": "88880095-2cd0-4e65-9144-9ae0bcd84e5f",
+        "type": "image",
+        "url": "http://localhost:8080/thumbs/88880095-2cd0-4e65-9144-9ae0bcd84e5f.jpg",
+        "thumbnailUrl": "http://localhost:8080/thumbs/88880095-2cd0-4e65-9144-9ae0bcd84e5f.jpg",
+        "status": "ready"
+      },
+      "upload": {
+        "diagnosticSeen": true,
+        "source": "frontend/src/lib/api/media.js:createReel",
+        "websocketCreatedObserved": true,
+        "websocketCreatedSample": "[HERO_ROUTE] {stage: websocket:onCreated, reelId: 88880095-2cd0-4e65-9144-9ae0bcd84e5f, type: image, url: http://localhost:8080/thumbs/88880095-2cd0-4e65-9144-9ae0bcd84e5f.jpg, thumbnailUrl: http://localhost:8080/thumbs/88880095-2cd0-4e65-9144-9ae0bcd84e5f.jpg}"
+      },
+      "classification": {
+        "heroClassifyCount": 115,
+        "resolvedAssetType": "jpg",
+        "resolvedMediaUrl": "/thumbs/88880095-2cd0-4e65-9144-9ae0bcd84e5f.jpg",
+        "responseType": "image"
+      },
+      "routing": {
+        "heroRouteCount": 11,
+        "enteredPersonalVideosVideoVault": false,
+        "videoVaultInsertIdsSeen": [
+          "0e08ae14-6fcb-4104-a4e6-365e758aab20",
+          "195927e9-61ae-46b3-ba3d-1f49ba43a8d3",
+          "a2870175-dc27-4039-a581-4828467316bf"
+        ],
+        "enteredAI_CLEANUP_AGENT_videoDistribution": false,
+        "enteredPlaceholderGeneration": true,
+        "placeholderNamesSeenTail": [
+          "5b4dc795-ba1f-4515-b63b-b35bff06fc60",
+          "32306f6a-f6dc-4e9b-a787-a18ab396b92f",
+          "a64830b4-ef25-4afc-af61-5a70091d1cee",
+          "9d2b507e-b548-4923-a1a5-90fcc1a1b6b5",
+          "68ed849d-ea04-4cb8-ac71-2454e4ade32a",
+          "b380bbf0-1836-44a8-9fcb-abf68ea63ab9",
+          "dbafc3e5-86aa-4902-b7e0-e5dfba33cac1",
+          "IMG_0131.JPEG"
+        ]
+      },
+      "persistence": {
+        "heroStoreReadCount": 14,
+        "heroStoreWriteCount": 2,
+        "heroVaultInsertCount": 1,
+        "heroManagerStorageKey": "reelforge_hero_manager_config",
+        "videoVaultStorageKey": "personal_video_vault",
+        "thumbnailVaultStorageKey": "personal_thumbnails"
+      },
+      "render": {
+        "heroRenderTargetSeen": true,
+        "renderTarget": "image-node",
+        "renderImageUrl": "/thumbs/88880095-2cd0-4e65-9144-9ae0bcd84e5f.jpg",
+        "renderVideoUrl": "",
+        "renderDiagnosticSample": "[HERO_RENDER_TARGET] {backgroundSource: custom_image, assetId: 88880095-2cd0-4e65-9144-9ae0bcd84e5f, videoUrl: , imageUrl: /thumbs/88880095-2cd0-4e65-9144-9ae0bcd84e5f.jpg, target: image-node}"
+      }
+    },
+    {
+      "ext": "jpeg",
+      "assetId": "20b8226f-89e1-4342-8309-eede2b96f559",
+      "assetType": "jpeg",
+      "mimeType": "image/jpeg",
+      "storageLocation": "http://localhost:8080/thumbs/20b8226f-89e1-4342-8309-eede2b96f559.jpeg",
+      "destinationVault": "shared thumbnail vault (personal_thumbnails)",
+      "renderTarget": "image-node",
+      "apiResponse": {
+        "id": "20b8226f-89e1-4342-8309-eede2b96f559",
+        "type": "image",
+        "url": "http://localhost:8080/thumbs/20b8226f-89e1-4342-8309-eede2b96f559.jpeg",
+        "thumbnailUrl": "http://localhost:8080/thumbs/20b8226f-89e1-4342-8309-eede2b96f559.jpeg",
+        "status": "ready"
+      },
+      "upload": {
+        "diagnosticSeen": true,
+        "source": "frontend/src/lib/api/media.js:createReel",
+        "websocketCreatedObserved": true,
+        "websocketCreatedSample": "[HERO_ROUTE] {stage: websocket:onCreated, reelId: 20b8226f-89e1-4342-8309-eede2b96f559, type: image, url: http://localhost:8080/thumbs/20b8226f-89e1-4342-8309-eede2b96f559.jpeg, thumbnailUrl: http://localhost:8080/thumbs/20b8226f-89e1-4342-8309-eede2b96f559.jpeg}"
+      },
+      "classification": {
+        "heroClassifyCount": 146,
+        "resolvedAssetType": "jpeg",
+        "resolvedMediaUrl": "/thumbs/20b8226f-89e1-4342-8309-eede2b96f559.jpeg",
+        "responseType": "image"
+      },
+      "routing": {
+        "heroRouteCount": 10,
+        "enteredPersonalVideosVideoVault": false,
+        "videoVaultInsertIdsSeen": [
+          "0e08ae14-6fcb-4104-a4e6-365e758aab20",
+          "195927e9-61ae-46b3-ba3d-1f49ba43a8d3",
+          "a2870175-dc27-4039-a581-4828467316bf"
+        ],
+        "enteredAI_CLEANUP_AGENT_videoDistribution": false,
+        "enteredPlaceholderGeneration": true,
+        "placeholderNamesSeenTail": [
+          "5b4dc795-ba1f-4515-b63b-b35bff06fc60",
+          "32306f6a-f6dc-4e9b-a787-a18ab396b92f",
+          "a64830b4-ef25-4afc-af61-5a70091d1cee",
+          "9d2b507e-b548-4923-a1a5-90fcc1a1b6b5",
+          "68ed849d-ea04-4cb8-ac71-2454e4ade32a",
+          "b380bbf0-1836-44a8-9fcb-abf68ea63ab9",
+          "dbafc3e5-86aa-4902-b7e0-e5dfba33cac1",
+          "IMG_0131.JPEG"
+        ]
+      },
+      "persistence": {
+        "heroStoreReadCount": 11,
+        "heroStoreWriteCount": 2,
+        "heroVaultInsertCount": 1,
+        "heroManagerStorageKey": "reelforge_hero_manager_config",
+        "videoVaultStorageKey": "personal_video_vault",
+        "thumbnailVaultStorageKey": "personal_thumbnails"
+      },
+      "render": {
+        "heroRenderTargetSeen": true,
+        "renderTarget": "image-node",
+        "renderImageUrl": "/thumbs/88880095-2cd0-4e65-9144-9ae0bcd84e5f.jpg",
+        "renderVideoUrl": "",
+        "renderDiagnosticSample": "[HERO_RENDER_TARGET] {backgroundSource: custom_image, assetId: 20b8226f-89e1-4342-8309-eede2b96f559, videoUrl: , imageUrl: /thumbs/88880095-2cd0-4e65-9144-9ae0bcd84e5f.jpg, target: image-node}"
+      }
+    },
+    {
+      "ext": "png",
+      "assetId": "b234cb27-f707-4aec-b9c5-b1052b57bf56",
+      "assetType": "png",
+      "mimeType": "image/png",
+      "storageLocation": "http://localhost:8080/thumbs/b234cb27-f707-4aec-b9c5-b1052b57bf56.png",
+      "destinationVault": "shared thumbnail vault (personal_thumbnails)",
+      "renderTarget": "image-node",
+      "apiResponse": {
+        "id": "b234cb27-f707-4aec-b9c5-b1052b57bf56",
+        "type": "image",
+        "url": "http://localhost:8080/thumbs/b234cb27-f707-4aec-b9c5-b1052b57bf56.png",
+        "thumbnailUrl": "http://localhost:8080/thumbs/b234cb27-f707-4aec-b9c5-b1052b57bf56.png",
+        "status": "ready"
+      },
+      "upload": {
+        "diagnosticSeen": true,
+        "source": "frontend/src/lib/api/media.js:createReel",
+        "websocketCreatedObserved": true,
+        "websocketCreatedSample": "[HERO_ROUTE] {stage: websocket:onCreated, reelId: b234cb27-f707-4aec-b9c5-b1052b57bf56, type: image, url: http://localhost:8080/thumbs/b234cb27-f707-4aec-b9c5-b1052b57bf56.png, thumbnailUrl: http://localhost:8080/thumbs/b234cb27-f707-4aec-b9c5-b1052b57bf56.png}"
+      },
+      "classification": {
+        "heroClassifyCount": 155,
+        "resolvedAssetType": "png",
+        "resolvedMediaUrl": "/thumbs/b234cb27-f707-4aec-b9c5-b1052b57bf56.png",
+        "responseType": "image"
+      },
+      "routing": {
+        "heroRouteCount": 10,
+        "enteredPersonalVideosVideoVault": false,
+        "videoVaultInsertIdsSeen": [
+          "0e08ae14-6fcb-4104-a4e6-365e758aab20",
+          "195927e9-61ae-46b3-ba3d-1f49ba43a8d3",
+          "a2870175-dc27-4039-a581-4828467316bf"
+        ],
+        "enteredAI_CLEANUP_AGENT_videoDistribution": false,
+        "enteredPlaceholderGeneration": true,
+        "placeholderNamesSeenTail": [
+          "5b4dc795-ba1f-4515-b63b-b35bff06fc60",
+          "32306f6a-f6dc-4e9b-a787-a18ab396b92f",
+          "a64830b4-ef25-4afc-af61-5a70091d1cee",
+          "9d2b507e-b548-4923-a1a5-90fcc1a1b6b5",
+          "68ed849d-ea04-4cb8-ac71-2454e4ade32a",
+          "b380bbf0-1836-44a8-9fcb-abf68ea63ab9",
+          "dbafc3e5-86aa-4902-b7e0-e5dfba33cac1",
+          "IMG_0131.JPEG"
+        ]
+      },
+      "persistence": {
+        "heroStoreReadCount": 12,
+        "heroStoreWriteCount": 2,
+        "heroVaultInsertCount": 1,
+        "heroManagerStorageKey": "reelforge_hero_manager_config",
+        "videoVaultStorageKey": "personal_video_vault",
+        "thumbnailVaultStorageKey": "personal_thumbnails"
+      },
+      "render": {
+        "heroRenderTargetSeen": true,
+        "renderTarget": "image-node",
+        "renderImageUrl": "/thumbs/88880095-2cd0-4e65-9144-9ae0bcd84e5f.jpg",
+        "renderVideoUrl": "",
+        "renderDiagnosticSample": "[HERO_RENDER_TARGET] {backgroundSource: custom_image, assetId: b234cb27-f707-4aec-b9c5-b1052b57bf56, videoUrl: , imageUrl: /thumbs/88880095-2cd0-4e65-9144-9ae0bcd84e5f.jpg, target: image-node}"
+      }
+    },
+    {
+      "ext": "webp",
+      "assetId": "9f61834a-54d5-4c42-b847-2f17016bdcbd",
+      "assetType": "webp",
+      "mimeType": "image/webp",
+      "storageLocation": "http://localhost:8080/thumbs/9f61834a-54d5-4c42-b847-2f17016bdcbd.webp",
+      "destinationVault": "shared thumbnail vault (personal_thumbnails)",
+      "renderTarget": "image-node",
+      "apiResponse": {
+        "id": "9f61834a-54d5-4c42-b847-2f17016bdcbd",
+        "type": "image",
+        "url": "http://localhost:8080/thumbs/9f61834a-54d5-4c42-b847-2f17016bdcbd.webp",
+        "thumbnailUrl": "http://localhost:8080/thumbs/9f61834a-54d5-4c42-b847-2f17016bdcbd.webp",
+        "status": "ready"
+      },
+      "upload": {
+        "diagnosticSeen": true,
+        "source": "frontend/src/lib/api/media.js:createReel",
+        "websocketCreatedObserved": true,
+        "websocketCreatedSample": "[HERO_ROUTE] {stage: websocket:onCreated, reelId: 9f61834a-54d5-4c42-b847-2f17016bdcbd, type: image, url: http://localhost:8080/thumbs/9f61834a-54d5-4c42-b847-2f17016bdcbd.webp, thumbnailUrl: http://localhost:8080/thumbs/9f61834a-54d5-4c42-b847-2f17016bdcbd.webp}"
+      },
+      "classification": {
+        "heroClassifyCount": 164,
+        "resolvedAssetType": "webp",
+        "resolvedMediaUrl": "/thumbs/9f61834a-54d5-4c42-b847-2f17016bdcbd.webp",
+        "responseType": "image"
+      },
+      "routing": {
+        "heroRouteCount": 10,
+        "enteredPersonalVideosVideoVault": false,
+        "videoVaultInsertIdsSeen": [
+          "0e08ae14-6fcb-4104-a4e6-365e758aab20",
+          "195927e9-61ae-46b3-ba3d-1f49ba43a8d3",
+          "a2870175-dc27-4039-a581-4828467316bf"
+        ],
+        "enteredAI_CLEANUP_AGENT_videoDistribution": false,
+        "enteredPlaceholderGeneration": true,
+        "placeholderNamesSeenTail": [
+          "5b4dc795-ba1f-4515-b63b-b35bff06fc60",
+          "32306f6a-f6dc-4e9b-a787-a18ab396b92f",
+          "a64830b4-ef25-4afc-af61-5a70091d1cee",
+          "9d2b507e-b548-4923-a1a5-90fcc1a1b6b5",
+          "68ed849d-ea04-4cb8-ac71-2454e4ade32a",
+          "b380bbf0-1836-44a8-9fcb-abf68ea63ab9",
+          "dbafc3e5-86aa-4902-b7e0-e5dfba33cac1",
+          "IMG_0131.JPEG"
+        ]
+      },
+      "persistence": {
+        "heroStoreReadCount": 11,
+        "heroStoreWriteCount": 2,
+        "heroVaultInsertCount": 1,
+        "heroManagerStorageKey": "reelforge_hero_manager_config",
+        "videoVaultStorageKey": "personal_video_vault",
+        "thumbnailVaultStorageKey": "personal_thumbnails"
+      },
+      "render": {
+        "heroRenderTargetSeen": true,
+        "renderTarget": "image-node",
+        "renderImageUrl": "/thumbs/88880095-2cd0-4e65-9144-9ae0bcd84e5f.jpg",
+        "renderVideoUrl": "",
+        "renderDiagnosticSample": "[HERO_RENDER_TARGET] {backgroundSource: custom_image, assetId: 9f61834a-54d5-4c42-b847-2f17016bdcbd, videoUrl: , imageUrl: /thumbs/88880095-2cd0-4e65-9144-9ae0bcd84e5f.jpg, target: image-node}"
+      }
+    },
+    {
+      "ext": "gif",
+      "assetId": "8bf810b0-d81e-49a7-9196-2d6f34037122",
+      "assetType": "gif",
+      "mimeType": "image/gif",
+      "storageLocation": "http://localhost:8080/thumbs/8bf810b0-d81e-49a7-9196-2d6f34037122.gif",
+      "destinationVault": "shared thumbnail vault (personal_thumbnails)",
+      "renderTarget": "image-node",
+      "apiResponse": {
+        "id": "8bf810b0-d81e-49a7-9196-2d6f34037122",
+        "type": "image",
+        "url": "http://localhost:8080/thumbs/8bf810b0-d81e-49a7-9196-2d6f34037122.gif",
+        "thumbnailUrl": "http://localhost:8080/thumbs/8bf810b0-d81e-49a7-9196-2d6f34037122.gif",
+        "status": "ready"
+      },
+      "upload": {
+        "diagnosticSeen": true,
+        "source": "frontend/src/lib/api/media.js:createReel",
+        "websocketCreatedObserved": true,
+        "websocketCreatedSample": "[HERO_ROUTE] {stage: websocket:onCreated, reelId: 8bf810b0-d81e-49a7-9196-2d6f34037122, type: image, url: http://localhost:8080/thumbs/8bf810b0-d81e-49a7-9196-2d6f34037122.gif, thumbnailUrl: http://localhost:8080/thumbs/8bf810b0-d81e-49a7-9196-2d6f34037122.gif}"
+      },
+      "classification": {
+        "heroClassifyCount": 173,
+        "resolvedAssetType": "gif",
+        "resolvedMediaUrl": "/thumbs/8bf810b0-d81e-49a7-9196-2d6f34037122.gif",
+        "responseType": "image"
+      },
+      "routing": {
+        "heroRouteCount": 10,
+        "enteredPersonalVideosVideoVault": false,
+        "videoVaultInsertIdsSeen": [
+          "0e08ae14-6fcb-4104-a4e6-365e758aab20",
+          "195927e9-61ae-46b3-ba3d-1f49ba43a8d3",
+          "a2870175-dc27-4039-a581-4828467316bf"
+        ],
+        "enteredAI_CLEANUP_AGENT_videoDistribution": false,
+        "enteredPlaceholderGeneration": true,
+        "placeholderNamesSeenTail": [
+          "5b4dc795-ba1f-4515-b63b-b35bff06fc60",
+          "32306f6a-f6dc-4e9b-a787-a18ab396b92f",
+          "a64830b4-ef25-4afc-af61-5a70091d1cee",
+          "9d2b507e-b548-4923-a1a5-90fcc1a1b6b5",
+          "68ed849d-ea04-4cb8-ac71-2454e4ade32a",
+          "b380bbf0-1836-44a8-9fcb-abf68ea63ab9",
+          "dbafc3e5-86aa-4902-b7e0-e5dfba33cac1",
+          "IMG_0131.JPEG"
+        ]
+      },
+      "persistence": {
+        "heroStoreReadCount": 11,
+        "heroStoreWriteCount": 2,
+        "heroVaultInsertCount": 1,
+        "heroManagerStorageKey": "reelforge_hero_manager_config",
+        "videoVaultStorageKey": "personal_video_vault",
+        "thumbnailVaultStorageKey": "personal_thumbnails"
+      },
+      "render": {
+        "heroRenderTargetSeen": true,
+        "renderTarget": "image-node",
+        "renderImageUrl": "/thumbs/88880095-2cd0-4e65-9144-9ae0bcd84e5f.jpg",
+        "renderVideoUrl": "",
+        "renderDiagnosticSample": "[HERO_RENDER_TARGET] {backgroundSource: custom_image, assetId: 8bf810b0-d81e-49a7-9196-2d6f34037122, videoUrl: , imageUrl: /thumbs/88880095-2cd0-4e65-9144-9ae0bcd84e5f.jpg, target: image-node}"
+      }
+    }
+  ],
+  "CLASSIFICATION": {
+    "summary": "All tested hero image uploads were accepted as image reels and persisted to /thumbs/*.",
+    "evidence": {
+      "backendImageIngest": "backend/src/ingestion/upload.rs:192-269",
+      "uploadFieldRouting": "backend/src/ingestion/upload.rs:280-288",
+      "heroAssetTypeInference": "frontend/src/lib/hero/heroAssetBridge.js:32-49"
+    }
+  },
+  "ROUTING": {
+    "heroUploadEntry": "frontend/src/components/experiences/HeroExperience.svelte:474-488",
+    "genericCreateReelPath": "frontend/src/lib/api/media.js:35-122",
+    "syncFanoutPath": "frontend/src/viewer/viewerContext.js:832-943",
+    "websocketTriggerPath": "frontend/src/viewer/viewerContext.js:1456-1469",
+    "aiCleanupVideoPath": "frontend/src/lib/viewer/aiCleanupAgent.js:191-237",
+    "aiCleanupPlaceholderPath": "frontend/src/lib/viewer/aiCleanupAgent.js:297-323"
+  },
+  "PERSISTENCE": {
+    "heroVaultStoreExists": false,
+    "heroVaultStoreFinding": "No dedicated Hero vault collection/store/key exists. Hero lookup reads shared video + thumbnail vault keys.",
+    "heroVaultStoreEvidence": "frontend/src/lib/hero/heroIntelligence.js:699-710",
+    "heroVaultPersistenceKey": null,
+    "heroAssignmentKey": "reelforge_hero_manager_config",
+    "heroAssignmentEvidence": "frontend/src/lib/hero/heroIntelligence.js:80,660-666",
+    "heroVaultRenderLoop": "No separate loop; Hero render resolves from resolveHeroBackgroundPresentation over shared stores.",
+    "heroVaultRenderLoopEvidence": "frontend/src/components/experiences/HeroExperience.svelte:73-92,556-595",
+    "heroVaultDeleteLogic": "Not separate; only shared thumbnail/video delete flows.",
+    "heroVaultDeleteEvidence": [
+      "frontend/src/lib/viewer/aiCleanupAgent.js:338-399",
+      "frontend/src/components/experiences/VaultExperience.svelte:99-106,391-406"
+    ],
+    "heroVaultReloadLogic": "Uses global syncFromVault() and loadHeroVaultItems() shared keys.",
+    "heroVaultReloadEvidence": [
+      "frontend/src/viewer/viewerContext.js:785-968",
+      "frontend/src/lib/hero/heroIntelligence.js:699-710"
+    ]
+  },
+  "RENDER": {
+    "heroRenderLoop": "frontend/src/components/experiences/HeroExperience.svelte:73-92,271-323,556-595",
+    "heroAssignmentLogic": "frontend/src/lib/hero/heroIntelligence.js:743-850",
+    "heroManagerAssetRegistry": "frontend/src/components/studio/HeroManagerPanel.svelte:27-35"
+  },
+  "verificationChecks": {
+    "testedExtensions": [
+      "jpg",
+      "jpeg",
+      "png",
+      "webp",
+      "gif"
+    ],
+    "heroAssetEnteredPersonalVideos": false,
+    "heroAssetEnteredVideoVault": false,
+    "heroAssetTriggeredPlaceholderGeneration": true,
+    "heroAssetEnteredFeedCategoryInsertion": true,
+    "heroAssetEnteredAI_CLEANUP_AGENT": true,
+    "uploadedIds": [
+      "88880095-2cd0-4e65-9144-9ae0bcd84e5f",
+      "20b8226f-89e1-4342-8309-eede2b96f559",
+      "b234cb27-f707-4aec-b9c5-b1052b57bf56",
+      "9f61834a-54d5-4c42-b847-2f17016bdcbd",
+      "8bf810b0-d81e-49a7-9196-2d6f34037122"
+    ]
+  },
+  "ROOT_CAUSE": {
+    "1_where_misclassified": {
+      "answer": "Hero uploads are not isolated; they are routed into shared thumbnail storage then shared feed placeholder sync.",
+      "evidence": [
+        "frontend/src/components/experiences/HeroExperience.svelte:474-488",
+        "frontend/src/viewer/viewerContext.js:832-833,932-933",
+        "frontend/src/lib/viewer/aiCleanupAgent.js:303-323"
+      ],
+      "confidence": "high"
+    },
+    "2_why_hero_assets_appear_in_mp4_vault": {
+      "answer": "No direct image->video-vault insert observed for tested hero uploads. The system co-mingles asset catalogs by design because Hero registry loads both personal_video_vault and personal_thumbnails.",
+      "evidence": [
+        "frontend/src/lib/hero/heroIntelligence.js:699-710",
+        "frontend/src/components/studio/HeroManagerPanel.svelte:27-35",
+        "runtime: uploaded hero IDs absent from [VIDEO_VAULT_INSERT]"
+      ],
+      "confidence": "medium"
+    },
+    "3_why_placeholders_are_created": {
+      "answer": "syncFromVault invokes AI_CLEANUP_AGENT.syncThumbnailsToFeed, which creates placeholder feed reels for every thumbnail, including hero uploads.",
+      "evidence": [
+        "frontend/src/viewer/viewerContext.js:932-933",
+        "frontend/src/lib/viewer/aiCleanupAgent.js:303-323",
+        "runtime: [PLACEHOLDER_INSERT] contains uploaded hero IDs"
+      ],
+      "confidence": "high"
+    },
+    "4_why_hero_vault_does_not_receive_asset": {
+      "answer": "A Hero-only vault does not exist. Hero only persists heroAssetId and resolves asset from shared vault keys.",
+      "evidence": [
+        "frontend/src/lib/hero/heroIntelligence.js:80,699-710,743-796",
+        "frontend/src/components/studio/HeroManagerPanel.svelte:27-35"
+      ],
+      "confidence": "high"
+    },
+    "5_exact_file_and_line_numbers": {
+      "hero_upload_handler": "frontend/src/components/experiences/HeroExperience.svelte:474-488",
+      "create_reel_client_path": "frontend/src/lib/api/media.js:35-122",
+      "shared_hero_vault_load": "frontend/src/lib/hero/heroIntelligence.js:699-710",
+      "sync_from_vault_shared_routines": "frontend/src/viewer/viewerContext.js:832-936",
+      "placeholder_generation": "frontend/src/lib/viewer/aiCleanupAgent.js:303-323",
+      "hero_registry_mix": "frontend/src/components/studio/HeroManagerPanel.svelte:27-35"
+    }
+  },
+  "artifacts": {
+    "rawCapture": "hero-vault-forensics-raw.json"
+  },
+  "HERO_VAULT_FORENSICS_COMPLETE": true
+}

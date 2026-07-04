@@ -1,0 +1,25 @@
+{
+  "score": 87,
+  "grade": "Strong",
+  "categories": {
+    "Critical": 3,
+    "High": 8,
+    "Medium": 5,
+    "Low": 0
+  },
+  "domainScores": {
+    "uploadEndpoints": 88,
+    "mediaRoutes": 64,
+    "notificationRoutes": 96,
+    "workflowApis": 92,
+    "teamApis": 92,
+    "authentication": 78,
+    "permissions": 80,
+    "localStorageUsage": 96,
+    "apiExposure": 96,
+    "environmentVariables": 92
+  },
+  "checksRun": 22,
+  "passingChecks": 6,
+  "version": "1.0.0"
+}

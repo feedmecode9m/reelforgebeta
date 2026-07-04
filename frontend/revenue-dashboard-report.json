@@ -1,0 +1,32 @@
+{
+  "kpis": [
+    "data-revenue-kpi-mrr",
+    "data-revenue-kpi-arr",
+    "data-revenue-kpi-series-revenue",
+    "data-revenue-kpi-revenue-per-episode",
+    "data-revenue-kpi-revenue-per-creator",
+    "data-revenue-kpi-revenue-per-team"
+  ],
+  "forecasts": [
+    "30",
+    "90",
+    "365"
+  ],
+  "unit": {
+    "mrr": 109171,
+    "arr": 1310052,
+    "seriesRevenue": 137842,
+    "revenuePerEpisode": 18195,
+    "revenuePerCreator": 109171,
+    "revenuePerTeam": 109171,
+    "forecastCount": 3,
+    "forecast30": 117905,
+    "forecast90": 412572,
+    "forecast365": 3387931
+  },
+  "diagnostics": {
+    "dashboard": 4,
+    "kpi": 24,
+    "forecast": 12
+  }
+}

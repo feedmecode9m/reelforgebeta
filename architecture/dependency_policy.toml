@@ -1,0 +1,191 @@
+# ReelForge Dependency Graph Policy (DGEL)
+# Enforced by: cargo run -p depgraph-check
+# Authority: PHASE_1B7, ASSET_SEMANTIC_CONTRACT_LOCK, PHASE_1C7_ARCHITECTURE_FREEZE
+
+version = "1.0.0"
+crate_root = "backend"
+
+boundary_types = [
+  "CompositionPlan",
+  "RenderTree",
+  "SemanticMediaBinding",
+  "MaterializedAssetBundle",
+  "MetadataSnapshot",
+  "AdapterResult",
+]
+
+# ---------------------------------------------------------------------------
+# Layer nodes (logical architecture modules)
+# ---------------------------------------------------------------------------
+# resolver          — experience_resolve + structural experience loaders
+# cspp              — campaign/slot post-processor
+# orchestrator      — compose_pipeline (frozen pipeline wiring only)
+# media_semantic    — media/ semantic metadata
+# viewer_sim        — viewer_sim/ composition plan simulation
+# asset_resolution  — AssetResolutionAdapter + types (production)
+# scenario          — scenario_feed, mock_registry, scenario_validation (test-only)
+# ingestion         — ingestion/ (legacy + future ingest; mutable domain)
+# asset_catalog     — future catalog projector (placeholder; no src path yet)
+
+# ---------------------------------------------------------------------------
+# Allowed edges (production code only)
+# ---------------------------------------------------------------------------
+allowed_edges = [
+  "orchestrator -> cspp",
+  "orchestrator -> media_semantic",
+  "orchestrator -> viewer_sim",
+  "orchestrator -> resolver",
+  "resolver -> cspp",
+  "cspp -> media_semantic",
+  "media_semantic -> viewer_sim",
+  "asset_resolution -> viewer_sim",
+  "ingestion -> asset_catalog",
+]
+
+# ---------------------------------------------------------------------------
+# Forbidden edges (hard fail)
+# ---------------------------------------------------------------------------
+forbidden_edges = [
+  # Semantic Layer (1b) — no asset/ingest awareness
+  "resolver -> asset_resolution",
+  "resolver -> ingestion",
+  "resolver -> viewer_sim",
+  "resolver -> scenario",
+  "cspp -> asset_resolution",
+  "cspp -> ingestion",
+  "cspp -> scenario",
+  "media_semantic -> asset_resolution",
+  "media_semantic -> ingestion",
+  "media_semantic -> scenario",
+  "media_semantic -> resolver",
+  "viewer_sim -> resolver",
+  "viewer_sim -> ingestion",
+  "viewer_sim -> asset_resolution",
+  "viewer_sim -> scenario",
+
+  # Asset Layer (1c) — no pipeline mutation
+  "asset_resolution -> resolver",
+  "asset_resolution -> cspp",
+  "asset_resolution -> media_semantic",
+  "asset_resolution -> orchestrator",
+  "asset_resolution -> ingestion",
+  "asset_resolution -> scenario",
+
+  # Ingestion — external to semantic pipeline
+  "ingestion -> resolver",
+  "ingestion -> cspp",
+  "ingestion -> media_semantic",
+  "ingestion -> viewer_sim",
+  "ingestion -> orchestrator",
+  "ingestion -> asset_resolution",
+  "ingestion -> scenario",
+
+  # Orchestrator must not bypass layer order into asset/ingest
+  "orchestrator -> asset_resolution",
+  "orchestrator -> ingestion",
+  "orchestrator -> scenario",
+
+  # Scenario test-only isolation
+  "scenario -> resolver",
+  "scenario -> cspp",
+  "scenario -> media_semantic",
+  "scenario -> viewer_sim",
+  "scenario -> orchestrator",
+  "scenario -> ingestion",
+  "scenario -> asset_resolution",
+
+  # Production modules must not import scenario subgraph
+  "resolver -> scenario",
+  "cspp -> scenario",
+  "media_semantic -> scenario",
+  "viewer_sim -> scenario",
+  "orchestrator -> scenario",
+  "ingestion -> scenario",
+
+  # Circular pipeline shortcuts
+  "cspp -> orchestrator",
+  "media_semantic -> cspp",
+  "media_semantic -> orchestrator",
+  "viewer_sim -> media_semantic",
+  "viewer_sim -> cspp",
+]
+
+# ---------------------------------------------------------------------------
+# Test-only paths (may import across layers for contract tests)
+# ---------------------------------------------------------------------------
+test_only_paths = [
+  "pipeline_integration_tests.rs",
+  "integration_tests.rs",
+  "resolve_tests.rs",
+  "/tests/",
+  "asset_resolution/adapter.rs",
+  "asset_resolution/scenario_feed.rs",
+]
+
+# ---------------------------------------------------------------------------
+# Documented boundary exceptions (1b.5) — array-of-tables; must follow root keys above
+# ---------------------------------------------------------------------------
+[[exception_rules]]
+from = "cspp"
+to = "viewer_sim"
+files = ["experience/cspp/composition_plan.rs"]
+reason = "CompositionPlan embeds RenderTree wire shape (data-only, Phase 1b.5)"
+
+[[exception_rules]]
+from = "viewer_sim"
+to = "cspp"
+files = ["viewer_sim/viewer_simulation.rs"]
+reason = "Viewer sim returns CompositionPlan type (data-only, Phase 1b.5)"
+
+# ---------------------------------------------------------------------------
+# Path → layer mapping — [[path_layers]] MUST be last (TOML array-of-tables scope)
+# ---------------------------------------------------------------------------
+[[path_layers]]
+layer = "orchestrator"
+paths = ["experience/compose_pipeline.rs"]
+
+[[path_layers]]
+layer = "cspp"
+paths = ["experience/cspp/"]
+
+[[path_layers]]
+layer = "resolver"
+paths = [
+  "experience/experience_resolve.rs",
+  "experience/contract.rs",
+  "experience/hierarchy.rs",
+  "experience/loader.rs",
+  "experience/layout_presets.rs",
+  "experience/metadata_registry.rs",
+  "experience/platform_defaults.rs",
+  "experience/profiles.rs",
+  "experience/provenance.rs",
+  "experience/slots.rs",
+  "experience/theme_tokens.rs",
+]
+
+[[path_layers]]
+layer = "media_semantic"
+paths = ["media/"]
+
+[[path_layers]]
+layer = "viewer_sim"
+paths = ["viewer_sim/"]
+
+[[path_layers]]
+layer = "scenario"
+paths = [
+  "asset_resolution/scenario_feed.rs",
+  "asset_resolution/mock_registry.rs",
+  "asset_resolution/scenario_validation.rs",
+]
+
+[[path_layers]]
+layer = "asset_resolution"
+paths = ["asset_resolution/"]
+
+[[path_layers]]
+layer = "ingestion"
+paths = ["ingestion/"]
+
+# Future extension hooks: docs/DEPENDENCY_GRAPH_ENFORCEMENT_MODEL.md §12

@@ -1,0 +1,100 @@
+{
+  "phase": "REELFORGE PHASE 69.8D — HERO DOMINANCE AUDIT",
+  "mode": "FORENSIC_ONLY",
+  "generatedAt": "2026-06-16T22:51:00.000Z",
+  "measurementContext": {
+    "url": "http://127.0.0.1:5173/",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "role": "normal_user"
+  },
+  "hero": {
+    "heightPx": 540,
+    "widthPx": 1440,
+    "viewportCoverage": 0.6,
+    "heightCoverage": 0.6,
+    "widthCoverage": 1.0,
+    "overlayCount": 5,
+    "cardsInsideHero": 1,
+    "cardsBelowHero": 21,
+    "panelsBlockingHero": 0
+  },
+  "blockingPanels": [],
+  "visualPriorityRanking": [
+    {
+      "module": "Hero",
+      "visualPriorityScore": 1,
+      "attentionWeight": 0.7138
+    },
+    {
+      "module": "Discovery Feed",
+      "visualPriorityScore": 2,
+      "attentionWeight": 0.6357
+    },
+    {
+      "module": "Creator Profile",
+      "visualPriorityScore": 3,
+      "attentionWeight": 0.5826
+    },
+    {
+      "module": "Upcoming Events Module",
+      "visualPriorityScore": 4,
+      "attentionWeight": 0.521
+    },
+    {
+      "module": "Header Notifications",
+      "visualPriorityScore": 5,
+      "attentionWeight": 0.5108
+    },
+    {
+      "module": "Support / Monetization",
+      "visualPriorityScore": 6,
+      "attentionWeight": 0.3837
+    },
+    {
+      "module": "Feed Shelf",
+      "visualPriorityScore": 7,
+      "attentionWeight": 0.2609
+    },
+    {
+      "module": "Ghost Trigger",
+      "visualPriorityScore": 8,
+      "attentionWeight": 0.2565
+    },
+    {
+      "module": "Featured Creator Module",
+      "visualPriorityScore": 9,
+      "attentionWeight": 0.214
+    }
+  ],
+  "modulesStealingAttentionFromHero": [
+    {
+      "module": "Discovery Feed",
+      "reason": "Large viewport footprint and high total attention weight create sustained competition immediately after hero section."
+    },
+    {
+      "module": "Creator Profile",
+      "reason": "Substantial visual area and dense card content compete for scan depth after hero."
+    },
+    {
+      "module": "Upcoming Events Module",
+      "reason": "Card-rich module positioned in the hero zone increases cognitive split inside hero stage."
+    },
+    {
+      "module": "Header Notifications",
+      "reason": "Persistent top-row status and notification affordance pull early eye focus before hero copy."
+    }
+  ],
+  "forensicConclusion": {
+    "heroIsTopPriority": true,
+    "heroDominanceAtRisk": true,
+    "primaryRiskFactors": [
+      "High number of cards below hero (21) creating rapid attention migration.",
+      "Embedded module cards inside hero stage (upcoming events / featured creator) fragment hero focus.",
+      "High-information discovery/profile surfaces directly follow hero and carry large visual mass."
+    ]
+  },
+  "completionToken": "HERO_DOMINANCE_AUDIT_COMPLETE=true"
+}

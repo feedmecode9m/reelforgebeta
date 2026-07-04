@@ -1,0 +1,38 @@
+{
+  "storageKey": "reelforge_creator_marketplace",
+  "categories": [
+    "editing",
+    "voice_over",
+    "music",
+    "vfx",
+    "thumbnail_design",
+    "script_writing",
+    "marketing"
+  ],
+  "unit": {
+    "creatorCount": 3,
+    "serviceCount": 7,
+    "gigCount": 1,
+    "portfolioCount": 7,
+    "reviewCount": 1,
+    "categories": [
+      "editing",
+      "voice_over",
+      "music",
+      "vfx",
+      "thumbnail_design",
+      "script_writing",
+      "marketing"
+    ],
+    "listingCount": 1,
+    "matchCount": 1,
+    "topMatchScore": 146.4,
+    "reviewRating": 5,
+    "creatorRating": 5
+  },
+  "diagnostics": {
+    "listing": 2,
+    "match": 1,
+    "review": 1
+  }
+}

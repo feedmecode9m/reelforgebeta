@@ -1,0 +1,120 @@
+{
+  "phase": "72.5",
+  "generatedAt": "2026-06-17T19:13:00Z",
+  "removedModules": [
+    {
+      "module": "Backend Status Pill",
+      "location": "frontend/src/components/viewer/NotificationBridge.svelte",
+      "status": "removed_from_viewer"
+    },
+    {
+      "module": "Corporate Ecosystem Banner",
+      "location": "frontend/src/components/viewer/NotificationBridge.svelte",
+      "status": "removed_from_viewer"
+    },
+    {
+      "module": "Discovery Feed Panel",
+      "location": "frontend/src/Viewer.svelte",
+      "status": "removed_from_viewer"
+    },
+    {
+      "module": "Creator Profile Dashboard Card",
+      "location": "frontend/src/Viewer.svelte",
+      "status": "removed_from_viewer"
+    },
+    {
+      "module": "Monetization Hub Banner/Plans",
+      "location": "frontend/src/Viewer.svelte",
+      "status": "removed_from_viewer"
+    },
+    {
+      "module": "Feed Debug Metrics Row (backend rows, personal thumbs, video vault)",
+      "location": "frontend/src/components/experiences/FeedExperience.svelte",
+      "status": "removed_from_viewer"
+    },
+    {
+      "module": "Hero Technical Loading Labels (hero video phrasing)",
+      "location": "frontend/src/components/experiences/HeroExperience.svelte",
+      "status": "sanitized_for_viewer"
+    }
+  ],
+  "relocatedModules": [
+    {
+      "module": "Revenue + Revenue Analytics",
+      "location": "frontend/src/components/experiences/StudioExperience.svelte",
+      "status": "studio_only"
+    },
+    {
+      "module": "Marketplace Analytics",
+      "location": "frontend/src/components/experiences/StudioExperience.svelte",
+      "status": "studio_only"
+    },
+    {
+      "module": "Command Center",
+      "location": "frontend/src/components/experiences/StudioExperience.svelte",
+      "status": "studio_only"
+    },
+    {
+      "module": "Sentinel + Security",
+      "location": "frontend/src/components/experiences/StudioExperience.svelte",
+      "status": "studio_only"
+    },
+    {
+      "module": "Workflow/Production/Health Ops Panels",
+      "location": "frontend/src/components/experiences/StudioExperience.svelte",
+      "status": "studio_only"
+    },
+    {
+      "module": "Hero Manager",
+      "location": "frontend/src/components/experiences/StudioExperience.svelte",
+      "status": "studio_only"
+    },
+    {
+      "module": "Search Analytics (Admin)",
+      "location": "frontend/src/components/search/GlobalSearchBar.svelte",
+      "status": "admin_only"
+    }
+  ],
+  "remainingViewerModules": [
+    "Hero",
+    "Continue Watching",
+    "Featured Collections",
+    "Series",
+    "Featured Creator",
+    "Marketplace",
+    "Notifications"
+  ],
+  "remainingStudioModules": [
+    "Revenue",
+    "Revenue Analytics",
+    "Workflow",
+    "Teams",
+    "Sentinel",
+    "Security",
+    "Command Center",
+    "Marketplace Analytics",
+    "Production Analytics",
+    "Creator Analytics",
+    "Production History",
+    "System Health",
+    "Hero Manager",
+    "Content Intelligence"
+  ],
+  "heroVisibilityScore": 95,
+  "heroOverlayCount": 2,
+  "heroTechnicalLabelsRemaining": [],
+  "validation": {
+    "inspectedFiles": [
+      "frontend/src/components/experiences/HeroExperience.svelte",
+      "frontend/src/components/experiences/StudioExperience.svelte",
+      "frontend/src/Viewer.svelte",
+      "frontend/src/components/hero/HeroCommandCenter.svelte",
+      "frontend/src/components/studio/HeroManagerPanel.svelte",
+      "frontend/src/components/search/GlobalSearchBar.svelte",
+      "frontend/src/components/experiences/FeedExperience.svelte",
+      "frontend/src/components/viewer/NotificationBridge.svelte"
+    ],
+    "frontendBuild": "pass"
+  },
+  "completionToken": "VIEWER_EXPERIENCE_PURIFIED=true"
+}

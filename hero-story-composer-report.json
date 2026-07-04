@@ -1,0 +1,41 @@
+{
+  "phase": "72.7",
+  "generatedAt": "2026-06-17T19:33:00Z",
+  "composerFields": [
+    "heroLabel",
+    "heroTitle",
+    "heroSubtitle",
+    "heroDescription",
+    "ctaPrimaryLabel",
+    "ctaPrimaryTarget",
+    "ctaSecondaryLabel",
+    "ctaSecondaryTarget",
+    "campaignType",
+    "featuredCollection",
+    "featuredSeries"
+  ],
+  "viewerFields": [
+    "heroLabel",
+    "heroTitle",
+    "heroSubtitle",
+    "heroDescription",
+    "ctaPrimaryLabel",
+    "ctaSecondaryLabel"
+  ],
+  "heroTechnicalLabelsRemaining": [],
+  "heroStoryRendered": true,
+  "heroBackgroundPreserved": true,
+  "notes": {
+    "studioComposerLocation": "Smart Production Studio > Hero Manager > Hero Story Composer",
+    "adminActions": [
+      "Save Draft",
+      "Publish Story",
+      "Schedule Story",
+      "Live Preview"
+    ],
+    "mediaPipelineChanged": false,
+    "heroAssetRegistryChanged": false,
+    "uploadPipelineChanged": false
+  },
+  "completionToken": "HERO_STORY_COMPOSER_COMPLETE=true"
+}

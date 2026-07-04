@@ -1,0 +1,45 @@
+{
+  "phase": "PHASE 72 — ADVANCED SEARCH ENGINE",
+  "generatedAt": "2026-06-17T18:52:34.204Z",
+  "baseUrl": "http://127.0.0.1:5173",
+  "checks": {
+    "metadataQueriesReturnResults": true,
+    "priorityOrderingValid": true,
+    "userSeesSearchOnly": true,
+    "adminSeesSearchAnalytics": true
+  },
+  "evidence": {
+    "queryChecks": {
+      "Black Farmers": {
+        "total": 5,
+        "topTitle": "Neon Vengeance — S1E1 Ghost in the Grid",
+        "topField": "title"
+      },
+      "Alabama": {
+        "total": 5,
+        "topTitle": "Neon Vengeance — S1E1 Ghost in the Grid",
+        "topField": "episodeTitle"
+      },
+      "Gullah Geechee": {
+        "total": 5,
+        "topTitle": "Neon Vengeance — S1E1 Ghost in the Grid",
+        "topField": "communityRepresented"
+      },
+      "Land Ownership": {
+        "total": 5,
+        "topTitle": "Neon Vengeance — S1E1 Ghost in the Grid",
+        "topField": "educationalThemes"
+      },
+      "Food Justice": {
+        "total": 5,
+        "topTitle": "Neon Vengeance — S1E1 Ghost in the Grid",
+        "topField": "topics"
+      }
+    },
+    "analyticsVisibility": {
+      "userGuardedByAdminFlag": true,
+      "adminAnalyticsVisible": 1
+    }
+  },
+  "completionToken": "ADVANCED_SEARCH_COMPLETE=true"
+}

@@ -1,0 +1,199 @@
+{
+  "generatedAt": "2026-06-19T05:28:04.286Z",
+  "inputs": {
+    "appUrl": "http://127.0.0.1:4173",
+    "backendUrl": "http://127.0.0.1:8080"
+  },
+  "vaultInventory": [
+    {
+      "assetId": "0e08ae14-6fcb-4104-a4e6-365e758aab20",
+      "title": "0e08ae14-6fcb-4104-a4e6-365e758aab20",
+      "fileName": "0e08ae14-6fcb-4104-a4e6-365e758aab20.mp4",
+      "filePath": "/videos/0e08ae14-6fcb-4104-a4e6-365e758aab20.mp4",
+      "url": "http://localhost:8080/videos/0e08ae14-6fcb-4104-a4e6-365e758aab20.mp4",
+      "thumbnail": "http://localhost:8080/thumbs/0e08ae14-6fcb-4104-a4e6-365e758aab20.jpg",
+      "createdAt": "2026-06-14T16:41:08.357044+00:00",
+      "status": "ready",
+      "source": [
+        "database_api_reels",
+        "database_reels_table",
+        "personalVideos_store",
+        "backend_public_videos"
+      ]
+    },
+    {
+      "assetId": "195927e9-61ae-46b3-ba3d-1f49ba43a8d3",
+      "title": "195927e9-61ae-46b3-ba3d-1f49ba43a8d3",
+      "fileName": "195927e9-61ae-46b3-ba3d-1f49ba43a8d3.mp4",
+      "filePath": "/videos/195927e9-61ae-46b3-ba3d-1f49ba43a8d3.mp4",
+      "url": "http://localhost:8080/videos/195927e9-61ae-46b3-ba3d-1f49ba43a8d3.mp4",
+      "thumbnail": "http://localhost:8080/thumbs/195927e9-61ae-46b3-ba3d-1f49ba43a8d3.jpg",
+      "createdAt": "2026-06-14T15:53:48.366465+00:00",
+      "status": "ready",
+      "source": [
+        "database_api_reels",
+        "database_reels_table",
+        "personalVideos_store",
+        "backend_public_videos"
+      ]
+    },
+    {
+      "assetId": "a2870175-dc27-4039-a581-4828467316bf",
+      "title": "a2870175-dc27-4039-a581-4828467316bf",
+      "fileName": "a2870175-dc27-4039-a581-4828467316bf.mov",
+      "filePath": "/videos/a2870175-dc27-4039-a581-4828467316bf.mov",
+      "url": "http://localhost:8080/videos/a2870175-dc27-4039-a581-4828467316bf.mov",
+      "thumbnail": "http://localhost:8080/thumbs/a2870175-dc27-4039-a581-4828467316bf.jpg",
+      "createdAt": "2026-06-14T15:39:32.557756+00:00",
+      "status": "ready",
+      "source": [
+        "database_api_reels",
+        "database_reels_table",
+        "personalVideos_store",
+        "backend_public_videos"
+      ]
+    },
+    {
+      "assetId": "555040fe-3e4c-43a7-b7d6-41fa6ffe64a1",
+      "title": "555040fe-3e4c-43a7-b7d6-41fa6ffe64a1",
+      "fileName": "555040fe-3e4c-43a7-b7d6-41fa6ffe64a1.mp4",
+      "filePath": "/videos/555040fe-3e4c-43a7-b7d6-41fa6ffe64a1.mp4",
+      "url": "/videos/555040fe-3e4c-43a7-b7d6-41fa6ffe64a1.mp4",
+      "thumbnail": "",
+      "createdAt": "2026-06-14 23:06:00.673201+00",
+      "status": "processing",
+      "source": [
+        "database_reels_table"
+      ]
+    }
+  ],
+  "visibleVaultCards": [
+    {
+      "component": "frontend/src/components/experiences/VaultExperience.svelte",
+      "renderLoop": "{#each $personalVideos.filter(Boolean) as video, vi (...) }",
+      "dataSource": "$personalVideos",
+      "visibleCardCount": 0
+    }
+  ],
+  "storageTruth": [
+    {
+      "assetId": "0e08ae14-6fcb-4104-a4e6-365e758aab20",
+      "filePath": "/videos/0e08ae14-6fcb-4104-a4e6-365e758aab20.mp4",
+      "present": {
+        "backendPublicVideos": true,
+        "databaseReelsTable": true,
+        "personalVideosStore": true,
+        "vaultStore": false,
+        "heroRegistry": false
+      }
+    },
+    {
+      "assetId": "195927e9-61ae-46b3-ba3d-1f49ba43a8d3",
+      "filePath": "/videos/195927e9-61ae-46b3-ba3d-1f49ba43a8d3.mp4",
+      "present": {
+        "backendPublicVideos": true,
+        "databaseReelsTable": true,
+        "personalVideosStore": true,
+        "vaultStore": false,
+        "heroRegistry": false
+      }
+    },
+    {
+      "assetId": "a2870175-dc27-4039-a581-4828467316bf",
+      "filePath": "/videos/a2870175-dc27-4039-a581-4828467316bf.mov",
+      "present": {
+        "backendPublicVideos": true,
+        "databaseReelsTable": true,
+        "personalVideosStore": true,
+        "vaultStore": false,
+        "heroRegistry": false
+      }
+    },
+    {
+      "assetId": "555040fe-3e4c-43a7-b7d6-41fa6ffe64a1",
+      "filePath": "/videos/555040fe-3e4c-43a7-b7d6-41fa6ffe64a1.mp4",
+      "present": {
+        "backendPublicVideos": false,
+        "databaseReelsTable": true,
+        "personalVideosStore": false,
+        "vaultStore": false,
+        "heroRegistry": false
+      }
+    }
+  ],
+  "heroRelationship": [
+    {
+      "assetId": "hero-background",
+      "filePath": "/videos/hero-background.mp4",
+      "sourceStore": "unknown",
+      "matchingVaultAsset": null,
+      "status": "ORPHANED"
+    }
+  ],
+  "cardVisibility": [
+    {
+      "assetId": "0e08ae14-6fcb-4104-a4e6-365e758aab20",
+      "filePath": "/videos/0e08ae14-6fcb-4104-a4e6-365e758aab20.mp4",
+      "storage": true,
+      "store": true,
+      "ui": false
+    },
+    {
+      "assetId": "195927e9-61ae-46b3-ba3d-1f49ba43a8d3",
+      "filePath": "/videos/195927e9-61ae-46b3-ba3d-1f49ba43a8d3.mp4",
+      "storage": true,
+      "store": true,
+      "ui": false
+    },
+    {
+      "assetId": "a2870175-dc27-4039-a581-4828467316bf",
+      "filePath": "/videos/a2870175-dc27-4039-a581-4828467316bf.mov",
+      "storage": true,
+      "store": true,
+      "ui": false
+    },
+    {
+      "assetId": "555040fe-3e4c-43a7-b7d6-41fa6ffe64a1",
+      "filePath": "/videos/555040fe-3e4c-43a7-b7d6-41fa6ffe64a1.mp4",
+      "storage": true,
+      "store": false,
+      "ui": false
+    }
+  ],
+  "duplicateAnalysis": {
+    "DUPLICATE_ORIGIN": "D) orphaned Hero asset"
+  },
+  "missingMp4Analysis": {
+    "missingAssets": [
+      {
+        "assetId": "0e08ae14-6fcb-4104-a4e6-365e758aab20",
+        "filePath": "/videos/0e08ae14-6fcb-4104-a4e6-365e758aab20.mp4",
+        "disappeared": "render"
+      },
+      {
+        "assetId": "195927e9-61ae-46b3-ba3d-1f49ba43a8d3",
+        "filePath": "/videos/195927e9-61ae-46b3-ba3d-1f49ba43a8d3.mp4",
+        "disappeared": "render"
+      },
+      {
+        "assetId": "a2870175-dc27-4039-a581-4828467316bf",
+        "filePath": "/videos/a2870175-dc27-4039-a581-4828467316bf.mov",
+        "disappeared": "render"
+      },
+      {
+        "assetId": "555040fe-3e4c-43a7-b7d6-41fa6ffe64a1",
+        "filePath": "/videos/555040fe-3e4c-43a7-b7d6-41fa6ffe64a1.mp4",
+        "disappeared": "store"
+      }
+    ],
+    "MISSING_ASSET_ROOT_CAUSE": "render"
+  },
+  "summary": {
+    "TOTAL_VAULT_ASSETS": 4,
+    "VISIBLE_VAULT_CARDS": 0,
+    "HERO_VIDEO_ASSET_ID": "hero-background",
+    "DUPLICATE_ORIGIN": "D) orphaned Hero asset",
+    "MISSING_ASSET_ROOT_CAUSE": "render"
+  },
+  "completionToken": "MP4_VAULT_TRUTH_COMPLETE=true"
+}

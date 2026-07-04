@@ -1,0 +1,69 @@
+{
+  "capturedAt": "2026-06-14T23:28:37.753Z",
+  "baseline": {
+    "videoVaultCount": 0,
+    "thumbnailVaultCount": 0,
+    "feedCount": 0,
+    "placeholderCount": 0
+  },
+  "applyResult": {
+    "heroAssetId": "hero-image-test-1781479713427",
+    "configHeroAssetId": "hero-image-test-1781479713427",
+    "vaultItemsCount": 1,
+    "vaultItems": [
+      {
+        "id": "hero-image-test-1781479713427",
+        "name": "Hero Image",
+        "title": "Hero Image",
+        "url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO7Z6WQAAAAASUVORK5CYII=",
+        "type": "image/png"
+      }
+    ],
+    "presentation": {
+      "style": "image",
+      "containerClasses": [],
+      "overlayClasses": [],
+      "useVideo": false,
+      "useImage": true,
+      "ambientMotion": false,
+      "cinematicBlur": false,
+      "gradientOverlay": false,
+      "backgroundSource": "custom_image",
+      "backgroundAsset": "hero-image-test-1781479713427",
+      "heroAssetId": "hero-image-test-1781479713427",
+      "assetId": "hero-image-test-1781479713427",
+      "vaultMatch": true,
+      "mediaUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO7Z6WQAAAAASUVORK5CYII=",
+      "assetType": "jpg",
+      "videoUrl": "",
+      "imageUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO7Z6WQAAAAASUVORK5CYII="
+    }
+  },
+  "afterReload": {
+    "videoVaultCount": 0,
+    "thumbnailVaultCount": 0,
+    "feedCount": 0,
+    "placeholderCount": 0,
+    "managerConfig": {
+      "backgroundSource": "custom_image",
+      "heroAssetId": "hero-image-test-1781479713427"
+    },
+    "heroVaultItemsCount": 1,
+    "heroVaultItems": [
+      {
+        "id": "hero-image-test-1781479713427",
+        "name": "Hero Image",
+        "title": "Hero Image",
+        "url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO7Z6WQAAAAASUVORK5CYII=",
+        "type": "image/png"
+      }
+    ],
+    "presentation": {
+      "backgroundSource": "custom_image",
+      "assetId": "hero-image-test-1781479713427",
+      "assetType": "jpg",
+      "imageUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO7Z6WQAAAAASUVORK5CYII=",
+      "videoUrl": ""
+    }
+  }
+}

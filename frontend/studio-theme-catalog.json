@@ -1,0 +1,162 @@
+[
+  {
+    "id": "creator-dark",
+    "name": "Creator Dark",
+    "description": "Neon cyber studio — default Smart Production look with cyan accents.",
+    "mood": "Energetic · Night shift",
+    "swatches": [
+      "#050810",
+      "#00f2ff",
+      "#ff00ff",
+      "#ffd700"
+    ],
+    "tokens": {
+      "--studio-bg": "rgba(8, 12, 20, 0.96)",
+      "--studio-bg-elevated": "rgba(0, 0, 0, 0.55)",
+      "--studio-surface": "rgba(0, 0, 0, 0.28)",
+      "--studio-border": "rgba(255, 255, 255, 0.08)",
+      "--studio-border-strong": "rgba(0, 242, 255, 0.22)",
+      "--studio-accent": "#00f2ff",
+      "--studio-accent-muted": "rgba(0, 242, 255, 0.12)",
+      "--studio-accent-contrast": "#000000",
+      "--studio-secondary": "#ff00ff",
+      "--studio-highlight": "#ffd700",
+      "--studio-text": "rgba(255, 255, 255, 0.95)",
+      "--studio-text-muted": "rgba(255, 255, 255, 0.55)",
+      "--studio-text-subtle": "rgba(255, 255, 255, 0.42)",
+      "--studio-glow": "rgba(0, 242, 255, 0.2)",
+      "--studio-shadow": "0 18px 48px rgba(0, 0, 0, 0.35)",
+      "--studio-gradient": "linear-gradient(165deg, rgba(8, 12, 20, 0.92) 0%, rgba(0, 0, 0, 0.55) 100%)",
+      "--studio-header-gradient": "linear-gradient(90deg, #00f2ff, #ff00ff)",
+      "--studio-radius": "12px"
+    }
+  },
+  {
+    "id": "creator-light",
+    "name": "Creator Light",
+    "description": "Bright editorial workspace with crisp contrast for daytime production.",
+    "mood": "Clean · Editorial",
+    "swatches": [
+      "#f4f6fb",
+      "#2563eb",
+      "#7c3aed",
+      "#0f172a"
+    ],
+    "tokens": {
+      "--studio-bg": "rgba(244, 246, 251, 0.98)",
+      "--studio-bg-elevated": "rgba(255, 255, 255, 0.92)",
+      "--studio-surface": "rgba(255, 255, 255, 0.88)",
+      "--studio-border": "rgba(15, 23, 42, 0.1)",
+      "--studio-border-strong": "rgba(37, 99, 235, 0.35)",
+      "--studio-accent": "#2563eb",
+      "--studio-accent-muted": "rgba(37, 99, 235, 0.1)",
+      "--studio-accent-contrast": "#ffffff",
+      "--studio-secondary": "#7c3aed",
+      "--studio-highlight": "#0f172a",
+      "--studio-text": "#0f172a",
+      "--studio-text-muted": "rgba(15, 23, 42, 0.62)",
+      "--studio-text-subtle": "rgba(15, 23, 42, 0.45)",
+      "--studio-glow": "rgba(37, 99, 235, 0.15)",
+      "--studio-shadow": "0 16px 40px rgba(15, 23, 42, 0.12)",
+      "--studio-gradient": "linear-gradient(165deg, #ffffff 0%, #eef2ff 100%)",
+      "--studio-header-gradient": "linear-gradient(90deg, #2563eb, #7c3aed)",
+      "--studio-radius": "12px"
+    }
+  },
+  {
+    "id": "cinematic",
+    "name": "Cinematic Studio",
+    "description": "Warm gold and deep charcoal — film-grade production mood.",
+    "mood": "Dramatic · Film grade",
+    "swatches": [
+      "#0c0a08",
+      "#c9a962",
+      "#8b4513",
+      "#1a1410"
+    ],
+    "tokens": {
+      "--studio-bg": "rgba(12, 10, 8, 0.97)",
+      "--studio-bg-elevated": "rgba(26, 20, 16, 0.85)",
+      "--studio-surface": "rgba(26, 20, 16, 0.55)",
+      "--studio-border": "rgba(201, 169, 98, 0.12)",
+      "--studio-border-strong": "rgba(201, 169, 98, 0.32)",
+      "--studio-accent": "#c9a962",
+      "--studio-accent-muted": "rgba(201, 169, 98, 0.12)",
+      "--studio-accent-contrast": "#0c0a08",
+      "--studio-secondary": "#8b4513",
+      "--studio-highlight": "#f5e6c8",
+      "--studio-text": "rgba(245, 230, 200, 0.95)",
+      "--studio-text-muted": "rgba(245, 230, 200, 0.58)",
+      "--studio-text-subtle": "rgba(245, 230, 200, 0.4)",
+      "--studio-glow": "rgba(201, 169, 98, 0.22)",
+      "--studio-shadow": "0 20px 52px rgba(0, 0, 0, 0.55)",
+      "--studio-gradient": "linear-gradient(165deg, rgba(26, 20, 16, 0.95) 0%, rgba(12, 10, 8, 0.92) 100%)",
+      "--studio-header-gradient": "linear-gradient(90deg, #c9a962, #8b4513)",
+      "--studio-radius": "10px"
+    }
+  },
+  {
+    "id": "command-center",
+    "name": "Command Center",
+    "description": "Boardroom navy with emerald signals — KPI-first executive view.",
+    "mood": "Strategic · KPI-first",
+    "swatches": [
+      "#0a1628",
+      "#10b981",
+      "#1e3a5f",
+      "#d1fae5"
+    ],
+    "tokens": {
+      "--studio-bg": "rgba(10, 22, 40, 0.97)",
+      "--studio-bg-elevated": "rgba(15, 30, 52, 0.9)",
+      "--studio-surface": "rgba(30, 58, 95, 0.35)",
+      "--studio-border": "rgba(16, 185, 129, 0.1)",
+      "--studio-border-strong": "rgba(16, 185, 129, 0.28)",
+      "--studio-accent": "#10b981",
+      "--studio-accent-muted": "rgba(16, 185, 129, 0.12)",
+      "--studio-accent-contrast": "#042f2e",
+      "--studio-secondary": "#1e3a5f",
+      "--studio-highlight": "#d1fae5",
+      "--studio-text": "rgba(236, 253, 245, 0.95)",
+      "--studio-text-muted": "rgba(209, 250, 229, 0.62)",
+      "--studio-text-subtle": "rgba(167, 243, 208, 0.45)",
+      "--studio-glow": "rgba(16, 185, 129, 0.2)",
+      "--studio-shadow": "0 18px 44px rgba(0, 0, 0, 0.4)",
+      "--studio-gradient": "linear-gradient(165deg, rgba(15, 30, 52, 0.94) 0%, rgba(10, 22, 40, 0.97) 100%)",
+      "--studio-header-gradient": "linear-gradient(90deg, #10b981, #1e3a5f)",
+      "--studio-radius": "12px"
+    }
+  },
+  {
+    "id": "neon-studio",
+    "name": "Neon Studio",
+    "description": "High-energy magenta and electric cyan — maximum creator vibe.",
+    "mood": "Bold · Neon pulse",
+    "swatches": [
+      "#120018",
+      "#ff00ff",
+      "#00f2ff",
+      "#ffd700"
+    ],
+    "tokens": {
+      "--studio-bg": "rgba(18, 0, 24, 0.98)",
+      "--studio-bg-elevated": "rgba(36, 0, 48, 0.88)",
+      "--studio-surface": "rgba(255, 0, 255, 0.06)",
+      "--studio-border": "rgba(255, 0, 255, 0.14)",
+      "--studio-border-strong": "rgba(0, 242, 255, 0.32)",
+      "--studio-accent": "#ff00ff",
+      "--studio-accent-muted": "rgba(255, 0, 255, 0.12)",
+      "--studio-accent-contrast": "#ffffff",
+      "--studio-secondary": "#00f2ff",
+      "--studio-highlight": "#ffd700",
+      "--studio-text": "rgba(255, 255, 255, 0.96)",
+      "--studio-text-muted": "rgba(255, 255, 255, 0.58)",
+      "--studio-text-subtle": "rgba(255, 255, 255, 0.42)",
+      "--studio-glow": "rgba(255, 0, 255, 0.28)",
+      "--studio-shadow": "0 20px 52px rgba(255, 0, 255, 0.12)",
+      "--studio-gradient": "linear-gradient(165deg, rgba(36, 0, 48, 0.94) 0%, rgba(18, 0, 24, 0.98) 100%)",
+      "--studio-header-gradient": "linear-gradient(90deg, #ff00ff, #00f2ff)",
+      "--studio-radius": "14px"
+    }
+  }
+]

@@ -1,0 +1,58 @@
+{
+  "phase": "HERO-FORENSIC-001",
+  "timestamp": "2026-06-14T12:00:00-04:00",
+  "mode": "forensic-only-no-code-changes",
+  "heroSystemCertified": false,
+  "featureCoveragePercent": 82,
+  "workingFeatures": [
+    "Hero discovery type selection and normalization",
+    "Hero manager config save/load in localStorage",
+    "Custom image and custom video source application",
+    "Hero background style and transition mapping",
+    "Carousel slide build, autoplay controls, and timeline controls",
+    "Seasonal campaign activation and schedule persistence",
+    "Hero playback-state persistence (resume/restore) in heroStore",
+    "Render fallback and placeholder paths for missing/loading media"
+  ],
+  "partiallyWorkingFeatures": [
+    {
+      "feature": "Hero rotation with custom backgrounds",
+      "reason": "Rotation and carousel context can alter displayed slide media while custom source is active."
+    },
+    {
+      "feature": "Vault-driven hero asset authority",
+      "reason": "Resolver reads localStorage vault caches; stale entries can influence asset resolution."
+    },
+    {
+      "feature": "Asset-type certification matrix (jpg/png/webp/gif/mp4) end-to-end runtime",
+      "reason": "Code paths are present, but full interactive admin-session execution was not fully reachable in automated capture."
+    }
+  ],
+  "brokenFeatures": [
+    {
+      "feature": "Hero Manager panel accessibility in non-admin flow",
+      "reason": "Panel is gated behind control-center + admin state and was unreachable in automated non-admin session capture."
+    }
+  ],
+  "missingFeatures": [
+    "Vault video asset picker control in Hero Manager (current picker is image-only)",
+    "Editable spotlight priority UI controls (currently displayed but not directly editable in panel)",
+    "Dedicated Hero playlist manager",
+    "Mixed media carousel authoring controls",
+    "Sponsor banner and featured creator banner authoring controls"
+  ],
+  "exactReasons": [
+    "HERO_SYSTEM_CERTIFIED=false because at least one required capability is not fully certifiable end-to-end: Hero Manager runtime accessibility and complete asset-type operational certification in current audited session.",
+    "Hero resolver depends on localStorage vault caches as authority inputs, which can permit stale hero asset resolution paths.",
+    "Rotation/carousel interactions can conflict with expectation that custom hero source remains visually exclusive."
+  ],
+  "artifacts": {
+    "inventory": "hero-system-inventory.md",
+    "controlsReport": "hero-manager-controls-report.md",
+    "renderFlow": "hero-render-flow.md",
+    "screenshots": [
+      "hero-manager-overview.png",
+      "hero-manager-studio-region.png"
+    ]
+  }
+}

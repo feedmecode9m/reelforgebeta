@@ -1,0 +1,8 @@
+{
+  "generatedAt": "2026-06-14T13:49:22.986Z",
+  "observations": [
+    "Backend process had previously terminated (exit 137) and later failed startup due database unavailable.",
+    "During outage, frontend could not complete upload/sync pipeline and vault would not refresh from backend.",
+    "Git history for suspect files is unavailable in HEAD because paths are currently untracked in this working tree; regression pinpoint relies on runtime evidence."
+  ]
+}

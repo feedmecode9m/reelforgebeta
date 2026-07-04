@@ -1,0 +1,112 @@
+{
+  "phase": "PHASE 70.1 — PLATFORM TRUTH LOCK",
+  "mode": "FORENSIC_ONLY",
+  "generatedAt": "2026-06-16T23:00:30.000Z",
+  "sources": [
+    "platform-truth-audit.json",
+    "user-experience-truth.json",
+    "studio-experience-truth.json",
+    "hero-dominance-report.json"
+  ],
+  "activeSystemsInventory": [
+    { "name": "Hero Background Pipeline", "layer": "SHARED" },
+    { "name": "Hero Vault UI", "layer": "ADMIN" },
+    { "name": "Hero Carousel Experience", "layer": "SHARED" },
+    { "name": "Hero Media Domain Separation", "layer": "SHARED" },
+    { "name": "Discovery Engine", "layer": "SHARED" },
+    { "name": "Global Search", "layer": "SHARED" },
+    { "name": "Universal Search", "layer": "SHARED" },
+    { "name": "Marketplace Hub", "layer": "SHARED" },
+    { "name": "Upcoming Events Module", "layer": "USER" },
+    { "name": "Featured Creator Module", "layer": "USER" },
+    { "name": "Revenue Dashboard", "layer": "ADMIN" },
+    { "name": "Security Operations Center", "layer": "ADMIN" },
+    { "name": "Security Enforcement", "layer": "ADMIN" },
+    { "name": "Daily Engagement", "layer": "SHARED" },
+    { "name": "Support ReelForge", "layer": "SHARED" },
+    { "name": "Workflow Engine", "layer": "ADMIN" },
+    { "name": "Release Center", "layer": "SHARED" },
+    { "name": "Studio Command Center", "layer": "ADMIN" },
+    { "name": "Studio Appearance System", "layer": "ADMIN" },
+    { "name": "Enterprise Foundation", "layer": "ADMIN" },
+    { "name": "Multi-user Pipelines", "layer": "ADMIN" },
+    { "name": "Backend Media + Reels API", "layer": "SHARED" },
+    { "name": "Notifications", "layer": "SHARED" },
+    { "name": "Teams API + UI", "layer": "ADMIN" },
+    { "name": "Analytics Backend Surface", "layer": "ADMIN" },
+    { "name": "Publishing Profiles", "layer": "ADMIN" }
+  ],
+  "publicHomepageModules": [
+    "Header + Notifications",
+    "Hero Stage",
+    "Upcoming Events Module",
+    "Featured Creator Module",
+    "Discovery Feed",
+    "Creator Profile",
+    "Support / Monetization Hub",
+    "Feed Shelf",
+    "Footer",
+    "Ghost Trigger (studio entry affordance)"
+  ],
+  "studioModules": [
+    "Command Center",
+    "Overview",
+    "Guide Me",
+    "Production (Projects + Workflow)",
+    "Content (Assets + Vault + Hero replace tools)",
+    "Teams",
+    "Analytics (Revenue + Marketplace)",
+    "Automation (Creator Copilot)",
+    "System (Hero Manager + Sentinel + Security + Appearance + Platform config + Monetization panel)",
+    "Continue Watching (studio system section)"
+  ],
+  "sharedModules": [
+    "Hero Background Pipeline",
+    "Hero Carousel Experience",
+    "Discovery Engine",
+    "Global Search",
+    "Universal Search",
+    "Support ReelForge",
+    "Release Center",
+    "Notifications",
+    "Backend Media + Reels API"
+  ],
+  "modulesCurrentlyShownInWrongLayer": [
+    {
+      "module": "Marketplace Hub",
+      "currentLayer": "ADMIN/STUDIO",
+      "expectedLayerBySystemTag": "SHARED",
+      "evidence": "platform-truth-audit marks userExposure=true; user-experience-truth shows marketplace hidden on public homepage and requiring studio/admin access."
+    },
+    {
+      "module": "Daily Engagement",
+      "currentLayer": "ADMIN/STUDIO",
+      "expectedLayerBySystemTag": "SHARED",
+      "evidence": "platform-truth-audit marks userExposure=true; user-experience-truth shows daily engagement hidden and studio/admin gated."
+    },
+    {
+      "module": "Continue Watching",
+      "currentLayer": "ADMIN/STUDIO",
+      "expectedLayerByJourney": "USER",
+      "evidence": "user-journey-report records viewer continue_watching flow success; user-experience-truth shows continue watching not rendered on public homepage."
+    },
+    {
+      "module": "Ghost Trigger (Studio Launcher)",
+      "currentLayer": "USER/Public",
+      "expectedLayer": "ADMIN utility affordance",
+      "evidence": "user-experience-truth shows ghost trigger visible to normal user and opens studio login overlay."
+    },
+    {
+      "module": "Creator Profile (studio-depth profile surface)",
+      "currentLayer": "USER/Public",
+      "expectedLayer": "SHARED with constrained public variant",
+      "evidence": "hero-dominance-report ranks Creator Profile as visual priority #3 and identifies attention competition immediately below hero."
+    }
+  ],
+  "normalizationRules": {
+    "USER": "Primary public homepage visibility without studio/admin gating.",
+    "ADMIN": "Studio/command-center gated operational modules.",
+    "SHARED": "Core systems serving both public and studio contexts with role-appropriate surfaces."
+  },
+  "completionToken": "EXPERIENCE_UNIFICATION_READY=true"
+}

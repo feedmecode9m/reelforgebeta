@@ -1,0 +1,13 @@
+{
+  "modes": [
+    "beginner",
+    "creator",
+    "producer",
+    "executive"
+  ],
+  "diagnostics": {
+    "mission": 11,
+    "action": 14,
+    "recommendation": 10
+  }
+}

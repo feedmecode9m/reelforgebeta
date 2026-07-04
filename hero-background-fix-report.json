@@ -1,0 +1,127 @@
+{
+  "phase": "PHASE HERO-ROOT-CAUSE-FIX",
+  "generatedAt": "2026-06-14T23:29:02.101592+00:00",
+  "rootCause": [
+    {
+      "id": "RC1",
+      "summary": "Hero Accept used shared media upload + sync pipeline, causing Hero assets to flow through shared vault/feed systems.",
+      "evidence": [
+        "Hero accept previously called uploadMedia(formData) and syncFromVault(true).",
+        "syncFromVault ingests thumbnails/videos into shared keys and invokes AI_CLEANUP_AGENT sync/distribution."
+      ],
+      "files": [
+        "frontend/src/components/experiences/HeroExperience.svelte",
+        "frontend/src/viewer/viewerContext.js"
+      ]
+    },
+    {
+      "id": "RC2",
+      "summary": "Hero vault inventory was sourced from shared media keys rather than Hero-only keys.",
+      "evidence": [
+        "loadHeroVaultItems previously merged personal_video_vault + personal_thumbnails.",
+        "Hero Manager asset registry consumed loadHeroVaultItems(), so inventory was merged by design."
+      ],
+      "files": [
+        "frontend/src/lib/hero/heroIntelligence.js",
+        "frontend/src/components/studio/HeroManagerPanel.svelte"
+      ]
+    },
+    {
+      "id": "RC3",
+      "summary": "Hero persistence used multiple authorities (manager config + legacy hero keys) with non-deterministic precedence.",
+      "evidence": [
+        "hydrateHeroBackgroundStores evaluated persisted hero keys and manager config in competing paths.",
+        "Could restore stale values after refresh/restart."
+      ],
+      "files": [
+        "frontend/src/lib/hero/heroIntelligence.js",
+        "frontend/src/viewer/viewerContext.js"
+      ]
+    }
+  ],
+  "filesChanged": [
+    "frontend/src/components/experiences/HeroExperience.svelte",
+    "frontend/src/lib/hero/heroIntelligence.js",
+    "frontend/src/viewer/viewerContext.js",
+    "frontend/src/lib/discovery/discoveryEngine.js"
+  ],
+  "beforeAfterFlow": {
+    "before": [
+      "Accept -> uploadMedia(/api/reels) -> websocket CREATED -> syncFromVault -> shared vault writes (personal_video_vault/personal_thumbnails) -> AI_CLEANUP_AGENT feed/placeholder sync.",
+      "Hero inventory -> loadHeroVaultItems() merged shared vault keys.",
+      "Persistence load -> mixed manager config and legacy keys with conflicting precedence."
+    ],
+    "after": [
+      "Accept -> local hero store update (HERO_POSTER_IMAGE/HERO_BACKGROUND_VIDEO) -> saveHeroManagerConfig -> hero-manager-updated event only.",
+      "Hero inventory -> loadHeroVaultItems() reads Hero-only keys (reelforge_hero_image/reelforge_hero_video) and maps to heroAssetId.",
+      "Hydrate load -> manager-config custom source applied first, then legacy/default fallback."
+    ]
+  },
+  "isolationGuarantees": {
+    "acceptWritesSharedVault": false,
+    "acceptWritesFeed": false,
+    "acceptCallsAI_CLEANUP_AGENT": false,
+    "heroInventoryReadsSharedVault": false,
+    "discoveryIndexesHeroVault": false
+  },
+  "diagnosticsAdded": [
+    "[HERO_ACCEPT]",
+    "[HERO_REJECT]",
+    "[HERO_SAVE]",
+    "[HERO_LOAD]",
+    "[HERO_RENDER]",
+    "[HERO_ROTATE]",
+    "[HERO_PERSIST]"
+  ],
+  "validationEvidence": {
+    "build": "frontend build succeeded (vite build)",
+    "runtimeValidationFile": "hero-background-fix-validation.json",
+    "runtimeChecks": {
+      "baseline": {
+        "videoVaultCount": 0,
+        "thumbnailVaultCount": 0,
+        "feedCount": 0,
+        "placeholderCount": 0
+      },
+      "applyResult": {
+        "heroAssetId": "hero-image-test-1781479713427",
+        "vaultItemsCount": 1,
+        "backgroundSource": "custom_image",
+        "resolvedAssetId": "hero-image-test-1781479713427"
+      },
+      "afterReload": {
+        "videoVaultCount": 0,
+        "thumbnailVaultCount": 0,
+        "feedCount": 0,
+        "placeholderCount": 0,
+        "managerConfig": {
+          "backgroundSource": "custom_image",
+          "heroAssetId": "hero-image-test-1781479713427"
+        },
+        "heroVaultItemsCount": 1,
+        "heroVaultItems": [
+          {
+            "id": "hero-image-test-1781479713427",
+            "name": "Hero Image",
+            "title": "Hero Image",
+            "url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO7Z6WQAAAAASUVORK5CYII=",
+            "type": "image/png"
+          }
+        ],
+        "presentation": {
+          "backgroundSource": "custom_image",
+          "assetId": "hero-image-test-1781479713427",
+          "assetType": "jpg",
+          "imageUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO7Z6WQAAAAASUVORK5CYII=",
+          "videoUrl": ""
+        }
+      }
+    },
+    "assertions": [
+      "Hero vault item appears immediately after Hero save path (vaultItemsCount=1).",
+      "After reload, manager config and hero vault item remain present.",
+      "Shared vault/feed counts remain unchanged in validation run."
+    ]
+  },
+  "HERO_BACKGROUND_FIXED": true
+}

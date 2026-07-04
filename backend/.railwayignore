@@ -1,0 +1,6 @@
+public/
+target/
+node_modules/
+.env
+.git/
+.DS_Store

@@ -1,0 +1,329 @@
+{
+  "phase": 54,
+  "objective": "Hero Intelligence Certification",
+  "matrix": [
+    {
+      "assetType": "jpg",
+      "assetId": "hero-cert-jpg",
+      "steps": [
+        {
+          "step": "upload",
+          "ok": true,
+          "detail": {
+            "uploaded": true,
+            "count": 7
+          }
+        },
+        {
+          "step": "hero-manager-assignment",
+          "ok": true,
+          "detail": {
+            "source": "custom_image",
+            "asset": "hero-cert-jpg",
+            "video": "/videos/hero-background.mp4",
+            "image": "/thumbs/hero-cert.jpg"
+          }
+        },
+        {
+          "step": "immediate-render",
+          "ok": true,
+          "detail": {
+            "source": "custom_image",
+            "stageAsset": "hero-cert-jpg",
+            "visible": true,
+            "hasAssetUrl": true,
+            "hasVideoNode": false,
+            "videoSrc": ""
+          }
+        },
+        {
+          "step": "refresh-persistence",
+          "ok": true,
+          "detail": {
+            "source": "custom_image",
+            "asset": "hero-cert-jpg",
+            "video": "/videos/hero-background.mp4"
+          }
+        },
+        {
+          "step": "restart-persistence",
+          "ok": true,
+          "detail": {
+            "source": "custom_image",
+            "asset": "hero-cert-jpg",
+            "video": "/videos/hero-background.mp4"
+          }
+        },
+        {
+          "step": "auto-rotation-compatibility",
+          "ok": true,
+          "detail": {
+            "autoRotate": true,
+            "source": "custom_image",
+            "asset": "hero-cert-jpg"
+          }
+        }
+      ]
+    },
+    {
+      "assetType": "png",
+      "assetId": "hero-cert-png",
+      "steps": [
+        {
+          "step": "upload",
+          "ok": true,
+          "detail": {
+            "uploaded": true,
+            "count": 7
+          }
+        },
+        {
+          "step": "hero-manager-assignment",
+          "ok": true,
+          "detail": {
+            "source": "custom_image",
+            "asset": "hero-cert-png",
+            "video": "/videos/hero-background.mp4",
+            "image": "/thumbs/hero-cert.png"
+          }
+        },
+        {
+          "step": "immediate-render",
+          "ok": true,
+          "detail": {
+            "source": "custom_image",
+            "stageAsset": "hero-cert-png",
+            "visible": true,
+            "hasAssetUrl": true,
+            "hasVideoNode": false,
+            "videoSrc": ""
+          }
+        },
+        {
+          "step": "refresh-persistence",
+          "ok": true,
+          "detail": {
+            "source": "custom_image",
+            "asset": "hero-cert-png",
+            "video": "/videos/hero-background.mp4"
+          }
+        },
+        {
+          "step": "restart-persistence",
+          "ok": true,
+          "detail": {
+            "source": "custom_image",
+            "asset": "hero-cert-png",
+            "video": "/videos/hero-background.mp4"
+          }
+        },
+        {
+          "step": "auto-rotation-compatibility",
+          "ok": true,
+          "detail": {
+            "autoRotate": true,
+            "source": "custom_image",
+            "asset": "hero-cert-png"
+          }
+        }
+      ]
+    },
+    {
+      "assetType": "webp",
+      "assetId": "hero-cert-webp",
+      "steps": [
+        {
+          "step": "upload",
+          "ok": true,
+          "detail": {
+            "uploaded": true,
+            "count": 7
+          }
+        },
+        {
+          "step": "hero-manager-assignment",
+          "ok": true,
+          "detail": {
+            "source": "custom_image",
+            "asset": "hero-cert-webp",
+            "video": "/videos/hero-background.mp4",
+            "image": "/thumbs/hero-cert.webp"
+          }
+        },
+        {
+          "step": "immediate-render",
+          "ok": true,
+          "detail": {
+            "source": "custom_image",
+            "stageAsset": "hero-cert-webp",
+            "visible": true,
+            "hasAssetUrl": true,
+            "hasVideoNode": false,
+            "videoSrc": ""
+          }
+        },
+        {
+          "step": "refresh-persistence",
+          "ok": true,
+          "detail": {
+            "source": "custom_image",
+            "asset": "hero-cert-webp",
+            "video": "/videos/hero-background.mp4"
+          }
+        },
+        {
+          "step": "restart-persistence",
+          "ok": true,
+          "detail": {
+            "source": "custom_image",
+            "asset": "hero-cert-webp",
+            "video": "/videos/hero-background.mp4"
+          }
+        },
+        {
+          "step": "auto-rotation-compatibility",
+          "ok": true,
+          "detail": {
+            "autoRotate": true,
+            "source": "custom_image",
+            "asset": "hero-cert-webp"
+          }
+        }
+      ]
+    },
+    {
+      "assetType": "gif",
+      "assetId": "hero-cert-gif",
+      "steps": [
+        {
+          "step": "upload",
+          "ok": true,
+          "detail": {
+            "uploaded": true,
+            "count": 7
+          }
+        },
+        {
+          "step": "hero-manager-assignment",
+          "ok": true,
+          "detail": {
+            "source": "custom_image",
+            "asset": "hero-cert-gif",
+            "video": "/videos/hero-background.mp4",
+            "image": "/thumbs/hero-cert.gif"
+          }
+        },
+        {
+          "step": "immediate-render",
+          "ok": true,
+          "detail": {
+            "source": "custom_image",
+            "stageAsset": "hero-cert-gif",
+            "visible": true,
+            "hasAssetUrl": true,
+            "hasVideoNode": false,
+            "videoSrc": ""
+          }
+        },
+        {
+          "step": "refresh-persistence",
+          "ok": true,
+          "detail": {
+            "source": "custom_image",
+            "asset": "hero-cert-gif",
+            "video": "/videos/hero-background.mp4"
+          }
+        },
+        {
+          "step": "restart-persistence",
+          "ok": true,
+          "detail": {
+            "source": "custom_image",
+            "asset": "hero-cert-gif",
+            "video": "/videos/hero-background.mp4"
+          }
+        },
+        {
+          "step": "auto-rotation-compatibility",
+          "ok": true,
+          "detail": {
+            "autoRotate": true,
+            "source": "custom_image",
+            "asset": "hero-cert-gif"
+          }
+        }
+      ]
+    },
+    {
+      "assetType": "mp4",
+      "assetId": "hero-cert-mp4",
+      "steps": [
+        {
+          "step": "upload",
+          "ok": true,
+          "detail": {
+            "uploaded": true,
+            "count": 7
+          }
+        },
+        {
+          "step": "hero-manager-assignment",
+          "ok": true,
+          "detail": {
+            "source": "custom_video",
+            "asset": "hero-cert-mp4",
+            "video": "/videos/hero-background.mp4",
+            "image": "/thumbs/hero-cert.gif"
+          }
+        },
+        {
+          "step": "immediate-render",
+          "ok": true,
+          "detail": {
+            "source": "custom_video",
+            "stageAsset": "hero-cert-mp4",
+            "visible": false,
+            "hasAssetUrl": true,
+            "hasVideoNode": true,
+            "videoSrc": "http://localhost:8080/videos/hero-background.mp4"
+          }
+        },
+        {
+          "step": "refresh-persistence",
+          "ok": true,
+          "detail": {
+            "source": "custom_video",
+            "asset": "hero-cert-mp4",
+            "video": "/videos/hero-background.mp4"
+          }
+        },
+        {
+          "step": "restart-persistence",
+          "ok": true,
+          "detail": {
+            "source": "custom_video",
+            "asset": "hero-cert-mp4",
+            "video": "/videos/hero-background.mp4"
+          }
+        },
+        {
+          "step": "auto-rotation-compatibility",
+          "ok": true,
+          "detail": {
+            "autoRotate": true,
+            "source": "custom_video",
+            "asset": "hero-cert-mp4"
+          }
+        }
+      ]
+    }
+  ],
+  "diagnostics": {
+    "heroCertification": 31,
+    "heroRenderSuccess": 40,
+    "heroRenderFailure": 0
+  },
+  "success": true,
+  "generatedAt": "2026-06-13T16:15:36.445Z",
+  "completeToken": "HERO_PIPELINE_CERTIFIED=true"
+}

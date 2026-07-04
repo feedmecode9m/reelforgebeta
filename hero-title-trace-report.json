@@ -1,0 +1,156 @@
+{
+  "audit": "HERO TITLE TRACE AUDIT",
+  "generatedAt": "2026-06-18T02:17:00Z",
+  "renderSource": {
+    "viewerHeroTitleNode": {
+      "file": "frontend/src/components/experiences/HeroExperience.svelte",
+      "component": "HeroExperience",
+      "line": 999,
+      "template": "<h1 data-hero-title>{heroSlideTitle}</h1>"
+    },
+    "titleResolutionChain": [
+      {
+        "source": "Hero Asset Registry / Carousel slide",
+        "file": "frontend/src/components/experiences/HeroExperience.svelte",
+        "component": "HeroExperience",
+        "lines": [131, 135, 165, 166],
+        "detail": "heroRegistryAssets -> slide.title (asset.title) -> heroSlideTitle"
+      },
+      {
+        "source": "Hero Story Composer",
+        "file": "frontend/src/components/experiences/HeroExperience.svelte",
+        "component": "HeroExperience",
+        "lines": [180, 186, 187, 188, 194, 195],
+        "detail": "if story published/scheduled-active, heroStoryTitle overrides heroSlideTitle"
+      },
+      {
+        "source": "Legacy Hero Metadata",
+        "file": "frontend/src/components/experiences/HeroExperience.svelte",
+        "component": "HeroExperience",
+        "lines": [166],
+        "detail": "heroSelection.title fallback branch"
+      },
+      {
+        "source": "Fallback Constants",
+        "file": "frontend/src/components/experiences/HeroExperience.svelte",
+        "component": "HeroExperience",
+        "lines": [166],
+        "detail": "hardcoded fallback 'NEON VENGEANCE'"
+      }
+    ],
+    "heroVideoLiteralOrigin": {
+      "file": "frontend/src/lib/hero/heroIntelligence.js",
+      "component": "heroIntelligence (data producer)",
+      "lines": [856, 857],
+      "detail": "loadHeroVaultItems emits title/name as 'Hero Video'"
+    },
+    "studioRenderPathsUsingSameTitle": [
+      {
+        "file": "frontend/src/components/studio/HeroManagerPanel.svelte",
+        "component": "HeroManagerPanel",
+        "lines": [541, 542, 543],
+        "detail": "dropdown option renders getDisplayTitle(item)"
+      },
+      {
+        "file": "frontend/src/components/studio/HeroManagerPanel.svelte",
+        "component": "HeroManagerPanel",
+        "lines": [723, 725, 750],
+        "detail": "Hero Vault card title renders displayTitle"
+      }
+    ]
+  },
+  "winningSource": {
+    "winner": "Conditional: A (Hero Story Composer) when published/scheduled-active; otherwise B (Hero Asset Registry)",
+    "precedence": [
+      "A: Hero Story Composer (override only when heroStoryPublished and heroStoryTitle exists)",
+      "B: Hero Asset Registry (activeHeroSlide.title from registry asset.title)",
+      "C: Legacy Hero Metadata (heroSelection.title)",
+      "D: Fallback Constants ('NEON VENGEANCE')"
+    ],
+    "proofLines": {
+      "A_override": [194, 195],
+      "B_base": [131, 135, 165, 166],
+      "C_base": [166],
+      "D_base": [166],
+      "renderNode": [999]
+    }
+  },
+  "componentPath": [
+    {
+      "component": "HeroExperience",
+      "file": "frontend/src/components/experiences/HeroExperience.svelte",
+      "role": "viewer hero title renderer"
+    },
+    {
+      "component": "heroIntelligence",
+      "file": "frontend/src/lib/hero/heroIntelligence.js",
+      "role": "hero asset title producer ('Hero Video')"
+    },
+    {
+      "component": "HeroManagerPanel",
+      "file": "frontend/src/components/studio/HeroManagerPanel.svelte",
+      "role": "studio render path for same title strings"
+    },
+    {
+      "component": "Viewer",
+      "file": "frontend/src/Viewer.svelte",
+      "role": "forces sanitizeViewer=true on public hero bridge",
+      "lines": [168, 186]
+    }
+  ],
+  "lineNumbers": {
+    "frontend/src/lib/hero/heroIntelligence.js": [847, 848, 856, 857],
+    "frontend/src/components/experiences/HeroExperience.svelte": [131, 135, 165, 166, 180, 186, 187, 188, 194, 195, 999],
+    "frontend/src/components/studio/HeroManagerPanel.svelte": [541, 542, 543, 723, 725, 750],
+    "frontend/src/Viewer.svelte": [168, 186]
+  },
+  "legacyPathsFound": [
+    {
+      "source": "heroSelection.title",
+      "file": "frontend/src/components/experiences/HeroExperience.svelte",
+      "line": 166
+    },
+    {
+      "source": "fallback constant 'NEON VENGEANCE'",
+      "file": "frontend/src/components/experiences/HeroExperience.svelte",
+      "line": 166
+    }
+  ],
+  "storyComposerPathsFound": [
+    {
+      "file": "frontend/src/lib/hero/heroIntelligence.js",
+      "lines": [308, 309, 310, 311, 368, 372, 376, 380, 412, 416],
+      "detail": "story fields and story status persisted/loaded"
+    },
+    {
+      "file": "frontend/src/components/studio/HeroManagerPanel.svelte",
+      "lines": [147, 148, 149, 150, 619, 642, 646, 650, 654],
+      "detail": "composer inputs for heroLabel/title/subtitle/description"
+    },
+    {
+      "file": "frontend/src/components/experiences/HeroExperience.svelte",
+      "lines": [180, 184, 186, 187, 188, 194, 195],
+      "detail": "viewer consumption + override gate for story content"
+    }
+  ],
+  "searchResults": {
+    "Hero Video": [
+      {
+        "file": "frontend/src/lib/hero/heroIntelligence.js",
+        "lines": [856, 857]
+      }
+    ],
+    "Hero video asset": [],
+    "hero-video-": [
+      {
+        "file": "frontend/src/components/experiences/HeroExperience.svelte",
+        "lines": [790, 806]
+      },
+      {
+        "file": "frontend/src/viewer/viewerContext.js",
+        "lines": [1411]
+      }
+    ]
+  },
+  "completionToken": "HERO_TITLE_TRACE_COMPLETE=true"
+}

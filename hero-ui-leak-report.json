@@ -1,0 +1,108 @@
+{
+  "phase": "PHASE 70.3 — HERO EXPERIENCE SANITIZATION",
+  "generatedAt": "2026-06-16T23:49:57.223Z",
+  "baseUrl": "http://127.0.0.1:5173",
+  "findings": [
+    {
+      "textPattern": "Hero Video Active",
+      "sourceVariable": "activeHeroSlide?.type === 'video'",
+      "component": "HeroExperience",
+      "purpose": "Runtime media-status indicator in hero meta pill",
+      "classification": "ADMIN_ONLY",
+      "visible": true
+    },
+    {
+      "textPattern": "Hero Image Active",
+      "sourceVariable": "activeHeroSlide?.type !== 'video'",
+      "component": "HeroExperience",
+      "purpose": "Runtime media-status indicator in hero meta pill",
+      "classification": "ADMIN_ONLY",
+      "visible": false
+    },
+    {
+      "textPattern": "Cinematic Stage",
+      "sourceVariable": "activeHeroSlide?.type === 'video' && activeHeroSlide?.imageUrl && activeHeroSlide?.videoUrl",
+      "component": "HeroExperience",
+      "purpose": "Technical dual-media mode label",
+      "classification": "ADMIN_ONLY",
+      "visible": true
+    },
+    {
+      "textPattern": "Image + Video",
+      "sourceVariable": "static string in hero-split-layout",
+      "component": "HeroExperience",
+      "purpose": "Media type disclosure",
+      "classification": "ADMIN_ONLY",
+      "visible": true
+    },
+    {
+      "textPattern": "Upcoming Events",
+      "sourceVariable": "eventsRegistry",
+      "component": "HeroExperience",
+      "purpose": "Viewer-facing content navigation",
+      "classification": "VIEWER_SAFE",
+      "visible": true
+    },
+    {
+      "textPattern": "Follow",
+      "sourceVariable": "followedCreatorIds",
+      "component": "HeroExperience",
+      "purpose": "Viewer-facing creator engagement action",
+      "classification": "VIEWER_SAFE",
+      "visible": true
+    },
+    {
+      "textPattern": "Continue Watching",
+      "sourceVariable": "hero carousel action controls",
+      "component": "HeroExperience",
+      "purpose": "Viewer-facing playback action",
+      "classification": "VIEWER_SAFE",
+      "visible": true
+    },
+    {
+      "textPattern": "Watch Now",
+      "sourceVariable": "hero carousel action controls",
+      "component": "HeroExperience",
+      "purpose": "Viewer-facing playback action",
+      "classification": "VIEWER_SAFE",
+      "visible": true
+    },
+    {
+      "textPattern": "Manage in Vault",
+      "sourceVariable": "openHeroVaultManager() action button",
+      "component": "HeroExperience",
+      "purpose": "Navigation to administrative vault controls",
+      "classification": "ADMIN_ONLY",
+      "visible": true
+    },
+    {
+      "textPattern": "Current Series",
+      "sourceVariable": "brief.primary.seriesTitle",
+      "component": "HeroCommandCenter",
+      "purpose": "Studio/production briefing header",
+      "classification": "ADMIN_ONLY",
+      "visible": true
+    },
+    {
+      "textPattern": "Production Readiness",
+      "sourceVariable": "brief.primary.readinessPercent",
+      "component": "HeroCommandCenter",
+      "purpose": "Operational production metric",
+      "classification": "ADMIN_ONLY",
+      "visible": true
+    },
+    {
+      "textPattern": "Biggest Blocker",
+      "sourceVariable": "brief.primary.biggestBlocker",
+      "component": "HeroCommandCenter",
+      "purpose": "Operational blocker telemetry",
+      "classification": "ADMIN_ONLY",
+      "visible": true
+    }
+  ],
+  "summary": {
+    "viewerSafeVisible": 4,
+    "adminOnlyVisible": 7,
+    "debugOnlyVisible": 0
+  }
+}

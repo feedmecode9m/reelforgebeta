@@ -1,0 +1,80 @@
+{
+  "phase": 51,
+  "generatedAt": "2026-06-13T09:10:30.000Z",
+  "objective": "Verify feature reachability through real UI pathways",
+  "reachabilityMatrix": [
+    {
+      "domain": "platformTruthFlow",
+      "normalUserFlow": false,
+      "adminFlow": true,
+      "smartProductionStudio": true,
+      "productionCommandCenter": true,
+      "primaryEntryPoint": "Admin login -> Production Command Center",
+      "notes": "Cross-domain admin-only operational journey."
+    },
+    {
+      "domain": "marketplace",
+      "normalUserFlow": false,
+      "adminFlow": true,
+      "smartProductionStudio": true,
+      "productionCommandCenter": true,
+      "primaryEntryPoint": "Command Center section tab: Marketplace",
+      "notes": "CRUD dashboard is reachable and validated through UI."
+    },
+    {
+      "domain": "revenueDashboard",
+      "normalUserFlow": false,
+      "adminFlow": true,
+      "smartProductionStudio": true,
+      "productionCommandCenter": true,
+      "primaryEntryPoint": "Command Center section tab: Revenue",
+      "notes": "KPI + forecast + monetization panel reachable."
+    },
+    {
+      "domain": "threatDetection",
+      "normalUserFlow": false,
+      "adminFlow": true,
+      "smartProductionStudio": true,
+      "productionCommandCenter": true,
+      "primaryEntryPoint": "System workspace: Sentinel Security Card",
+      "notes": "Threat state surfaced in card + SOC diagnostics."
+    },
+    {
+      "domain": "sentinelAssistant",
+      "normalUserFlow": false,
+      "adminFlow": true,
+      "smartProductionStudio": true,
+      "productionCommandCenter": true,
+      "primaryEntryPoint": "System workspace: Sentinel Assistant Panel",
+      "notes": "Recommendations and ask flow reachable."
+    },
+    {
+      "domain": "heroIntelligence",
+      "normalUserFlow": true,
+      "adminFlow": true,
+      "smartProductionStudio": true,
+      "productionCommandCenter": true,
+      "primaryEntryPoint": "Hero stage + System workspace Hero Manager",
+      "notes": "Normal users see hero experience; admins control hero strategy."
+    },
+    {
+      "domain": "commandCenter",
+      "normalUserFlow": false,
+      "adminFlow": true,
+      "smartProductionStudio": true,
+      "productionCommandCenter": true,
+      "primaryEntryPoint": "Admin login -> Production Command Center",
+      "notes": "Operational surface is admin-gated."
+    },
+    {
+      "domain": "appearanceSystem",
+      "normalUserFlow": false,
+      "adminFlow": true,
+      "smartProductionStudio": true,
+      "productionCommandCenter": true,
+      "primaryEntryPoint": "System workspace: Studio Appearance Panel",
+      "notes": "Theme controls are studio/admin context."
+    }
+  ],
+  "unreachableFeatures": []
+}

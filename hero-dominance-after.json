@@ -1,0 +1,68 @@
+{
+  "phase": "PHASE 70.2 — PLATFORM TRUTH LOCK",
+  "generatedAt": "2026-06-16T23:21:54.327Z",
+  "measurementContext": {
+    "url": "http://127.0.0.1:5173/",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "role": "normal_user"
+  },
+  "hero": {
+    "heightPx": 540,
+    "widthPx": 1440,
+    "viewportCoverage": 0.6,
+    "heightCoverage": 0.6,
+    "widthCoverage": 1,
+    "overlayCount": 4,
+    "competingModulesInViewport": 1
+  },
+  "competingModules": [
+    {
+      "module": "Discovery Feed",
+      "top": 940.515625,
+      "area": 961627.5,
+      "overlapsHero": false
+    },
+    {
+      "module": "Creator Profile",
+      "top": 1624.3125,
+      "area": 934402.5,
+      "overlapsHero": false
+    },
+    {
+      "module": "Monetization Hub",
+      "top": 2286.796875,
+      "area": 504787.5,
+      "overlapsHero": false
+    },
+    {
+      "module": "Hero Command Center",
+      "top": 754.1875,
+      "area": 245196.875,
+      "overlapsHero": false
+    }
+  ],
+  "movedBelowHeroChecks": {
+    "productionReadiness": true,
+    "currentSeries": true,
+    "openTasks": true,
+    "assetCoverage": true,
+    "notificationsMetrics": true,
+    "teamActivityMetrics": true,
+    "commandCenterBelowHero": true
+  },
+  "keptInsideHeroChecks": {
+    "featuredCreator": true,
+    "upcomingEvents": true,
+    "continueWatching": true,
+    "watchNow": true
+  },
+  "requirements": {
+    "heroVisibleWithoutScrolling": true,
+    "heroVideoImageAlwaysVisible": true,
+    "heroCarouselNeverCovered": true
+  },
+  "completionToken": "HERO_DOMINANCE_RESTORED=true"
+}

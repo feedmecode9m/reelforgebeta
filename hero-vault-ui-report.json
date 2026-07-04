@@ -1,0 +1,78 @@
+{
+  "phase": "REELFORGE PHASE 66 — HERO VISUAL VAULT IMPLEMENTATION",
+  "generatedAt": "2026-06-15T00:18:57.884Z",
+  "checks": {
+    "acceptImageCardAppears": true,
+    "acceptVideoCardAppears": true,
+    "reloadCardRemains": true,
+    "activeAssetHighlighted": true,
+    "deleteRemovesCard": true
+  },
+  "evidence": {
+    "afterImage": {
+      "label": "after-image-accept",
+      "cardCount": 1,
+      "activeCount": 1,
+      "cardState": [
+        {
+          "assetId": "hero-image-ui-1781482746331",
+          "hasActiveBadge": true,
+          "classes": "hero-vault__card s-gGwL1ENnHNIC hero-vault__card--active"
+        }
+      ]
+    },
+    "afterReload": {
+      "label": "after-reload",
+      "cardCount": 1,
+      "activeCount": 1,
+      "cardState": [
+        {
+          "assetId": "hero-image-ui-1781482746331",
+          "hasActiveBadge": true,
+          "classes": "hero-vault__card s-gGwL1ENnHNIC hero-vault__card--active"
+        }
+      ]
+    },
+    "afterVideo": {
+      "label": "after-video-accept",
+      "cardCount": 1,
+      "activeCount": 1,
+      "cardState": [
+        {
+          "assetId": "hero-video-ui-1781482756673",
+          "hasActiveBadge": true,
+          "classes": "hero-vault__card s-gGwL1ENnHNIC hero-vault__card--active"
+        }
+      ]
+    },
+    "afterDelete": {
+      "label": "after-delete",
+      "cardCount": 0,
+      "activeCount": 0,
+      "cardState": []
+    }
+  },
+  "diagnostics": [
+    {
+      "at": 1781482746623,
+      "text": "[HERO_VAULT_CARD_RENDER] {assetId: hero-image-ui-1781482746331, type: jpg, active: true}"
+    },
+    {
+      "at": 1781482755769,
+      "text": "[HERO_VAULT_CARD_RENDER] {assetId: hero-image-ui-1781482746331, type: jpg, active: true}"
+    },
+    {
+      "at": 1781482755786,
+      "text": "[HERO_VAULT_CARD_RENDER] {assetId: hero-image-ui-1781482746331, type: jpg, active: true}"
+    },
+    {
+      "at": 1781482756750,
+      "text": "[HERO_VAULT_CARD_RENDER] {assetId: hero-video-ui-1781482756673, type: video, active: true}"
+    },
+    {
+      "at": 1781482758010,
+      "text": "[HERO_VAULT_DELETE] {assetId: hero-video-ui-1781482756673}"
+    }
+  ],
+  "completeToken": "HERO_VAULT_UI_COMPLETE=true"
+}

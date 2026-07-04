@@ -1,0 +1,52 @@
+{
+  "generatedAt": "2026-06-13T06:12:09.828Z",
+  "phase": 48,
+  "objective": "Watch tracking hardening without hidden toggles",
+  "auditedFiles": [
+    "src/lib/watch/watchTracker.js",
+    "src/lib/api/watch.js",
+    "src/lib/series/seriesWatchProgress.js",
+    "src/components/series/ContinueWatchingBadge.svelte"
+  ],
+  "unifiedResolver": "src/lib/series/seriesWatchProgress.js::resolveWatchProgress",
+  "validation": {
+    "runtimeChecks": 8,
+    "runtimePassed": 8,
+    "failed": false
+  },
+  "pathVerification": {
+    "localOnly": {
+      "percent": 32,
+      "source": "local",
+      "localPercent": 32,
+      "apiPercent": null,
+      "synced": false,
+      "apiAttempted": false
+    },
+    "apiBacked": {
+      "percent": 32,
+      "source": "local",
+      "localPercent": 32,
+      "apiPercent": null,
+      "synced": false,
+      "apiAttempted": true
+    }
+  },
+  "restore": {
+    "badgeVisible": true,
+    "badgePercent": 32,
+    "storedPercent": 32
+  },
+  "diagnostics": {
+    "WATCH_PROGRESS": 5,
+    "WATCH_SYNC": 4,
+    "WATCH_RESTORE": 1
+  },
+  "watched": {
+    "success": true,
+    "watchedSeconds": 19.2,
+    "episodePercent": 32,
+    "reelPercent": 32
+  },
+  "successToken": "WATCH_TRACKING_HARDENING_COMPLETE=true"
+}

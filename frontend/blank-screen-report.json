@@ -1,0 +1,1755 @@
+{
+  "generatedAt": "2026-06-14T07:12:31.173Z",
+  "counts": {
+    "appMount": 1,
+    "appUnmount": 0,
+    "appRerender": 21,
+    "storeReset": 2,
+    "feedReset": 3,
+    "heroReset": 0,
+    "vaultReset": 0,
+    "syncCalls": 3
+  },
+  "blankFrameCount": 0,
+  "sampleBlankWindow": {
+    "startTs": 1781421135215,
+    "endTs": 1781421135215,
+    "events": [
+      {
+        "ts": 1781421135215,
+        "event": "STORE_WRITE",
+        "detail": {
+          "key": "reelforge_feed",
+          "prevCount": 0,
+          "nextCount": 0
+        }
+      },
+      {
+        "ts": 1781421135215,
+        "event": "[FEED_RESET]",
+        "detail": {
+          "prevCount": 0,
+          "nextCount": 0
+        }
+      },
+      {
+        "ts": 1781421135409,
+        "event": "[APP_MOUNT]",
+        "detail": {
+          "childCount": 1
+        }
+      },
+      {
+        "ts": 1781421135515,
+        "event": "STORE_WRITE",
+        "detail": {
+          "key": "personal_thumbnails",
+          "prevCount": 0,
+          "nextCount": 20
+        }
+      },
+      {
+        "ts": 1781421135520,
+        "event": "[APP_RERENDER]",
+        "detail": {
+          "rerenderCount": 1
+        }
+      },
+      {
+        "ts": 1781421135552,
+        "event": "STORE_WRITE",
+        "detail": {
+          "key": "personal_video_vault",
+          "prevCount": 0,
+          "nextCount": 0
+        }
+      },
+      {
+        "ts": 1781421135553,
+        "event": "STORE_WRITE",
+        "detail": {
+          "key": "personal_thumbnails",
+          "prevCount": 20,
+          "nextCount": 20
+        }
+      },
+      {
+        "ts": 1781421135587,
+        "event": "[APP_RERENDER]",
+        "detail": {
+          "rerenderCount": 2
+        }
+      },
+      {
+        "ts": 1781421135603,
+        "event": "[APP_RERENDER]",
+        "detail": {
+          "rerenderCount": 3
+        }
+      },
+      {
+        "ts": 1781421135700,
+        "event": "STORE_WRITE",
+        "detail": {
+          "key": "reelforge_feed",
+          "prevCount": 0,
+          "nextCount": 20
+        }
+      },
+      {
+        "ts": 1781421135701,
+        "event": "STORE_WRITE",
+        "detail": {
+          "key": "reelforge_feed",
+          "prevCount": 20,
+          "nextCount": 20
+        }
+      },
+      {
+        "ts": 1781421135739,
+        "event": "[APP_RERENDER]",
+        "detail": {
+          "rerenderCount": 4
+        }
+      },
+      {
+        "ts": 1781421135774,
+        "event": "syncFromVault-proxy-call",
+        "detail": {
+          "url": "/api/reels?t=1781421135773",
+          "count": 1
+        }
+      },
+      {
+        "ts": 1781421136813,
+        "event": "[APP_RERENDER]",
+        "detail": {
+          "rerenderCount": 5
+        }
+      }
+    ]
+  },
+  "failedApiCalls": [
+    {
+      "ts": 1781421134673,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134674,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134676,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/dashboard net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134676,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "POST http://127.0.0.1:5173/api/notifications net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134676,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134676,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134676,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134676,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134676,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/health net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134676,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134676,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134676,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134676,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134676,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134676,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134676,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/dashboard net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134676,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134677,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134677,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134677,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134677,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134677,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "POST http://127.0.0.1:5173/api/security/events net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134677,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/reels net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134677,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134677,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134677,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134677,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134677,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134677,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134677,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134677,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134677,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/notifications?userId=user-owner-1 net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134677,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134677,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134677,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134677,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134677,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134679,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/notifications?userId=user-owner-1 net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134679,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134679,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134679,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "POST http://127.0.0.1:5173/api/security/events net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134679,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134679,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "POST http://127.0.0.1:5173/api/workflow/tasks net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134679,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134679,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134679,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134679,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134679,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134679,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134679,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "POST http://127.0.0.1:5173/api/security/events net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134679,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134679,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134679,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134679,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134679,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134679,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/dashboard net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134679,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134679,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134679,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134679,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134679,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "POST http://127.0.0.1:5173/api/security/events net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134679,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134679,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "POST http://127.0.0.1:5173/api/notifications net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134679,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134679,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134679,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/series/series-neon-vengeance net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421134679,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET https://ui-avatars.com/api/?name=ST&background=111827&color=ffffff&size=128&bold=true net::ERR_ABORTED"
+    },
+    {
+      "ts": 1781421135796,
+      "component": "network",
+      "event": "api-failed",
+      "detail": "GET http://127.0.0.1:5173/api/reels?t=1781421135773 net::ERR_FAILED"
+    }
+  ],
+  "apiResponses": [
+    {
+      "ts": 1781421133396,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/src/lib/api/reelContract.js 200"
+    },
+    {
+      "ts": 1781421133445,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/src/lib/api/media.js 200"
+    },
+    {
+      "ts": 1781421133538,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/src/lib/api/seriesApi.js 200"
+    },
+    {
+      "ts": 1781421133749,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/src/lib/api/watch.js 200"
+    },
+    {
+      "ts": 1781421133749,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/src/lib/api/analyticsApi.js 200"
+    },
+    {
+      "ts": 1781421133754,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/src/lib/api/ingestPoll.js 200"
+    },
+    {
+      "ts": 1781421133755,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/src/lib/api/syncApi.js 200"
+    },
+    {
+      "ts": 1781421133767,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/src/lib/api/workflowApi.js 200"
+    },
+    {
+      "ts": 1781421133767,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/src/lib/api/teamApi.js 200"
+    },
+    {
+      "ts": 1781421133769,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/src/lib/api/pipelineApi.js 200"
+    },
+    {
+      "ts": 1781421133781,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/src/lib/api/notificationApi.js 200"
+    },
+    {
+      "ts": 1781421133796,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/src/lib/api/securityApi.js 200"
+    },
+    {
+      "ts": 1781421133812,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/src/lib/api/studio.js 200"
+    },
+    {
+      "ts": 1781421133859,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/src/lib/api/platformConfig.js 200"
+    },
+    {
+      "ts": 1781421133864,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/src/lib/api/monetization.js 200"
+    },
+    {
+      "ts": 1781421133869,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/src/lib/api/revenueApi.js 200"
+    },
+    {
+      "ts": 1781421134559,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134559,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134559,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/workflow/status 200"
+    },
+    {
+      "ts": 1781421134560,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134560,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134560,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134560,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134560,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134560,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134560,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134561,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134561,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134561,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134561,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134561,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134561,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134561,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134561,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134561,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134561,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134562,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134562,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134562,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134562,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134562,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134562,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134562,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134562,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134565,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134565,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134565,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/notifications/status 200"
+    },
+    {
+      "ts": 1781421134566,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/notifications/status 200"
+    },
+    {
+      "ts": 1781421134566,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134566,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134567,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134567,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134568,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134568,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134568,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134568,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134568,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134568,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134569,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134569,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134569,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134569,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134569,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134570,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134570,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134571,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134571,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/sync/status 200"
+    },
+    {
+      "ts": 1781421134571,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/workflow/status 200"
+    },
+    {
+      "ts": 1781421134572,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/series/status 200"
+    },
+    {
+      "ts": 1781421134572,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134572,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134572,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134572,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134573,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134573,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134573,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134574,
+      "component": "network",
+      "event": "api-response",
+      "detail": "POST http://127.0.0.1:5173/api/security/events 201"
+    },
+    {
+      "ts": 1781421134574,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134574,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134574,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134574,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134575,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134575,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134575,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134575,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134575,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134575,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134576,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/notifications/status 200"
+    },
+    {
+      "ts": 1781421134576,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134576,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/workflow/status 200"
+    },
+    {
+      "ts": 1781421134576,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/notifications/status 200"
+    },
+    {
+      "ts": 1781421134576,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134577,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134577,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134577,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134577,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134577,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134578,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134578,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134578,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134578,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134578,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/workflow/status 200"
+    },
+    {
+      "ts": 1781421134579,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/notifications/status 200"
+    },
+    {
+      "ts": 1781421134579,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134579,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134579,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134579,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/notifications/status 200"
+    },
+    {
+      "ts": 1781421134580,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134580,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134580,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134580,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134582,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134582,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134582,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134583,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134583,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134583,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134583,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134583,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134584,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134584,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134584,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134584,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134584,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134584,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134584,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134585,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134585,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134585,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134585,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134585,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134586,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134586,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134586,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134587,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134587,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134587,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134587,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134588,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134588,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134588,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134588,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134588,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134589,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134589,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134589,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134589,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134589,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134590,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134590,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134590,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134590,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134590,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134590,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134591,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134591,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134591,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134591,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134591,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134591,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134592,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134592,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134592,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134592,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134592,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134596,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134596,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134597,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134597,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134597,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134598,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/health 200"
+    },
+    {
+      "ts": 1781421134599,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134604,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134604,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134631,
+      "component": "network",
+      "event": "api-response",
+      "detail": "POST http://127.0.0.1:5173/api/security/events 201"
+    },
+    {
+      "ts": 1781421134632,
+      "component": "network",
+      "event": "api-response",
+      "detail": "POST http://127.0.0.1:5173/api/security/events 201"
+    },
+    {
+      "ts": 1781421134632,
+      "component": "network",
+      "event": "api-response",
+      "detail": "POST http://127.0.0.1:5173/api/security/events 201"
+    },
+    {
+      "ts": 1781421134632,
+      "component": "network",
+      "event": "api-response",
+      "detail": "POST http://127.0.0.1:5173/api/security/events 201"
+    },
+    {
+      "ts": 1781421134632,
+      "component": "network",
+      "event": "api-response",
+      "detail": "POST http://127.0.0.1:5173/api/notifications 201"
+    },
+    {
+      "ts": 1781421134633,
+      "component": "network",
+      "event": "api-response",
+      "detail": "POST http://127.0.0.1:5173/api/notifications 201"
+    },
+    {
+      "ts": 1781421134645,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/reels 200"
+    },
+    {
+      "ts": 1781421134646,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134646,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134646,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134651,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134651,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134663,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134663,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134664,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/api/analytics/status 200"
+    },
+    {
+      "ts": 1781421134776,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/src/lib/api/reelContract.js 200"
+    },
+    {
+      "ts": 1781421134811,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/src/lib/api/media.js 200"
+    },
+    {
+      "ts": 1781421134860,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/src/lib/api/seriesApi.js 200"
+    },
+    {
+      "ts": 1781421134955,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/src/lib/api/watch.js 200"
+    },
+    {
+      "ts": 1781421134961,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/src/lib/api/analyticsApi.js 200"
+    },
+    {
+      "ts": 1781421134993,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/src/lib/api/notificationApi.js 200"
+    },
+    {
+      "ts": 1781421135001,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/src/lib/api/ingestPoll.js 200"
+    },
+    {
+      "ts": 1781421135001,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/src/lib/api/syncApi.js 200"
+    },
+    {
+      "ts": 1781421135006,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/src/lib/api/workflowApi.js 200"
+    },
+    {
+      "ts": 1781421135008,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/src/lib/api/teamApi.js 200"
+    },
+    {
+      "ts": 1781421135009,
+      "component": "network",
+      "event": "api-response",
+      "detail": "GET http://127.0.0.1:5173/src/lib/api/pipelineApi.js 200"
+    }
+  ],
+  "traces": {
+    "syncFromVaultProxyCalls": 3,
+    "runEpisodeBridgeSyncLogs": 21,
+    "createViewerContextEvidence": {
+      "note": "Called at module init in Viewer.svelte; proxied by APP_MOUNT count",
+      "appMountCount": 1
+    },
+    "initializeFeedEvidence": {
+      "foundInCodebase": false
+    }
+  }
+}

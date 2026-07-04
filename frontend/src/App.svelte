@@ -11,8 +11,8 @@
   main {
     margin: 0;
     padding: 0;
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    min-height: 100vh;
     background: #000;
   }
 </style>

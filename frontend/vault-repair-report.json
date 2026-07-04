@@ -1,0 +1,7 @@
+{
+  "generatedAt": "2026-06-14T13:49:22.986Z",
+  "applied": [
+    "Added forensic diagnostics across drop/upload/store/render pipeline.",
+    "Recovered backend dependencies by starting Postgres and backend runtime."
+  ]
+}

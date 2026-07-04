@@ -1,0 +1,658 @@
+{
+  "generatedAt": "2026-06-14T06:45:41.527Z",
+  "tests": {
+    "A": {
+      "upload": {
+        "id": "871f4b17-231a-4de2-9f69-de0bf4a0e0f0",
+        "status": "ready",
+        "videoUrl": "http://localhost:8080/thumbs/871f4b17-231a-4de2-9f69-de0bf4a0e0f0.png",
+        "thumbnailUrl": "http://localhost:8080/thumbs/871f4b17-231a-4de2-9f69-de0bf4a0e0f0.png",
+        "pollUrl": "/api/reels/871f4b17-231a-4de2-9f69-de0bf4a0e0f0"
+      },
+      "assignment": {
+        "uploadedAssetId": "871f4b17-231a-4de2-9f69-de0bf4a0e0f0",
+        "heroConfigId": "871f4b17-231a-4de2-9f69-de0bf4a0e0f0",
+        "heroResolvedAssetId": "871f4b17-231a-4de2-9f69-de0bf4a0e0f0",
+        "vaultEntryId": null,
+        "vaultMatchedByUrl": true
+      },
+      "state": {
+        "dataAsset": "871f4b17-231a-4de2-9f69-de0bf4a0e0f0",
+        "dataSource": "custom_image",
+        "videoSrc": null,
+        "imageSrc": null,
+        "hasVideo": false,
+        "hasImage": true,
+        "imageVisible": true
+      },
+      "diagCounts": {
+        "HERO_BACKGROUND_SAVE": 1,
+        "HERO_ASSET_RESOLVE": 1,
+        "HERO_RENDER": 2,
+        "HERO_VISIBILITY": 6,
+        "HERO_ASSET_TYPE": 3,
+        "HERO_RENDER_SUCCESS": 2,
+        "HERO_RENDER_FAILURE": 0
+      }
+    },
+    "B": {
+      "upload": {
+        "id": "f5366753-8e6a-4955-88f2-195f021de158",
+        "status": "pending",
+        "videoUrl": "http://localhost:8080/videos/f5366753-8e6a-4955-88f2-195f021de158.mp4",
+        "thumbnailUrl": null,
+        "pollUrl": "/api/reels/f5366753-8e6a-4955-88f2-195f021de158"
+      },
+      "assignment": {
+        "heroConfigId": "f5366753-8e6a-4955-88f2-195f021de158",
+        "heroResolvedAssetId": "f5366753-8e6a-4955-88f2-195f021de158",
+        "resolvedVideoUrl": "/videos/f5366753-8e6a-4955-88f2-195f021de158.mp4"
+      },
+      "state": {
+        "dataAsset": "f5366753-8e6a-4955-88f2-195f021de158",
+        "dataSource": "custom_video",
+        "videoSrc": "http://localhost:8080/videos/hero-background.mp4",
+        "imageSrc": null,
+        "hasVideo": true,
+        "hasImage": false,
+        "imageVisible": false
+      },
+      "noFallbackImagePath": true,
+      "diagCounts": {
+        "HERO_BACKGROUND_SAVE": 1,
+        "HERO_ASSET_RESOLVE": 1,
+        "HERO_RENDER": 2,
+        "HERO_VISIBILITY": 6,
+        "HERO_ASSET_TYPE": 3,
+        "HERO_RENDER_SUCCESS": 3,
+        "HERO_RENDER_FAILURE": 0
+      }
+    },
+    "C": {
+      "persistedConfigAsset": "f5366753-8e6a-4955-88f2-195f021de158",
+      "state": {
+        "dataAsset": "f5366753-8e6a-4955-88f2-195f021de158",
+        "dataSource": "custom_video",
+        "videoSrc": "http://localhost:8080/videos/hero-background.mp4",
+        "imageSrc": null,
+        "hasVideo": true,
+        "hasImage": false,
+        "imageVisible": false
+      },
+      "diagCounts": {
+        "HERO_BACKGROUND_SAVE": 1,
+        "HERO_ASSET_RESOLVE": 1,
+        "HERO_RENDER": 1,
+        "HERO_VISIBILITY": 3,
+        "HERO_ASSET_TYPE": 1,
+        "HERO_RENDER_SUCCESS": 2,
+        "HERO_RENDER_FAILURE": 0
+      }
+    },
+    "E": {
+      "expectedAsset": "f5366753-8e6a-4955-88f2-195f021de158",
+      "state": {
+        "dataAsset": "f5366753-8e6a-4955-88f2-195f021de158",
+        "dataSource": "custom_video",
+        "videoSrc": "http://localhost:8080/videos/hero-background.mp4",
+        "imageSrc": null,
+        "hasVideo": true,
+        "hasImage": false,
+        "imageVisible": false
+      },
+      "customBackgroundRemains": false,
+      "diagCounts": {
+        "HERO_BACKGROUND_SAVE": 1,
+        "HERO_ASSET_RESOLVE": 0,
+        "HERO_RENDER": 0,
+        "HERO_VISIBILITY": 0,
+        "HERO_ASSET_TYPE": 2,
+        "HERO_RENDER_SUCCESS": 0,
+        "HERO_RENDER_FAILURE": 0
+      }
+    },
+    "F": {
+      "modeResults": [
+        {
+          "mode": "FEATURED_RELEASE",
+          "state": {
+            "dataAsset": "f5366753-8e6a-4955-88f2-195f021de158",
+            "dataSource": "custom_video",
+            "videoSrc": "http://localhost:8080/videos/hero-background.mp4",
+            "imageSrc": null,
+            "hasVideo": true,
+            "hasImage": false,
+            "imageVisible": false
+          }
+        },
+        {
+          "mode": "TRENDING",
+          "state": {
+            "dataAsset": "f5366753-8e6a-4955-88f2-195f021de158",
+            "dataSource": "custom_video",
+            "videoSrc": "http://localhost:8080/videos/hero-background.mp4",
+            "imageSrc": null,
+            "hasVideo": true,
+            "hasImage": false,
+            "imageVisible": false
+          }
+        },
+        {
+          "mode": "CONTINUE_WATCHING",
+          "state": {
+            "dataAsset": "f5366753-8e6a-4955-88f2-195f021de158",
+            "dataSource": "custom_video",
+            "videoSrc": "http://localhost:8080/videos/hero-background.mp4",
+            "imageSrc": null,
+            "hasVideo": true,
+            "hasImage": false,
+            "imageVisible": false
+          }
+        },
+        {
+          "mode": "TEAM_SPOTLIGHT",
+          "state": {
+            "dataAsset": "f5366753-8e6a-4955-88f2-195f021de158",
+            "dataSource": "custom_video",
+            "videoSrc": "http://localhost:8080/videos/hero-background.mp4",
+            "imageSrc": null,
+            "hasVideo": true,
+            "hasImage": false,
+            "imageVisible": false
+          }
+        }
+      ],
+      "managerHonoredAcrossModes": false,
+      "diagCounts": {
+        "HERO_BACKGROUND_SAVE": 4,
+        "HERO_ASSET_RESOLVE": 0,
+        "HERO_RENDER": 0,
+        "HERO_VISIBILITY": 0,
+        "HERO_ASSET_TYPE": 8,
+        "HERO_RENDER_SUCCESS": 0,
+        "HERO_RENDER_FAILURE": 0
+      }
+    },
+    "G": {
+      "deleteResult": [
+        {
+          "ep": "/api/storage/file/f5366753-8e6a-4955-88f2-195f021de158.mp4",
+          "status": 200
+        }
+      ],
+      "configAfterDelete": {
+        "heroType": "TEAM_SPOTLIGHT",
+        "backgroundSource": "custom_video",
+        "backgroundAsset": "f5366753-8e6a-4955-88f2-195f021de158",
+        "backgroundVideo": "/videos/f5366753-8e6a-4955-88f2-195f021de158.mp4",
+        "backgroundImage": "/thumbs/871f4b17-231a-4de2-9f69-de0bf4a0e0f0.png",
+        "backgroundStyle": "video",
+        "autoRotate": true,
+        "rotateIntervalMs": 250,
+        "spotlightPriority": [
+          "FEATURED_RELEASE",
+          "CONTINUE_WATCHING",
+          "TRENDING",
+          "UPCOMING_PREMIERE",
+          "TEAM_SPOTLIGHT",
+          "STUDIO_PRIORITY"
+        ],
+        "seasonalCampaigns": [
+          {
+            "id": "winter-premiere",
+            "label": "Winter Premiere Push",
+            "heroType": "UPCOMING_PREMIERE",
+            "active": false,
+            "scheduleStart": "",
+            "scheduleEnd": ""
+          },
+          {
+            "id": "studio-sprint",
+            "label": "Studio Sprint Spotlight",
+            "heroType": "STUDIO_PRIORITY",
+            "active": false,
+            "scheduleStart": "",
+            "scheduleEnd": ""
+          }
+        ],
+        "carouselDurationMs": 8000,
+        "carouselTransitionStyle": "fade",
+        "carouselPriority": "video",
+        "heroTypography": "cinematic",
+        "autoplayEnabled": true,
+        "carouselSlideOverrides": [
+          {
+            "type": "video",
+            "order": 1,
+            "durationMs": 8000,
+            "enabled": true
+          },
+          {
+            "type": "image",
+            "order": 2,
+            "durationMs": 8000,
+            "enabled": true
+          },
+          {
+            "type": "featured_release",
+            "order": 3,
+            "durationMs": 8000,
+            "enabled": true
+          },
+          {
+            "type": "admin_image",
+            "order": 4,
+            "durationMs": 8000,
+            "enabled": true
+          },
+          {
+            "type": "admin_video",
+            "order": 5,
+            "durationMs": 8000,
+            "enabled": true
+          },
+          {
+            "type": "upcoming_release",
+            "order": 6,
+            "durationMs": 8000,
+            "enabled": true
+          },
+          {
+            "type": "team_spotlight",
+            "order": 7,
+            "durationMs": 8000,
+            "enabled": true
+          },
+          {
+            "type": "marketplace_spotlight",
+            "order": 8,
+            "durationMs": 8000,
+            "enabled": true
+          },
+          {
+            "type": "revenue_milestone",
+            "order": 9,
+            "durationMs": 8000,
+            "enabled": true
+          },
+          {
+            "type": "creator_spotlight",
+            "order": 10,
+            "durationMs": 8000,
+            "enabled": true
+          },
+          {
+            "type": "discovery_recommendation",
+            "order": 11,
+            "durationMs": 8000,
+            "enabled": true
+          },
+          {
+            "type": "sentinel_recommendation",
+            "order": 12,
+            "durationMs": 8000,
+            "enabled": true
+          }
+        ],
+        "updatedAt": 1781419569510
+      },
+      "stateAfterDelete": {
+        "dataAsset": "f5366753-8e6a-4955-88f2-195f021de158",
+        "dataSource": "custom_video",
+        "videoSrc": "http://localhost:8080/videos/hero-background.mp4",
+        "imageSrc": null,
+        "hasVideo": true,
+        "hasImage": false,
+        "imageVisible": false
+      },
+      "gracefulFallback": true,
+      "diagCounts": {
+        "HERO_BACKGROUND_SAVE": 1,
+        "HERO_ASSET_RESOLVE": 1,
+        "HERO_RENDER": 1,
+        "HERO_VISIBILITY": 3,
+        "HERO_ASSET_TYPE": 1,
+        "HERO_RENDER_SUCCESS": 2,
+        "HERO_RENDER_FAILURE": 0
+      }
+    },
+    "H": {
+      "uploadedImages": [
+        "d1df25ac-5cd0-4499-818d-059a6b8e7c5a",
+        "532142c7-1f71-41bd-a0d0-adfc42bca151",
+        "b2491058-78cb-40a4-8c04-d1c370bf9b79",
+        "0eefc317-ec33-4398-bd1b-6e54c8719737",
+        "7aea91e2-63f2-4cc7-af5b-a94eca8cf2f2",
+        "68509587-858f-4896-b0b7-b2c18cb34516",
+        "bf8c8515-2eaf-4313-8a3e-7b2fbf8434e5",
+        "cbd5a742-d8dc-4952-ba7a-0b5f2c066495",
+        "7f420e0b-6273-40a7-80d3-feebcc6dbde2",
+        "c83c2f5b-7ddf-49bb-8fc8-ae91d677120d"
+      ],
+      "uploadedVideos": [
+        "e81a12e9-84aa-4de3-9045-cf409fda10a0",
+        "8cc29993-6274-4fc8-bfc6-12fe577ebcbd",
+        "664234c7-744b-40bc-ba17-1dd88979c095",
+        "495ebb96-6f7d-4ed2-a991-4c1b1dd8618d",
+        "5f013e21-b235-4538-b9fb-3cbde964e637",
+        "d3acae45-1028-4405-a14f-2f8e78e35295",
+        "666d20a9-50c3-440a-9733-b7875e25d4e1",
+        "4dbbef9f-8d08-4861-9ecf-6fc540f9a9eb",
+        "8f6503cc-e051-4235-b274-7ffaf9e2c67a",
+        "19a2ac01-abe1-4f8d-b7d0-1857e54e372e"
+      ],
+      "cycleResults": [
+        {
+          "id": "d1df25ac-5cd0-4499-818d-059a6b8e7c5a",
+          "kind": "image",
+          "state": {
+            "dataAsset": "d1df25ac-5cd0-4499-818d-059a6b8e7c5a",
+            "dataSource": "custom_image",
+            "videoSrc": null,
+            "imageSrc": null,
+            "hasVideo": false,
+            "hasImage": true,
+            "imageVisible": true
+          },
+          "ok": true
+        },
+        {
+          "id": "532142c7-1f71-41bd-a0d0-adfc42bca151",
+          "kind": "image",
+          "state": {
+            "dataAsset": "532142c7-1f71-41bd-a0d0-adfc42bca151",
+            "dataSource": "custom_image",
+            "videoSrc": null,
+            "imageSrc": null,
+            "hasVideo": false,
+            "hasImage": true,
+            "imageVisible": true
+          },
+          "ok": true
+        },
+        {
+          "id": "b2491058-78cb-40a4-8c04-d1c370bf9b79",
+          "kind": "image",
+          "state": {
+            "dataAsset": "b2491058-78cb-40a4-8c04-d1c370bf9b79",
+            "dataSource": "custom_image",
+            "videoSrc": null,
+            "imageSrc": null,
+            "hasVideo": false,
+            "hasImage": true,
+            "imageVisible": true
+          },
+          "ok": true
+        },
+        {
+          "id": "0eefc317-ec33-4398-bd1b-6e54c8719737",
+          "kind": "image",
+          "state": {
+            "dataAsset": "0eefc317-ec33-4398-bd1b-6e54c8719737",
+            "dataSource": "custom_image",
+            "videoSrc": null,
+            "imageSrc": null,
+            "hasVideo": false,
+            "hasImage": true,
+            "imageVisible": true
+          },
+          "ok": true
+        },
+        {
+          "id": "7aea91e2-63f2-4cc7-af5b-a94eca8cf2f2",
+          "kind": "image",
+          "state": {
+            "dataAsset": "7aea91e2-63f2-4cc7-af5b-a94eca8cf2f2",
+            "dataSource": "custom_image",
+            "videoSrc": null,
+            "imageSrc": null,
+            "hasVideo": false,
+            "hasImage": true,
+            "imageVisible": true
+          },
+          "ok": true
+        },
+        {
+          "id": "68509587-858f-4896-b0b7-b2c18cb34516",
+          "kind": "image",
+          "state": {
+            "dataAsset": "68509587-858f-4896-b0b7-b2c18cb34516",
+            "dataSource": "custom_image",
+            "videoSrc": null,
+            "imageSrc": null,
+            "hasVideo": false,
+            "hasImage": true,
+            "imageVisible": true
+          },
+          "ok": true
+        },
+        {
+          "id": "bf8c8515-2eaf-4313-8a3e-7b2fbf8434e5",
+          "kind": "image",
+          "state": {
+            "dataAsset": "bf8c8515-2eaf-4313-8a3e-7b2fbf8434e5",
+            "dataSource": "custom_image",
+            "videoSrc": null,
+            "imageSrc": null,
+            "hasVideo": false,
+            "hasImage": true,
+            "imageVisible": true
+          },
+          "ok": true
+        },
+        {
+          "id": "cbd5a742-d8dc-4952-ba7a-0b5f2c066495",
+          "kind": "image",
+          "state": {
+            "dataAsset": "cbd5a742-d8dc-4952-ba7a-0b5f2c066495",
+            "dataSource": "custom_image",
+            "videoSrc": null,
+            "imageSrc": null,
+            "hasVideo": false,
+            "hasImage": true,
+            "imageVisible": true
+          },
+          "ok": true
+        },
+        {
+          "id": "7f420e0b-6273-40a7-80d3-feebcc6dbde2",
+          "kind": "image",
+          "state": {
+            "dataAsset": "7f420e0b-6273-40a7-80d3-feebcc6dbde2",
+            "dataSource": "custom_image",
+            "videoSrc": null,
+            "imageSrc": null,
+            "hasVideo": false,
+            "hasImage": true,
+            "imageVisible": true
+          },
+          "ok": true
+        },
+        {
+          "id": "c83c2f5b-7ddf-49bb-8fc8-ae91d677120d",
+          "kind": "image",
+          "state": {
+            "dataAsset": "c83c2f5b-7ddf-49bb-8fc8-ae91d677120d",
+            "dataSource": "custom_image",
+            "videoSrc": null,
+            "imageSrc": null,
+            "hasVideo": false,
+            "hasImage": true,
+            "imageVisible": true
+          },
+          "ok": true
+        },
+        {
+          "id": "e81a12e9-84aa-4de3-9045-cf409fda10a0",
+          "kind": "video",
+          "state": {
+            "dataAsset": "e81a12e9-84aa-4de3-9045-cf409fda10a0",
+            "dataSource": "custom_video",
+            "videoSrc": "http://localhost:8080/videos/hero-background.mp4",
+            "imageSrc": null,
+            "hasVideo": true,
+            "hasImage": false,
+            "imageVisible": false
+          },
+          "ok": false
+        },
+        {
+          "id": "8cc29993-6274-4fc8-bfc6-12fe577ebcbd",
+          "kind": "video",
+          "state": {
+            "dataAsset": "8cc29993-6274-4fc8-bfc6-12fe577ebcbd",
+            "dataSource": "custom_video",
+            "videoSrc": "http://localhost:8080/videos/hero-background.mp4",
+            "imageSrc": null,
+            "hasVideo": true,
+            "hasImage": false,
+            "imageVisible": false
+          },
+          "ok": false
+        },
+        {
+          "id": "664234c7-744b-40bc-ba17-1dd88979c095",
+          "kind": "video",
+          "state": {
+            "dataAsset": "664234c7-744b-40bc-ba17-1dd88979c095",
+            "dataSource": "custom_video",
+            "videoSrc": "http://localhost:8080/videos/hero-background.mp4",
+            "imageSrc": null,
+            "hasVideo": true,
+            "hasImage": false,
+            "imageVisible": false
+          },
+          "ok": false
+        },
+        {
+          "id": "495ebb96-6f7d-4ed2-a991-4c1b1dd8618d",
+          "kind": "video",
+          "state": {
+            "dataAsset": "495ebb96-6f7d-4ed2-a991-4c1b1dd8618d",
+            "dataSource": "custom_video",
+            "videoSrc": "http://localhost:8080/videos/hero-background.mp4",
+            "imageSrc": null,
+            "hasVideo": true,
+            "hasImage": false,
+            "imageVisible": false
+          },
+          "ok": false
+        },
+        {
+          "id": "5f013e21-b235-4538-b9fb-3cbde964e637",
+          "kind": "video",
+          "state": {
+            "dataAsset": "5f013e21-b235-4538-b9fb-3cbde964e637",
+            "dataSource": "custom_video",
+            "videoSrc": "http://localhost:8080/videos/hero-background.mp4",
+            "imageSrc": null,
+            "hasVideo": true,
+            "hasImage": false,
+            "imageVisible": false
+          },
+          "ok": false
+        },
+        {
+          "id": "d3acae45-1028-4405-a14f-2f8e78e35295",
+          "kind": "video",
+          "state": {
+            "dataAsset": "d3acae45-1028-4405-a14f-2f8e78e35295",
+            "dataSource": "custom_video",
+            "videoSrc": "http://localhost:8080/videos/hero-background.mp4",
+            "imageSrc": null,
+            "hasVideo": true,
+            "hasImage": false,
+            "imageVisible": false
+          },
+          "ok": false
+        },
+        {
+          "id": "666d20a9-50c3-440a-9733-b7875e25d4e1",
+          "kind": "video",
+          "state": {
+            "dataAsset": "666d20a9-50c3-440a-9733-b7875e25d4e1",
+            "dataSource": "custom_video",
+            "videoSrc": "http://localhost:8080/videos/hero-background.mp4",
+            "imageSrc": null,
+            "hasVideo": true,
+            "hasImage": false,
+            "imageVisible": false
+          },
+          "ok": false
+        },
+        {
+          "id": "4dbbef9f-8d08-4861-9ecf-6fc540f9a9eb",
+          "kind": "video",
+          "state": {
+            "dataAsset": "4dbbef9f-8d08-4861-9ecf-6fc540f9a9eb",
+            "dataSource": "custom_video",
+            "videoSrc": "http://localhost:8080/videos/hero-background.mp4",
+            "imageSrc": null,
+            "hasVideo": true,
+            "hasImage": false,
+            "imageVisible": false
+          },
+          "ok": false
+        },
+        {
+          "id": "8f6503cc-e051-4235-b274-7ffaf9e2c67a",
+          "kind": "video",
+          "state": {
+            "dataAsset": "8f6503cc-e051-4235-b274-7ffaf9e2c67a",
+            "dataSource": "custom_video",
+            "videoSrc": "http://localhost:8080/videos/hero-background.mp4",
+            "imageSrc": null,
+            "hasVideo": true,
+            "hasImage": false,
+            "imageVisible": false
+          },
+          "ok": false
+        },
+        {
+          "id": "19a2ac01-abe1-4f8d-b7d0-1857e54e372e",
+          "kind": "video",
+          "state": {
+            "dataAsset": "19a2ac01-abe1-4f8d-b7d0-1857e54e372e",
+            "dataSource": "custom_video",
+            "videoSrc": "http://localhost:8080/videos/hero-background.mp4",
+            "imageSrc": null,
+            "hasVideo": true,
+            "hasImage": false,
+            "imageVisible": false
+          },
+          "ok": false
+        }
+      ],
+      "allRenderCorrectly": false,
+      "diagCounts": {
+        "HERO_BACKGROUND_SAVE": 32,
+        "HERO_ASSET_RESOLVE": 20,
+        "HERO_RENDER": 42,
+        "HERO_VISIBILITY": 126,
+        "HERO_ASSET_TYPE": 97,
+        "HERO_RENDER_SUCCESS": 43,
+        "HERO_RENDER_FAILURE": 0
+      }
+    },
+    "I": {
+      "sampleChanges": [
+        {
+          "save": 0,
+          "resolve": 0,
+          "render": 0,
+          "visibility": 0,
+          "assetType": 0
+        },
+        {
+          "save": 1,
+          "resolve": 1,
+          "render": 2,
+          "visibility": 6,
+          "assetType": 3
+        }
+      ],
+      "strictOneEach": false,
+      "diagTailCount": 400
+    }
+  }
+}

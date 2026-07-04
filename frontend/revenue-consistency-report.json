@@ -1,0 +1,45 @@
+{
+  "generatedAt": "2026-06-13T05:36:31.672Z",
+  "phase": 46,
+  "seriesId": "series-neon-vengeance",
+  "consolidated": true,
+  "singleSource": "src/lib/revenue/revenueCore.js",
+  "duplicateLogicRemoved": [
+    "computeRevenueEstimate from revenueEngine.js",
+    "buildRevenueHorizonForecasts from revenueEngine.js",
+    "forecastRevenue calculation loop from revenueEngine.js",
+    "buildRevenueDashboardBrief from revenueDashboard.js",
+    "formatRevenueCurrency from revenueDashboard.js",
+    "getTeamCount from revenueDashboard.js and monetizationAI.js",
+    "duplicate monthly viewer context in monetizationAI analyzeRevenue"
+  ],
+  "consumersUpdated": [
+    "src/components/revenue/RevenueDashboard.svelte",
+    "src/lib/revenue/revenueDashboard.js",
+    "src/lib/revenue/revenueEngine.js",
+    "src/lib/revenue/monetizationAI.js",
+    "src/lib/reporting/reportingEngine.js",
+    "src/viewer/viewerContext.js"
+  ],
+  "diagnostics": {
+    "REVENUE_CORE": 11,
+    "REVENUE_SYNC": 1
+  },
+  "runtime": {
+    "ok": true,
+    "checks": {
+      "netMonthlyAligned": true,
+      "grossMonthlyAligned": true,
+      "monthlyViewersAligned": true,
+      "mrrMatchesAggregateNet": true,
+      "arrMatchesMrr": true
+    },
+    "mrrCents": 109171,
+    "arrCents": 1310052,
+    "aggregateNet": 109171,
+    "snapshotNet": 109171,
+    "forecastCount": 3
+  },
+  "consistent": true,
+  "successToken": "REVENUE_CONSOLIDATION_COMPLETE=true"
+}

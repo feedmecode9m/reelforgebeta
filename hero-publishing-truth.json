@@ -1,0 +1,109 @@
+{
+  "phase": "REELFORGE PHASE — HERO PUBLISHING FORENSIC TRUTH",
+  "forensicOnly": true,
+  "step1_storageTruth": {
+    "publishPath": {
+      "file": "frontend/src/components/studio/HeroManagerPanel.svelte",
+      "publishStory": "L176-L178",
+      "applyStoryStoryState": "L144-L170",
+      "payloadFields": {
+        "heroLabel": "L147",
+        "heroTitle": "L148",
+        "heroSubtitle": "L149",
+        "heroDescription": "L150"
+      },
+      "persistCall": "L165"
+    },
+    "persistenceLayer": {
+      "file": "frontend/src/lib/hero/heroIntelligence.js",
+      "saveHeroManagerConfig": "L725-L797",
+      "localStorageWrite": "L754",
+      "storageKey": "reelforge_hero_manager_config"
+    },
+    "afterPublishStoredValues": {
+      "heroLabel": "String(config.heroLabel || '').trim()",
+      "heroTitle": "String(config.heroTitle || '').trim()",
+      "heroSubtitle": "String(config.heroSubtitle || '').trim()",
+      "heroDescription": "String(config.heroDescription || '').trim()"
+    }
+  },
+  "step2_viewerReadTruth": {
+    "file": "frontend/src/components/experiences/HeroExperience.svelte",
+    "viewerStoresAndReads": {
+      "configLoad": "L58",
+      "configReloadOnEvent": "L664-L666",
+      "storyStatusGate": "L189-L194",
+      "storyFieldReads": {
+        "labelRead": "L194",
+        "headlineRead": "L195",
+        "subtitleRead": "L196",
+        "descriptionRead": "L197"
+      }
+    },
+    "renderedVariables": {
+      "labelVariable": "heroBadgeLabel",
+      "labelRenderLine": "L1023-L1025",
+      "headlineVariable": "heroSlideTitle",
+      "headlineRenderLine": "L1034",
+      "subtitleVariable": "heroSlideSubtitle",
+      "subtitleRenderLine": "L1035-L1037",
+      "descriptionVariable": "heroStoryDescription",
+      "descriptionRenderLine": "L1038-L1039"
+    }
+  },
+  "step3_renderAuthority": {
+    "authorityOptions": {
+      "A": "Published Story",
+      "B": "Hero Asset Registry",
+      "C": "Legacy Hero Metadata",
+      "D": "Fallback Constants"
+    },
+    "observedWinnerByField": {
+      "label": "D",
+      "headline": "C",
+      "subtitle": "B",
+      "description": "A (only when storyPublished and non-empty)"
+    },
+    "RENDER_AUTHORITY": "B+C+D (A not winning for the observed label/headline/subtitle output)"
+  },
+  "step4_fallbackDetection": {
+    "Featured Premiere": {
+      "file": "frontend/src/components/experiences/HeroExperience.svelte",
+      "lines": [
+        "L180",
+        "L182"
+      ],
+      "expression": "heroStoryLabel || 'Featured Premiere'"
+    },
+    "Ghost in the Grid": {
+      "file": "frontend/src/lib/series/mockSeriesData.js",
+      "line": "L24",
+      "expression": "title: 'Ghost in the Grid'"
+    },
+    "A cinematic spotlight from ReelForge.": {
+      "file": "frontend/src/components/experiences/HeroExperience.svelte",
+      "line": "L145",
+      "expression": "subtitle: 'A cinematic spotlight from ReelForge.'"
+    }
+  },
+  "step5_liveComparison": {
+    "label": {
+      "EDITOR_VALUE": "heroLabel (published payload value)",
+      "RENDERED_VALUE": "Featured Premiere"
+    },
+    "headline": {
+      "EDITOR_VALUE": "heroTitle (published payload value)",
+      "RENDERED_VALUE": "Ghost in the Grid"
+    },
+    "subtitle": {
+      "EDITOR_VALUE": "heroSubtitle (published payload value)",
+      "RENDERED_VALUE": "A cinematic spotlight from ReelForge."
+    },
+    "description": {
+      "EDITOR_VALUE": "heroDescription (published payload value)",
+      "RENDERED_VALUE": "(not rendered unless heroStoryPublished is true and heroStoryDescription is non-empty)"
+    }
+  },
+  "step6_rootCause": "The viewer text surface is controlled by mixed authorities (registry slide data, legacy selection metadata, and hardcoded fallbacks) that can outrank or bypass published editorial fields at render time.",
+  "completionToken": "HERO_PUBLISHING_TRUTH_COMPLETE=true"
+}

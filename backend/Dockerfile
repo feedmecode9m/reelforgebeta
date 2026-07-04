@@ -16,10 +16,11 @@ RUN cargo build --release
 FROM debian:bookworm-slim
 WORKDIR /app
 RUN apt-get update && apt-get install -y \
-    libssl3 libpq5 ca-certificates \
+    libssl3 libpq5 ca-certificates ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
-# Note: Ensure 'reel-forge' matches the executable name in your Cargo.toml
-COPY --from=builder /app/target/release/reel-forge ./backend
+# Package name in Cargo.toml is "backend"
+COPY --from=builder /app/target/release/backend ./backend
+RUN mkdir -p /app/public/videos /app/public/thumbs
 EXPOSE 8080
 CMD ["./backend"]

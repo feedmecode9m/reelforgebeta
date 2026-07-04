@@ -1,0 +1,41 @@
+{
+  "singleDeleteHeroVault": {
+    "handlerFires": true,
+    "confirmationShows": true,
+    "storeUpdates": true,
+    "persistenceWorks": true,
+    "uiRefreshes": true
+  },
+  "singleDeleteTrendingVault": {
+    "handlerFires": true,
+    "confirmationShows": true,
+    "storeUpdates": true,
+    "persistenceWorks": true,
+    "uiRefreshes": true
+  },
+  "dragAndDropDelete": {
+    "dropZoneVisible": true,
+    "dragEventsFire": true,
+    "dropHandlerWorks": true,
+    "confirmationShows": true,
+    "itemDeleted": true
+  },
+  "batchDelete": {
+    "selectionWorks": true,
+    "batchButtonEnables": true,
+    "confirmationShows": true,
+    "allItemsDeleted": true,
+    "vaultUpdates": true
+  },
+  "cancelDelete": {
+    "cancelWorks": true,
+    "itemRetained": true
+  },
+  "persistenceVerification": {
+    "deletePersists": true,
+    "survivesRefresh": true
+  },
+  "diagnosticsClean": true,
+  "allVaultsWorking": true,
+  "productionReady": true
+}

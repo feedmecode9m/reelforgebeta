@@ -1,0 +1,43 @@
+{
+  "phase": "62C",
+  "certified": true,
+  "token": "HERO_BACKGROUND_TRUTH_COMPLETE=true",
+  "requirements": {
+    "A": "Hero Manager saves configuration",
+    "B": "Configuration persists after refresh",
+    "C": "Hero image/video is visible in hero region",
+    "D": "Hero asset resolves through [HERO_ASSET_RESOLVE]",
+    "E": "Hero render diagnostics emit [HERO_RENDER]",
+    "F": "Custom background survives rotation",
+    "G": "Custom background survives reload"
+  },
+  "scenarios": [
+    {
+      "scenario": "custom-image",
+      "allChecksPassed": true,
+      "checks": {
+        "A_HERO_MANAGER_SAVES_CONFIGURATION": true,
+        "B_CONFIGURATION_PERSISTS_AFTER_REFRESH": true,
+        "C_HERO_MEDIA_VISIBLE_IN_REGION": true,
+        "D_ASSET_RESOLVES_THROUGH_HERO_ASSET_RESOLVE": true,
+        "E_RENDER_DIAGNOSTICS_EMIT_HERO_RENDER": true,
+        "F_CUSTOM_BACKGROUND_SURVIVES_ROTATION": true,
+        "G_CUSTOM_BACKGROUND_SURVIVES_RELOAD": true
+      }
+    },
+    {
+      "scenario": "custom-video",
+      "allChecksPassed": true,
+      "checks": {
+        "A_HERO_MANAGER_SAVES_CONFIGURATION": true,
+        "B_CONFIGURATION_PERSISTS_AFTER_REFRESH": true,
+        "C_HERO_MEDIA_VISIBLE_IN_REGION": true,
+        "D_ASSET_RESOLVES_THROUGH_HERO_ASSET_RESOLVE": true,
+        "E_RENDER_DIAGNOSTICS_EMIT_HERO_RENDER": true,
+        "F_CUSTOM_BACKGROUND_SURVIVES_ROTATION": true,
+        "G_CUSTOM_BACKGROUND_SURVIVES_RELOAD": true
+      }
+    }
+  ],
+  "generatedAt": "2026-06-13T23:32:11.966Z"
+}

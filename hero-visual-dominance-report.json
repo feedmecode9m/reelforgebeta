@@ -1,0 +1,244 @@
+{
+  "phase": "PHASE — HERO VISUAL DOMINANCE FIX",
+  "sourceFindings": [
+    "hero-container-forensic.json",
+    "hero-viewport-children.json",
+    "frontend runtime measurements at 1440x900"
+  ],
+  "heroRuntime": {
+    "widthPx": 1440,
+    "heightPx": 828,
+    "viewportWidthPx": 1440,
+    "viewportHeightPx": 900,
+    "widthCoveragePercent": 100,
+    "heightCoveragePercent": 92
+  },
+  "step1_modulesInsideHero": [
+    {
+      "moduleName": "Hero Background Container",
+      "selector": ".hero-video-container",
+      "dimensionsPx": {
+        "width": 1440,
+        "height": 828
+      },
+      "zIndex": 0,
+      "screenOccupancyPercent": 92
+    },
+    {
+      "moduleName": "Hero Overlay",
+      "selector": ".hero-video-overlay",
+      "dimensionsPx": {
+        "width": 1440,
+        "height": 828
+      },
+      "zIndex": "auto",
+      "screenOccupancyPercent": 92
+    },
+    {
+      "moduleName": "Motion Gradient",
+      "selector": ".hero-motion-gradient",
+      "dimensionsPx": {
+        "width": 1471.631,
+        "height": 846.188
+      },
+      "zIndex": "auto",
+      "screenOccupancyPercent": 96.086
+    },
+    {
+      "moduleName": "Story Overlay Wrap",
+      "selector": ".hero-wrap",
+      "dimensionsPx": {
+        "width": 1080,
+        "height": 543.531
+      },
+      "zIndex": 4,
+      "screenOccupancyPercent": 45.294
+    },
+    {
+      "moduleName": "Story Headline",
+      "selector": "[data-hero-title]",
+      "dimensionsPx": {
+        "width": 560.594,
+        "height": 222.469
+      },
+      "zIndex": "auto",
+      "screenOccupancyPercent": 9.623
+    },
+    {
+      "moduleName": "Story Subtitle",
+      "selector": "[data-hero-subtitle]",
+      "dimensionsPx": {
+        "width": 640.688,
+        "height": 102.375
+      },
+      "zIndex": "auto",
+      "screenOccupancyPercent": 5.061
+    },
+    {
+      "moduleName": "Story Description",
+      "selector": "[data-hero-story-description]",
+      "dimensionsPx": {
+        "width": 672,
+        "height": 20.406
+      },
+      "zIndex": "auto",
+      "screenOccupancyPercent": 1.058
+    },
+    {
+      "moduleName": "Hero CTA Group",
+      "selector": ".hero-carousel-actions",
+      "dimensionsPx": {
+        "width": 907.219,
+        "height": 56
+      },
+      "zIndex": "auto",
+      "screenOccupancyPercent": 3.92
+    },
+    {
+      "moduleName": "Upcoming Events",
+      "selector": "[data-upcoming-events-module]",
+      "rendered": false,
+      "dimensionsPx": {
+        "width": 0,
+        "height": 0
+      },
+      "zIndex": "n/a",
+      "screenOccupancyPercent": 0
+    },
+    {
+      "moduleName": "Featured Creator",
+      "selector": "[data-featured-creator-module]",
+      "rendered": false,
+      "dimensionsPx": {
+        "width": 0,
+        "height": 0
+      },
+      "zIndex": "n/a",
+      "screenOccupancyPercent": 0
+    }
+  ],
+  "step2_storyOverlayMeasurement": {
+    "headlineWidthPx": 560.594,
+    "headlineFontSizePx": 72,
+    "descriptionWidthPx": 672,
+    "ctaSize": {
+      "primary": {
+        "widthPx": 68.609,
+        "heightPx": 56,
+        "fontSizePx": 9.28
+      },
+      "secondary": {
+        "widthPx": 69.156,
+        "heightPx": 56,
+        "fontSizePx": 9.28
+      }
+    },
+    "notes": [
+      "Headline is visually large.",
+      "Description and CTA typography are visually compressed, reducing perceived hero scale."
+    ]
+  },
+  "step3_visualDominanceRanking_1to10": {
+    "Background Media": 8,
+    "Story Headline": 6,
+    "Featured Creator": 1,
+    "Events": 1,
+    "Collections": 7,
+    "Notifications": 4
+  },
+  "step4_attentionStealersFromStoryCopy": {
+    "heroTitle": [
+      {
+        "module": "Hero Overlay",
+        "selector": ".hero-video-overlay",
+        "reason": "Full-surface dark wash competes with headline contrast hierarchy."
+      },
+      {
+        "module": "Motion Gradient",
+        "selector": ".hero-motion-gradient",
+        "reason": "Near-full-screen animated layer pulls attention from static title."
+      },
+      {
+        "module": "Global Header",
+        "selector": "main > header",
+        "reason": "Persistent top chrome occupies first eye-fixation zone."
+      }
+    ],
+    "heroSubtitle": [
+      {
+        "module": "Motion Gradient",
+        "selector": ".hero-motion-gradient",
+        "reason": "Dynamic color movement draws focus away from subtitle line."
+      },
+      {
+        "module": "Featured Collection Panel",
+        "selector": "[data-featured-collection-panel]",
+        "reason": "Large card block immediately after hero causes rapid visual migration."
+      }
+    ],
+    "heroDescription": [
+      {
+        "module": "CTA Group",
+        "selector": ".hero-carousel-actions",
+        "reason": "Button row sits directly below text and receives interaction priority."
+      },
+      {
+        "module": "Ghost Trigger",
+        "selector": ".ghost-trigger",
+        "reason": "Fixed z-index 9999 control adds high-salience UI chrome over hero."
+      },
+      {
+        "module": "Notifications",
+        "selector": "[data-notification-center]",
+        "reason": "High-z notification affordance diverts top-level attention."
+      }
+    ]
+  },
+  "step5_guideMeBlurInvestigation": {
+    "blurBackdropOpacityChain": [
+      {
+        "file": "frontend/src/Viewer.svelte",
+        "line": 163,
+        "selector": "main class:blur={$activeReel || $controlCenterOpen}",
+        "effect": "Enables blurred state whenever Smart Production Studio opens."
+      },
+      {
+        "file": "frontend/src/viewer/viewer.css",
+        "line": 10,
+        "selector": "main.blur",
+        "rule": "filter: blur(5px)",
+        "effect": "Background blur applied to full viewer content."
+      },
+      {
+        "file": "frontend/src/viewer/viewer.css",
+        "line": 216,
+        "selector": ".control-center-overlay",
+        "rule": "backdrop-filter: blur(10px)",
+        "effect": "Second blur layer over Smart Studio overlay."
+      },
+      {
+        "file": "frontend/src/viewer/viewer.css",
+        "line": 218,
+        "selector": ".control-center-container::before",
+        "rule": "opacity: 0.3",
+        "effect": "Glow layer lowers perceived sharpness/contrast."
+      },
+      {
+        "file": "frontend/src/viewer/viewer.css",
+        "line": 11,
+        "selector": "header",
+        "rule": "position: absolute; z-index: 6;",
+        "effect": "Global header selector leaks into studio header element and contributes clipping/stacking artifacts."
+      },
+      {
+        "file": "frontend/src/components/experiences/StudioExperience.svelte",
+        "line": 578,
+        "selector": "<header class=\"control-center-header\">",
+        "effect": "Receives both .control-center-header and global header styles."
+      }
+    ]
+  },
+  "VISUAL_DOMINANCE_ROOT_CAUSE": "Hero area is physically large, but perceived scale is reduced by hierarchy compression: full-surface decorative layers dominate while key story support text and CTAs are rendered with very small typography (description ~14px, CTA text ~9.28px), making the hero read like compact UI inside a large container.",
+  "GUIDE_ME_BLUR_ROOT_CAUSE": "Smart Production Studio blur is caused by stacked blur paths (`main.blur` + `.control-center-overlay` backdrop blur) plus global `header` style bleed into the studio header and low-opacity container glow, producing cumulative softness/clipping in the Guide Me region.",
+  "HERO_VISUAL_DOMINANCE_COMPLETE": true
+}

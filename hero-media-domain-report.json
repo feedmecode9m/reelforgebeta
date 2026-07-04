@@ -1,0 +1,78 @@
+{
+  "phase": "REELFORGE PHASE 69.5 — HERO MEDIA DOMAIN SEPARATION",
+  "generatedAt": "2026-06-15T23:53:30.000Z",
+  "mode": "FORENSIC FIX",
+  "rootCause": [
+    {
+      "id": "RC1",
+      "summary": "Content-domain write paths accepted Hero-shaped assets without a shared domain guard.",
+      "impact": "Hero media could enter personalVideos/personal_video_vault and be treated as standard vault content."
+    },
+    {
+      "id": "RC2",
+      "summary": "Feed distribution and placeholder sync consumed full vault/thumbnail inventories without Hero filtering.",
+      "impact": "Hero media could propagate into reelforge_feed and placeholder insertion flows."
+    },
+    {
+      "id": "RC3",
+      "summary": "Hydration/bootstrap paths relied on name-based filtering only, not a canonical domain classifier.",
+      "impact": "Non-canonical Hero identifiers could bypass exclusion and reappear in content inventories."
+    }
+  ],
+  "fixesApplied": {
+    "guard": "frontend/src/lib/hero/heroDomainGuard.js",
+    "integrations": [
+      "frontend/src/viewer/viewerContext.js",
+      "frontend/src/lib/viewer/aiCleanupAgent.js",
+      "frontend/src/components/experiences/VaultExperience.svelte",
+      "frontend/src/lib/mediaBootstrap.js",
+      "frontend/src/lib/discovery/discoveryEngine.js"
+    ],
+    "blockedDomains": [
+      "personalVideos",
+      "personal_video_vault",
+      "personalThumbnailCollection placeholder fanout",
+      "reelforge_feed",
+      "AI_CLEANUP_AGENT distribution",
+      "discovery candidate indexing",
+      "video inventory hydration",
+      "thumbnail inventory hydration"
+    ]
+  },
+  "validation": {
+    "runtimeReport": "hero-media-domain-runtime.json",
+    "result": {
+      "heroVaultIncreases": true,
+      "videoVaultUnchanged": true,
+      "feedUnchanged": true,
+      "placeholderUnchanged": true,
+      "discoveryUnchanged": true,
+      "reloadSurvives": true
+    },
+    "evidence": {
+      "baseline": {
+        "heroVaultCount": 0,
+        "videoVaultCount": 0,
+        "feedCount": 0,
+        "placeholderCount": 0,
+        "discoveryCount": 84
+      },
+      "postAccept": {
+        "heroVaultCount": 1,
+        "videoVaultCount": 0,
+        "feedCount": 0,
+        "placeholderCount": 0,
+        "discoveryCount": 84
+      },
+      "guardProbe": {
+        "reelsToVideoVaultEntriesHeroResultCount": 0
+      }
+    }
+  },
+  "successCriteria": {
+    "heroOnlyInHeroSystems": true,
+    "contentOnlyInContentSystems": true,
+    "zeroCrossContamination": true
+  },
+  "completionToken": "HERO_MEDIA_DOMAIN_SEPARATION_COMPLETE=true"
+}

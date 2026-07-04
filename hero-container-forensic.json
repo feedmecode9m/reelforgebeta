@@ -1,0 +1,199 @@
+{
+  "phase": "PHASE — HERO CONTAINER FORENSIC",
+  "forensicOnly": true,
+  "heroContainerChain": [
+    {
+      "node": "html",
+      "selector": "html",
+      "width": "1440px",
+      "max-width": "none",
+      "height": "1391.05px",
+      "overflow": "hidden auto / hidden / auto",
+      "display": "block",
+      "position": "static"
+    },
+    {
+      "node": "body",
+      "selector": "body",
+      "width": "1440px",
+      "max-width": "none",
+      "height": "1391.05px",
+      "overflow": "hidden auto / hidden / auto",
+      "display": "block",
+      "position": "static"
+    },
+    {
+      "node": "root",
+      "selector": "div#app",
+      "width": "1440px",
+      "max-width": "none",
+      "height": "1391.05px",
+      "overflow": "visible / visible / visible",
+      "display": "block",
+      "position": "static"
+    },
+    {
+      "node": "parent",
+      "selector": "main.s-XsEmFtvddWTw",
+      "sourceFile": "frontend/src/App.svelte",
+      "width": "1440px",
+      "max-width": "none",
+      "height": "1391.05px",
+      "overflow": "visible / visible / visible",
+      "display": "block",
+      "position": "relative"
+    },
+    {
+      "node": "parent",
+      "selector": "main",
+      "sourceFile": "frontend/src/Viewer.svelte",
+      "width": "1440px",
+      "max-width": "none",
+      "height": "1391.05px",
+      "overflow": "visible / visible / visible",
+      "display": "block",
+      "position": "relative"
+    },
+    {
+      "node": "hero",
+      "selector": "section.hero-stage.hero-stage--viewer",
+      "sourceFile": "frontend/src/components/experiences/HeroExperience.svelte",
+      "width": "1440px",
+      "max-width": "none",
+      "height": "828px",
+      "overflow": "hidden / hidden / hidden",
+      "display": "flex",
+      "position": "relative"
+    }
+  ],
+  "widthLimiters": {
+    "detected": [],
+    "notes": [
+      "No active max-width chain limiter found between root and hero.",
+      "Hero runtime width equals viewport width."
+    ]
+  },
+  "heightLimiters": {
+    "detected": [
+      {
+        "selector": ".hero-stage",
+        "file": "frontend/src/viewer/viewer.css",
+        "line": 37,
+        "rule": "height: 92vh"
+      },
+      {
+        "selector": ".hero-stage.hero-stage--viewer",
+        "file": "frontend/src/viewer/viewer.css",
+        "line": 47,
+        "rule": "min-height: 80vh; max-height: 100vh"
+      },
+      {
+        "selector": ".hero-stage",
+        "file": "frontend/src/viewer/viewer.css",
+        "line": 43,
+        "rule": "overflow: hidden"
+      }
+    ]
+  },
+  "heroCoveragePercent": {
+    "heroWidthPx": 1440,
+    "heroHeightPx": 828,
+    "viewportWidthPx": 1440,
+    "viewportHeightPx": 900,
+    "widthCoveragePercent": 100,
+    "heightCoveragePercent": 92
+  },
+  "viewportComparison": {
+    "heroVsViewport": "Hero is full viewport width and 92% viewport height at runtime.",
+    "classification": "Not half-screen in current runtime measurement."
+  },
+  "guideMeBlurSource": {
+    "chain": [
+      {
+        "file": "frontend/src/Viewer.svelte",
+        "line": 163,
+        "code": "<main class:blur={$activeReel || $controlCenterOpen}>",
+        "effect": "Applies blur class to viewer main when Smart Studio overlay is open."
+      },
+      {
+        "file": "frontend/src/viewer/viewer.css",
+        "line": 10,
+        "code": "main.blur { filter: blur(5px); ... }",
+        "effect": "Background viewer content is blurred."
+      },
+      {
+        "file": "frontend/src/components/experiences/StudioExperience.svelte",
+        "line": 565,
+        "code": "class=\"control-center-overlay smart-studio-overlay\"",
+        "effect": "Smart Studio overlay wrapper is mounted."
+      },
+      {
+        "file": "frontend/src/viewer/viewer.css",
+        "line": 86,
+        "code": ".control-center-overlay { backdrop-filter: blur(10px); overflow-y: auto; position: fixed; z-index: 1500; }",
+        "effect": "Overlay applies additional blur and viewport-level scrolling."
+      },
+      {
+        "file": "frontend/src/viewer/viewer.css",
+        "line": 87,
+        "code": ".control-center-container { max-height: 90vh; overflow-y: auto; }",
+        "effect": "Studio container is clipping/scroll-constrained."
+      },
+      {
+        "file": "frontend/src/viewer/viewer.css",
+        "line": 11,
+        "code": "header { position: absolute; z-index: 6; ... }",
+        "effect": "Global header selector affects .control-center-header too, forcing absolute positioning inside Smart Studio."
+      }
+    ],
+    "runtimeAudit": {
+      "mainBlurFilter": "blur(4.91741px)",
+      "overlayBackdropFilter": "blur(10px)",
+      "overlayHeightPx": 900,
+      "containerMaxHeight": "810px (90vh at 900px viewport)",
+      "containerOverflow": "auto / auto / auto",
+      "controlCenterHeaderPosition": "absolute",
+      "guideMeButtonPresent": false,
+      "guideMePanelPresent": false
+    }
+  },
+  "blockingElements": [
+    {
+      "selector": "header",
+      "position": "absolute",
+      "z-index": "6",
+      "dimensions": {
+        "widthPx": 1440,
+        "heightPx": 57.59
+      },
+      "consumesViewportSpace": true
+    },
+    {
+      "selector": "header.s-h2wauWde3x4Z",
+      "position": "absolute",
+      "z-index": "6",
+      "dimensions": {
+        "widthPx": 1440,
+        "heightPx": 53
+      },
+      "consumesViewportSpace": true
+    },
+    {
+      "selector": "button.ghost-trigger",
+      "position": "fixed",
+      "z-index": "9999",
+      "dimensions": {
+        "widthPx": 60,
+        "heightPx": 60
+      },
+      "location": {
+        "topPx": 20,
+        "leftPx": 1360
+      },
+      "consumesViewportSpace": false
+    }
+  ],
+  "PRIMARY_BLOCKER": "Global `header` CSS in viewer scope applies absolute/z-index styling to Smart Studio header containers, creating visual clipping/overlay artifacts in the top section.",
+  "SECONDARY_BLOCKER": "Smart Studio overlay stack applies layered blur and scrolling constraints (`main.blur` + `backdrop-filter` + `max-height:90vh; overflow-y:auto`), which amplifies perceived blur/clipping.",
+  "completionToken": "HERO_CONTAINER_FORENSIC_COMPLETE=true"
+}

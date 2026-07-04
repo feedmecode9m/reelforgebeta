@@ -1,0 +1,463 @@
+{
+  "capturedAt": "2026-06-14T23:56:20.509Z",
+  "imageScenario": {
+    "before": {
+      "label": "before",
+      "manager": {
+        "backgroundSource": "selection",
+        "heroAssetId": ""
+      },
+      "registryCount": 0,
+      "dropdownCount": 0,
+      "vaultCount": 0,
+      "assetIds": []
+    },
+    "imageResult": {
+      "imageAssetId": "hero-image-truth-1781481370815",
+      "configHeroAssetId": "hero-image-truth-1781481370815"
+    },
+    "afterImage": {
+      "label": "afterImageAccept",
+      "manager": {
+        "backgroundSource": "custom_image",
+        "heroAssetId": "hero-image-truth-1781481370815"
+      },
+      "registryCount": 1,
+      "dropdownCount": 1,
+      "vaultCount": 1,
+      "assetIds": [
+        "hero-image-truth-1781481370815"
+      ]
+    },
+    "afterReload": {
+      "label": "afterReload",
+      "manager": {
+        "backgroundSource": "custom_image",
+        "heroAssetId": "hero-image-truth-1781481370815"
+      },
+      "registryCount": 1,
+      "dropdownCount": 1,
+      "vaultCount": 1,
+      "assetIds": [
+        "hero-image-truth-1781481370815"
+      ]
+    }
+  },
+  "videoScenario": {
+    "videoResult": {
+      "videoAssetId": "hero-video-truth-1781481380168",
+      "configHeroAssetId": "hero-video-truth-1781481380168"
+    },
+    "afterVideo": {
+      "label": "afterVideoAccept",
+      "manager": {
+        "backgroundSource": "custom_video",
+        "heroAssetId": "hero-video-truth-1781481380168"
+      },
+      "registryCount": 1,
+      "dropdownCount": 1,
+      "vaultCount": 1,
+      "assetIds": [
+        "hero-video-truth-1781481380168"
+      ]
+    }
+  },
+  "traceLogs": [
+    {
+      "t": 1781481365004,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481365001}"
+    },
+    {
+      "t": 1781481365004,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: , heroAssetId: , source: reelforge_hero_image, timestamp: 1781481365003}"
+    },
+    {
+      "t": 1781481365005,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: , heroAssetId: , source: resolveHeroBackgroundAsset, timestamp: 1781481365004}"
+    },
+    {
+      "t": 1781481365055,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481365054}"
+    },
+    {
+      "t": 1781481365055,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: , heroAssetId: , source: reelforge_hero_image, timestamp: 1781481365054}"
+    },
+    {
+      "t": 1781481365056,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: , heroAssetId: , source: resolveHeroBackgroundAsset, timestamp: 1781481365054}"
+    },
+    {
+      "t": 1781481365271,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: HeroExperience:render, assetId: , heroAssetId: , source: HeroExperience, timestamp: 1781481365270}"
+    },
+    {
+      "t": 1781481366433,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481366432}"
+    },
+    {
+      "t": 1781481366433,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: , heroAssetId: , source: reelforge_hero_image, timestamp: 1781481366432}"
+    },
+    {
+      "t": 1781481366434,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: /thumbs/IMG_0113.JPEG, heroAssetId: , source: resolveHeroBackgroundAsset, timestamp: 1781481366432}"
+    },
+    {
+      "t": 1781481367181,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481367180}"
+    },
+    {
+      "t": 1781481367181,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: , heroAssetId: , source: reelforge_hero_image, timestamp: 1781481367180}"
+    },
+    {
+      "t": 1781481367181,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: /thumbs/IMG_0113.JPEG, heroAssetId: , source: resolveHeroBackgroundAsset, timestamp: 1781481367180}"
+    },
+    {
+      "t": 1781481368045,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481368044}"
+    },
+    {
+      "t": 1781481368045,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: , heroAssetId: , source: reelforge_hero_image, timestamp: 1781481368045}"
+    },
+    {
+      "t": 1781481368046,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: /thumbs/IMG_0113.JPEG, heroAssetId: , source: resolveHeroBackgroundAsset, timestamp: 1781481368045}"
+    },
+    {
+      "t": 1781481368953,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481368952}"
+    },
+    {
+      "t": 1781481368953,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: , heroAssetId: , source: reelforge_hero_image, timestamp: 1781481368952}"
+    },
+    {
+      "t": 1781481368954,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: /thumbs/IMG_0113.JPEG, heroAssetId: , source: resolveHeroBackgroundAsset, timestamp: 1781481368953}"
+    },
+    {
+      "t": 1781481370620,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481370618}"
+    },
+    {
+      "t": 1781481370620,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: , heroAssetId: , source: reelforge_hero_image, timestamp: 1781481370618}"
+    },
+    {
+      "t": 1781481370621,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: /thumbs/IMG_0113.JPEG, heroAssetId: , source: resolveHeroBackgroundAsset, timestamp: 1781481370619}"
+    },
+    {
+      "t": 1781481370748,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481370747}"
+    },
+    {
+      "t": 1781481370749,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: , heroAssetId: , source: reelforge_hero_image, timestamp: 1781481370748}"
+    },
+    {
+      "t": 1781481370749,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: , heroAssetId: , source: resolveHeroBackgroundAsset, timestamp: 1781481370748}"
+    },
+    {
+      "t": 1781481370776,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481370775}"
+    },
+    {
+      "t": 1781481370776,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: , heroAssetId: , source: reelforge_hero_image, timestamp: 1781481370775}"
+    },
+    {
+      "t": 1781481370794,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481370794}"
+    },
+    {
+      "t": 1781481370794,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: , heroAssetId: , source: reelforge_hero_image, timestamp: 1781481370794}"
+    },
+    {
+      "t": 1781481370795,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: , heroAssetId: , source: resolveHeroBackgroundAsset, timestamp: 1781481370794}"
+    },
+    {
+      "t": 1781481370817,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481370816}"
+    },
+    {
+      "t": 1781481370817,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: , heroAssetId: , source: reelforge_hero_image, timestamp: 1781481370816}"
+    },
+    {
+      "t": 1781481370817,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: saveHeroManagerConfig:write, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: reelforge_hero_manager_config, timestamp: 1781481370816}"
+    },
+    {
+      "t": 1781481370818,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481370817}"
+    },
+    {
+      "t": 1781481370818,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: reelforge_hero_image, timestamp: 1781481370817}"
+    },
+    {
+      "t": 1781481370821,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: resolveHeroBackgroundAsset, timestamp: 1781481370818}"
+    },
+    {
+      "t": 1781481370821,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481370819}"
+    },
+    {
+      "t": 1781481370821,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: reelforge_hero_image, timestamp: 1781481370819}"
+    },
+    {
+      "t": 1781481370821,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: resolveHeroBackgroundAsset, timestamp: 1781481370820}"
+    },
+    {
+      "t": 1781481370827,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481370822}"
+    },
+    {
+      "t": 1781481370827,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: reelforge_hero_image, timestamp: 1781481370823}"
+    },
+    {
+      "t": 1781481370827,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: resolveHeroBackgroundAsset, timestamp: 1781481370823}"
+    },
+    {
+      "t": 1781481370827,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481370824}"
+    },
+    {
+      "t": 1781481370828,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: reelforge_hero_image, timestamp: 1781481370824}"
+    },
+    {
+      "t": 1781481370828,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: resolveHeroBackgroundAsset, timestamp: 1781481370824}"
+    },
+    {
+      "t": 1781481370831,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481370831}"
+    },
+    {
+      "t": 1781481370832,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: reelforge_hero_image, timestamp: 1781481370831}"
+    },
+    {
+      "t": 1781481370832,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: resolveHeroBackgroundAsset, timestamp: 1781481370831}"
+    },
+    {
+      "t": 1781481370834,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: HeroExperience:render, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: HeroExperience, timestamp: 1781481370833}"
+    },
+    {
+      "t": 1781481371188,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481371187}"
+    },
+    {
+      "t": 1781481371188,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: reelforge_hero_image, timestamp: 1781481371187}"
+    },
+    {
+      "t": 1781481371537,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481371536}"
+    },
+    {
+      "t": 1781481371537,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: reelforge_hero_image, timestamp: 1781481371536}"
+    },
+    {
+      "t": 1781481371538,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: resolveHeroBackgroundAsset, timestamp: 1781481371537}"
+    },
+    {
+      "t": 1781481371551,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481371551}"
+    },
+    {
+      "t": 1781481371551,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: reelforge_hero_image, timestamp: 1781481371551}"
+    },
+    {
+      "t": 1781481371552,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: resolveHeroBackgroundAsset, timestamp: 1781481371552}"
+    },
+    {
+      "t": 1781481371583,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481371582}"
+    },
+    {
+      "t": 1781481371583,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: reelforge_hero_image, timestamp: 1781481371582}"
+    },
+    {
+      "t": 1781481371583,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: resolveHeroBackgroundAsset, timestamp: 1781481371583}"
+    },
+    {
+      "t": 1781481371702,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: HeroExperience:render, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: HeroExperience, timestamp: 1781481371701}"
+    },
+    {
+      "t": 1781481371756,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481371752}"
+    },
+    {
+      "t": 1781481371756,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: reelforge_hero_image, timestamp: 1781481371752}"
+    },
+    {
+      "t": 1781481371756,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: resolveHeroBackgroundAsset, timestamp: 1781481371753}"
+    },
+    {
+      "t": 1781481372583,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481372582}"
+    },
+    {
+      "t": 1781481372583,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: reelforge_hero_image, timestamp: 1781481372582}"
+    },
+    {
+      "t": 1781481372584,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: resolveHeroBackgroundAsset, timestamp: 1781481372583}"
+    },
+    {
+      "t": 1781481373463,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481373462}"
+    },
+    {
+      "t": 1781481373463,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: reelforge_hero_image, timestamp: 1781481373462}"
+    },
+    {
+      "t": 1781481373464,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: resolveHeroBackgroundAsset, timestamp: 1781481373462}"
+    },
+    {
+      "t": 1781481374349,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481374348}"
+    },
+    {
+      "t": 1781481374349,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: reelforge_hero_image, timestamp: 1781481374348}"
+    },
+    {
+      "t": 1781481374350,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: resolveHeroBackgroundAsset, timestamp: 1781481374348}"
+    },
+    {
+      "t": 1781481376092,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481376091}"
+    },
+    {
+      "t": 1781481376092,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: reelforge_hero_image, timestamp: 1781481376091}"
+    },
+    {
+      "t": 1781481376092,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: resolveHeroBackgroundAsset, timestamp: 1781481376092}"
+    },
+    {
+      "t": 1781481380069,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481380064}"
+    },
+    {
+      "t": 1781481380069,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: reelforge_hero_image, timestamp: 1781481380065}"
+    },
+    {
+      "t": 1781481380069,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: resolveHeroBackgroundAsset, timestamp: 1781481380065}"
+    },
+    {
+      "t": 1781481380149,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481380144}"
+    },
+    {
+      "t": 1781481380149,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: reelforge_hero_image, timestamp: 1781481380144}"
+    },
+    {
+      "t": 1781481380170,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481380169}"
+    },
+    {
+      "t": 1781481380170,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: reelforge_hero_image, timestamp: 1781481380169}"
+    },
+    {
+      "t": 1781481380171,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: saveHeroManagerConfig:write, assetId: hero-video-truth-1781481380168, heroAssetId: hero-video-truth-1781481380168, source: reelforge_hero_manager_config, timestamp: 1781481380170}"
+    },
+    {
+      "t": 1781481380172,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481380171}"
+    },
+    {
+      "t": 1781481380172,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: hero-video-truth-1781481380168, heroAssetId: hero-video-truth-1781481380168, source: reelforge_hero_video, timestamp: 1781481380171}"
+    },
+    {
+      "t": 1781481380173,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: hero-video-truth-1781481380168, heroAssetId: hero-video-truth-1781481380168, source: resolveHeroBackgroundAsset, timestamp: 1781481380172}"
+    },
+    {
+      "t": 1781481380175,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481380174}"
+    },
+    {
+      "t": 1781481380175,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: hero-video-truth-1781481380168, heroAssetId: hero-video-truth-1781481380168, source: reelforge_hero_video, timestamp: 1781481380174}"
+    },
+    {
+      "t": 1781481380176,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: hero-video-truth-1781481380168, heroAssetId: hero-video-truth-1781481380168, source: resolveHeroBackgroundAsset, timestamp: 1781481380175}"
+    },
+    {
+      "t": 1781481380177,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481380176}"
+    },
+    {
+      "t": 1781481380177,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: hero-video-truth-1781481380168, heroAssetId: hero-video-truth-1781481380168, source: reelforge_hero_video, timestamp: 1781481380176}"
+    },
+    {
+      "t": 1781481380181,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: hero-video-truth-1781481380168, heroAssetId: hero-video-truth-1781481380168, source: resolveHeroBackgroundAsset, timestamp: 1781481380177}"
+    },
+    {
+      "t": 1781481380187,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481380186}"
+    },
+    {
+      "t": 1781481380187,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: hero-video-truth-1781481380168, heroAssetId: hero-video-truth-1781481380168, source: reelforge_hero_video, timestamp: 1781481380186}"
+    },
+    {
+      "t": 1781481380188,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: hero-video-truth-1781481380168, heroAssetId: hero-video-truth-1781481380168, source: resolveHeroBackgroundAsset, timestamp: 1781481380187}"
+    },
+    {
+      "t": 1781481380196,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: HeroExperience:render, assetId: hero-video-truth-1781481380168, heroAssetId: hero-video-truth-1781481380168, source: HeroExperience, timestamp: 1781481380195}"
+    },
+    {
+      "t": 1781481380509,
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481380507}"
+    },
+    {
+      "t": 1781481380509,
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: hero-video-truth-1781481380168, heroAssetId: hero-video-truth-1781481380168, source: reelforge_hero_video, timestamp: 1781481380507}"
+    }
+  ]
+}

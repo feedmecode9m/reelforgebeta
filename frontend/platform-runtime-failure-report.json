@@ -1,0 +1,101 @@
+{
+  "phase": 51,
+  "generatedAt": "2026-06-13T09:10:00.000Z",
+  "objective": "Eliminate runtime validation failures for platform truth",
+  "before": {
+    "completionToken": "REELFORGE_PLATFORM_TRUTH_COMPLETE=false",
+    "actualReadinessScore": 89,
+    "failedDomains": [
+      "platformTruthFlow",
+      "marketplace",
+      "revenueDashboard",
+      "threatDetection",
+      "sentinelAssistant",
+      "heroIntelligence",
+      "commandCenter",
+      "appearanceSystem"
+    ]
+  },
+  "domains": [
+    {
+      "domain": "platformTruthFlow",
+      "validator": "scripts/validate-platform-truth-flow.mjs",
+      "runtimeFailure": "Timed out waiting for revenue dashboard detail in command center flow.",
+      "rootCause": "Flow asserted marketplace/revenue through stale command-detail path that failed when revenue panel crashed and command-center sequence changed.",
+      "uiEntryPoint": "Admin login -> Production Command Center -> section tabs (Security/Revenue/Marketplace/Enterprise).",
+      "expectedBehavior": "Full admin flow reaches security, revenue, marketplace, and enterprise surfaces.",
+      "actualBehavior": "Flow stopped at revenue detail wait and returned false completion token.",
+      "fixRequired": "Updated validator to strictly follow visible UI tabs and verify rendered surfaces by selectors."
+    },
+    {
+      "domain": "marketplace",
+      "validator": "scripts/validate-marketplace-truth.mjs",
+      "runtimeFailure": "Validator timed out on outdated monetization selector path and later on create-message visibility.",
+      "rootCause": "Validator targeted indirect revenue-panel hook instead of marketplace dashboard CRUD flow; create message not guaranteed after auto-switch to My Listings.",
+      "uiEntryPoint": "Admin login -> Production Command Center -> Marketplace section.",
+      "expectedBehavior": "Marketplace dashboard mounts and supports create/edit/delete/apply operations.",
+      "actualBehavior": "Selector mismatch caused timeout and false fail despite reachable UI.",
+      "fixRequired": "Rewrote validator to execute real UI CRUD: create listing, edit title, delete listing, and check diagnostics."
+    },
+    {
+      "domain": "revenueDashboard",
+      "validator": "scripts/validate-revenue-dashboard-truth.mjs",
+      "runtimeFailure": "Revenue detail timeout and subsequent runtime crash path.",
+      "rootCause": "Revenue path blocked by monetization runtime exception in `analyzeRevenue()` using undefined `context`.",
+      "uiEntryPoint": "Admin login -> Production Command Center -> Revenue section.",
+      "expectedBehavior": "Revenue dashboard renders KPI cards and forecast panel with diagnostics.",
+      "actualBehavior": "Revenue panel failed to mount consistently under validator path.",
+      "fixRequired": "Patched `src/lib/revenue/monetizationAI.js` to initialize `context` in `analyzeRevenue`; kept validator UI-only."
+    },
+    {
+      "domain": "threatDetection",
+      "validator": "scripts/validate-threat-detection.mjs",
+      "runtimeFailure": "Previous validator failed in mixed static/runtime mode and command-center assumptions.",
+      "rootCause": "Used static checks and non-UI engine pathways; threat simulation did not guarantee card state change.",
+      "uiEntryPoint": "Admin login -> System workspace -> Sentinel Security Card.",
+      "expectedBehavior": "Threat simulation updates card level/active threat count and emits diagnostics.",
+      "actualBehavior": "Initial simulation path kept card green without deterministic event burst.",
+      "fixRequired": "Rewrote validator to seed threat events through persisted runtime data + UI event dispatch, then verify card level change + diagnostics."
+    },
+    {
+      "domain": "sentinelAssistant",
+      "validator": "scripts/validate-sentinel-assistant.mjs",
+      "runtimeFailure": "Timed out in prior script while relying on static file assertions and direct engine calls.",
+      "rootCause": "Validator mixed compile-time checks and runtime assumptions, causing brittle failures unrelated to visible panel behavior.",
+      "uiEntryPoint": "Admin login -> System workspace -> Sentinel Assistant panel.",
+      "expectedBehavior": "Panel renders executive summary, priorities, recommendations, and answers interactive prompt.",
+      "actualBehavior": "Legacy script failed before meaningful UI validation path completed.",
+      "fixRequired": "Rewrote to pure Playwright UI interactions with recommendation prompt + diagnostics verification."
+    },
+    {
+      "domain": "heroIntelligence",
+      "validator": "scripts/validate-hero-intelligence.mjs",
+      "runtimeFailure": "Timed out with outdated hero type option and heavy direct-engine static checks.",
+      "rootCause": "Validator selected unsupported option (`MOST_WATCHED`) in hero manager discovery enum and depended on direct runtime engine calls.",
+      "uiEntryPoint": "Normal hero stage + Admin login -> System workspace -> Hero Manager panel.",
+      "expectedBehavior": "Hero manager setting changes propagate to live hero mode/content.",
+      "actualBehavior": "Script failed before verifying UI effect due invalid select option path.",
+      "fixRequired": "Rewrote validator to UI-only flow, using supported option (`CONTINUE_WATCHING`) and validating hero mode/title/insight + diagnostics."
+    },
+    {
+      "domain": "commandCenter",
+      "validator": "scripts/validate-command-center-truth.mjs",
+      "runtimeFailure": "Revenue section wait timed out.",
+      "rootCause": "Revenue section render was blocked by monetization runtime error (`context is not defined`) and validator had brittle assumptions.",
+      "uiEntryPoint": "Admin login -> Production Command Center section tabs.",
+      "expectedBehavior": "All command-center sections render and diagnostics emit.",
+      "actualBehavior": "Validation halted at revenue tab.",
+      "fixRequired": "Resolved monetization crash and hardened validator to focus on runtime section rendering + diagnostics."
+    },
+    {
+      "domain": "appearanceSystem",
+      "validator": "scripts/validate-studio-appearance-truth.mjs",
+      "runtimeFailure": "Timed out in prior run waiting for expected admin context panel chain.",
+      "rootCause": "Legacy sequence depended on fragile preconditions and direct engine hook checks.",
+      "uiEntryPoint": "Admin login -> System workspace -> Studio Appearance panel.",
+      "expectedBehavior": "Theme profile selection updates shell theme and persists in local storage.",
+      "actualBehavior": "Previous script failed before completing theme persistence checks.",
+      "fixRequired": "Retained runtime-only visibility/theme/persistence assertions and removed direct `window.__...` dependency."
+    }
+  ]
+}

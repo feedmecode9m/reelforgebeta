@@ -1,0 +1,82 @@
+{
+  "phase": "REELFORGE PHASE 69.5 — HERO MEDIA DOMAIN SEPARATION",
+  "generatedAt": "2026-06-15T23:53:00.000Z",
+  "paths": [
+    {
+      "sourceFile": "frontend/src/components/experiences/VaultExperience.svelte",
+      "function": "handleVaultVideoDrop",
+      "reasonAssetEntersVault": "Uploaded entry was always prepended into personalVideos and persisted to personal_video_vault without a hero-domain gate.",
+      "reasonAssetEntersFeed": "AI_CLEANUP_AGENT.distributeVideoToFeed(entry) was always invoked after vault write.",
+      "reasonAssetEntersPlaceholderSystem": "Feed insertion allowed downstream placeholder/feed processors to treat Hero video as standard content."
+    },
+    {
+      "sourceFile": "frontend/src/viewer/viewerContext.js",
+      "function": "persistPersonalVault",
+      "reasonAssetEntersVault": "All entries were written directly to personal_video_vault with no hero exclusion.",
+      "reasonAssetEntersFeed": "Video vault hydration later re-distributed persisted rows into feed.",
+      "reasonAssetEntersPlaceholderSystem": "Cross-domain feed hydration indirectly exposed Hero rows to placeholder maintenance flow."
+    },
+    {
+      "sourceFile": "frontend/src/viewer/viewerContext.js",
+      "function": "reloadVaultStoresFromStorage",
+      "reasonAssetEntersVault": "Stored personal_video_vault rows were replayed to personalVideos without filtering Hero signatures.",
+      "reasonAssetEntersFeed": "Recovered personalVideos could be propagated by AI cleanup sync routines.",
+      "reasonAssetEntersPlaceholderSystem": "Thumbnail-side replay could propagate cross-domain metadata into placeholder regeneration."
+    },
+    {
+      "sourceFile": "frontend/src/viewer/viewerContext.js",
+      "function": "mergeVideoVaultEntries + syncFromVault",
+      "reasonAssetEntersVault": "Merged backend + local video entries could include Hero media before being set/persisted.",
+      "reasonAssetEntersFeed": "Offline branch distributed every personal video to feed (including Hero-shaped rows).",
+      "reasonAssetEntersPlaceholderSystem": "Feed rebuild path and thumbnail sync execution could retain contaminated records."
+    },
+    {
+      "sourceFile": "frontend/src/lib/viewer/aiCleanupAgent.js",
+      "function": "distributeVideoToFeed",
+      "reasonAssetEntersVault": "Not a vault writer, but consumed contaminated video rows from personal_video_vault.",
+      "reasonAssetEntersFeed": "No hero-domain check before createLocalReel + unshift to feed category.",
+      "reasonAssetEntersPlaceholderSystem": "Once in feed, Hero media became eligible for generic content orchestration and placeholder coexistence."
+    },
+    {
+      "sourceFile": "frontend/src/lib/viewer/aiCleanupAgent.js",
+      "function": "syncVideoVaultToFeed",
+      "reasonAssetEntersVault": "Read all rows from personal_video_vault including Hero-like rows.",
+      "reasonAssetEntersFeed": "Looped through every row and called distributeVideoToFeed without Hero filtering.",
+      "reasonAssetEntersPlaceholderSystem": "Feed contamination enabled mixed-domain placeholder reconciliation against polluted content sets."
+    },
+    {
+      "sourceFile": "frontend/src/lib/viewer/aiCleanupAgent.js",
+      "function": "distributeThumbnailAcrossCategories + syncThumbnailsToFeed",
+      "reasonAssetEntersVault": "Not a direct vault writer; consumed thumbnail vault entries for feed placeholders.",
+      "reasonAssetEntersFeed": "Constructed personal thumbnail placeholders for all thumbnail rows without Hero guard.",
+      "reasonAssetEntersPlaceholderSystem": "This is the primary placeholder insertion path and accepted all rows pre-fix."
+    },
+    {
+      "sourceFile": "frontend/src/lib/mediaBootstrap.js",
+      "function": "hydrateVaultFromReels + reelsToVideoVaultEntries + ingestThumbReelsToVault",
+      "reasonAssetEntersVault": "API reel hydration could write Hero-like rows into personal_video_vault/personal_thumbnails unless explicitly filtered.",
+      "reasonAssetEntersFeed": "Hydrated vault rows were later synchronized by AI cleanup into feed.",
+      "reasonAssetEntersPlaceholderSystem": "Hydrated thumbnail rows fed placeholder rebuild loops."
+    },
+    {
+      "sourceFile": "frontend/src/lib/discovery/discoveryEngine.js",
+      "function": "buildDiscoveryIndex (hero candidate loop)",
+      "reasonAssetEntersVault": "Not a vault writer.",
+      "reasonAssetEntersFeed": "Not a feed writer.",
+      "reasonAssetEntersPlaceholderSystem": "Not a placeholder writer; however Hero-shaped candidate rows could still be indexed without explicit Hero guard."
+    }
+  ],
+  "guardPolicy": {
+    "guardName": "isHeroAsset",
+    "blockedIfTrue": [
+      "personalVideos writes",
+      "personal_video_vault persistence",
+      "personalThumbnailCollection-derived placeholder insertion",
+      "reelforge_feed writes",
+      "AI_CLEANUP_AGENT distribution paths",
+      "discovery indexing candidate insertion",
+      "video inventory hydration",
+      "thumbnail inventory hydration"
+    ]
+  }
+}

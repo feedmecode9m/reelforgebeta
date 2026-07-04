@@ -1,0 +1,129 @@
+{
+  "upload": {
+    "id": "7c7f2bfd-2ab8-4508-9c59-d8ddb2facf32",
+    "status": "ready",
+    "videoUrl": "http://localhost:8080/thumbs/7c7f2bfd-2ab8-4508-9c59-d8ddb2facf32.png",
+    "thumbnailUrl": "http://localhost:8080/thumbs/7c7f2bfd-2ab8-4508-9c59-d8ddb2facf32.png",
+    "pollUrl": "/api/reels/7c7f2bfd-2ab8-4508-9c59-d8ddb2facf32"
+  },
+  "baseline": {
+    "cfg": {
+      "heroType": "TRENDING",
+      "backgroundSource": "custom_image",
+      "backgroundAsset": "7c7f2bfd-2ab8-4508-9c59-d8ddb2facf32",
+      "backgroundVideo": "/videos/hero-background.mp4",
+      "backgroundImage": "/thumbs/7c7f2bfd-2ab8-4508-9c59-d8ddb2facf32.png",
+      "backgroundStyle": "image",
+      "autoRotate": false,
+      "rotateIntervalMs": 30000,
+      "spotlightPriority": [
+        "FEATURED_RELEASE",
+        "CONTINUE_WATCHING",
+        "TRENDING",
+        "UPCOMING_PREMIERE",
+        "TEAM_SPOTLIGHT",
+        "STUDIO_PRIORITY"
+      ],
+      "seasonalCampaigns": [
+        {
+          "id": "winter-premiere",
+          "label": "Winter Premiere Push",
+          "heroType": "UPCOMING_PREMIERE",
+          "active": false,
+          "scheduleStart": "",
+          "scheduleEnd": ""
+        },
+        {
+          "id": "studio-sprint",
+          "label": "Studio Sprint Spotlight",
+          "heroType": "STUDIO_PRIORITY",
+          "active": false,
+          "scheduleStart": "",
+          "scheduleEnd": ""
+        }
+      ],
+      "carouselDurationMs": 8000,
+      "carouselTransitionStyle": "fade",
+      "carouselPriority": "video",
+      "heroTypography": "cinematic",
+      "autoplayEnabled": true,
+      "carouselSlideOverrides": [
+        {
+          "type": "video",
+          "order": 1,
+          "durationMs": 8000,
+          "enabled": true
+        },
+        {
+          "type": "image",
+          "order": 2,
+          "durationMs": 8000,
+          "enabled": true
+        },
+        {
+          "type": "featured_release",
+          "order": 3,
+          "durationMs": 8000,
+          "enabled": true
+        },
+        {
+          "type": "admin_image",
+          "order": 4,
+          "durationMs": 8000,
+          "enabled": true
+        },
+        {
+          "type": "admin_video",
+          "order": 5,
+          "durationMs": 8000,
+          "enabled": true
+        },
+        {
+          "type": "upcoming_release",
+          "order": 6,
+          "durationMs": 8000,
+          "enabled": true
+        },
+        {
+          "type": "team_spotlight",
+          "order": 7,
+          "durationMs": 8000,
+          "enabled": true
+        },
+        {
+          "type": "marketplace_spotlight",
+          "order": 8,
+          "durationMs": 8000,
+          "enabled": true
+        },
+        {
+          "type": "revenue_milestone",
+          "order": 9,
+          "durationMs": 8000,
+          "enabled": true
+        },
+        {
+          "type": "creator_spotlight",
+          "order": 10,
+          "durationMs": 8000,
+          "enabled": true
+        },
+        {
+          "type": "discovery_recommendation",
+          "order": 11,
+          "durationMs": 8000,
+          "enabled": true
+        },
+        {
+          "type": "sentinel_recommendation",
+          "order": 12,
+          "durationMs": 8000,
+          "enabled": true
+        }
+      ],
+      "updatedAt": 1781419846325
+    },
+    "asset": "7c7f2bfd-2ab8-4508-9c59-d8ddb2facf32",
+    "source": "custom_image"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "profiles": [
+    "creator-dark",
+    "creator-light",
+    "cinematic",
+    "command-center",
+    "neon-studio"
+  ],
+  "densities": [
+    "compact",
+    "comfortable",
+    "spacious"
+  ],
+  "fontScales": [
+    "small",
+    "normal",
+    "large"
+  ],
+  "storageKey": "reelforge_studio_appearance",
+  "diagnostics": {
+    "theme": 6,
+    "density": 3,
+    "accessibility": 6
+  }
+}

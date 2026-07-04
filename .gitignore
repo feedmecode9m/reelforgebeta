@@ -1,38 +1,104 @@
-# Rust
-/target/
-**/*.rs.bk
-Cargo.lock
+# =============================================================================
+# ReelForge — production .gitignore
+# Generated artifacts, caches, secrets, and user-uploaded media stay local.
+# =============================================================================
 
-# Vite
-/node_modules/
-/dist/
-/.vite/
+# --- Rust / Cargo ---
+target/
+**/target/
+target-clean/
+**/*.rs.bk
+
+# --- Node / npm ---
+node_modules/
+**/node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnpm-debug.log*
+.npm/
 
-# Local env
+# --- Build outputs (Vite, bundlers) ---
+dist/
+**/dist/
+build/
+.vite/
+*.tsbuildinfo
+
+# --- Python ---
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.eggs/
+
+# --- Playwright ---
+playwright-report/
+test-results/
+playwright/.cache/
+blob-report/
+
+# --- Logs ---
+*.log
+logs/
+.dev-logs/
+backend/logs/
+
+# --- User-generated / runtime media (never commit uploads) ---
+public/videos/
+backend/public/videos/
+
+# Small bundled hero stub used by the frontend (keep in repo)
+!frontend/public/hero-background.mp4
+!frontend/public/videos/hero-background.mp4
+
+# Block other large media patterns outside the hero stub
+*.mp4
+*.mov
+*.avi
+*.webm
+*.mkv
+!frontend/public/hero-background.mp4
+!frontend/public/videos/hero-background.mp4
+
+# --- Environment / secrets ---
 .env
-.env.local
+.env.*
+!.env.example
 
-# IDE
-.vscode/
+# --- OS ---
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# --- IDE / editors ---
 .idea/
+.vscode/
 *.swp
+*.swo
 *~
 
-/target/
-/node_modules/
-/dist/
+# --- Temporary / cache ---
+.cache/
+tmp/
+temp/
+*.tmp
+*.temp
 
+# --- Netlify local state ---
+.netlify/
 
-/target/
-/node_modules/
-/dist/
+# --- Test / coverage ---
+coverage/
+.nyc_output/
 
-Caddyfile
-Railway.toml
-
-/backend/target/
-.env
-**/*.rs.bk
+# --- Docker (local overrides only) ---
+docker-compose.override.yml

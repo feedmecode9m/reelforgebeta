@@ -1,0 +1,10 @@
+{
+  "inventory_state": "MISSING",
+  "media_failure_mode": "none",
+  "media_intent": "DOCUMENTARY",
+  "media_placeholder_policy": "CONTENT_THEN_PLACEHOLDER",
+  "media_reference": "episode:a1000000-0000-4000-8000-000000000001",
+  "media_reference_validity": "valid",
+  "media_state": "PLACEHOLDER_MEDIA",
+  "thumbnail_resolution": "MUST_PLACEHOLDER"
+}

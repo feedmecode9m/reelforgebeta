@@ -1,0 +1,163 @@
+{
+  "phase": "REELFORGE PHASE 69.8B — PUBLIC EXPERIENCE TRUTH AUDIT",
+  "mode": "FORENSIC_ONLY",
+  "generatedAt": "2026-06-16T22:42:00.000Z",
+  "auditedRole": "normal_user",
+  "evidence": {
+    "runtimeCapture": {
+      "url": "http://127.0.0.1:5173/",
+      "adminModeForced": false,
+      "sources": [
+        "frontend/src/Viewer.svelte",
+        "frontend/src/components/experiences/HeroExperience.svelte",
+        "frontend/src/components/experiences/StudioExperience.svelte",
+        "frontend/user-journey-report.json"
+      ]
+    }
+  },
+  "elements": [
+    {
+      "name": "Homepage",
+      "visible": true,
+      "hidden": false,
+      "collapsed": false,
+      "requiresStudioAccess": false,
+      "requiresAdminAccess": false,
+      "forensicNotes": "Top-level `main` renders hero, discovery, creator profile, support (monetization hub), and feed shell for non-admin users."
+    },
+    {
+      "name": "Hero",
+      "visible": true,
+      "hidden": false,
+      "collapsed": false,
+      "requiresStudioAccess": false,
+      "requiresAdminAccess": false,
+      "forensicNotes": "Hero stage is always rendered via `HeroExperienceBridge` in public flow."
+    },
+    {
+      "name": "Marketplace",
+      "visible": false,
+      "hidden": true,
+      "collapsed": false,
+      "requiresStudioAccess": true,
+      "requiresAdminAccess": true,
+      "forensicNotes": "No `data-marketplace-dashboard` on public page; marketplace dashboard lives inside studio command center/admin workflows."
+    },
+    {
+      "name": "Creator cards",
+      "visible": true,
+      "hidden": false,
+      "collapsed": false,
+      "requiresStudioAccess": false,
+      "requiresAdminAccess": false,
+      "forensicNotes": "Both hero featured creator module (`data-featured-creator-module`) and creator profile block (`data-creator-profile`) render for normal users."
+    },
+    {
+      "name": "Notifications",
+      "visible": true,
+      "hidden": false,
+      "collapsed": false,
+      "requiresStudioAccess": false,
+      "requiresAdminAccess": false,
+      "forensicNotes": "Notification center bell is visible in header; panel content is conditional on user interaction."
+    },
+    {
+      "name": "Daily engagement",
+      "visible": false,
+      "hidden": true,
+      "collapsed": false,
+      "requiresStudioAccess": true,
+      "requiresAdminAccess": true,
+      "forensicNotes": "`data-daily-engagement` only appears in studio workspace sections."
+    },
+    {
+      "name": "Continue watching",
+      "visible": false,
+      "hidden": true,
+      "collapsed": false,
+      "requiresStudioAccess": true,
+      "requiresAdminAccess": true,
+      "forensicNotes": "`data-watch-continue` is inside `StudioExperience` command center context; not present on public landing page."
+    },
+    {
+      "name": "Series",
+      "visible": false,
+      "hidden": true,
+      "collapsed": false,
+      "requiresStudioAccess": false,
+      "requiresAdminAccess": false,
+      "forensicNotes": "Dedicated series panels/drawers are not rendered in idle public homepage state; series metadata appears contextually in feed/theater interactions."
+    },
+    {
+      "name": "Support section",
+      "visible": true,
+      "hidden": false,
+      "collapsed": false,
+      "requiresStudioAccess": false,
+      "requiresAdminAccess": false,
+      "forensicNotes": "Public support CTA is exposed as `MonetizationHub` (`data-monetization-hub`, title 'Support ReelForge')."
+    }
+  ],
+  "screenOrder": [
+    {
+      "index": 1,
+      "element": "Header + Notifications",
+      "selector": "header, [data-notification-center]",
+      "visible": true
+    },
+    {
+      "index": 2,
+      "element": "Hero stage",
+      "selector": "[data-hero-intelligence]",
+      "visible": true
+    },
+    {
+      "index": 3,
+      "element": "Hero Upcoming Events module",
+      "selector": "[data-upcoming-events-module]",
+      "visible": true
+    },
+    {
+      "index": 4,
+      "element": "Hero Featured Creator module",
+      "selector": "[data-featured-creator-module]",
+      "visible": true
+    },
+    {
+      "index": 5,
+      "element": "Discovery feed",
+      "selector": "[data-discovery-feed]",
+      "visible": true
+    },
+    {
+      "index": 6,
+      "element": "Creator profile card",
+      "selector": "[data-creator-profile]",
+      "visible": true
+    },
+    {
+      "index": 7,
+      "element": "Support section (Monetization Hub)",
+      "selector": "[data-monetization-hub]",
+      "visible": true
+    },
+    {
+      "index": 8,
+      "element": "Feed section shell",
+      "selector": ".forge-loader or feed shelves",
+      "visible": true
+    },
+    {
+      "index": 9,
+      "element": "Footer",
+      "selector": "footer",
+      "visible": true
+    }
+  ],
+  "adminGatedButReachableByOverlay": {
+    "studioLauncherTriggerVisible": true,
+    "selector": ".ghost-trigger",
+    "normalUserResult": "Opens studio overlay with admin login panel; full studio modules remain admin-gated."
+  },
+  "completionToken": "USER_EXPERIENCE_TRUTH_COMPLETE=true"
+}

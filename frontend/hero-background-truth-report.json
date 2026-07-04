@@ -1,0 +1,1065 @@
+{
+  "phase": "62C",
+  "objective": "Hero Background Truth Validator Repair",
+  "scenarios": [
+    {
+      "scenario": "custom-image",
+      "checks": {
+        "A_HERO_MANAGER_SAVES_CONFIGURATION": true,
+        "B_CONFIGURATION_PERSISTS_AFTER_REFRESH": true,
+        "C_HERO_MEDIA_VISIBLE_IN_REGION": true,
+        "D_ASSET_RESOLVES_THROUGH_HERO_ASSET_RESOLVE": true,
+        "E_RENDER_DIAGNOSTICS_EMIT_HERO_RENDER": true,
+        "F_CUSTOM_BACKGROUND_SURVIVES_ROTATION": true,
+        "G_CUSTOM_BACKGROUND_SURVIVES_RELOAD": true
+      },
+      "evidence": {
+        "savedConfig": {
+          "heroType": "TRENDING",
+          "backgroundSource": "custom_image",
+          "backgroundAsset": "hero-vault-png",
+          "backgroundVideo": "",
+          "backgroundImage": "/thumbs/hero-test.png",
+          "backgroundStyle": "image",
+          "autoRotate": true,
+          "rotateIntervalMs": 30000,
+          "spotlightPriority": [
+            "FEATURED_RELEASE",
+            "CONTINUE_WATCHING",
+            "TRENDING",
+            "UPCOMING_PREMIERE",
+            "TEAM_SPOTLIGHT",
+            "STUDIO_PRIORITY"
+          ],
+          "seasonalCampaigns": [
+            {
+              "id": "winter-premiere",
+              "label": "Winter Premiere Push",
+              "heroType": "UPCOMING_PREMIERE",
+              "active": false,
+              "scheduleStart": "",
+              "scheduleEnd": ""
+            },
+            {
+              "id": "studio-sprint",
+              "label": "Studio Sprint Spotlight",
+              "heroType": "STUDIO_PRIORITY",
+              "active": false,
+              "scheduleStart": "",
+              "scheduleEnd": ""
+            }
+          ],
+          "carouselDurationMs": 8000,
+          "carouselTransitionStyle": "fade",
+          "carouselPriority": "video",
+          "heroTypography": "cinematic",
+          "autoplayEnabled": true,
+          "carouselSlideOverrides": [
+            {
+              "type": "video",
+              "order": 1,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "image",
+              "order": 2,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "featured_release",
+              "order": 3,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "admin_image",
+              "order": 4,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "admin_video",
+              "order": 5,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "upcoming_release",
+              "order": 6,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "team_spotlight",
+              "order": 7,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "marketplace_spotlight",
+              "order": 8,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "revenue_milestone",
+              "order": 9,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "creator_spotlight",
+              "order": 10,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "discovery_recommendation",
+              "order": 11,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "sentinel_recommendation",
+              "order": 12,
+              "durationMs": 8000,
+              "enabled": true
+            }
+          ],
+          "updatedAt": 1781393526879
+        },
+        "afterRefreshConfig": {
+          "heroType": "TRENDING",
+          "backgroundSource": "custom_image",
+          "backgroundAsset": "hero-vault-png",
+          "backgroundVideo": "",
+          "backgroundImage": "/thumbs/hero-test.png",
+          "backgroundStyle": "image",
+          "autoRotate": true,
+          "rotateIntervalMs": 30000,
+          "spotlightPriority": [
+            "FEATURED_RELEASE",
+            "CONTINUE_WATCHING",
+            "TRENDING",
+            "UPCOMING_PREMIERE",
+            "TEAM_SPOTLIGHT",
+            "STUDIO_PRIORITY"
+          ],
+          "seasonalCampaigns": [
+            {
+              "id": "winter-premiere",
+              "label": "Winter Premiere Push",
+              "heroType": "UPCOMING_PREMIERE",
+              "active": false,
+              "scheduleStart": "",
+              "scheduleEnd": ""
+            },
+            {
+              "id": "studio-sprint",
+              "label": "Studio Sprint Spotlight",
+              "heroType": "STUDIO_PRIORITY",
+              "active": false,
+              "scheduleStart": "",
+              "scheduleEnd": ""
+            }
+          ],
+          "carouselDurationMs": 8000,
+          "carouselTransitionStyle": "fade",
+          "carouselPriority": "video",
+          "heroTypography": "cinematic",
+          "autoplayEnabled": true,
+          "carouselSlideOverrides": [
+            {
+              "type": "video",
+              "order": 1,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "image",
+              "order": 2,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "featured_release",
+              "order": 3,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "admin_image",
+              "order": 4,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "admin_video",
+              "order": 5,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "upcoming_release",
+              "order": 6,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "team_spotlight",
+              "order": 7,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "marketplace_spotlight",
+              "order": 8,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "revenue_milestone",
+              "order": 9,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "creator_spotlight",
+              "order": 10,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "discovery_recommendation",
+              "order": 11,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "sentinel_recommendation",
+              "order": 12,
+              "durationMs": 8000,
+              "enabled": true
+            }
+          ],
+          "updatedAt": 1781393526879
+        },
+        "visibility": {
+          "source": "custom_image",
+          "hasStage": true,
+          "hasActiveMedia": true,
+          "activeMediaVisible": true,
+          "hasVideoNode": false,
+          "videoVisible": false,
+          "videoSrc": "",
+          "hasMediaRendererNode": true
+        },
+        "diagnostics": {
+          "heroAssetResolve": {
+            "tag": "HERO_ASSET_RESOLVE",
+            "payload": {
+              "assetId": "hero-vault-png",
+              "vaultMatch": true,
+              "mediaUrl": "/thumbs/hero-test.png",
+              "assetType": "png",
+              "timestamp": 1781393526880
+            }
+          },
+          "heroRender": {
+            "tag": "HERO_RENDER",
+            "payload": {
+              "backgroundSource": "custom_image",
+              "backgroundAsset": "hero-vault-png",
+              "videoUrl": "",
+              "imageUrl": "/thumbs/hero-test.png",
+              "useVideo": false,
+              "useImage": true,
+              "timestamp": 1781393526891
+            }
+          }
+        },
+        "afterRotateConfig": {
+          "heroType": "UPCOMING_PREMIERE",
+          "backgroundSource": "custom_image",
+          "backgroundAsset": "hero-vault-png",
+          "backgroundVideo": "",
+          "backgroundImage": "/thumbs/hero-test.png",
+          "backgroundStyle": "image",
+          "autoRotate": true,
+          "rotateIntervalMs": 30000,
+          "spotlightPriority": [
+            "FEATURED_RELEASE",
+            "CONTINUE_WATCHING",
+            "TRENDING",
+            "UPCOMING_PREMIERE",
+            "TEAM_SPOTLIGHT",
+            "STUDIO_PRIORITY"
+          ],
+          "seasonalCampaigns": [
+            {
+              "id": "winter-premiere",
+              "label": "Winter Premiere Push",
+              "heroType": "UPCOMING_PREMIERE",
+              "active": false,
+              "scheduleStart": "",
+              "scheduleEnd": ""
+            },
+            {
+              "id": "studio-sprint",
+              "label": "Studio Sprint Spotlight",
+              "heroType": "STUDIO_PRIORITY",
+              "active": false,
+              "scheduleStart": "",
+              "scheduleEnd": ""
+            }
+          ],
+          "carouselDurationMs": 8000,
+          "carouselTransitionStyle": "fade",
+          "carouselPriority": "video",
+          "heroTypography": "cinematic",
+          "autoplayEnabled": true,
+          "carouselSlideOverrides": [
+            {
+              "type": "video",
+              "order": 1,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "image",
+              "order": 2,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "featured_release",
+              "order": 3,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "admin_image",
+              "order": 4,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "admin_video",
+              "order": 5,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "upcoming_release",
+              "order": 6,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "team_spotlight",
+              "order": 7,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "marketplace_spotlight",
+              "order": 8,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "revenue_milestone",
+              "order": 9,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "creator_spotlight",
+              "order": 10,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "discovery_recommendation",
+              "order": 11,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "sentinel_recommendation",
+              "order": 12,
+              "durationMs": 8000,
+              "enabled": true
+            }
+          ],
+          "updatedAt": 1781393528256
+        },
+        "afterReload": {
+          "config": {
+            "heroType": "UPCOMING_PREMIERE",
+            "backgroundSource": "custom_image",
+            "backgroundAsset": "hero-vault-png",
+            "backgroundVideo": "",
+            "backgroundImage": "/thumbs/hero-test.png",
+            "backgroundStyle": "image",
+            "autoRotate": true,
+            "rotateIntervalMs": 30000,
+            "spotlightPriority": [
+              "FEATURED_RELEASE",
+              "CONTINUE_WATCHING",
+              "TRENDING",
+              "UPCOMING_PREMIERE",
+              "TEAM_SPOTLIGHT",
+              "STUDIO_PRIORITY"
+            ],
+            "seasonalCampaigns": [
+              {
+                "id": "winter-premiere",
+                "label": "Winter Premiere Push",
+                "heroType": "UPCOMING_PREMIERE",
+                "active": false,
+                "scheduleStart": "",
+                "scheduleEnd": ""
+              },
+              {
+                "id": "studio-sprint",
+                "label": "Studio Sprint Spotlight",
+                "heroType": "STUDIO_PRIORITY",
+                "active": false,
+                "scheduleStart": "",
+                "scheduleEnd": ""
+              }
+            ],
+            "carouselDurationMs": 8000,
+            "carouselTransitionStyle": "fade",
+            "carouselPriority": "video",
+            "heroTypography": "cinematic",
+            "autoplayEnabled": true,
+            "carouselSlideOverrides": [
+              {
+                "type": "video",
+                "order": 1,
+                "durationMs": 8000,
+                "enabled": true
+              },
+              {
+                "type": "image",
+                "order": 2,
+                "durationMs": 8000,
+                "enabled": true
+              },
+              {
+                "type": "featured_release",
+                "order": 3,
+                "durationMs": 8000,
+                "enabled": true
+              },
+              {
+                "type": "admin_image",
+                "order": 4,
+                "durationMs": 8000,
+                "enabled": true
+              },
+              {
+                "type": "admin_video",
+                "order": 5,
+                "durationMs": 8000,
+                "enabled": true
+              },
+              {
+                "type": "upcoming_release",
+                "order": 6,
+                "durationMs": 8000,
+                "enabled": true
+              },
+              {
+                "type": "team_spotlight",
+                "order": 7,
+                "durationMs": 8000,
+                "enabled": true
+              },
+              {
+                "type": "marketplace_spotlight",
+                "order": 8,
+                "durationMs": 8000,
+                "enabled": true
+              },
+              {
+                "type": "revenue_milestone",
+                "order": 9,
+                "durationMs": 8000,
+                "enabled": true
+              },
+              {
+                "type": "creator_spotlight",
+                "order": 10,
+                "durationMs": 8000,
+                "enabled": true
+              },
+              {
+                "type": "discovery_recommendation",
+                "order": 11,
+                "durationMs": 8000,
+                "enabled": true
+              },
+              {
+                "type": "sentinel_recommendation",
+                "order": 12,
+                "durationMs": 8000,
+                "enabled": true
+              }
+            ],
+            "updatedAt": 1781393528256
+          },
+          "visibility": {
+            "source": "custom_image",
+            "hasStage": true,
+            "hasActiveMedia": true,
+            "activeMediaVisible": true,
+            "hasVideoNode": false,
+            "videoVisible": false,
+            "videoSrc": "",
+            "hasMediaRendererNode": true
+          }
+        }
+      }
+    },
+    {
+      "scenario": "custom-video",
+      "checks": {
+        "A_HERO_MANAGER_SAVES_CONFIGURATION": true,
+        "B_CONFIGURATION_PERSISTS_AFTER_REFRESH": true,
+        "C_HERO_MEDIA_VISIBLE_IN_REGION": true,
+        "D_ASSET_RESOLVES_THROUGH_HERO_ASSET_RESOLVE": true,
+        "E_RENDER_DIAGNOSTICS_EMIT_HERO_RENDER": true,
+        "F_CUSTOM_BACKGROUND_SURVIVES_ROTATION": true,
+        "G_CUSTOM_BACKGROUND_SURVIVES_RELOAD": true
+      },
+      "evidence": {
+        "savedConfig": {
+          "heroType": "UPCOMING_PREMIERE",
+          "backgroundSource": "custom_video",
+          "backgroundAsset": "hero-vault-mp4",
+          "backgroundVideo": "/videos/hero-test.mp4",
+          "backgroundImage": "",
+          "backgroundStyle": "video",
+          "autoRotate": true,
+          "rotateIntervalMs": 30000,
+          "spotlightPriority": [
+            "FEATURED_RELEASE",
+            "CONTINUE_WATCHING",
+            "TRENDING",
+            "UPCOMING_PREMIERE",
+            "TEAM_SPOTLIGHT",
+            "STUDIO_PRIORITY"
+          ],
+          "seasonalCampaigns": [
+            {
+              "id": "winter-premiere",
+              "label": "Winter Premiere Push",
+              "heroType": "UPCOMING_PREMIERE",
+              "active": false,
+              "scheduleStart": "",
+              "scheduleEnd": ""
+            },
+            {
+              "id": "studio-sprint",
+              "label": "Studio Sprint Spotlight",
+              "heroType": "STUDIO_PRIORITY",
+              "active": false,
+              "scheduleStart": "",
+              "scheduleEnd": ""
+            }
+          ],
+          "carouselDurationMs": 8000,
+          "carouselTransitionStyle": "fade",
+          "carouselPriority": "video",
+          "heroTypography": "cinematic",
+          "autoplayEnabled": true,
+          "carouselSlideOverrides": [
+            {
+              "type": "video",
+              "order": 1,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "image",
+              "order": 2,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "featured_release",
+              "order": 3,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "admin_image",
+              "order": 4,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "admin_video",
+              "order": 5,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "upcoming_release",
+              "order": 6,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "team_spotlight",
+              "order": 7,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "marketplace_spotlight",
+              "order": 8,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "revenue_milestone",
+              "order": 9,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "creator_spotlight",
+              "order": 10,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "discovery_recommendation",
+              "order": 11,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "sentinel_recommendation",
+              "order": 12,
+              "durationMs": 8000,
+              "enabled": true
+            }
+          ],
+          "updatedAt": 1781393529532
+        },
+        "afterRefreshConfig": {
+          "heroType": "UPCOMING_PREMIERE",
+          "backgroundSource": "custom_video",
+          "backgroundAsset": "hero-vault-mp4",
+          "backgroundVideo": "/videos/hero-test.mp4",
+          "backgroundImage": "",
+          "backgroundStyle": "video",
+          "autoRotate": true,
+          "rotateIntervalMs": 30000,
+          "spotlightPriority": [
+            "FEATURED_RELEASE",
+            "CONTINUE_WATCHING",
+            "TRENDING",
+            "UPCOMING_PREMIERE",
+            "TEAM_SPOTLIGHT",
+            "STUDIO_PRIORITY"
+          ],
+          "seasonalCampaigns": [
+            {
+              "id": "winter-premiere",
+              "label": "Winter Premiere Push",
+              "heroType": "UPCOMING_PREMIERE",
+              "active": false,
+              "scheduleStart": "",
+              "scheduleEnd": ""
+            },
+            {
+              "id": "studio-sprint",
+              "label": "Studio Sprint Spotlight",
+              "heroType": "STUDIO_PRIORITY",
+              "active": false,
+              "scheduleStart": "",
+              "scheduleEnd": ""
+            }
+          ],
+          "carouselDurationMs": 8000,
+          "carouselTransitionStyle": "fade",
+          "carouselPriority": "video",
+          "heroTypography": "cinematic",
+          "autoplayEnabled": true,
+          "carouselSlideOverrides": [
+            {
+              "type": "video",
+              "order": 1,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "image",
+              "order": 2,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "featured_release",
+              "order": 3,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "admin_image",
+              "order": 4,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "admin_video",
+              "order": 5,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "upcoming_release",
+              "order": 6,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "team_spotlight",
+              "order": 7,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "marketplace_spotlight",
+              "order": 8,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "revenue_milestone",
+              "order": 9,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "creator_spotlight",
+              "order": 10,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "discovery_recommendation",
+              "order": 11,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "sentinel_recommendation",
+              "order": 12,
+              "durationMs": 8000,
+              "enabled": true
+            }
+          ],
+          "updatedAt": 1781393529532
+        },
+        "visibility": {
+          "source": "custom_video",
+          "hasStage": true,
+          "hasActiveMedia": true,
+          "activeMediaVisible": true,
+          "hasVideoNode": true,
+          "videoVisible": true,
+          "videoSrc": "http://localhost:8080/videos/hero-background.mp4",
+          "hasMediaRendererNode": true
+        },
+        "diagnostics": {
+          "heroAssetResolve": {
+            "tag": "HERO_ASSET_RESOLVE",
+            "payload": {
+              "assetId": "hero-vault-mp4",
+              "vaultMatch": true,
+              "mediaUrl": "/videos/hero-test.mp4",
+              "assetType": "mp4",
+              "timestamp": 1781393529532
+            }
+          },
+          "heroRender": {
+            "tag": "HERO_RENDER",
+            "payload": {
+              "backgroundSource": "custom_video",
+              "backgroundAsset": "hero-vault-mp4",
+              "videoUrl": "/videos/hero-test.mp4",
+              "imageUrl": "/thumbs/hero-test-poster.jpg",
+              "useVideo": true,
+              "useImage": false,
+              "timestamp": 1781393529546
+            }
+          }
+        },
+        "afterRotateConfig": {
+          "heroType": "TEAM_SPOTLIGHT",
+          "backgroundSource": "custom_video",
+          "backgroundAsset": "hero-vault-mp4",
+          "backgroundVideo": "/videos/hero-test.mp4",
+          "backgroundImage": "",
+          "backgroundStyle": "video",
+          "autoRotate": true,
+          "rotateIntervalMs": 30000,
+          "spotlightPriority": [
+            "FEATURED_RELEASE",
+            "CONTINUE_WATCHING",
+            "TRENDING",
+            "UPCOMING_PREMIERE",
+            "TEAM_SPOTLIGHT",
+            "STUDIO_PRIORITY"
+          ],
+          "seasonalCampaigns": [
+            {
+              "id": "winter-premiere",
+              "label": "Winter Premiere Push",
+              "heroType": "UPCOMING_PREMIERE",
+              "active": false,
+              "scheduleStart": "",
+              "scheduleEnd": ""
+            },
+            {
+              "id": "studio-sprint",
+              "label": "Studio Sprint Spotlight",
+              "heroType": "STUDIO_PRIORITY",
+              "active": false,
+              "scheduleStart": "",
+              "scheduleEnd": ""
+            }
+          ],
+          "carouselDurationMs": 8000,
+          "carouselTransitionStyle": "fade",
+          "carouselPriority": "video",
+          "heroTypography": "cinematic",
+          "autoplayEnabled": true,
+          "carouselSlideOverrides": [
+            {
+              "type": "video",
+              "order": 1,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "image",
+              "order": 2,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "featured_release",
+              "order": 3,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "admin_image",
+              "order": 4,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "admin_video",
+              "order": 5,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "upcoming_release",
+              "order": 6,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "team_spotlight",
+              "order": 7,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "marketplace_spotlight",
+              "order": 8,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "revenue_milestone",
+              "order": 9,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "creator_spotlight",
+              "order": 10,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "discovery_recommendation",
+              "order": 11,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "sentinel_recommendation",
+              "order": 12,
+              "durationMs": 8000,
+              "enabled": true
+            }
+          ],
+          "updatedAt": 1781393530793
+        },
+        "afterReload": {
+          "config": {
+            "heroType": "TEAM_SPOTLIGHT",
+            "backgroundSource": "custom_video",
+            "backgroundAsset": "hero-vault-mp4",
+            "backgroundVideo": "/videos/hero-test.mp4",
+            "backgroundImage": "",
+            "backgroundStyle": "video",
+            "autoRotate": true,
+            "rotateIntervalMs": 30000,
+            "spotlightPriority": [
+              "FEATURED_RELEASE",
+              "CONTINUE_WATCHING",
+              "TRENDING",
+              "UPCOMING_PREMIERE",
+              "TEAM_SPOTLIGHT",
+              "STUDIO_PRIORITY"
+            ],
+            "seasonalCampaigns": [
+              {
+                "id": "winter-premiere",
+                "label": "Winter Premiere Push",
+                "heroType": "UPCOMING_PREMIERE",
+                "active": false,
+                "scheduleStart": "",
+                "scheduleEnd": ""
+              },
+              {
+                "id": "studio-sprint",
+                "label": "Studio Sprint Spotlight",
+                "heroType": "STUDIO_PRIORITY",
+                "active": false,
+                "scheduleStart": "",
+                "scheduleEnd": ""
+              }
+            ],
+            "carouselDurationMs": 8000,
+            "carouselTransitionStyle": "fade",
+            "carouselPriority": "video",
+            "heroTypography": "cinematic",
+            "autoplayEnabled": true,
+            "carouselSlideOverrides": [
+              {
+                "type": "video",
+                "order": 1,
+                "durationMs": 8000,
+                "enabled": true
+              },
+              {
+                "type": "image",
+                "order": 2,
+                "durationMs": 8000,
+                "enabled": true
+              },
+              {
+                "type": "featured_release",
+                "order": 3,
+                "durationMs": 8000,
+                "enabled": true
+              },
+              {
+                "type": "admin_image",
+                "order": 4,
+                "durationMs": 8000,
+                "enabled": true
+              },
+              {
+                "type": "admin_video",
+                "order": 5,
+                "durationMs": 8000,
+                "enabled": true
+              },
+              {
+                "type": "upcoming_release",
+                "order": 6,
+                "durationMs": 8000,
+                "enabled": true
+              },
+              {
+                "type": "team_spotlight",
+                "order": 7,
+                "durationMs": 8000,
+                "enabled": true
+              },
+              {
+                "type": "marketplace_spotlight",
+                "order": 8,
+                "durationMs": 8000,
+                "enabled": true
+              },
+              {
+                "type": "revenue_milestone",
+                "order": 9,
+                "durationMs": 8000,
+                "enabled": true
+              },
+              {
+                "type": "creator_spotlight",
+                "order": 10,
+                "durationMs": 8000,
+                "enabled": true
+              },
+              {
+                "type": "discovery_recommendation",
+                "order": 11,
+                "durationMs": 8000,
+                "enabled": true
+              },
+              {
+                "type": "sentinel_recommendation",
+                "order": 12,
+                "durationMs": 8000,
+                "enabled": true
+              }
+            ],
+            "updatedAt": 1781393530793
+          },
+          "visibility": {
+            "source": "custom_video",
+            "hasStage": true,
+            "hasActiveMedia": true,
+            "activeMediaVisible": true,
+            "hasVideoNode": true,
+            "videoVisible": true,
+            "videoSrc": "http://localhost:8080/videos/hero-background.mp4",
+            "hasMediaRendererNode": true
+          }
+        }
+      }
+    }
+  ],
+  "diagnostics": {
+    "heroAssetResolveCount": 8,
+    "heroRenderCount": 8
+  },
+  "outputs": {
+    "truthReportPath": "/home/youloose2dafish/projects/reelforge/frontend/hero-background-truth-report.json",
+    "certificationPath": "/home/youloose2dafish/projects/reelforge/frontend/hero-background-certification.json"
+  },
+  "success": true,
+  "completeToken": "HERO_BACKGROUND_TRUTH_COMPLETE=true",
+  "generatedAt": "2026-06-13T23:32:05.957Z"
+}

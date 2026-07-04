@@ -1,0 +1,17 @@
+[package]
+name = "depgraph-check"
+version = "0.1.0"
+edition = "2021"
+description = "ReelForge architecture dependency graph enforcement (DGEL)"
+
+[[bin]]
+name = "depgraph-check"
+path = "src/main.rs"
+
+[dependencies]
+regex = "1"
+serde = { version = "1", features = ["derive"] }
+proc-macro2 = { version = "1", features = ["span-locations"] }
+syn = { version = "2", features = ["full", "visit"] }
+toml = "0.8"
+walkdir = "2"

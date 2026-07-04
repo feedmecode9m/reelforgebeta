@@ -1,0 +1,85 @@
+{
+  "phase": "REELFORGE PHASE 67.2",
+  "mode": "SURGICAL HOTFIX",
+  "generatedAt": "2026-06-18T12:47:05.536Z",
+  "baseUrl": "http://127.0.0.1:4173",
+  "guideMeModeEnabled": true,
+  "diagnostics": {
+    "guideMeBlurFixAppliedSeen": true
+  },
+  "computed": {
+    "mainFilter": "none",
+    "overlayBackdropFilter": "none",
+    "overlayWebkitBackdropFilter": "none",
+    "headerPosition": "relative",
+    "headerBackgroundColor": "rgb(8, 10, 18)",
+    "headerBackgroundAlpha": 1,
+    "containerGlowOpacity": "0",
+    "coachCardFilter": "none",
+    "coachCardOpacity": 1,
+    "coachCardOverflow": "auto",
+    "coachCardRect": {
+      "top": 573.438,
+      "left": 550,
+      "width": 340,
+      "height": 302.563,
+      "bottom": 876
+    },
+    "sampledText": [
+      {
+        "tag": "p",
+        "opacity": 1,
+        "filter": "none",
+        "color": "rgba(255, 255, 255, 0.85)",
+        "lineHeight": "16.704px"
+      },
+      {
+        "tag": "h4",
+        "opacity": 1,
+        "filter": "none",
+        "color": "rgb(0, 242, 255)",
+        "lineHeight": "23.04px"
+      },
+      {
+        "tag": "p",
+        "opacity": 1,
+        "filter": "none",
+        "color": "rgba(255, 255, 255, 0.85)",
+        "lineHeight": "16.704px"
+      },
+      {
+        "tag": "p",
+        "opacity": 1,
+        "filter": "none",
+        "color": "rgba(255, 255, 255, 0.85)",
+        "lineHeight": "16.704px"
+      },
+      {
+        "tag": "p",
+        "opacity": 1,
+        "filter": "none",
+        "color": "rgba(255, 255, 255, 0.85)",
+        "lineHeight": "16.704px"
+      },
+      {
+        "tag": "p",
+        "opacity": 1,
+        "filter": "none",
+        "color": "rgba(255, 255, 255, 0.85)",
+        "lineHeight": "16.704px"
+      }
+    ]
+  },
+  "interactions": {
+    "nextButtonClickable": true
+  },
+  "checks": {
+    "mainBlurRemoved": true,
+    "overlayBackdropBlurAdjusted": true,
+    "headerBleedFixed": true,
+    "containerGlowNeutralized": true,
+    "textReadableNoClipping": true,
+    "controlsClickable": true
+  },
+  "completionToken": "GUIDE_ME_READABILITY_COMPLETE=true"
+}

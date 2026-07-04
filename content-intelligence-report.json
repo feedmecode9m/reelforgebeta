@@ -1,0 +1,71 @@
+{
+  "phase": "PHASE 71 — CONTENT INTELLIGENCE FOUNDATION",
+  "generatedAt": "2026-06-17T18:41:07.212Z",
+  "models": {
+    "seriesMetadataFields": [
+      "seriesId",
+      "title",
+      "subtitle",
+      "creator",
+      "productionCompany",
+      "genre",
+      "subgenre",
+      "releaseYear",
+      "country",
+      "language",
+      "rating",
+      "communityRepresented",
+      "educationalThemes",
+      "historicalSignificance",
+      "coverArt",
+      "trailer",
+      "rightsStatus",
+      "tags",
+      "keywords"
+    ],
+    "episodeMetadataFields": [
+      "episodeId",
+      "seriesId",
+      "episodeNumber",
+      "episodeTitle",
+      "description",
+      "runtime",
+      "thumbnail",
+      "releaseDate",
+      "location",
+      "callToAction",
+      "language",
+      "captions",
+      "featuredPeople",
+      "keywords",
+      "topics"
+    ],
+    "rightsMetadataFields": [
+      "copyrightOwner",
+      "distributionRights",
+      "expirationDate",
+      "musicRightsConfirmed",
+      "talentReleasesConfirmed",
+      "locationReleasesConfirmed"
+    ]
+  },
+  "validation": {
+    "seriesModelValid": true,
+    "episodeModelValid": true,
+    "rightsModelValid": true,
+    "missingSeriesFields": [],
+    "missingEpisodeFields": [],
+    "missingRightsFields": []
+  },
+  "studioPlacement": {
+    "panel": "Content Intelligence",
+    "location": "Smart Production Studio",
+    "between": [
+      "Assets",
+      "Collections"
+    ],
+    "placementValid": true
+  },
+  "adminOnly": true,
+  "completionToken": "CONTENT_INTELLIGENCE_FOUNDATION_COMPLETE=true"
+}

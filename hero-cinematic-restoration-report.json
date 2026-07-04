@@ -1,0 +1,62 @@
+{
+  "phase": "REELFORGE PHASE — CINEMATIC HERO RESTORATION",
+  "forensicAudit": {
+    "step1HeroSizeAudit": {
+      "before": {
+        "heroWidth": "100% container width",
+        "heroHeight": "60vh (min 400px)",
+        "viewportCoverage": "about 60% viewport height",
+        "layoutClassification": "A) Split/layout-with-dashboard-overlays"
+      },
+      "after": {
+        "heroWidth": "100vw (full-bleed)",
+        "heroHeight": "92vh (min 80vh, max 100vh)",
+        "viewportCoverage": "about 92% viewport height"
+      }
+    }
+  },
+  "heroWidth": {
+    "value": "100vw",
+    "source": "frontend/src/viewer/viewer.css (.hero-stage.hero-stage--viewer)"
+  },
+  "heroHeight": {
+    "value": "92vh",
+    "bounds": "min 80vh, max 100vh",
+    "source": "frontend/src/viewer/viewer.css (.hero-stage, .hero-stage.hero-stage--viewer)"
+  },
+  "viewportCoverage": {
+    "heightPercent": 92,
+    "widthPercent": 100,
+    "classification": "B) Full-bleed layout"
+  },
+  "storyFontSizes": {
+    "label": "clamp(16px, 1.3vw, 20px)",
+    "headline": "clamp(48px, 6vw, 72px)",
+    "subtitle": "clamp(24px, 2.4vw, 32px)",
+    "description": "clamp(18px, 1.9vw, 24px)",
+    "cta": "clamp(17px, 1.5vw, 22px) with 56px min height"
+  },
+  "heroPriorityRank": {
+    "rank": 1,
+    "rationale": "Hero is full-bleed, header demoted to lightweight top overlay, secondary modules rendered below hero."
+  },
+  "competingModulesMoved": {
+    "movedBelowHero": [
+      "Featured Collections",
+      "Notifications",
+      "Feed/Series modules"
+    ],
+    "removedFromViewerHeroOverlay": [
+      "Upcoming Events module (sanitizeViewer path)",
+      "Featured Creator module (sanitizeViewer path)",
+      "Carousel timeline controls (hidden in sanitizeViewer)",
+      "Continue Watching hero CTA"
+    ]
+  },
+  "fullBleedEnabled": true,
+  "storyAuthorityConfirmed": {
+    "status": true,
+    "rule": "In viewer mode, title/subtitle/description are resolved from story fields and no longer sourced from asset labels for primary overlay copy."
+  },
+  "completionToken": "HERO_CINEMATIC_RESTORATION_COMPLETE=true"
+}

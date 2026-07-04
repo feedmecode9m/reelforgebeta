@@ -1,0 +1,158 @@
+{
+  "version": "4.0.0",
+  "seriesId": "series-neon-vengeance",
+  "generatedAt": 1781328019307,
+  "readinessScore": 32,
+  "securityScore": 94,
+  "threatLevel": "GREEN",
+  "publishingScore": 52,
+  "workflowHealth": 52,
+  "teamHealth": 4,
+  "topIssues": [
+    {
+      "id": "upload-post-reels",
+      "title": "Multipart upload surface",
+      "detail": "POST /api/reels accepts video/thumbnail payloads — must require authenticated admin on backend.",
+      "severity": "critical",
+      "domain": "security"
+    },
+    {
+      "id": "media-storage-list",
+      "title": "Storage inventory routes",
+      "detail": "GET /api/media/storage, /api/videos, /api/thumbnails expose filesystem inventory.",
+      "severity": "critical",
+      "domain": "security"
+    },
+    {
+      "id": "media-delete-paths",
+      "title": "Destructive media delete routes",
+      "detail": "DELETE /api/media/storage/{file} and /api/storage/file/{file} can remove assets permanently.",
+      "severity": "critical",
+      "domain": "security"
+    },
+    {
+      "id": "media-orphan-cleanup",
+      "title": "Orphan cleanup mutation",
+      "detail": "POST /api/media/cleanup/orphans?confirm=true bulk-deletes unreferenced files.",
+      "severity": "critical",
+      "domain": "security"
+    },
+    {
+      "id": "production-missing-assets",
+      "title": "6 episodes missing assets",
+      "detail": "Asset coverage gaps suppress weighted readiness.",
+      "severity": "critical",
+      "domain": "production"
+    }
+  ],
+  "recommendations": [
+    "Upload assets for E01 and E02 to raise readiness from 25% to 61%.",
+    "Critical: Require admin Bearer token and audit-log every delete; confirm CSRF-safe methods.",
+    "Critical: Gate cleanup behind admin role, dry-run preview, and two-step confirmation.",
+    "Critical: Prefer HttpOnly secure cookies or short-lived tokens with refresh rotation.",
+    "High: Enforce Bearer auth on all upload routes and validate MIME/size server-side.",
+    "Upload S1:E01 reel",
+    "Upload S1:E02 reel",
+    "Upload S1:E03 reel"
+  ],
+  "quickWins": [
+    "Attach reel to E03",
+    "Attach reel to E04"
+  ],
+  "blockers": [
+    {
+      "id": "production-missing-assets",
+      "title": "6 episodes missing assets",
+      "detail": "Asset coverage gaps suppress weighted readiness.",
+      "severity": "critical",
+      "domain": "production"
+    },
+    {
+      "id": "missing-asset-ep-neon-s01e01",
+      "title": "Attach reel to E01",
+      "detail": "Ghost in the Grid cannot play until a video is linked.",
+      "severity": "critical",
+      "domain": "production"
+    },
+    {
+      "id": "missing-asset-ep-neon-s01e02",
+      "title": "Attach reel to E02",
+      "detail": "Blood Protocol cannot play until a video is linked.",
+      "severity": "critical",
+      "domain": "production"
+    },
+    {
+      "id": "missing-asset-ep-neon-s01e03",
+      "title": "Attach reel to E03",
+      "detail": "Midnight Firewall cannot play until a video is linked.",
+      "severity": "critical",
+      "domain": "production"
+    },
+    {
+      "id": "upload-post-reels",
+      "title": "Multipart upload surface",
+      "detail": "POST /api/reels accepts video/thumbnail payloads — must require authenticated admin on backend.",
+      "severity": "critical",
+      "domain": "security"
+    }
+  ],
+  "nextActions": [
+    {
+      "title": "Attach reel to E01",
+      "detail": "Ghost in the Grid cannot play until a video is linked.",
+      "targetTab": "Production",
+      "targetSection": "workflowTasks",
+      "impact": 6
+    },
+    {
+      "title": "Attach reel to E02",
+      "detail": "Blood Protocol cannot play until a video is linked.",
+      "targetTab": "Production",
+      "targetSection": "workflowTasks",
+      "impact": 6
+    },
+    {
+      "title": "Attach reel to E03",
+      "detail": "Midnight Firewall cannot play until a video is linked.",
+      "targetTab": "Production",
+      "targetSection": "workflowTasks",
+      "impact": 6
+    },
+    {
+      "title": "Attach Reel to E01",
+      "detail": "Complete this workflow task to restore momentum.",
+      "targetTab": "Production",
+      "targetSection": "workflowTasks"
+    },
+    {
+      "title": "Attach Reel to E02",
+      "detail": "Complete this workflow task to restore momentum.",
+      "targetTab": "Production",
+      "targetSection": "workflowTasks"
+    },
+    {
+      "title": "Attach Reel to E03",
+      "detail": "Complete this workflow task to restore momentum.",
+      "targetTab": "Production",
+      "targetSection": "workflowTasks"
+    }
+  ],
+  "summary": "Sentinel master analysis — readiness 32%, security 94/100, threat GREEN.",
+  "executiveSummary": "Multipart upload surface — POST /api/reels accepts video/thumbnail payloads — must require authenticated admin on backend.",
+  "riskLevel": "CRITICAL",
+  "platformHealth": 33,
+  "projectedReadiness": {
+    "current": 25,
+    "projected": 61,
+    "delta": 36,
+    "targetReadiness": 80
+  },
+  "domains": {
+    "platform": "Platform health 33% · hero spotlight on Neon Vengeance.",
+    "security": "Security 94/100 · live threat GREEN.",
+    "production": "Production readiness 25%.",
+    "publishing": "Publishing score 52% · launch readiness 78%.",
+    "workflows": "6 open workflow tasks.",
+    "teams": "Team health 4% · 0 recent activities."
+  }
+}

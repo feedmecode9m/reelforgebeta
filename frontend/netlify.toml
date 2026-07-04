@@ -1,0 +1,14 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  VITE_API_URL = "https://reelforge-deploy-production.up.railway.app"
+  VITE_BACKEND_URL = "https://reelforge-deploy-production.up.railway.app"
+  VITE_API_BASE_URL = "https://reelforge-deploy-production.up.railway.app"
+  VITE_ALLOW_UI_PLACEHOLDERS = "true"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

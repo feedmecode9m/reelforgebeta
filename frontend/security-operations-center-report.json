@@ -1,0 +1,47 @@
+{
+  "sections": [
+    "threat-timeline",
+    "active-incidents",
+    "threat-map",
+    "recent-security-events",
+    "attack-surface-overview",
+    "security-audit-results",
+    "platform-security-score",
+    "recommended-actions"
+  ],
+  "unit": {
+    "sectionKeys": [
+      "threatTimeline",
+      "activeIncidents",
+      "threatMap",
+      "recentSecurityEvents",
+      "attackSurfaceOverview",
+      "securityAuditResults",
+      "platformSecurityScore",
+      "recommendedActions"
+    ],
+    "combinedScore": 94,
+    "auditScore": 87,
+    "threatScore": 100,
+    "sentinelScore": 94,
+    "threatLevel": "GREEN",
+    "timelineCount": 7,
+    "incidentCount": 0,
+    "mapCount": 5,
+    "eventCount": 7,
+    "actionCount": 6,
+    "auditFindingCount": 5,
+    "sources": {
+      "securityAuditEngine": 87,
+      "threatDetectionEngine": 100,
+      "sentinelAssistant": 94,
+      "platformMetrics": 1781224531776
+    }
+  },
+  "diagnostics": {
+    "score": 8,
+    "timeline": 37,
+    "incident": 0,
+    "alert": 21
+  }
+}

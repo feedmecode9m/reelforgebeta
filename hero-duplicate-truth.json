@@ -1,0 +1,162 @@
+{
+  "phase": "PHASE — DUPLICATE HERO MEDIA TRUTH",
+  "forensicOnly": true,
+  "generatedAt": "2026-06-19T04:53:18.589Z",
+  "baseUrl": "http://127.0.0.1:4173",
+  "step1_screenTruth": [
+    {
+      "element": "div#app > main.svelte-2qypke > main > section.hero-stage.svelte-whqsg3.hero-stage--viewer > div.hero-video-container.hero-background.svelte-whqsg3 > video.hero-video.hero-media.hero-video-visible",
+      "tag": "video",
+      "component": "HeroExperience.svelte (via MediaRenderer.svelte)",
+      "source": "http://127.0.0.1:4173/videos/hero-background.mp4",
+      "width": 1440,
+      "height": 828
+    },
+    {
+      "element": "div#app > main.svelte-2qypke > main > section.hero-stage.svelte-whqsg3.hero-stage--viewer > div.hero-video-container.hero-background.svelte-whqsg3 > div.hero-video-overlay.hero-overlay",
+      "tag": "background-image",
+      "component": "HeroExperience.svelte background layer",
+      "source": "linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.8))",
+      "width": 1440,
+      "height": 828
+    },
+    {
+      "element": "div#app > main.svelte-2qypke > main > section.hero-stage.svelte-whqsg3.hero-stage--viewer > div.hero-video-container.hero-background.svelte-whqsg3 > div.hero-motion-gradient.svelte-whqsg3",
+      "tag": "background-image",
+      "component": "HeroExperience.svelte background layer",
+      "source": "radial-gradient(120% 80% at 80% 20%, rgba(255, 0, 180, 0.18), rgba(0, 0, 0, 0) 60%), radial-gradient(100% 75% at 15% 80%, rgba(0, 220, 255, 0.18), rgba(0, 0, 0, 0) 55%)",
+      "width": 1471.789,
+      "height": 846.279
+    }
+  ],
+  "step2_activeMediaCount": {
+    "videoElementsInsideHeroViewport": 1,
+    "imgElementsInsideHeroViewport": 0,
+    "backgroundImageElementsInsideHeroViewport": 2,
+    "visibleVideoElementsInsideHeroViewport": 1,
+    "visibleImgElementsInsideHeroViewport": 0,
+    "visibleBackgroundImageElementsInsideHeroViewport": 2,
+    "visibleMediaCount": 3
+  },
+  "step3_componentOwnership": {
+    "HeroExperience.svelte": {
+      "rendersHeroMedia": true,
+      "mode": "Primary owner",
+      "evidence": [
+        "Defines hero media branch (video/image/fallback)",
+        "Owns active carousel slide and media URLs"
+      ]
+    },
+    "HeroExperienceBridge.svelte": {
+      "rendersHeroMedia": true,
+      "mode": "Wrapper",
+      "evidence": [
+        "Mounts HeroExperience section=\"stage\""
+      ]
+    },
+    "Viewer.svelte": {
+      "rendersHeroMedia": true,
+      "mode": "Host",
+      "evidence": [
+        "Renders HeroExperienceBridge in main viewer tree"
+      ]
+    },
+    "StudioLauncher.svelte": {
+      "rendersHeroMedia": false,
+      "mode": "No hero viewport media",
+      "evidence": [
+        "Launches StudioExperience overlay only"
+      ]
+    },
+    "HeroManagerPanel.svelte": {
+      "rendersHeroMedia": false,
+      "mode": "Admin preview media only",
+      "evidence": [
+        "Renders vault card previews, not hero viewport renderer"
+      ]
+    },
+    "Any carousel renderer": {
+      "owner": "HeroExperience.svelte",
+      "separateRendererFound": false
+    },
+    "Any slide renderer": {
+      "owner": "HeroExperience.svelte",
+      "separateRendererFound": false
+    }
+  },
+  "step4_domSnapshot": {
+    "hierarchy": [
+      {
+        "parent": "div#app > main.svelte-2qypke > main > section.hero-stage.svelte-whqsg3.hero-stage--viewer > div.hero-video-container.hero-background.svelte-whqsg3",
+        "child": "video.hero-video.hero-media.hero-video-visible"
+      },
+      {
+        "parent": "div#app > main.svelte-2qypke > main > section.hero-stage.svelte-whqsg3.hero-stage--viewer > div.hero-video-container.hero-background.svelte-whqsg3",
+        "child": "div.hero-video-overlay.hero-overlay"
+      },
+      {
+        "parent": "div#app > main.svelte-2qypke > main > section.hero-stage.svelte-whqsg3.hero-stage--viewer > div.hero-video-container.hero-background.svelte-whqsg3",
+        "child": "div.hero-motion-gradient.svelte-whqsg3"
+      }
+    ],
+    "mediaNodes": [
+      {
+        "node": "div#app > main.svelte-2qypke > main > section.hero-stage.svelte-whqsg3.hero-stage--viewer > div.hero-video-container.hero-background.svelte-whqsg3 > video.hero-video.hero-media.hero-video-visible",
+        "tag": "video",
+        "className": "hero-video hero-media hero-video-visible svelte-1hqxcoa",
+        "src": "http://127.0.0.1:4173/videos/hero-background.mp4",
+        "backgroundImage": "none",
+        "display": "inline",
+        "visibility": "visible",
+        "opacity": "1",
+        "width": 1440,
+        "height": 828,
+        "inHeroViewport": true
+      },
+      {
+        "node": "div#app > main.svelte-2qypke > main > section.hero-stage.svelte-whqsg3.hero-stage--viewer > div.hero-video-container.hero-background.svelte-whqsg3 > div.hero-video-overlay.hero-overlay",
+        "tag": "div",
+        "className": "hero-video-overlay hero-overlay",
+        "src": "",
+        "backgroundImage": "linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.8))",
+        "display": "block",
+        "visibility": "visible",
+        "opacity": "1",
+        "width": 1440,
+        "height": 828,
+        "inHeroViewport": true
+      },
+      {
+        "node": "div#app > main.svelte-2qypke > main > section.hero-stage.svelte-whqsg3.hero-stage--viewer > div.hero-video-container.hero-background.svelte-whqsg3 > div.hero-motion-gradient.svelte-whqsg3",
+        "tag": "div",
+        "className": "hero-motion-gradient svelte-whqsg3",
+        "src": "",
+        "backgroundImage": "radial-gradient(120% 80% at 80% 20%, rgba(255, 0, 180, 0.18), rgba(0, 0, 0, 0) 60%), radial-gradient(100% 75% at 15% 80%, rgba(0, 220, 255, 0.18), rgba(0, 0, 0, 0) 55%)",
+        "display": "block",
+        "visibility": "visible",
+        "opacity": "0.462972",
+        "width": 1471.789,
+        "height": 846.279,
+        "inHeroViewport": true
+      }
+    ]
+  },
+  "step5_duplicateSource": "B) video + image/background simultaneously",
+  "step6_deletionSafety": {
+    "safeToRemoveRenderers": [
+      "NONE_IDENTIFIED_FROM_THIS_CAPTURE"
+    ],
+    "unsafeToRemoveRenderers": [
+      "HeroExperience.svelte",
+      "HeroExperienceBridge.svelte",
+      "MediaRenderer.svelte (hero video path)"
+    ],
+    "note": "Identification only; no removals applied."
+  },
+  "outputs": {
+    "VISIBLE_MEDIA_COUNT": 3,
+    "DUPLICATE_SOURCE": "B) video + image/background simultaneously",
+    "SAFE_RENDERER_TO_REMOVE": "NONE_IDENTIFIED"
+  },
+  "completionToken": "HERO_DUPLICATE_TRUTH_COMPLETE=true"
+}

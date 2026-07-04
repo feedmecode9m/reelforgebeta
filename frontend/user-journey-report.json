@@ -1,0 +1,265 @@
+{
+  "phase": 65,
+  "objective": "User Journey Certification",
+  "roles": {
+    "viewer": {
+      "discover_content": {
+        "role": "viewer",
+        "step": "discover_content",
+        "ok": true,
+        "total": 40,
+        "top": "Trending Shorts S1E1 Hook — 15s",
+        "timestamp": 1781383463759
+      },
+      "search_content": {
+        "role": "viewer",
+        "step": "search_content",
+        "ok": true,
+        "total": 8,
+        "query": "neon",
+        "timestamp": 1781383463769
+      },
+      "continue_watching": {
+        "role": "viewer",
+        "step": "continue_watching",
+        "ok": true,
+        "source": "local",
+        "percent": 42,
+        "timestamp": 1781383463822
+      },
+      "complete_episode": {
+        "role": "viewer",
+        "step": "complete_episode",
+        "ok": true,
+        "percent": 100,
+        "reelPercent": 100,
+        "timestamp": 1781383473885
+      }
+    },
+    "creator": {
+      "upload_reel": {
+        "role": "creator",
+        "step": "upload_reel",
+        "ok": true,
+        "vaultCount": 1,
+        "uploaded": true,
+        "timestamp": 1781383475121
+      },
+      "attach_episode": {
+        "role": "creator",
+        "step": "attach_episode",
+        "ok": true,
+        "attached": true,
+        "episodeId": "ep-neon-s01e01",
+        "timestamp": 1781383475125
+      },
+      "schedule_release": {
+        "role": "creator",
+        "step": "schedule_release",
+        "ok": true,
+        "status": "scheduled",
+        "releaseAt": 1781452800000,
+        "timestamp": 1781383475256
+      },
+      "publish": {
+        "role": "creator",
+        "step": "publish",
+        "ok": true,
+        "stage": "PUBLISHED",
+        "episodeId": "ep-neon-s01e01",
+        "timestamp": 1781383475896
+      }
+    },
+    "teamManager": {
+      "assign_workflow_task": {
+        "role": "teamManager",
+        "step": "assign_workflow_task",
+        "ok": true,
+        "assigned": true,
+        "taskId": "missing-asset-ep-neon-s01e01",
+        "status": "IN_PROGRESS",
+        "timestamp": 1781383475936
+      },
+      "approve_workflow": {
+        "role": "teamManager",
+        "step": "approve_workflow",
+        "ok": true,
+        "approved": true,
+        "taskId": "missing-asset-ep-neon-s01e01",
+        "status": "COMPLETE",
+        "timestamp": 1781383475975
+      },
+      "receive_notification": {
+        "role": "teamManager",
+        "step": "receive_notification",
+        "ok": true,
+        "before": 8,
+        "after": 9,
+        "received": true,
+        "timestamp": 1781383476014
+      }
+    },
+    "admin": {
+      "open_studio": {
+        "role": "admin",
+        "step": "open_studio",
+        "ok": true,
+        "commandCenterVisible": true,
+        "timestamp": 1781383476021
+      },
+      "review_sentinel": {
+        "role": "admin",
+        "step": "review_sentinel",
+        "ok": true,
+        "panelVisible": false,
+        "hasAnalysis": true,
+        "threatLevel": "GREEN",
+        "timestamp": 1781383476028
+      },
+      "review_security_operations_center": {
+        "role": "admin",
+        "step": "review_security_operations_center",
+        "ok": true,
+        "dashboardVisible": true,
+        "timestamp": 1781383476662
+      },
+      "review_revenue_dashboard": {
+        "role": "admin",
+        "step": "review_revenue_dashboard",
+        "ok": true,
+        "dashboardVisible": false,
+        "hasRuntimeBrief": true,
+        "mrr": null,
+        "timestamp": 1781383477091
+      }
+    }
+  },
+  "diagnostics": [
+    {
+      "role": "viewer",
+      "step": "discover_content",
+      "ok": true,
+      "total": 40,
+      "top": "Trending Shorts S1E1 Hook — 15s",
+      "timestamp": 1781383463759
+    },
+    {
+      "role": "viewer",
+      "step": "search_content",
+      "ok": true,
+      "total": 8,
+      "query": "neon",
+      "timestamp": 1781383463769
+    },
+    {
+      "role": "viewer",
+      "step": "continue_watching",
+      "ok": true,
+      "source": "local",
+      "percent": 42,
+      "timestamp": 1781383463822
+    },
+    {
+      "role": "viewer",
+      "step": "complete_episode",
+      "ok": true,
+      "percent": 100,
+      "reelPercent": 100,
+      "timestamp": 1781383473885
+    },
+    {
+      "role": "creator",
+      "step": "upload_reel",
+      "ok": true,
+      "vaultCount": 1,
+      "uploaded": true,
+      "timestamp": 1781383475121
+    },
+    {
+      "role": "creator",
+      "step": "attach_episode",
+      "ok": true,
+      "attached": true,
+      "episodeId": "ep-neon-s01e01",
+      "timestamp": 1781383475125
+    },
+    {
+      "role": "creator",
+      "step": "schedule_release",
+      "ok": true,
+      "status": "scheduled",
+      "releaseAt": 1781452800000,
+      "timestamp": 1781383475256
+    },
+    {
+      "role": "creator",
+      "step": "publish",
+      "ok": true,
+      "stage": "PUBLISHED",
+      "episodeId": "ep-neon-s01e01",
+      "timestamp": 1781383475896
+    },
+    {
+      "role": "teamManager",
+      "step": "assign_workflow_task",
+      "ok": true,
+      "assigned": true,
+      "taskId": "missing-asset-ep-neon-s01e01",
+      "status": "IN_PROGRESS",
+      "timestamp": 1781383475936
+    },
+    {
+      "role": "teamManager",
+      "step": "approve_workflow",
+      "ok": true,
+      "approved": true,
+      "taskId": "missing-asset-ep-neon-s01e01",
+      "status": "COMPLETE",
+      "timestamp": 1781383475975
+    },
+    {
+      "role": "teamManager",
+      "step": "receive_notification",
+      "ok": true,
+      "before": 8,
+      "after": 9,
+      "received": true,
+      "timestamp": 1781383476014
+    },
+    {
+      "role": "admin",
+      "step": "open_studio",
+      "ok": true,
+      "commandCenterVisible": true,
+      "timestamp": 1781383476021
+    },
+    {
+      "role": "admin",
+      "step": "review_sentinel",
+      "ok": true,
+      "panelVisible": false,
+      "hasAnalysis": true,
+      "threatLevel": "GREEN",
+      "timestamp": 1781383476028
+    },
+    {
+      "role": "admin",
+      "step": "review_security_operations_center",
+      "ok": true,
+      "dashboardVisible": true,
+      "timestamp": 1781383476662
+    },
+    {
+      "role": "admin",
+      "step": "review_revenue_dashboard",
+      "ok": true,
+      "dashboardVisible": false,
+      "hasRuntimeBrief": true,
+      "mrr": null,
+      "timestamp": 1781383477091
+    }
+  ],
+  "success": true,
+  "completeToken": "USER_JOURNEY_COMPLETE=true",
+  "generatedAt": "2026-06-13T20:44:22.417Z"
+}

@@ -1,0 +1,90 @@
+{
+  "phase": "PHASE 70.2B — HERO CINEMATIC RESTORATION",
+  "generatedAt": "2026-06-18T03:52:41.394Z",
+  "baseUrl": "http://127.0.0.1:5173",
+  "hero": {
+    "bounds": {
+      "top": 0,
+      "left": 0,
+      "width": 1440,
+      "height": 828,
+      "right": 1440,
+      "bottom": 828
+    },
+    "viewportCoveragePct": 92
+  },
+  "HERO_VIEWPORT_CHILDREN": [
+    {
+      "component": "Hero Carousel Timeline",
+      "selector": "[data-hero-carousel-timeline]",
+      "height": 0,
+      "width": 0,
+      "position": "static",
+      "zIndex": "auto",
+      "overlayCoveragePct": 0,
+      "viewportCoveragePct": 0,
+      "bounds": {
+        "top": 0,
+        "left": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0
+      }
+    },
+    {
+      "component": "hero-wrap hero-typography--cinematic s-wwAD1KUgiy9g",
+      "selector": ".hero-wrap",
+      "height": 543.531,
+      "width": 1080,
+      "position": "relative",
+      "zIndex": 4,
+      "overlayCoveragePct": 49.233,
+      "viewportCoveragePct": 45.294,
+      "bounds": {
+        "top": 284.469,
+        "left": 0,
+        "width": 1080,
+        "height": 543.531,
+        "right": 1080,
+        "bottom": 828
+      }
+    },
+    {
+      "component": "hero-video-overlay hero-overlay s-wwAD1KUgiy9g",
+      "selector": ".hero-video-overlay",
+      "height": 828,
+      "width": 1440,
+      "position": "absolute",
+      "zIndex": "auto",
+      "overlayCoveragePct": 100,
+      "viewportCoveragePct": 92,
+      "bounds": {
+        "top": 0,
+        "left": 0,
+        "width": 1440,
+        "height": 828,
+        "right": 1440,
+        "bottom": 828
+      }
+    },
+    {
+      "component": "hero-motion-gradient s-wwAD1KUgiy9g",
+      "selector": ".hero-motion-gradient",
+      "height": 846.144,
+      "width": 1471.555,
+      "position": "absolute",
+      "zIndex": "auto",
+      "overlayCoveragePct": 99.739,
+      "viewportCoveragePct": 96.076,
+      "bounds": {
+        "top": -9.666,
+        "left": -35.311,
+        "width": 1471.555,
+        "height": 846.144,
+        "right": 1436.243,
+        "bottom": 836.478
+      }
+    }
+  ]
+}

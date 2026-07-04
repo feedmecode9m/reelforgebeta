@@ -1,0 +1,11 @@
+{
+  "sections": [
+    "executive-overview",
+    "security",
+    "production",
+    "publishing",
+    "teams",
+    "revenue"
+  ],
+  "diagnostics": 90
+}

@@ -1,0 +1,52 @@
+{
+  "phase": "REELFORGE PHASE 67.1",
+  "mode": "SURGICAL HOTFIX",
+  "generatedAt": "2026-06-18T12:25:15.185Z",
+  "baseUrl": "http://127.0.0.1:5174",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "hero": {
+    "widthPx": 1440,
+    "heightPx": 828,
+    "widthCoveragePct": 100,
+    "heightCoveragePct": 92,
+    "display": "flex",
+    "overflow": "hidden"
+  },
+  "mediaContainer": {
+    "widthPx": 1440,
+    "heightPx": 828,
+    "zIndex": "0",
+    "position": "absolute",
+    "widthVsHeroPct": 100,
+    "heightVsHeroPct": 100
+  },
+  "mediaNode": {
+    "widthPx": 1440,
+    "heightPx": 828,
+    "objectFit": "cover",
+    "zIndex": "auto",
+    "position": "absolute",
+    "widthVsHeroPct": 100,
+    "heightVsHeroPct": 100
+  },
+  "typography": {
+    "heroTitleFontSizePx": 92,
+    "heroTitleLineHeightPx": 93.84,
+    "ctaFontSizePx": 21.6,
+    "ctaMinHeightPx": 56,
+    "ctaPadding": "13.12px 24px"
+  },
+  "checks": {
+    "mediaContainerFillsHero": true,
+    "mediaObjectFitCover": true,
+    "mediaNoBlackSplitConstraint": true,
+    "typographyScaledAndLegible": true
+  },
+  "diagnostics": {
+    "HERO_LAYOUT_HOTFIX_APPLIED_seen": true
+  },
+  "completionToken": "HERO_LAYOUT_HOTFIX_COMPLETE=true"
+}

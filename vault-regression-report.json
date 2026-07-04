@@ -1,0 +1,65 @@
+{
+  "generatedAt": "2026-06-14T13:52:41.871Z",
+  "rootCause": {
+    "type": "operational-outage",
+    "details": [
+      "Backend runtime had terminated (exit 137).",
+      "Backend restart failed until Postgres was brought up; uploads could not complete while API was unavailable."
+    ]
+  },
+  "codeRegression": {
+    "gitHistoryStatus": "unavailable-for-target-paths-in-HEAD",
+    "notes": [
+      "VaultExperience.svelte, viewerContext.js, media.js, storage.js, and aiCleanupAgent.js are present in working tree but not traceable in current HEAD history in this checkout."
+    ]
+  },
+  "secondaryFindings": [
+    {
+      "id": "image-mime-extension-mismatch",
+      "status": "verified",
+      "details": "Image-only ingest path forced .jpg and image/jpeg for non-PNG uploads (including WebP)."
+    }
+  ],
+  "evidence": {
+    "tests": [
+      {
+        "testId": "A",
+        "id": "beed7fd8-9510-4abf-b997-95b4a53ebe20",
+        "status": "ready",
+        "mediaExists": true,
+        "thumbExists": true
+      },
+      {
+        "testId": "B",
+        "id": "b72c9314-a0fd-425b-b919-869a60be0d73",
+        "status": "ready",
+        "mediaExists": true,
+        "thumbExists": true
+      },
+      {
+        "testId": "C",
+        "id": "d24f2315-9975-45f0-8eea-e6eec34c2fe3",
+        "status": "ready",
+        "mediaExists": true,
+        "thumbExists": true
+      },
+      {
+        "testId": "D",
+        "id": "03d9dacd-0278-49e3-9e14-9545b385c9d8",
+        "status": "ready",
+        "mediaExists": true,
+        "thumbExists": true
+      }
+    ],
+    "certification": {
+      "imageCards": 20,
+      "videoCards": 37
+    },
+    "phase66eCertification": {
+      "uploadedImages": 5,
+      "uploadedVideos": 5,
+      "apiReadyAfterUpload": true,
+      "apiReadyAfterBackendRestart": true
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "generatedAt": "2026-06-14T13:52:41.875Z",
+  "repairs": [
+    {
+      "id": "restore-runtime-dependencies",
+      "status": "applied",
+      "details": [
+        "Started Postgres container via docker compose.",
+        "Restarted backend service with DB connectivity restored."
+      ]
+    },
+    {
+      "id": "pipeline-diagnostics",
+      "status": "applied",
+      "details": [
+        "Added [DROP_RECEIVED], [UPLOAD_STARTED], [UPLOAD_SUCCESS], [UPLOAD_FAILED] diagnostics in frontend upload paths.",
+        "Added [STORE_WRITE], [STORE_UPDATE] diagnostics in backend ingest and frontend store sync.",
+        "Added [VAULT_RENDER], [VAULT_ITEM_COUNT], [VIDEO_RENDER], [IMAGE_RENDER] diagnostics in Vault render layer."
+      ]
+    },
+    {
+      "id": "image-ingest-contract-fix",
+      "status": "applied",
+      "details": [
+        "Preserve extension for .png/.webp/.gif/.jpeg in image-only ingest path.",
+        "Persist matching mime_type instead of hardcoded image/jpeg."
+      ]
+    },
+    {
+      "id": "post-fix-mime-validation",
+      "status": "applied",
+      "details": [
+        "Restarted backend after ingest_image_only patch.",
+        "Validated new WebP upload persists as .webp with mime_type image/webp in reels table."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "admitted_surfaces": [
+    "CONTINUE_WATCHING"
+  ],
+  "plan_version": "1.0.0",
+  "render_tree": {
+    "nodes": [
+      {
+        "campaign_id": null,
+        "slot_key": null,
+        "surface_id": "CONTINUE_WATCHING",
+        "zone_hint": null
+      }
+    ]
+  },
+  "schema_version": "1.0.0"
+}

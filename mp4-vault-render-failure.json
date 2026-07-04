@@ -1,0 +1,160 @@
+{
+  "generatedAt": "2026-06-19T05:32:00.243Z",
+  "knownTruth": {
+    "TOTAL_VAULT_ASSETS": 4,
+    "VISIBLE_VAULT_CARDS": 0,
+    "MISSING_ASSET_ROOT_CAUSE": "render"
+  },
+  "step1_component": {
+    "component": "VaultExperience",
+    "file": "frontend/src/components/experiences/VaultExperience.svelte",
+    "renderLoop": "{#each $personalVideos.filter(Boolean) as video, vi (...) }",
+    "storeSource": "personalVideos store (backed by localStorage key personal_video_vault)"
+  },
+  "step2_renderFilterAudit": [
+    {
+      "assetId": "0e08ae14-6fcb-4104-a4e6-365e758aab20",
+      "assetType": "mp4",
+      "passesFilter": true
+    },
+    {
+      "assetId": "195927e9-61ae-46b3-ba3d-1f49ba43a8d3",
+      "assetType": "mp4",
+      "passesFilter": true
+    },
+    {
+      "assetId": "a2870175-dc27-4039-a581-4828467316bf",
+      "assetType": "mov",
+      "passesFilter": true
+    },
+    {
+      "assetId": "555040fe-3e4c-43a7-b7d6-41fa6ffe64a1",
+      "assetType": "mp4",
+      "passesFilter": false
+    }
+  ],
+  "step3_conditionalBlocks": [
+    {
+      "file": "frontend/src/components/experiences/StudioExperience.svelte",
+      "condition": "{#if $controlCenterOpen}",
+      "effect": "Smart Production Studio (and VaultExperience) not mounted when false"
+    },
+    {
+      "file": "frontend/src/components/experiences/StudioExperience.svelte",
+      "condition": "{#if $adminMode}",
+      "effect": "Studio inner command-center content hidden when false"
+    },
+    {
+      "file": "frontend/src/components/studio/StudioWorkspaceLayout.svelte",
+      "condition": "{:else if activeTab === \"Content\"}",
+      "effect": "Content slot (includes VaultExperience) only rendered on Content tab"
+    },
+    {
+      "file": "frontend/src/components/experiences/VaultExperience.svelte",
+      "condition": "{#if $personalVideos.length > 0}",
+      "effect": "Video vault grid not rendered when store length is zero"
+    },
+    {
+      "file": "frontend/src/components/experiences/VaultExperience.svelte",
+      "condition": "{#each $personalVideos.filter(Boolean) as video, vi ...}",
+      "effect": "Null/undefined store items are removed before card creation"
+    },
+    {
+      "file": "frontend/src/components/experiences/VaultExperience.svelte",
+      "condition": "{#if video}",
+      "effect": "Per-entry guard blocks card output for falsy entries"
+    }
+  ],
+  "step4_storeVsUi": [
+    {
+      "assetId": "0e08ae14-6fcb-4104-a4e6-365e758aab20",
+      "filePath": "/videos/0e08ae14-6fcb-4104-a4e6-365e758aab20.mp4",
+      "existsInStore": true,
+      "reachesRenderLoop": false,
+      "rendersCard": false
+    },
+    {
+      "assetId": "195927e9-61ae-46b3-ba3d-1f49ba43a8d3",
+      "filePath": "/videos/195927e9-61ae-46b3-ba3d-1f49ba43a8d3.mp4",
+      "existsInStore": true,
+      "reachesRenderLoop": false,
+      "rendersCard": false
+    },
+    {
+      "assetId": "a2870175-dc27-4039-a581-4828467316bf",
+      "filePath": "/videos/a2870175-dc27-4039-a581-4828467316bf.mov",
+      "existsInStore": true,
+      "reachesRenderLoop": false,
+      "rendersCard": false
+    },
+    {
+      "assetId": "555040fe-3e4c-43a7-b7d6-41fa6ffe64a1",
+      "filePath": "/videos/555040fe-3e4c-43a7-b7d6-41fa6ffe64a1.mp4",
+      "existsInStore": false,
+      "reachesRenderLoop": false,
+      "rendersCard": false
+    }
+  ],
+  "step5_heroOrphanAudit": {
+    "assetId": "hero-background",
+    "filePath": "/videos/hero-background.mp4",
+    "existsInVault": false,
+    "existsInRegistry": false,
+    "existsInHeroManager": true,
+    "existsInViewerStore": false
+  },
+  "step6_rootCause": {
+    "RENDER_FAILURE_ROOT_CAUSE": "Vault component not mounted because Smart Production Studio overlay is closed ($controlCenterOpen=false)"
+  },
+  "runtimeSnapshot": {
+    "localStorage": {
+      "adminMode": false,
+      "personalVideoVault": [
+        {
+          "id": "0e08ae14-6fcb-4104-a4e6-365e758aab20",
+          "name": "0e08ae14-6fcb-4104-a4e6-365e758aab20",
+          "type": "video/mp4",
+          "addedAt": "2026-06-14T16:41:08.357044+00:00",
+          "thumbnail": "/thumbs/0e08ae14-6fcb-4104-a4e6-365e758aab20.jpg",
+          "url": "/videos/0e08ae14-6fcb-4104-a4e6-365e758aab20.mp4"
+        },
+        {
+          "id": "195927e9-61ae-46b3-ba3d-1f49ba43a8d3",
+          "name": "195927e9-61ae-46b3-ba3d-1f49ba43a8d3",
+          "type": "video/mp4",
+          "addedAt": "2026-06-14T15:53:48.366465+00:00",
+          "thumbnail": "/thumbs/195927e9-61ae-46b3-ba3d-1f49ba43a8d3.jpg",
+          "url": "/videos/195927e9-61ae-46b3-ba3d-1f49ba43a8d3.mp4"
+        },
+        {
+          "id": "a2870175-dc27-4039-a581-4828467316bf",
+          "name": "a2870175-dc27-4039-a581-4828467316bf",
+          "type": "video/quicktime",
+          "addedAt": "2026-06-14T15:39:32.557756+00:00",
+          "thumbnail": "/thumbs/a2870175-dc27-4039-a581-4828467316bf.jpg",
+          "url": "/videos/a2870175-dc27-4039-a581-4828467316bf.mov"
+        }
+      ],
+      "heroVideo": "/videos/hero-background.mp4",
+      "heroManagerAssetId": "",
+      "heroManagerBackgroundSource": ""
+    },
+    "dom": {
+      "controlCenterOpen": false,
+      "activeWorkspaceSection": "",
+      "vaultHostMounted": false,
+      "videoVaultGridMounted": false,
+      "renderedCardCount": 0,
+      "visibleCardCount": 0
+    },
+    "heroRegistry": []
+  },
+  "summary": {
+    "TOTAL_VAULT_ASSETS": 4,
+    "RENDER_LOOP_COUNT": 0,
+    "VISIBLE_CARDS": 0,
+    "RENDER_FAILURE_ROOT_CAUSE": "Vault component not mounted because Smart Production Studio overlay is closed ($controlCenterOpen=false)",
+    "ORPHAN_HERO_SOURCE": "viewer_default_hero_store"
+  },
+  "completionToken": "MP4_VAULT_RENDER_FORENSIC_COMPLETE=true"
+}

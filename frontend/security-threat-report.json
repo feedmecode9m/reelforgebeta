@@ -1,0 +1,304 @@
+{
+  "version": "2.0.0",
+  "level": "YELLOW",
+  "activeThreats": [
+    {
+      "id": "api-abuse",
+      "category": "api",
+      "level": "YELLOW",
+      "title": "API abuse pattern",
+      "detail": "21 endpoint bursts · 1 mutations · 1 failures",
+      "recommendedAction": "Enable API rate limits and inspect failing routes for credential abuse.",
+      "count": 23,
+      "windowMs": 60000
+    }
+  ],
+  "recentEvents": [
+    {
+      "id": "api-endpoint_burst-1781328010158-j8pwl",
+      "category": "api",
+      "type": "endpoint_burst",
+      "timestamp": 1781328010158,
+      "detail": {
+        "url": "http://localhost:8080/api/analytics/dashboard",
+        "method": "GET",
+        "count": 12,
+        "signalKey": "api:endpoint"
+      }
+    },
+    {
+      "id": "notification-notification_flood-1781328010388-eo09d",
+      "category": "notification",
+      "type": "notification_flood",
+      "timestamp": 1781328010388,
+      "detail": {
+        "count": 6,
+        "signalKey": "notification:flood"
+      }
+    },
+    {
+      "id": "notification-notification_loop-1781328010428-erzn8",
+      "category": "notification",
+      "type": "notification_loop",
+      "timestamp": 1781328010428,
+      "detail": {
+        "count": 6,
+        "signalKey": "notification:loop"
+      }
+    },
+    {
+      "id": "api-mutation_burst-1781328010651-hcov0",
+      "category": "api",
+      "type": "mutation_burst",
+      "timestamp": 1781328010651,
+      "detail": {
+        "url": "http://localhost:8080/api/workflow/tasks",
+        "method": "POST",
+        "count": 12,
+        "signalKey": "api:mutation"
+      }
+    },
+    {
+      "id": "api-failure_burst-1781328010662-vru60",
+      "category": "api",
+      "type": "failure_burst",
+      "timestamp": 1781328010662,
+      "detail": {
+        "url": "http://localhost:8080/api/platform/status",
+        "method": "GET",
+        "status": 404,
+        "count": 3,
+        "signalKey": "api:failure"
+      }
+    },
+    {
+      "id": "api-endpoint_burst-sim-1781328013064-0",
+      "category": "api",
+      "type": "endpoint_burst",
+      "timestamp": 1781328013064,
+      "detail": {
+        "simulated": true,
+        "category": "api_abuse",
+        "index": 0
+      }
+    },
+    {
+      "id": "api-endpoint_burst-sim-1781328013064-1",
+      "category": "api",
+      "type": "endpoint_burst",
+      "timestamp": 1781328012914,
+      "detail": {
+        "simulated": true,
+        "category": "api_abuse",
+        "index": 1
+      }
+    },
+    {
+      "id": "api-endpoint_burst-sim-1781328013064-2",
+      "category": "api",
+      "type": "endpoint_burst",
+      "timestamp": 1781328012764,
+      "detail": {
+        "simulated": true,
+        "category": "api_abuse",
+        "index": 2
+      }
+    },
+    {
+      "id": "api-endpoint_burst-sim-1781328013064-3",
+      "category": "api",
+      "type": "endpoint_burst",
+      "timestamp": 1781328012614,
+      "detail": {
+        "simulated": true,
+        "category": "api_abuse",
+        "index": 3
+      }
+    },
+    {
+      "id": "api-endpoint_burst-sim-1781328013064-4",
+      "category": "api",
+      "type": "endpoint_burst",
+      "timestamp": 1781328012464,
+      "detail": {
+        "simulated": true,
+        "category": "api_abuse",
+        "index": 4
+      }
+    },
+    {
+      "id": "api-endpoint_burst-sim-1781328013064-5",
+      "category": "api",
+      "type": "endpoint_burst",
+      "timestamp": 1781328012314,
+      "detail": {
+        "simulated": true,
+        "category": "api_abuse",
+        "index": 5
+      }
+    },
+    {
+      "id": "api-endpoint_burst-sim-1781328013064-6",
+      "category": "api",
+      "type": "endpoint_burst",
+      "timestamp": 1781328012164,
+      "detail": {
+        "simulated": true,
+        "category": "api_abuse",
+        "index": 6
+      }
+    },
+    {
+      "id": "api-endpoint_burst-sim-1781328013064-7",
+      "category": "api",
+      "type": "endpoint_burst",
+      "timestamp": 1781328012014,
+      "detail": {
+        "simulated": true,
+        "category": "api_abuse",
+        "index": 7
+      }
+    },
+    {
+      "id": "api-endpoint_burst-sim-1781328013064-8",
+      "category": "api",
+      "type": "endpoint_burst",
+      "timestamp": 1781328011864,
+      "detail": {
+        "simulated": true,
+        "category": "api_abuse",
+        "index": 8
+      }
+    },
+    {
+      "id": "api-endpoint_burst-sim-1781328013064-9",
+      "category": "api",
+      "type": "endpoint_burst",
+      "timestamp": 1781328011714,
+      "detail": {
+        "simulated": true,
+        "category": "api_abuse",
+        "index": 9
+      }
+    },
+    {
+      "id": "api-endpoint_burst-sim-1781328013064-10",
+      "category": "api",
+      "type": "endpoint_burst",
+      "timestamp": 1781328011564,
+      "detail": {
+        "simulated": true,
+        "category": "api_abuse",
+        "index": 10
+      }
+    },
+    {
+      "id": "api-endpoint_burst-sim-1781328013064-11",
+      "category": "api",
+      "type": "endpoint_burst",
+      "timestamp": 1781328011414,
+      "detail": {
+        "simulated": true,
+        "category": "api_abuse",
+        "index": 11
+      }
+    },
+    {
+      "id": "api-endpoint_burst-sim-1781328013064-12",
+      "category": "api",
+      "type": "endpoint_burst",
+      "timestamp": 1781328011264,
+      "detail": {
+        "simulated": true,
+        "category": "api_abuse",
+        "index": 12
+      }
+    },
+    {
+      "id": "api-endpoint_burst-sim-1781328013064-13",
+      "category": "api",
+      "type": "endpoint_burst",
+      "timestamp": 1781328011114,
+      "detail": {
+        "simulated": true,
+        "category": "api_abuse",
+        "index": 13
+      }
+    },
+    {
+      "id": "api-endpoint_burst-sim-1781328013064-14",
+      "category": "api",
+      "type": "endpoint_burst",
+      "timestamp": 1781328010964,
+      "detail": {
+        "simulated": true,
+        "category": "api_abuse",
+        "index": 14
+      }
+    },
+    {
+      "id": "api-endpoint_burst-sim-1781328013064-15",
+      "category": "api",
+      "type": "endpoint_burst",
+      "timestamp": 1781328010814,
+      "detail": {
+        "simulated": true,
+        "category": "api_abuse",
+        "index": 15
+      }
+    },
+    {
+      "id": "api-endpoint_burst-sim-1781328013064-16",
+      "category": "api",
+      "type": "endpoint_burst",
+      "timestamp": 1781328010664,
+      "detail": {
+        "simulated": true,
+        "category": "api_abuse",
+        "index": 16
+      }
+    },
+    {
+      "id": "api-endpoint_burst-sim-1781328013064-17",
+      "category": "api",
+      "type": "endpoint_burst",
+      "timestamp": 1781328010514,
+      "detail": {
+        "simulated": true,
+        "category": "api_abuse",
+        "index": 17
+      }
+    },
+    {
+      "id": "api-endpoint_burst-sim-1781328013064-18",
+      "category": "api",
+      "type": "endpoint_burst",
+      "timestamp": 1781328010364,
+      "detail": {
+        "simulated": true,
+        "category": "api_abuse",
+        "index": 18
+      }
+    },
+    {
+      "id": "api-endpoint_burst-sim-1781328013064-19",
+      "category": "api",
+      "type": "endpoint_burst",
+      "timestamp": 1781328010214,
+      "detail": {
+        "simulated": true,
+        "category": "api_abuse",
+        "index": 19
+      }
+    }
+  ],
+  "categoryCounts": {
+    "upload": 0,
+    "workflow": 0,
+    "notification": 2,
+    "team": 0,
+    "api": 23
+  },
+  "storageKey": "reelforge_security_events",
+  "timestamp": 1781328013521
+}

@@ -1,0 +1,49 @@
+{
+  "viewerContentFields": {
+    "section": "Hero Viewer Content",
+    "fields": [
+      { "label": "Viewer Label", "binding": "heroLabel" },
+      { "label": "Viewer Headline", "binding": "heroTitle" },
+      { "label": "Viewer Subtitle", "binding": "heroSubtitle" },
+      { "label": "Viewer Description", "binding": "heroDescription" },
+      { "label": "Primary CTA Label", "binding": "ctaPrimaryLabel" },
+      { "label": "Secondary CTA Label", "binding": "ctaSecondaryLabel" }
+    ]
+  },
+  "storyComposerBindings": {
+    "saveDraftAction": "Save Draft -> applyStoryStoryState('draft') -> saveHeroManagerConfig(config)",
+    "publishAction": "Publish Story -> applyStoryStoryState('published') -> saveHeroManagerConfig(config)",
+    "publishedViewerKeys": [
+      "heroLabel",
+      "heroTitle",
+      "heroSubtitle",
+      "heroDescription",
+      "ctaPrimaryLabel",
+      "ctaSecondaryLabel"
+    ]
+  },
+  "assetMetadataHidden": {
+    "viewerRule": "Internal hero asset names and ids are filtered from viewer-facing title/subtitle text in sanitizeViewer mode.",
+    "blockedPatterns": [
+      "Hero Video",
+      "Hero Image",
+      "Hero video asset",
+      "hero-video-*",
+      "hero-image-*",
+      "asset ids / internal labels"
+    ],
+    "status": true
+  },
+  "heroViewerTextSource": {
+    "A_heroTitle": "config.heroTitle -> heroManagerConfig.heroTitle -> heroStoryTitle -> viewer title when story is published",
+    "B_heroSubtitle": "config.heroSubtitle -> heroManagerConfig.heroSubtitle -> heroStorySubtitle -> viewer subtitle when story is published",
+    "C_heroDescription": "config.heroDescription -> heroManagerConfig.heroDescription -> heroStoryDescription -> viewer description when story is published",
+    "D_assetTitle": "asset.title populates carousel slide title for non-published/internal slide context; published story now overrides with editorial heroTitle",
+    "E_assetDescription": "not used for viewer-facing hero text in current flow"
+  },
+  "publishedStoryWins": {
+    "status": true,
+    "behavior": "On Publish Story, viewer title/subtitle/description/badge source from heroLabel/heroTitle/heroSubtitle/heroDescription and no longer falls back to Hero Video/Hero Image naming."
+  },
+  "completionToken": "HERO_PUBLISHING_CONTROL_COMPLETE=true"
+}

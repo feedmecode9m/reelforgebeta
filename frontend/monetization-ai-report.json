@@ -1,0 +1,60 @@
+{
+  "recommendationCategories": [
+    "Revenue Growth",
+    "Sponsorship Opportunities",
+    "Subscription Opportunities",
+    "Premium Episode Opportunities",
+    "Marketplace Opportunities",
+    "Cross Promotion",
+    "Series Expansion",
+    "Team Expansion"
+  ],
+  "unit": {
+    "fields": [
+      "revenueScore",
+      "monetizationReadiness",
+      "sponsorReadiness",
+      "subscriptionReadiness",
+      "marketplacePotential",
+      "topOpportunities",
+      "blockers",
+      "recommendations",
+      "projectedMonthlyRevenue",
+      "projectedAnnualRevenue",
+      "projectedMonthlyFormatted",
+      "projectedAnnualFormatted",
+      "summary",
+      "revenue",
+      "subscriptions",
+      "sponsors",
+      "marketplace",
+      "performance"
+    ],
+    "revenueScore": 57,
+    "monetizationReadiness": 100,
+    "sponsorReadiness": 17,
+    "subscriptionReadiness": 40,
+    "marketplacePotential": 94,
+    "opportunityCount": 4,
+    "recommendationCount": 6,
+    "blockerCount": 3,
+    "projectedMonthlyRevenue": 114578,
+    "projectedAnnualRevenue": 1374936,
+    "categories": [
+      "Marketplace Opportunities",
+      "Premium Episode Opportunities",
+      "Sponsorship Opportunities",
+      "Subscription Opportunities",
+      "Cross Promotion",
+      "Team Expansion"
+    ],
+    "analyzeRevenue": 109171,
+    "analyzeMarketplace": 94
+  },
+  "diagnostics": {
+    "analysis": 5,
+    "recommendation": 20,
+    "opportunity": 16,
+    "forecast": 4
+  }
+}

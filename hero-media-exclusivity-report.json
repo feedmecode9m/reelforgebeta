@@ -1,0 +1,45 @@
+{
+  "phase": "PHASE — HERO MEDIA EXCLUSIVITY ENFORCEMENT",
+  "generatedAt": "2026-06-19T04:58:32.454Z",
+  "activeHeroMediaMode": "video",
+  "visibleMediaCount": 1,
+  "disabledLayers": [
+    "image background",
+    "css background-image layers",
+    "poster fallback layer"
+  ],
+  "renderDecisionTree": [
+    "1) HERO STORY MEDIA (published/scheduled)",
+    "2) HERO VIDEO (available + healthy)",
+    "3) HERO IMAGE (video failed)",
+    "4) FALLBACK (both unavailable)"
+  ],
+  "step3_activeRenderersAudit": {
+    "HeroExperience_svelte": "active media owner",
+    "HeroExperienceBridge_svelte": "wrapper mounts HeroExperience",
+    "Viewer_svelte": "hosts HeroExperienceBridge",
+    "HeroCarouselRenderer": "inside HeroExperience.svelte",
+    "backgroundCssBindings": "gated by activeHeroMediaMode"
+  },
+  "simultaneousMediaOutputs": [
+    {
+      "renderer": "div#app > main.svelte-2qypke > main > section.hero-stage.svelte-whqsg3.hero-stage--viewer > div.hero-video-container.hero-background.svelte-whqsg3 > video.hero-video.hero-media.hero-video-visible",
+      "tag": "video",
+      "source": "http://127.0.0.1:4173/videos/hero-background.mp4"
+    }
+  ],
+  "domLayerSnapshot": [
+    {
+      "node": "div#app > main.svelte-2qypke > main > section.hero-stage.svelte-whqsg3.hero-stage--viewer > div.hero-video-container.hero-background.svelte-whqsg3 > video.hero-video.hero-media.hero-video-visible",
+      "tag": "video",
+      "className": "hero-video hero-media hero-video-visible svelte-1hqxcoa",
+      "src": "http://127.0.0.1:4173/videos/hero-background.mp4",
+      "backgroundImage": "none",
+      "display": "inline",
+      "visibility": "visible",
+      "opacity": "1",
+      "visible": true
+    }
+  ],
+  "completionToken": "HERO_MEDIA_EXCLUSIVITY_COMPLETE=true"
+}

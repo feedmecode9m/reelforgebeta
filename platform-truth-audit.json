@@ -1,0 +1,626 @@
+{
+  "phase": "REELFORGE PHASE 69.8A — PLATFORM TRUTH AUDIT",
+  "mode": "FORENSIC_ONLY",
+  "generatedAt": "2026-06-16T22:40:00.000Z",
+  "objective": "Complete inventory of active ReelForge subsystems with runtime/validator/exposure truth.",
+  "evidenceSources": [
+    "frontend/src/viewer/viewerContext.js mountViewer() init chain",
+    "backend/src/main.rs route and module wiring",
+    "backend/src/db/mod.rs feature flag defaults",
+    "frontend/platform-truth-report.json",
+    "frontend/platform-proof-report.json",
+    "frontend/platform-reachability-report.json",
+    "frontend/scripts/validate-*.mjs completion tokens",
+    "phase reports: hero-media-domain-report.json, hero-vault-ui-report.json, hero-carousel-ui-report.json, upcoming-events-ui-report.json, featured-creator-ui-report.json"
+  ],
+  "featureFlags": [
+    {
+      "name": "REELFORGE_INGESTION_V2",
+      "scope": "backend",
+      "default": true,
+      "effectiveState": "enabled_by_default",
+      "source": "backend/src/db/mod.rs"
+    },
+    {
+      "name": "REELFORGE_STARTUP_RECONCILE",
+      "scope": "backend",
+      "default": true,
+      "effectiveState": "enabled_by_default",
+      "source": "backend/src/db/mod.rs"
+    },
+    {
+      "name": "REELFORGE_SERIES_API",
+      "scope": "backend",
+      "default": true,
+      "effectiveState": "enabled_by_default",
+      "source": "backend/src/db/mod.rs"
+    },
+    {
+      "name": "REELFORGE_STUDIO_SYNC",
+      "scope": "backend",
+      "default": true,
+      "effectiveState": "enabled_by_default",
+      "source": "backend/src/db/mod.rs"
+    },
+    {
+      "name": "REELFORGE_WORKFLOW_API",
+      "scope": "backend",
+      "default": true,
+      "effectiveState": "enabled_by_default",
+      "source": "backend/src/db/mod.rs"
+    },
+    {
+      "name": "REELFORGE_ANALYTICS_API",
+      "scope": "backend",
+      "default": true,
+      "effectiveState": "enabled_by_default",
+      "source": "backend/src/db/mod.rs"
+    },
+    {
+      "name": "REELFORGE_TEAM_API",
+      "scope": "backend",
+      "default": true,
+      "effectiveState": "enabled_by_default",
+      "source": "backend/src/db/mod.rs"
+    },
+    {
+      "name": "REELFORGE_NOTIFICATION_API",
+      "scope": "backend",
+      "default": true,
+      "effectiveState": "enabled_by_default",
+      "source": "backend/src/db/mod.rs"
+    },
+    {
+      "name": "REELFORGE_SECURITY_EVENTS_API",
+      "scope": "backend",
+      "default": true,
+      "effectiveState": "enabled_by_default",
+      "source": "backend/src/db/mod.rs"
+    },
+    {
+      "name": "REELFORGE_REVENUE_API",
+      "scope": "backend",
+      "default": true,
+      "effectiveState": "enabled_by_default",
+      "source": "backend/src/db/mod.rs"
+    },
+    {
+      "name": "REELFORGE_PIPELINE_API",
+      "scope": "backend",
+      "default": true,
+      "effectiveState": "enabled_by_default",
+      "source": "backend/src/db/mod.rs"
+    },
+    {
+      "name": "REELFORGE_MONETIZATION",
+      "scope": "backend",
+      "default": false,
+      "effectiveState": "config_dependent",
+      "source": "backend/src/db/mod.rs"
+    },
+    {
+      "name": "REELFORGE_PLATFORM_CONFIG",
+      "scope": "backend",
+      "default": false,
+      "effectiveState": "config_dependent",
+      "source": "backend/src/db/mod.rs"
+    },
+    {
+      "name": "REELFORGE_EXPERIENCE_PROFILES",
+      "scope": "backend",
+      "default": false,
+      "effectiveState": "config_dependent",
+      "source": "backend/src/db/mod.rs"
+    },
+    {
+      "name": "REELFORGE_WATCH_TRACKING",
+      "scope": "backend",
+      "default": false,
+      "effectiveState": "config_dependent",
+      "source": "backend/src/db/mod.rs"
+    }
+  ],
+  "stores": [
+    "personal_video_vault",
+    "personal_thumbnails",
+    "reelforge_feed",
+    "reelforge_hero_manager_config",
+    "reelforge_hero_video",
+    "reelforge_hero_image",
+    "reelforge_discovery_index",
+    "reelforge_discovery_feed_state",
+    "reelforge_creator_home_feed",
+    "reelforge_global_search_index",
+    "reelforge_universal_search_index",
+    "reelforge_security_events",
+    "reelforge_workflow_tasks",
+    "reelforge_monetization_hub",
+    "reelforge_creator_profiles",
+    "daily_engagement_state",
+    "reelforge_support_config"
+  ],
+  "activeSystems": [
+    {
+      "name": "Hero Background Pipeline",
+      "enabled": true,
+      "disabled": false,
+      "validator": "frontend/scripts/validate-hero-background-truth.mjs",
+      "runtimeDiagnostics": [
+        "[HERO_RENDER]",
+        "[HERO_PERSIST]",
+        "[HERO_LOAD]",
+        "[HERO_ROUTE]"
+      ],
+      "uiExposure": "Hero stage + Hero manager",
+      "adminExposure": true,
+      "userExposure": true,
+      "completionToken": "HERO_BACKGROUND_TRUTH_COMPLETE=true"
+    },
+    {
+      "name": "Hero Vault UI",
+      "enabled": true,
+      "disabled": false,
+      "validator": "frontend/scripts/validate-hero-vault-ui.mjs",
+      "runtimeDiagnostics": [
+        "[HERO_VAULT_CARD_RENDER]",
+        "[HERO_VAULT_SELECT]",
+        "[HERO_VAULT_DELETE]"
+      ],
+      "uiExposure": "Hero Manager panel vault cards",
+      "adminExposure": true,
+      "userExposure": false,
+      "completionToken": "HERO_VAULT_UI_COMPLETE=true"
+    },
+    {
+      "name": "Hero Carousel Experience",
+      "enabled": true,
+      "disabled": false,
+      "validator": "frontend/scripts/validate-hero-carousel-ui.mjs",
+      "runtimeDiagnostics": [
+        "[HERO_CAROUSEL_RENDER]",
+        "[HERO_CAROUSEL_NAVIGATE]",
+        "[HERO_CAROUSEL_MEDIA_STATE]"
+      ],
+      "uiExposure": "Front page hero section",
+      "adminExposure": true,
+      "userExposure": true,
+      "completionToken": "HERO_CAROUSEL_UI_COMPLETE=true"
+    },
+    {
+      "name": "Hero Media Domain Separation",
+      "enabled": true,
+      "disabled": false,
+      "validator": "frontend/scripts/validate-hero-media-domain.mjs",
+      "runtimeDiagnostics": [
+        "[HERO_MEDIA_DOMAIN_SEPARATION]",
+        "[HERO_ROUTE]",
+        "[VIDEO_VAULT_INSERT]",
+        "[PLACEHOLDER_INSERT]"
+      ],
+      "uiExposure": "Implicit through hero accept + vault/feed isolation",
+      "adminExposure": true,
+      "userExposure": true,
+      "completionToken": "HERO_MEDIA_DOMAIN_SEPARATION_COMPLETE=true"
+    },
+    {
+      "name": "Discovery Engine",
+      "enabled": true,
+      "disabled": false,
+      "validator": "frontend/scripts/validate-discovery-engine.mjs",
+      "runtimeDiagnostics": [
+        "[DISCOVERY_INDEX]",
+        "[DISCOVERY_QUERY]",
+        "[DISCOVERY_RESULT]"
+      ],
+      "uiExposure": "Discovery panels and search surfaces",
+      "adminExposure": true,
+      "userExposure": true,
+      "completionToken": "DISCOVERY_ENGINE_COMPLETE=true"
+    },
+    {
+      "name": "Global Search",
+      "enabled": true,
+      "disabled": false,
+      "validator": "frontend/scripts/validate-global-search.mjs",
+      "runtimeDiagnostics": [
+        "[GLOBAL_SEARCH_*]"
+      ],
+      "uiExposure": "Global search bar",
+      "adminExposure": true,
+      "userExposure": true,
+      "completionToken": "GLOBAL_SEARCH_COMPLETE=true"
+    },
+    {
+      "name": "Universal Search",
+      "enabled": true,
+      "disabled": false,
+      "validator": "frontend/scripts/validate-universal-search.mjs",
+      "runtimeDiagnostics": [
+        "[UNIVERSAL_SEARCH_*]"
+      ],
+      "uiExposure": "Studio/search workflows",
+      "adminExposure": true,
+      "userExposure": true,
+      "completionToken": "UNIVERSAL_SEARCH_COMPLETE=true"
+    },
+    {
+      "name": "Marketplace Hub",
+      "enabled": true,
+      "disabled": false,
+      "validator": "frontend/scripts/validate-marketplace-truth.mjs",
+      "runtimeDiagnostics": [
+        "[MARKETPLACE_*]",
+        "[SPOTLIGHT_*]"
+      ],
+      "uiExposure": "Marketplace dashboard + featured creator linkage",
+      "adminExposure": true,
+      "userExposure": true,
+      "completionToken": "MARKETPLACE_TRUTH_COMPLETE=true"
+    },
+    {
+      "name": "Upcoming Events Module",
+      "enabled": true,
+      "disabled": false,
+      "validator": "frontend/scripts/validate-upcoming-events-ui.mjs",
+      "runtimeDiagnostics": [
+        "[EVENTS_MODULE_RENDER]",
+        "[EVENT_RSVP_ACTION]",
+        "[EVENT_DETAILS_VIEW]"
+      ],
+      "uiExposure": "Front page events cards",
+      "adminExposure": true,
+      "userExposure": true,
+      "completionToken": "UPCOMING_EVENTS_UI_COMPLETE=true"
+    },
+    {
+      "name": "Featured Creator Module",
+      "enabled": true,
+      "disabled": false,
+      "validator": "frontend/scripts/validate-featured-creator-ui.mjs",
+      "runtimeDiagnostics": [
+        "[FEATURED_CREATOR_RENDER]",
+        "[CREATOR_PROFILE_VIEW]",
+        "[CREATOR_FOLLOW_ACTION]"
+      ],
+      "uiExposure": "Front page featured creator card",
+      "adminExposure": true,
+      "userExposure": true,
+      "completionToken": "FEATURED_CREATOR_UI_COMPLETE=true"
+    },
+    {
+      "name": "Revenue Dashboard",
+      "enabled": true,
+      "disabled": false,
+      "validator": "frontend/scripts/validate-revenue-dashboard-truth.mjs",
+      "runtimeDiagnostics": [
+        "[REVENUE_*]",
+        "[MONETIZATION_*]"
+      ],
+      "uiExposure": "Command Center revenue tabs",
+      "adminExposure": true,
+      "userExposure": false,
+      "completionToken": "REVENUE_DASHBOARD_TRUTH_COMPLETE=true"
+    },
+    {
+      "name": "Security Operations Center",
+      "enabled": true,
+      "disabled": false,
+      "validator": "frontend/scripts/validate-security-operations-center-truth.mjs",
+      "runtimeDiagnostics": [
+        "[SECURITY_*]",
+        "[THREAT_*]"
+      ],
+      "uiExposure": "System workspace security panels",
+      "adminExposure": true,
+      "userExposure": false,
+      "completionToken": "SECURITY_OPERATIONS_CENTER_COMPLETE=true"
+    },
+    {
+      "name": "Security Enforcement",
+      "enabled": true,
+      "disabled": false,
+      "validator": "frontend/scripts/validate-security-enforcement.mjs",
+      "runtimeDiagnostics": [
+        "[SECURITY_ENFORCEMENT_*]"
+      ],
+      "uiExposure": "Security policy and enforcement surfaces",
+      "adminExposure": true,
+      "userExposure": false,
+      "completionToken": "SECURITY_ENFORCEMENT_COMPLETE=true"
+    },
+    {
+      "name": "Daily Engagement",
+      "enabled": true,
+      "disabled": false,
+      "validator": "frontend/scripts/validate-daily-engagement.mjs",
+      "runtimeDiagnostics": [
+        "[DAILY_ENGAGEMENT_*]",
+        "[CHALLENGE_*]"
+      ],
+      "uiExposure": "Daily engagement section",
+      "adminExposure": true,
+      "userExposure": true,
+      "completionToken": "DAILY_ENGAGEMENT_COMPLETE=true"
+    },
+    {
+      "name": "Support ReelForge",
+      "enabled": true,
+      "disabled": false,
+      "validator": "frontend/scripts/validate-support-reelforge.mjs",
+      "runtimeDiagnostics": [
+        "[SUPPORT_REELFORGE_*]"
+      ],
+      "uiExposure": "Support section",
+      "adminExposure": true,
+      "userExposure": true,
+      "completionToken": "SUPPORT_REELFORGE_COMPLETE=true"
+    },
+    {
+      "name": "Workflow Engine",
+      "enabled": true,
+      "disabled": false,
+      "validator": "frontend/scripts/validate-workflow-engine.mjs",
+      "runtimeDiagnostics": [
+        "[WORKFLOW_*]"
+      ],
+      "uiExposure": "Workflow board and task cards",
+      "adminExposure": true,
+      "userExposure": false,
+      "completionToken": "WORKFLOW_ENGINE_COMPLETE=true"
+    },
+    {
+      "name": "Release Center",
+      "enabled": true,
+      "disabled": false,
+      "validator": "frontend/scripts/validate-release-center.mjs",
+      "runtimeDiagnostics": [
+        "[RELEASE_CENTER_*]"
+      ],
+      "uiExposure": "Release center and schedule cards",
+      "adminExposure": true,
+      "userExposure": true,
+      "completionToken": "RELEASE_CENTER_COMPLETE=true"
+    },
+    {
+      "name": "Studio Command Center",
+      "enabled": true,
+      "disabled": false,
+      "validator": "frontend/scripts/validate-command-center-truth.mjs",
+      "runtimeDiagnostics": [
+        "[COMMAND_CENTER_*]"
+      ],
+      "uiExposure": "Production command center",
+      "adminExposure": true,
+      "userExposure": false,
+      "completionToken": "COMMAND_CENTER_TRUTH_COMPLETE=true"
+    },
+    {
+      "name": "Studio Appearance System",
+      "enabled": true,
+      "disabled": false,
+      "validator": "frontend/scripts/validate-studio-appearance-truth.mjs",
+      "runtimeDiagnostics": [
+        "[STUDIO_APPEARANCE_*]"
+      ],
+      "uiExposure": "Studio appearance panel",
+      "adminExposure": true,
+      "userExposure": false,
+      "completionToken": "STUDIO_APPEARANCE_TRUTH_COMPLETE=true"
+    },
+    {
+      "name": "Enterprise Foundation",
+      "enabled": true,
+      "disabled": false,
+      "validator": "frontend/scripts/validate-enterprise-truth.mjs",
+      "runtimeDiagnostics": [
+        "[ENTERPRISE_*]"
+      ],
+      "uiExposure": "Enterprise control center",
+      "adminExposure": true,
+      "userExposure": false,
+      "completionToken": "ENTERPRISE_TRUTH_COMPLETE=true"
+    },
+    {
+      "name": "Multi-user Pipelines",
+      "enabled": true,
+      "disabled": false,
+      "validator": "frontend/scripts/validate-multi-user-pipeline-truth.mjs",
+      "runtimeDiagnostics": [
+        "[SYNC_*]",
+        "[PIPELINE_*]"
+      ],
+      "uiExposure": "Studio sync and collaborative pipelines",
+      "adminExposure": true,
+      "userExposure": false,
+      "completionToken": "MULTI_USER_PIPELINE_COMPLETE=true"
+    },
+    {
+      "name": "Backend Media + Reels API",
+      "enabled": true,
+      "disabled": false,
+      "validator": "backend runtime routes in /api/reels, /api/upload, /api/media/*",
+      "runtimeDiagnostics": [
+        "[reconcile]",
+        "[validation-backfill]"
+      ],
+      "uiExposure": "Indirect via Vault/Hero/Theater",
+      "adminExposure": true,
+      "userExposure": true,
+      "completionToken": "PIPELINE_COMPLETE=true"
+    }
+  ],
+  "partialSystems": [
+    {
+      "name": "Teams API + UI",
+      "enabled": true,
+      "disabled": false,
+      "validator": "frontend/scripts/validate-creator-teams.mjs",
+      "runtimeDiagnostics": [
+        "[TEAM_*]"
+      ],
+      "uiExposure": "Studio teams surfaces",
+      "adminExposure": true,
+      "userExposure": false,
+      "completionToken": "CREATOR_TEAMS_COMPLETE=true",
+      "forensicNote": "platform-proof-report.json marked WARN in backend-offline run; local hooks and UI present."
+    },
+    {
+      "name": "Notifications",
+      "enabled": true,
+      "disabled": false,
+      "validator": "frontend/scripts/validate-notifications.mjs",
+      "runtimeDiagnostics": [
+        "[NOTIFICATION_*]"
+      ],
+      "uiExposure": "Notification bridge and studio notifications",
+      "adminExposure": true,
+      "userExposure": true,
+      "completionToken": "TEAM_NOTIFICATIONS_TRUTH_COMPLETE=true",
+      "forensicNote": "platform-proof-report.json marked WARN in backend-offline run."
+    },
+    {
+      "name": "Analytics Backend Surface",
+      "enabled": true,
+      "disabled": false,
+      "validator": "frontend/scripts/validate-analytics-backend.mjs",
+      "runtimeDiagnostics": [
+        "[ANALYTICS_*]"
+      ],
+      "uiExposure": "Command center and dashboards",
+      "adminExposure": true,
+      "userExposure": false,
+      "completionToken": "ANALYTICS_BACKEND_COMPLETE=true",
+      "forensicNote": "platform-proof-report.json marked WARN in backend-offline run."
+    },
+    {
+      "name": "Publishing Profiles",
+      "enabled": true,
+      "disabled": false,
+      "validator": "inline-browser (platform-proof)",
+      "runtimeDiagnostics": [
+        "[PUBLISHING_PROFILE_*]"
+      ],
+      "uiExposure": "Publishing profile panels",
+      "adminExposure": true,
+      "userExposure": false,
+      "completionToken": "PUBLISHING_PROFILES_COMPLETE=unknown",
+      "forensicNote": "platform-proof-report.json marked WARN (headless selector reachability caveat)."
+    }
+  ],
+  "deprecatedSystems": [
+    {
+      "name": "Legacy composite validator domains superseded in platform-truth-report",
+      "enabled": false,
+      "disabled": true,
+      "validator": "frontend/scripts/validate-platform.mjs (falsePositiveDomainsRemoved list)",
+      "runtimeDiagnostics": [],
+      "uiExposure": "None (classification-only legacy buckets)",
+      "adminExposure": false,
+      "userExposure": false,
+      "completionToken": "N/A",
+      "items": [
+        "platformTruthFlow",
+        "revenueArchitecture",
+        "theaterNavigation",
+        "continueWatching",
+        "teamNotifications",
+        "securityAudit",
+        "threatDetection",
+        "sentinelAssistant",
+        "heroIntelligence",
+        "creatorCopilot",
+        "guideMe",
+        "productionHealth",
+        "releaseCenter",
+        "notifications",
+        "teams",
+        "workflowEngine",
+        "commandCenter",
+        "appearanceSystem"
+      ]
+    }
+  ],
+  "orphanedSystems": [
+    {
+      "name": "system_hardening test harness",
+      "enabled": false,
+      "disabled": true,
+      "validator": "Rust test-only module",
+      "runtimeDiagnostics": [],
+      "uiExposure": "None",
+      "adminExposure": false,
+      "userExposure": false,
+      "completionToken": "N/A",
+      "forensicNote": "backend/src/lib.rs gates system_hardening under #[cfg(test)]"
+    },
+    {
+      "name": "asset_runtime and experience integration test modules",
+      "enabled": false,
+      "disabled": true,
+      "validator": "Rust integration tests",
+      "runtimeDiagnostics": [],
+      "uiExposure": "None",
+      "adminExposure": false,
+      "userExposure": false,
+      "completionToken": "N/A",
+      "forensicNote": "Modules exist for test validation paths, not user runtime entrypoints."
+    }
+  ],
+  "unreachableSystems": [
+    {
+      "name": "Command Center operational surfaces (normal user path)",
+      "enabled": true,
+      "disabled": false,
+      "validator": "frontend/platform-reachability-report.json",
+      "runtimeDiagnostics": [
+        "[COMMAND_CENTER_*]"
+      ],
+      "uiExposure": "Admin-only",
+      "adminExposure": true,
+      "userExposure": false,
+      "completionToken": "COMMAND_CENTER_TRUTH_COMPLETE=true",
+      "forensicNote": "Reachability matrix marks normalUserFlow=false."
+    },
+    {
+      "name": "Revenue dashboard (normal user path)",
+      "enabled": true,
+      "disabled": false,
+      "validator": "frontend/platform-reachability-report.json",
+      "runtimeDiagnostics": [
+        "[REVENUE_*]"
+      ],
+      "uiExposure": "Admin/system workspace",
+      "adminExposure": true,
+      "userExposure": false,
+      "completionToken": "REVENUE_DASHBOARD_TRUTH_COMPLETE=true",
+      "forensicNote": "Reachability matrix marks normalUserFlow=false."
+    },
+    {
+      "name": "Security/Sentinel operations (normal user path)",
+      "enabled": true,
+      "disabled": false,
+      "validator": "frontend/platform-reachability-report.json",
+      "runtimeDiagnostics": [
+        "[SECURITY_*]",
+        "[THREAT_*]",
+        "[SENTINEL_*]"
+      ],
+      "uiExposure": "Admin/system workspace",
+      "adminExposure": true,
+      "userExposure": false,
+      "completionToken": "SECURITY_OPERATIONS_CENTER_COMPLETE=true",
+      "forensicNote": "Reachability matrix marks normalUserFlow=false."
+    }
+  ],
+  "summary": {
+    "activeCount": 22,
+    "partialCount": 4,
+    "deprecatedCount": 1,
+    "orphanedCount": 2,
+    "unreachableCount": 3,
+    "backendRoutesMounted": true,
+    "frontendRuntimeInitMounted": true,
+    "validatorInventoryPresent": true
+  },
+  "completionToken": "PLATFORM_TRUTH_AUDIT_COMPLETE=true"
+}

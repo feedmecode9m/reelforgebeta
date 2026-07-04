@@ -1,3 +1,30 @@
-pub mod models;
+pub mod ai_detector;
+pub mod api;
 pub mod db;
+pub mod asset_resolution;
+pub mod asset_runtime;
 
+#[cfg(test)]
+mod system_hardening;
+pub mod experience;
+pub mod media;
+pub mod viewer_sim;
+pub mod events;
+pub mod handlers;
+pub mod ingestion;
+pub mod media_api;
+pub mod media_seed;
+pub mod media_validator;
+pub mod models;
+pub mod no_compress;
+pub mod reel_contract;
+pub mod series_api;
+pub mod security_api;
+pub mod sync_api;
+pub mod analytics_api;
+pub mod notification_api;
+pub mod pipeline_api;
+pub mod team_api;
+pub mod workflow_api;
+pub mod utils;
+pub mod video_stream;

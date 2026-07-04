@@ -1,0 +1,78 @@
+{
+  "phase": 50,
+  "generatedAt": "2026-06-13T08:42:00.000Z",
+  "objective": "Remove confirmed dead assets from audit",
+  "deletedFiles": [
+    "src/components/studio/GuideMeCoachingCards.svelte",
+    "src/components/studio/StudioThemeSwitcher.svelte",
+    "src/components/series/WorkflowTaskCenter.svelte",
+    "src/viewer/_slim_script.svelte",
+    "src/viewer/_viewer_script_base.svelte",
+    "src/viewer/_extract_studio.html",
+    "src/viewer/_extract_personal_studio.html",
+    "src/viewer/_extract_hero_replace.html",
+    "src/viewer/_extract_vault.html",
+    "src/viewer/_extract_feed.html",
+    "src/viewer/_extract_hero_stage.html"
+  ],
+  "orphanCleanup": [
+    "scripts/validate-guide-me-2.mjs (removed stale file existence assertion for GuideMeCoachingCards.svelte)"
+  ],
+  "referenceAudit": {
+    "query": "GuideMeCoachingCards|StudioThemeSwitcher|components/series/WorkflowTaskCenter.svelte|_slim_script.svelte|_viewer_script_base.svelte|_extract_*.html",
+    "runtimeReferencesFound": 0
+  },
+  "bundleSize": {
+    "before": {
+      "cssBytes": 184470,
+      "vendorJsBytes": 8260,
+      "mainJsBytes": 1036070,
+      "totalBytes": 1228800
+    },
+    "after": {
+      "cssBytes": 184470,
+      "vendorJsBytes": 8260,
+      "mainJsBytes": 1036070,
+      "totalBytes": 1228800
+    },
+    "reductionBytes": 0,
+    "reductionPercent": 0
+  },
+  "validation": {
+    "command": "npm run validate:platform",
+    "success": false,
+    "actualReadinessScore": 89,
+    "runtimeChecks": {
+      "passed": 300,
+      "total": 301
+    },
+    "domains": {
+      "passed": [
+        "heroBackground",
+        "revenueArchitecture",
+        "enterprise",
+        "theaterNavigation",
+        "continueWatching",
+        "teamNotifications",
+        "securityAudit",
+        "creatorCopilot",
+        "guideMe",
+        "productionHealth",
+        "releaseCenter",
+        "notifications",
+        "teams",
+        "workflowEngine"
+      ],
+      "failed": [
+        "platformTruthFlow",
+        "marketplace",
+        "revenueDashboard",
+        "threatDetection",
+        "sentinelAssistant",
+        "heroIntelligence",
+        "commandCenter",
+        "appearanceSystem"
+      ]
+    }
+  }
+}

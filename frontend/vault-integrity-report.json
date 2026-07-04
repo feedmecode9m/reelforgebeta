@@ -1,0 +1,195 @@
+{
+  "phase": "66-vault-integrity-repair",
+  "generatedAt": "2026-06-14T06:26:35.573Z",
+  "validations": {
+    "oneImage": {
+      "uploads": [
+        {
+          "start": 1781418320272,
+          "upload": {
+            "id": "094f1388-50c6-4b63-a4a8-8af4491c04c2",
+            "status": "ready",
+            "videoUrl": "http://localhost:8080/thumbs/094f1388-50c6-4b63-a4a8-8af4491c04c2.png",
+            "thumbnailUrl": "http://localhost:8080/thumbs/094f1388-50c6-4b63-a4a8-8af4491c04c2.png",
+            "pollUrl": "/api/reels/094f1388-50c6-4b63-a4a8-8af4491c04c2"
+          },
+          "postCalls": 1,
+          "syncCycles": 2,
+          "statusPolls": 1
+        }
+      ],
+      "metrics": {
+        "totals": {
+          "thumbnailVaultSize": 20,
+          "videoVaultSize": 0
+        },
+        "perId": {
+          "094f1388-50c6-4b63-a4a8-8af4491c04c2": {
+            "vaultRefs": 1,
+            "feedRefs": 1
+          }
+        }
+      }
+    },
+    "threeImages": {
+      "uploads": [
+        {
+          "start": 1781418333184,
+          "upload": {
+            "id": "e9325e43-8f77-4e38-8774-bc497e1a43a3",
+            "status": "ready",
+            "videoUrl": "http://localhost:8080/thumbs/e9325e43-8f77-4e38-8774-bc497e1a43a3.png",
+            "thumbnailUrl": "http://localhost:8080/thumbs/e9325e43-8f77-4e38-8774-bc497e1a43a3.png",
+            "pollUrl": "/api/reels/e9325e43-8f77-4e38-8774-bc497e1a43a3"
+          },
+          "postCalls": 1,
+          "syncCycles": 2,
+          "statusPolls": 1
+        },
+        {
+          "start": 1781418339082,
+          "upload": {
+            "id": "8990b8fb-bcc9-4ec2-91f3-4813150f6aa1",
+            "status": "ready",
+            "videoUrl": "http://localhost:8080/thumbs/8990b8fb-bcc9-4ec2-91f3-4813150f6aa1.png",
+            "thumbnailUrl": "http://localhost:8080/thumbs/8990b8fb-bcc9-4ec2-91f3-4813150f6aa1.png",
+            "pollUrl": "/api/reels/8990b8fb-bcc9-4ec2-91f3-4813150f6aa1"
+          },
+          "postCalls": 1,
+          "syncCycles": 2,
+          "statusPolls": 1
+        },
+        {
+          "start": 1781418346037,
+          "upload": {
+            "id": "a2a0845e-4d44-41a9-984b-101457e75519",
+            "status": "ready",
+            "videoUrl": "http://localhost:8080/thumbs/a2a0845e-4d44-41a9-984b-101457e75519.png",
+            "thumbnailUrl": "http://localhost:8080/thumbs/a2a0845e-4d44-41a9-984b-101457e75519.png",
+            "pollUrl": "/api/reels/a2a0845e-4d44-41a9-984b-101457e75519"
+          },
+          "postCalls": 1,
+          "syncCycles": 2,
+          "statusPolls": 1
+        }
+      ],
+      "metrics": {
+        "totals": {
+          "thumbnailVaultSize": 20,
+          "videoVaultSize": 0
+        },
+        "perId": {
+          "e9325e43-8f77-4e38-8774-bc497e1a43a3": {
+            "vaultRefs": 1,
+            "feedRefs": 1
+          },
+          "8990b8fb-bcc9-4ec2-91f3-4813150f6aa1": {
+            "vaultRefs": 1,
+            "feedRefs": 1
+          },
+          "a2a0845e-4d44-41a9-984b-101457e75519": {
+            "vaultRefs": 1,
+            "feedRefs": 1
+          }
+        }
+      }
+    },
+    "oneVideo": {
+      "uploads": [
+        {
+          "start": 1781418358817,
+          "upload": {
+            "id": "841b584b-a056-4df7-9113-687beb6d3f17",
+            "status": "pending",
+            "videoUrl": "http://localhost:8080/videos/841b584b-a056-4df7-9113-687beb6d3f17.mp4",
+            "thumbnailUrl": null,
+            "pollUrl": "/api/reels/841b584b-a056-4df7-9113-687beb6d3f17"
+          },
+          "postCalls": 1,
+          "syncCycles": 1,
+          "statusPolls": 2
+        }
+      ],
+      "metrics": {
+        "totals": {
+          "thumbnailVaultSize": 20,
+          "videoVaultSize": 1
+        },
+        "perId": {
+          "841b584b-a056-4df7-9113-687beb6d3f17": {
+            "vaultRefs": 1,
+            "feedRefs": 1
+          }
+        }
+      }
+    },
+    "threeVideos": {
+      "uploads": [
+        {
+          "start": 1781418373176,
+          "upload": {
+            "id": "d332cf7a-ec5c-4a9a-ad07-9ba35599e1e8",
+            "status": "pending",
+            "videoUrl": "http://localhost:8080/videos/d332cf7a-ec5c-4a9a-ad07-9ba35599e1e8.mp4",
+            "thumbnailUrl": null,
+            "pollUrl": "/api/reels/d332cf7a-ec5c-4a9a-ad07-9ba35599e1e8"
+          },
+          "postCalls": 1,
+          "syncCycles": 1,
+          "statusPolls": 3
+        },
+        {
+          "start": 1781418380679,
+          "upload": {
+            "id": "0e19b2b5-8786-4ad7-abde-92da6f6b47ee",
+            "status": "pending",
+            "videoUrl": "http://localhost:8080/videos/0e19b2b5-8786-4ad7-abde-92da6f6b47ee.mp4",
+            "thumbnailUrl": null,
+            "pollUrl": "/api/reels/0e19b2b5-8786-4ad7-abde-92da6f6b47ee"
+          },
+          "postCalls": 1,
+          "syncCycles": 1,
+          "statusPolls": 4
+        },
+        {
+          "start": 1781418388010,
+          "upload": {
+            "id": "aafab1a4-999c-4223-9f83-113be81179e4",
+            "status": "pending",
+            "videoUrl": "http://localhost:8080/videos/aafab1a4-999c-4223-9f83-113be81179e4.mp4",
+            "thumbnailUrl": null,
+            "pollUrl": "/api/reels/aafab1a4-999c-4223-9f83-113be81179e4"
+          },
+          "postCalls": 1,
+          "syncCycles": 1,
+          "statusPolls": 2
+        }
+      ],
+      "metrics": {
+        "totals": {
+          "thumbnailVaultSize": 20,
+          "videoVaultSize": 3
+        },
+        "perId": {
+          "d332cf7a-ec5c-4a9a-ad07-9ba35599e1e8": {
+            "vaultRefs": 1,
+            "feedRefs": 1
+          },
+          "0e19b2b5-8786-4ad7-abde-92da6f6b47ee": {
+            "vaultRefs": 1,
+            "feedRefs": 1
+          },
+          "aafab1a4-999c-4223-9f83-113be81179e4": {
+            "vaultRefs": 1,
+            "feedRefs": 1
+          }
+        }
+      }
+    }
+  },
+  "tokens": {
+    "THUMBNAIL_FANOUT_FIX_COMPLETE": true,
+    "THUMBNAIL_CAP_FIX_COMPLETE": true,
+    "VIDEO_SYNC_FIX_COMPLETE": true
+  }
+}

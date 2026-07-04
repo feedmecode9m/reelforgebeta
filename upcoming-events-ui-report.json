@@ -1,0 +1,43 @@
+{
+  "phase": "REELFORGE PHASE 68 — UPCOMING EVENTS MODULE IMPLEMENTATION",
+  "generatedAt": "2026-06-15T02:47:34.766Z",
+  "checks": {
+    "registryLoadsAndCardsRender": true,
+    "rsvpActionEmitsDiagnostic": true,
+    "viewDetailsEmitsDiagnostic": true
+  },
+  "evidence": {
+    "baseline": {
+      "cardCount": 6,
+      "eventIds": [
+        "ep-neon-s01e01",
+        "ep-neon-s01e02",
+        "ep-neon-s01e03",
+        "ep-neon-s01e04",
+        "ep-neon-s02e01",
+        "ep-neon-s02e02"
+      ]
+    },
+    "afterActions": {
+      "firstEventId": "ep-neon-s01e01",
+      "detailsViewedFlag": true
+    }
+  },
+  "diagnostics": {
+    "render": [
+      "[EVENTS_MODULE_RENDER] {eventId: ep-neon-s01e01, status: LIVE}",
+      "[EVENTS_MODULE_RENDER] {eventId: ep-neon-s01e02, status: LIVE}",
+      "[EVENTS_MODULE_RENDER] {eventId: ep-neon-s01e03, status: SOON}",
+      "[EVENTS_MODULE_RENDER] {eventId: ep-neon-s01e04, status: UPCOMING}",
+      "[EVENTS_MODULE_RENDER] {eventId: ep-neon-s02e01, status: LIVE}",
+      "[EVENTS_MODULE_RENDER] {eventId: ep-neon-s02e02, status: LIVE}"
+    ],
+    "rsvp": [
+      "[EVENT_RSVP_ACTION] {eventId: ep-neon-s01e01}"
+    ],
+    "details": [
+      "[EVENT_DETAILS_VIEW] {eventId: ep-neon-s01e01}"
+    ]
+  },
+  "completeToken": "UPCOMING_EVENTS_UI_COMPLETE=true"
+}

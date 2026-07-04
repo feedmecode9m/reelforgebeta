@@ -1,0 +1,25 @@
+{
+  "phase": "PHASE 70.3 — HERO EXPERIENCE SANITIZATION",
+  "generatedAt": "2026-06-16T23:51:34.280Z",
+  "baseUrl": "http://127.0.0.1:5173",
+  "viewer_visible_elements": [
+    "Featured Premiere Next in 8s Neon Vengeance Most Watched This Week Continue Watching Watch Now Pause Media Upcoming Events Studio Creator Follow Prev Pause Next",
+    "Continue Watching Watch Now Pause Media",
+    "Continue Watching",
+    "Watch Now",
+    "Upcoming Events",
+    "Studio Creator Follow",
+    "Follow"
+  ],
+  "admin_visible_elements": [],
+  "removed_internal_elements": [
+    "Hero Video Active",
+    "Cinematic Stage",
+    "Image + Video",
+    "Manage in Vault",
+    "Current Series",
+    "Production Readiness",
+    "Biggest Blocker"
+  ],
+  "completionToken": "HERO_EXPERIENCE_SANITIZED=true"
+}

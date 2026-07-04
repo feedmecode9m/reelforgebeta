@@ -1,0 +1,89 @@
+{
+  "campaigns": [],
+  "labels": {
+    "episode_label": "system_hardening"
+  },
+  "layout": {
+    "definition": {
+      "panels": {
+        "hero": {
+          "visible": true,
+          "zone": "top"
+        }
+      },
+      "shelf_order": []
+    },
+    "preset_key": "MINIMAL"
+  },
+  "metadata": {
+    "harness_content_format": "DOCUMENTARY",
+    "inventory_state": "MISSING",
+    "media_failure_mode": "none",
+    "media_intent": "DOCUMENTARY",
+    "media_placeholder_policy": "CONTENT_THEN_PLACEHOLDER",
+    "media_reference": "episode:a1000000-0000-4000-8000-000000000001",
+    "media_reference_validity": "valid",
+    "media_state": "PLACEHOLDER_MEDIA",
+    "thumbnail_resolution": "MUST_PLACEHOLDER"
+  },
+  "monetization_presentation": {},
+  "provenance": {
+    "labels.episode_label": {
+      "source": "default",
+      "value": "system_hardening"
+    },
+    "layout.preset_key": {
+      "source": "default",
+      "value": "MINIMAL"
+    },
+    "resolve_context.project_id": {
+      "source": "episode",
+      "value": "c3000000-0000-4000-8000-000000000003"
+    },
+    "schema_version": {
+      "source": "default",
+      "value": "1.0.0"
+    },
+    "visibility.hero.enabled": {
+      "source": "default",
+      "value": true
+    },
+    "visibility.hero.mode": {
+      "source": "default",
+      "value": "OFF"
+    }
+  },
+  "resolve_context": {
+    "enforce_paywall": false,
+    "episode_id": "a1000000-0000-4000-8000-000000000001",
+    "project_id": "c3000000-0000-4000-8000-000000000003",
+    "resolved_at": "2026-06-03T12:00:00Z"
+  },
+  "schema_version": "1.0.0",
+  "slots": [],
+  "theme": {
+    "tokens": {}
+  },
+  "visibility": {
+    "hero": {
+      "enabled": true,
+      "mode": "OFF"
+    },
+    "panels": {
+      "continue_watching": {
+        "baseline_visible": true,
+        "effective_visible": true
+      },
+      "hero": {
+        "baseline_visible": true,
+        "effective_visible": true
+      }
+    }
+  },
+  "watch_features": {
+    "comments_enabled": false,
+    "continue_watching_enabled": true,
+    "downloads_enabled": false,
+    "recommendations_enabled": false
+  }
+}

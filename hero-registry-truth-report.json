@@ -1,0 +1,282 @@
+{
+  "phase": "REELFORGE PHASE \u2014 HERO REGISTRY TRUTH AUDIT",
+  "mode": "FORENSIC + MINIMAL FIX",
+  "generatedAt": "2026-06-14T23:56:53.992538+00:00",
+  "step1_HERO_ASSET_ID_TRACE": {
+    "acceptPipeline": [
+      {
+        "stage": "handleHeroFileSelect",
+        "file": "frontend/src/components/experiences/HeroExperience.svelte",
+        "path": [
+          "file-select/drop",
+          "heroPendingFile.set",
+          "heroPreviewUrl.set",
+          "uploadStatus preview"
+        ]
+      },
+      {
+        "stage": "acceptHeroFile:image/video",
+        "file": "frontend/src/components/experiences/HeroExperience.svelte",
+        "path": [
+          "heroAssetId create",
+          "HERO_POSTER_IMAGE/HERO_BACKGROUND_VIDEO set",
+          "saveHeroManagerConfig",
+          "pending clear"
+        ]
+      },
+      {
+        "stage": "saveHeroManagerConfig",
+        "file": "frontend/src/lib/hero/heroIntelligence.js",
+        "path": [
+          "localStorage reelforge_hero_manager_config write",
+          "reelforge:hero-manager-updated event"
+        ]
+      },
+      {
+        "stage": "registry build",
+        "file": "frontend/src/lib/hero/heroIntelligence.js",
+        "path": [
+          "loadHeroVaultItems -> buildHeroAssetRegistry"
+        ]
+      },
+      {
+        "stage": "render",
+        "file": "frontend/src/components/experiences/HeroExperience.svelte",
+        "path": [
+          "resolveHeroBackgroundPresentation -> resolveHeroBackgroundAsset -> render branch"
+        ]
+      }
+    ],
+    "runtimeTail": [
+      {
+        "t": 1781481376092,
+        "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: reelforge_hero_image, timestamp: 1781481376091}"
+      },
+      {
+        "t": 1781481376092,
+        "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: resolveHeroBackgroundAsset, timestamp: 1781481376092}"
+      },
+      {
+        "t": 1781481380069,
+        "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481380064}"
+      },
+      {
+        "t": 1781481380069,
+        "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: reelforge_hero_image, timestamp: 1781481380065}"
+      },
+      {
+        "t": 1781481380069,
+        "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: resolveHeroBackgroundAsset, timestamp: 1781481380065}"
+      },
+      {
+        "t": 1781481380149,
+        "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481380144}"
+      },
+      {
+        "t": 1781481380149,
+        "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: reelforge_hero_image, timestamp: 1781481380144}"
+      },
+      {
+        "t": 1781481380170,
+        "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481380169}"
+      },
+      {
+        "t": 1781481380170,
+        "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: hero-image-truth-1781481370815, heroAssetId: hero-image-truth-1781481370815, source: reelforge_hero_image, timestamp: 1781481380169}"
+      },
+      {
+        "t": 1781481380171,
+        "text": "[HERO_ASSET_ID_TRACE] {stage: saveHeroManagerConfig:write, assetId: hero-video-truth-1781481380168, heroAssetId: hero-video-truth-1781481380168, source: reelforge_hero_manager_config, timestamp: 1781481380170}"
+      },
+      {
+        "t": 1781481380172,
+        "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481380171}"
+      },
+      {
+        "t": 1781481380172,
+        "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: hero-video-truth-1781481380168, heroAssetId: hero-video-truth-1781481380168, source: reelforge_hero_video, timestamp: 1781481380171}"
+      },
+      {
+        "t": 1781481380173,
+        "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: hero-video-truth-1781481380168, heroAssetId: hero-video-truth-1781481380168, source: resolveHeroBackgroundAsset, timestamp: 1781481380172}"
+      },
+      {
+        "t": 1781481380175,
+        "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481380174}"
+      },
+      {
+        "t": 1781481380175,
+        "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: hero-video-truth-1781481380168, heroAssetId: hero-video-truth-1781481380168, source: reelforge_hero_video, timestamp: 1781481380174}"
+      },
+      {
+        "t": 1781481380176,
+        "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: hero-video-truth-1781481380168, heroAssetId: hero-video-truth-1781481380168, source: resolveHeroBackgroundAsset, timestamp: 1781481380175}"
+      },
+      {
+        "t": 1781481380177,
+        "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481380176}"
+      },
+      {
+        "t": 1781481380177,
+        "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: hero-video-truth-1781481380168, heroAssetId: hero-video-truth-1781481380168, source: reelforge_hero_video, timestamp: 1781481380176}"
+      },
+      {
+        "t": 1781481380181,
+        "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: hero-video-truth-1781481380168, heroAssetId: hero-video-truth-1781481380168, source: resolveHeroBackgroundAsset, timestamp: 1781481380177}"
+      },
+      {
+        "t": 1781481380187,
+        "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481380186}"
+      },
+      {
+        "t": 1781481380187,
+        "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: hero-video-truth-1781481380168, heroAssetId: hero-video-truth-1781481380168, source: reelforge_hero_video, timestamp: 1781481380186}"
+      },
+      {
+        "t": 1781481380188,
+        "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: hero-video-truth-1781481380168, heroAssetId: hero-video-truth-1781481380168, source: resolveHeroBackgroundAsset, timestamp: 1781481380187}"
+      },
+      {
+        "t": 1781481380196,
+        "text": "[HERO_ASSET_ID_TRACE] {stage: HeroExperience:render, assetId: hero-video-truth-1781481380168, heroAssetId: hero-video-truth-1781481380168, source: HeroExperience, timestamp: 1781481380195}"
+      },
+      {
+        "t": 1781481380509,
+        "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1781481380507}"
+      },
+      {
+        "t": 1781481380509,
+        "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: hero-video-truth-1781481380168, heroAssetId: hero-video-truth-1781481380168, source: reelforge_hero_video, timestamp: 1781481380507}"
+      }
+    ]
+  },
+  "step2_HERO_STORAGE_AUTHORITIES": {
+    "authorityA": {
+      "key": "reelforge_hero_manager_config",
+      "owns": [
+        "heroAssetId",
+        "backgroundSource",
+        "backgroundStyle"
+      ],
+      "reader": [
+        "loadHeroManagerConfig",
+        "loadHeroVaultItems",
+        "resolveHeroBackgroundAsset"
+      ]
+    },
+    "authorityB": {
+      "key": "reelforge_hero_image",
+      "owns": [
+        "hero image payload"
+      ],
+      "reader": [
+        "loadHeroVaultItems",
+        "resolveHeroBackgroundAsset"
+      ]
+    },
+    "authorityC": {
+      "key": "reelforge_hero_video",
+      "owns": [
+        "hero video payload"
+      ],
+      "reader": [
+        "loadHeroVaultItems",
+        "resolveHeroBackgroundAsset"
+      ]
+    },
+    "winnerAfterReload": "Authority A (manager config backgroundSource + heroAssetId) gates which payload key (B or C) is materialized into registry after reload."
+  },
+  "step3_mismatch_proof": {
+    "hypothesisA": "Registry stores hero-image-123 but UI searches hero-image",
+    "resultA": "not_observed_after_fix",
+    "proofA": "Image scenario after accept/reload keeps identical ID in registry and manager heroAssetId.",
+    "hypothesisB": "Registry stores assetId while UI searches heroAssetId",
+    "resultB": "not_observed_after_fix",
+    "proofB": "Trace lines show assetId == heroAssetId at save/load/resolve/render stages.",
+    "hypothesisC": "Normalization strips IDs",
+    "resultC": "not_observed_after_fix",
+    "proofC": "buildHeroAssetRegistry retained accepted IDs without stripping in runtime snapshots."
+  },
+  "step4_HERO_VAULT_RENDER": {
+    "component": "frontend/src/components/studio/HeroManagerPanel.svelte",
+    "uiBlock": "{#each heroAssetRegistry as item (item.assetId)}",
+    "source": "heroAssetRegistry = buildHeroAssetRegistry(loadHeroVaultItems())",
+    "runtime": {
+      "registryCount": 1,
+      "renderedCount": 1,
+      "assetIds": [
+        "hero-image-truth-1781481370815"
+      ]
+    }
+  },
+  "step5_HERO_REGISTRY_COMPARE": {
+    "afterImageAccept": {
+      "dropdownCount": 1,
+      "vaultCount": 1,
+      "registryCount": 1
+    },
+    "afterReload": {
+      "dropdownCount": 1,
+      "vaultCount": 1,
+      "registryCount": 1
+    },
+    "afterVideoAccept": {
+      "dropdownCount": 1,
+      "vaultCount": 1,
+      "registryCount": 1
+    }
+  },
+  "step6_minimal_fix_applied": {
+    "type": "assetId mismatch + authority collision only",
+    "changes": [
+      {
+        "file": "frontend/src/lib/hero/heroIntelligence.js",
+        "summary": "loadHeroVaultItems now materializes only active source (custom_image/custom_video) and binds active entry ID to manager heroAssetId, preventing generic fallback ID collisions."
+      },
+      {
+        "file": "frontend/src/lib/hero/heroIntelligence.js",
+        "summary": "Added authority and ID lifecycle diagnostics: [HERO_ASSET_ID_TRACE], [HERO_STORAGE_AUTHORITIES]."
+      },
+      {
+        "file": "frontend/src/components/experiences/HeroExperience.svelte",
+        "summary": "Added [HERO_ASSET_ID_TRACE] at accept stages and render stage."
+      },
+      {
+        "file": "frontend/src/components/studio/HeroManagerPanel.svelte",
+        "summary": "Added [HERO_VAULT_RENDER] and [HERO_REGISTRY_COMPARE] diagnostics from registry render source."
+      }
+    ]
+  },
+  "step7_validation": {
+    "upload1ImageExpected": {
+      "afterAccept_registryCount": 1,
+      "afterReload_registryCount": 1,
+      "afterReload_dropdownCount": 1,
+      "afterReload_vaultCount": 1,
+      "allIdsIdentical": true
+    },
+    "observed_imageScenario": {
+      "afterAccept_registryCount": 1,
+      "afterReload_registryCount": 1,
+      "afterReload_dropdownCount": 1,
+      "afterReload_vaultCount": 1,
+      "afterAccept_ids": [
+        "hero-image-truth-1781481370815"
+      ],
+      "afterReload_ids": [
+        "hero-image-truth-1781481370815"
+      ],
+      "managerHeroAssetId_afterReload": "hero-image-truth-1781481370815"
+    },
+    "pass": true
+  },
+  "artifacts": {
+    "runtime": "hero-registry-truth-runtime.json"
+  },
+  "filesChanged": [
+    "frontend/src/lib/hero/heroIntelligence.js",
+    "frontend/src/components/experiences/HeroExperience.svelte",
+    "frontend/src/components/studio/HeroManagerPanel.svelte"
+  ],
+  "HERO_REGISTRY_TRUTH_COMPLETE": true
+}

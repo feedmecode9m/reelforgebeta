@@ -1,0 +1,522 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reelforge.dev/schemas/resolved_viewer_experience/1.0.0",
+  "title": "ResolvedViewerExperience",
+  "description": "Canonical composed viewer experience output from the Unified Resolver. Normative source: docs/RESOLVED_VIEWER_EXPERIENCE_CONTRACT.md",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "resolve_context",
+    "layout",
+    "theme",
+    "labels",
+    "metadata",
+    "visibility",
+    "campaigns",
+    "slots",
+    "monetization_presentation",
+    "watch_features",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": { "$ref": "#/$defs/semver" },
+    "resolve_context": { "$ref": "#/$defs/resolveContext" },
+    "experience_profile": { "$ref": "#/$defs/experienceProfile" },
+    "layout": { "$ref": "#/$defs/layout" },
+    "theme": { "$ref": "#/$defs/theme" },
+    "labels": { "$ref": "#/$defs/labels" },
+    "metadata": { "$ref": "#/$defs/metadataMap" },
+    "visibility": { "$ref": "#/$defs/visibility" },
+    "campaigns": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/campaign" }
+    },
+    "slots": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/slot" }
+    },
+    "monetization_presentation": { "$ref": "#/$defs/monetizationPresentation" },
+    "watch_features": { "$ref": "#/$defs/watchFeatures" },
+    "extensions": { "$ref": "#/$defs/extensions" },
+    "provenance": { "$ref": "#/$defs/provenanceMap" }
+  },
+  "$defs": {
+    "semver": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "uuid": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "dateTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadataKey": {
+      "type": "string",
+      "pattern": "^(?!rf\\.)(?!system\\.)(?!internal\\.)(?!ai\\.)(?!ads\\.)(?!recommendation\\.)[a-z][a-z0-9_]*$"
+    },
+    "metadataMap": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/metadataKey" },
+      "additionalProperties": { "$ref": "#/$defs/metadataValue" }
+    },
+    "metadataValue": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "number" },
+        { "type": "boolean" },
+        { "type": "object" },
+        { "type": "array" },
+        { "type": "null" }
+      ]
+    },
+    "provenanceSource": {
+      "type": "string",
+      "enum": [
+        "default",
+        "platform",
+        "project",
+        "series",
+        "season",
+        "episode",
+        "profile",
+        "campaign"
+      ]
+    },
+    "provenanceEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "source"],
+      "properties": {
+        "value": {},
+        "source": { "$ref": "#/$defs/provenanceSource" },
+        "scope": { "type": ["string", "null"] },
+        "profile_version": {
+          "type": ["string", "null"],
+          "format": "uuid"
+        }
+      }
+    },
+    "provenanceMap": {
+      "type": "object",
+      "minProperties": 6,
+      "propertyNames": { "type": "string", "minLength": 1 },
+      "additionalProperties": { "$ref": "#/$defs/provenanceEntry" },
+      "required": [
+        "schema_version",
+        "resolve_context.project_id",
+        "layout.preset_key",
+        "labels.episode_label",
+        "visibility.hero.mode",
+        "visibility.hero.enabled"
+      ]
+    },
+    "resolveContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["project_id", "resolved_at", "enforce_paywall"],
+      "properties": {
+        "episode_id": { "$ref": "#/$defs/uuid" },
+        "reel_id": { "$ref": "#/$defs/uuid" },
+        "project_id": { "$ref": "#/$defs/uuid" },
+        "series_id": { "type": ["string", "null"], "format": "uuid" },
+        "season_id": { "type": ["string", "null"], "format": "uuid" },
+        "resolved_at": { "$ref": "#/$defs/dateTime" },
+        "enforce_paywall": { "type": "boolean", "const": false }
+      },
+      "anyOf": [
+        { "required": ["episode_id"] },
+        { "required": ["reel_id"] }
+      ]
+    },
+    "contentFormat": {
+      "type": "string",
+      "enum": [
+        "GENERIC",
+        "MICRO_DRAMA",
+        "DOCUMENTARY",
+        "MUSIC_VIDEO",
+        "REALITY",
+        "EDUCATIONAL",
+        "CREATOR_COURSE",
+        "CREATOR_CHANNEL",
+        "LIVESTREAM_REPLAY"
+      ]
+    },
+    "profileStatus": {
+      "type": "string",
+      "enum": ["ACTIVE", "ARCHIVED"]
+    },
+    "experienceProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile_family_id",
+        "profile_version_id",
+        "profile_version",
+        "content_format",
+        "pin_version",
+        "status"
+      ],
+      "properties": {
+        "profile_family_id": { "$ref": "#/$defs/uuid" },
+        "profile_version_id": { "$ref": "#/$defs/uuid" },
+        "profile_version": { "type": "integer", "minimum": 1 },
+        "profile_family_name": { "type": "string", "minLength": 1 },
+        "content_format": { "$ref": "#/$defs/contentFormat" },
+        "pin_version": { "type": "boolean" },
+        "status": { "$ref": "#/$defs/profileStatus" }
+      }
+    },
+    "layoutPresetKey": {
+      "type": "string",
+      "enum": [
+        "MINIMAL",
+        "NETFLIX",
+        "REELSHORT",
+        "DOCUMENTARY",
+        "ARTIST_ACCESS",
+        "EDUCATIONAL",
+        "CUSTOM"
+      ]
+    },
+    "layoutPanel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["visible", "zone"],
+      "properties": {
+        "visible": { "type": "boolean" },
+        "zone": { "type": "string", "minLength": 1 }
+      }
+    },
+    "layoutDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["panels", "shelf_order"],
+      "properties": {
+        "panels": {
+          "type": "object",
+          "propertyNames": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+          "additionalProperties": { "$ref": "#/$defs/layoutPanel" }
+        },
+        "shelf_order": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "cta": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "layout": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["preset_key", "definition"],
+      "properties": {
+        "preset_key": { "$ref": "#/$defs/layoutPresetKey" },
+        "preset_name": { "type": "string", "minLength": 1 },
+        "definition": { "$ref": "#/$defs/layoutDefinition" }
+      }
+    },
+    "themeTokenKey": {
+      "type": "string",
+      "enum": [
+        "hero_surface",
+        "panel_surface",
+        "accent_surface",
+        "typography_style",
+        "button_style",
+        "card_style",
+        "overlay_style"
+      ]
+    },
+    "themeTokenValue": {
+      "type": "object",
+      "additionalProperties": true,
+      "minProperties": 1
+    },
+    "theme": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tokens"],
+      "properties": {
+        "token_set_id": { "type": ["string", "null"], "format": "uuid" },
+        "token_set_slug": { "type": "string", "minLength": 1 },
+        "tokens": {
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/themeTokenKey" },
+          "additionalProperties": { "$ref": "#/$defs/themeTokenValue" }
+        }
+      }
+    },
+    "labels": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["episode_label"],
+      "properties": {
+        "project_label": { "type": "string", "minLength": 1 },
+        "series_label": { "type": "string", "minLength": 1 },
+        "season_label": { "type": "string", "minLength": 1 },
+        "episode_label": { "type": "string", "minLength": 1 },
+        "vip_label": { "type": "string", "minLength": 1 },
+        "trailer_label": { "type": "string", "minLength": 1 },
+        "bonus_content_label": { "type": "string", "minLength": 1 }
+      }
+    },
+    "heroMode": {
+      "type": "string",
+      "enum": [
+        "OFF",
+        "STATIC_IMAGE",
+        "STATIC_VIDEO",
+        "CAROUSEL_IMAGES",
+        "CAROUSEL_VIDEOS",
+        "MIXED"
+      ]
+    },
+    "visibilityHero": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "mode"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "mode": { "$ref": "#/$defs/heroMode" },
+        "autoplay": { "type": "boolean" },
+        "carousel_interval_seconds": {
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 120
+        },
+        "overlay_enabled": { "type": "boolean" }
+      }
+    },
+    "visibilityPanel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["effective_visible", "baseline_visible"],
+      "properties": {
+        "effective_visible": { "type": "boolean" },
+        "baseline_visible": { "type": "boolean" },
+        "profile_enabled": { "type": ["boolean", "null"] },
+        "zone": { "type": "string" },
+        "disabled_by": {
+          "type": ["string", "null"],
+          "enum": ["preset", "profile", null]
+        }
+      }
+    },
+    "visibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hero", "panels"],
+      "properties": {
+        "hero": { "$ref": "#/$defs/visibilityHero" },
+        "panels": {
+          "type": "object",
+          "propertyNames": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+          "additionalProperties": { "$ref": "#/$defs/visibilityPanel" },
+          "minProperties": 1
+        }
+      }
+    },
+    "campaignType": {
+      "type": "string",
+      "enum": ["CONTEST", "PREMIERE", "PROMOTION", "SPONSOR"]
+    },
+    "campaignStatus": {
+      "type": "string",
+      "enum": ["draft", "scheduled", "active", "ended", "archived"]
+    },
+    "campaign": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "campaign_name", "campaign_type", "status"],
+      "properties": {
+        "id": { "$ref": "#/$defs/uuid" },
+        "campaign_name": { "type": "string", "minLength": 1 },
+        "campaign_type": { "$ref": "#/$defs/campaignType" },
+        "status": { "$ref": "#/$defs/campaignStatus" },
+        "start_date": { "type": ["string", "null"], "format": "date-time" },
+        "end_date": { "type": ["string", "null"], "format": "date-time" },
+        "priority": { "type": "integer" },
+        "target_series_id": { "type": ["string", "null"], "format": "uuid" },
+        "target_episode_id": { "type": ["string", "null"], "format": "uuid" }
+      }
+    },
+    "slotScopeType": {
+      "type": "string",
+      "enum": ["project", "series", "season", "episode", "platform"]
+    },
+    "slotStatus": {
+      "type": "string",
+      "enum": ["scheduled", "active", "ended"]
+    },
+    "standardSlotKey": {
+      "type": "string",
+      "enum": ["hero_promo", "shelf_featured", "theater_overlay", "shelf_badge"]
+    },
+    "slot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["slot_key", "scope_type", "status"],
+      "properties": {
+        "slot_key": {
+          "oneOf": [
+            { "$ref": "#/$defs/standardSlotKey" },
+            { "type": "string", "pattern": "^custom\\.[a-z][a-z0-9_]*$" }
+          ]
+        },
+        "campaign_id": { "type": ["string", "null"], "format": "uuid" },
+        "scope_type": { "$ref": "#/$defs/slotScopeType" },
+        "scope_id": { "type": ["string", "null"], "format": "uuid" },
+        "status": { "$ref": "#/$defs/slotStatus" },
+        "content_ref": { "type": "object", "additionalProperties": true },
+        "zone_hint": { "type": "string" }
+      }
+    },
+    "premiumCtaStyle": {
+      "type": "string",
+      "enum": ["NONE", "SUBTLE", "BANNER", "MODAL", "PILL"]
+    },
+    "monetizationPresentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "paywall_style": { "type": ["string", "null"] },
+        "access_style": { "type": ["string", "null"] },
+        "cta_style": { "type": ["string", "null"] },
+        "premium_cta_style": { "$ref": "#/$defs/premiumCtaStyle" }
+      }
+    },
+    "watchFeatures": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "continue_watching_enabled",
+        "recommendations_enabled",
+        "downloads_enabled",
+        "comments_enabled"
+      ],
+      "properties": {
+        "continue_watching_enabled": { "type": "boolean" },
+        "recommendations_enabled": { "type": "boolean" },
+        "downloads_enabled": { "type": "boolean" },
+        "comments_enabled": { "type": "boolean" }
+      }
+    },
+    "aiModule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["module_id"],
+      "properties": {
+        "module_id": { "type": "string", "minLength": 1 },
+        "payload": { "type": "object", "additionalProperties": true }
+      }
+    },
+    "customSlot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["slot_key", "scope_type", "status"],
+      "properties": {
+        "slot_key": {
+          "type": "string",
+          "pattern": "^custom\\.[a-z][a-z0-9_]*$"
+        },
+        "campaign_id": { "type": ["string", "null"], "format": "uuid" },
+        "scope_type": { "$ref": "#/$defs/slotScopeType" },
+        "scope_id": { "type": ["string", "null"], "format": "uuid" },
+        "status": { "$ref": "#/$defs/slotStatus" },
+        "content_ref": { "type": "object", "additionalProperties": true },
+        "zone_hint": { "type": "string" }
+      }
+    },
+    "extensions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "custom_metadata": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "definitions": {
+              "type": "array",
+              "items": { "type": "object", "additionalProperties": true }
+            },
+            "values": {
+              "type": "object",
+              "propertyNames": { "$ref": "#/$defs/metadataKey" },
+              "additionalProperties": { "$ref": "#/$defs/metadataValue" }
+            }
+          }
+        },
+        "custom_slots": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "slots": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/customSlot" }
+            }
+          }
+        },
+        "future_ai_modules": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "modules": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/aiModule" }
+            }
+          }
+        },
+        "future_recommendation_modules": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "engine_id": { "type": ["string", "null"] },
+            "shelf_hints": { "type": "object", "additionalProperties": true }
+          }
+        },
+        "future_ad_modules": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "placements": {
+              "type": "array",
+              "items": { "type": "object", "additionalProperties": true }
+            }
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "properties": {
+        "schema_version": { "const": "1.0.0" }
+      }
+    },
+    {
+      "if": {
+        "required": ["experience_profile"],
+        "properties": {
+          "experience_profile": { "type": "object" }
+        }
+      },
+      "then": {
+        "properties": {
+          "provenance": {
+            "required": [
+              "experience_profile.profile_version_id",
+              "experience_profile.content_format"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

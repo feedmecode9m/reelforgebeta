@@ -1,0 +1,110 @@
+{
+  "version": "4.0.0",
+  "seriesId": "series-neon-vengeance",
+  "generatedAt": 1781328019310,
+  "recommendations": [
+    "Upload assets for E01 and E02 to raise readiness from 25% to 61%.",
+    "Critical: Require admin Bearer token and audit-log every delete; confirm CSRF-safe methods.",
+    "Critical: Gate cleanup behind admin role, dry-run preview, and two-step confirmation.",
+    "Critical: Prefer HttpOnly secure cookies or short-lived tokens with refresh rotation.",
+    "High: Enforce Bearer auth on all upload routes and validate MIME/size server-side.",
+    "Upload S1:E01 reel",
+    "Upload S1:E02 reel",
+    "Upload S1:E03 reel"
+  ],
+  "quickWins": [
+    "Attach reel to E03",
+    "Attach reel to E04"
+  ],
+  "blockers": [
+    "6 episodes missing assets",
+    "Attach reel to E01",
+    "Attach reel to E02",
+    "Attach reel to E03",
+    "Multipart upload surface"
+  ],
+  "nextActions": [
+    {
+      "title": "Attach reel to E01",
+      "detail": "Ghost in the Grid cannot play until a video is linked.",
+      "targetTab": "Production",
+      "targetSection": "workflowTasks",
+      "impact": 6
+    },
+    {
+      "title": "Attach reel to E02",
+      "detail": "Blood Protocol cannot play until a video is linked.",
+      "targetTab": "Production",
+      "targetSection": "workflowTasks",
+      "impact": 6
+    },
+    {
+      "title": "Attach reel to E03",
+      "detail": "Midnight Firewall cannot play until a video is linked.",
+      "targetTab": "Production",
+      "targetSection": "workflowTasks",
+      "impact": 6
+    },
+    {
+      "title": "Attach Reel to E01",
+      "detail": "Complete this workflow task to restore momentum.",
+      "targetTab": "Production",
+      "targetSection": "workflowTasks"
+    },
+    {
+      "title": "Attach Reel to E02",
+      "detail": "Complete this workflow task to restore momentum.",
+      "targetTab": "Production",
+      "targetSection": "workflowTasks"
+    },
+    {
+      "title": "Attach Reel to E03",
+      "detail": "Complete this workflow task to restore momentum.",
+      "targetTab": "Production",
+      "targetSection": "workflowTasks"
+    }
+  ],
+  "guideMeOverlay": {
+    "biggestBlocker": "6 episodes missing assets",
+    "biggestQuickWin": "Attach reel to E03",
+    "highestImpactAction": {
+      "title": "Attach reel to E01",
+      "detail": "Ghost in the Grid cannot play until a video is linked.",
+      "targetTab": "Production",
+      "targetSection": "workflowTasks",
+      "impact": 6
+    }
+  },
+  "questions": [
+    {
+      "id": "fix-next",
+      "label": "What should I do next?",
+      "sampleAnswer": "Attach reel to E01 — Ghost in the Grid cannot play until a video is linked."
+    },
+    {
+      "id": "readiness-low",
+      "label": "Why is readiness low?",
+      "sampleAnswer": "Production readiness 25%."
+    },
+    {
+      "id": "blocking-release",
+      "label": "What is blocking release?",
+      "sampleAnswer": "Multipart upload surface — POST /api/reels accepts video/thumbnail payloads — must require authenticated admin on backend."
+    },
+    {
+      "id": "security-risk",
+      "label": "What is my biggest security risk?",
+      "sampleAnswer": "Security 94/100 · live threat GREEN."
+    },
+    {
+      "id": "series-attention",
+      "label": "Which series needs attention?",
+      "sampleAnswer": "Neon Vengeance readiness 32% with 5 blockers."
+    },
+    {
+      "id": "workflow-stalled",
+      "label": "Which workflow is stalled?",
+      "sampleAnswer": "6 open workflow tasks."
+    }
+  ]
+}

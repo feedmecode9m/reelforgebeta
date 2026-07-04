@@ -1,0 +1,228 @@
+{
+  "phase": "REELFORGE PHASE 69.8C — STUDIO EXPERIENCE TRUTH AUDIT",
+  "mode": "FORENSIC_ONLY",
+  "generatedAt": "2026-06-16T22:46:30.000Z",
+  "objective": "Map full Smart Production Studio panel truth (visible/mounted/reachable/validator/diagnostics).",
+  "evidence": {
+    "runtimeProbe": {
+      "url": "http://127.0.0.1:5173/",
+      "preconditions": {
+        "admin_mode": true,
+        "control_center_opened": true
+      },
+      "defaultWorkspaceTab": "overview",
+      "defaultCommandSection": "executive-overview"
+    },
+    "codeMountSources": [
+      "frontend/src/components/experiences/StudioExperience.svelte",
+      "frontend/src/components/studio/ProductionCommandCenter.svelte",
+      "frontend/src/components/studio/StudioWorkspaceLayout.svelte"
+    ],
+    "validatorSources": [
+      "frontend/platform-truth-report.json",
+      "frontend/platform-validation-report.json",
+      "frontend/scripts/validate-command-center-truth.mjs",
+      "frontend/scripts/validate-guide-me-3.mjs",
+      "frontend/scripts/validate-creator-copilot.mjs",
+      "frontend/scripts/validate-workflow-engine.mjs",
+      "frontend/scripts/validate-creator-teams.mjs",
+      "frontend/scripts/validate-marketplace-truth.mjs",
+      "frontend/scripts/validate-revenue-dashboard-truth.mjs",
+      "frontend/scripts/validate-security-operations-center-truth.mjs",
+      "frontend/scripts/validate-security-enforcement.mjs",
+      "frontend/scripts/validate-hero-vault-ui.mjs",
+      "frontend/scripts/validate-hero-background-truth.mjs"
+    ]
+  },
+  "panels": [
+    {
+      "name": "Overview",
+      "visible": true,
+      "mounted": true,
+      "reachable": true,
+      "validator": "validate-command-center-truth.mjs (plus studio workspace runtime path)",
+      "runtimeDiagnostics": [
+        "COMMAND_CENTER",
+        "COMMAND_CENTER_LOAD",
+        "COMMAND_CENTER_REFRESH",
+        "WORKSPACE_TAB",
+        "STUDIO_REFRESH"
+      ]
+    },
+    {
+      "name": "Guide Me",
+      "visible": true,
+      "mounted": true,
+      "reachable": true,
+      "validator": "validate-guide-me-3.mjs",
+      "runtimeDiagnostics": [
+        "GUIDE_ME_CONTEXT",
+        "GUIDE_ME_RECOMMENDATION",
+        "GUIDE_ME_ACTION",
+        "GUIDEME_MISSION"
+      ]
+    },
+    {
+      "name": "Creator Copilot",
+      "visible": false,
+      "mounted": true,
+      "reachable": true,
+      "validator": "validate-creator-copilot.mjs",
+      "runtimeDiagnostics": [
+        "logCopilotDiag(tag)",
+        "COPILOT brief telemetry via creatorCopilot engine"
+      ],
+      "visibilityContext": "Visible when workspace tab = Automation."
+    },
+    {
+      "name": "Projects",
+      "visible": false,
+      "mounted": true,
+      "reachable": true,
+      "validator": "validate-pipeline.mjs (project/series/season/episode hierarchy path)",
+      "runtimeDiagnostics": [
+        "STUDIO_REFRESH",
+        "WORKSPACE_SECTION",
+        "hierarchy status via studio API sync"
+      ],
+      "visibilityContext": "Visible when workspace tab = Production."
+    },
+    {
+      "name": "Assets",
+      "visible": false,
+      "mounted": true,
+      "reachable": true,
+      "validator": "validate-pipeline.mjs + vault/media phase validators",
+      "runtimeDiagnostics": [
+        "UPLOAD_STARTED",
+        "UPLOAD_SUCCESS",
+        "STORE_UPDATE",
+        "VAULT_RENDER",
+        "VAULT_ITEM_COUNT"
+      ],
+      "visibilityContext": "Visible when workspace tab = Content."
+    },
+    {
+      "name": "Hero Manager",
+      "visible": false,
+      "mounted": true,
+      "reachable": true,
+      "validator": "validate-hero-vault-ui.mjs / validate-hero-background-truth.mjs",
+      "runtimeDiagnostics": [
+        "HERO_VAULT_CARD_RENDER",
+        "HERO_VAULT_SELECT",
+        "HERO_VAULT_DELETE",
+        "HERO_RENDER",
+        "HERO_ASSET_ID_TRACE"
+      ],
+      "visibilityContext": "Visible when workspace tab = System."
+    },
+    {
+      "name": "Marketplace",
+      "visible": false,
+      "mounted": true,
+      "reachable": true,
+      "validator": "validate-marketplace-truth.mjs",
+      "runtimeDiagnostics": [
+        "MARKETPLACE_* diagnostics",
+        "command-center section telemetry"
+      ],
+      "visibilityContext": "Visible in Analytics workspace tab and in Command Center dashboard section = marketplace."
+    },
+    {
+      "name": "Revenue",
+      "visible": false,
+      "mounted": true,
+      "reachable": true,
+      "validator": "validate-revenue-dashboard-truth.mjs",
+      "runtimeDiagnostics": [
+        "REVENUE_* diagnostics",
+        "command-center section telemetry"
+      ],
+      "visibilityContext": "Visible in Analytics workspace tab and in Command Center dashboard section = revenue."
+    },
+    {
+      "name": "Workflow",
+      "visible": false,
+      "mounted": true,
+      "reachable": true,
+      "validator": "validate-workflow-engine.mjs",
+      "runtimeDiagnostics": [
+        "logWorkflowTaskDiag(tag)",
+        "workflow task store API/local fallback events"
+      ],
+      "visibilityContext": "Visible when workspace tab = Production."
+    },
+    {
+      "name": "Teams",
+      "visible": false,
+      "mounted": true,
+      "reachable": true,
+      "validator": "validate-creator-teams.mjs",
+      "runtimeDiagnostics": [
+        "team manager state events",
+        "command-center team activity metrics"
+      ],
+      "visibilityContext": "Visible when workspace tab = Teams."
+    },
+    {
+      "name": "Sentinel",
+      "visible": false,
+      "mounted": true,
+      "reachable": true,
+      "validator": "validate-sentinel-assistant.mjs",
+      "runtimeDiagnostics": [
+        "SENTINEL_* diagnostics",
+        "sentinel assistant panel telemetry"
+      ],
+      "visibilityContext": "Visible when workspace tab = System."
+    },
+    {
+      "name": "Security",
+      "visible": false,
+      "mounted": true,
+      "reachable": true,
+      "validator": "validate-security-operations-center-truth.mjs / validate-security-enforcement.mjs",
+      "runtimeDiagnostics": [
+        "SECURITY_* diagnostics",
+        "THREAT_* diagnostics",
+        "SOC panel telemetry"
+      ],
+      "visibilityContext": "Visible in Command Center dashboard section = security."
+    },
+    {
+      "name": "Command Center",
+      "visible": true,
+      "mounted": true,
+      "reachable": true,
+      "validator": "validate-command-center-truth.mjs",
+      "runtimeDiagnostics": [
+        "COMMAND_CENTER",
+        "COMMAND_CENTER_LOAD",
+        "COMMAND_CENTER_REFRESH"
+      ]
+    }
+  ],
+  "summary": {
+    "totalPanelsAudited": 13,
+    "visibleByDefault": [
+      "Overview",
+      "Guide Me",
+      "Command Center"
+    ],
+    "mountedButContextual": [
+      "Creator Copilot",
+      "Projects",
+      "Assets",
+      "Hero Manager",
+      "Marketplace",
+      "Revenue",
+      "Workflow",
+      "Teams",
+      "Sentinel",
+      "Security"
+    ],
+    "unreachablePanels": []
+  },
+  "completionToken": "STUDIO_EXPERIENCE_TRUTH_COMPLETE=true"
+}

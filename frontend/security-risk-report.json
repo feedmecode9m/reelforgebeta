@@ -1,0 +1,281 @@
+{
+  "totalFindings": 16,
+  "categories": {
+    "Critical": 3,
+    "High": 8,
+    "Medium": 5,
+    "Low": 0
+  },
+  "risks": [
+    {
+      "id": "upload-post-reels",
+      "severity": "High",
+      "domain": "uploadEndpoints",
+      "title": "Multipart upload surface",
+      "detail": "POST /api/reels accepts video/thumbnail payloads — must require authenticated admin on backend.",
+      "recommendation": "Enforce Bearer auth on all upload routes and validate MIME/size server-side.",
+      "passing": false
+    },
+    {
+      "id": "upload-media-validate",
+      "severity": "Medium",
+      "domain": "uploadEndpoints",
+      "title": "Pre-upload validation endpoint",
+      "detail": "POST /api/media/validate inspects files without persisting — still a DoS vector if unauthenticated.",
+      "recommendation": "Rate-limit /api/media/validate and require studio session for anonymous clients.",
+      "passing": false
+    },
+    {
+      "id": "media-storage-list",
+      "severity": "High",
+      "domain": "mediaRoutes",
+      "title": "Storage inventory routes",
+      "detail": "GET /api/media/storage, /api/videos, /api/thumbnails expose filesystem inventory.",
+      "recommendation": "Restrict media inventory to authenticated operators; avoid public listing in production.",
+      "passing": false
+    },
+    {
+      "id": "media-delete-paths",
+      "severity": "Critical",
+      "domain": "mediaRoutes",
+      "title": "Destructive media delete routes",
+      "detail": "DELETE /api/media/storage/{file} and /api/storage/file/{file} can remove assets permanently.",
+      "recommendation": "Require admin Bearer token and audit-log every delete; confirm CSRF-safe methods.",
+      "passing": false
+    },
+    {
+      "id": "media-orphan-cleanup",
+      "severity": "Critical",
+      "domain": "mediaRoutes",
+      "title": "Orphan cleanup mutation",
+      "detail": "POST /api/media/cleanup/orphans?confirm=true bulk-deletes unreferenced files.",
+      "recommendation": "Gate cleanup behind admin role, dry-run preview, and two-step confirmation.",
+      "passing": false
+    },
+    {
+      "id": "notification-crud",
+      "severity": "Medium",
+      "domain": "notificationRoutes",
+      "title": "Notification API surface",
+      "detail": "Routes under /api/notifications support list, create, read, and read-all by userId query.",
+      "recommendation": "Bind notifications to authenticated viewer identity; reject cross-user reads/writes.",
+      "passing": false
+    },
+    {
+      "id": "workflow-task-mutations",
+      "severity": "High",
+      "domain": "workflowApis",
+      "title": "Workflow task write APIs",
+      "detail": "POST/PATCH/DELETE /api/workflow/tasks mutate production state without frontend Authorization headers.",
+      "recommendation": "Attach studio session token to workflow writes and enforce series-scoped RBAC server-side.",
+      "passing": false
+    },
+    {
+      "id": "team-membership-mutations",
+      "severity": "High",
+      "domain": "teamApis",
+      "title": "Team membership mutations",
+      "detail": "POST /api/teams, member add/remove, and assign-task routes change collaboration permissions.",
+      "recommendation": "Require OWNER/PRODUCER roles on team mutations; validate userId server-side.",
+      "passing": false
+    },
+    {
+      "id": "admin-auth-endpoint",
+      "severity": "High",
+      "domain": "authentication",
+      "title": "Admin authentication endpoint",
+      "detail": "POST /admin/auth validates studio passwords — brute-force and credential stuffing risk.",
+      "recommendation": "Use rate limiting, lockout policy, and rotate default credentials in production.",
+      "passing": false
+    },
+    {
+      "id": "admin-token-localstorage",
+      "severity": "Critical",
+      "domain": "authentication",
+      "title": "Admin session token in localStorage",
+      "detail": "reelforge_admin_session_token persists in localStorage and is readable by any XSS payload.",
+      "recommendation": "Prefer HttpOnly secure cookies or short-lived tokens with refresh rotation.",
+      "passing": false
+    },
+    {
+      "id": "default-admin-password-env",
+      "severity": "High",
+      "domain": "environmentVariables",
+      "title": "Default admin password in client bundle",
+      "detail": "VITE_ADMIN_PASSWORD falls back to admin123 when unset — may ship in client-accessible config.",
+      "recommendation": "Never embed production passwords in Vite env; inject at deploy time via secrets manager.",
+      "passing": false
+    },
+    {
+      "id": "workflow-no-auth-header",
+      "severity": "High",
+      "domain": "permissions",
+      "title": "Workflow client lacks Authorization header",
+      "detail": "workflowFetch does not attach Bearer tokens — relies entirely on backend enforcement.",
+      "recommendation": "Send Authorization on all mutating API calls from studio surfaces.",
+      "passing": false
+    },
+    {
+      "id": "team-no-auth-header",
+      "severity": "High",
+      "domain": "permissions",
+      "title": "Team client lacks Authorization header",
+      "detail": "teamFetch does not attach Bearer tokens for membership or assignment operations.",
+      "recommendation": "Propagate studio admin token to team APIs and verify role server-side.",
+      "passing": false
+    },
+    {
+      "id": "upload-optional-auth",
+      "severity": "Medium",
+      "domain": "permissions",
+      "title": "Upload auth header is optional in some paths",
+      "detail": "Vault and hero uploads pass Authorization only when token exists — empty header still attempts upload.",
+      "recommendation": "Block upload UI actions unless authenticated; reject unauthenticated createReel calls client-side.",
+      "passing": false
+    },
+    {
+      "id": "localstorage-broad-surface",
+      "severity": "Medium",
+      "domain": "localStorageUsage",
+      "title": "Broad localStorage persistence surface",
+      "detail": "Vault, feed, workflow, notifications, pipeline, and admin token share browser localStorage.",
+      "recommendation": "Minimize sensitive keys, encrypt at rest where possible, and namespace by user.",
+      "passing": false
+    },
+    {
+      "id": "public-media-static-routes",
+      "severity": "Medium",
+      "domain": "apiExposure",
+      "title": "Public media static routes",
+      "detail": "Videos and thumbnails resolve to /videos and /thumbs paths on backend origin.",
+      "recommendation": "Use signed URLs or CDN tokens for non-public assets in production.",
+      "passing": false
+    }
+  ],
+  "domains": [
+    {
+      "id": "uploadEndpoints",
+      "label": "Upload Endpoints",
+      "score": 88,
+      "riskCount": 2
+    },
+    {
+      "id": "mediaRoutes",
+      "label": "Media Routes",
+      "score": 64,
+      "riskCount": 3
+    },
+    {
+      "id": "notificationRoutes",
+      "label": "Notification Routes",
+      "score": 96,
+      "riskCount": 1
+    },
+    {
+      "id": "workflowApis",
+      "label": "Workflow APIs",
+      "score": 92,
+      "riskCount": 1
+    },
+    {
+      "id": "teamApis",
+      "label": "Team APIs",
+      "score": 92,
+      "riskCount": 1
+    },
+    {
+      "id": "authentication",
+      "label": "Authentication",
+      "score": 78,
+      "riskCount": 2
+    },
+    {
+      "id": "permissions",
+      "label": "Permissions",
+      "score": 80,
+      "riskCount": 3
+    },
+    {
+      "id": "localStorageUsage",
+      "label": "localStorage Usage",
+      "score": 96,
+      "riskCount": 1
+    },
+    {
+      "id": "apiExposure",
+      "label": "API Exposure",
+      "score": 96,
+      "riskCount": 1
+    },
+    {
+      "id": "environmentVariables",
+      "label": "Environment Variables",
+      "score": 92,
+      "riskCount": 1
+    }
+  ],
+  "auditedRoutes": {
+    "upload": [
+      "/api/reels",
+      "/api/media/validate",
+      "createReel",
+      "upload",
+      "uploadThumbnail",
+      "uploadVideo",
+      "validate",
+      "storage",
+      "deleteFile",
+      "previewOrphans",
+      "cleanupOrphans"
+    ],
+    "media": [
+      "/api/media/storage",
+      "/api/videos",
+      "/api/thumbnails",
+      "/api/media/cleanup/orphans"
+    ],
+    "notifications": [
+      "/api/notifications",
+      "/api/notifications/unread-count"
+    ],
+    "workflow": [
+      "/api/workflow/status",
+      "/api/workflow/tasks"
+    ],
+    "team": [
+      "/api/teams/status",
+      "/api/teams",
+      "/api/users"
+    ],
+    "auth": [
+      "/admin/auth"
+    ]
+  },
+  "localStorageKeys": {
+    "preserved": [
+      "reelforge_admin_session_token",
+      "admin_mode",
+      "reelforge_category_names",
+      "reel_titles_persistent",
+      "reelforge_hero_video",
+      "reelforge_hero_image",
+      "heroBackgroundState",
+      "reelforge_series_metadata",
+      "reelforge_publishing_profile"
+    ],
+    "notifications": "reelforge_notifications",
+    "adminToken": "reelforge_admin_session_token"
+  },
+  "apiExposure": {
+    "apiBaseUrl": "http://localhost:8080",
+    "backendUrl": "http://localhost:8080"
+  },
+  "environment": {
+    "dev": false,
+    "prod": true,
+    "viteBackendUrl": "http://localhost:8080",
+    "viteApiBaseUrl": "http://localhost:8080",
+    "viteAdminPasswordConfigured": false,
+    "viteWatchTracking": null
+  }
+}

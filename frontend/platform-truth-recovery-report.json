@@ -1,0 +1,267 @@
+{
+  "generatedAt": "2026-06-13T18:18:30.000Z",
+  "phase": "62A",
+  "goal": "Platform Truth Recovery",
+  "inspectedValidator": "scripts/validate-platform.mjs",
+  "classificationTypes": [
+    "MISSING_FEATURE",
+    "BROKEN_VALIDATOR",
+    "INIT_NOT_RUNNING",
+    "PERMISSION_FAILURE",
+    "UI_NOT_REACHABLE"
+  ],
+  "platformValidationSnapshot": {
+    "source": "platform-truth-report.json",
+    "pass": 21,
+    "fail": 1,
+    "runtimeChecks": 258,
+    "runtimePassed": 257,
+    "failedDomains": [
+      "heroBackground"
+    ],
+    "platformToken": "REELFORGE_PLATFORM_TRUTH_COMPLETE=false"
+  },
+  "requestedDomainStatus": [
+    {
+      "id": "platformTruthFlow",
+      "status": "PASS",
+      "runtimeChecks": 10,
+      "runtimePassed": 10,
+      "completionTokenEmitted": true,
+      "runtimeApiExists": true,
+      "uiMounted": true,
+      "validatorExpectationMatchesImplementation": true
+    },
+    {
+      "id": "heroBackground",
+      "status": "FAIL",
+      "runtimeChecks": 7,
+      "runtimePassed": 6,
+      "completionTokenEmitted": true,
+      "runtimeApiExists": true,
+      "uiMounted": true,
+      "validatorExpectationMatchesImplementation": false
+    },
+    {
+      "id": "marketplace",
+      "status": "PASS",
+      "runtimeChecks": 7,
+      "runtimePassed": 7,
+      "completionTokenEmitted": true,
+      "runtimeApiExists": true,
+      "uiMounted": true,
+      "validatorExpectationMatchesImplementation": true
+    },
+    {
+      "id": "revenueDashboard",
+      "status": "PASS",
+      "runtimeChecks": 7,
+      "runtimePassed": 7,
+      "completionTokenEmitted": true,
+      "runtimeApiExists": true,
+      "uiMounted": true,
+      "validatorExpectationMatchesImplementation": true
+    },
+    {
+      "id": "revenueArchitecture",
+      "status": "PASS",
+      "runtimeChecks": 3,
+      "runtimePassed": 3,
+      "completionTokenEmitted": true,
+      "runtimeApiExists": true,
+      "uiMounted": true,
+      "validatorExpectationMatchesImplementation": true
+    },
+    {
+      "id": "enterprise",
+      "status": "PASS",
+      "runtimeChecks": 4,
+      "runtimePassed": 4,
+      "completionTokenEmitted": true,
+      "runtimeApiExists": true,
+      "uiMounted": true,
+      "validatorExpectationMatchesImplementation": true
+    },
+    {
+      "id": "theaterNavigation",
+      "status": "PASS",
+      "runtimeChecks": 5,
+      "runtimePassed": 5,
+      "completionTokenEmitted": true,
+      "runtimeApiExists": true,
+      "uiMounted": true,
+      "validatorExpectationMatchesImplementation": true
+    },
+    {
+      "id": "continueWatching",
+      "status": "PASS",
+      "runtimeChecks": 2,
+      "runtimePassed": 2,
+      "completionTokenEmitted": true,
+      "runtimeApiExists": true,
+      "uiMounted": true,
+      "validatorExpectationMatchesImplementation": true
+    },
+    {
+      "id": "teamNotifications",
+      "status": "PASS",
+      "runtimeChecks": 3,
+      "runtimePassed": 3,
+      "completionTokenEmitted": true,
+      "runtimeApiExists": true,
+      "uiMounted": true,
+      "validatorExpectationMatchesImplementation": true
+    },
+    {
+      "id": "threatDetection",
+      "status": "PASS",
+      "runtimeChecks": 3,
+      "runtimePassed": 3,
+      "completionTokenEmitted": true,
+      "runtimeApiExists": true,
+      "uiMounted": true,
+      "validatorExpectationMatchesImplementation": true
+    },
+    {
+      "id": "sentinelAssistant",
+      "status": "PASS",
+      "runtimeChecks": 6,
+      "runtimePassed": 6,
+      "completionTokenEmitted": true,
+      "runtimeApiExists": true,
+      "uiMounted": true,
+      "validatorExpectationMatchesImplementation": true
+    },
+    {
+      "id": "heroIntelligence",
+      "status": "PASS",
+      "runtimeChecks": 6,
+      "runtimePassed": 6,
+      "completionTokenEmitted": true,
+      "runtimeApiExists": true,
+      "uiMounted": true,
+      "validatorExpectationMatchesImplementation": true
+    },
+    {
+      "id": "creatorCopilot",
+      "status": "PASS",
+      "runtimeChecks": 22,
+      "runtimePassed": 22,
+      "completionTokenEmitted": true,
+      "runtimeApiExists": true,
+      "uiMounted": true,
+      "validatorExpectationMatchesImplementation": true
+    },
+    {
+      "id": "guideMe",
+      "status": "PASS",
+      "runtimeChecks": 59,
+      "runtimePassed": 59,
+      "completionTokenEmitted": true,
+      "runtimeApiExists": true,
+      "uiMounted": true,
+      "validatorExpectationMatchesImplementation": true
+    },
+    {
+      "id": "productionHealth",
+      "status": "PASS",
+      "runtimeChecks": 7,
+      "runtimePassed": 7,
+      "completionTokenEmitted": true,
+      "runtimeApiExists": true,
+      "uiMounted": true,
+      "validatorExpectationMatchesImplementation": true
+    },
+    {
+      "id": "releaseCenter",
+      "status": "PASS",
+      "runtimeChecks": 17,
+      "runtimePassed": 17,
+      "completionTokenEmitted": true,
+      "runtimeApiExists": true,
+      "uiMounted": true,
+      "validatorExpectationMatchesImplementation": true
+    },
+    {
+      "id": "notifications",
+      "status": "PASS",
+      "runtimeChecks": 13,
+      "runtimePassed": 13,
+      "completionTokenEmitted": true,
+      "runtimeApiExists": true,
+      "uiMounted": true,
+      "validatorExpectationMatchesImplementation": true
+    },
+    {
+      "id": "teams",
+      "status": "PASS",
+      "runtimeChecks": 19,
+      "runtimePassed": 19,
+      "completionTokenEmitted": true,
+      "runtimeApiExists": true,
+      "uiMounted": true,
+      "validatorExpectationMatchesImplementation": true
+    },
+    {
+      "id": "workflowEngine",
+      "status": "PASS",
+      "runtimeChecks": 17,
+      "runtimePassed": 17,
+      "completionTokenEmitted": true,
+      "runtimeApiExists": true,
+      "uiMounted": true,
+      "validatorExpectationMatchesImplementation": true
+    },
+    {
+      "id": "commandCenter",
+      "status": "PASS",
+      "runtimeChecks": 10,
+      "runtimePassed": 10,
+      "completionTokenEmitted": true,
+      "runtimeApiExists": true,
+      "uiMounted": true,
+      "validatorExpectationMatchesImplementation": true
+    },
+    {
+      "id": "appearanceSystem",
+      "status": "PASS",
+      "runtimeChecks": 4,
+      "runtimePassed": 4,
+      "completionTokenEmitted": true,
+      "runtimeApiExists": true,
+      "uiMounted": true,
+      "validatorExpectationMatchesImplementation": true
+    }
+  ],
+  "failingDomainClassifications": [
+    {
+      "id": "heroBackground",
+      "classification": "BROKEN_VALIDATOR",
+      "reason": "The validator fails only the check that expects '.hero-media.active' inline style to include 'hero-test.png'. Runtime API and UI checks pass, and hero diagnostics stages are emitted. Current implementation renders image via MediaPoster component, not guaranteed inline background-image style.",
+      "evidence": {
+        "runtimeChecks": 7,
+        "runtimePassed": 6,
+        "failedAssertion": "hero image visible in DOM (style.includes('hero-test.png'))",
+        "passedAssertions": [
+          "hero image asset resolves",
+          "hero image mediaUrl resolved",
+          "hero manager background applied",
+          "hero poster store updated",
+          "hero DOM uses custom_image source",
+          "hero pipeline diagnostics emitted"
+        ],
+        "tokenObservedFromValidator": "HERO_BACKGROUND_TRUTH_COMPLETE=true"
+      }
+    }
+  ],
+  "conclusion": {
+    "missingFunctionalityDetected": false,
+    "brokenValidatorsDetected": true,
+    "runtimeInitializationIssuesDetected": false,
+    "filePermissionIssuesDetected": false,
+    "uiReachabilityIssuesDetected": false,
+    "primaryBlocker": "heroBackground",
+    "recommendedFix": "Update validate-hero-background-truth.mjs to assert rendered poster/image source using component output (e.g. img/src or data attributes), not inline style matching."
+  },
+  "completionToken": "PLATFORM_TRUTH_RECOVERY_COMPLETE=true"
+}

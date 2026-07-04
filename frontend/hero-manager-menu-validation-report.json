@@ -1,0 +1,60 @@
+{
+  "generatedAt": "2026-06-23T22:09:29.196Z",
+  "checks": {
+    "heroType": {
+      "uiControlPresent": true,
+      "configDefaultPresent": true,
+      "updatePathPresent": true
+    },
+    "backgroundSource": {
+      "uiControlPresent": true,
+      "configDefaultPresent": true,
+      "applyPathPresent": true
+    },
+    "backgroundStyle": {
+      "uiControlPresent": true,
+      "configDefaultPresent": true,
+      "presentationPathPresent": true
+    },
+    "vaultHeroAsset": {
+      "uiControlPresent": true,
+      "handlerPresent": true,
+      "persistencePathPresent": true
+    },
+    "autoRotate": {
+      "uiControlPresent": true,
+      "rotationTimerPathPresent": true,
+      "stopPathPresent": true
+    },
+    "carouselAutoplay": {
+      "uiControlPresent": true,
+      "defaultPresent": true,
+      "consumePathPresent": true
+    },
+    "rotateEverySec": {
+      "uiControlPresent": true,
+      "defaultPresent": true,
+      "runtimeUsePresent": true
+    },
+    "carouselDurationSec": {
+      "uiControlPresent": true,
+      "defaultPresent": true,
+      "runtimeUsePresent": true
+    },
+    "carouselPriority": {
+      "uiControlPresent": true,
+      "defaultPresent": true,
+      "rankingUsePresent": true
+    },
+    "transitionStyle": {
+      "uiControlPresent": true,
+      "defaultPresent": true,
+      "runtimeUsePresent": true
+    }
+  },
+  "passRate": 1,
+  "passedChecks": 30,
+  "totalChecks": 30,
+  "allMenuLogicChecksPass": true,
+  "completionToken": "HERO_MANAGER_MENU_LOGIC_VALIDATED=true"
+}

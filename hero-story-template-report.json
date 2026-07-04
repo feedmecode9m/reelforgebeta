@@ -1,0 +1,68 @@
+{
+  "phase": "72.8",
+  "generatedAt": "2026-06-17T19:44:00Z",
+  "templateCount": 6,
+  "templateNames": [
+    "Documentary Spotlight",
+    "Community Spotlight",
+    "Collection Spotlight",
+    "Premiere Announcement",
+    "Educational Spotlight",
+    "Campaign Spotlight"
+  ],
+  "templatePreviews": [
+    {
+      "name": "Documentary Spotlight",
+      "defaultLabel": "LOOK@ZAKANDA PRESENTS",
+      "defaultTitleStructure": "{seriesTitle}: Land, Legacy & Liberation",
+      "recommendedCTA1": "Watch Now",
+      "recommendedCTA2": "Learn More"
+    },
+    {
+      "name": "Community Spotlight",
+      "defaultLabel": "COMMUNITY SPOTLIGHT",
+      "defaultTitleStructure": "{communityName}",
+      "recommendedCTA1": "Watch Story",
+      "recommendedCTA2": "Meet the Community"
+    },
+    {
+      "name": "Collection Spotlight",
+      "defaultLabel": "FEATURED COLLECTION",
+      "defaultTitleStructure": "{collectionName}",
+      "recommendedCTA1": "Explore Collection",
+      "recommendedCTA2": "View All"
+    },
+    {
+      "name": "Premiere Announcement",
+      "defaultLabel": "UPCOMING PREMIERE",
+      "defaultTitleStructure": "{seriesTitle} Premieres Soon",
+      "recommendedCTA1": "Set Reminder",
+      "recommendedCTA2": "View Trailer"
+    },
+    {
+      "name": "Educational Spotlight",
+      "defaultLabel": "EDUCATIONAL SERIES",
+      "defaultTitleStructure": "{topicTitle}",
+      "recommendedCTA1": "Start Learning",
+      "recommendedCTA2": "View Curriculum"
+    },
+    {
+      "name": "Campaign Spotlight",
+      "defaultLabel": "CAMPAIGN SPOTLIGHT",
+      "defaultTitleStructure": "{campaignTitle}",
+      "recommendedCTA1": "Join Campaign",
+      "recommendedCTA2": "Campaign Details"
+    }
+  ],
+  "templateApplicationSuccess": true,
+  "notes": {
+    "templateSelectorAdded": true,
+    "applyTemplateAdded": true,
+    "previewTemplateAdded": true,
+    "viewerTemplateMetadataVisible": false,
+    "heroMediaRenderingChanged": false,
+    "heroBackgroundSystemChanged": false,
+    "ctaBehaviorChanged": false
+  },
+  "completionToken": "HERO_STORY_TEMPLATES_COMPLETE=true"
+}

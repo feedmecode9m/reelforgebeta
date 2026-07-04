@@ -1,0 +1,38 @@
+{
+  "storageKey": "reelforge_revenue_profiles",
+  "streamTypes": [
+    "subscriptions",
+    "sponsorships",
+    "ad_revenue",
+    "affiliate_campaigns",
+    "premium_episodes",
+    "pay_per_view",
+    "team_revenue_splits"
+  ],
+  "unit": {
+    "storageKey": "reelforge_revenue_profiles",
+    "hasSeries": true,
+    "hasCreator": true,
+    "hasCampaign": true,
+    "hasPlatform": true,
+    "streamTypes": [
+      "subscriptions",
+      "sponsorships",
+      "ad_revenue",
+      "affiliate_campaigns",
+      "premium_episodes",
+      "pay_per_view"
+    ],
+    "teamSplitCount": 3,
+    "estimateGross": 444212,
+    "estimateNet": 351816,
+    "forecastMonths": 3,
+    "forecastTotal": 1162863,
+    "campaignGross": 15000
+  },
+  "diagnostics": {
+    "profile": 6,
+    "estimate": 2,
+    "forecast": 1
+  }
+}

@@ -1,0 +1,297 @@
+/**
+ * Phase 34 — Studio Appearance themes.
+ * Scoped to .control-center-container[data-studio-theme] — never affects theater or exempt media.
+ */
+
+.control-center-container[data-studio-theme] {
+    color: var(--studio-text, rgba(255, 255, 255, 0.95));
+    background: var(--studio-bg, rgba(20, 20, 20, 0.95));
+    box-shadow: 0 0 60px var(--studio-glow, rgba(0, 242, 255, 0.2));
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.control-center-container[data-studio-theme]::before {
+    background: var(
+        --studio-header-gradient,
+        linear-gradient(45deg, var(--neon-cyan), var(--neon-pink), var(--neon-gold))
+    );
+}
+
+.control-center-container[data-studio-theme] .control-center-header {
+    background: var(--studio-bg-elevated, rgba(0, 0, 0, 0.3));
+    border-bottom-color: var(--studio-border, rgba(255, 255, 255, 0.1));
+}
+
+.control-center-container[data-studio-theme] .control-center-header h2 {
+    background: var(--studio-header-gradient, linear-gradient(90deg, var(--neon-cyan), var(--neon-pink)));
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+.control-center-container[data-studio-theme] .control-center-header p,
+.control-center-container[data-studio-theme] .smart-subtitle,
+.control-center-container[data-studio-theme] .login-hint {
+    color: var(--studio-text-muted, rgba(255, 255, 255, 0.5));
+}
+
+.control-center-container[data-studio-theme] .guide-me-btn,
+.control-center-container[data-studio-theme] .production-command-center-shell__refresh,
+.control-center-container[data-studio-theme] .studio-workspace-layout__refresh {
+    border-color: var(--studio-border-strong, rgba(0, 242, 255, 0.35));
+    background: var(--studio-accent-muted, rgba(0, 242, 255, 0.1));
+    color: var(--studio-accent, var(--neon-cyan));
+}
+
+.control-center-container[data-studio-theme] .guide-me-btn:hover,
+.control-center-container[data-studio-theme] .production-command-center-shell__refresh:hover {
+    background: color-mix(in srgb, var(--studio-accent) 25%, transparent);
+}
+
+.control-center-container[data-studio-theme] .production-command-center-shell__header,
+.control-center-container[data-studio-theme] .production-command-center-shell__focus,
+.control-center-container[data-studio-theme] .production-command-center-shell__status-grid,
+.control-center-container[data-studio-theme] .production-command-center-shell__signals,
+.control-center-container[data-studio-theme] .production-command-center-shell__risks,
+.control-center-container[data-studio-theme] .studio-workspace-layout,
+.control-center-container[data-studio-theme] .studio-workspace-layout__metric-card,
+.control-center-container[data-studio-theme] .studio-workspace-layout__card,
+.control-center-container[data-studio-theme] .studio-workspace-slot.forge-zone,
+.control-center-container[data-studio-theme] .studio-workspace-slot .forge-zone,
+.control-center-container[data-studio-theme] .studio-workspace-slot .studio-hierarchy-section,
+.control-center-container[data-studio-theme] .studio-workspace-slot .asset-manager,
+.control-center-container[data-studio-theme] .studio-workspace-slot .personal-studio-section,
+.control-center-container[data-studio-theme] .studio-workspace-slot .series-metadata-studio-section {
+    background: var(--studio-gradient, var(--studio-surface, rgba(0, 0, 0, 0.28)));
+    border-color: var(--studio-border-strong, rgba(0, 242, 255, 0.22));
+    box-shadow: var(--studio-shadow, none);
+}
+
+.control-center-container[data-studio-theme] .production-command-center-shell__header h3,
+.control-center-container[data-studio-theme] .studio-workspace-layout__brand h3,
+.control-center-container[data-studio-theme] .production-command-center-shell__focus-head strong,
+.control-center-container[data-studio-theme] .production-command-center-shell__signal strong,
+.control-center-container[data-studio-theme] .studio-workspace-layout__metric-value {
+    color: var(--studio-accent, var(--neon-cyan));
+}
+
+.control-center-container[data-studio-theme] .production-command-center-shell__header p,
+.control-center-container[data-studio-theme] .production-command-center-shell__status-card p,
+.control-center-container[data-studio-theme] .studio-workspace-layout__metric-copy,
+.control-center-container[data-studio-theme] .studio-workspace-layout__hint,
+.control-center-container[data-studio-theme] .studio-workspace-layout__empty {
+    color: var(--studio-text-muted, rgba(255, 255, 255, 0.55));
+}
+
+.control-center-container[data-studio-theme] .production-command-center-shell__status-label,
+.control-center-container[data-studio-theme] .production-command-center-shell__signal span,
+.control-center-container[data-studio-theme] .studio-workspace-layout__metric-label {
+    color: var(--studio-text-subtle, rgba(255, 255, 255, 0.45));
+}
+
+.control-center-container[data-studio-theme] .production-command-center-shell__status-card,
+.control-center-container[data-studio-theme] .production-command-center-shell__signal,
+.control-center-container[data-studio-theme] .studio-workspace-layout__tab,
+.control-center-container[data-studio-theme] .studio-workspace-layout__disclosure {
+    background: var(--studio-surface, rgba(255, 255, 255, 0.03));
+    border-color: var(--studio-border, rgba(255, 255, 255, 0.08));
+}
+
+.control-center-container[data-studio-theme] .production-command-center-shell__focus-list li,
+.control-center-container[data-studio-theme] .studio-workspace-layout__action-list li {
+    border-color: var(--studio-border-strong, rgba(0, 242, 255, 0.25));
+    background: var(--studio-accent-muted, rgba(0, 242, 255, 0.08));
+    color: var(--studio-text, rgba(255, 255, 255, 0.9));
+}
+
+.control-center-container[data-studio-theme] .studio-workspace-layout__tab--active,
+.control-center-container[data-studio-theme] .production-command-center__nav-btn--active {
+    border-color: var(--studio-accent, var(--neon-cyan));
+    background: var(--studio-accent-muted, rgba(0, 242, 255, 0.12));
+    color: var(--studio-accent, var(--neon-cyan));
+}
+
+.control-center-container[data-studio-theme] .ai-badge {
+    background: var(--studio-accent, var(--neon-cyan));
+    color: var(--studio-accent-contrast, #000);
+}
+
+.control-center-container[data-studio-theme] .submit-btn,
+.control-center-container[data-studio-theme] .quick-upload-btn,
+.control-center-container[data-studio-theme] .batch-upload-btn,
+.control-center-container[data-studio-theme] .force-cleanup-btn,
+.control-center-container[data-studio-theme] .unveil-btn {
+    border-color: var(--studio-accent, var(--neon-cyan));
+    background: var(--studio-accent-muted, rgba(0, 242, 255, 0.2));
+    color: var(--studio-accent, var(--neon-cyan));
+}
+
+.control-center-container[data-studio-theme] .submit-btn:hover:not(:disabled),
+.control-center-container[data-studio-theme] .quick-upload-btn:hover:not(:disabled),
+.control-center-container[data-studio-theme] .batch-upload-btn:hover:not(:disabled),
+.control-center-container[data-studio-theme] .force-cleanup-btn:hover:not(:disabled),
+.control-center-container[data-studio-theme] .unveil-btn:hover {
+    background: var(--studio-accent, var(--neon-cyan));
+    color: var(--studio-accent-contrast, #000);
+    box-shadow: 0 0 20px var(--studio-glow, rgba(0, 242, 255, 0.4));
+}
+
+.control-center-container[data-studio-theme] .input-label-wrapper {
+    color: var(--studio-text-muted, rgba(255, 255, 255, 0.6));
+}
+
+.control-center-container[data-studio-theme] .input-label-wrapper input,
+.control-center-container[data-studio-theme] .input-label-wrapper select,
+.control-center-container[data-studio-theme] .input-label-wrapper textarea,
+.control-center-container[data-studio-theme] .studio-workspace-layout__series-select select {
+    background: var(--studio-bg-elevated, rgba(0, 0, 0, 0.35));
+    border-color: var(--studio-border, rgba(255, 255, 255, 0.15));
+    color: var(--studio-text, #fff);
+}
+
+.control-center-container[data-studio-theme] .input-label-wrapper input:focus,
+.control-center-container[data-studio-theme] .input-label-wrapper select:focus {
+    border-color: var(--studio-accent, var(--neon-cyan));
+    box-shadow: 0 0 10px var(--studio-glow, rgba(0, 242, 255, 0.3));
+}
+
+.control-center-container[data-studio-theme] .health-percent,
+.control-center-container[data-studio-theme] .storage-metrics .metric-value,
+.control-center-container[data-studio-theme] .stat-value,
+.control-center-container[data-studio-theme] .glow-text,
+.control-center-container[data-studio-theme] .hierarchy-project-name {
+    color: var(--studio-accent, var(--neon-cyan));
+}
+
+.control-center-container[data-studio-theme] .studio-workspace-layout__guide-mode {
+    border-color: var(--studio-border-strong, rgba(0, 242, 255, 0.35));
+    color: var(--studio-accent, var(--neon-cyan));
+}
+
+.control-center-container[data-studio-theme] :global(.creator-copilot),
+.control-center-container[data-studio-theme] :global(.ops-table),
+.control-center-container[data-studio-theme] :global(.readiness-meter),
+.control-center-container[data-studio-theme] :global(.missing-queue),
+.control-center-container[data-studio-theme] :global(.studio-walkthrough__card),
+.control-center-container[data-studio-theme] :global(.guide-me-coach-card),
+.control-center-container[data-studio-theme] :global(.pipeline-board),
+.control-center-container[data-studio-theme] :global(.workflow-task-center) {
+    border-color: var(--studio-border-strong, rgba(0, 242, 255, 0.22)) !important;
+}
+
+.control-center-container[data-studio-theme] :global(.creator-copilot__header h3),
+.control-center-container[data-studio-theme] :global(.ops-table h4),
+.control-center-container[data-studio-theme] :global(.readiness-meter strong) {
+    color: var(--studio-accent, var(--neon-cyan)) !important;
+}
+
+.control-center-container[data-studio-theme] [data-viewer-media-exempt],
+.control-center-container[data-studio-theme] [data-viewer-media-exempt] * {
+    --studio-accent: var(--neon-cyan);
+    --studio-text: #fff;
+}
+
+.control-center-container[data-studio-theme='creator-light'] .control-center-header,
+.control-center-container[data-studio-theme='creator-light'] .refresh-btn,
+.control-center-container[data-studio-theme='creator-light'] .close-x {
+    color: var(--studio-text);
+}
+
+.control-center-container[data-studio-theme='creator-light'] .refresh-btn,
+.control-center-container[data-studio-theme='creator-light'] .close-x {
+    background: rgba(15, 23, 42, 0.06);
+    border-color: rgba(15, 23, 42, 0.12);
+}
+
+.control-center-container[data-studio-theme='creator-light'] .smart-header {
+    border-bottom-color: var(--studio-border);
+}
+
+/* Density tokens */
+.control-center-container[data-studio-density='compact'] .production-command-center-shell__status-grid,
+.control-center-container[data-studio-density='compact'] .studio-workspace-layout__metrics {
+    gap: var(--studio-gap, 0.35rem);
+}
+
+.control-center-container[data-studio-density='compact'] .production-command-center-shell__status-card,
+.control-center-container[data-studio-density='compact'] .studio-workspace-layout__metric-card {
+    padding: var(--studio-panel-padding, 0.65rem);
+}
+
+.control-center-container[data-studio-density='spacious'] .production-command-center-shell__status-grid,
+.control-center-container[data-studio-density='spacious'] .studio-workspace-layout__metrics {
+    gap: var(--studio-gap, 0.75rem);
+}
+
+.control-center-container[data-studio-density='spacious'] .production-command-center-shell__status-card,
+.control-center-container[data-studio-density='spacious'] .studio-workspace-layout__metric-card {
+    padding: var(--studio-panel-padding, 1.05rem);
+}
+
+/* Font scale */
+.control-center-container[data-studio-font-scale='small'] {
+    font-size: calc(14px * var(--studio-font-scale, 0.92));
+}
+
+.control-center-container[data-studio-font-scale='large'] {
+    font-size: calc(14px * var(--studio-font-scale, 1.1));
+}
+
+/* Accessibility — reduced motion */
+.control-center-container[data-studio-reduced-motion] *,
+.control-center-container[data-studio-reduced-motion]::before {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+}
+
+.control-center-container[data-studio-reduced-motion] .ai-badge.pulse {
+    animation: none !important;
+}
+
+/* Accessibility — focus mode */
+.control-center-container[data-studio-focus-mode]::before {
+    opacity: 0.12;
+}
+
+.control-center-container[data-studio-focus-mode] .ai-badge.pulse {
+    animation: none;
+}
+
+.control-center-container[data-studio-focus-mode] .production-command-center-shell__header,
+.control-center-container[data-studio-focus-mode] .studio-workspace-layout__brand {
+    box-shadow: none;
+}
+
+/* Accessibility — color blind safe */
+.control-center-container[data-studio-color-blind-safe] .production-command-center-shell__header h3,
+.control-center-container[data-studio-color-blind-safe] .studio-workspace-layout__brand h3 {
+    color: var(--studio-accent, #0072b2);
+}
+
+/* Profile-specific accents */
+.control-center-container[data-studio-theme='neon-studio']::before {
+    opacity: 0.18;
+}
+
+.control-center-container[data-studio-theme='neon-studio'] .ai-badge.pulse {
+    animation: none;
+}
+
+.control-center-container[data-studio-theme='command-center'] .production-command-center-shell__risks em {
+    color: var(--studio-highlight, #d1fae5);
+}
+
+/* Legacy theme aliases (normalized to command-center / neon-studio on apply) */
+.control-center-container[data-studio-theme='focus-mode']::before {
+    opacity: 0.12;
+}
+
+.control-center-container[data-studio-theme='focus-mode'] .ai-badge.pulse {
+    animation: none;
+}
+
+.control-center-container[data-studio-theme='executive-dashboard'] .production-command-center-shell__risks em {
+    color: var(--studio-highlight, #d1fae5);
+}

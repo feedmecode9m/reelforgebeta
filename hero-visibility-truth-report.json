@@ -1,0 +1,198 @@
+{
+  "phase": "REELFORGE PHASE \u2014 HERO VISIBILITY TRUTH",
+  "mode": "FORENSIC ONLY",
+  "generatedAt": "2026-06-15T00:08:41.918546+00:00",
+  "step1_render_block": {
+    "file": "frontend/src/components/studio/HeroManagerPanel.svelte",
+    "component": "HeroManagerPanel",
+    "loop": "{#each heroAssetRegistry as item (item.assetId)}",
+    "renderTarget": "<select> options under [data-hero-manager-background-asset]",
+    "heroVaultCardLoopFound": false,
+    "heroVaultCardSelector": "[data-hero-vault-card] (none found in DOM)"
+  },
+  "step2_HERO_UI_RENDER": {
+    "before": {
+      "registryCount": 0,
+      "renderedCount": 0,
+      "visibleCards": 0,
+      "assetIds": []
+    },
+    "afterAccept": {
+      "registryCount": 1,
+      "renderedCount": 0,
+      "visibleCards": 0,
+      "assetIds": [
+        "hero-image-visibility-1781482073574"
+      ]
+    },
+    "after10sWatch": {
+      "registryCount": 1,
+      "renderedCount": 0,
+      "visibleCards": 0,
+      "assetIds": [
+        "hero-image-visibility-1781482073574"
+      ]
+    },
+    "afterReload": {
+      "registryCount": 1,
+      "renderedCount": 1,
+      "visibleCards": 0,
+      "assetIds": [
+        "hero-image-visibility-1781482073574"
+      ]
+    },
+    "sampleLogs": [
+      {
+        "t": 1781482071242,
+        "text": "[HERO_UI_RENDER] {registryCount: 0, renderedCount: 0, visibleCards: 0, assetIds: Array(0), timestamp: 1781482071240}"
+      },
+      {
+        "t": 1781482071277,
+        "text": "[HERO_UI_RENDER] {registryCount: 0, renderedCount: 0, visibleCards: 0, assetIds: Array(0), timestamp: 1781482071276}"
+      },
+      {
+        "t": 1781482073589,
+        "text": "[HERO_UI_RENDER] {registryCount: 0, renderedCount: 0, visibleCards: 0, assetIds: Array(0), timestamp: 1781482073587}"
+      },
+      {
+        "t": 1781482095385,
+        "text": "[HERO_UI_RENDER] {registryCount: 1, renderedCount: 0, visibleCards: 0, assetIds: Array(1), timestamp: 1781482095384}"
+      },
+      {
+        "t": 1781482096164,
+        "text": "[HERO_UI_RENDER] {registryCount: 1, renderedCount: 1, visibleCards: 0, assetIds: Array(1), timestamp: 1781482096162}"
+      }
+    ]
+  },
+  "step3_HERO_CARD_VISIBILITY": {
+    "cardElementsDetected": 0,
+    "sampleLogs": [
+      {
+        "t": 1781482071242,
+        "text": "[HERO_CARD_VISIBILITY] {assetId: , offsetWidth: 0, offsetHeight: 0, display: none, visibility: hidden}"
+      },
+      {
+        "t": 1781482071277,
+        "text": "[HERO_CARD_VISIBILITY] {assetId: , offsetWidth: 0, offsetHeight: 0, display: none, visibility: hidden}"
+      },
+      {
+        "t": 1781482073590,
+        "text": "[HERO_CARD_VISIBILITY] {assetId: , offsetWidth: 0, offsetHeight: 0, display: none, visibility: hidden}"
+      },
+      {
+        "t": 1781482095385,
+        "text": "[HERO_CARD_VISIBILITY] {assetId: , offsetWidth: 0, offsetHeight: 0, display: none, visibility: hidden}"
+      },
+      {
+        "t": 1781482096164,
+        "text": "[HERO_CARD_VISIBILITY] {assetId: , offsetWidth: 0, offsetHeight: 0, display: none, visibility: hidden}"
+      }
+    ],
+    "result": "No hero card elements exist in renderer; visibility metrics remain 0 by design of current UI."
+  },
+  "step4_HERO_CARD_MEDIA": {
+    "sampleLogs": [
+      {
+        "t": 1781482071242,
+        "text": "[HERO_CARD_MEDIA] {assetId: , type: , src: , timestamp: 1781482071241, reason: no-hero-vault-card-elements}"
+      },
+      {
+        "t": 1781482071277,
+        "text": "[HERO_CARD_MEDIA] {assetId: , type: , src: , timestamp: 1781482071276, reason: no-hero-vault-card-elements}"
+      },
+      {
+        "t": 1781482073590,
+        "text": "[HERO_CARD_MEDIA] {assetId: , type: , src: , timestamp: 1781482073588, reason: no-hero-vault-card-elements}"
+      },
+      {
+        "t": 1781482095385,
+        "text": "[HERO_CARD_MEDIA] {assetId: , type: , src: , timestamp: 1781482095384, reason: no-hero-vault-card-elements}"
+      },
+      {
+        "t": 1781482096164,
+        "text": "[HERO_CARD_MEDIA] {assetId: , type: , src: , timestamp: 1781482096163, reason: no-hero-vault-card-elements}"
+      }
+    ],
+    "result": "No hero card media nodes rendered; only dropdown options are rendered from registry."
+  },
+  "step5_accept_counts": {
+    "afterAccept": {
+      "registryCount": 1,
+      "uiCount": 0,
+      "visibleCount": 0,
+      "equalToOne": false
+    },
+    "afterReload": {
+      "registryCount": 1,
+      "uiCount": 1,
+      "visibleCount": 0,
+      "equalToOne": false
+    }
+  },
+  "step6_refresh_audit": {
+    "durationMs": 10000,
+    "eventsCaptured": 14,
+    "sampleLogs": [
+      {
+        "t": 1781482071277,
+        "text": "[HERO_REFRESH_AUDIT] {stage: refresh:invoked, source: HeroManagerPanel.refresh, timestamp: 1781482071275}"
+      },
+      {
+        "t": 1781482073586,
+        "text": "[HERO_REFRESH_AUDIT] {stage: hero-manager-updated:event, source: reelforge:hero-manager-updated, heroAssetId: hero-image-visibility-1781482073574, timestamp: 1781482073584}"
+      },
+      {
+        "t": 1781482074654,
+        "text": "[HERO_REFRESH_AUDIT] {stage: post-accept-watch, elapsedMs: 1069, heroAssetId: hero-image-visibility-1781482073574, registryCount: 1, loadHeroVaultItemsCount: 1}"
+      },
+      {
+        "t": 1781482075635,
+        "text": "[HERO_REFRESH_AUDIT] {stage: post-accept-watch, elapsedMs: 2050, heroAssetId: hero-image-visibility-1781482073574, registryCount: 1, loadHeroVaultItemsCount: 1}"
+      },
+      {
+        "t": 1781482076627,
+        "text": "[HERO_REFRESH_AUDIT] {stage: post-accept-watch, elapsedMs: 3041, heroAssetId: hero-image-visibility-1781482073574, registryCount: 1, loadHeroVaultItemsCount: 1}"
+      },
+      {
+        "t": 1781482077622,
+        "text": "[HERO_REFRESH_AUDIT] {stage: post-accept-watch, elapsedMs: 4037, heroAssetId: hero-image-visibility-1781482073574, registryCount: 1, loadHeroVaultItemsCount: 1}"
+      },
+      {
+        "t": 1781482078633,
+        "text": "[HERO_REFRESH_AUDIT] {stage: post-accept-watch, elapsedMs: 5045, heroAssetId: hero-image-visibility-1781482073574, registryCount: 1, loadHeroVaultItemsCount: 1}"
+      },
+      {
+        "t": 1781482079620,
+        "text": "[HERO_REFRESH_AUDIT] {stage: post-accept-watch, elapsedMs: 6034, heroAssetId: hero-image-visibility-1781482073574, registryCount: 1, loadHeroVaultItemsCount: 1}"
+      },
+      {
+        "t": 1781482080610,
+        "text": "[HERO_REFRESH_AUDIT] {stage: post-accept-watch, elapsedMs: 7024, heroAssetId: hero-image-visibility-1781482073574, registryCount: 1, loadHeroVaultItemsCount: 1}"
+      },
+      {
+        "t": 1781482081620,
+        "text": "[HERO_REFRESH_AUDIT] {stage: post-accept-watch, elapsedMs: 8035, heroAssetId: hero-image-visibility-1781482073574, registryCount: 1, loadHeroVaultItemsCount: 1}"
+      },
+      {
+        "t": 1781482082625,
+        "text": "[HERO_REFRESH_AUDIT] {stage: post-accept-watch, elapsedMs: 9040, heroAssetId: hero-image-visibility-1781482073574, registryCount: 1, loadHeroVaultItemsCount: 1}"
+      },
+      {
+        "t": 1781482083601,
+        "text": "[HERO_REFRESH_AUDIT] {stage: post-accept-watch, elapsedMs: 10015, heroAssetId: hero-image-visibility-1781482073574, registryCount: 1, loadHeroVaultItemsCount: 1}"
+      },
+      {
+        "t": 1781482083601,
+        "text": "[HERO_REFRESH_AUDIT] {stage: post-accept-watch:complete, elapsedMs: 10015, timestamp: 1781482083600}"
+      },
+      {
+        "t": 1781482096125,
+        "text": "[HERO_REFRESH_AUDIT] {stage: refresh:invoked, source: HeroManagerPanel.refresh, timestamp: 1781482096124}"
+      }
+    ],
+    "finding": "hero-manager-updated event fires; 10s watch shows loadHeroVaultItemsCount=1 and registryCount=1 stable (no overwrite)."
+  },
+  "runtimeArtifact": "hero-visibility-truth-runtime.json",
+  "VISIBLE": false,
+  "reasonIfFalse": "Registry persistence is true, but there is no user-visible Hero Vault card renderer. Current Hero UI renders registry in a dropdown, and immediate post-accept dropdown render can lag until refresh/remount."
+}

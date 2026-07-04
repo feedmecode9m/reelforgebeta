@@ -13,16 +13,19 @@ impl SmartCategoryDetector {
                 is_auto_detected: true,
             };
         }
-        
+
         let title_lower = title.to_lowercase();
         let keyword_map = vec![
-            ("Trending", vec!["trending", "viral", "barbershop", "barber"]),
+            (
+                "Trending",
+                vec!["trending", "viral", "barbershop", "barber"],
+            ),
             ("Cyber-Action", vec!["cyber", "hack", "action", "fight"]),
             ("Romance", vec!["love", "romance", "heart", "dating"]),
             ("Suspense", vec!["mystery", "thriller", "horror", "dark"]),
             ("Noir", vec!["noir", "detective", "crime", "rain"]),
         ];
-        
+
         let mut scores: Vec<(String, i32, Vec<String>)> = keyword_map
             .iter()
             .map(|(category, keywords)| {
@@ -37,15 +40,23 @@ impl SmartCategoryDetector {
                 (category.to_string(), score, matched)
             })
             .collect();
-        
+
         scores.sort_by(|a, b| b.1.cmp(&a.1));
         let (top_category, top_score, matched_keywords) = &scores[0];
-        
+
         // Fixed: Ensure confidence calculation results in f64
-        let confidence = if *top_score == 0 { 65.0 } else { (*top_score as f64 * 15.0).min(100.0) };
-        
-        let suggested_categories: Vec<String> = scores.iter().take(3).map(|(cat, _, _)| cat.clone()).collect();
-        
+        let confidence = if *top_score == 0 {
+            65.0
+        } else {
+            (*top_score as f64 * 15.0).min(100.0)
+        };
+
+        let suggested_categories: Vec<String> = scores
+            .iter()
+            .take(3)
+            .map(|(cat, _, _)| cat.clone())
+            .collect();
+
         CategoryDetection {
             category: top_category.clone(),
             confidence,
@@ -54,7 +65,7 @@ impl SmartCategoryDetector {
             is_auto_detected: true,
         }
     }
-    
+
     pub fn analyze_video_metadata(_video_url: &str) -> serde_json::Value {
         serde_json::json!({
             "duration": 0,
@@ -67,9 +78,15 @@ impl SmartCategoryDetector {
     pub fn get_cultural_themes(title: &str) -> Vec<String> {
         let title_lower = title.to_lowercase();
         let mut themes = Vec::new();
-        if title_lower.contains("barber") { themes.push("community".to_string()); }
-        if title_lower.contains("love") { themes.push("black-love".to_string()); }
-        if themes.is_empty() { themes.push("black-stories".to_string()); }
+        if title_lower.contains("barber") {
+            themes.push("community".to_string());
+        }
+        if title_lower.contains("love") {
+            themes.push("black-love".to_string());
+        }
+        if themes.is_empty() {
+            themes.push("black-stories".to_string());
+        }
         themes
     }
 }

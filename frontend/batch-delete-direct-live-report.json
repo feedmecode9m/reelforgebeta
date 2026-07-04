@@ -1,0 +1,340 @@
+{
+  "generatedAt": "2026-06-23T20:12:12.171Z",
+  "baseUrl": "http://127.0.0.1:5173",
+  "cases": {
+    "delete3": {
+      "ok": true,
+      "targetCount": 3,
+      "beforeCount": 20,
+      "afterCount": 17,
+      "selectedCount": 3,
+      "selectedIds": [
+        "1abf2d43-3fae-4b38-9323-b76e0c986666.png",
+        "e5b8e2fd-548d-4280-baf8-1eef93be7abc.png",
+        "33eeccbd-a4ab-4264-b46a-00dc853c578e.png"
+      ],
+      "chain": {
+        "batchSelect": true,
+        "batchDeleteClick": true,
+        "batchDeleteConfirm": true,
+        "batchStoreUpdate": true,
+        "batchPersist": true,
+        "batchUiRefresh": true,
+        "iterationCount": 3
+      },
+      "tailLogs": [
+        {
+          "tag": "[BATCH_SELECT_TOGGLE]",
+          "payload": {
+            "itemId": "e5b8e2fd-548d-4280-baf8-1eef93be7abc.png",
+            "action": "added",
+            "newCount": 2
+          }
+        },
+        {
+          "tag": "[BATCH_SELECT]",
+          "payload": {
+            "selectedCount": 3,
+            "selectedIds": [
+              "1abf2d43-3fae-4b38-9323-b76e0c986666.png",
+              "e5b8e2fd-548d-4280-baf8-1eef93be7abc.png",
+              "33eeccbd-a4ab-4264-b46a-00dc853c578e.png"
+            ]
+          }
+        },
+        {
+          "tag": "[BATCH_SELECT_TOGGLE]",
+          "payload": {
+            "itemId": "33eeccbd-a4ab-4264-b46a-00dc853c578e.png",
+            "action": "added",
+            "newCount": 3
+          }
+        },
+        {
+          "tag": "[BATCH_DELETE_CLICK]",
+          "payload": {
+            "selectedCount": 3
+          }
+        },
+        {
+          "tag": "[BATCH_DELETE_CONFIRM]",
+          "payload": {
+            "itemCount": 3
+          }
+        },
+        {
+          "tag": "[BATCH_DELETE_START]",
+          "payload": {
+            "totalSelected": 3,
+            "selectedIds": [
+              "1abf2d43-3fae-4b38-9323-b76e0c986666.png",
+              "e5b8e2fd-548d-4280-baf8-1eef93be7abc.png",
+              "33eeccbd-a4ab-4264-b46a-00dc853c578e.png"
+            ]
+          }
+        },
+        {
+          "tag": "[BATCH_DELETE_ITERATION]",
+          "payload": {
+            "current": 1,
+            "total": 3,
+            "itemId": "1abf2d43-3fae-4b38-9323-b76e0c986666.png"
+          }
+        },
+        {
+          "tag": "[BATCH_DELETE_ITEM]",
+          "payload": {
+            "index": 1,
+            "itemId": "1abf2d43-3fae-4b38-9323-b76e0c986666.png",
+            "registrySizeBefore": 20
+          }
+        },
+        {
+          "tag": "[BATCH_DELETE_ITERATION]",
+          "payload": {
+            "current": 2,
+            "total": 3,
+            "itemId": "e5b8e2fd-548d-4280-baf8-1eef93be7abc.png"
+          }
+        },
+        {
+          "tag": "[BATCH_DELETE_ITEM]",
+          "payload": {
+            "index": 2,
+            "itemId": "e5b8e2fd-548d-4280-baf8-1eef93be7abc.png",
+            "registrySizeBefore": 20
+          }
+        },
+        {
+          "tag": "[BATCH_DELETE_ITERATION]",
+          "payload": {
+            "current": 3,
+            "total": 3,
+            "itemId": "33eeccbd-a4ab-4264-b46a-00dc853c578e.png"
+          }
+        },
+        {
+          "tag": "[BATCH_DELETE_ITEM]",
+          "payload": {
+            "index": 3,
+            "itemId": "33eeccbd-a4ab-4264-b46a-00dc853c578e.png",
+            "registrySizeBefore": 20
+          }
+        },
+        {
+          "tag": "[BATCH_STORE_UPDATE]",
+          "payload": {
+            "beforeCount": 20,
+            "afterCount": 17
+          }
+        },
+        {
+          "tag": "[BATCH_PERSIST]",
+          "payload": {
+            "success": true
+          }
+        },
+        {
+          "tag": "[BATCH_UI_REFRESH]",
+          "payload": {
+            "newCount": 17
+          }
+        },
+        {
+          "tag": "[BATCH_DELETE_COMPLETE]",
+          "payload": {
+            "deletedCount": 3,
+            "finalRegistrySize": 17
+          }
+        }
+      ]
+    },
+    "delete10plus": {
+      "ok": true,
+      "targetCount": 10,
+      "beforeCount": 17,
+      "afterCount": 7,
+      "selectedCount": 10,
+      "selectedIds": [
+        "2acd2254-c18b-418b-aeea-c8574aa37fa4.png",
+        "7db135b6-0bf1-46a6-b65f-dfac19a93838.png",
+        "68b78c4e-ea21-4563-8819-eee3b57f38e6.png",
+        "6bd8fb72-327d-4022-98c7-af7dd72d0cf4.png",
+        "f1c33d99-2aa8-4691-81ff-f4e3eeb096ed.png",
+        "c31e3a87-2e9d-4322-951a-8389878eb0f7.png",
+        "0b66acc3-bde6-40e7-85fc-fb72c838505c.png",
+        "dab49524-eb8a-4b6f-948d-e34b7fe161a1.png",
+        "8c2db166-b42c-4869-937e-392b1bc62075.png",
+        "85a98760-8cd6-4632-b4af-945eb5be621b.png"
+      ],
+      "chain": {
+        "batchSelect": true,
+        "batchDeleteClick": true,
+        "batchDeleteConfirm": true,
+        "batchStoreUpdate": true,
+        "batchPersist": true,
+        "batchUiRefresh": true,
+        "iterationCount": 10
+      },
+      "tailLogs": [
+        {
+          "tag": "[BATCH_DELETE_ITERATION]",
+          "payload": {
+            "current": 5,
+            "total": 10,
+            "itemId": "f1c33d99-2aa8-4691-81ff-f4e3eeb096ed.png"
+          }
+        },
+        {
+          "tag": "[BATCH_DELETE_ITEM]",
+          "payload": {
+            "index": 5,
+            "itemId": "f1c33d99-2aa8-4691-81ff-f4e3eeb096ed.png",
+            "registrySizeBefore": 17
+          }
+        },
+        {
+          "tag": "[BATCH_DELETE_ITERATION]",
+          "payload": {
+            "current": 6,
+            "total": 10,
+            "itemId": "c31e3a87-2e9d-4322-951a-8389878eb0f7.png"
+          }
+        },
+        {
+          "tag": "[BATCH_DELETE_ITEM]",
+          "payload": {
+            "index": 6,
+            "itemId": "c31e3a87-2e9d-4322-951a-8389878eb0f7.png",
+            "registrySizeBefore": 17
+          }
+        },
+        {
+          "tag": "[BATCH_DELETE_ITERATION]",
+          "payload": {
+            "current": 7,
+            "total": 10,
+            "itemId": "0b66acc3-bde6-40e7-85fc-fb72c838505c.png"
+          }
+        },
+        {
+          "tag": "[BATCH_DELETE_ITEM]",
+          "payload": {
+            "index": 7,
+            "itemId": "0b66acc3-bde6-40e7-85fc-fb72c838505c.png",
+            "registrySizeBefore": 17
+          }
+        },
+        {
+          "tag": "[BATCH_DELETE_ITERATION]",
+          "payload": {
+            "current": 8,
+            "total": 10,
+            "itemId": "dab49524-eb8a-4b6f-948d-e34b7fe161a1.png"
+          }
+        },
+        {
+          "tag": "[BATCH_DELETE_ITEM]",
+          "payload": {
+            "index": 8,
+            "itemId": "dab49524-eb8a-4b6f-948d-e34b7fe161a1.png",
+            "registrySizeBefore": 17
+          }
+        },
+        {
+          "tag": "[BATCH_DELETE_ITERATION]",
+          "payload": {
+            "current": 9,
+            "total": 10,
+            "itemId": "8c2db166-b42c-4869-937e-392b1bc62075.png"
+          }
+        },
+        {
+          "tag": "[BATCH_DELETE_ITEM]",
+          "payload": {
+            "index": 9,
+            "itemId": "8c2db166-b42c-4869-937e-392b1bc62075.png",
+            "registrySizeBefore": 17
+          }
+        },
+        {
+          "tag": "[BATCH_DELETE_ITERATION]",
+          "payload": {
+            "current": 10,
+            "total": 10,
+            "itemId": "85a98760-8cd6-4632-b4af-945eb5be621b.png"
+          }
+        },
+        {
+          "tag": "[BATCH_DELETE_ITEM]",
+          "payload": {
+            "index": 10,
+            "itemId": "85a98760-8cd6-4632-b4af-945eb5be621b.png",
+            "registrySizeBefore": 17
+          }
+        },
+        {
+          "tag": "[BATCH_STORE_UPDATE]",
+          "payload": {
+            "beforeCount": 17,
+            "afterCount": 7
+          }
+        },
+        {
+          "tag": "[BATCH_PERSIST]",
+          "payload": {
+            "success": true
+          }
+        },
+        {
+          "tag": "[BATCH_UI_REFRESH]",
+          "payload": {
+            "newCount": 7
+          }
+        },
+        {
+          "tag": "[BATCH_DELETE_COMPLETE]",
+          "payload": {
+            "deletedCount": 10,
+            "finalRegistrySize": 7
+          }
+        }
+      ]
+    }
+  },
+  "persistence": {
+    "reloadRetainsDeletes": true,
+    "checkedIds": [
+      "1abf2d43-3fae-4b38-9323-b76e0c986666.png",
+      "e5b8e2fd-548d-4280-baf8-1eef93be7abc.png",
+      "33eeccbd-a4ab-4264-b46a-00dc853c578e.png",
+      "2acd2254-c18b-418b-aeea-c8574aa37fa4.png",
+      "7db135b6-0bf1-46a6-b65f-dfac19a93838.png",
+      "68b78c4e-ea21-4563-8819-eee3b57f38e6.png",
+      "6bd8fb72-327d-4022-98c7-af7dd72d0cf4.png",
+      "f1c33d99-2aa8-4691-81ff-f4e3eeb096ed.png",
+      "c31e3a87-2e9d-4322-951a-8389878eb0f7.png",
+      "0b66acc3-bde6-40e7-85fc-fb72c838505c.png",
+      "dab49524-eb8a-4b6f-948d-e34b7fe161a1.png",
+      "8c2db166-b42c-4869-937e-392b1bc62075.png",
+      "85a98760-8cd6-4632-b4af-945eb5be621b.png"
+    ],
+    "missingAfterReload": [
+      "1abf2d43-3fae-4b38-9323-b76e0c986666.png",
+      "e5b8e2fd-548d-4280-baf8-1eef93be7abc.png",
+      "33eeccbd-a4ab-4264-b46a-00dc853c578e.png",
+      "2acd2254-c18b-418b-aeea-c8574aa37fa4.png",
+      "7db135b6-0bf1-46a6-b65f-dfac19a93838.png",
+      "68b78c4e-ea21-4563-8819-eee3b57f38e6.png",
+      "6bd8fb72-327d-4022-98c7-af7dd72d0cf4.png",
+      "f1c33d99-2aa8-4691-81ff-f4e3eeb096ed.png",
+      "c31e3a87-2e9d-4322-951a-8389878eb0f7.png",
+      "0b66acc3-bde6-40e7-85fc-fb72c838505c.png",
+      "dab49524-eb8a-4b6f-948d-e34b7fe161a1.png",
+      "8c2db166-b42c-4869-937e-392b1bc62075.png",
+      "85a98760-8cd6-4632-b4af-945eb5be621b.png"
+    ],
+    "afterReloadCount": 7
+  },
+  "completionToken": "BATCH_DELETE_REPAIRED=true"
+}

@@ -1,0 +1,43 @@
+{
+  "phase": "REELFORGE PHASE 69.5 — HERO MEDIA DOMAIN SEPARATION",
+  "generatedAt": "2026-06-15T23:54:05.883Z",
+  "checks": {
+    "heroVaultIncreases": true,
+    "videoVaultUnchanged": true,
+    "feedUnchanged": true,
+    "placeholderUnchanged": true,
+    "discoveryUnchanged": true,
+    "reloadSurvives": true
+  },
+  "evidence": {
+    "baseline": {
+      "heroVaultCount": 0,
+      "videoVaultCount": 0,
+      "thumbnailVaultCount": 0,
+      "feedCount": 0,
+      "placeholderCount": 0,
+      "discoveryCount": 84
+    },
+    "postAccept": {
+      "heroVaultCount": 1,
+      "videoVaultCount": 0,
+      "thumbnailVaultCount": 0,
+      "feedCount": 0,
+      "placeholderCount": 0,
+      "discoveryCount": 84,
+      "blockedByBootstrapCount": 0
+    },
+    "postReload": {
+      "heroVaultCount": 1,
+      "videoVaultCount": 0,
+      "thumbnailVaultCount": 0,
+      "feedCount": 0,
+      "placeholderCount": 0,
+      "discoveryCount": 85
+    },
+    "guardProbe": {
+      "reelsToVideoVaultEntriesHeroResultCount": 0
+    }
+  },
+  "completeToken": "HERO_MEDIA_DOMAIN_SEPARATION_COMPLETE=true"
+}

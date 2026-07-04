@@ -1,0 +1,96 @@
+{
+  "phase": "HERO-ASSET-ARCHITECTURE",
+  "architecture": "Asset Registry -> Hero Asset Bridge -> Hero Render",
+  "results": [
+    {
+      "assetType": "jpg",
+      "assetId": "dbafc3e5-86aa-4902-b7e0-e5dfba33cac1",
+      "upload": true,
+      "assignment": true,
+      "render": true,
+      "refresh": true,
+      "rotation": true,
+      "frontendRestart": true,
+      "backendRestart": true,
+      "status": "PASS"
+    },
+    {
+      "assetType": "jpeg",
+      "assetId": "b380bbf0-1836-44a8-9fcb-abf68ea63ab9",
+      "upload": true,
+      "assignment": true,
+      "render": true,
+      "refresh": true,
+      "rotation": true,
+      "frontendRestart": true,
+      "backendRestart": true,
+      "status": "PASS"
+    },
+    {
+      "assetType": "png",
+      "assetId": "68ed849d-ea04-4cb8-ac71-2454e4ade32a",
+      "upload": true,
+      "assignment": true,
+      "render": true,
+      "refresh": true,
+      "rotation": true,
+      "frontendRestart": true,
+      "backendRestart": true,
+      "status": "PASS"
+    },
+    {
+      "assetType": "webp",
+      "assetId": "9d2b507e-b548-4923-a1a5-90fcc1a1b6b5",
+      "upload": true,
+      "assignment": true,
+      "render": true,
+      "refresh": true,
+      "rotation": true,
+      "frontendRestart": true,
+      "backendRestart": true,
+      "status": "PASS"
+    },
+    {
+      "assetType": "gif",
+      "assetId": "a64830b4-ef25-4afc-af61-5a70091d1cee",
+      "upload": true,
+      "assignment": true,
+      "render": true,
+      "refresh": true,
+      "rotation": true,
+      "frontendRestart": true,
+      "backendRestart": true,
+      "status": "PASS"
+    },
+    {
+      "assetType": "mp4",
+      "assetId": "c46c757a-fc29-4554-97a6-bf32c6ec191e",
+      "upload": true,
+      "assignment": true,
+      "render": true,
+      "refresh": true,
+      "rotation": true,
+      "frontendRestart": true,
+      "backendRestart": true,
+      "status": "PASS"
+    },
+    {
+      "assetType": "mov",
+      "assetId": "7eb9d963-061c-41e9-9730-8635a8adc9b1",
+      "upload": true,
+      "assignment": true,
+      "render": true,
+      "refresh": true,
+      "rotation": true,
+      "frontendRestart": true,
+      "backendRestart": true,
+      "status": "PASS"
+    }
+  ],
+  "overallStatus": "PASS",
+  "notes": {
+    "heroManagerStores": "heroAssetId",
+    "legacyRawUrlFieldsPersisted": false,
+    "heroBridge": "frontend/src/lib/hero/heroAssetBridge.js"
+  }
+}

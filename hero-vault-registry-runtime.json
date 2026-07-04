@@ -1,0 +1,36 @@
+{
+  "capturedAt": "2026-06-14T23:48:41.483Z",
+  "method": "module-level accept simulation matching current acceptHeroFile persistence path",
+  "result": {
+    "before": {
+      "heroVaultItemsCount": 2,
+      "heroRegistryCount": 2,
+      "dropdownOptionCount": 3,
+      "heroAssetIds": [
+        "hero-image",
+        "hero-video"
+      ]
+    },
+    "afterImageAccept": {
+      "heroVaultItemsCount": 1,
+      "heroRegistryCount": 1,
+      "dropdownOptionCount": 2,
+      "heroAssetIds": [
+        "hero-image-audit-1781480921453"
+      ]
+    },
+    "afterVideoAccept": {
+      "heroVaultItemsCount": 2,
+      "heroRegistryCount": 2,
+      "dropdownOptionCount": 3,
+      "heroAssetIds": [
+        "hero-image",
+        "hero-video-audit-1781480921462"
+      ]
+    },
+    "ids": {
+      "imageAssetId": "hero-image-audit-1781480921453",
+      "videoAssetId": "hero-video-audit-1781480921462"
+    }
+  }
+}

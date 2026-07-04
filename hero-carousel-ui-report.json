@@ -1,0 +1,80 @@
+{
+  "phase": "REELFORGE PHASE 67 — HERO CAROUSEL EXPERIENCE IMPLEMENTATION",
+  "generatedAt": "2026-06-15T02:21:42.471Z",
+  "checks": {
+    "activeAssetLoads": true,
+    "reloadKeepsPrimaryFocus": true,
+    "mediaPlaybackStateValid": true,
+    "navigationDiagnosticsEmit": true
+  },
+  "evidence": {
+    "afterImage": {
+      "label": "after-image",
+      "activeId": "hero-carousel-image-1781490105653",
+      "hasStage": true,
+      "hasVideoNode": false,
+      "hasImageNode": true,
+      "videoPaused": null,
+      "videoMuted": null,
+      "hasNextControl": true
+    },
+    "afterReload": {
+      "label": "after-reload",
+      "activeId": "hero-carousel-image-1781490105653",
+      "hasStage": true,
+      "hasVideoNode": false,
+      "hasImageNode": true,
+      "videoPaused": null,
+      "videoMuted": null,
+      "hasNextControl": true
+    },
+    "afterVideo": {
+      "label": "after-video",
+      "activeId": "hero-carousel-video-1781490117022",
+      "hasStage": true,
+      "hasVideoNode": true,
+      "hasImageNode": true,
+      "videoPaused": true,
+      "videoMuted": true,
+      "hasNextControl": true
+    },
+    "afterNavigation": {
+      "label": "after-navigation",
+      "activeId": "hero-carousel-video-1781490117022",
+      "hasStage": true,
+      "hasVideoNode": true,
+      "hasImageNode": true,
+      "videoPaused": true,
+      "videoMuted": true,
+      "hasNextControl": true
+    }
+  },
+  "diagnostics": {
+    "render": [
+      "[HERO_CAROUSEL_RENDER] {assetId: slide-video:fallback, type: video, mediaLoaded: true}",
+      "[HERO_CAROUSEL_RENDER] {assetId: slide-video:fallback, type: video, mediaLoaded: true}",
+      "[HERO_CAROUSEL_RENDER] {assetId: slide-video:fallback, type: video, mediaLoaded: true}",
+      "[HERO_CAROUSEL_RENDER] {assetId: slide-video:fallback, type: video, mediaLoaded: true}",
+      "[HERO_CAROUSEL_RENDER] {assetId: slide-video:fallback, type: video, mediaLoaded: true}",
+      "[HERO_CAROUSEL_RENDER] {assetId: slide-video:fallback, type: video, mediaLoaded: true}",
+      "[HERO_CAROUSEL_RENDER] {assetId: slide-video:fallback, type: video, mediaLoaded: true}",
+      "[HERO_CAROUSEL_RENDER] {assetId: hero-carousel-image-1781490105653, type: image, mediaLoaded: true}",
+      "[HERO_CAROUSEL_RENDER] {assetId: hero-carousel-image-1781490105653, type: image, mediaLoaded: true}",
+      "[HERO_CAROUSEL_RENDER] {assetId: hero-carousel-image-1781490105653, type: image, mediaLoaded: true}",
+      "[HERO_CAROUSEL_RENDER] {assetId: hero-carousel-image-1781490105653, type: image, mediaLoaded: true}",
+      "[HERO_CAROUSEL_RENDER] {assetId: hero-carousel-image-1781490105653, type: image, mediaLoaded: true}",
+      "[HERO_CAROUSEL_RENDER] {assetId: hero-carousel-image-1781490105653, type: image, mediaLoaded: true}",
+      "[HERO_CAROUSEL_RENDER] {assetId: hero-carousel-image-1781490105653, type: image, mediaLoaded: true}",
+      "[HERO_CAROUSEL_RENDER] {assetId: hero-carousel-image-1781490105653, type: image, mediaLoaded: true}",
+      "[HERO_CAROUSEL_RENDER] {assetId: hero-carousel-video-1781490117022, type: video, mediaLoaded: true}",
+      "[HERO_CAROUSEL_RENDER] {assetId: hero-carousel-video-1781490117022, type: video, mediaLoaded: true}"
+    ],
+    "navigate": [
+      "[HERO_CAROUSEL_NAVIGATE] {direction: next, targetAssetId: hero-carousel-video-1781490117022}"
+    ],
+    "mediaState": [
+      "[HERO_CAROUSEL_MEDIA_STATE] {assetId: slide-video:fallback, playing: true, muted: true}"
+    ]
+  },
+  "completeToken": "HERO_CAROUSEL_UI_COMPLETE=true"
+}

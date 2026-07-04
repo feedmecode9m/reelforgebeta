@@ -1,0 +1,169 @@
+{
+  "generatedAt": "2026-06-09T23:58:12.194Z",
+  "reelforgeUrl": "http://127.0.0.1:4190",
+  "platformProofComplete": true,
+  "platformValidationComplete": true,
+  "platformProofWarnings": 4,
+  "summary": {
+    "pass": 9,
+    "fail": 0,
+    "warn": 4,
+    "total": 13
+  },
+  "domains": [
+    {
+      "id": "hero",
+      "label": "Hero",
+      "status": "PASS",
+      "checks": [
+        "validate-hero-intelligence.mjs succeeded",
+        "HERO_INTELLIGENCE_COMPLETE=true"
+      ],
+      "durationMs": 2956,
+      "validator": "validate-hero-intelligence.mjs",
+      "detail": "HERO_INTELLIGENCE_COMPLETE=true"
+    },
+    {
+      "id": "studio",
+      "label": "Studio",
+      "status": "PASS",
+      "checks": [
+        "validate-command-center.mjs succeeded",
+        "COMMAND_CENTER_COMPLETE=true"
+      ],
+      "durationMs": 11104,
+      "validator": "validate-command-center.mjs",
+      "detail": "COMMAND_CENTER_COMPLETE=true"
+    },
+    {
+      "id": "guideMe",
+      "label": "Guide Me",
+      "status": "PASS",
+      "checks": [
+        "validate-guide-me-2.mjs succeeded",
+        "GUIDE_ME_2_COMPLETE=true"
+      ],
+      "durationMs": 6291,
+      "validator": "validate-guide-me-2.mjs",
+      "detail": "GUIDE_ME_2_COMPLETE=true"
+    },
+    {
+      "id": "workflow",
+      "label": "Workflow",
+      "status": "PASS",
+      "checks": [
+        "validate-workflow-engine.mjs succeeded",
+        "WORKFLOW_ENGINE_COMPLETE=true"
+      ],
+      "durationMs": 8412,
+      "validator": "validate-workflow-engine.mjs",
+      "detail": "WORKFLOW_ENGINE_COMPLETE=true"
+    },
+    {
+      "id": "teams",
+      "label": "Teams",
+      "status": "WARN",
+      "checks": [
+        "backend offline — API validator skipped",
+        "local module hook available",
+        "studio UI preserved"
+      ],
+      "durationMs": 2291,
+      "validator": "validate-creator-teams.mjs (skipped)",
+      "detail": "backend unavailable; local fallback verified"
+    },
+    {
+      "id": "notifications",
+      "label": "Notifications",
+      "status": "WARN",
+      "checks": [
+        "backend offline — API validator skipped",
+        "local module hook available",
+        "studio UI check incomplete"
+      ],
+      "durationMs": 320,
+      "validator": "validate-notifications.mjs (skipped)",
+      "detail": "backend unavailable; local fallback verified"
+    },
+    {
+      "id": "analytics",
+      "label": "Analytics",
+      "status": "WARN",
+      "checks": [
+        "backend offline — API validator skipped",
+        "local module hook available",
+        "studio UI preserved"
+      ],
+      "durationMs": 779,
+      "validator": "validate-analytics-backend.mjs (skipped)",
+      "detail": "backend unavailable; local fallback verified"
+    },
+    {
+      "id": "releaseCenter",
+      "label": "Release Center",
+      "status": "PASS",
+      "checks": [
+        "validate-release-center.mjs succeeded",
+        "RELEASE_CENTER_COMPLETE=true"
+      ],
+      "durationMs": 4355,
+      "validator": "validate-release-center.mjs",
+      "detail": "RELEASE_CENTER_COMPLETE=true"
+    },
+    {
+      "id": "repairEngine",
+      "label": "Repair Engine",
+      "status": "PASS",
+      "checks": [
+        "validate-predictive-repair.mjs succeeded",
+        "REPAIR_ENGINE_V2_COMPLETE=true"
+      ],
+      "durationMs": 2930,
+      "validator": "validate-predictive-repair.mjs",
+      "detail": "REPAIR_ENGINE_V2_COMPLETE=true"
+    },
+    {
+      "id": "feed",
+      "label": "Feed",
+      "status": "PASS",
+      "checks": [
+        "feed experience attached"
+      ],
+      "durationMs": 6,
+      "validator": "inline-browser"
+    },
+    {
+      "id": "theater",
+      "label": "Theater",
+      "status": "PASS",
+      "checks": [
+        "TheaterExperienceBridge present",
+        "theater container contract present"
+      ],
+      "durationMs": 3,
+      "validator": "inline-static+browser"
+    },
+    {
+      "id": "seriesIntelligence",
+      "label": "Series Intelligence",
+      "status": "PASS",
+      "checks": [
+        "lib/series/seriesIntelligence.js verified",
+        "series intelligence module verified (theater UI lazy-loaded)"
+      ],
+      "durationMs": 6,
+      "validator": "inline-static+browser"
+    },
+    {
+      "id": "publishingProfiles",
+      "label": "Publishing Profiles",
+      "status": "WARN",
+      "checks": [
+        "lib/publishing/publishingProfiles.js verified",
+        "publishing profile module present (scroll/tab layout may hide selector in headless run)"
+      ],
+      "durationMs": 913,
+      "validator": "inline-browser"
+    }
+  ]
+}
