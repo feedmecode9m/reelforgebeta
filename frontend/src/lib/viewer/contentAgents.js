@@ -253,9 +253,11 @@ export function createContentAgents(deps) {
   }
   };
   // ==========================================
-  // Personal Upload System
+  // Personal Upload System (local feed composer — NOT canonical HTTP upload)
+  // Canonical file upload: createReel() → POST /api/reels
   // ==========================================
   const PersonalUploadSystem = {
+  /** @deprecated Local-only title placement; does not POST files. Use Vault/Studio file upload → createReel. */
   async quickUpload(title, category = 'Trending') {
   const videoCollection = get(personalVideoCollection);
   if (!title || !videoCollection.length) { uploadStatus.set('ERROR: TITLE REQUIRED AND NO VIDEOS'); return; }

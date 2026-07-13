@@ -1,4 +1,4 @@
-import { BACKEND_URL } from './config.js';
+import { BACKEND_URL, USE_SAME_ORIGIN_API } from './config.js';
 import { normalizeReel } from './api/reelContract.js';
 
 const WS_DEBUG = import.meta.env.VITE_DEBUG_API === 'true';
@@ -11,7 +11,10 @@ const WS_DEBUG = import.meta.env.VITE_DEBUG_API === 'true';
 export function connectReelEventSocket(handlers = {}) {
     if (typeof WebSocket === 'undefined') return () => {};
 
-    const wsBase = (BACKEND_URL || '').replace(/^http/, 'ws');
+    const wsBase =
+        USE_SAME_ORIGIN_API && typeof window !== 'undefined'
+            ? window.location.origin.replace(/^http/, 'ws')
+            : (BACKEND_URL || '').replace(/^http/, 'ws');
     const url = wsBase ? `${wsBase}/ws/control-center` : null;
     if (!url) {
         if (import.meta.env.DEV) {

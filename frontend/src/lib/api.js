@@ -1,5 +1,6 @@
 import { API_BASE_URL, BACKEND_URL, toBackendMediaUrl, toRelativeMediaPath, logResolvedMediaUrl } from './config.js';
 import { writable } from 'svelte/store';
+import { pipelineDiag, pipelineDiagCors } from './diagnostics/pipelineDiag.js';
 
 export { API_BASE_URL, BACKEND_URL, toBackendMediaUrl, toRelativeMediaPath, logResolvedMediaUrl };
 
@@ -123,10 +124,15 @@ export async function checkBackendHealth() {
                         lastOkAt: Date.now(),
                         lastError: ''
                     });
+                    pipelineDiag('API', 'checkBackendHealth', 'api.js', {
+                        result: 'healthy',
+                        detail: `${base}${path}`
+                    });
                     logApiDebug('healthcheck:ok', `${base}${path}`, response.status);
                     return true;
                 }
             } catch (error) {
+                pipelineDiagCors('checkBackendHealth', 'api.js', error, { url: `${base}${path}` });
                 setBackendConnectionStatus('degraded', {
                     lastError: error?.message || 'healthcheck failed'
                 });
@@ -135,6 +141,7 @@ export async function checkBackendHealth() {
         }
     }
 
+    pipelineDiag('API', 'checkBackendHealth', 'api.js', { result: 'unhealthy' });
     return false;
 }
 
@@ -153,9 +160,17 @@ export async function fetchWithRetry(
     for (let attempt = 0; attempt <= retries; attempt += 1) {
         try {
             logApiDebug('request', { url, attempt, options });
+            pipelineDiag('FETCH', 'fetchWithRetry', 'api.js', {
+                result: `attempt_${attempt}`,
+                detail: { url, method: options?.method || 'GET' }
+            });
             const response = await fetch(url, options);
             lastResponse = response;
             logApiDebug('response', { url, status: response.status, ok: response.ok, attempt });
+            pipelineDiag('RESPONSE', 'fetchWithRetry', 'api.js', {
+                result: `http_${response.status}`,
+                detail: { url, ok: response.ok, attempt }
+            });
 
             if (response.ok) {
                 setBackendConnectionStatus('online', {
@@ -179,6 +194,7 @@ export async function fetchWithRetry(
             lastError = new Error(`Request failed with status ${response.status}`);
         } catch (error) {
             lastError = error;
+            pipelineDiagCors('fetchWithRetry', 'api.js', error, { url });
             notifyBackendReconnecting();
             setBackendConnectionStatus('offline', {
                 lastError: error?.message || 'network failure'

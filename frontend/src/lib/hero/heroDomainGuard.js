@@ -1,6 +1,7 @@
 const HERO_MANAGER_STORAGE_KEY = 'reelforge_hero_manager_config';
 const HERO_VIDEO_STORAGE_KEY = 'reelforge_hero_video';
 const HERO_IMAGE_STORAGE_KEY = 'reelforge_hero_image';
+const HERO_REEL_STORAGE_KEY = 'reelforge_hero_reel';
 const HERO_DEFAULT_VIDEO = '/videos/hero-background.mp4';
 
 function normalize(value) {
@@ -46,10 +47,27 @@ function readHeroStorageSnapshot() {
   };
 }
 
+function readHeroReelSnapshot() {
+  if (typeof window === 'undefined') {
+    return { id: '', fileName: '', url: '' };
+  }
+  try {
+    const parsed = JSON.parse(localStorage.getItem(HERO_REEL_STORAGE_KEY) || 'null');
+    return {
+      id: normalize(parsed?.id),
+      fileName: normalize(parsed?.fileName),
+      url: normalizeUrl(parsed?.url)
+    };
+  } catch {
+    return { id: '', fileName: '', url: '' };
+  }
+}
+
 export function getHeroDomainSnapshot() {
   return {
     manager: readHeroManagerSnapshot(),
-    storage: readHeroStorageSnapshot()
+    storage: readHeroStorageSnapshot(),
+    reel: readHeroReelSnapshot()
   };
 }
 
@@ -58,11 +76,15 @@ export function isHeroAsset(candidate = {}, options = {}) {
   const managerHeroId = normalize(snapshot?.manager?.heroAssetId);
   const heroVideo = normalize(snapshot?.storage?.heroVideo);
   const heroImage = normalize(snapshot?.storage?.heroImage);
+  const reelId = normalize(snapshot?.reel?.id);
+  const reelFileName = normalize(snapshot?.reel?.fileName);
+  const reelUrl = normalizeUrl(snapshot?.reel?.url);
 
   if (isHeroCategory(candidate)) return true;
 
   const id = normalize(candidate?.id || candidate?.assetId || candidate?.heroAssetId);
-  const name = normalize(candidate?.name || candidate?.title || candidate?.fileName || candidate?.file_name);
+  const fileName = normalize(candidate?.fileName || candidate?.file_name);
+  const name = normalize(candidate?.name || candidate?.title);
   const url = normalize(candidate?.url || candidate?.mediaUrl || candidate?.videoUrl || candidate?.video_url);
   const thumbnail = normalize(
     candidate?.thumbnail || candidate?.thumbnailUrl || candidate?.thumbnail_url || candidate?.posterUrl
@@ -73,6 +95,11 @@ export function isHeroAsset(candidate = {}, options = {}) {
   const normalizedHeroVideo = normalizeUrl(heroVideo);
   const normalizedHeroImage = normalizeUrl(heroImage);
 
+  if (reelId && id && id === reelId) return true;
+  if (reelId && managerHeroId && id === managerHeroId && managerHeroId === reelId) return true;
+  if (reelFileName && fileName && fileName === reelFileName) return true;
+  if (reelUrl && normalizedUrl && normalizedUrl === reelUrl) return true;
+  if (reelUrl && normalizedThumb && normalizedThumb === reelUrl) return true;
   if (id && managerHeroId && id === managerHeroId) return true;
   if (name.toLowerCase().includes('hero-background')) return true;
   if (normalizedUrl && normalizedUrl === HERO_DEFAULT_VIDEO) return true;

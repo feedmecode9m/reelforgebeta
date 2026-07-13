@@ -1,4 +1,4 @@
-import { API_BASE_URL, checkBackendHealth, fetchWithRetry } from './api.js';
+import { API_BASE_URL, checkBackendHealth, fetchWithRetry, getAdminAuthorizationHeader } from './api.js';
 import {
     normalizeReels,
     isVideoReel,
@@ -8,8 +8,15 @@ import {
 } from './api/reelContract.js';
 import { resolveUserPosterUrl } from './vaultMedia.js';
 import { safeStorageSet } from './storage.js';
+import { readThumbnailVault, upgradeThumbnailVaultFromBackendReels } from './viewer/thumbnailVault.js';
 import { toRelativeMediaPath } from './config.js';
 import { isHeroAsset } from './hero/heroDomainGuard.js';
+import { pipelineDiag } from './diagnostics/pipelineDiag.js';
+
+/**
+ * Media catalog bootstrap — reads authoritative catalog from GET /api/reels (Postgres).
+ * Thumbnail vault metadata is owned exclusively by thumbnailVault.js.
+ */
 
 /** Canvas/Black Stories placeholders — enabled in dev or when explicitly opted in for production demos. */
 export const ALLOW_UI_PLACEHOLDERS =
@@ -19,6 +26,10 @@ export const ALLOW_UI_PLACEHOLDERS =
 const THUMBNAIL_KEY = 'personal_thumbnails';
 const VIDEO_VAULT_KEY = 'personal_video_vault';
 
+function getAdminToken() {
+    return typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
+}
+
 function readVaultJson(key) {
     if (typeof window === 'undefined') return [];
     try {
@@ -27,20 +38,6 @@ function readVaultJson(key) {
     } catch {
         return [];
     }
-}
-
-/** @param {Array<Record<string, unknown>>} entries */
-function dedupeThumbEntries(entries) {
-    const seen = new Set();
-    return entries.filter((entry) => {
-        const url = String(entry?.url || '').trim();
-        const name = String(entry?.name || '').trim();
-        const fileName = String(entry?.fileName || '').trim();
-        const key = url || fileName || name;
-        if (!key || seen.has(key)) return false;
-        seen.add(key);
-        return true;
-    });
 }
 
 /** @param {Array<Record<string, unknown>>} entries */
@@ -61,17 +58,30 @@ function dedupeVideoEntries(entries) {
  * @param {{ thumbnailKey?: string; videoVaultKey?: string }} [config]
  */
 export async function bootstrapMediaFromBackend(config = {}) {
+    pipelineDiag('BOOTSTRAP', 'bootstrapMediaFromBackend', 'mediaBootstrap.js', { result: 'start' });
     const thumbnailKey = config.thumbnailKey || THUMBNAIL_KEY;
     const videoVaultKey = config.videoVaultKey || VIDEO_VAULT_KEY;
 
     const healthy = await checkBackendHealth();
     if (!healthy) {
+        pipelineDiag('BOOTSTRAP', 'bootstrapMediaFromBackend', 'mediaBootstrap.js', { result: 'backend_unavailable' });
         console.log('[mediaBootstrap] backend unavailable — skipping');
         return { source: 'none', thumbnails: 0, videos: 0, reels: 0 };
     }
 
     const fromReels = await hydrateVaultFromReels(thumbnailKey, videoVaultKey);
     const source = fromReels.thumbnails || fromReels.videos ? 'api-reels' : 'none';
+    console.info('[VAULT_BOOTSTRAP]', {
+        action: 'bootstrapMediaFromBackend:complete',
+        source,
+        thumbnails: fromReels.thumbnails,
+        videos: fromReels.videos,
+        ts: new Date().toISOString()
+    });
+    pipelineDiag('BOOTSTRAP', 'bootstrapMediaFromBackend', 'mediaBootstrap.js', {
+        result: source,
+        detail: { thumbnails: fromReels.thumbnails, videos: fromReels.videos }
+    });
     return {
         source,
         thumbnails: fromReels.thumbnails,
@@ -81,7 +91,7 @@ export async function bootstrapMediaFromBackend(config = {}) {
 }
 
 /**
- * Populate vault localStorage from GET /api/reels (canonical DB-backed catalog).
+ * Populate video vault localStorage from GET /api/reels. Thumbnails: notify vault only.
  * @param {string} thumbnailKey
  * @param {string} videoVaultKey
  * @param {{ thumbsOnly?: boolean; videosOnly?: boolean }} [options]
@@ -92,29 +102,29 @@ export async function hydrateVaultFromReels(thumbnailKey, videoVaultKey, options
     let videoCount = 0;
 
     try {
-        const res = await fetchWithRetry(`${API_BASE_URL}/api/reels`, {}, { retries: 2 });
+        pipelineDiag('BOOTSTRAP', 'hydrateVaultFromReels', 'mediaBootstrap.js', { result: 'fetch_reels_start' });
+        const res = await fetchWithRetry(
+            `${API_BASE_URL}/api/reels?t=${Date.now()}`,
+            { headers: getAdminAuthorizationHeader(getAdminToken()) },
+            { retries: 2 }
+        );
+        pipelineDiag('RESPONSE', 'hydrateVaultFromReels', 'mediaBootstrap.js', {
+            result: `http_${res.status}`,
+            detail: { ok: res.ok }
+        });
         if (!res.ok) return { thumbnails: 0, videos: 0 };
 
         const reels = normalizeReels(await res.json(), 'GET /api/reels (vault hydrate)');
-        const thumbEntries = [];
         const videoEntries = [];
 
         for (const reel of reels) {
-            const url = String(reel?.url || '');
-            const displayName = String(reel?.name || 'Untitled');
-            const fileName = String(reel?.fileName || reel?.file_name || '');
             const isThumb = !videosOnly && isImageReel(reel);
             const isVideo = !thumbsOnly && isVideoReel(reel);
 
             if (isThumb) {
-                if (isHeroAsset(reel)) continue;
-                thumbEntries.push({
-                    name: displayName,
-                    fileName: fileName || displayName,
-                    url: resolveMediaUrl(url, 'thumbnail'),
-                    addedAt: reel.createdAt || new Date().toISOString()
-                });
-            } else if (isVideo) {
+                continue;
+            }
+            if (isVideo) {
                 const entry = reelToVaultEntry(reel);
                 if (isHeroAsset(reel) || isHeroAsset(entry)) continue;
                 entry.thumbnail = reel.thumbnailUrl
@@ -124,11 +134,25 @@ export async function hydrateVaultFromReels(thumbnailKey, videoVaultKey, options
             }
         }
 
-        if (!videosOnly && thumbEntries.length > 0) {
-            const merged = dedupeThumbEntries([...readVaultJson(thumbnailKey), ...thumbEntries]);
-            safeStorageSet(thumbnailKey, merged);
-            thumbnailCount = merged.length;
-            console.log(`[mediaBootstrap] Hydrated ${thumbnailCount} thumbnails from [GET /api/reels]`);
+        if (!videosOnly) {
+            const localCount = readThumbnailVault(thumbnailKey).length;
+            console.info('[VAULT_BOOTSTRAP]', {
+                action: 'hydrateVaultFromReels:thumbs',
+                localCount,
+                backendReels: reels.length,
+                ts: new Date().toISOString()
+            });
+            if (localCount > 0) {
+                const before = localCount;
+                thumbnailCount = upgradeThumbnailVaultFromBackendReels(reels, thumbnailKey);
+                console.info('[VAULT_BOOTSTRAP]', {
+                    action: 'upgradeThumbnailVaultFromBackendReels:complete',
+                    before,
+                    after: thumbnailCount,
+                    ts: new Date().toISOString()
+                });
+                console.log(`[mediaBootstrap] Notified thumbnailVault to refresh ${thumbnailCount} local thumbnails from [GET /api/reels]`);
+            }
         }
         if (!thumbsOnly && videoEntries.length > 0) {
             const merged = dedupeVideoEntries([...readVaultJson(videoVaultKey), ...videoEntries]);
@@ -137,8 +161,17 @@ export async function hydrateVaultFromReels(thumbnailKey, videoVaultKey, options
             console.log(`[mediaBootstrap] Hydrated ${videoCount} videos from [GET /api/reels]`);
         }
     } catch (error) {
+        pipelineDiag('BOOTSTRAP', 'hydrateVaultFromReels', 'mediaBootstrap.js', {
+            result: 'error',
+            detail: error?.message || String(error)
+        });
         console.warn('[mediaBootstrap] reels vault hydrate failed', error);
     }
+
+    pipelineDiag('BOOTSTRAP', 'hydrateVaultFromReels', 'mediaBootstrap.js', {
+        result: 'complete',
+        detail: { thumbnails: thumbnailCount, videos: videoCount }
+    });
 
     return { thumbnails: thumbnailCount, videos: videoCount };
 }
@@ -153,45 +186,8 @@ export function isBackendThumbReel(reel) {
     return isImageReel(reel) && String(reel?.url || '').includes('/thumbs/');
 }
 
-/**
- * Thumbnail reels from API → vault only.
- * @param {Record<string, unknown>[]} reels
- * @param {string} thumbnailKey
- */
-export function ingestThumbReelsToVault(reels, thumbnailKey) {
-    const existing = readVaultJson(thumbnailKey);
-    const entries = [...existing];
-
-    for (const reel of reels || []) {
-        if (!isBackendThumbReel(reel)) continue;
-        if (isHeroAsset(reel)) continue;
-        const url = String(reel?.url || '');
-        const resolvedUrl = resolveMediaUrl(url, 'thumbnail');
-        const name = String(reel?.name || 'thumb');
-        const fileName = String(reel?.fileName || reel?.file_name || name);
-        if (
-            entries.some(
-                (e) =>
-                    e?.fileName === fileName ||
-                    e?.name === name ||
-                    String(e?.url || '').trim() === resolvedUrl
-            )
-        ) {
-            continue;
-        }
-        entries.push({
-            name,
-            fileName,
-            url: resolvedUrl,
-            addedAt: reel?.createdAt || reel?.created_at || new Date().toISOString()
-        });
-    }
-
-    if (entries.length > existing.length) {
-        safeStorageSet(thumbnailKey, dedupeThumbEntries(entries));
-    }
-    return entries.length;
-}
+/** @deprecated Use upgradeThumbnailVaultFromBackendReels from thumbnailVault.js */
+export { upgradeThumbnailVaultFromBackendReels as ingestThumbReelsToVault } from './viewer/thumbnailVault.js';
 
 export function reelsToVideoVaultEntries(reels) {
     const entries = [];

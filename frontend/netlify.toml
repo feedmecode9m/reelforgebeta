@@ -3,10 +3,39 @@
   publish = "dist"
 
 [build.environment]
-  VITE_API_URL = "https://reelforge-deploy-production.up.railway.app"
-  VITE_BACKEND_URL = "https://reelforge-deploy-production.up.railway.app"
-  VITE_API_BASE_URL = "https://reelforge-deploy-production.up.railway.app"
+  # Same-origin API via public/_redirects → Railway (fixes upload CORS on Netlify Drop)
+  VITE_USE_SAME_ORIGIN_API = "true"
   VITE_ALLOW_UI_PLACEHOLDERS = "true"
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://reelforge-deploy-production.up.railway.app/api/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/videos/*"
+  to = "https://reelforge-deploy-production.up.railway.app/videos/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/thumbs/*"
+  to = "https://reelforge-deploy-production.up.railway.app/thumbs/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/health"
+  to = "https://reelforge-deploy-production.up.railway.app/health"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/ws/*"
+  to = "https://reelforge-deploy-production.up.railway.app/ws/:splat"
+  status = 200
+  force = true
 
 [[redirects]]
   from = "/*"

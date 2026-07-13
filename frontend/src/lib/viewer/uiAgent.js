@@ -129,7 +129,16 @@ export function createUiAgent(deps) {
   },
   handleFileBrowse: () => { document.getElementById('file-input')?.click(); },
   handleFileSelect: (e) => { const file = e.target.files?.[0]; if (checkIsVideo(file)) { selectedFile.set(file); videoSource.set(''); } },
-  handleDrop: (e) => { e.preventDefault(); dragActive.set(false); const file = e.dataTransfer?.files[0]; if (checkIsVideo(file)) { selectedFile.set(file); videoSource.set(''); } },
+  handleDrop: (e) => {
+    e.preventDefault();
+    dragActive.set(false);
+    const files = [...(e.dataTransfer?.files || [])];
+    const file = files[0];
+    if (checkIsVideo(file)) {
+      selectedFile.set(file);
+      videoSource.set('');
+    }
+  },
   async renameCategory(oldName, newName) { const trimmed = newName?.trim(); if (!trimmed || trimmed === oldName) return; categoryNames.saveName(oldName, trimmed); const currentFeed = get(feed); if (currentFeed[oldName]) { currentFeed[trimmed] = currentFeed[oldName].map((r) => ({ ...r, category: trimmed })); delete currentFeed[oldName]; feed.set({ ...currentFeed }); categories.set(Object.keys(currentFeed)); } uploadStatus.set('✅ Category Renamed & Persisted'); },
   togglePersonalStudioMode: () => { personalStudioMode.update((p) => { const newVal = !p; const thumbCount = get(personalThumbnailCollection).length; uploadStatus.set(newVal ? `🎬 PERSONAL STUDIO MODE ACTIVATED (${thumbCount} thumbnails)` : '🎬 PERSONAL STUDIO MODE DEACTIVATED'); return newVal; }); },
   togglePersonalThumbnails: () => { usePersonalThumbnails.update((u) => { const newVal = !u; const thumbCount = get(personalThumbnailCollection).length; uploadStatus.set(newVal ? `🖼️  USING PERSONAL THUMBNAILS (${thumbCount})` : '🖼️  USING AI-GENERATED THUMBNAILS'); return newVal; }); },

@@ -1,6 +1,23 @@
 /** @typedef {{ ok: boolean; recovered?: boolean; error?: Error }} StorageResult */
 
+import { traceThumbStoreWrite } from './viewer/thumbStoreWriteTrace.js';
+import {
+  isThumbnailVaultWriteActive,
+  logThumbOwnerViolation,
+  enterThumbnailVaultWrite,
+  exitThumbnailVaultWrite
+} from './viewer/thumbnailOwnerGuard.js';
+
 const STORAGE_DEBUG = false;
+
+function isPersonalThumbnailsKey(key, options = {}) {
+    return key === 'personal_thumbnails' || options.thumbnailKey === 'personal_thumbnails';
+}
+
+function guardPersonalThumbnailsWrite(caller, key, value, options = {}) {
+    if (!isPersonalThumbnailsKey(key, options) || isThumbnailVaultWriteActive()) return;
+    logThumbOwnerViolation(caller, value);
+}
 
 export const STORAGE_LIMITS = Object.freeze({
     MAX_TOTAL_BYTES: 5 * 1024 * 1024,
@@ -15,6 +32,7 @@ export const PRESERVED_KEYS = new Set([
     'reelforge_category_names',
     'reel_titles_persistent',
     'reelforge_hero_manager_config',
+    'reelforge_hero_reel',
     'reelforge_hero_video',
     'reelforge_hero_image',
     'heroBackgroundState',
@@ -92,11 +110,9 @@ export function stripHeavyThumbnailEntries(entries = [], keep = STORAGE_LIMITS.M
         .map((item) => {
             if (!item || typeof item !== 'object') return item;
             let url = '';
-            if (
-                typeof item.url === 'string' &&
-                !item.url.startsWith('data:') &&
-                !item.url.startsWith('blob:')
-            ) {
+            if (typeof item.url === 'string' && (item.url.startsWith('data:') || item.url.startsWith('blob:'))) {
+                url = item.url.trim();
+            } else if (typeof item.url === 'string') {
                 // Lazy import avoided — normalize absolute URLs to /thumbs/ paths for storage
                 const raw = item.url.trim();
                 if (/^https?:\/\//i.test(raw)) {
@@ -109,23 +125,31 @@ export function stripHeavyThumbnailEntries(entries = [], keep = STORAGE_LIMITS.M
                     url = raw.startsWith('/') ? raw : `/thumbs/${raw.replace(/^\/+/, '')}`;
                 }
             }
+            const fileName =
+                String(item.fileName || item.file_name || '').trim() ||
+                (url ? url.split('/').pop()?.split('?')[0] || '' : '');
+            const displayName = String(item.title || item.name || fileName || '').trim();
             return {
-                name: item.name,
+                id: item.id ? String(item.id) : undefined,
+                fileName,
+                name: displayName,
+                title: item.title || item.name,
                 url,
                 size: item.size,
                 type: item.type,
-                addedAt: item.addedAt || new Date().toISOString()
+                addedAt: item.addedAt || new Date().toISOString(),
+                orphaned: item.orphaned === true ? true : undefined
             };
         })
-        .filter((item) => item?.name || item?.url);
+        .filter((item) => item?.fileName || item?.url);
 
-    // Deduplicate thumbnails by canonical URL first, then fallback to name.
+    // Deduplicate thumbnails by canonical URL or fileName — never display name.
     const deduped = [];
     const seen = new Set();
     for (const item of normalized) {
         const urlKey = String(item?.url || '').trim();
-        const nameKey = String(item?.name || '').trim();
-        const key = urlKey || `name:${nameKey}`;
+        const fileKey = String(item?.fileName || '').trim();
+        const key = urlKey || fileKey;
         if (!key || seen.has(key)) continue;
         seen.add(key);
         deduped.push(item);
@@ -146,7 +170,15 @@ export function stripHeavyThumbnailEntries(entries = [], keep = STORAGE_LIMITS.M
  * @returns {StorageResult}
  */
 export function storeThumbnailMetadata(thumbnailKey, entries) {
+    guardPersonalThumbnailsWrite('storeThumbnailMetadata', thumbnailKey, entries, { thumbnailKey });
     const light = stripHeavyThumbnailEntries(entries);
+    let prev = [];
+    try {
+        prev = JSON.parse(localStorage.getItem(thumbnailKey) || '[]');
+    } catch {
+        prev = [];
+    }
+    traceThumbStoreWrite('storeThumbnailMetadata', thumbnailKey, prev, light);
     return safeStorageSet(thumbnailKey, light, { thumbnailKey, skipEviction: true });
 }
 
@@ -161,13 +193,18 @@ export function clearOldestThumbnailData(thumbnailKey, keep = STORAGE_LIMITS.MAX
         }
 
         const trimmed = stripHeavyThumbnailEntries(stored, keep);
-        const writeResult = safeStorageSet(thumbnailKey, trimmed, { skipEviction: true });
-        if (!writeResult.ok) {
-            try {
-                localStorage.removeItem(thumbnailKey);
-            } catch {
-                // ignore
+        enterThumbnailVaultWrite();
+        try {
+            const writeResult = safeStorageSet(thumbnailKey, trimmed, { skipEviction: true });
+            if (!writeResult.ok) {
+                try {
+                    localStorage.removeItem(thumbnailKey);
+                } catch {
+                    // ignore
+                }
             }
+        } finally {
+            exitThumbnailVaultWrite();
         }
         console.warn(`[storage] evicted thumbnails, kept ${trimmed.length}`);
         return trimmed;
@@ -280,7 +317,26 @@ export function safeStorageSet(key, value, options = {}) {
         }
     }
 
+    guardPersonalThumbnailsWrite('safeStorageSet', key, payload, options);
+
     try {
+        if (key === 'personal_thumbnails' || key === 'personal_thumbnail_index' || key === 'reelforge_feed' || key === options.thumbnailKey) {
+            let prev = [];
+            try {
+                prev = JSON.parse(localStorage.getItem(key) || (key === 'reelforge_feed' ? '{}' : '[]'));
+            } catch {
+                prev = key === 'reelforge_feed' ? {} : [];
+            }
+            const prevCount = key === 'reelforge_feed'
+                ? Object.values(prev).flat().filter((r) => r?.isPersonalThumbnail).length
+                : (Array.isArray(prev) ? prev.length : 0);
+            const newCount = key === 'reelforge_feed'
+                ? Object.values(payload).flat().filter((r) => r?.isPersonalThumbnail).length
+                : (Array.isArray(payload) ? payload.length : 0);
+            traceThumbStoreWrite('safeStorageSet', key, prevCount, key === 'reelforge_feed' ? payload : payload, {
+                personalThumbPlaceholders: key === 'reelforge_feed' ? newCount : undefined
+            });
+        }
         localStorage.setItem(key, json);
         if (STORAGE_DEBUG) {
             console.log(`[storage:set] ok key=${key} totalAfter=${formatBytes(getLocalStorageSize())}`);

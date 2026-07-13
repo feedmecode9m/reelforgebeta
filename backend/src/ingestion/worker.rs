@@ -70,6 +70,14 @@ async fn process_one(
 
     let video_url = reel.video_url.clone().unwrap_or_default();
     let file_name = reel.file_name.clone();
+    crate::pipeline_diag::pipeline_diag(
+        "INGEST",
+        "process_one",
+        "worker.rs",
+        Some(&job.reel_id.to_string()),
+        Some(&file_name),
+        "job_claimed",
+    );
     let video_path = videos_path.join(&file_name);
 
     if let Err(err) = media_validator::validate_video_path(&video_path) {
@@ -77,6 +85,14 @@ async fn process_one(
         let _ = media_validator::quarantine_video(videos_path, &video_path, &err);
         let _ = jobs::fail_job(pool, job.id, &reason, false).await;
         let _ = reels::mark_failed(pool, reel.id, &reason).await;
+        crate::pipeline_diag::pipeline_diag(
+            "INGEST",
+            "process_one",
+            "worker.rs",
+            Some(&reel.id.to_string()),
+            Some(&file_name),
+            "invalid_video_quarantined",
+        );
         eprintln!(
             "[ingest-worker] rejected invalid video reel={} file={}: {}",
             reel.id, file_name, reason
@@ -97,8 +113,24 @@ async fn process_one(
             if let Err(e) = reels::mark_ready(pool, reel.id, &thumb_url).await {
                 let _ = std::fs::remove_file(&thumb_path);
                 let _ = jobs::fail_job(pool, job.id, &e.to_string(), false).await;
+                crate::pipeline_diag::pipeline_diag(
+                    "DB",
+                    "process_one",
+                    "worker.rs",
+                    Some(&reel.id.to_string()),
+                    Some(&file_name),
+                    "mark_ready_failed",
+                );
                 return Err(e.to_string());
             }
+            crate::pipeline_diag::pipeline_diag(
+                "DB",
+                "process_one",
+                "worker.rs",
+                Some(&reel.id.to_string()),
+                Some(&thumb_name),
+                "mark_ready_ok",
+            );
             eprintln!(
                 "[STORE_UPDATE] reel={} status=ready worker=true thumb={}",
                 reel.id, thumb_url
@@ -109,6 +141,14 @@ async fn process_one(
                 "[ingest-worker] ready reel={} video={} thumb={}",
                 reel.id, video_url, thumb_url
             );
+            crate::pipeline_diag::pipeline_diag(
+                "INGEST",
+                "process_one",
+                "worker.rs",
+                Some(&reel.id.to_string()),
+                Some(&file_name),
+                "ready",
+            );
 
             reel_contract::publish_reel_ready(pool, reel.id, event_bus).await;
 
@@ -118,6 +158,14 @@ async fn process_one(
             let _ = std::fs::remove_file(&thumb_path);
             let retry = job.attempts < job.max_attempts;
             let _ = jobs::fail_job(pool, job.id, &err, retry).await;
+            crate::pipeline_diag::pipeline_diag(
+                "FFMPEG",
+                "process_one",
+                "worker.rs",
+                Some(&reel.id.to_string()),
+                Some(&file_name),
+                if retry { "retry" } else { "failed" },
+            );
             if !retry {
                 let _ = reels::mark_failed(pool, reel.id, &err).await;
                 eprintln!("[ingest-worker] failed reel={}: {}", reel.id, err);

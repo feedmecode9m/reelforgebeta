@@ -1,0 +1,1127 @@
+{
+  "generatedAt": "2026-07-08T02:56:28.665Z",
+  "baseUrl": "http://127.0.0.1:5173",
+  "steps": {
+    "openedApp": true,
+    "openedStudioSystemTab": false,
+    "selectedFile": false,
+    "clickedAccept": false,
+    "processingCleared": false,
+    "heroConfigUpdated": false,
+    "heroMediaPersisted": false
+  },
+  "checks": {
+    "processingStuck": true
+  },
+  "heroState": {},
+  "heroLogs": [
+    {
+      "at": 1783479389637,
+      "type": "info",
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1783479389634}"
+    },
+    {
+      "at": 1783479389638,
+      "type": "info",
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: , heroAssetId: , source: reelforge_hero_image, timestamp: 1783479389636}"
+    },
+    {
+      "at": 1783479389638,
+      "type": "info",
+      "text": "[HERO_STORE_READ] {stage: loadHeroVaultItems, videoKey: reelforge_hero_video, thumbKey: reelforge_hero_image, videoCount: 0, thumbCount: 0}"
+    },
+    {
+      "at": 1783479389638,
+      "type": "info",
+      "text": "[HERO_CLASSIFY] {stage: resolveHeroBackgroundAsset:start, heroAssetId: , backgroundSource: selection, vaultItemsCount: 0, ts: 2026-07-08T02:56:29.636Z}"
+    },
+    {
+      "at": 1783479389639,
+      "type": "info",
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: , heroAssetId: , source: resolveHeroBackgroundAsset, timestamp: 1783479389637}"
+    },
+    {
+      "at": 1783479389639,
+      "type": "info",
+      "text": "[HERO_ROUTE] {stage: resolveHeroBackgroundAsset:resolved, heroAssetId: , resolvedAssetId: , assetType: unknown, mediaUrl: }"
+    },
+    {
+      "at": 1783479389639,
+      "type": "log",
+      "text": "[HERO_ASSET_RESOLVE] {\"assetId\":\"\",\"vaultMatch\":false,\"mediaUrl\":\"\",\"assetType\":\"unknown\",\"timestamp\":1783479389637}"
+    },
+    {
+      "at": 1783479389651,
+      "type": "log",
+      "text": "[HERO_SCORE] {\"source\":\"featured_series\",\"episodeId\":\"ep-neon-s01e02\",\"views\":0,\"completionRate\":0,\"releasePriority\":20,\"teamPriority\":15,\"publishingStatus\":85,\"total\":19,\"timestamp\":1783479389649}"
+    },
+    {
+      "at": 1783479389652,
+      "type": "log",
+      "text": "[HERO_SCORE] {\"source\":\"creator_spotlight\",\"episodeId\":\"ep-neon-s01e02\",\"views\":0,\"completionRate\":0,\"releasePriority\":20,\"teamPriority\":45,\"publishingStatus\":85,\"total\":24,\"timestamp\":1783479389650}"
+    },
+    {
+      "at": 1783479389652,
+      "type": "log",
+      "text": "[HERO_SCORE] {\"source\":\"team_pick\",\"episodeId\":\"ep-neon-s01e02\",\"views\":0,\"completionRate\":0,\"releasePriority\":20,\"teamPriority\":90,\"publishingStatus\":85,\"total\":30,\"timestamp\":1783479389651}"
+    },
+    {
+      "at": 1783479389661,
+      "type": "log",
+      "text": "[HERO_SCORE] {\"source\":\"studio_priority\",\"episodeId\":\"ep-neon-s01e01\",\"views\":0,\"completionRate\":0,\"releasePriority\":20,\"teamPriority\":15,\"publishingStatus\":85,\"total\":19,\"timestamp\":1783479389661}"
+    },
+    {
+      "at": 1783479389662,
+      "type": "log",
+      "text": "[HERO_SCORE] {\"source\":\"editors_choice\",\"episodeId\":\"ep-neon-s01e03\",\"views\":0,\"completionRate\":0,\"releasePriority\":20,\"teamPriority\":15,\"publishingStatus\":75,\"total\":18,\"timestamp\":1783479389661}"
+    },
+    {
+      "at": 1783479389662,
+      "type": "log",
+      "text": "[HERO_PRIORITY] {\"ranked\":[{\"source\":\"creator_spotlight\",\"discoveryType\":\"TRENDING\",\"title\":\"Neon Vengeance\",\"score\":24,\"priorityIndex\":2},{\"source\":\"featured_series\",\"discoveryType\":\"TRENDING\",\"title\":\"Neon Vengeance\",\"score\":19,\"priorityIndex\":2},{\"source\":\"featured_series\",\"discoveryType\":\"TRENDING\",\"title\":\"Neon Vengeance\",\"score\":19,\"priorityIndex\":2},{\"source\":\"editors_choice\",\"discoveryType\":\"TRENDING\",\"title\":\"Midnight Firewall\",\"score\":18,\"priorityIndex\":2},{\"source\":\"team_pick\",\"discoveryType\":\"TEAM_SPOTLIGHT\",\"title\":\"Neon Vengeance\",\"score\":30,\"priorityIndex\":4},{\"source\":\"studio_priority\",\"discoveryType\":\"STUDIO_PRIORITY\",\"title\":\"Ghost in the Grid\",\"score\":19,\"priorityIndex\":5}],\"timestamp\":1783479389662}"
+    },
+    {
+      "at": 1783479389663,
+      "type": "log",
+      "text": "[HERO_INTELLIGENCE] {\"candidateCount\":6,\"sources\":[\"featured_series\",\"creator_spotlight\",\"team_pick\",\"studio_priority\",\"editors_choice\",\"featured_series\"],\"seriesId\":\"series-neon-vengeance\",\"timestamp\":1783479389662}"
+    },
+    {
+      "at": 1783479389663,
+      "type": "log",
+      "text": "[HERO_CAMPAIGN] {\"mode\":\"selection\",\"activeCampaignId\":null,\"activeCampaignLabel\":null,\"scheduleStart\":null,\"scheduleEnd\":null,\"timestamp\":1783479389662}"
+    },
+    {
+      "at": 1783479389663,
+      "type": "log",
+      "text": "[HERO_SELECTION] {\"mode\":\"TRENDING\",\"source\":\"creator_spotlight\",\"title\":\"Neon Vengeance\",\"insight\":\"Most Watched This Week\",\"episodeId\":\"ep-neon-s01e02\",\"reelId\":\"reel-neon-s01e02\",\"score\":24,\"timestamp\":1783479389663}"
+    },
+    {
+      "at": 1783479389690,
+      "type": "info",
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1783479389688}"
+    },
+    {
+      "at": 1783479389690,
+      "type": "info",
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: , heroAssetId: , source: reelforge_hero_image, timestamp: 1783479389688}"
+    },
+    {
+      "at": 1783479389690,
+      "type": "info",
+      "text": "[HERO_STORE_READ] {stage: loadHeroVaultItems, videoKey: reelforge_hero_video, thumbKey: reelforge_hero_image, videoCount: 0, thumbCount: 0}"
+    },
+    {
+      "at": 1783479389690,
+      "type": "info",
+      "text": "[HERO_CLASSIFY] {stage: resolveHeroBackgroundAsset:start, heroAssetId: , backgroundSource: selection, vaultItemsCount: 0, ts: 2026-07-08T02:56:29.688Z}"
+    },
+    {
+      "at": 1783479389690,
+      "type": "info",
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: , heroAssetId: , source: resolveHeroBackgroundAsset, timestamp: 1783479389689}"
+    },
+    {
+      "at": 1783479389690,
+      "type": "info",
+      "text": "[HERO_ROUTE] {stage: resolveHeroBackgroundAsset:resolved, heroAssetId: , resolvedAssetId: , assetType: unknown, mediaUrl: }"
+    },
+    {
+      "at": 1783479389690,
+      "type": "log",
+      "text": "[HERO_CAROUSEL] {\"slideCount\":6,\"transitionStyle\":\"fade\",\"durationMs\":8000,\"priority\":\"video\",\"autoplayEnabled\":true,\"timestamp\":1783479389689}"
+    },
+    {
+      "at": 1783479389691,
+      "type": "log",
+      "text": "[HERO_SLIDE] {\"id\":\"slide-video:fallback\",\"type\":\"video\",\"title\":\"Neon Vengeance\",\"durationMs\":8000,\"priority\":-1,\"timestamp\":1783479389689}"
+    },
+    {
+      "at": 1783479389691,
+      "type": "log",
+      "text": "[HERO_SLIDE] {\"id\":\"slide-image:reel-neon-s01e02\",\"type\":\"image\",\"title\":\"Neon Vengeance\",\"durationMs\":8000,\"priority\":2,\"timestamp\":1783479389689}"
+    },
+    {
+      "at": 1783479389691,
+      "type": "log",
+      "text": "[HERO_SLIDE] {\"id\":\"slide-featured:ep-neon-s01e02\",\"type\":\"featured_release\",\"title\":\"Neon Vengeance\",\"durationMs\":8000,\"priority\":3,\"timestamp\":1783479389690}"
+    },
+    {
+      "at": 1783479389691,
+      "type": "log",
+      "text": "[HERO_SLIDE] {\"id\":\"slide-team:series-neon-vengeance\",\"type\":\"team_spotlight\",\"title\":\"Team Spotlight\",\"durationMs\":8000,\"priority\":7,\"timestamp\":1783479389690}"
+    },
+    {
+      "at": 1783479389691,
+      "type": "log",
+      "text": "[HERO_SLIDE] {\"id\":\"slide-revenue:series-neon-vengeance\",\"type\":\"revenue_milestone\",\"title\":\"Revenue Milestone\",\"durationMs\":8000,\"priority\":9,\"timestamp\":1783479389690}"
+    },
+    {
+      "at": 1783479389691,
+      "type": "log",
+      "text": "[HERO_SLIDE] {\"id\":\"slide-creator:series-neon-vengeance\",\"type\":\"creator_spotlight\",\"title\":\"Creator Spotlight\",\"durationMs\":8000,\"priority\":10,\"timestamp\":1783479389690}"
+    },
+    {
+      "at": 1783479389691,
+      "type": "log",
+      "text": "[HERO_CAMPAIGN] {\"activeCampaignId\":null,\"activeCampaignLabel\":null,\"scheduled\":false,\"scheduleStart\":null,\"scheduleEnd\":null,\"timestamp\":1783479389690}"
+    },
+    {
+      "at": 1783479389692,
+      "type": "info",
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1783479389690}"
+    },
+    {
+      "at": 1783479389692,
+      "type": "info",
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: , heroAssetId: , source: reelforge_hero_image, timestamp: 1783479389690}"
+    },
+    {
+      "at": 1783479389692,
+      "type": "info",
+      "text": "[HERO_STORE_READ] {stage: loadHeroVaultItems, videoKey: reelforge_hero_video, thumbKey: reelforge_hero_image, videoCount: 0, thumbCount: 0}"
+    },
+    {
+      "at": 1783479389692,
+      "type": "info",
+      "text": "[HERO_CAROUSEL_RENDER] {assetId: slide-video:fallback, type: video, mediaLoaded: true}"
+    },
+    {
+      "at": 1783479389716,
+      "type": "info",
+      "text": "[HERO_LAYOUT_HOTFIX_APPLIED] {mediaFillMode: full_bleed_cover, typographyScaleAdjusted: true}"
+    },
+    {
+      "at": 1783479389716,
+      "type": "info",
+      "text": "[HERO_MP4_RENDER_FIX_APPLIED] {videoLoadEventUpdated: true, mutedAttributeSet: true, conditionalLogicVerified: true, mp4RenderingInVault: true, mp4RenderingInCarousel: true}"
+    },
+    {
+      "at": 1783479389726,
+      "type": "log",
+      "text": "[HERO_INTELLIGENCE] {\"phase\":\"engine_initialized\",\"discoveryTypes\":[\"FEATURED_RELEASE\",\"CONTINUE_WATCHING\",\"TRENDING\",\"UPCOMING_PREMIERE\",\"TEAM_SPOTLIGHT\",\"STUDIO_PRIORITY\"],\"backgroundStyles\":[\"image\",\"video\",\"ambient_motion\",\"cinematic_blur\",\"gradient_overlay\"],\"timestamp\":1783479389725}"
+    },
+    {
+      "at": 1783479389741,
+      "type": "log",
+      "text": "[HERO_BLOCKER] {\"seriesId\":\"series-neon-vengeance\",\"blocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":6,\"openTasks\":6,\"readiness\":25,\"timestamp\":1783479389739}"
+    },
+    {
+      "at": 1783479389741,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e01\",\"title\":\"Upload S1:E01 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1783479389739}"
+    },
+    {
+      "at": 1783479389741,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e02\",\"title\":\"Upload S1:E02 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1783479389739}"
+    },
+    {
+      "at": 1783479389742,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e03\",\"title\":\"Upload S1:E03 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1783479389739}"
+    },
+    {
+      "at": 1783479389742,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e04\",\"title\":\"Upload S1:E04 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1783479389739}"
+    },
+    {
+      "at": 1783479389742,
+      "type": "log",
+      "text": "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-neon-vengeance\",\"readinessPercent\":25,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":6,\"openTasks\":6,\"publishingVelocity\":0,\"unreadNotifications\":0,\"timestamp\":1783479389739}"
+    },
+    {
+      "at": 1783479389770,
+      "type": "log",
+      "text": "[HERO_BLOCKER] {\"seriesId\":\"series-vault-chronicles\",\"blocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"readiness\":0,\"timestamp\":1783479389766}"
+    },
+    {
+      "at": 1783479389770,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e01\",\"title\":\"Upload S1:E01 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1783479389766}"
+    },
+    {
+      "at": 1783479389770,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e02\",\"title\":\"Upload S1:E02 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1783479389767}"
+    },
+    {
+      "at": 1783479389770,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e03\",\"title\":\"Upload S1:E03 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1783479389767}"
+    },
+    {
+      "at": 1783479389770,
+      "type": "log",
+      "text": "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-vault-chronicles\",\"readinessPercent\":0,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"publishingVelocity\":0,\"unreadNotifications\":1,\"timestamp\":1783479389767}"
+    },
+    {
+      "at": 1783479389779,
+      "type": "log",
+      "text": "[HERO_BLOCKER] {\"seriesId\":\"series-trending-shorts\",\"blocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"readiness\":0,\"timestamp\":1783479389776}"
+    },
+    {
+      "at": 1783479389779,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e01\",\"title\":\"Upload S1:E01 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1783479389776}"
+    },
+    {
+      "at": 1783479389779,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e02\",\"title\":\"Upload S1:E02 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1783479389776}"
+    },
+    {
+      "at": 1783479389779,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e03\",\"title\":\"Upload S1:E03 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1783479389776}"
+    },
+    {
+      "at": 1783479389779,
+      "type": "log",
+      "text": "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-trending-shorts\",\"readinessPercent\":0,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"publishingVelocity\":0,\"unreadNotifications\":2,\"timestamp\":1783479389776}"
+    },
+    {
+      "at": 1783479389808,
+      "type": "log",
+      "text": "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-neon-vengeance\",\"readinessPercent\":25,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":6,\"openTasks\":6,\"publishingVelocity\":0,\"unreadNotifications\":2,\"timestamp\":1783479389807}"
+    },
+    {
+      "at": 1783479389812,
+      "type": "log",
+      "text": "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-vault-chronicles\",\"readinessPercent\":0,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"publishingVelocity\":0,\"unreadNotifications\":2,\"timestamp\":1783479389810}"
+    },
+    {
+      "at": 1783479389865,
+      "type": "log",
+      "text": "[HERO_RENDER] {\"backgroundSource\":\"selection\",\"backgroundAsset\":\"\",\"videoUrl\":\"/videos/hero-background.mp4\",\"imageUrl\":\"/thumbs/IMG_0113.JPEG\",\"useVideo\":true,\"useImage\":false,\"timestamp\":1783479389863}"
+    },
+    {
+      "at": 1783479389865,
+      "type": "info",
+      "text": "[HERO_RENDER_TARGET] {backgroundSource: selection, assetId: , videoUrl: /videos/hero-background.mp4, imageUrl: /thumbs/IMG_0113.JPEG, target: video-node}"
+    },
+    {
+      "at": 1783479389865,
+      "type": "info",
+      "text": "[HERO_RENDER] {backgroundSource: selection, assetId: , target: video-node, ts: 2026-07-08T02:56:29.864Z}"
+    },
+    {
+      "at": 1783479389865,
+      "type": "info",
+      "text": "[HERO_ASSET_ID_TRACE] {stage: HeroExperience:render, assetId: , heroAssetId: , source: HeroExperience, timestamp: 1783479389864}"
+    },
+    {
+      "at": 1783479389866,
+      "type": "log",
+      "text": "[HERO_RENDER_SUCCESS] {\"backgroundSource\":\"selection\",\"backgroundAsset\":\"\",\"videoUrl\":\"/videos/hero-background.mp4\",\"imageUrl\":\"/thumbs/IMG_0113.JPEG\",\"timestamp\":1783479389864}"
+    },
+    {
+      "at": 1783479389905,
+      "type": "log",
+      "text": "[HERO_VISIBILITY] {\"selector\":\".hero-background\",\"display\":\"block\",\"opacity\":\"1\",\"zIndex\":\"0\",\"timestamp\":1783479389903}"
+    },
+    {
+      "at": 1783479389905,
+      "type": "log",
+      "text": "[HERO_VISIBILITY] {\"selector\":\".hero-media\",\"display\":\"inline\",\"opacity\":\"1\",\"zIndex\":\"auto\",\"timestamp\":1783479389903}"
+    },
+    {
+      "at": 1783479390187,
+      "type": "info",
+      "text": "[HERO_LOAD] {stage: viewer:onMount:hero-storage-keys, videoKey: reelforge_hero_video, imageKey: reelforge_hero_image, hasVideo: false, hasImage: false}"
+    },
+    {
+      "at": 1783479390924,
+      "type": "info",
+      "text": "[HERO_CAROUSEL_MEDIA_STATE] {assetId: slide-video:fallback, playing: false, muted: true}"
+    },
+    {
+      "at": 1783479390924,
+      "type": "log",
+      "text": "[HERO_RENDER_FAILURE] {\"backgroundSource\":\"selection\",\"backgroundAsset\":\"\",\"videoUrl\":\"/videos/hero-background.mp4\",\"imageUrl\":\"/thumbs/IMG_0113.JPEG\",\"event\":\"video-error\",\"timestamp\":1783479390923}"
+    },
+    {
+      "at": 1783479391932,
+      "type": "log",
+      "text": "[HERO_BACKGROUND_SAVE] {\"phase\":\"hydrate\",\"source\":\"missing\",\"tried\":[\"/videos/hero-background.mp4\",\"/hero-background.mp4\",\"/videos/hero-background.MOV\",\"/hero-background.MOV\"],\"timestamp\":1783479391931}"
+    },
+    {
+      "at": 1783479391932,
+      "type": "info",
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1783479391931}"
+    },
+    {
+      "at": 1783479391932,
+      "type": "info",
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: , heroAssetId: , source: reelforge_hero_image, timestamp: 1783479391931}"
+    },
+    {
+      "at": 1783479391932,
+      "type": "info",
+      "text": "[HERO_STORE_READ] {stage: loadHeroVaultItems, videoKey: reelforge_hero_video, thumbKey: reelforge_hero_image, videoCount: 0, thumbCount: 0}"
+    },
+    {
+      "at": 1783479391933,
+      "type": "info",
+      "text": "[HERO_CAROUSEL_RENDER] {assetId: slide-video:fallback, type: video, mediaLoaded: true}"
+    },
+    {
+      "at": 1783479391934,
+      "type": "info",
+      "text": "[HERO_LOAD] {stage: viewer:onMount:hydrate-result, result: missing, ts: 2026-07-08T02:56:31.933Z}"
+    },
+    {
+      "at": 1783479391938,
+      "type": "info",
+      "text": "[HERO_PERSIST] {stage: hero-image-store-write, key: reelforge_hero_image, ok: true, length: 21, ts: 2026-07-08T02:56:31.936Z}"
+    },
+    {
+      "at": 1783479391940,
+      "type": "info",
+      "text": "[HERO_STORE_READ] {stage: reloadVaultStoresFromStorage:thumbs, key: personal_thumbnails, count: 8, ts: 2026-07-08T02:56:31.939Z}"
+    },
+    {
+      "at": 1783479391942,
+      "type": "info",
+      "text": "[HERO_STORE_READ] {stage: reloadVaultStoresFromStorage:videos, key: personal_video_vault, count: 8, ts: 2026-07-08T02:56:31.941Z}"
+    },
+    {
+      "at": 1783479391970,
+      "type": "info",
+      "text": "[HERO_STORE_READ] {stage: reloadVaultStoresFromStorage:thumbs, key: personal_thumbnails, count: 7, ts: 2026-07-08T02:56:31.970Z}"
+    },
+    {
+      "at": 1783479391971,
+      "type": "info",
+      "text": "[HERO_STORE_READ] {stage: reloadVaultStoresFromStorage:videos, key: personal_video_vault, count: 8, ts: 2026-07-08T02:56:31.970Z}"
+    },
+    {
+      "at": 1783479391975,
+      "type": "info",
+      "text": "[HERO_STORE_WRITE] {stage: syncFromVault:video-vault-persist, key: personal_video_vault, count: 8, heroAssetId: , ts: 2026-07-08T02:56:31.974Z}"
+    },
+    {
+      "at": 1783479392732,
+      "type": "log",
+      "text": "[HERO_PRIORITY] {\"ranked\":[{\"source\":\"creator_spotlight\",\"discoveryType\":\"TRENDING\",\"title\":\"Neon Vengeance\",\"score\":24,\"priorityIndex\":2},{\"source\":\"featured_series\",\"discoveryType\":\"TRENDING\",\"title\":\"Neon Vengeance\",\"score\":19,\"priorityIndex\":2},{\"source\":\"featured_series\",\"discoveryType\":\"TRENDING\",\"title\":\"Neon Vengeance\",\"score\":19,\"priorityIndex\":2},{\"source\":\"editors_choice\",\"discoveryType\":\"TRENDING\",\"title\":\"Midnight Firewall\",\"score\":18,\"priorityIndex\":2},{\"source\":\"team_pick\",\"discoveryType\":\"TEAM_SPOTLIGHT\",\"title\":\"Neon Vengeance\",\"score\":30,\"priorityIndex\":4},{\"source\":\"studio_priority\",\"discoveryType\":\"STUDIO_PRIORITY\",\"title\":\"Ghost in the Grid\",\"score\":19,\"priorityIndex\":5}],\"timestamp\":1783479392731}"
+    },
+    {
+      "at": 1783479392732,
+      "type": "log",
+      "text": "[HERO_INTELLIGENCE] {\"candidateCount\":6,\"sources\":[\"featured_series\",\"creator_spotlight\",\"team_pick\",\"studio_priority\",\"editors_choice\",\"featured_series\"],\"seriesId\":\"series-neon-vengeance\",\"timestamp\":1783479392731}"
+    },
+    {
+      "at": 1783479392732,
+      "type": "log",
+      "text": "[HERO_CAMPAIGN] {\"mode\":\"selection\",\"activeCampaignId\":null,\"activeCampaignLabel\":null,\"scheduleStart\":null,\"scheduleEnd\":null,\"timestamp\":1783479392731}"
+    },
+    {
+      "at": 1783479392733,
+      "type": "log",
+      "text": "[HERO_SELECTION] {\"mode\":\"TRENDING\",\"source\":\"creator_spotlight\",\"title\":\"Neon Vengeance\",\"insight\":\"Most Watched This Week\",\"episodeId\":\"ep-neon-s01e02\",\"reelId\":\"reel-neon-s01e02\",\"score\":24,\"timestamp\":1783479392731}"
+    },
+    {
+      "at": 1783479392735,
+      "type": "log",
+      "text": "[HERO_BLOCKER] {\"seriesId\":\"series-neon-vengeance\",\"blocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":6,\"openTasks\":6,\"readiness\":25,\"timestamp\":1783479392735}"
+    },
+    {
+      "at": 1783479392736,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e01\",\"title\":\"Upload S1:E01 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1783479392735}"
+    },
+    {
+      "at": 1783479392736,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e02\",\"title\":\"Upload S1:E02 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1783479392735}"
+    },
+    {
+      "at": 1783479392736,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e03\",\"title\":\"Upload S1:E03 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1783479392735}"
+    },
+    {
+      "at": 1783479392736,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e04\",\"title\":\"Upload S1:E04 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1783479392735}"
+    },
+    {
+      "at": 1783479392736,
+      "type": "log",
+      "text": "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-neon-vengeance\",\"readinessPercent\":25,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":6,\"openTasks\":6,\"publishingVelocity\":0,\"unreadNotifications\":200,\"timestamp\":1783479392735}"
+    },
+    {
+      "at": 1783479392738,
+      "type": "info",
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1783479392737}"
+    },
+    {
+      "at": 1783479392738,
+      "type": "info",
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: , heroAssetId: , source: reelforge_hero_image, timestamp: 1783479392737}"
+    },
+    {
+      "at": 1783479392738,
+      "type": "info",
+      "text": "[HERO_STORE_READ] {stage: loadHeroVaultItems, videoKey: reelforge_hero_video, thumbKey: reelforge_hero_image, videoCount: 0, thumbCount: 0}"
+    },
+    {
+      "at": 1783479392738,
+      "type": "info",
+      "text": "[HERO_CLASSIFY] {stage: resolveHeroBackgroundAsset:start, heroAssetId: , backgroundSource: selection, vaultItemsCount: 0, ts: 2026-07-08T02:56:32.737Z}"
+    },
+    {
+      "at": 1783479392739,
+      "type": "info",
+      "text": "[HERO_CLASSIFY] {stage: heroAssetBridge.normalizeHeroAssetRecord, assetId: /thumbs/IMG_0113.JPEG, assetType: jpeg, mime: image/jpeg, mediaUrl: /thumbs/IMG_0113.JPEG}"
+    },
+    {
+      "at": 1783479392739,
+      "type": "info",
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: /thumbs/IMG_0113.JPEG, heroAssetId: , source: resolveHeroBackgroundAsset, timestamp: 1783479392737}"
+    },
+    {
+      "at": 1783479392739,
+      "type": "info",
+      "text": "[HERO_ROUTE] {stage: resolveHeroBackgroundAsset:resolved, heroAssetId: , resolvedAssetId: /thumbs/IMG_0113.JPEG, assetType: jpeg, mediaUrl: /thumbs/IMG_0113.JPEG}"
+    },
+    {
+      "at": 1783479392739,
+      "type": "log",
+      "text": "[HERO_CAROUSEL] {\"slideCount\":7,\"transitionStyle\":\"fade\",\"durationMs\":8000,\"priority\":\"video\",\"autoplayEnabled\":true,\"timestamp\":1783479392738}"
+    },
+    {
+      "at": 1783479392739,
+      "type": "log",
+      "text": "[HERO_SLIDE] {\"id\":\"slide-video:fallback\",\"type\":\"video\",\"title\":\"Neon Vengeance\",\"durationMs\":8000,\"priority\":-1,\"timestamp\":1783479392738}"
+    },
+    {
+      "at": 1783479392739,
+      "type": "log",
+      "text": "[HERO_SLIDE] {\"id\":\"slide-image:reel-neon-s01e02\",\"type\":\"image\",\"title\":\"Neon Vengeance\",\"durationMs\":8000,\"priority\":2,\"timestamp\":1783479392738}"
+    },
+    {
+      "at": 1783479392739,
+      "type": "log",
+      "text": "[HERO_SLIDE] {\"id\":\"slide-featured:ep-neon-s01e02\",\"type\":\"featured_release\",\"title\":\"Neon Vengeance\",\"durationMs\":8000,\"priority\":3,\"timestamp\":1783479392738}"
+    },
+    {
+      "at": 1783479392739,
+      "type": "log",
+      "text": "[HERO_SLIDE] {\"id\":\"slide-team:series-neon-vengeance\",\"type\":\"team_spotlight\",\"title\":\"Team Spotlight\",\"durationMs\":8000,\"priority\":7,\"timestamp\":1783479392738}"
+    },
+    {
+      "at": 1783479392739,
+      "type": "log",
+      "text": "[HERO_SLIDE] {\"id\":\"slide-market:service-editing-001\",\"type\":\"marketplace_spotlight\",\"title\":\"Marketplace Spotlight\",\"durationMs\":8000,\"priority\":8,\"timestamp\":1783479392738}"
+    },
+    {
+      "at": 1783479392740,
+      "type": "log",
+      "text": "[HERO_SLIDE] {\"id\":\"slide-revenue:series-neon-vengeance\",\"type\":\"revenue_milestone\",\"title\":\"Revenue Milestone\",\"durationMs\":8000,\"priority\":9,\"timestamp\":1783479392738}"
+    },
+    {
+      "at": 1783479392740,
+      "type": "log",
+      "text": "[HERO_SLIDE] {\"id\":\"slide-creator:series-neon-vengeance\",\"type\":\"creator_spotlight\",\"title\":\"Creator Spotlight\",\"durationMs\":8000,\"priority\":10,\"timestamp\":1783479392738}"
+    },
+    {
+      "at": 1783479392740,
+      "type": "log",
+      "text": "[HERO_CAMPAIGN] {\"activeCampaignId\":null,\"activeCampaignLabel\":null,\"scheduled\":false,\"scheduleStart\":null,\"scheduleEnd\":null,\"timestamp\":1783479392738}"
+    },
+    {
+      "at": 1783479392740,
+      "type": "info",
+      "text": "[HERO_CAROUSEL_RENDER] {assetId: slide-video:fallback, type: video, mediaLoaded: true}"
+    },
+    {
+      "at": 1783479393431,
+      "type": "info",
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1783479393429}"
+    },
+    {
+      "at": 1783479393431,
+      "type": "info",
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: , heroAssetId: , source: reelforge_hero_image, timestamp: 1783479393429}"
+    },
+    {
+      "at": 1783479393431,
+      "type": "info",
+      "text": "[HERO_STORE_READ] {stage: loadHeroVaultItems, videoKey: reelforge_hero_video, thumbKey: reelforge_hero_image, videoCount: 0, thumbCount: 0}"
+    },
+    {
+      "at": 1783479393431,
+      "type": "info",
+      "text": "[HERO_CLASSIFY] {stage: resolveHeroBackgroundAsset:start, heroAssetId: , backgroundSource: selection, vaultItemsCount: 0, ts: 2026-07-08T02:56:33.429Z}"
+    },
+    {
+      "at": 1783479393431,
+      "type": "info",
+      "text": "[HERO_CLASSIFY] {stage: heroAssetBridge.normalizeHeroAssetRecord, assetId: /thumbs/IMG_0113.JPEG, assetType: jpeg, mime: image/jpeg, mediaUrl: /thumbs/IMG_0113.JPEG}"
+    },
+    {
+      "at": 1783479393432,
+      "type": "info",
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: /thumbs/IMG_0113.JPEG, heroAssetId: , source: resolveHeroBackgroundAsset, timestamp: 1783479393429}"
+    },
+    {
+      "at": 1783479393432,
+      "type": "info",
+      "text": "[HERO_ROUTE] {stage: resolveHeroBackgroundAsset:resolved, heroAssetId: , resolvedAssetId: /thumbs/IMG_0113.JPEG, assetType: jpeg, mediaUrl: /thumbs/IMG_0113.JPEG}"
+    },
+    {
+      "at": 1783479393432,
+      "type": "info",
+      "text": "[HERO_CAROUSEL_RENDER] {assetId: slide-video:fallback, type: video, mediaLoaded: true}"
+    },
+    {
+      "at": 1783479393907,
+      "type": "info",
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1783479393906}"
+    },
+    {
+      "at": 1783479393907,
+      "type": "info",
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: , heroAssetId: , source: reelforge_hero_image, timestamp: 1783479393906}"
+    },
+    {
+      "at": 1783479393908,
+      "type": "info",
+      "text": "[HERO_STORE_READ] {stage: loadHeroVaultItems, videoKey: reelforge_hero_video, thumbKey: reelforge_hero_image, videoCount: 0, thumbCount: 0}"
+    },
+    {
+      "at": 1783479393909,
+      "type": "info",
+      "text": "[HERO_CLASSIFY] {stage: resolveHeroBackgroundAsset:start, heroAssetId: , backgroundSource: selection, vaultItemsCount: 0, ts: 2026-07-08T02:56:33.906Z}"
+    },
+    {
+      "at": 1783479393909,
+      "type": "info",
+      "text": "[HERO_CLASSIFY] {stage: heroAssetBridge.normalizeHeroAssetRecord, assetId: /thumbs/IMG_0113.JPEG, assetType: jpeg, mime: image/jpeg, mediaUrl: /thumbs/IMG_0113.JPEG}"
+    },
+    {
+      "at": 1783479393909,
+      "type": "info",
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: /thumbs/IMG_0113.JPEG, heroAssetId: , source: resolveHeroBackgroundAsset, timestamp: 1783479393906}"
+    },
+    {
+      "at": 1783479393909,
+      "type": "info",
+      "text": "[HERO_ROUTE] {stage: resolveHeroBackgroundAsset:resolved, heroAssetId: , resolvedAssetId: /thumbs/IMG_0113.JPEG, assetType: jpeg, mediaUrl: /thumbs/IMG_0113.JPEG}"
+    },
+    {
+      "at": 1783479393909,
+      "type": "info",
+      "text": "[HERO_CAROUSEL_RENDER] {assetId: slide-video:fallback, type: video, mediaLoaded: true}"
+    },
+    {
+      "at": 1783479393940,
+      "type": "log",
+      "text": "[HERO_SCORE] {\"source\":\"featured_series\",\"episodeId\":\"series-validation-1781016646994-e1\",\"views\":0,\"completionRate\":0,\"releasePriority\":20,\"teamPriority\":15,\"publishingStatus\":85,\"total\":19,\"timestamp\":1783479393927}"
+    },
+    {
+      "at": 1783479393940,
+      "type": "log",
+      "text": "[HERO_SCORE] {\"source\":\"studio_priority\",\"episodeId\":\"series-validation-1781016646994-e1\",\"views\":0,\"completionRate\":0,\"releasePriority\":20,\"teamPriority\":15,\"publishingStatus\":85,\"total\":19,\"timestamp\":1783479393928}"
+    },
+    {
+      "at": 1783479393940,
+      "type": "log",
+      "text": "[HERO_SCORE] {\"source\":\"editors_choice\",\"episodeId\":\"series-validation-1781016646994-e1\",\"views\":0,\"completionRate\":0,\"releasePriority\":20,\"teamPriority\":15,\"publishingStatus\":85,\"total\":19,\"timestamp\":1783479393928}"
+    },
+    {
+      "at": 1783479393940,
+      "type": "log",
+      "text": "[HERO_PRIORITY] {\"ranked\":[{\"source\":\"creator_spotlight\",\"discoveryType\":\"TRENDING\",\"title\":\"Neon Vengeance\",\"score\":24,\"priorityIndex\":2},{\"source\":\"featured_series\",\"discoveryType\":\"TRENDING\",\"title\":\"Validation Series Updated\",\"score\":19,\"priorityIndex\":2},{\"source\":\"editors_choice\",\"discoveryType\":\"TRENDING\",\"title\":\"Pilot Updated\",\"score\":19,\"priorityIndex\":2},{\"source\":\"featured_series\",\"discoveryType\":\"TRENDING\",\"title\":\"Validation Series Updated\",\"score\":19,\"priorityIndex\":2},{\"source\":\"team_pick\",\"discoveryType\":\"TEAM_SPOTLIGHT\",\"title\":\"Neon Vengeance\",\"score\":30,\"priorityIndex\":4},{\"source\":\"studio_priority\",\"discoveryType\":\"STUDIO_PRIORITY\",\"title\":\"Pilot Updated\",\"score\":19,\"priorityIndex\":5}],\"timestamp\":1783479393928}"
+    },
+    {
+      "at": 1783479393940,
+      "type": "log",
+      "text": "[HERO_INTELLIGENCE] {\"candidateCount\":6,\"sources\":[\"featured_series\",\"creator_spotlight\",\"team_pick\",\"studio_priority\",\"editors_choice\",\"featured_series\"],\"seriesId\":\"series-validation-1781016646994\",\"timestamp\":1783479393928}"
+    },
+    {
+      "at": 1783479393940,
+      "type": "log",
+      "text": "[HERO_BLOCKER] {\"seriesId\":\"series-validation-1781016646994\",\"blocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":1,\"openTasks\":1,\"readiness\":25,\"timestamp\":1783479393930}"
+    },
+    {
+      "at": 1783479393942,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-validation-1781016646994\",\"id\":\"missing-asset-series-validation-1781016646994-e1\",\"title\":\"Upload S1:E01 reel\",\"priority\":\"CRITICAL\",\"impact\":35,\"timestamp\":1783479393930}"
+    },
+    {
+      "at": 1783479393943,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-validation-1781016646994\",\"id\":\"missing-season-structure-s2\",\"title\":\"Fix season structure\",\"priority\":\"CRITICAL\",\"impact\":1,\"timestamp\":1783479393930}"
+    },
+    {
+      "at": 1783479393943,
+      "type": "log",
+      "text": "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-validation-1781016646994\",\"readinessPercent\":25,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":1,\"openTasks\":1,\"publishingVelocity\":0,\"unreadNotifications\":200,\"timestamp\":1783479393930}"
+    },
+    {
+      "at": 1783479393943,
+      "type": "log",
+      "text": "[HERO_BLOCKER] {\"seriesId\":\"series-trending-shorts\",\"blocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"readiness\":0,\"timestamp\":1783479393932}"
+    },
+    {
+      "at": 1783479393943,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e01\",\"title\":\"Upload S1:E01 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1783479393932}"
+    },
+    {
+      "at": 1783479393943,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e02\",\"title\":\"Upload S1:E02 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1783479393933}"
+    },
+    {
+      "at": 1783479393943,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e03\",\"title\":\"Upload S1:E03 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1783479393933}"
+    },
+    {
+      "at": 1783479393943,
+      "type": "log",
+      "text": "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-trending-shorts\",\"readinessPercent\":0,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"publishingVelocity\":0,\"unreadNotifications\":200,\"timestamp\":1783479393933}"
+    },
+    {
+      "at": 1783479393943,
+      "type": "log",
+      "text": "[HERO_BLOCKER] {\"seriesId\":\"series-vault-chronicles\",\"blocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"readiness\":0,\"timestamp\":1783479393936}"
+    },
+    {
+      "at": 1783479393944,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e01\",\"title\":\"Upload S1:E01 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1783479393936}"
+    },
+    {
+      "at": 1783479393944,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e02\",\"title\":\"Upload S1:E02 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1783479393936}"
+    },
+    {
+      "at": 1783479393944,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e03\",\"title\":\"Upload S1:E03 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1783479393936}"
+    },
+    {
+      "at": 1783479393945,
+      "type": "log",
+      "text": "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-vault-chronicles\",\"readinessPercent\":0,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"publishingVelocity\":0,\"unreadNotifications\":200,\"timestamp\":1783479393936}"
+    },
+    {
+      "at": 1783479393945,
+      "type": "log",
+      "text": "[HERO_BLOCKER] {\"seriesId\":\"series-neon-vengeance\",\"blocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":6,\"openTasks\":6,\"readiness\":25,\"timestamp\":1783479393939}"
+    },
+    {
+      "at": 1783479393945,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e01\",\"title\":\"Upload S1:E01 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1783479393939}"
+    },
+    {
+      "at": 1783479393945,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e02\",\"title\":\"Upload S1:E02 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1783479393939}"
+    },
+    {
+      "at": 1783479393945,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e03\",\"title\":\"Upload S1:E03 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1783479393939}"
+    },
+    {
+      "at": 1783479393945,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e04\",\"title\":\"Upload S1:E04 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1783479393939}"
+    },
+    {
+      "at": 1783479393945,
+      "type": "log",
+      "text": "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-neon-vengeance\",\"readinessPercent\":25,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":6,\"openTasks\":6,\"publishingVelocity\":0,\"unreadNotifications\":200,\"timestamp\":1783479393939}"
+    },
+    {
+      "at": 1783479393966,
+      "type": "info",
+      "text": "[HERO_STORE_READ] {stage: AI_CLEANUP_AGENT.syncVideoVaultToFeed, key: personal_video_vault, count: 8, ts: 2026-07-08T02:56:33.963Z}"
+    },
+    {
+      "at": 1783479393966,
+      "type": "info",
+      "text": "[HERO_ROUTE] {stage: AI_CLEANUP_AGENT.distributeVideoToFeed, id: d27e9a23-a579-4171-93eb-7b8297bdb3f1, url: /videos/d27e9a23-a579-4171-93eb-7b8297bdb3f1.mp4, mime: video/mp4, destination: feed:Trending}"
+    },
+    {
+      "at": 1783479393967,
+      "type": "info",
+      "text": "[HERO_ROUTE] {stage: AI_CLEANUP_AGENT.distributeVideoToFeed, id: 648478d1-41a7-48a1-b127-cf8b61b5a67d, url: /videos/6719d3e7-ebeb-40a3-bc40-50e7ee804303.mov, mime: video/quicktime, destination: feed:Trending}"
+    },
+    {
+      "at": 1783479393968,
+      "type": "info",
+      "text": "[HERO_ROUTE] {stage: AI_CLEANUP_AGENT.distributeVideoToFeed, id: d35d5f2a-a0ab-4379-b642-2d2bca3b66c5, url: /videos/cb92a4d9-0b8e-49ba-a70e-4976bd05ce66.mp4, mime: video/mp4, destination: feed:Trending}"
+    },
+    {
+      "at": 1783479393969,
+      "type": "info",
+      "text": "[HERO_ROUTE] {stage: AI_CLEANUP_AGENT.distributeVideoToFeed, id: b1dc97d7-59d0-4243-86e6-db6042e211ab, url: /videos/b1dc97d7-59d0-4243-86e6-db6042e211ab.mp4, mime: video/mp4, destination: feed:Trending}"
+    },
+    {
+      "at": 1783479393970,
+      "type": "info",
+      "text": "[HERO_ROUTE] {stage: AI_CLEANUP_AGENT.distributeVideoToFeed, id: 718a23cf-a8f6-462e-9e8e-5a105c01ad19, url: /videos/718a23cf-a8f6-462e-9e8e-5a105c01ad19.mp4, mime: video/mp4, destination: feed:Trending}"
+    },
+    {
+      "at": 1783479393971,
+      "type": "info",
+      "text": "[HERO_ROUTE] {stage: AI_CLEANUP_AGENT.distributeVideoToFeed, id: f0e86256-6756-45c7-87a7-d9daf1c69c3e, url: /videos/f0e86256-6756-45c7-87a7-d9daf1c69c3e.mp4, mime: video/mp4, destination: feed:Trending}"
+    },
+    {
+      "at": 1783479393971,
+      "type": "info",
+      "text": "[HERO_ROUTE] {stage: AI_CLEANUP_AGENT.distributeVideoToFeed, id: 0ca41cef-92a9-4cb7-b979-179233a2488d, url: /videos/0ca41cef-92a9-4cb7-b979-179233a2488d.mp4, mime: video/mp4, destination: feed:Trending}"
+    },
+    {
+      "at": 1783479393972,
+      "type": "info",
+      "text": "[HERO_ROUTE] {stage: AI_CLEANUP_AGENT.distributeVideoToFeed, id: e20e73e8-fcf6-4436-af57-bdf6268b888f, url: /videos/e20e73e8-fcf6-4436-af57-bdf6268b888f.mp4, mime: video/mp4, destination: feed:Trending}"
+    },
+    {
+      "at": 1783479394650,
+      "type": "log",
+      "text": "[HERO_SCORE] {\"source\":\"featured_series\",\"episodeId\":\"ep-neon-s01e02\",\"views\":0,\"completionRate\":0,\"releasePriority\":20,\"teamPriority\":15,\"publishingStatus\":85,\"total\":19,\"timestamp\":1783479394649}"
+    },
+    {
+      "at": 1783479394651,
+      "type": "log",
+      "text": "[HERO_PRIORITY] {\"ranked\":[{\"source\":\"creator_spotlight\",\"discoveryType\":\"TRENDING\",\"title\":\"Neon Vengeance\",\"score\":24,\"priorityIndex\":2},{\"source\":\"featured_series\",\"discoveryType\":\"TRENDING\",\"title\":\"Neon Vengeance\",\"score\":19,\"priorityIndex\":2},{\"source\":\"featured_series\",\"discoveryType\":\"TRENDING\",\"title\":\"Neon Vengeance\",\"score\":19,\"priorityIndex\":2},{\"source\":\"editors_choice\",\"discoveryType\":\"TRENDING\",\"title\":\"Midnight Firewall\",\"score\":18,\"priorityIndex\":2},{\"source\":\"team_pick\",\"discoveryType\":\"TEAM_SPOTLIGHT\",\"title\":\"Neon Vengeance\",\"score\":30,\"priorityIndex\":4},{\"source\":\"studio_priority\",\"discoveryType\":\"STUDIO_PRIORITY\",\"title\":\"Ghost in the Grid\",\"score\":19,\"priorityIndex\":5}],\"timestamp\":1783479394649}"
+    },
+    {
+      "at": 1783479394651,
+      "type": "log",
+      "text": "[HERO_INTELLIGENCE] {\"candidateCount\":6,\"sources\":[\"featured_series\",\"creator_spotlight\",\"team_pick\",\"studio_priority\",\"editors_choice\",\"featured_series\"],\"seriesId\":\"series-neon-vengeance\",\"timestamp\":1783479394649}"
+    },
+    {
+      "at": 1783479394651,
+      "type": "log",
+      "text": "[HERO_CAMPAIGN] {\"mode\":\"selection\",\"activeCampaignId\":null,\"activeCampaignLabel\":null,\"scheduleStart\":null,\"scheduleEnd\":null,\"timestamp\":1783479394650}"
+    },
+    {
+      "at": 1783479394651,
+      "type": "log",
+      "text": "[HERO_SELECTION] {\"mode\":\"TRENDING\",\"source\":\"creator_spotlight\",\"title\":\"Neon Vengeance\",\"insight\":\"Most Watched This Week\",\"episodeId\":\"ep-neon-s01e02\",\"reelId\":\"reel-neon-s01e02\",\"score\":24,\"timestamp\":1783479394650}"
+    },
+    {
+      "at": 1783479394651,
+      "type": "log",
+      "text": "[HERO_SCORE] {\"source\":\"creator_spotlight\",\"episodeId\":\"ep-neon-s01e02\",\"views\":0,\"completionRate\":0,\"releasePriority\":20,\"teamPriority\":45,\"publishingStatus\":85,\"total\":24,\"timestamp\":1783479394650}"
+    },
+    {
+      "at": 1783479394656,
+      "type": "info",
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1783479394655}"
+    },
+    {
+      "at": 1783479394656,
+      "type": "info",
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: , heroAssetId: , source: reelforge_hero_image, timestamp: 1783479394655}"
+    },
+    {
+      "at": 1783479394657,
+      "type": "info",
+      "text": "[HERO_STORE_READ] {stage: loadHeroVaultItems, videoKey: reelforge_hero_video, thumbKey: reelforge_hero_image, videoCount: 0, thumbCount: 0}"
+    },
+    {
+      "at": 1783479394657,
+      "type": "info",
+      "text": "[HERO_CLASSIFY] {stage: resolveHeroBackgroundAsset:start, heroAssetId: , backgroundSource: selection, vaultItemsCount: 0, ts: 2026-07-08T02:56:34.655Z}"
+    },
+    {
+      "at": 1783479394657,
+      "type": "info",
+      "text": "[HERO_CLASSIFY] {stage: heroAssetBridge.normalizeHeroAssetRecord, assetId: /thumbs/IMG_0113.JPEG, assetType: jpeg, mime: image/jpeg, mediaUrl: /thumbs/IMG_0113.JPEG}"
+    },
+    {
+      "at": 1783479394657,
+      "type": "info",
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: /thumbs/IMG_0113.JPEG, heroAssetId: , source: resolveHeroBackgroundAsset, timestamp: 1783479394655}"
+    },
+    {
+      "at": 1783479394658,
+      "type": "info",
+      "text": "[HERO_ROUTE] {stage: resolveHeroBackgroundAsset:resolved, heroAssetId: , resolvedAssetId: /thumbs/IMG_0113.JPEG, assetType: jpeg, mediaUrl: /thumbs/IMG_0113.JPEG}"
+    },
+    {
+      "at": 1783479394658,
+      "type": "log",
+      "text": "[HERO_CAROUSEL] {\"slideCount\":7,\"transitionStyle\":\"fade\",\"durationMs\":8000,\"priority\":\"video\",\"autoplayEnabled\":true,\"timestamp\":1783479394656}"
+    },
+    {
+      "at": 1783479394658,
+      "type": "log",
+      "text": "[HERO_SLIDE] {\"id\":\"slide-video:fallback\",\"type\":\"video\",\"title\":\"Neon Vengeance\",\"durationMs\":8000,\"priority\":-1,\"timestamp\":1783479394656}"
+    },
+    {
+      "at": 1783479394658,
+      "type": "log",
+      "text": "[HERO_SLIDE] {\"id\":\"slide-image:reel-neon-s01e02\",\"type\":\"image\",\"title\":\"Neon Vengeance\",\"durationMs\":8000,\"priority\":2,\"timestamp\":1783479394656}"
+    },
+    {
+      "at": 1783479394658,
+      "type": "log",
+      "text": "[HERO_SLIDE] {\"id\":\"slide-featured:ep-neon-s01e02\",\"type\":\"featured_release\",\"title\":\"Neon Vengeance\",\"durationMs\":8000,\"priority\":3,\"timestamp\":1783479394656}"
+    },
+    {
+      "at": 1783479394658,
+      "type": "log",
+      "text": "[HERO_SLIDE] {\"id\":\"slide-team:series-neon-vengeance\",\"type\":\"team_spotlight\",\"title\":\"Team Spotlight\",\"durationMs\":8000,\"priority\":7,\"timestamp\":1783479394656}"
+    },
+    {
+      "at": 1783479394658,
+      "type": "log",
+      "text": "[HERO_SLIDE] {\"id\":\"slide-market:service-editing-001\",\"type\":\"marketplace_spotlight\",\"title\":\"Marketplace Spotlight\",\"durationMs\":8000,\"priority\":8,\"timestamp\":1783479394656}"
+    },
+    {
+      "at": 1783479394658,
+      "type": "log",
+      "text": "[HERO_SLIDE] {\"id\":\"slide-revenue:series-neon-vengeance\",\"type\":\"revenue_milestone\",\"title\":\"Revenue Milestone\",\"durationMs\":8000,\"priority\":9,\"timestamp\":1783479394656}"
+    },
+    {
+      "at": 1783479394659,
+      "type": "log",
+      "text": "[HERO_SLIDE] {\"id\":\"slide-creator:series-neon-vengeance\",\"type\":\"creator_spotlight\",\"title\":\"Creator Spotlight\",\"durationMs\":8000,\"priority\":10,\"timestamp\":1783479394656}"
+    },
+    {
+      "at": 1783479394659,
+      "type": "log",
+      "text": "[HERO_CAMPAIGN] {\"activeCampaignId\":null,\"activeCampaignLabel\":null,\"scheduled\":false,\"scheduleStart\":null,\"scheduleEnd\":null,\"timestamp\":1783479394656}"
+    },
+    {
+      "at": 1783479394659,
+      "type": "info",
+      "text": "[HERO_CAROUSEL_RENDER] {assetId: slide-video:fallback, type: video, mediaLoaded: true}"
+    },
+    {
+      "at": 1783479394766,
+      "type": "info",
+      "text": "[HERO_STORE_READ] {stage: AI_CLEANUP_AGENT.syncVideoVaultToFeed, key: personal_video_vault, count: 8, ts: 2026-07-08T02:56:34.765Z}"
+    },
+    {
+      "at": 1783479394766,
+      "type": "info",
+      "text": "[HERO_ROUTE] {stage: AI_CLEANUP_AGENT.distributeVideoToFeed, id: d27e9a23-a579-4171-93eb-7b8297bdb3f1, url: /videos/d27e9a23-a579-4171-93eb-7b8297bdb3f1.mp4, mime: video/mp4, destination: feed:Trending}"
+    },
+    {
+      "at": 1783479394769,
+      "type": "info",
+      "text": "[HERO_ROUTE] {stage: AI_CLEANUP_AGENT.distributeVideoToFeed, id: 648478d1-41a7-48a1-b127-cf8b61b5a67d, url: /videos/6719d3e7-ebeb-40a3-bc40-50e7ee804303.mov, mime: video/quicktime, destination: feed:Trending}"
+    },
+    {
+      "at": 1783479394771,
+      "type": "info",
+      "text": "[HERO_ROUTE] {stage: AI_CLEANUP_AGENT.distributeVideoToFeed, id: d35d5f2a-a0ab-4379-b642-2d2bca3b66c5, url: /videos/cb92a4d9-0b8e-49ba-a70e-4976bd05ce66.mp4, mime: video/mp4, destination: feed:Trending}"
+    },
+    {
+      "at": 1783479394773,
+      "type": "info",
+      "text": "[HERO_ROUTE] {stage: AI_CLEANUP_AGENT.distributeVideoToFeed, id: b1dc97d7-59d0-4243-86e6-db6042e211ab, url: /videos/b1dc97d7-59d0-4243-86e6-db6042e211ab.mp4, mime: video/mp4, destination: feed:Trending}"
+    },
+    {
+      "at": 1783479394774,
+      "type": "info",
+      "text": "[HERO_ROUTE] {stage: AI_CLEANUP_AGENT.distributeVideoToFeed, id: 718a23cf-a8f6-462e-9e8e-5a105c01ad19, url: /videos/718a23cf-a8f6-462e-9e8e-5a105c01ad19.mp4, mime: video/mp4, destination: feed:Trending}"
+    },
+    {
+      "at": 1783479394776,
+      "type": "info",
+      "text": "[HERO_ROUTE] {stage: AI_CLEANUP_AGENT.distributeVideoToFeed, id: f0e86256-6756-45c7-87a7-d9daf1c69c3e, url: /videos/f0e86256-6756-45c7-87a7-d9daf1c69c3e.mp4, mime: video/mp4, destination: feed:Trending}"
+    },
+    {
+      "at": 1783479394778,
+      "type": "info",
+      "text": "[HERO_ROUTE] {stage: AI_CLEANUP_AGENT.distributeVideoToFeed, id: 0ca41cef-92a9-4cb7-b979-179233a2488d, url: /videos/0ca41cef-92a9-4cb7-b979-179233a2488d.mp4, mime: video/mp4, destination: feed:Trending}"
+    },
+    {
+      "at": 1783479394780,
+      "type": "info",
+      "text": "[HERO_ROUTE] {stage: AI_CLEANUP_AGENT.distributeVideoToFeed, id: e20e73e8-fcf6-4436-af57-bdf6268b888f, url: /videos/e20e73e8-fcf6-4436-af57-bdf6268b888f.mp4, mime: video/mp4, destination: feed:Trending}"
+    },
+    {
+      "at": 1783479395506,
+      "type": "log",
+      "text": "[HERO_SCORE] {\"source\":\"team_pick\",\"episodeId\":\"ep-neon-s01e02\",\"views\":0,\"completionRate\":0,\"releasePriority\":20,\"teamPriority\":90,\"publishingStatus\":85,\"total\":30,\"timestamp\":1783479395504}"
+    },
+    {
+      "at": 1783479395510,
+      "type": "log",
+      "text": "[HERO_BLOCKER] {\"seriesId\":\"series-neon-vengeance\",\"blocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":6,\"openTasks\":6,\"readiness\":25,\"timestamp\":1783479395509}"
+    },
+    {
+      "at": 1783479395510,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e01\",\"title\":\"Upload S1:E01 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1783479395509}"
+    },
+    {
+      "at": 1783479395510,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e02\",\"title\":\"Upload S1:E02 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1783479395509}"
+    },
+    {
+      "at": 1783479395510,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e03\",\"title\":\"Upload S1:E03 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1783479395509}"
+    },
+    {
+      "at": 1783479395510,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e04\",\"title\":\"Upload S1:E04 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1783479395509}"
+    },
+    {
+      "at": 1783479395510,
+      "type": "log",
+      "text": "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-neon-vengeance\",\"readinessPercent\":25,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":6,\"openTasks\":6,\"publishingVelocity\":0,\"unreadNotifications\":200,\"timestamp\":1783479395509}"
+    },
+    {
+      "at": 1783479395512,
+      "type": "info",
+      "text": "[HERO_STORAGE_AUTHORITIES] {authorityA: Object, authorityB: Object, authorityC: Object, winner: Object, timestamp: 1783479395511}"
+    },
+    {
+      "at": 1783479395513,
+      "type": "info",
+      "text": "[HERO_ASSET_ID_TRACE] {stage: loadHeroVaultItems:build, assetId: , heroAssetId: , source: reelforge_hero_image, timestamp: 1783479395511}"
+    },
+    {
+      "at": 1783479395513,
+      "type": "info",
+      "text": "[HERO_STORE_READ] {stage: loadHeroVaultItems, videoKey: reelforge_hero_video, thumbKey: reelforge_hero_image, videoCount: 0, thumbCount: 0}"
+    },
+    {
+      "at": 1783479395513,
+      "type": "info",
+      "text": "[HERO_CLASSIFY] {stage: resolveHeroBackgroundAsset:start, heroAssetId: , backgroundSource: selection, vaultItemsCount: 0, ts: 2026-07-08T02:56:35.511Z}"
+    },
+    {
+      "at": 1783479395514,
+      "type": "info",
+      "text": "[HERO_CLASSIFY] {stage: heroAssetBridge.normalizeHeroAssetRecord, assetId: /thumbs/IMG_0113.JPEG, assetType: jpeg, mime: image/jpeg, mediaUrl: /thumbs/IMG_0113.JPEG}"
+    },
+    {
+      "at": 1783479395514,
+      "type": "info",
+      "text": "[HERO_ASSET_ID_TRACE] {stage: resolveHeroBackgroundAsset:resolved, assetId: /thumbs/IMG_0113.JPEG, heroAssetId: , source: resolveHeroBackgroundAsset, timestamp: 1783479395511}"
+    },
+    {
+      "at": 1783479395514,
+      "type": "info",
+      "text": "[HERO_ROUTE] {stage: resolveHeroBackgroundAsset:resolved, heroAssetId: , resolvedAssetId: /thumbs/IMG_0113.JPEG, assetType: jpeg, mediaUrl: /thumbs/IMG_0113.JPEG}"
+    },
+    {
+      "at": 1783479395514,
+      "type": "info",
+      "text": "[HERO_CAROUSEL_RENDER] {assetId: slide-video:fallback, type: video, mediaLoaded: true}"
+    },
+    {
+      "at": 1783479395580,
+      "type": "log",
+      "text": "[HERO_PRIORITY] {\"ranked\":[{\"source\":\"creator_spotlight\",\"discoveryType\":\"TRENDING\",\"title\":\"Neon Vengeance\",\"score\":24,\"priorityIndex\":2},{\"source\":\"featured_series\",\"discoveryType\":\"TRENDING\",\"title\":\"Validation Series Updated\",\"score\":19,\"priorityIndex\":2},{\"source\":\"editors_choice\",\"discoveryType\":\"TRENDING\",\"title\":\"Pilot Updated\",\"score\":19,\"priorityIndex\":2},{\"source\":\"featured_series\",\"discoveryType\":\"TRENDING\",\"title\":\"Validation Series Updated\",\"score\":19,\"priorityIndex\":2},{\"source\":\"team_pick\",\"discoveryType\":\"TEAM_SPOTLIGHT\",\"title\":\"Neon Vengeance\",\"score\":30,\"priorityIndex\":4},{\"source\":\"studio_priority\",\"discoveryType\":\"STUDIO_PRIORITY\",\"title\":\"Pilot Updated\",\"score\":19,\"priorityIndex\":5}],\"timestamp\":1783479395579}"
+    },
+    {
+      "at": 1783479395580,
+      "type": "log",
+      "text": "[HERO_INTELLIGENCE] {\"candidateCount\":6,\"sources\":[\"featured_series\",\"creator_spotlight\",\"team_pick\",\"studio_priority\",\"editors_choice\",\"featured_series\"],\"seriesId\":\"series-validation-1781016646994\",\"timestamp\":1783479395579}"
+    },
+    {
+      "at": 1783479395582,
+      "type": "log",
+      "text": "[HERO_BLOCKER] {\"seriesId\":\"series-validation-1781016646994\",\"blocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":1,\"openTasks\":1,\"readiness\":25,\"timestamp\":1783479395581}"
+    },
+    {
+      "at": 1783479395582,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-validation-1781016646994\",\"id\":\"missing-asset-series-validation-1781016646994-e1\",\"title\":\"Upload S1:E01 reel\",\"priority\":\"CRITICAL\",\"impact\":35,\"timestamp\":1783479395581}"
+    },
+    {
+      "at": 1783479395582,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-validation-1781016646994\",\"id\":\"missing-season-structure-s2\",\"title\":\"Fix season structure\",\"priority\":\"CRITICAL\",\"impact\":1,\"timestamp\":1783479395581}"
+    },
+    {
+      "at": 1783479395582,
+      "type": "log",
+      "text": "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-validation-1781016646994\",\"readinessPercent\":25,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":1,\"openTasks\":1,\"publishingVelocity\":0,\"unreadNotifications\":200,\"timestamp\":1783479395581}"
+    },
+    {
+      "at": 1783479395586,
+      "type": "log",
+      "text": "[HERO_BLOCKER] {\"seriesId\":\"series-trending-shorts\",\"blocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"readiness\":0,\"timestamp\":1783479395584}"
+    },
+    {
+      "at": 1783479395586,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e01\",\"title\":\"Upload S1:E01 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1783479395585}"
+    },
+    {
+      "at": 1783479395586,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e02\",\"title\":\"Upload S1:E02 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1783479395585}"
+    },
+    {
+      "at": 1783479395586,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e03\",\"title\":\"Upload S1:E03 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1783479395585}"
+    },
+    {
+      "at": 1783479395586,
+      "type": "log",
+      "text": "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-trending-shorts\",\"readinessPercent\":0,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"publishingVelocity\":0,\"unreadNotifications\":200,\"timestamp\":1783479395585}"
+    },
+    {
+      "at": 1783479395589,
+      "type": "log",
+      "text": "[HERO_BLOCKER] {\"seriesId\":\"series-vault-chronicles\",\"blocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"readiness\":0,\"timestamp\":1783479395588}"
+    },
+    {
+      "at": 1783479395589,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e01\",\"title\":\"Upload S1:E01 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1783479395588}"
+    },
+    {
+      "at": 1783479395589,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e02\",\"title\":\"Upload S1:E02 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1783479395588}"
+    },
+    {
+      "at": 1783479395589,
+      "type": "log",
+      "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e03\",\"title\":\"Upload S1:E03 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1783479395588}"
+    },
+    {
+      "at": 1783479395590,
+      "type": "log",
+      "text": "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-vault-chronicles\",\"readinessPercent\":0,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"publishingVelocity\":0,\"unreadNotifications\":200,\"timestamp\":1783479395588}"
+    },
+    {
+      "at": 1783479403515,
+      "type": "log",
+      "text": "[HERO_TRANSITION] {\"trigger\":\"autoplay\",\"fromIndex\":0,\"toIndex\":1,\"slideType\":\"image\",\"slideId\":\"slide-image:reel-neon-s01e02\",\"transitionStyle\":\"fade\",\"paused\":false,\"timestamp\":1783479403514}"
+    },
+    {
+      "at": 1783479403515,
+      "type": "log",
+      "text": "[HERO_ROTATION] {\"trigger\":\"autoplay\",\"index\":1,\"slideType\":\"image\",\"slideId\":\"slide-image:reel-neon-s01e02\",\"timestamp\":1783479403515}"
+    },
+    {
+      "at": 1783479403515,
+      "type": "info",
+      "text": "[HERO_CAROUSEL_NAVIGATE] {direction: autoplay, targetAssetId: slide-image:reel-neon-s01e02}"
+    },
+    {
+      "at": 1783479403516,
+      "type": "info",
+      "text": "[HERO_CAROUSEL_RENDER] {assetId: slide-image:reel-neon-s01e02, type: image, mediaLoaded: true}"
+    }
+  ],
+  "errors": [
+    "page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator('.hero-replace-section, .hero-drop-zone') to be visible\n"
+  ]
+}

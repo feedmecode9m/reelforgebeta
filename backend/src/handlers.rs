@@ -145,8 +145,40 @@ pub async fn create_reel(
     event_bus: web::Data<EventBus>,
 ) -> impl Responder {
     eprintln!("📥 POST /api/reels");
+    crate::pipeline_diag::pipeline_diag(
+        "ROUTER",
+        "create_reel",
+        "handlers.rs",
+        None,
+        None,
+        "route_matched_post_api_reels",
+    );
+    crate::pipeline_diag::pipeline_diag(
+        "HANDLER",
+        "create_reel",
+        "handlers.rs",
+        None,
+        None,
+        "enter",
+    );
 
     if !**db_available {
+        crate::pipeline_diag::pipeline_diag(
+            "DB",
+            "create_reel",
+            "handlers.rs",
+            None,
+            None,
+            "unavailable",
+        );
+        crate::pipeline_diag::pipeline_diag(
+            "RESPONSE",
+            "create_reel",
+            "handlers.rs",
+            None,
+            None,
+            "503_db_unavailable",
+        );
         return crate::ingestion::IngestionService::require_db_response();
     }
 

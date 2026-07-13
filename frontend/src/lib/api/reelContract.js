@@ -36,6 +36,18 @@ export function resolveMediaUrl(url, kind = 'media', context = kind) {
         return trimmed;
     }
 
+    if (/^https?:\/\//i.test(trimmed)) {
+        try {
+            const u = new URL(trimmed);
+            if (!u.pathname.startsWith('/videos/') && !u.pathname.startsWith('/thumbs/')) {
+                logResolvedMediaUrl(kind, trimmed, trimmed, `${context}:external`);
+                return trimmed;
+            }
+        } catch {
+            /* fall through to relative resolution */
+        }
+    }
+
     const relative = toRelativeMediaPath(trimmed);
     if (relative.startsWith('blob:') || relative.startsWith('data:')) {
         logResolvedMediaUrl(kind, relative, trimmed, context);

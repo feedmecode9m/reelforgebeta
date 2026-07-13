@@ -2,7 +2,7 @@
 import { get } from 'svelte/store';
 import { resolveDisplayUrl } from '../../components/media/resolveDisplayUrl.js';
 import { toRelativeMediaPath, logFinalMediaUrl, videoMimeForPath } from '../config.js';
-import { isFakeThumbUrl } from '../vaultMedia.js';
+import { isFakeThumbUrl, filenameFromMediaRef } from '../vaultMedia.js';
 
 export function createVaultUtils(deps) {
   const { CONFIG, personalThumbnailCollection, getFallbackImage } = deps;
@@ -40,18 +40,64 @@ export function createVaultUtils(deps) {
   function getStoredThumbnailEntries() {
   if (typeof window === 'undefined') return [];
   try {
-  return JSON.parse(localStorage.getItem(CONFIG.THUMBNAIL_STORAGE_KEY) || '[]');
+  const raw = JSON.parse(localStorage.getItem(CONFIG.THUMBNAIL_STORAGE_KEY) || '[]');
+  console.info('[VAULT_STORAGE]', {
+  key: CONFIG.THUMBNAIL_STORAGE_KEY,
+  action: 'getStoredThumbnailEntries',
+  count: Array.isArray(raw) ? raw.length : 0,
+  ts: new Date().toISOString()
+  });
+  return raw;
   } catch {
   return [];
   }
   }
   /** Raw thumbnail path for MediaRenderer/MediaThumbnail — does not resolve URLs. */
+  function thumbPathFromFileKey(key) {
+    const basename = filenameFromMediaRef(String(key || '').trim());
+    if (!basename || !/\.(jpe?g|png|gif|webp)$/i.test(basename)) return '';
+    return `/thumbs/${basename.replace(/^thumbs\//, '')}`;
+  }
+  function findStoredThumbnailEntry(stored, item, index = 0) {
+  const key = typeof item === 'string' ? item.trim() : String(item?.fileName || item?.file_name || item?.id || item?.url || '').trim();
+  if (key) {
+  const keyBase = filenameFromMediaRef(key);
+  for (const t of stored) {
+    if (typeof t === 'string') {
+      const raw = String(t).trim();
+      if (raw === key || raw === keyBase || filenameFromMediaRef(raw) === keyBase) {
+        const fileName = filenameFromMediaRef(raw) || raw;
+        return { fileName, url: thumbPathFromFileKey(fileName) };
+      }
+      continue;
+    }
+  }
+  const byId = stored.find((t) => t && typeof t === 'object' && String(t.id || '').trim() === key);
+  if (byId) return byId;
+  const byFile = stored.find((t) => t && typeof t === 'object' && String(t.fileName || t.file_name || '').trim() === key);
+  if (byFile) return byFile;
+  if (keyBase && keyBase !== key) {
+    const byFileBase = stored.find(
+      (t) => t && typeof t === 'object' && String(t.fileName || t.file_name || '').trim() === keyBase
+    );
+    if (byFileBase) return byFileBase;
+  }
+  const byUrl = stored.find((t) => {
+  if (!t?.url || typeof t !== 'object') return false;
+  const rel = toRelativeMediaPath(String(t.url));
+  return rel === key || rel.endsWith(`/${key}`) || filenameFromMediaRef(t.url) === key || filenameFromMediaRef(t.url) === keyBase;
+  });
+  if (byUrl) return byUrl;
+  }
+  return null;
+  }
   function resolveThumbnailPath(nameOrUrl, index = 0) {
   if (!nameOrUrl) return getFallbackImage();
   if (typeof nameOrUrl === 'object') {
   const direct = nameOrUrl.url || nameOrUrl.thumbnailUrl || nameOrUrl.thumbnail_url;
   if (direct) return resolveThumbnailPath(direct, index);
-  if (nameOrUrl.name) return resolveThumbnailPath(nameOrUrl.name, index);
+  if (nameOrUrl.fileName || nameOrUrl.file_name) return resolveThumbnailPath(nameOrUrl.fileName || nameOrUrl.file_name, index);
+  if (nameOrUrl.id) return resolveThumbnailPath(nameOrUrl.id, index);
   return getFallbackImage();
   }
   const value = String(nameOrUrl).trim();
@@ -59,22 +105,12 @@ export function createVaultUtils(deps) {
   if (value.startsWith('data:') || value.startsWith('blob:')) return value;
   if (value.startsWith('/thumbs/') || value.startsWith('/videos/')) return value;
   const stored = getStoredThumbnailEntries();
-  const entry = stored.find((t) => t && (t.name === value || t.url === value));
+  const entry = findStoredThumbnailEntry(stored, value, index);
   if (entry?.url && !entry.url.startsWith('data:') && !entry.url.startsWith('blob:')) {
-  return entry.url.startsWith('/') ? entry.url : `/thumbs/${entry.url.replace(/^\/+/, '')}`;
+  const rel = toRelativeMediaPath(entry.url);
+  return rel.startsWith('/thumbs/') ? rel : `/thumbs/${rel.replace(/^\/+/, '').replace(/^thumbs\//, '')}`;
   }
   if (entry?.preview) return entry.preview;
-  if (/\.(jpe?g|png|webp|gif)$/i.test(value)) return `/thumbs/${value}`;
-  const collection = get(personalThumbnailCollection);
-  const name = collection[index % Math.max(collection.length, 1)];
-  if (name && name !== value) {
-  const byIndex = stored.find((t) => t && t.name === name);
-  if (byIndex?.url && !byIndex.url.startsWith('data:') && !byIndex.url.startsWith('blob:')) {
-  return byIndex.url.startsWith('/') ? byIndex.url : `/thumbs/${byIndex.url.replace(/^\/+/, '')}`;
-  }
-  if (byIndex?.preview) return byIndex.preview;
-  if (/\.(jpe?g|png|webp|gif)$/i.test(name)) return `/thumbs/${name}`;
-  }
   return getFallbackImage();
   }
   function handleVaultThumbnailError(event, item) {
@@ -207,21 +243,33 @@ export function createVaultUtils(deps) {
   /** Vault grid card: image reel — always use backend /thumbs/ path, never base64. */
   function getVaultImageReel(item, index = 0) {
   const stored = getStoredThumbnailEntries();
-  const name = typeof item === 'string' ? item : item?.name;
-  const entry = stored.find((t) => t && (t.name === name || t.name === item));
+  const lookupKey = typeof item === 'string' ? item : String(item?.fileName || item?.file_name || item?.id || '').trim();
+  let entry = findStoredThumbnailEntry(stored, lookupKey || item, index);
   let path = entry?.url || (typeof item === 'object' ? item?.url : null) || '';
-  if (!path || path.startsWith('data:') || path.startsWith('blob:') || isFakeThumbUrl(path)) {
-  path = name ? `/thumbs/${name}` : '';
+  if (path.startsWith('data:') || path.startsWith('blob:')) {
+    const displayName = entry?.title || entry?.name || `Image ${index + 1}`;
+    return {
+      name: displayName,
+      type: 'image',
+      url: path,
+      thumbnailUrl: null
+    };
+  }
+  if (!path || isFakeThumbUrl(path)) {
+  const diskKey = String(entry?.fileName || entry?.file_name || '').trim() || filenameFromMediaRef(entry?.url);
+  path = diskKey ? `/thumbs/${diskKey.replace(/^\/+/, '').replace(/^thumbs\//, '')}` : '';
   } else {
   path = toRelativeMediaPath(path);
   if (!path.startsWith('/thumbs/') && !path.startsWith('/videos/') && !path.startsWith('blob:') && !path.startsWith('data:')) {
-  path = `/thumbs/${path.replace(/^\/+/, '')}`;
+  const diskKey = String(entry?.fileName || entry?.file_name || '').trim() || filenameFromMediaRef(path);
+  path = diskKey ? `/thumbs/${diskKey.replace(/^\/+/, '').replace(/^thumbs\//, '')}` : '';
   }
   }
-  const url = path || '';
+  const url = path || thumbPathFromFileKey(lookupKey) || thumbPathFromFileKey(item) || '';
+  const displayName = entry?.title || entry?.name || `Image ${index + 1}`;
   if (url) logFinalMediaUrl('vault-thumbnail', resolveDisplayUrl(url, 'thumbnail', 'getVaultImageReel'));
   return {
-  name: entry?.name || name || `Image ${index + 1}`,
+  name: displayName,
   type: 'image',
   url,
   thumbnailUrl: null

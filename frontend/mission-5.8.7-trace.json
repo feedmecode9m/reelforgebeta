@@ -1,0 +1,709 @@
+{
+  "scenario": {
+    "backendThumbReels": 361,
+    "interceptedThumbReels": 0,
+    "seededLocalGhosts": 20
+  },
+  "ui": {
+    "cardCount": 0,
+    "localThumbs": 0,
+    "localIndex": 0
+  },
+  "firstFailureCandidate": {
+    "timestamp": "2026-07-13T00:33:44.954Z",
+    "function": "safeStorageSet",
+    "store": "personal_thumbnails",
+    "previousCount": 1,
+    "newCount": 20,
+    "first3": [
+      {
+        "id": "ghost-01-0000-4000-8000-000000000000",
+        "fileName": "mission-587-ghost-1.png",
+        "url": "/thumbs/mission-587-ghost-1.png",
+        "orphaned": null,
+        "placeholder": null
+      },
+      {
+        "id": "ghost-02-0000-4000-8000-000000000000",
+        "fileName": "mission-587-ghost-2.png",
+        "url": "/thumbs/mission-587-ghost-2.png",
+        "orphaned": null,
+        "placeholder": null
+      },
+      {
+        "id": "ghost-03-0000-4000-8000-000000000000",
+        "fileName": "mission-587-ghost-3.png",
+        "url": "/thumbs/mission-587-ghost-3.png",
+        "orphaned": null,
+        "placeholder": null
+      }
+    ],
+    "stack": [
+      "at traceThumbStoreWrite (http://127.0.0.1:5173/src/lib/viewer/thumbStoreWriteTrace.js:48:12)",
+      "at safeStorageSet (http://127.0.0.1:5173/src/lib/storage.js:336:13)",
+      "at storeThumbnailMetadata (http://127.0.0.1:5173/src/lib/storage.js:182:12)",
+      "at writeThumbnailVault (http://127.0.0.1:5173/src/lib/viewer/thumbnailVault.js:125:3)",
+      "at reloadVaultStoresFromStorage (http://127.0.0.1:5173/src/viewer/viewerContext.js:789:1)",
+      "at mountViewer (http://127.0.0.1:5173/src/viewer/viewerContext.js:1600:1)",
+      "at async http://127.0.0.1:5173/src/Viewer.svelte:386:18"
+    ]
+  },
+  "ownerViolations": [],
+  "mediaBootstrapWrites": [],
+  "writeChain": [
+    {
+      "timestamp": "2026-07-13T00:33:44.523Z",
+      "function": "safeStorageSet",
+      "store": "reelforge_feed",
+      "previousCount": 1,
+      "newCount": 1,
+      "first3": [],
+      "personalThumbPlaceholders": 0,
+      "stack": [
+        "at traceThumbStoreWrite (http://127.0.0.1:5173/src/lib/viewer/thumbStoreWriteTrace.js:48:12)",
+        "at safeStorageSet (http://127.0.0.1:5173/src/lib/storage.js:336:13)",
+        "at storageSet (http://127.0.0.1:5173/src/viewer/viewerContext.js:194:8)",
+        "at http://127.0.0.1:5173/src/viewer/viewerContext.js:275:1",
+        "at Object.subscribe2 [as subscribe] (http://127.0.0.1:5173/node_modules/.vite/deps/chunk-BMRIXSE7.js?v=9b873303:46:5)",
+        "at createViewerContext (http://127.0.0.1:5173/src/viewer/viewerContext.js:274:6)",
+        "at instance (http://127.0.0.1:5173/src/Viewer.svelte:362:14)",
+        "at init (http://127.0.0.1:5173/node_modules/.vite/deps/chunk-SOP74ZKY.js?v=9b873303:2137:23)",
+        "at new Viewer (http://127.0.0.1:5173/src/Viewer.svelte:711:3)"
+      ]
+    },
+    {
+      "timestamp": "2026-07-13T00:33:44.953Z",
+      "function": "storeThumbnailMetadata",
+      "store": "personal_thumbnails",
+      "previousCount": 20,
+      "newCount": 20,
+      "first3": [
+        {
+          "id": "ghost-01-0000-4000-8000-000000000000",
+          "fileName": "mission-587-ghost-1.png",
+          "url": "/thumbs/mission-587-ghost-1.png",
+          "orphaned": null,
+          "placeholder": null
+        },
+        {
+          "id": "ghost-02-0000-4000-8000-000000000000",
+          "fileName": "mission-587-ghost-2.png",
+          "url": "/thumbs/mission-587-ghost-2.png",
+          "orphaned": null,
+          "placeholder": null
+        },
+        {
+          "id": "ghost-03-0000-4000-8000-000000000000",
+          "fileName": "mission-587-ghost-3.png",
+          "url": "/thumbs/mission-587-ghost-3.png",
+          "orphaned": null,
+          "placeholder": null
+        }
+      ],
+      "stack": [
+        "at traceThumbStoreWrite (http://127.0.0.1:5173/src/lib/viewer/thumbStoreWriteTrace.js:48:12)",
+        "at storeThumbnailMetadata (http://127.0.0.1:5173/src/lib/storage.js:181:5)",
+        "at writeThumbnailVault (http://127.0.0.1:5173/src/lib/viewer/thumbnailVault.js:125:3)",
+        "at reloadVaultStoresFromStorage (http://127.0.0.1:5173/src/viewer/viewerContext.js:789:1)",
+        "at mountViewer (http://127.0.0.1:5173/src/viewer/viewerContext.js:1600:1)",
+        "at async http://127.0.0.1:5173/src/Viewer.svelte:386:18"
+      ]
+    },
+    {
+      "timestamp": "2026-07-13T00:33:44.954Z",
+      "function": "safeStorageSet",
+      "store": "personal_thumbnails",
+      "previousCount": 1,
+      "newCount": 20,
+      "first3": [
+        {
+          "id": "ghost-01-0000-4000-8000-000000000000",
+          "fileName": "mission-587-ghost-1.png",
+          "url": "/thumbs/mission-587-ghost-1.png",
+          "orphaned": null,
+          "placeholder": null
+        },
+        {
+          "id": "ghost-02-0000-4000-8000-000000000000",
+          "fileName": "mission-587-ghost-2.png",
+          "url": "/thumbs/mission-587-ghost-2.png",
+          "orphaned": null,
+          "placeholder": null
+        },
+        {
+          "id": "ghost-03-0000-4000-8000-000000000000",
+          "fileName": "mission-587-ghost-3.png",
+          "url": "/thumbs/mission-587-ghost-3.png",
+          "orphaned": null,
+          "placeholder": null
+        }
+      ],
+      "stack": [
+        "at traceThumbStoreWrite (http://127.0.0.1:5173/src/lib/viewer/thumbStoreWriteTrace.js:48:12)",
+        "at safeStorageSet (http://127.0.0.1:5173/src/lib/storage.js:336:13)",
+        "at storeThumbnailMetadata (http://127.0.0.1:5173/src/lib/storage.js:182:12)",
+        "at writeThumbnailVault (http://127.0.0.1:5173/src/lib/viewer/thumbnailVault.js:125:3)",
+        "at reloadVaultStoresFromStorage (http://127.0.0.1:5173/src/viewer/viewerContext.js:789:1)",
+        "at mountViewer (http://127.0.0.1:5173/src/viewer/viewerContext.js:1600:1)",
+        "at async http://127.0.0.1:5173/src/Viewer.svelte:386:18"
+      ]
+    },
+    {
+      "timestamp": "2026-07-13T00:33:44.955Z",
+      "function": "writeThumbnailVault:indexMirror",
+      "store": "personal_thumbnail_index",
+      "previousCount": 20,
+      "newCount": 20,
+      "first3": [
+        {
+          "id": null,
+          "fileName": "mission-587-ghost-0.png",
+          "url": null,
+          "orphaned": null,
+          "placeholder": null
+        },
+        {
+          "id": null,
+          "fileName": "mission-587-ghost-1.png",
+          "url": null,
+          "orphaned": null,
+          "placeholder": null
+        },
+        {
+          "id": null,
+          "fileName": "mission-587-ghost-2.png",
+          "url": null,
+          "orphaned": null,
+          "placeholder": null
+        }
+      ],
+      "storageKey": "personal_thumbnails",
+      "stack": [
+        "at traceThumbStoreWrite (http://127.0.0.1:5173/src/lib/viewer/thumbStoreWriteTrace.js:48:12)",
+        "at writeThumbnailVault (http://127.0.0.1:5173/src/lib/viewer/thumbnailVault.js:131:7)",
+        "at reloadVaultStoresFromStorage (http://127.0.0.1:5173/src/viewer/viewerContext.js:789:1)",
+        "at mountViewer (http://127.0.0.1:5173/src/viewer/viewerContext.js:1600:1)",
+        "at async http://127.0.0.1:5173/src/Viewer.svelte:386:18"
+      ]
+    },
+    {
+      "timestamp": "2026-07-13T00:33:44.955Z",
+      "function": "writeThumbnailVault",
+      "store": "personal_thumbnails",
+      "previousCount": 20,
+      "newCount": 20,
+      "first3": [
+        {
+          "id": "ghost-00-0000-4000-8000-000000000000",
+          "fileName": "mission-587-ghost-0.png",
+          "url": "/thumbs/mission-587-ghost-0.png",
+          "orphaned": null,
+          "placeholder": null
+        },
+        {
+          "id": "ghost-01-0000-4000-8000-000000000000",
+          "fileName": "mission-587-ghost-1.png",
+          "url": "/thumbs/mission-587-ghost-1.png",
+          "orphaned": null,
+          "placeholder": null
+        },
+        {
+          "id": "ghost-02-0000-4000-8000-000000000000",
+          "fileName": "mission-587-ghost-2.png",
+          "url": "/thumbs/mission-587-ghost-2.png",
+          "orphaned": null,
+          "placeholder": null
+        }
+      ],
+      "storageKey": "personal_thumbnails",
+      "stack": [
+        "at traceThumbStoreWrite (http://127.0.0.1:5173/src/lib/viewer/thumbStoreWriteTrace.js:48:12)",
+        "at writeThumbnailVault (http://127.0.0.1:5173/src/lib/viewer/thumbnailVault.js:138:3)",
+        "at reloadVaultStoresFromStorage (http://127.0.0.1:5173/src/viewer/viewerContext.js:789:1)",
+        "at mountViewer (http://127.0.0.1:5173/src/viewer/viewerContext.js:1600:1)",
+        "at async http://127.0.0.1:5173/src/Viewer.svelte:386:18"
+      ]
+    },
+    {
+      "timestamp": "2026-07-13T00:33:44.956Z",
+      "function": "syncCollectionStore",
+      "store": "personalThumbnailCollection",
+      "previousCount": 0,
+      "newCount": 20,
+      "first3": [
+        {
+          "id": null,
+          "fileName": "mission-587-ghost-1.png",
+          "url": null,
+          "orphaned": null,
+          "placeholder": null
+        },
+        {
+          "id": null,
+          "fileName": "mission-587-ghost-2.png",
+          "url": null,
+          "orphaned": null,
+          "placeholder": null
+        },
+        {
+          "id": null,
+          "fileName": "mission-587-ghost-3.png",
+          "url": null,
+          "orphaned": null,
+          "placeholder": null
+        }
+      ],
+      "storageKey": "personal_thumbnails",
+      "stack": [
+        "at traceThumbStoreWrite (http://127.0.0.1:5173/src/lib/viewer/thumbStoreWriteTrace.js:48:12)",
+        "at syncCollectionStore (http://127.0.0.1:5173/src/lib/viewer/thumbnailVault.js:154:3)",
+        "at reloadVaultStoresFromStorage (http://127.0.0.1:5173/src/viewer/viewerContext.js:790:1)",
+        "at mountViewer (http://127.0.0.1:5173/src/viewer/viewerContext.js:1600:1)",
+        "at async http://127.0.0.1:5173/src/Viewer.svelte:386:18"
+      ]
+    },
+    {
+      "timestamp": "2026-07-13T00:33:45.053Z",
+      "function": "storeThumbnailMetadata",
+      "store": "personal_thumbnails",
+      "previousCount": 20,
+      "newCount": 20,
+      "first3": [
+        {
+          "id": "ghost-01-0000-4000-8000-000000000000",
+          "fileName": "mission-587-ghost-1.png",
+          "url": "/thumbs/mission-587-ghost-1.png",
+          "orphaned": null,
+          "placeholder": null
+        },
+        {
+          "id": "ghost-02-0000-4000-8000-000000000000",
+          "fileName": "mission-587-ghost-2.png",
+          "url": "/thumbs/mission-587-ghost-2.png",
+          "orphaned": null,
+          "placeholder": null
+        },
+        {
+          "id": "ghost-03-0000-4000-8000-000000000000",
+          "fileName": "mission-587-ghost-3.png",
+          "url": "/thumbs/mission-587-ghost-3.png",
+          "orphaned": null,
+          "placeholder": null
+        }
+      ],
+      "stack": [
+        "at traceThumbStoreWrite (http://127.0.0.1:5173/src/lib/viewer/thumbStoreWriteTrace.js:48:12)",
+        "at storeThumbnailMetadata (http://127.0.0.1:5173/src/lib/storage.js:181:5)",
+        "at writeThumbnailVault (http://127.0.0.1:5173/src/lib/viewer/thumbnailVault.js:125:3)",
+        "at reloadVaultStoresFromStorage (http://127.0.0.1:5173/src/viewer/viewerContext.js:789:1)",
+        "at http://127.0.0.1:5173/src/viewer/viewerContext.js:936:1",
+        "at async mountViewer (http://127.0.0.1:5173/src/viewer/viewerContext.js:1611:1)",
+        "at async http://127.0.0.1:5173/src/Viewer.svelte:386:18"
+      ]
+    },
+    {
+      "timestamp": "2026-07-13T00:33:45.054Z",
+      "function": "safeStorageSet",
+      "store": "personal_thumbnails",
+      "previousCount": 1,
+      "newCount": 20,
+      "first3": [
+        {
+          "id": "ghost-01-0000-4000-8000-000000000000",
+          "fileName": "mission-587-ghost-1.png",
+          "url": "/thumbs/mission-587-ghost-1.png",
+          "orphaned": null,
+          "placeholder": null
+        },
+        {
+          "id": "ghost-02-0000-4000-8000-000000000000",
+          "fileName": "mission-587-ghost-2.png",
+          "url": "/thumbs/mission-587-ghost-2.png",
+          "orphaned": null,
+          "placeholder": null
+        },
+        {
+          "id": "ghost-03-0000-4000-8000-000000000000",
+          "fileName": "mission-587-ghost-3.png",
+          "url": "/thumbs/mission-587-ghost-3.png",
+          "orphaned": null,
+          "placeholder": null
+        }
+      ],
+      "stack": [
+        "at traceThumbStoreWrite (http://127.0.0.1:5173/src/lib/viewer/thumbStoreWriteTrace.js:48:12)",
+        "at safeStorageSet (http://127.0.0.1:5173/src/lib/storage.js:336:13)",
+        "at storeThumbnailMetadata (http://127.0.0.1:5173/src/lib/storage.js:182:12)",
+        "at writeThumbnailVault (http://127.0.0.1:5173/src/lib/viewer/thumbnailVault.js:125:3)",
+        "at reloadVaultStoresFromStorage (http://127.0.0.1:5173/src/viewer/viewerContext.js:789:1)",
+        "at http://127.0.0.1:5173/src/viewer/viewerContext.js:936:1",
+        "at async mountViewer (http://127.0.0.1:5173/src/viewer/viewerContext.js:1611:1)",
+        "at async http://127.0.0.1:5173/src/Viewer.svelte:386:18"
+      ]
+    },
+    {
+      "timestamp": "2026-07-13T00:33:45.054Z",
+      "function": "writeThumbnailVault:indexMirror",
+      "store": "personal_thumbnail_index",
+      "previousCount": 20,
+      "newCount": 20,
+      "first3": [
+        {
+          "id": null,
+          "fileName": "mission-587-ghost-1.png",
+          "url": null,
+          "orphaned": null,
+          "placeholder": null
+        },
+        {
+          "id": null,
+          "fileName": "mission-587-ghost-2.png",
+          "url": null,
+          "orphaned": null,
+          "placeholder": null
+        },
+        {
+          "id": null,
+          "fileName": "mission-587-ghost-3.png",
+          "url": null,
+          "orphaned": null,
+          "placeholder": null
+        }
+      ],
+      "storageKey": "personal_thumbnails",
+      "stack": [
+        "at traceThumbStoreWrite (http://127.0.0.1:5173/src/lib/viewer/thumbStoreWriteTrace.js:48:12)",
+        "at writeThumbnailVault (http://127.0.0.1:5173/src/lib/viewer/thumbnailVault.js:131:7)",
+        "at reloadVaultStoresFromStorage (http://127.0.0.1:5173/src/viewer/viewerContext.js:789:1)",
+        "at http://127.0.0.1:5173/src/viewer/viewerContext.js:936:1",
+        "at async mountViewer (http://127.0.0.1:5173/src/viewer/viewerContext.js:1611:1)",
+        "at async http://127.0.0.1:5173/src/Viewer.svelte:386:18"
+      ]
+    },
+    {
+      "timestamp": "2026-07-13T00:33:45.054Z",
+      "function": "writeThumbnailVault",
+      "store": "personal_thumbnails",
+      "previousCount": 20,
+      "newCount": 20,
+      "first3": [
+        {
+          "id": "ghost-01-0000-4000-8000-000000000000",
+          "fileName": "mission-587-ghost-1.png",
+          "url": "/thumbs/mission-587-ghost-1.png",
+          "orphaned": null,
+          "placeholder": null
+        },
+        {
+          "id": "ghost-02-0000-4000-8000-000000000000",
+          "fileName": "mission-587-ghost-2.png",
+          "url": "/thumbs/mission-587-ghost-2.png",
+          "orphaned": null,
+          "placeholder": null
+        },
+        {
+          "id": "ghost-03-0000-4000-8000-000000000000",
+          "fileName": "mission-587-ghost-3.png",
+          "url": "/thumbs/mission-587-ghost-3.png",
+          "orphaned": null,
+          "placeholder": null
+        }
+      ],
+      "storageKey": "personal_thumbnails",
+      "stack": [
+        "at traceThumbStoreWrite (http://127.0.0.1:5173/src/lib/viewer/thumbStoreWriteTrace.js:48:12)",
+        "at writeThumbnailVault (http://127.0.0.1:5173/src/lib/viewer/thumbnailVault.js:138:3)",
+        "at reloadVaultStoresFromStorage (http://127.0.0.1:5173/src/viewer/viewerContext.js:789:1)",
+        "at http://127.0.0.1:5173/src/viewer/viewerContext.js:936:1",
+        "at async mountViewer (http://127.0.0.1:5173/src/viewer/viewerContext.js:1611:1)",
+        "at async http://127.0.0.1:5173/src/Viewer.svelte:386:18"
+      ]
+    },
+    {
+      "timestamp": "2026-07-13T00:33:45.055Z",
+      "function": "syncCollectionStore",
+      "store": "personalThumbnailCollection",
+      "previousCount": 20,
+      "newCount": 20,
+      "first3": [
+        {
+          "id": null,
+          "fileName": "mission-587-ghost-1.png",
+          "url": null,
+          "orphaned": null,
+          "placeholder": null
+        },
+        {
+          "id": null,
+          "fileName": "mission-587-ghost-2.png",
+          "url": null,
+          "orphaned": null,
+          "placeholder": null
+        },
+        {
+          "id": null,
+          "fileName": "mission-587-ghost-3.png",
+          "url": null,
+          "orphaned": null,
+          "placeholder": null
+        }
+      ],
+      "storageKey": "personal_thumbnails",
+      "stack": [
+        "at traceThumbStoreWrite (http://127.0.0.1:5173/src/lib/viewer/thumbStoreWriteTrace.js:48:12)",
+        "at syncCollectionStore (http://127.0.0.1:5173/src/lib/viewer/thumbnailVault.js:154:3)",
+        "at reloadVaultStoresFromStorage (http://127.0.0.1:5173/src/viewer/viewerContext.js:790:1)",
+        "at http://127.0.0.1:5173/src/viewer/viewerContext.js:936:1",
+        "at async mountViewer (http://127.0.0.1:5173/src/viewer/viewerContext.js:1611:1)",
+        "at async http://127.0.0.1:5173/src/Viewer.svelte:386:18"
+      ]
+    },
+    {
+      "timestamp": "2026-07-13T00:33:45.057Z",
+      "function": "storeThumbnailMetadata",
+      "store": "personal_thumbnails",
+      "previousCount": 20,
+      "newCount": 0,
+      "first3": [],
+      "stack": [
+        "at traceThumbStoreWrite (http://127.0.0.1:5173/src/lib/viewer/thumbStoreWriteTrace.js:48:12)",
+        "at storeThumbnailMetadata (http://127.0.0.1:5173/src/lib/storage.js:181:5)",
+        "at writeThumbnailVault (http://127.0.0.1:5173/src/lib/viewer/thumbnailVault.js:125:3)",
+        "at reconcileThumbnailVault (http://127.0.0.1:5173/src/lib/viewer/thumbnailVault.js:308:5)",
+        "at reconcileStaleThumbnailsOnStartup (http://127.0.0.1:5173/src/viewer/viewerContext.js:858:16)",
+        "at http://127.0.0.1:5173/src/viewer/viewerContext.js:945:1",
+        "at async mountViewer (http://127.0.0.1:5173/src/viewer/viewerContext.js:1611:1)",
+        "at async http://127.0.0.1:5173/src/Viewer.svelte:386:18"
+      ]
+    },
+    {
+      "timestamp": "2026-07-13T00:33:45.058Z",
+      "function": "safeStorageSet",
+      "store": "personal_thumbnails",
+      "previousCount": 1,
+      "newCount": 0,
+      "first3": [],
+      "stack": [
+        "at traceThumbStoreWrite (http://127.0.0.1:5173/src/lib/viewer/thumbStoreWriteTrace.js:48:12)",
+        "at safeStorageSet (http://127.0.0.1:5173/src/lib/storage.js:336:13)",
+        "at storeThumbnailMetadata (http://127.0.0.1:5173/src/lib/storage.js:182:12)",
+        "at writeThumbnailVault (http://127.0.0.1:5173/src/lib/viewer/thumbnailVault.js:125:3)",
+        "at reconcileThumbnailVault (http://127.0.0.1:5173/src/lib/viewer/thumbnailVault.js:308:5)",
+        "at reconcileStaleThumbnailsOnStartup (http://127.0.0.1:5173/src/viewer/viewerContext.js:858:16)",
+        "at http://127.0.0.1:5173/src/viewer/viewerContext.js:945:1",
+        "at async mountViewer (http://127.0.0.1:5173/src/viewer/viewerContext.js:1611:1)",
+        "at async http://127.0.0.1:5173/src/Viewer.svelte:386:18"
+      ]
+    },
+    {
+      "timestamp": "2026-07-13T00:33:45.059Z",
+      "function": "writeThumbnailVault:indexMirror",
+      "store": "personal_thumbnail_index",
+      "previousCount": 20,
+      "newCount": 0,
+      "first3": [],
+      "storageKey": "personal_thumbnails",
+      "stack": [
+        "at traceThumbStoreWrite (http://127.0.0.1:5173/src/lib/viewer/thumbStoreWriteTrace.js:48:12)",
+        "at writeThumbnailVault (http://127.0.0.1:5173/src/lib/viewer/thumbnailVault.js:131:7)",
+        "at reconcileThumbnailVault (http://127.0.0.1:5173/src/lib/viewer/thumbnailVault.js:308:5)",
+        "at reconcileStaleThumbnailsOnStartup (http://127.0.0.1:5173/src/viewer/viewerContext.js:858:16)",
+        "at http://127.0.0.1:5173/src/viewer/viewerContext.js:945:1",
+        "at async mountViewer (http://127.0.0.1:5173/src/viewer/viewerContext.js:1611:1)",
+        "at async http://127.0.0.1:5173/src/Viewer.svelte:386:18"
+      ]
+    },
+    {
+      "timestamp": "2026-07-13T00:33:45.059Z",
+      "function": "writeThumbnailVault",
+      "store": "personal_thumbnails",
+      "previousCount": 20,
+      "newCount": 0,
+      "first3": [],
+      "storageKey": "personal_thumbnails",
+      "stack": [
+        "at traceThumbStoreWrite (http://127.0.0.1:5173/src/lib/viewer/thumbStoreWriteTrace.js:48:12)",
+        "at writeThumbnailVault (http://127.0.0.1:5173/src/lib/viewer/thumbnailVault.js:138:3)",
+        "at reconcileThumbnailVault (http://127.0.0.1:5173/src/lib/viewer/thumbnailVault.js:308:5)",
+        "at reconcileStaleThumbnailsOnStartup (http://127.0.0.1:5173/src/viewer/viewerContext.js:858:16)",
+        "at http://127.0.0.1:5173/src/viewer/viewerContext.js:945:1",
+        "at async mountViewer (http://127.0.0.1:5173/src/viewer/viewerContext.js:1611:1)",
+        "at async http://127.0.0.1:5173/src/Viewer.svelte:386:18"
+      ]
+    },
+    {
+      "timestamp": "2026-07-13T00:33:45.060Z",
+      "function": "syncCollectionStore",
+      "store": "personalThumbnailCollection",
+      "previousCount": 20,
+      "newCount": 0,
+      "first3": [],
+      "storageKey": "personal_thumbnails",
+      "stack": [
+        "at traceThumbStoreWrite (http://127.0.0.1:5173/src/lib/viewer/thumbStoreWriteTrace.js:48:12)",
+        "at syncCollectionStore (http://127.0.0.1:5173/src/lib/viewer/thumbnailVault.js:154:3)",
+        "at reconcileStaleThumbnailsOnStartup (http://127.0.0.1:5173/src/viewer/viewerContext.js:864:1)",
+        "at http://127.0.0.1:5173/src/viewer/viewerContext.js:945:1",
+        "at async mountViewer (http://127.0.0.1:5173/src/viewer/viewerContext.js:1611:1)",
+        "at async http://127.0.0.1:5173/src/Viewer.svelte:386:18"
+      ]
+    },
+    {
+      "timestamp": "2026-07-13T00:33:45.061Z",
+      "function": "safeStorageSet",
+      "store": "reelforge_feed",
+      "previousCount": 1,
+      "newCount": 1,
+      "first3": [],
+      "personalThumbPlaceholders": 0,
+      "stack": [
+        "at traceThumbStoreWrite (http://127.0.0.1:5173/src/lib/viewer/thumbStoreWriteTrace.js:48:12)",
+        "at safeStorageSet (http://127.0.0.1:5173/src/lib/storage.js:336:13)",
+        "at storageSet (http://127.0.0.1:5173/src/viewer/viewerContext.js:194:8)",
+        "at Array.<anonymous> (http://127.0.0.1:5173/src/viewer/viewerContext.js:275:1)",
+        "at Object.set (http://127.0.0.1:5173/node_modules/.vite/deps/chunk-BMRIXSE7.js?v=9b873303:30:35)",
+        "at http://127.0.0.1:5173/src/viewer/viewerContext.js:1021:6",
+        "at async mountViewer (http://127.0.0.1:5173/src/viewer/viewerContext.js:1611:1)",
+        "at async http://127.0.0.1:5173/src/Viewer.svelte:386:18"
+      ]
+    },
+    {
+      "timestamp": "2026-07-13T00:33:45.063Z",
+      "function": "safeStorageSet",
+      "store": "reelforge_feed",
+      "previousCount": 1,
+      "newCount": 1,
+      "first3": [],
+      "personalThumbPlaceholders": 0,
+      "stack": [
+        "at traceThumbStoreWrite (http://127.0.0.1:5173/src/lib/viewer/thumbStoreWriteTrace.js:48:12)",
+        "at safeStorageSet (http://127.0.0.1:5173/src/lib/storage.js:336:13)",
+        "at storageSet (http://127.0.0.1:5173/src/viewer/viewerContext.js:194:8)",
+        "at http://127.0.0.1:5173/src/viewer/viewerContext.js:1023:19",
+        "at async mountViewer (http://127.0.0.1:5173/src/viewer/viewerContext.js:1611:1)",
+        "at async http://127.0.0.1:5173/src/Viewer.svelte:386:18"
+      ]
+    },
+    {
+      "timestamp": "2026-07-13T00:33:45.066Z",
+      "function": "safeStorageSet",
+      "store": "reelforge_feed",
+      "previousCount": 1,
+      "newCount": 1,
+      "first3": [],
+      "personalThumbPlaceholders": 0,
+      "stack": [
+        "at traceThumbStoreWrite (http://127.0.0.1:5173/src/lib/viewer/thumbStoreWriteTrace.js:48:12)",
+        "at safeStorageSet (http://127.0.0.1:5173/src/lib/storage.js:336:13)",
+        "at storageSet (http://127.0.0.1:5173/src/viewer/viewerContext.js:194:8)",
+        "at Array.<anonymous> (http://127.0.0.1:5173/src/viewer/viewerContext.js:275:1)",
+        "at Object.set (http://127.0.0.1:5173/node_modules/.vite/deps/chunk-BMRIXSE7.js?v=9b873303:30:35)",
+        "at http://127.0.0.1:5173/src/viewer/viewerContext.js:1130:6",
+        "at async mountViewer (http://127.0.0.1:5173/src/viewer/viewerContext.js:1611:1)",
+        "at async http://127.0.0.1:5173/src/Viewer.svelte:386:18"
+      ]
+    },
+    {
+      "timestamp": "2026-07-13T00:33:45.067Z",
+      "function": "safeStorageSet",
+      "store": "reelforge_feed",
+      "previousCount": 1,
+      "newCount": 1,
+      "first3": [],
+      "personalThumbPlaceholders": 0,
+      "stack": [
+        "at traceThumbStoreWrite (http://127.0.0.1:5173/src/lib/viewer/thumbStoreWriteTrace.js:48:12)",
+        "at safeStorageSet (http://127.0.0.1:5173/src/lib/storage.js:336:13)",
+        "at storageSet (http://127.0.0.1:5173/src/viewer/viewerContext.js:194:8)",
+        "at http://127.0.0.1:5173/src/viewer/viewerContext.js:1132:1",
+        "at async mountViewer (http://127.0.0.1:5173/src/viewer/viewerContext.js:1611:1)",
+        "at async http://127.0.0.1:5173/src/Viewer.svelte:386:18"
+      ]
+    },
+    {
+      "timestamp": "2026-07-13T00:33:46.066Z",
+      "function": "safeStorageSet",
+      "store": "reelforge_feed",
+      "previousCount": 1,
+      "newCount": 1,
+      "first3": [],
+      "personalThumbPlaceholders": 0,
+      "stack": [
+        "at traceThumbStoreWrite (http://127.0.0.1:5173/src/lib/viewer/thumbStoreWriteTrace.js:48:12)",
+        "at safeStorageSet (http://127.0.0.1:5173/src/lib/storage.js:336:13)",
+        "at storageSet (http://127.0.0.1:5173/src/viewer/viewerContext.js:194:8)",
+        "at Array.<anonymous> (http://127.0.0.1:5173/src/viewer/viewerContext.js:275:1)",
+        "at set (http://127.0.0.1:5173/node_modules/.vite/deps/chunk-BMRIXSE7.js?v=9b873303:30:35)",
+        "at Object.update (http://127.0.0.1:5173/node_modules/.vite/deps/chunk-BMRIXSE7.js?v=9b873303:38:5)",
+        "at patchFeedWithEpisodeBindings (http://127.0.0.1:5173/src/viewer/viewerContext.js:384:6)",
+        "at runEpisodeBridgeSync (http://127.0.0.1:5173/src/viewer/viewerContext.js:402:1)",
+        "at mountViewer (http://127.0.0.1:5173/src/viewer/viewerContext.js:1615:1)"
+      ]
+    }
+  ],
+  "consoleWriteLogs": [
+    {
+      "raw": "[THUMB_STORE_WRITE] {timestamp: 2026-07-13T00:33:44.523Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}"
+    },
+    {
+      "raw": "[THUMB_STORE_WRITE] {timestamp: 2026-07-13T00:33:44.953Z, function: storeThumbnailMetadata, store: personal_thumbnails, previousCount: 20, newCount: 20}"
+    },
+    {
+      "raw": "[THUMB_STORE_WRITE] {timestamp: 2026-07-13T00:33:44.954Z, function: safeStorageSet, store: personal_thumbnails, previousCount: 1, newCount: 20}"
+    },
+    {
+      "raw": "[THUMB_STORE_WRITE] {timestamp: 2026-07-13T00:33:44.955Z, function: writeThumbnailVault:indexMirror, store: personal_thumbnail_index, previousCount: 20, newCount: 20}"
+    },
+    {
+      "raw": "[THUMB_STORE_WRITE] {timestamp: 2026-07-13T00:33:44.955Z, function: writeThumbnailVault, store: personal_thumbnails, previousCount: 20, newCount: 20}"
+    },
+    {
+      "raw": "[THUMB_STORE_WRITE] {timestamp: 2026-07-13T00:33:44.956Z, function: syncCollectionStore, store: personalThumbnailCollection, previousCount: 0, newCount: 20}"
+    },
+    {
+      "raw": "[THUMB_STORE_WRITE] {timestamp: 2026-07-13T00:33:45.053Z, function: storeThumbnailMetadata, store: personal_thumbnails, previousCount: 20, newCount: 20}"
+    },
+    {
+      "raw": "[THUMB_STORE_WRITE] {timestamp: 2026-07-13T00:33:45.054Z, function: safeStorageSet, store: personal_thumbnails, previousCount: 1, newCount: 20}"
+    },
+    {
+      "raw": "[THUMB_STORE_WRITE] {timestamp: 2026-07-13T00:33:45.054Z, function: writeThumbnailVault:indexMirror, store: personal_thumbnail_index, previousCount: 20, newCount: 20}"
+    },
+    {
+      "raw": "[THUMB_STORE_WRITE] {timestamp: 2026-07-13T00:33:45.054Z, function: writeThumbnailVault, store: personal_thumbnails, previousCount: 20, newCount: 20}"
+    },
+    {
+      "raw": "[THUMB_STORE_WRITE] {timestamp: 2026-07-13T00:33:45.055Z, function: syncCollectionStore, store: personalThumbnailCollection, previousCount: 20, newCount: 20}"
+    },
+    {
+      "raw": "[THUMB_STORE_WRITE] {timestamp: 2026-07-13T00:33:45.057Z, function: storeThumbnailMetadata, store: personal_thumbnails, previousCount: 20, newCount: 0}"
+    },
+    {
+      "raw": "[THUMB_STORE_WRITE] {timestamp: 2026-07-13T00:33:45.058Z, function: safeStorageSet, store: personal_thumbnails, previousCount: 1, newCount: 0}"
+    },
+    {
+      "raw": "[THUMB_STORE_WRITE] {timestamp: 2026-07-13T00:33:45.059Z, function: writeThumbnailVault:indexMirror, store: personal_thumbnail_index, previousCount: 20, newCount: 0}"
+    },
+    {
+      "raw": "[THUMB_STORE_WRITE] {timestamp: 2026-07-13T00:33:45.059Z, function: writeThumbnailVault, store: personal_thumbnails, previousCount: 20, newCount: 0}"
+    },
+    {
+      "raw": "[THUMB_STORE_WRITE] {timestamp: 2026-07-13T00:33:45.060Z, function: syncCollectionStore, store: personalThumbnailCollection, previousCount: 20, newCount: 0}"
+    },
+    {
+      "raw": "[THUMB_STORE_WRITE] {timestamp: 2026-07-13T00:33:45.061Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}"
+    },
+    {
+      "raw": "[THUMB_STORE_WRITE] {timestamp: 2026-07-13T00:33:45.063Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}"
+    },
+    {
+      "raw": "[THUMB_STORE_WRITE] {timestamp: 2026-07-13T00:33:45.066Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}"
+    },
+    {
+      "raw": "[THUMB_STORE_WRITE] {timestamp: 2026-07-13T00:33:45.067Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}"
+    },
+    {
+      "raw": "[THUMB_STORE_WRITE] {timestamp: 2026-07-13T00:33:46.066Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}"
+    }
+  ]
+}

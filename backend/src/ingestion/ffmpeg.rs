@@ -9,6 +9,18 @@ const FFMPEG_TIMEOUT: Duration = Duration::from_secs(30);
 
 /// Extract a JPEG thumbnail at t=1s. Fail-fast on invalid media.
 pub async fn extract_thumbnail_at_1s(video_path: &Path, thumb_path: &Path) -> Result<(), String> {
+    let video_name = video_path
+        .file_name()
+        .and_then(|s| s.to_str())
+        .unwrap_or("-");
+    crate::pipeline_diag::pipeline_diag(
+        "FFMPEG",
+        "extract_thumbnail_at_1s",
+        "ffmpeg.rs",
+        None,
+        Some(video_name),
+        "start",
+    );
     if thumb_path.exists() {
         let _ = std::fs::remove_file(thumb_path);
     }
@@ -30,18 +42,51 @@ pub async fn extract_thumbnail_at_1s(video_path: &Path, thumb_path: &Path) -> Re
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
+        crate::pipeline_diag::pipeline_diag(
+            "FFMPEG",
+            "extract_thumbnail_at_1s",
+            "ffmpeg.rs",
+            None,
+            Some(video_name),
+            "failed",
+        );
         return Err(format!("ffmpeg failed: {}", stderr.trim()));
     }
 
     if !thumb_path.is_file() {
+        crate::pipeline_diag::pipeline_diag(
+            "FFMPEG",
+            "extract_thumbnail_at_1s",
+            "ffmpeg.rs",
+            None,
+            Some(video_name),
+            "no_output_file",
+        );
         return Err("ffmpeg produced no output file".to_string());
     }
 
     let bytes = std::fs::read(thumb_path).map_err(|e| e.to_string())?;
     if !crate::media_seed::is_valid_image_bytes(&bytes) {
         let _ = std::fs::remove_file(thumb_path);
+        crate::pipeline_diag::pipeline_diag(
+            "FFMPEG",
+            "extract_thumbnail_at_1s",
+            "ffmpeg.rs",
+            None,
+            Some(video_name),
+            "invalid_output_bytes",
+        );
         return Err("thumbnail output is not a valid JPEG/PNG".to_string());
     }
+
+    crate::pipeline_diag::pipeline_diag(
+        "FFMPEG",
+        "extract_thumbnail_at_1s",
+        "ffmpeg.rs",
+        None,
+        Some(video_name),
+        "ok",
+    );
 
     Ok(())
 }

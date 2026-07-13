@@ -75,7 +75,6 @@ export function normalizeHeroAssetRecord(item, options = {}) {
 
     const assetId =
         normalizeAssetId(String(item?.id || '')) ||
-        normalizeAssetId(String(item?.name || '')) ||
         normalizeAssetId(String(item?.fileName || item?.file_name || '')) ||
         normalizeAssetId(String(mediaUrl));
 
@@ -130,7 +129,7 @@ export function resolveHeroAssetById(heroAssetId, vaultItems = []) {
     const registry = buildHeroAssetRegistry(vaultItems);
     return (
         registry.find((asset) => asset.assetId === target) ||
-        registry.find((asset) => asset.mediaUrl === target) ||
+        registry.find((asset) => asset.mediaUrl === target || asset.mediaUrl.endsWith(`/${target}`)) ||
         null
     );
 }

@@ -1,0 +1,2202 @@
+# MISSION_5_7_7_LIVE_DELETE_EVENT_AUDIT
+
+Generated: 2026-07-13T06:45:43.194Z
+
+## Mode: Investigation only (no fixes)
+
+Live browser simulation using Mission 5.7.3 forensic state (20 cards: 15 orphans + 5 canonical ids).
+
+---
+
+## 1. Event flow
+
+### DELETE SELECTED path
+
+```
+Mouse click → DELETE SELECTED button
+  ↓ disabled={selectedThumbnailIds.length === 0}  ← STOPS HERE (all-orphan / no selection)
+  ↓ on:click → batchDeleteSelectedThumbnails()
+  ↓ if (!selected.length) early return
+  ↓ deleteReelById(reelId) per selected UUID
+  ↓ applyThumbnailDeleteTombstone(deletedIds) — keeps !id entries
+  ↓ syncFromVault → purgeStaleOrphanThumbnails(deletedIds)
+  ↓ personalThumbnailCollection.set / update
+  ↓ [DELETE_REACTIVE] → #each re-render
+```
+
+### BATCH DELETE ALL path
+
+```
+Mouse click → BATCH DELETE ALL button (always enabled)
+  ↓ batchDeleteThumbnails()
+  ↓ fetchReadyReels() → idsToDelete (backend only)
+  ↓ deleteReelById for each backend id
+  ↓ applyThumbnailDeleteTombstone(deletedIds) — only if deletedIds.length > 0
+  ↓ syncFromVault
+  ↓ purgeStaleOrphanThumbnails(deletedIds) — only if deletedIds.length > 0  ← orphans survive when 0
+  ↓ afterCount unchanged for id-less orphans
+```
+
+---
+
+## 2. First failed stage
+
+**DELETE_SELECTED_BUTTON_DISABLED**
+
+## 3. Reason UI remains "Your Thumbnails (20)"
+
+Button disabled because selectedThumbnailIds.length === 0; orphan checkboxes disabled (no reel.id)
+
+## 4. File / function / line
+
+```json
+{
+  "file": "frontend/src/components/experiences/VaultExperience.svelte",
+  "function": "batch-delete-btn disabled binding",
+  "line": 1304
+}
+```
+
+---
+
+## 5. Button verification
+
+| Check | Value |
+|-------|-------|
+| DELETE SELECTED disabled | true |
+| Enabled checkboxes | 0 |
+| Disabled checkboxes | 15 |
+| After load cards | 15 |
+| After load heading | Your Thumbnails (15) |
+| Backend thumb reels | 64 |
+
+### After load button state
+
+```json
+{
+  "text": "🗑️ DELETE SELECTED THUMBS (0)",
+  "disabled": true,
+  "pointerEvents": "auto",
+  "opacity": "1",
+  "coveredBy": "undefined"
+}
+```
+
+---
+
+## 6. Live trace results
+
+### After page load
+
+```json
+{
+  "heading": "Your Thumbnails (15)",
+  "thumbs": 15,
+  "index": 15,
+  "withId": 0,
+  "withoutId": 15,
+  "orphaned": 15,
+  "cards": 15,
+  "placeholders": 15,
+  "deleteSelected": {
+    "text": "🗑️ DELETE SELECTED THUMBS (0)",
+    "disabled": true,
+    "pointerEvents": "auto",
+    "opacity": "1",
+    "coveredBy": "undefined"
+  },
+  "batchDeleteAll": {
+    "disabled": false,
+    "pointerEvents": "auto"
+  },
+  "checkboxes": {
+    "total": 15,
+    "enabled": 0,
+    "disabled": 15
+  },
+  "logs": [
+    {
+      "tag": "[STARTUP_RECONCILE]",
+      "payload": {
+        "action": "purge",
+        "examined": 20,
+        "purgedCount": 5,
+        "remaining": 15,
+        "backendThumbReels": 64,
+        "ts": "2026-07-13T06:44:17.040Z"
+      },
+      "at": 1783925057040
+    },
+    {
+      "tag": "[DELETE_REACTIVE]",
+      "payload": {
+        "storeCount": 15,
+        "renderedCount": 0,
+        "selectedCount": 0,
+        "ts": 1783925067104
+      },
+      "at": 1783925067104
+    },
+    {
+      "tag": "[DELETE_AUDIT_START]",
+      "payload": {
+        "scope": "vault-experience",
+        "timestamp": 1783925067106
+      },
+      "at": 1783925067106
+    },
+    {
+      "tag": "[DELETE_HANDLER_ATTACHED]",
+      "payload": {
+        "vault": "thumbnail-vault",
+        "mechanism": "single",
+        "timestamp": 1783925067106
+      },
+      "at": 1783925067106
+    },
+    {
+      "tag": "[DELETE_HANDLER_ATTACHED]",
+      "payload": {
+        "vault": "video-vault",
+        "mechanism": "single",
+        "timestamp": 1783925067106
+      },
+      "at": 1783925067106
+    },
+    {
+      "tag": "[DELETE_HANDLER_ATTACHED]",
+      "payload": {
+        "vault": "thumbnail-vault",
+        "mechanism": "batch",
+        "timestamp": 1783925067106
+      },
+      "at": 1783925067106
+    },
+    {
+      "tag": "[DELETE_HANDLER_ATTACHED]",
+      "payload": {
+        "vault": "video-vault",
+        "mechanism": "batch",
+        "timestamp": 1783925067106
+      },
+      "at": 1783925067106
+    },
+    {
+      "tag": "[DELETE_HANDLER_ATTACHED]",
+      "payload": {
+        "vault": "vault-delete-zone",
+        "mechanism": "drag-drop",
+        "timestamp": 1783925067106
+      },
+      "at": 1783925067106
+    },
+    {
+      "tag": "[STARTUP_RECONCILE]",
+      "payload": {
+        "action": "noop",
+        "source": "VaultExperience.ensureThumbnailCanonicalization",
+        "examined": 15,
+        "purgedCount": 0,
+        "remaining": 15,
+        "ts": "2026-07-13T06:44:27.433Z"
+      },
+      "at": 1783925067433
+    }
+  ]
+}
+```
+
+### DELETE SELECTED click (forced)
+
+```json
+{
+  "newLogs": [],
+  "after": "Your Thumbnails (15)",
+  "cards": 15
+}
+```
+
+### Partial DELETE SELECTED (3 canonical)
+
+```json
+{
+  "keyLogs": []
+}
+```
+
+### BATCH DELETE ALL
+
+```json
+{
+  "api": [
+    {
+      "url": "http://127.0.0.1:5173/api/reels/84c77a0a-fdcf-4f2d-b032-38a94398f3c3",
+      "at": 1783925080765,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/c82bf2fb-336b-4be1-a7fa-3187179f14d0",
+      "at": 1783925080820,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/4a0ee575-acc4-41ce-a382-1b3fe04189f5",
+      "at": 1783925080841,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/b15c8e5e-f270-47e7-a293-f92f2d750e39",
+      "at": 1783925080867,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/81ee2f4d-50b8-4325-9de5-00063cf5135d",
+      "at": 1783925080896,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/2c3761ba-b6fa-4fc2-9dd3-39dff34cfbb2",
+      "at": 1783925080936,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/7a28a7d6-f15d-49b9-86be-8b1c84f12b21",
+      "at": 1783925080962,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/2c3d919f-ca21-485d-912c-a8aed3f8feda",
+      "at": 1783925080983,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/0998fe41-5eed-4783-9caf-d7906ee9616c",
+      "at": 1783925081004,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/40db7979-5e85-4436-8dee-d17c685cfd0a",
+      "at": 1783925081030,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/6fbd08f0-963f-416c-994e-af9f99a631dd",
+      "at": 1783925081055,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/6bff4995-3888-4152-ae87-fd148392fe27",
+      "at": 1783925081082,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/28b8549e-a43f-4bed-9fe7-12cd9ef6eac8",
+      "at": 1783925081105,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/f924dd4a-009f-4f37-a057-4ab9dbb9e009",
+      "at": 1783925081149,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/636d8e8f-239e-4dbe-95a8-6c2251eea0f1",
+      "at": 1783925081179,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/9cefa0d6-ccbb-494b-83b5-c8af45cbd9da",
+      "at": 1783925081240,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/64e382e7-dc4e-4226-8a4e-a789983d5c6f",
+      "at": 1783925081288,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/781391d1-6ef6-4aa9-ad06-52e373b2c89c",
+      "at": 1783925081328,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/2711170d-dd84-4bbb-841b-2cb05f9fde36",
+      "at": 1783925081359,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/ce422daf-8878-40bb-a6a0-2d75522ce4fa",
+      "at": 1783925081383,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/83042792-b2f8-4331-8cbe-82d031badc19",
+      "at": 1783925081429,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/12502004-9d60-43e0-9016-fcb80c0508ca",
+      "at": 1783925081459,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/77b6e085-d2db-41df-a8e8-d9eb999ee1cb",
+      "at": 1783925081508,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/a708a87c-ae07-45c5-a7cc-c6f6f4c5e15e",
+      "at": 1783925081538,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/80b93d19-015e-4215-9064-f9c87732a47f",
+      "at": 1783925081564,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/4c92b3e1-7d10-4b51-9559-2d296f842326",
+      "at": 1783925081590,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/cb7fa6e5-0ee7-4f0b-ae1b-1e7f9ed6c9d4",
+      "at": 1783925081618,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/514db24d-7ae6-4ca4-bad6-a6fc0ca91dcc",
+      "at": 1783925081650,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/f6850fed-a4a3-4a86-b277-309c9d6b4f9e",
+      "at": 1783925081701,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/bb30e8e2-b7a0-40ff-9e2a-b345fd5ca9d6",
+      "at": 1783925081734,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/358f9df3-225e-4618-9bbb-544fd8b79552",
+      "at": 1783925081789,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/6d44293c-b4b6-4262-8e73-74c55b2e069f",
+      "at": 1783925081822,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/364c3411-65a9-49bf-a70f-a6d7451fd528",
+      "at": 1783925081845,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/904b8e3c-f1cc-45aa-8084-0e1510680bb1",
+      "at": 1783925081867,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/399e6a81-1069-4ee2-a415-291e3434bd65",
+      "at": 1783925081892,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/e94c6ee2-4914-49d2-982e-836c6c277a29",
+      "at": 1783925081912,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/17627dba-0f06-4dd6-a914-1490fef01355",
+      "at": 1783925081932,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/59a28006-b47a-4b36-a270-96baef9e68a6",
+      "at": 1783925081962,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/7d55791d-79eb-49df-a83e-2458f7421bf4",
+      "at": 1783925082007,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/d652fdc9-e098-425b-b009-3aeca07c85f0",
+      "at": 1783925082031,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/0848790f-d078-41d8-bf3d-7b601db98d75",
+      "at": 1783925082054,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/5143ef15-74fb-4c00-92cd-d27ab1bb9e2c",
+      "at": 1783925082094,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/ea25dca8-d6f6-4270-aff8-008373d96b88",
+      "at": 1783925082123,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/4b0a9a4f-eee1-4544-b5db-c6c384d052de",
+      "at": 1783925082176,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/fe90675e-0d3d-4366-a190-3dae1f4becff",
+      "at": 1783925082198,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/bdd82353-5904-40c0-ad6d-78ac4b9b08af",
+      "at": 1783925082221,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/76727309-579e-4d98-b39d-614eaece4ba1",
+      "at": 1783925082248,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/c492c413-e8d9-46cd-9379-106dbed41a74",
+      "at": 1783925082269,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/4c4d4ce7-b0f7-499b-8743-57b408f530c8",
+      "at": 1783925082291,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/6f695693-02e0-4b2c-9f5d-9cef38680d4f",
+      "at": 1783925082315,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/b832b757-7bf6-41ef-a588-7499249e5647",
+      "at": 1783925082345,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/a45a8f00-8504-46e6-8b72-942939e8d765",
+      "at": 1783925082366,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/60e787d1-e918-4e79-b04d-f076c96586c9",
+      "at": 1783925082395,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/b19797d4-dd90-411d-9a46-af92756c6d30",
+      "at": 1783925082423,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/bbc90e28-6132-488c-84b0-92d406afb967",
+      "at": 1783925082445,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/1c1870bb-ce65-4ea4-b961-727c5904733c",
+      "at": 1783925082468,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/3a0ee4f1-5355-4e4f-b1fe-8924581643de",
+      "at": 1783925082492,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/5ff19246-977e-42ed-aa42-591be0752476",
+      "at": 1783925082569,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/9877d67d-d247-4943-91a9-ee907f47b1a0",
+      "at": 1783925082619,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/877537e8-44de-4088-b0e6-cef9d5ff0b65",
+      "at": 1783925082660,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/18bd4088-a6b4-471b-a45b-9c1871afa90d",
+      "at": 1783925082684,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/d7ef6bb3-8521-4365-97d1-81c9c4b46495",
+      "at": 1783925082707,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/bdc4e55b-dc6e-416b-a6b7-33774bdf67b1",
+      "at": 1783925082728,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/48d2c05d-3667-4765-86b5-2bffcc0feccc",
+      "at": 1783925082750,
+      "status": 200
+    }
+  ],
+  "after": "Your Thumbnails (0)",
+  "cards": 0,
+  "thumbs": 0,
+  "keyLogs": [
+    {
+      "tag": "[DELETE_CLICK]",
+      "payload": {
+        "button": "BATCH_DELETE_ALL_DOM"
+      },
+      "at": 1783925080694
+    },
+    {
+      "tag": "[DELETE_HANDLER]",
+      "payload": {
+        "handler": "batchDeleteThumbnails",
+        "entered": true,
+        "ts": 1783925080695
+      },
+      "at": 1783925080695
+    },
+    {
+      "tag": "[DELETE_CLICK]",
+      "payload": {
+        "button": "BATCH_DELETE_ALL",
+        "storeSize": 15
+      },
+      "at": 1783925080695
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "84c77a0a-fdcf-4f2d-b032-38a94398f3c3",
+        "ts": 1783925080763
+      },
+      "at": 1783925080763
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "84c77a0a-fdcf-4f2d-b032-38a94398f3c3",
+        "elapsedMs": 53
+      },
+      "at": 1783925080816
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "c82bf2fb-336b-4be1-a7fa-3187179f14d0",
+        "ts": 1783925080816
+      },
+      "at": 1783925080816
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "c82bf2fb-336b-4be1-a7fa-3187179f14d0",
+        "elapsedMs": 24
+      },
+      "at": 1783925080840
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "4a0ee575-acc4-41ce-a382-1b3fe04189f5",
+        "ts": 1783925080840
+      },
+      "at": 1783925080840
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "4a0ee575-acc4-41ce-a382-1b3fe04189f5",
+        "elapsedMs": 23
+      },
+      "at": 1783925080863
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "b15c8e5e-f270-47e7-a293-f92f2d750e39",
+        "ts": 1783925080864
+      },
+      "at": 1783925080864
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "b15c8e5e-f270-47e7-a293-f92f2d750e39",
+        "elapsedMs": 29
+      },
+      "at": 1783925080893
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "81ee2f4d-50b8-4325-9de5-00063cf5135d",
+        "ts": 1783925080893
+      },
+      "at": 1783925080893
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "81ee2f4d-50b8-4325-9de5-00063cf5135d",
+        "elapsedMs": 41
+      },
+      "at": 1783925080934
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "2c3761ba-b6fa-4fc2-9dd3-39dff34cfbb2",
+        "ts": 1783925080934
+      },
+      "at": 1783925080934
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "2c3761ba-b6fa-4fc2-9dd3-39dff34cfbb2",
+        "elapsedMs": 27
+      },
+      "at": 1783925080961
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "7a28a7d6-f15d-49b9-86be-8b1c84f12b21",
+        "ts": 1783925080961
+      },
+      "at": 1783925080961
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "7a28a7d6-f15d-49b9-86be-8b1c84f12b21",
+        "elapsedMs": 21
+      },
+      "at": 1783925080982
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "2c3d919f-ca21-485d-912c-a8aed3f8feda",
+        "ts": 1783925080982
+      },
+      "at": 1783925080982
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "2c3d919f-ca21-485d-912c-a8aed3f8feda",
+        "elapsedMs": 21
+      },
+      "at": 1783925081003
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "0998fe41-5eed-4783-9caf-d7906ee9616c",
+        "ts": 1783925081003
+      },
+      "at": 1783925081003
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "0998fe41-5eed-4783-9caf-d7906ee9616c",
+        "elapsedMs": 26
+      },
+      "at": 1783925081029
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "40db7979-5e85-4436-8dee-d17c685cfd0a",
+        "ts": 1783925081029
+      },
+      "at": 1783925081029
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "40db7979-5e85-4436-8dee-d17c685cfd0a",
+        "elapsedMs": 24
+      },
+      "at": 1783925081053
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "6fbd08f0-963f-416c-994e-af9f99a631dd",
+        "ts": 1783925081054
+      },
+      "at": 1783925081054
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "6fbd08f0-963f-416c-994e-af9f99a631dd",
+        "elapsedMs": 23
+      },
+      "at": 1783925081077
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "6bff4995-3888-4152-ae87-fd148392fe27",
+        "ts": 1783925081077
+      },
+      "at": 1783925081077
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "6bff4995-3888-4152-ae87-fd148392fe27",
+        "elapsedMs": 27
+      },
+      "at": 1783925081104
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "28b8549e-a43f-4bed-9fe7-12cd9ef6eac8",
+        "ts": 1783925081104
+      },
+      "at": 1783925081104
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "28b8549e-a43f-4bed-9fe7-12cd9ef6eac8",
+        "elapsedMs": 44
+      },
+      "at": 1783925081148
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "f924dd4a-009f-4f37-a057-4ab9dbb9e009",
+        "ts": 1783925081148
+      },
+      "at": 1783925081148
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "f924dd4a-009f-4f37-a057-4ab9dbb9e009",
+        "elapsedMs": 30
+      },
+      "at": 1783925081178
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "636d8e8f-239e-4dbe-95a8-6c2251eea0f1",
+        "ts": 1783925081178
+      },
+      "at": 1783925081178
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "636d8e8f-239e-4dbe-95a8-6c2251eea0f1",
+        "elapsedMs": 61
+      },
+      "at": 1783925081239
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "9cefa0d6-ccbb-494b-83b5-c8af45cbd9da",
+        "ts": 1783925081239
+      },
+      "at": 1783925081239
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "9cefa0d6-ccbb-494b-83b5-c8af45cbd9da",
+        "elapsedMs": 48
+      },
+      "at": 1783925081287
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "64e382e7-dc4e-4226-8a4e-a789983d5c6f",
+        "ts": 1783925081287
+      },
+      "at": 1783925081287
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "64e382e7-dc4e-4226-8a4e-a789983d5c6f",
+        "elapsedMs": 40
+      },
+      "at": 1783925081327
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "781391d1-6ef6-4aa9-ad06-52e373b2c89c",
+        "ts": 1783925081327
+      },
+      "at": 1783925081327
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "781391d1-6ef6-4aa9-ad06-52e373b2c89c",
+        "elapsedMs": 30
+      },
+      "at": 1783925081357
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "2711170d-dd84-4bbb-841b-2cb05f9fde36",
+        "ts": 1783925081357
+      },
+      "at": 1783925081357
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "2711170d-dd84-4bbb-841b-2cb05f9fde36",
+        "elapsedMs": 24
+      },
+      "at": 1783925081381
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "ce422daf-8878-40bb-a6a0-2d75522ce4fa",
+        "ts": 1783925081381
+      },
+      "at": 1783925081381
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "ce422daf-8878-40bb-a6a0-2d75522ce4fa",
+        "elapsedMs": 46
+      },
+      "at": 1783925081427
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "83042792-b2f8-4331-8cbe-82d031badc19",
+        "ts": 1783925081428
+      },
+      "at": 1783925081428
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "83042792-b2f8-4331-8cbe-82d031badc19",
+        "elapsedMs": 28
+      },
+      "at": 1783925081456
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "12502004-9d60-43e0-9016-fcb80c0508ca",
+        "ts": 1783925081456
+      },
+      "at": 1783925081456
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "12502004-9d60-43e0-9016-fcb80c0508ca",
+        "elapsedMs": 49
+      },
+      "at": 1783925081505
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "77b6e085-d2db-41df-a8e8-d9eb999ee1cb",
+        "ts": 1783925081505
+      },
+      "at": 1783925081505
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "77b6e085-d2db-41df-a8e8-d9eb999ee1cb",
+        "elapsedMs": 31
+      },
+      "at": 1783925081536
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "a708a87c-ae07-45c5-a7cc-c6f6f4c5e15e",
+        "ts": 1783925081536
+      },
+      "at": 1783925081536
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "a708a87c-ae07-45c5-a7cc-c6f6f4c5e15e",
+        "elapsedMs": 26
+      },
+      "at": 1783925081562
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "80b93d19-015e-4215-9064-f9c87732a47f",
+        "ts": 1783925081562
+      },
+      "at": 1783925081562
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "80b93d19-015e-4215-9064-f9c87732a47f",
+        "elapsedMs": 27
+      },
+      "at": 1783925081589
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "4c92b3e1-7d10-4b51-9559-2d296f842326",
+        "ts": 1783925081589
+      },
+      "at": 1783925081589
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "4c92b3e1-7d10-4b51-9559-2d296f842326",
+        "elapsedMs": 27
+      },
+      "at": 1783925081616
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "cb7fa6e5-0ee7-4f0b-ae1b-1e7f9ed6c9d4",
+        "ts": 1783925081617
+      },
+      "at": 1783925081617
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "cb7fa6e5-0ee7-4f0b-ae1b-1e7f9ed6c9d4",
+        "elapsedMs": 32
+      },
+      "at": 1783925081649
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "514db24d-7ae6-4ca4-bad6-a6fc0ca91dcc",
+        "ts": 1783925081649
+      },
+      "at": 1783925081649
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "514db24d-7ae6-4ca4-bad6-a6fc0ca91dcc",
+        "elapsedMs": 51
+      },
+      "at": 1783925081700
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "f6850fed-a4a3-4a86-b277-309c9d6b4f9e",
+        "ts": 1783925081700
+      },
+      "at": 1783925081700
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "f6850fed-a4a3-4a86-b277-309c9d6b4f9e",
+        "elapsedMs": 29
+      },
+      "at": 1783925081729
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "bb30e8e2-b7a0-40ff-9e2a-b345fd5ca9d6",
+        "ts": 1783925081729
+      },
+      "at": 1783925081729
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "bb30e8e2-b7a0-40ff-9e2a-b345fd5ca9d6",
+        "elapsedMs": 59
+      },
+      "at": 1783925081788
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "358f9df3-225e-4618-9bbb-544fd8b79552",
+        "ts": 1783925081788
+      },
+      "at": 1783925081788
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "358f9df3-225e-4618-9bbb-544fd8b79552",
+        "elapsedMs": 32
+      },
+      "at": 1783925081820
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "6d44293c-b4b6-4262-8e73-74c55b2e069f",
+        "ts": 1783925081821
+      },
+      "at": 1783925081821
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "6d44293c-b4b6-4262-8e73-74c55b2e069f",
+        "elapsedMs": 23
+      },
+      "at": 1783925081844
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "364c3411-65a9-49bf-a70f-a6d7451fd528",
+        "ts": 1783925081844
+      },
+      "at": 1783925081844
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "364c3411-65a9-49bf-a70f-a6d7451fd528",
+        "elapsedMs": 22
+      },
+      "at": 1783925081866
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "904b8e3c-f1cc-45aa-8084-0e1510680bb1",
+        "ts": 1783925081866
+      },
+      "at": 1783925081866
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "904b8e3c-f1cc-45aa-8084-0e1510680bb1",
+        "elapsedMs": 25
+      },
+      "at": 1783925081891
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "399e6a81-1069-4ee2-a415-291e3434bd65",
+        "ts": 1783925081891
+      },
+      "at": 1783925081891
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "399e6a81-1069-4ee2-a415-291e3434bd65",
+        "elapsedMs": 20
+      },
+      "at": 1783925081911
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "e94c6ee2-4914-49d2-982e-836c6c277a29",
+        "ts": 1783925081911
+      },
+      "at": 1783925081911
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "e94c6ee2-4914-49d2-982e-836c6c277a29",
+        "elapsedMs": 20
+      },
+      "at": 1783925081931
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "17627dba-0f06-4dd6-a914-1490fef01355",
+        "ts": 1783925081931
+      },
+      "at": 1783925081931
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "17627dba-0f06-4dd6-a914-1490fef01355",
+        "elapsedMs": 27
+      },
+      "at": 1783925081958
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "59a28006-b47a-4b36-a270-96baef9e68a6",
+        "ts": 1783925081958
+      },
+      "at": 1783925081958
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "59a28006-b47a-4b36-a270-96baef9e68a6",
+        "elapsedMs": 47
+      },
+      "at": 1783925082005
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "7d55791d-79eb-49df-a83e-2458f7421bf4",
+        "ts": 1783925082005
+      },
+      "at": 1783925082005
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "7d55791d-79eb-49df-a83e-2458f7421bf4",
+        "elapsedMs": 25
+      },
+      "at": 1783925082030
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "d652fdc9-e098-425b-b009-3aeca07c85f0",
+        "ts": 1783925082030
+      },
+      "at": 1783925082030
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "d652fdc9-e098-425b-b009-3aeca07c85f0",
+        "elapsedMs": 22
+      },
+      "at": 1783925082052
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "0848790f-d078-41d8-bf3d-7b601db98d75",
+        "ts": 1783925082052
+      },
+      "at": 1783925082052
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "0848790f-d078-41d8-bf3d-7b601db98d75",
+        "elapsedMs": 40
+      },
+      "at": 1783925082092
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "5143ef15-74fb-4c00-92cd-d27ab1bb9e2c",
+        "ts": 1783925082093
+      },
+      "at": 1783925082093
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "5143ef15-74fb-4c00-92cd-d27ab1bb9e2c",
+        "elapsedMs": 28
+      },
+      "at": 1783925082121
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "ea25dca8-d6f6-4270-aff8-008373d96b88",
+        "ts": 1783925082121
+      },
+      "at": 1783925082121
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "ea25dca8-d6f6-4270-aff8-008373d96b88",
+        "elapsedMs": 53
+      },
+      "at": 1783925082174
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "4b0a9a4f-eee1-4544-b5db-c6c384d052de",
+        "ts": 1783925082174
+      },
+      "at": 1783925082174
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "4b0a9a4f-eee1-4544-b5db-c6c384d052de",
+        "elapsedMs": 23
+      },
+      "at": 1783925082197
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "fe90675e-0d3d-4366-a190-3dae1f4becff",
+        "ts": 1783925082197
+      },
+      "at": 1783925082197
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "fe90675e-0d3d-4366-a190-3dae1f4becff",
+        "elapsedMs": 22
+      },
+      "at": 1783925082219
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "bdd82353-5904-40c0-ad6d-78ac4b9b08af",
+        "ts": 1783925082219
+      },
+      "at": 1783925082219
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "bdd82353-5904-40c0-ad6d-78ac4b9b08af",
+        "elapsedMs": 26
+      },
+      "at": 1783925082245
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "76727309-579e-4d98-b39d-614eaece4ba1",
+        "ts": 1783925082246
+      },
+      "at": 1783925082246
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "76727309-579e-4d98-b39d-614eaece4ba1",
+        "elapsedMs": 22
+      },
+      "at": 1783925082268
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "c492c413-e8d9-46cd-9379-106dbed41a74",
+        "ts": 1783925082268
+      },
+      "at": 1783925082268
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "c492c413-e8d9-46cd-9379-106dbed41a74",
+        "elapsedMs": 22
+      },
+      "at": 1783925082290
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "4c4d4ce7-b0f7-499b-8743-57b408f530c8",
+        "ts": 1783925082290
+      },
+      "at": 1783925082290
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "4c4d4ce7-b0f7-499b-8743-57b408f530c8",
+        "elapsedMs": 24
+      },
+      "at": 1783925082314
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "6f695693-02e0-4b2c-9f5d-9cef38680d4f",
+        "ts": 1783925082314
+      },
+      "at": 1783925082314
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "6f695693-02e0-4b2c-9f5d-9cef38680d4f",
+        "elapsedMs": 30
+      },
+      "at": 1783925082344
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "b832b757-7bf6-41ef-a588-7499249e5647",
+        "ts": 1783925082344
+      },
+      "at": 1783925082344
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "b832b757-7bf6-41ef-a588-7499249e5647",
+        "elapsedMs": 21
+      },
+      "at": 1783925082365
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "a45a8f00-8504-46e6-8b72-942939e8d765",
+        "ts": 1783925082365
+      },
+      "at": 1783925082365
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "a45a8f00-8504-46e6-8b72-942939e8d765",
+        "elapsedMs": 27
+      },
+      "at": 1783925082392
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "60e787d1-e918-4e79-b04d-f076c96586c9",
+        "ts": 1783925082392
+      },
+      "at": 1783925082392
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "60e787d1-e918-4e79-b04d-f076c96586c9",
+        "elapsedMs": 30
+      },
+      "at": 1783925082422
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "b19797d4-dd90-411d-9a46-af92756c6d30",
+        "ts": 1783925082422
+      },
+      "at": 1783925082422
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "b19797d4-dd90-411d-9a46-af92756c6d30",
+        "elapsedMs": 21
+      },
+      "at": 1783925082443
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "bbc90e28-6132-488c-84b0-92d406afb967",
+        "ts": 1783925082444
+      },
+      "at": 1783925082444
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "bbc90e28-6132-488c-84b0-92d406afb967",
+        "elapsedMs": 23
+      },
+      "at": 1783925082467
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "1c1870bb-ce65-4ea4-b961-727c5904733c",
+        "ts": 1783925082467
+      },
+      "at": 1783925082467
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "1c1870bb-ce65-4ea4-b961-727c5904733c",
+        "elapsedMs": 24
+      },
+      "at": 1783925082491
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "3a0ee4f1-5355-4e4f-b1fe-8924581643de",
+        "ts": 1783925082491
+      },
+      "at": 1783925082491
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "3a0ee4f1-5355-4e4f-b1fe-8924581643de",
+        "elapsedMs": 77
+      },
+      "at": 1783925082568
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "5ff19246-977e-42ed-aa42-591be0752476",
+        "ts": 1783925082568
+      },
+      "at": 1783925082568
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "5ff19246-977e-42ed-aa42-591be0752476",
+        "elapsedMs": 49
+      },
+      "at": 1783925082617
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "9877d67d-d247-4943-91a9-ee907f47b1a0",
+        "ts": 1783925082617
+      },
+      "at": 1783925082617
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "9877d67d-d247-4943-91a9-ee907f47b1a0",
+        "elapsedMs": 41
+      },
+      "at": 1783925082658
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "877537e8-44de-4088-b0e6-cef9d5ff0b65",
+        "ts": 1783925082658
+      },
+      "at": 1783925082658
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "877537e8-44de-4088-b0e6-cef9d5ff0b65",
+        "elapsedMs": 24
+      },
+      "at": 1783925082682
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "18bd4088-a6b4-471b-a45b-9c1871afa90d",
+        "ts": 1783925082682
+      },
+      "at": 1783925082682
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "18bd4088-a6b4-471b-a45b-9c1871afa90d",
+        "elapsedMs": 24
+      },
+      "at": 1783925082706
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "d7ef6bb3-8521-4365-97d1-81c9c4b46495",
+        "ts": 1783925082706
+      },
+      "at": 1783925082706
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "d7ef6bb3-8521-4365-97d1-81c9c4b46495",
+        "elapsedMs": 20
+      },
+      "at": 1783925082726
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "bdc4e55b-dc6e-416b-a6b7-33774bdf67b1",
+        "ts": 1783925082726
+      },
+      "at": 1783925082726
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "bdc4e55b-dc6e-416b-a6b7-33774bdf67b1",
+        "elapsedMs": 23
+      },
+      "at": 1783925082749
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "start",
+        "reelId": "48d2c05d-3667-4765-86b5-2bffcc0feccc",
+        "ts": 1783925082749
+      },
+      "at": 1783925082749
+    },
+    {
+      "tag": "[DELETE_API]",
+      "payload": {
+        "stage": "success",
+        "reelId": "48d2c05d-3667-4765-86b5-2bffcc0feccc",
+        "elapsedMs": 24
+      },
+      "at": 1783925082773
+    },
+    {
+      "tag": "[DELETE_STORE]",
+      "payload": {
+        "action": "applyThumbnailDeleteTombstone",
+        "deletedIds": [
+          "84c77a0a-fdcf-4f2d-b032-38a94398f3c3",
+          "c82bf2fb-336b-4be1-a7fa-3187179f14d0",
+          "4a0ee575-acc4-41ce-a382-1b3fe04189f5",
+          "b15c8e5e-f270-47e7-a293-f92f2d750e39",
+          "81ee2f4d-50b8-4325-9de5-00063cf5135d",
+          "2c3761ba-b6fa-4fc2-9dd3-39dff34cfbb2",
+          "7a28a7d6-f15d-49b9-86be-8b1c84f12b21",
+          "2c3d919f-ca21-485d-912c-a8aed3f8feda",
+          "0998fe41-5eed-4783-9caf-d7906ee9616c",
+          "40db7979-5e85-4436-8dee-d17c685cfd0a",
+          "6fbd08f0-963f-416c-994e-af9f99a631dd",
+          "6bff4995-3888-4152-ae87-fd148392fe27",
+          "28b8549e-a43f-4bed-9fe7-12cd9ef6eac8",
+          "f924dd4a-009f-4f37-a057-4ab9dbb9e009",
+          "636d8e8f-239e-4dbe-95a8-6c2251eea0f1",
+          "9cefa0d6-ccbb-494b-83b5-c8af45cbd9da",
+          "64e382e7-dc4e-4226-8a4e-a789983d5c6f",
+          "781391d1-6ef6-4aa9-ad06-52e373b2c89c",
+          "2711170d-dd84-4bbb-841b-2cb05f9fde36",
+          "ce422daf-8878-40bb-a6a0-2d75522ce4fa",
+          "83042792-b2f8-4331-8cbe-82d031badc19",
+          "12502004-9d60-43e0-9016-fcb80c0508ca",
+          "77b6e085-d2db-41df-a8e8-d9eb999ee1cb",
+          "a708a87c-ae07-45c5-a7cc-c6f6f4c5e15e",
+          "80b93d19-015e-4215-9064-f9c87732a47f",
+          "4c92b3e1-7d10-4b51-9559-2d296f842326",
+          "cb7fa6e5-0ee7-4f0b-ae1b-1e7f9ed6c9d4",
+          "514db24d-7ae6-4ca4-bad6-a6fc0ca91dcc",
+          "f6850fed-a4a3-4a86-b277-309c9d6b4f9e",
+          "bb30e8e2-b7a0-40ff-9e2a-b345fd5ca9d6",
+          "358f9df3-225e-4618-9bbb-544fd8b79552",
+          "6d44293c-b4b6-4262-8e73-74c55b2e069f",
+          "364c3411-65a9-49bf-a70f-a6d7451fd528",
+          "904b8e3c-f1cc-45aa-8084-0e1510680bb1",
+          "399e6a81-1069-4ee2-a415-291e3434bd65",
+          "e94c6ee2-4914-49d2-982e-836c6c277a29",
+          "17627dba-0f06-4dd6-a914-1490fef01355",
+          "59a28006-b47a-4b36-a270-96baef9e68a6",
+          "7d55791d-79eb-49df-a83e-2458f7421bf4",
+          "d652fdc9-e098-425b-b009-3aeca07c85f0",
+          "0848790f-d078-41d8-bf3d-7b601db98d75",
+          "5143ef15-74fb-4c00-92cd-d27ab1bb9e2c",
+          "ea25dca8-d6f6-4270-aff8-008373d96b88",
+          "4b0a9a4f-eee1-4544-b5db-c6c384d052de",
+          "fe90675e-0d3d-4366-a190-3dae1f4becff",
+          "bdd82353-5904-40c0-ad6d-78ac4b9b08af",
+          "76727309-579e-4d98-b39d-614eaece4ba1",
+          "c492c413-e8d9-46cd-9379-106dbed41a74",
+          "4c4d4ce7-b0f7-499b-8743-57b408f530c8",
+          "6f695693-02e0-4b2c-9f5d-9cef38680d4f",
+          "b832b757-7bf6-41ef-a588-7499249e5647",
+          "a45a8f00-8504-46e6-8b72-942939e8d765",
+          "60e787d1-e918-4e79-b04d-f076c96586c9",
+          "b19797d4-dd90-411d-9a46-af92756c6d30",
+          "bbc90e28-6132-488c-84b0-92d406afb967",
+          "1c1870bb-ce65-4ea4-b961-727c5904733c",
+          "3a0ee4f1-5355-4e4f-b1fe-8924581643de",
+          "5ff19246-977e-42ed-aa42-591be0752476",
+          "9877d67d-d247-4943-91a9-ee907f47b1a0",
+          "877537e8-44de-4088-b0e6-cef9d5ff0b65",
+          "18bd4088-a6b4-471b-a45b-9c1871afa90d",
+          "d7ef6bb3-8521-4365-97d1-81c9c4b46495",
+          "bdc4e55b-dc6e-416b-a6b7-33774bdf67b1",
+          "48d2c05d-3667-4765-86b5-2bffcc0feccc"
+        ],
+        "failedIds": [],
+        "before": 15,
+        "after": 15,
+        "purged": 0,
+        "ts": 1783925082801
+      },
+      "at": 1783925082801
+    },
+    {
+      "tag": "[STARTUP_RECONCILE]",
+      "payload": {
+        "action": "noop",
+        "examined": 15,
+        "purgedCount": 0,
+        "remaining": 15,
+        "backendThumbReels": 0,
+        "ts": "2026-07-13T06:44:42.874Z"
+      },
+      "at": 1783925082874
+    },
+    {
+      "tag": "[DELETE_STORE]",
+      "payload": {
+        "action": "applyThumbnailDeleteTombstone",
+        "deletedIds": [
+          "84c77a0a-fdcf-4f2d-b032-38a94398f3c3",
+          "c82bf2fb-336b-4be1-a7fa-3187179f14d0",
+          "4a0ee575-acc4-41ce-a382-1b3fe04189f5",
+          "b15c8e5e-f270-47e7-a293-f92f2d750e39",
+          "81ee2f4d-50b8-4325-9de5-00063cf5135d",
+          "2c3761ba-b6fa-4fc2-9dd3-39dff34cfbb2",
+          "7a28a7d6-f15d-49b9-86be-8b1c84f12b21",
+          "2c3d919f-ca21-485d-912c-a8aed3f8feda",
+          "0998fe41-5eed-4783-9caf-d7906ee9616c",
+          "40db7979-5e85-4436-8dee-d17c685cfd0a",
+          "6fbd08f0-963f-416c-994e-af9f99a631dd",
+          "6bff4995-3888-4152-ae87-fd148392fe27",
+          "28b8549e-a43f-4bed-9fe7-12cd9ef6eac8",
+          "f924dd4a-009f-4f37-a057-4ab9dbb9e009",
+          "636d8e8f-239e-4dbe-95a8-6c2251eea0f1",
+          "9cefa0d6-ccbb-494b-83b5-c8af45cbd9da",
+          "64e382e7-dc4e-4226-8a4e-a789983d5c6f",
+          "781391d1-6ef6-4aa9-ad06-52e373b2c89c",
+          "2711170d-dd84-4bbb-841b-2cb05f9fde36",
+          "ce422daf-8878-40bb-a6a0-2d75522ce4fa",
+          "83042792-b2f8-4331-8cbe-82d031badc19",
+          "12502004-9d60-43e0-9016-fcb80c0508ca",
+          "77b6e085-d2db-41df-a8e8-d9eb999ee1cb",
+          "a708a87c-ae07-45c5-a7cc-c6f6f4c5e15e",
+          "80b93d19-015e-4215-9064-f9c87732a47f",
+          "4c92b3e1-7d10-4b51-9559-2d296f842326",
+          "cb7fa6e5-0ee7-4f0b-ae1b-1e7f9ed6c9d4",
+          "514db24d-7ae6-4ca4-bad6-a6fc0ca91dcc",
+          "f6850fed-a4a3-4a86-b277-309c9d6b4f9e",
+          "bb30e8e2-b7a0-40ff-9e2a-b345fd5ca9d6",
+          "358f9df3-225e-4618-9bbb-544fd8b79552",
+          "6d44293c-b4b6-4262-8e73-74c55b2e069f",
+          "364c3411-65a9-49bf-a70f-a6d7451fd528",
+          "904b8e3c-f1cc-45aa-8084-0e1510680bb1",
+          "399e6a81-1069-4ee2-a415-291e3434bd65",
+          "e94c6ee2-4914-49d2-982e-836c6c277a29",
+          "17627dba-0f06-4dd6-a914-1490fef01355",
+          "59a28006-b47a-4b36-a270-96baef9e68a6",
+          "7d55791d-79eb-49df-a83e-2458f7421bf4",
+          "d652fdc9-e098-425b-b009-3aeca07c85f0",
+          "0848790f-d078-41d8-bf3d-7b601db98d75",
+          "5143ef15-74fb-4c00-92cd-d27ab1bb9e2c",
+          "ea25dca8-d6f6-4270-aff8-008373d96b88",
+          "4b0a9a4f-eee1-4544-b5db-c6c384d052de",
+          "fe90675e-0d3d-4366-a190-3dae1f4becff",
+          "bdd82353-5904-40c0-ad6d-78ac4b9b08af",
+          "76727309-579e-4d98-b39d-614eaece4ba1",
+          "c492c413-e8d9-46cd-9379-106dbed41a74",
+          "4c4d4ce7-b0f7-499b-8743-57b408f530c8",
+          "6f695693-02e0-4b2c-9f5d-9cef38680d4f",
+          "b832b757-7bf6-41ef-a588-7499249e5647",
+          "a45a8f00-8504-46e6-8b72-942939e8d765",
+          "60e787d1-e918-4e79-b04d-f076c96586c9",
+          "b19797d4-dd90-411d-9a46-af92756c6d30",
+          "bbc90e28-6132-488c-84b0-92d406afb967",
+          "1c1870bb-ce65-4ea4-b961-727c5904733c",
+          "3a0ee4f1-5355-4e4f-b1fe-8924581643de",
+          "5ff19246-977e-42ed-aa42-591be0752476",
+          "9877d67d-d247-4943-91a9-ee907f47b1a0",
+          "877537e8-44de-4088-b0e6-cef9d5ff0b65",
+          "18bd4088-a6b4-471b-a45b-9c1871afa90d",
+          "d7ef6bb3-8521-4365-97d1-81c9c4b46495",
+          "bdc4e55b-dc6e-416b-a6b7-33774bdf67b1",
+          "48d2c05d-3667-4765-86b5-2bffcc0feccc"
+        ],
+        "failedIds": [],
+        "before": 15,
+        "after": 15,
+        "purged": 0,
+        "ts": 1783925083691
+      },
+      "at": 1783925083691
+    },
+    {
+      "tag": "[ORPHAN_PURGE]",
+      "payload": {
+        "deletedIds": [
+          "84c77a0a-fdcf-4f2d-b032-38a94398f3c3",
+          "c82bf2fb-336b-4be1-a7fa-3187179f14d0",
+          "4a0ee575-acc4-41ce-a382-1b3fe04189f5",
+          "b15c8e5e-f270-47e7-a293-f92f2d750e39",
+          "81ee2f4d-50b8-4325-9de5-00063cf5135d",
+          "2c3761ba-b6fa-4fc2-9dd3-39dff34cfbb2",
+          "7a28a7d6-f15d-49b9-86be-8b1c84f12b21",
+          "2c3d919f-ca21-485d-912c-a8aed3f8feda",
+          "0998fe41-5eed-4783-9caf-d7906ee9616c",
+          "40db7979-5e85-4436-8dee-d17c685cfd0a",
+          "6fbd08f0-963f-416c-994e-af9f99a631dd",
+          "6bff4995-3888-4152-ae87-fd148392fe27",
+          "28b8549e-a43f-4bed-9fe7-12cd9ef6eac8",
+          "f924dd4a-009f-4f37-a057-4ab9dbb9e009",
+          "636d8e8f-239e-4dbe-95a8-6c2251eea0f1",
+          "9cefa0d6-ccbb-494b-83b5-c8af45cbd9da",
+          "64e382e7-dc4e-4226-8a4e-a789983d5c6f",
+          "781391d1-6ef6-4aa9-ad06-52e373b2c89c",
+          "2711170d-dd84-4bbb-841b-2cb05f9fde36",
+          "ce422daf-8878-40bb-a6a0-2d75522ce4fa",
+          "83042792-b2f8-4331-8cbe-82d031badc19",
+          "12502004-9d60-43e0-9016-fcb80c0508ca",
+          "77b6e085-d2db-41df-a8e8-d9eb999ee1cb",
+          "a708a87c-ae07-45c5-a7cc-c6f6f4c5e15e",
+          "80b93d19-015e-4215-9064-f9c87732a47f",
+          "4c92b3e1-7d10-4b51-9559-2d296f842326",
+          "cb7fa6e5-0ee7-4f0b-ae1b-1e7f9ed6c9d4",
+          "514db24d-7ae6-4ca4-bad6-a6fc0ca91dcc",
+          "f6850fed-a4a3-4a86-b277-309c9d6b4f9e",
+          "bb30e8e2-b7a0-40ff-9e2a-b345fd5ca9d6",
+          "358f9df3-225e-4618-9bbb-544fd8b79552",
+          "6d44293c-b4b6-4262-8e73-74c55b2e069f",
+          "364c3411-65a9-49bf-a70f-a6d7451fd528",
+          "904b8e3c-f1cc-45aa-8084-0e1510680bb1",
+          "399e6a81-1069-4ee2-a415-291e3434bd65",
+          "e94c6ee2-4914-49d2-982e-836c6c277a29",
+          "17627dba-0f06-4dd6-a914-1490fef01355",
+          "59a28006-b47a-4b36-a270-96baef9e68a6",
+          "7d55791d-79eb-49df-a83e-2458f7421bf4",
+          "d652fdc9-e098-425b-b009-3aeca07c85f0",
+          "0848790f-d078-41d8-bf3d-7b601db98d75",
+          "5143ef15-74fb-4c00-92cd-d27ab1bb9e2c",
+          "ea25dca8-d6f6-4270-aff8-008373d96b88",
+          "4b0a9a4f-eee1-4544-b5db-c6c384d052de",
+          "fe90675e-0d3d-4366-a190-3dae1f4becff",
+          "bdd82353-5904-40c0-ad6d-78ac4b9b08af",
+          "76727309-579e-4d98-b39d-614eaece4ba1",
+          "c492c413-e8d9-46cd-9379-106dbed41a74",
+          "4c4d4ce7-b0f7-499b-8743-57b408f530c8",
+          "6f695693-02e0-4b2c-9f5d-9cef38680d4f",
+          "b832b757-7bf6-41ef-a588-7499249e5647",
+          "a45a8f00-8504-46e6-8b72-942939e8d765",
+          "60e787d1-e918-4e79-b04d-f076c96586c9",
+          "b19797d4-dd90-411d-9a46-af92756c6d30",
+          "bbc90e28-6132-488c-84b0-92d406afb967",
+          "1c1870bb-ce65-4ea4-b961-727c5904733c",
+          "3a0ee4f1-5355-4e4f-b1fe-8924581643de",
+          "5ff19246-977e-42ed-aa42-591be0752476",
+          "9877d67d-d247-4943-91a9-ee907f47b1a0",
+          "877537e8-44de-4088-b0e6-cef9d5ff0b65",
+          "18bd4088-a6b4-471b-a45b-9c1871afa90d",
+          "d7ef6bb3-8521-4365-97d1-81c9c4b46495",
+          "bdc4e55b-dc6e-416b-a6b7-33774bdf67b1",
+          "48d2c05d-3667-4765-86b5-2bffcc0feccc"
+        ],
+        "purgedCount": 15,
+        "purged": [
+          {
+            "fileKey": "phantom-no-id-0.png",
+            "reason": "orphaned",
+            "type": "orphaned"
+          },
+          {
+            "fileKey": "phantom-no-id-1.png",
+            "reason": "orphaned",
+            "type": "orphaned"
+          },
+          {
+            "fileKey": "phantom-no-id-2.png",
+            "reason": "orphaned",
+            "type": "orphaned"
+          },
+          {
+            "fileKey": "phantom-no-id-3.png",
+            "reason": "orphaned",
+            "type": "orphaned"
+          },
+          {
+            "fileKey": "phantom-no-id-4.png",
+            "reason": "orphaned",
+            "type": "orphaned"
+          },
+          {
+            "fileKey": "phantom-no-id-5.png",
+            "reason": "orphaned",
+            "type": "orphaned"
+          },
+          {
+            "fileKey": "phantom-no-id-6.png",
+            "reason": "orphaned",
+            "type": "orphaned"
+          },
+          {
+            "fileKey": "phantom-no-id-7.png",
+            "reason": "orphaned",
+            "type": "orphaned"
+          },
+          {
+            "fileKey": "phantom-no-id-8.png",
+            "reason": "orphaned",
+            "type": "orphaned"
+          },
+          {
+            "fileKey": "phantom-no-id-9.png",
+            "reason": "orphaned",
+            "type": "orphaned"
+          },
+          {
+            "fileKey": "phantom-no-id-10.png",
+            "reason": "orphaned",
+            "type": "orphaned"
+          },
+          {
+            "fileKey": "phantom-no-id-11.png",
+            "reason": "orphaned",
+            "type": "orphaned"
+          },
+          {
+            "fileKey": "phantom-no-id-12.png",
+            "reason": "orphaned",
+            "type": "orphaned"
+          },
+          {
+            "fileKey": "phantom-no-id-13.png",
+            "reason": "orphaned",
+            "type": "orphaned"
+          },
+          {
+            "fileKey": "phantom-no-id-14.png",
+            "reason": "orphaned",
+            "type": "orphaned"
+          }
+        ],
+        "remaining": 0
+      },
+      "at": 1783925083699
+    },
+    {
+      "tag": "[DELETE_RENDER]",
+      "payload": {
+        "mechanism": "batch",
+        "beforeCount": 15,
+        "afterCount": 0,
+        "renderedAfter": 0,
+        "deletedIdsCount": 64,
+        "idsToDeleteCount": 64,
+        "removed": 64,
+        "ts": 1783925083702
+      },
+      "at": 1783925083702
+    }
+  ]
+}
+```
+
+### After hard refresh
+
+```json
+{
+  "heading": "Your Thumbnails (0)",
+  "thumbs": 0,
+  "index": 0,
+  "withId": 0,
+  "withoutId": 0,
+  "orphaned": 0,
+  "cards": 0,
+  "placeholders": 0,
+  "deleteSelected": {
+    "text": "🗑️ DELETE SELECTED THUMBS (0)",
+    "disabled": true,
+    "pointerEvents": "auto",
+    "opacity": "1",
+    "coveredBy": "undefined"
+  },
+  "batchDeleteAll": {
+    "disabled": false,
+    "pointerEvents": "auto"
+  },
+  "checkboxes": {
+    "total": 0,
+    "enabled": 0,
+    "disabled": 0
+  },
+  "logs": [
+    {
+      "tag": "[STARTUP_RECONCILE]",
+      "payload": {
+        "action": "noop",
+        "examined": 0,
+        "purgedCount": 0,
+        "remaining": 0,
+        "backendThumbReels": 0,
+        "ts": "2026-07-13T06:44:56.469Z"
+      },
+      "at": 1783925096469
+    },
+    {
+      "tag": "[DELETE_REACTIVE]",
+      "payload": {
+        "storeCount": 0,
+        "renderedCount": 0,
+        "selectedCount": 0,
+        "ts": 1783925100867
+      },
+      "at": 1783925100867
+    },
+    {
+      "tag": "[DELETE_AUDIT_START]",
+      "payload": {
+        "scope": "vault-experience",
+        "timestamp": 1783925100868
+      },
+      "at": 1783925100868
+    },
+    {
+      "tag": "[DELETE_HANDLER_ATTACHED]",
+      "payload": {
+        "vault": "thumbnail-vault",
+        "mechanism": "single",
+        "timestamp": 1783925100869
+      },
+      "at": 1783925100869
+    },
+    {
+      "tag": "[DELETE_HANDLER_ATTACHED]",
+      "payload": {
+        "vault": "video-vault",
+        "mechanism": "single",
+        "timestamp": 1783925100869
+      },
+      "at": 1783925100869
+    },
+    {
+      "tag": "[DELETE_HANDLER_ATTACHED]",
+      "payload": {
+        "vault": "thumbnail-vault",
+        "mechanism": "batch",
+        "timestamp": 1783925100869
+      },
+      "at": 1783925100869
+    },
+    {
+      "tag": "[DELETE_HANDLER_ATTACHED]",
+      "payload": {
+        "vault": "video-vault",
+        "mechanism": "batch",
+        "timestamp": 1783925100869
+      },
+      "at": 1783925100869
+    },
+    {
+      "tag": "[DELETE_HANDLER_ATTACHED]",
+      "payload": {
+        "vault": "vault-delete-zone",
+        "mechanism": "drag-drop",
+        "timestamp": 1783925100869
+      },
+      "at": 1783925100869
+    },
+    {
+      "tag": "[STARTUP_RECONCILE]",
+      "payload": {
+        "action": "noop",
+        "source": "VaultExperience.ensureThumbnailCanonicalization",
+        "examined": 0,
+        "purgedCount": 0,
+        "remaining": 0,
+        "ts": "2026-07-13T06:45:01.220Z"
+      },
+      "at": 1783925101220
+    }
+  ]
+}
+```
+
+---
+
+## 7. Conclusion
+
+| Question | Answer |
+|----------|--------|
+| Does onclick fire on DELETE SELECTED? | **NO** (button disabled — handler not reachable without force) |
+| Is selectedThumbnailIds empty? | **YES** when no canonical selection (orphan vault) |
+| Is batchDeleteThumbnails called? | **YES** |
+| Does store count drop after BATCH DELETE ALL? | YES |
+| Why rendered count stays 20? | Id-less orphans bypass tombstone; purge gated on deletedIds.length |
+
+Audit: `node scripts/mission-5.7.7-live-delete-audit.mjs`

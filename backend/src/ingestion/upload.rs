@@ -47,6 +47,14 @@ async fn ingest_video_bytes(
 
     let asset_id = Uuid::new_v4();
     let stored_name = asset_filename(asset_id, ext);
+    crate::pipeline_diag::pipeline_diag(
+        "INGEST",
+        "ingest_video_bytes",
+        "upload.rs",
+        Some(&asset_id.to_string()),
+        Some(original_filename),
+        "asset_created",
+    );
     let video_path = svc.config.videos_path.join(&stored_name);
 
     if let Err(e) = std::fs::write(&video_path, bytes) {
@@ -111,10 +119,34 @@ async fn ingest_video_bytes(
     .await
     {
         let _ = std::fs::remove_file(&video_path);
+        crate::pipeline_diag::pipeline_diag(
+            "DB",
+            "ingest_video_bytes",
+            "upload.rs",
+            Some(&asset_id.to_string()),
+            Some(original_filename),
+            "insert_failed",
+        );
+        crate::pipeline_diag::pipeline_diag(
+            "RESPONSE",
+            "ingest_video_bytes",
+            "upload.rs",
+            Some(&asset_id.to_string()),
+            Some(original_filename),
+            "500_db_insert_failed",
+        );
         return HttpResponse::InternalServerError().json(serde_json::json!({
             "error": format!("Database insert failed: {}", e)
         }));
     }
+    crate::pipeline_diag::pipeline_diag(
+        "DB",
+        "ingest_video_bytes",
+        "upload.rs",
+        Some(&asset_id.to_string()),
+        Some(&stored_name),
+        "insert_pending_ok",
+    );
 
     // Skip ffmpeg job if user supplied a valid thumbnail
     let needs_thumb_job = thumb_url.is_none();
@@ -126,6 +158,14 @@ async fn ingest_video_bytes(
             }));
         }
         eprintln!("[STORE_UPDATE] reel={} status=pending queue=enqueued", asset_id);
+        crate::pipeline_diag::pipeline_diag(
+            "INGEST",
+            "ingest_video_bytes",
+            "upload.rs",
+            Some(&asset_id.to_string()),
+            Some(&stored_name),
+            "pending_enqueued",
+        );
     } else {
         if let Err(e) = reels::mark_ready(&svc.pool, asset_id, thumb_url.as_ref().unwrap()).await {
             return HttpResponse::InternalServerError().json(serde_json::json!({
@@ -133,6 +173,14 @@ async fn ingest_video_bytes(
             }));
         }
         eprintln!("[STORE_UPDATE] reel={} status=ready immediate=true", asset_id);
+        crate::pipeline_diag::pipeline_diag(
+            "DB",
+            "ingest_video_bytes",
+            "upload.rs",
+            Some(&asset_id.to_string()),
+            Some(&stored_name),
+            "mark_ready_immediate",
+        );
         reel_contract::publish_reel_ready(&svc.pool, asset_id, svc.event_bus.as_ref()).await;
     }
 
@@ -143,10 +191,19 @@ async fn ingest_video_bytes(
         "[ingest] accepted reel={} file={} thumb_job={}",
         asset_id, stored_name, needs_thumb_job
     );
+    let status = if needs_thumb_job { "pending" } else { "ready" };
+    crate::pipeline_diag::pipeline_diag(
+        "RESPONSE",
+        "ingest_video_bytes",
+        "upload.rs",
+        Some(&asset_id.to_string()),
+        Some(&stored_name),
+        status,
+    );
 
     HttpResponse::Accepted().json(IngestAcceptedResponse {
         id: asset_id.to_string(),
-        status: if needs_thumb_job { "pending" } else { "ready" },
+        status,
         video_url: abs_video,
         thumbnail_url: abs_thumb,
         poll_url: format!("/api/reels/{}", asset_id),
@@ -157,18 +214,60 @@ pub async fn ingest_from_reel_multipart(
     svc: &IngestionService,
     payload: &mut Multipart,
 ) -> HttpResponse {
+    crate::pipeline_diag::pipeline_diag(
+        "INGEST",
+        "ingest_from_reel_multipart",
+        "upload.rs",
+        None,
+        None,
+        "enter",
+    );
     let form = match media_api::parse_reel_multipart(payload).await {
         Ok(f) => f,
-        Err(resp) => return resp,
+        Err(resp) => {
+            crate::pipeline_diag::pipeline_diag(
+                "INGEST",
+                "ingest_from_reel_multipart",
+                "upload.rs",
+                None,
+                None,
+                "parse_multipart_error",
+            );
+            crate::pipeline_diag::pipeline_diag(
+                "RESPONSE",
+                "ingest_from_reel_multipart",
+                "upload.rs",
+                None,
+                None,
+                "bad_request",
+            );
+            return resp;
+        }
     };
 
     if form.video.is_none() && form.thumbnail.is_none() {
+        crate::pipeline_diag::pipeline_diag(
+            "RESPONSE",
+            "ingest_from_reel_multipart",
+            "upload.rs",
+            None,
+            None,
+            "400_no_media",
+        );
         return HttpResponse::BadRequest().json(serde_json::json!({
             "error": "At least one of video or thumbnail is required"
         }));
     }
 
     if let Some((ref filename, ref bytes)) = form.video {
+        crate::pipeline_diag::pipeline_diag(
+            "INGEST",
+            "ingest_from_reel_multipart",
+            "upload.rs",
+            None,
+            Some(filename.as_str()),
+            "route_video_bytes",
+        );
         return ingest_video_bytes(
             svc,
             bytes,
@@ -183,9 +282,25 @@ pub async fn ingest_from_reel_multipart(
 
     // Image-only upload (no async pipeline)
     if let Some((ref filename, ref bytes)) = form.thumbnail {
+        crate::pipeline_diag::pipeline_diag(
+            "INGEST",
+            "ingest_from_reel_multipart",
+            "upload.rs",
+            None,
+            Some(filename.as_str()),
+            "route_image_only",
+        );
         return ingest_image_only(svc, filename, bytes, form.title, form.category).await;
     }
 
+    crate::pipeline_diag::pipeline_diag(
+        "RESPONSE",
+        "ingest_from_reel_multipart",
+        "upload.rs",
+        None,
+        None,
+        "400_no_valid_media",
+    );
     HttpResponse::BadRequest().json(serde_json::json!({ "error": "No valid media in request" }))
 }
 
@@ -201,6 +316,14 @@ async fn ingest_image_only(
     }
 
     let asset_id = Uuid::new_v4();
+    crate::pipeline_diag::pipeline_diag(
+        "INGEST",
+        "ingest_image_only",
+        "upload.rs",
+        Some(&asset_id.to_string()),
+        Some(filename),
+        "asset_created",
+    );
     let lowered = filename.to_lowercase();
     let (ext, mime) = if lowered.ends_with(".png") {
         (".png", "image/png")
@@ -254,13 +377,38 @@ async fn ingest_image_only(
     }
 
     if let Err(e) = reels::mark_ready(&svc.pool, asset_id, &thumb_url).await {
+        crate::pipeline_diag::pipeline_diag(
+            "DB",
+            "ingest_image_only",
+            "upload.rs",
+            Some(&asset_id.to_string()),
+            Some(&stored_name),
+            "mark_ready_failed",
+        );
         return HttpResponse::InternalServerError().json(serde_json::json!({
             "error": e.to_string()
         }));
     }
+    crate::pipeline_diag::pipeline_diag(
+        "DB",
+        "ingest_image_only",
+        "upload.rs",
+        Some(&asset_id.to_string()),
+        Some(&stored_name),
+        "mark_ready_ok",
+    );
     eprintln!("[STORE_UPDATE] reel={} status=ready image_only=true", asset_id);
 
     reel_contract::publish_reel_ready(&svc.pool, asset_id, svc.event_bus.as_ref()).await;
+
+    crate::pipeline_diag::pipeline_diag(
+        "RESPONSE",
+        "ingest_image_only",
+        "upload.rs",
+        Some(&asset_id.to_string()),
+        Some(&stored_name),
+        "ready",
+    );
 
     HttpResponse::Accepted().json(IngestAcceptedResponse {
         id: asset_id.to_string(),

@@ -1,0 +1,452 @@
+{
+  "stages": {
+    "page_load": {
+      "label": "page_load",
+      "heading": "Your Thumbnails (20)",
+      "thumbsCount": 20,
+      "indexCount": 20,
+      "thumbsWithId": 5,
+      "thumbsWithoutId": 15,
+      "stringEntries": 0,
+      "cards": 20,
+      "placeholders": 15,
+      "checkboxes": {
+        "total": 20,
+        "enabled": 5,
+        "disabled": 15,
+        "checked": 0
+      },
+      "deleteButton": {
+        "text": "🗑️ DELETE SELECTED THUMBS (0)",
+        "disabled": true
+      },
+      "sampleThumb": {
+        "fileName": "phantom-no-id-0.png",
+        "name": "phantom-no-id-0.png",
+        "title": "phantom-no-id-0.png",
+        "url": "/thumbs/phantom-no-id-0.png",
+        "addedAt": "2026-07-12T13:52:40.981Z",
+        "orphaned": true
+      }
+    },
+    "selected_enabled_count": 3,
+    "after_selection": {
+      "label": "after_selection",
+      "heading": "Your Thumbnails (20)",
+      "thumbsCount": 20,
+      "indexCount": 20,
+      "thumbsWithId": 5,
+      "thumbsWithoutId": 15,
+      "stringEntries": 0,
+      "cards": 20,
+      "placeholders": 15,
+      "checkboxes": {
+        "total": 20,
+        "enabled": 5,
+        "disabled": 15,
+        "checked": 3
+      },
+      "deleteButton": {
+        "text": "🗑️ DELETE SELECTED THUMBS (3)",
+        "disabled": false
+      },
+      "sampleThumb": {
+        "fileName": "phantom-no-id-0.png",
+        "name": "phantom-no-id-0.png",
+        "title": "phantom-no-id-0.png",
+        "url": "/thumbs/phantom-no-id-0.png",
+        "addedAt": "2026-07-12T13:52:40.981Z",
+        "orphaned": true
+      }
+    },
+    "selection_logs": [
+      {
+        "tag": "[BATCH_SELECT]",
+        "payload": {
+          "selectedCount": 1,
+          "selectedIds": [
+            "1fd6621f-240e-4bb3-aeb8-6bd28bcfc65d"
+          ]
+        },
+        "at": 1783864376983
+      },
+      {
+        "tag": "[BATCH_SELECT_TOGGLE]",
+        "payload": {
+          "itemId": "1fd6621f-240e-4bb3-aeb8-6bd28bcfc65d",
+          "action": "added",
+          "newCount": 1
+        },
+        "at": 1783864376983
+      },
+      {
+        "tag": "[BATCH_SELECT]",
+        "payload": {
+          "selectedCount": 2,
+          "selectedIds": [
+            "1fd6621f-240e-4bb3-aeb8-6bd28bcfc65d",
+            "6f19ec1d-3b96-4858-84cd-57e1e087fd3b"
+          ]
+        },
+        "at": 1783864377209
+      },
+      {
+        "tag": "[BATCH_SELECT_TOGGLE]",
+        "payload": {
+          "itemId": "6f19ec1d-3b96-4858-84cd-57e1e087fd3b",
+          "action": "added",
+          "newCount": 2
+        },
+        "at": 1783864377210
+      },
+      {
+        "tag": "[BATCH_SELECT]",
+        "payload": {
+          "selectedCount": 3,
+          "selectedIds": [
+            "1fd6621f-240e-4bb3-aeb8-6bd28bcfc65d",
+            "6f19ec1d-3b96-4858-84cd-57e1e087fd3b",
+            "7b6e1139-c311-4203-807e-5bf25dd25d04"
+          ]
+        },
+        "at": 1783864377420
+      },
+      {
+        "tag": "[BATCH_SELECT_TOGGLE]",
+        "payload": {
+          "itemId": "7b6e1139-c311-4203-807e-5bf25dd25d04",
+          "action": "added",
+          "newCount": 3
+        },
+        "at": 1783864377421
+      }
+    ],
+    "delete_button_disabled": false,
+    "after_delete": {
+      "label": "after_delete",
+      "heading": "Your Thumbnails (17)",
+      "thumbsCount": 17,
+      "indexCount": 17,
+      "thumbsWithId": 2,
+      "thumbsWithoutId": 15,
+      "stringEntries": 0,
+      "cards": 17,
+      "placeholders": 15,
+      "checkboxes": {
+        "total": 17,
+        "enabled": 2,
+        "disabled": 15,
+        "checked": 0
+      },
+      "deleteButton": {
+        "text": "🗑️ DELETE SELECTED THUMBS (0)",
+        "disabled": true
+      },
+      "sampleThumb": {
+        "fileName": "phantom-no-id-0.png",
+        "name": "phantom-no-id-0.png",
+        "title": "phantom-no-id-0.png",
+        "url": "/thumbs/phantom-no-id-0.png",
+        "addedAt": "2026-07-12T13:52:40.981Z",
+        "orphaned": true
+      }
+    },
+    "delete_requests": [
+      {
+        "url": "http://127.0.0.1:5173/api/reels/1fd6621f-240e-4bb3-aeb8-6bd28bcfc65d",
+        "method": "DELETE",
+        "at": 1783864377834,
+        "status": 200
+      },
+      {
+        "url": "http://127.0.0.1:5173/api/reels/6f19ec1d-3b96-4858-84cd-57e1e087fd3b",
+        "method": "DELETE",
+        "at": 1783864377898,
+        "status": 200
+      },
+      {
+        "url": "http://127.0.0.1:5173/api/reels/7b6e1139-c311-4203-807e-5bf25dd25d04",
+        "method": "DELETE",
+        "at": 1783864377917,
+        "status": 200
+      }
+    ]
+  },
+  "logs": [
+    {
+      "tag": "[DELETE_AUDIT_START]",
+      "payload": {
+        "scope": "vault-experience",
+        "timestamp": 1783864371566
+      },
+      "at": 1783864371566
+    },
+    {
+      "tag": "[DELETE_HANDLER_ATTACHED]",
+      "payload": {
+        "vault": "thumbnail-vault",
+        "mechanism": "single",
+        "timestamp": 1783864371567
+      },
+      "at": 1783864371567
+    },
+    {
+      "tag": "[DELETE_HANDLER_ATTACHED]",
+      "payload": {
+        "vault": "video-vault",
+        "mechanism": "single",
+        "timestamp": 1783864371567
+      },
+      "at": 1783864371567
+    },
+    {
+      "tag": "[DELETE_HANDLER_ATTACHED]",
+      "payload": {
+        "vault": "thumbnail-vault",
+        "mechanism": "batch",
+        "timestamp": 1783864371568
+      },
+      "at": 1783864371568
+    },
+    {
+      "tag": "[DELETE_HANDLER_ATTACHED]",
+      "payload": {
+        "vault": "video-vault",
+        "mechanism": "batch",
+        "timestamp": 1783864371568
+      },
+      "at": 1783864371568
+    },
+    {
+      "tag": "[DELETE_HANDLER_ATTACHED]",
+      "payload": {
+        "vault": "vault-delete-zone",
+        "mechanism": "drag-drop",
+        "timestamp": 1783864371569
+      },
+      "at": 1783864371569
+    },
+    {
+      "tag": "[BATCH_SELECT]",
+      "payload": {
+        "selectedCount": 1,
+        "selectedIds": [
+          "1fd6621f-240e-4bb3-aeb8-6bd28bcfc65d"
+        ]
+      },
+      "at": 1783864376983
+    },
+    {
+      "tag": "[BATCH_SELECT_TOGGLE]",
+      "payload": {
+        "itemId": "1fd6621f-240e-4bb3-aeb8-6bd28bcfc65d",
+        "action": "added",
+        "newCount": 1
+      },
+      "at": 1783864376983
+    },
+    {
+      "tag": "[BATCH_SELECT]",
+      "payload": {
+        "selectedCount": 2,
+        "selectedIds": [
+          "1fd6621f-240e-4bb3-aeb8-6bd28bcfc65d",
+          "6f19ec1d-3b96-4858-84cd-57e1e087fd3b"
+        ]
+      },
+      "at": 1783864377209
+    },
+    {
+      "tag": "[BATCH_SELECT_TOGGLE]",
+      "payload": {
+        "itemId": "6f19ec1d-3b96-4858-84cd-57e1e087fd3b",
+        "action": "added",
+        "newCount": 2
+      },
+      "at": 1783864377210
+    },
+    {
+      "tag": "[BATCH_SELECT]",
+      "payload": {
+        "selectedCount": 3,
+        "selectedIds": [
+          "1fd6621f-240e-4bb3-aeb8-6bd28bcfc65d",
+          "6f19ec1d-3b96-4858-84cd-57e1e087fd3b",
+          "7b6e1139-c311-4203-807e-5bf25dd25d04"
+        ]
+      },
+      "at": 1783864377420
+    },
+    {
+      "tag": "[BATCH_SELECT_TOGGLE]",
+      "payload": {
+        "itemId": "7b6e1139-c311-4203-807e-5bf25dd25d04",
+        "action": "added",
+        "newCount": 3
+      },
+      "at": 1783864377421
+    },
+    {
+      "tag": "[BATCH_DELETE_CLICK]",
+      "payload": {
+        "selectedCount": 3
+      },
+      "at": 1783864377824
+    },
+    {
+      "tag": "[BATCH_DELETE_CONFIRM]",
+      "payload": {
+        "itemCount": 3
+      },
+      "at": 1783864377828
+    },
+    {
+      "tag": "[BATCH_DELETE_START]",
+      "payload": {
+        "totalSelected": 3,
+        "selectedIds": [
+          "1fd6621f-240e-4bb3-aeb8-6bd28bcfc65d",
+          "6f19ec1d-3b96-4858-84cd-57e1e087fd3b",
+          "7b6e1139-c311-4203-807e-5bf25dd25d04"
+        ]
+      },
+      "at": 1783864377828
+    },
+    {
+      "tag": "[DELETE_PIPELINE]",
+      "payload": {
+        "vault": "thumbnail-vault",
+        "stage": "delete_targets",
+        "selectedIds": [
+          "1fd6621f-240e-4bb3-aeb8-6bd28bcfc65d",
+          "6f19ec1d-3b96-4858-84cd-57e1e087fd3b",
+          "7b6e1139-c311-4203-807e-5bf25dd25d04"
+        ],
+        "resolvedAssetIds": [
+          "1fd6621f-240e-4bb3-aeb8-6bd28bcfc65d",
+          "6f19ec1d-3b96-4858-84cd-57e1e087fd3b",
+          "7b6e1139-c311-4203-807e-5bf25dd25d04"
+        ],
+        "storeSizeBefore": 20,
+        "timestamp": 1783864377829
+      },
+      "at": 1783864377829
+    },
+    {
+      "tag": "[BATCH_DELETE_ITERATION]",
+      "payload": {
+        "current": 1,
+        "total": 3,
+        "itemId": "1fd6621f-240e-4bb3-aeb8-6bd28bcfc65d"
+      },
+      "at": 1783864377829
+    },
+    {
+      "tag": "[BATCH_DELETE_ITEM]",
+      "payload": {
+        "index": 1,
+        "itemId": "1fd6621f-240e-4bb3-aeb8-6bd28bcfc65d",
+        "registrySizeBefore": 20
+      },
+      "at": 1783864377896
+    },
+    {
+      "tag": "[BATCH_DELETE_ITERATION]",
+      "payload": {
+        "current": 2,
+        "total": 3,
+        "itemId": "6f19ec1d-3b96-4858-84cd-57e1e087fd3b"
+      },
+      "at": 1783864377897
+    },
+    {
+      "tag": "[BATCH_DELETE_ITEM]",
+      "payload": {
+        "index": 2,
+        "itemId": "6f19ec1d-3b96-4858-84cd-57e1e087fd3b",
+        "registrySizeBefore": 20
+      },
+      "at": 1783864377916
+    },
+    {
+      "tag": "[BATCH_DELETE_ITERATION]",
+      "payload": {
+        "current": 3,
+        "total": 3,
+        "itemId": "7b6e1139-c311-4203-807e-5bf25dd25d04"
+      },
+      "at": 1783864377916
+    },
+    {
+      "tag": "[BATCH_DELETE_ITEM]",
+      "payload": {
+        "index": 3,
+        "itemId": "7b6e1139-c311-4203-807e-5bf25dd25d04",
+        "registrySizeBefore": 20
+      },
+      "at": 1783864377941
+    },
+    {
+      "tag": "[DELETE_PIPELINE]",
+      "payload": {
+        "vault": "thumbnail-vault",
+        "stage": "store_after",
+        "storeSizeBefore": 20,
+        "storeSizeAfter": 17,
+        "deletedCount": 3,
+        "timestamp": 1783864379507
+      },
+      "at": 1783864379507
+    },
+    {
+      "tag": "[BATCH_STORE_UPDATE]",
+      "payload": {
+        "beforeCount": 20,
+        "afterCount": 17
+      },
+      "at": 1783864379508
+    },
+    {
+      "tag": "[BATCH_PERSIST]",
+      "payload": {
+        "success": true
+      },
+      "at": 1783864379508
+    },
+    {
+      "tag": "[BATCH_UI_REFRESH]",
+      "payload": {
+        "newCount": 17
+      },
+      "at": 1783864379508
+    },
+    {
+      "tag": "[BATCH_DELETE_COMPLETE]",
+      "payload": {
+        "deletedCount": 3,
+        "finalRegistrySize": 17
+      },
+      "at": 1783864379508
+    }
+  ],
+  "deleteRequests": [
+    {
+      "url": "http://127.0.0.1:5173/api/reels/1fd6621f-240e-4bb3-aeb8-6bd28bcfc65d",
+      "method": "DELETE",
+      "at": 1783864377834,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/6f19ec1d-3b96-4858-84cd-57e1e087fd3b",
+      "method": "DELETE",
+      "at": 1783864377898,
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/7b6e1139-c311-4203-807e-5bf25dd25d04",
+      "method": "DELETE",
+      "at": 1783864377917,
+      "status": 200
+    }
+  ]
+}

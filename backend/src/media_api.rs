@@ -295,6 +295,14 @@ pub struct ParsedReelForm {
 
 /// Read all multipart parts (video, thumbnail/image, title, description, category).
 pub async fn parse_reel_multipart(payload: &mut Multipart) -> Result<ParsedReelForm, HttpResponse> {
+    crate::pipeline_diag::pipeline_diag(
+        "MEDIA_API",
+        "parse_reel_multipart",
+        "media_api.rs",
+        None,
+        None,
+        "enter",
+    );
     let mut form = ParsedReelForm {
         title: None,
         description: None,
@@ -379,6 +387,17 @@ pub async fn parse_reel_multipart(payload: &mut Multipart) -> Result<ParsedReelF
             _ => {}
         }
     }
+
+    let video_name = form.video.as_ref().map(|(n, _)| n.as_str());
+    let thumb_name = form.thumbnail.as_ref().map(|(n, _)| n.as_str());
+    crate::pipeline_diag::pipeline_diag(
+        "MEDIA_API",
+        "parse_reel_multipart",
+        "media_api.rs",
+        None,
+        video_name.or(thumb_name),
+        "parsed_ok",
+    );
 
     Ok(form)
 }

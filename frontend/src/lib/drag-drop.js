@@ -1,6 +1,7 @@
 export const VAULT_MIME = 'application/x-reelforge-vault';
 
 import { toBackendMediaUrl } from './config.js';
+import { pipelineDiag } from './diagnostics/pipelineDiag.js';
 
 export const VAULT_SOURCES = Object.freeze({
     MP4: 'mp4-vault',
@@ -13,7 +14,12 @@ const DRAG_DEBUG = true;
 
 export function logDrag(event, detail = {}) {
     if (DRAG_DEBUG) {
-        console.log(`[DnD] ${event}`, detail);
+        pipelineDiag('DND', event, 'drag-drop.js', {
+            assetId: detail.id || null,
+            fileName: detail.name || detail.title || null,
+            result: event,
+            detail
+        });
     }
 }
 

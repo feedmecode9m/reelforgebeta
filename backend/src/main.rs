@@ -10,6 +10,7 @@ pub mod media;
 pub mod viewer_sim;
 pub mod events;
 pub mod handlers;
+pub mod pipeline_diag;
 pub mod ingestion;
 pub mod media_api;
 pub mod media_seed;
@@ -43,7 +44,15 @@ fn is_production_env() -> bool {
     let env = env::var("REELFORGE_ENV")
         .or_else(|_| env::var("RUST_ENV"))
         .unwrap_or_default();
-    matches!(env.as_str(), "production" | "prod")
+    if matches!(env.as_str(), "production" | "prod") {
+        return true;
+    }
+    // Railway/Render set platform env vars but not always REELFORGE_ENV.
+    env::var("RAILWAY_ENVIRONMENT").is_ok() || env::var("RENDER").is_ok()
+}
+
+fn is_deployed_host() -> bool {
+    is_production_env()
 }
 
 fn configure_cors() -> Cors {
@@ -89,6 +98,43 @@ fn configure_cors() -> Cors {
             cors = cors.allowed_origin(origin.as_str());
         }
     }
+
+    let allow_netlify = env::var("REELFORGE_CORS_ALLOW_NETLIFY")
+        .map(|v| {
+            let v = v.trim();
+            v == "1" || v.eq_ignore_ascii_case("true") || v.eq_ignore_ascii_case("yes")
+        })
+        .unwrap_or(is_deployed_host());
+
+    if allow_netlify {
+        cors = cors.allowed_origin_fn(|origin, _req_head| {
+            let allowed = origin
+                .to_str()
+                .map(|o| o.ends_with(".netlify.app") || o.ends_with(".netlify.live"))
+                .unwrap_or(false);
+            if !allowed {
+                let origin_str = origin.to_str().unwrap_or("-");
+                pipeline_diag::pipeline_diag(
+                    "CORS",
+                    "allowed_origin_fn",
+                    "main.rs",
+                    None,
+                    None,
+                    &format!("netlify_rejected:{}", origin_str),
+                );
+            }
+            allowed
+        });
+    }
+
+    pipeline_diag::pipeline_diag(
+        "CORS",
+        "configure_cors",
+        "main.rs",
+        None,
+        None,
+        "configured",
+    );
 
     cors
 }

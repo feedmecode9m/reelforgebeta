@@ -1,17 +1,17 @@
 {
-  "generatedAt": "2026-06-23T20:12:12.171Z",
+  "generatedAt": "2026-07-08T03:25:07.106Z",
   "baseUrl": "http://127.0.0.1:5173",
   "cases": {
     "delete3": {
       "ok": true,
       "targetCount": 3,
-      "beforeCount": 20,
-      "afterCount": 17,
+      "beforeCount": 19,
+      "afterCount": 16,
       "selectedCount": 3,
       "selectedIds": [
-        "1abf2d43-3fae-4b38-9323-b76e0c986666.png",
-        "e5b8e2fd-548d-4280-baf8-1eef93be7abc.png",
-        "33eeccbd-a4ab-4264-b46a-00dc853c578e.png"
+        "Batch Seed 18",
+        "Batch Seed 17",
+        "Batch Seed 16"
       ],
       "chain": {
         "batchSelect": true,
@@ -26,7 +26,7 @@
         {
           "tag": "[BATCH_SELECT_TOGGLE]",
           "payload": {
-            "itemId": "e5b8e2fd-548d-4280-baf8-1eef93be7abc.png",
+            "itemId": "Batch Seed 17",
             "action": "added",
             "newCount": 2
           }
@@ -36,16 +36,16 @@
           "payload": {
             "selectedCount": 3,
             "selectedIds": [
-              "1abf2d43-3fae-4b38-9323-b76e0c986666.png",
-              "e5b8e2fd-548d-4280-baf8-1eef93be7abc.png",
-              "33eeccbd-a4ab-4264-b46a-00dc853c578e.png"
+              "Batch Seed 18",
+              "Batch Seed 17",
+              "Batch Seed 16"
             ]
           }
         },
         {
           "tag": "[BATCH_SELECT_TOGGLE]",
           "payload": {
-            "itemId": "33eeccbd-a4ab-4264-b46a-00dc853c578e.png",
+            "itemId": "Batch Seed 16",
             "action": "added",
             "newCount": 3
           }
@@ -67,9 +67,9 @@
           "payload": {
             "totalSelected": 3,
             "selectedIds": [
-              "1abf2d43-3fae-4b38-9323-b76e0c986666.png",
-              "e5b8e2fd-548d-4280-baf8-1eef93be7abc.png",
-              "33eeccbd-a4ab-4264-b46a-00dc853c578e.png"
+              "Batch Seed 18",
+              "Batch Seed 17",
+              "Batch Seed 16"
             ]
           }
         },
@@ -78,15 +78,15 @@
           "payload": {
             "current": 1,
             "total": 3,
-            "itemId": "1abf2d43-3fae-4b38-9323-b76e0c986666.png"
+            "itemId": "Batch Seed 18"
           }
         },
         {
           "tag": "[BATCH_DELETE_ITEM]",
           "payload": {
             "index": 1,
-            "itemId": "1abf2d43-3fae-4b38-9323-b76e0c986666.png",
-            "registrySizeBefore": 20
+            "itemId": "Batch Seed 18",
+            "registrySizeBefore": 19
           }
         },
         {
@@ -94,15 +94,15 @@
           "payload": {
             "current": 2,
             "total": 3,
-            "itemId": "e5b8e2fd-548d-4280-baf8-1eef93be7abc.png"
+            "itemId": "Batch Seed 17"
           }
         },
         {
           "tag": "[BATCH_DELETE_ITEM]",
           "payload": {
             "index": 2,
-            "itemId": "e5b8e2fd-548d-4280-baf8-1eef93be7abc.png",
-            "registrySizeBefore": 20
+            "itemId": "Batch Seed 17",
+            "registrySizeBefore": 19
           }
         },
         {
@@ -110,22 +110,22 @@
           "payload": {
             "current": 3,
             "total": 3,
-            "itemId": "33eeccbd-a4ab-4264-b46a-00dc853c578e.png"
+            "itemId": "Batch Seed 16"
           }
         },
         {
           "tag": "[BATCH_DELETE_ITEM]",
           "payload": {
             "index": 3,
-            "itemId": "33eeccbd-a4ab-4264-b46a-00dc853c578e.png",
-            "registrySizeBefore": 20
+            "itemId": "Batch Seed 16",
+            "registrySizeBefore": 19
           }
         },
         {
           "tag": "[BATCH_STORE_UPDATE]",
           "payload": {
-            "beforeCount": 20,
-            "afterCount": 17
+            "beforeCount": 19,
+            "afterCount": 16
           }
         },
         {
@@ -137,14 +137,14 @@
         {
           "tag": "[BATCH_UI_REFRESH]",
           "payload": {
-            "newCount": 17
+            "newCount": 16
           }
         },
         {
           "tag": "[BATCH_DELETE_COMPLETE]",
           "payload": {
             "deletedCount": 3,
-            "finalRegistrySize": 17
+            "finalRegistrySize": 16
           }
         }
       ]
@@ -152,20 +152,20 @@
     "delete10plus": {
       "ok": true,
       "targetCount": 10,
-      "beforeCount": 17,
-      "afterCount": 7,
+      "beforeCount": 16,
+      "afterCount": 6,
       "selectedCount": 10,
       "selectedIds": [
-        "2acd2254-c18b-418b-aeea-c8574aa37fa4.png",
-        "7db135b6-0bf1-46a6-b65f-dfac19a93838.png",
-        "68b78c4e-ea21-4563-8819-eee3b57f38e6.png",
-        "6bd8fb72-327d-4022-98c7-af7dd72d0cf4.png",
-        "f1c33d99-2aa8-4691-81ff-f4e3eeb096ed.png",
-        "c31e3a87-2e9d-4322-951a-8389878eb0f7.png",
-        "0b66acc3-bde6-40e7-85fc-fb72c838505c.png",
-        "dab49524-eb8a-4b6f-948d-e34b7fe161a1.png",
-        "8c2db166-b42c-4869-937e-392b1bc62075.png",
-        "85a98760-8cd6-4632-b4af-945eb5be621b.png"
+        "Batch Seed 15",
+        "Batch Seed 14",
+        "Batch Seed 13",
+        "Batch Seed 12",
+        "Batch Seed 11",
+        "Batch Seed 10",
+        "Batch Seed 9",
+        "Batch Seed 8",
+        "Batch Seed 7",
+        "Batch Seed 6"
       ],
       "chain": {
         "batchSelect": true,
@@ -182,15 +182,15 @@
           "payload": {
             "current": 5,
             "total": 10,
-            "itemId": "f1c33d99-2aa8-4691-81ff-f4e3eeb096ed.png"
+            "itemId": "Batch Seed 11"
           }
         },
         {
           "tag": "[BATCH_DELETE_ITEM]",
           "payload": {
             "index": 5,
-            "itemId": "f1c33d99-2aa8-4691-81ff-f4e3eeb096ed.png",
-            "registrySizeBefore": 17
+            "itemId": "Batch Seed 11",
+            "registrySizeBefore": 16
           }
         },
         {
@@ -198,15 +198,15 @@
           "payload": {
             "current": 6,
             "total": 10,
-            "itemId": "c31e3a87-2e9d-4322-951a-8389878eb0f7.png"
+            "itemId": "Batch Seed 10"
           }
         },
         {
           "tag": "[BATCH_DELETE_ITEM]",
           "payload": {
             "index": 6,
-            "itemId": "c31e3a87-2e9d-4322-951a-8389878eb0f7.png",
-            "registrySizeBefore": 17
+            "itemId": "Batch Seed 10",
+            "registrySizeBefore": 16
           }
         },
         {
@@ -214,15 +214,15 @@
           "payload": {
             "current": 7,
             "total": 10,
-            "itemId": "0b66acc3-bde6-40e7-85fc-fb72c838505c.png"
+            "itemId": "Batch Seed 9"
           }
         },
         {
           "tag": "[BATCH_DELETE_ITEM]",
           "payload": {
             "index": 7,
-            "itemId": "0b66acc3-bde6-40e7-85fc-fb72c838505c.png",
-            "registrySizeBefore": 17
+            "itemId": "Batch Seed 9",
+            "registrySizeBefore": 16
           }
         },
         {
@@ -230,15 +230,15 @@
           "payload": {
             "current": 8,
             "total": 10,
-            "itemId": "dab49524-eb8a-4b6f-948d-e34b7fe161a1.png"
+            "itemId": "Batch Seed 8"
           }
         },
         {
           "tag": "[BATCH_DELETE_ITEM]",
           "payload": {
             "index": 8,
-            "itemId": "dab49524-eb8a-4b6f-948d-e34b7fe161a1.png",
-            "registrySizeBefore": 17
+            "itemId": "Batch Seed 8",
+            "registrySizeBefore": 16
           }
         },
         {
@@ -246,15 +246,15 @@
           "payload": {
             "current": 9,
             "total": 10,
-            "itemId": "8c2db166-b42c-4869-937e-392b1bc62075.png"
+            "itemId": "Batch Seed 7"
           }
         },
         {
           "tag": "[BATCH_DELETE_ITEM]",
           "payload": {
             "index": 9,
-            "itemId": "8c2db166-b42c-4869-937e-392b1bc62075.png",
-            "registrySizeBefore": 17
+            "itemId": "Batch Seed 7",
+            "registrySizeBefore": 16
           }
         },
         {
@@ -262,22 +262,22 @@
           "payload": {
             "current": 10,
             "total": 10,
-            "itemId": "85a98760-8cd6-4632-b4af-945eb5be621b.png"
+            "itemId": "Batch Seed 6"
           }
         },
         {
           "tag": "[BATCH_DELETE_ITEM]",
           "payload": {
             "index": 10,
-            "itemId": "85a98760-8cd6-4632-b4af-945eb5be621b.png",
-            "registrySizeBefore": 17
+            "itemId": "Batch Seed 6",
+            "registrySizeBefore": 16
           }
         },
         {
           "tag": "[BATCH_STORE_UPDATE]",
           "payload": {
-            "beforeCount": 17,
-            "afterCount": 7
+            "beforeCount": 16,
+            "afterCount": 6
           }
         },
         {
@@ -289,14 +289,14 @@
         {
           "tag": "[BATCH_UI_REFRESH]",
           "payload": {
-            "newCount": 7
+            "newCount": 6
           }
         },
         {
           "tag": "[BATCH_DELETE_COMPLETE]",
           "payload": {
             "deletedCount": 10,
-            "finalRegistrySize": 7
+            "finalRegistrySize": 6
           }
         }
       ]
@@ -305,36 +305,36 @@
   "persistence": {
     "reloadRetainsDeletes": true,
     "checkedIds": [
-      "1abf2d43-3fae-4b38-9323-b76e0c986666.png",
-      "e5b8e2fd-548d-4280-baf8-1eef93be7abc.png",
-      "33eeccbd-a4ab-4264-b46a-00dc853c578e.png",
-      "2acd2254-c18b-418b-aeea-c8574aa37fa4.png",
-      "7db135b6-0bf1-46a6-b65f-dfac19a93838.png",
-      "68b78c4e-ea21-4563-8819-eee3b57f38e6.png",
-      "6bd8fb72-327d-4022-98c7-af7dd72d0cf4.png",
-      "f1c33d99-2aa8-4691-81ff-f4e3eeb096ed.png",
-      "c31e3a87-2e9d-4322-951a-8389878eb0f7.png",
-      "0b66acc3-bde6-40e7-85fc-fb72c838505c.png",
-      "dab49524-eb8a-4b6f-948d-e34b7fe161a1.png",
-      "8c2db166-b42c-4869-937e-392b1bc62075.png",
-      "85a98760-8cd6-4632-b4af-945eb5be621b.png"
+      "Batch Seed 18",
+      "Batch Seed 17",
+      "Batch Seed 16",
+      "Batch Seed 15",
+      "Batch Seed 14",
+      "Batch Seed 13",
+      "Batch Seed 12",
+      "Batch Seed 11",
+      "Batch Seed 10",
+      "Batch Seed 9",
+      "Batch Seed 8",
+      "Batch Seed 7",
+      "Batch Seed 6"
     ],
     "missingAfterReload": [
-      "1abf2d43-3fae-4b38-9323-b76e0c986666.png",
-      "e5b8e2fd-548d-4280-baf8-1eef93be7abc.png",
-      "33eeccbd-a4ab-4264-b46a-00dc853c578e.png",
-      "2acd2254-c18b-418b-aeea-c8574aa37fa4.png",
-      "7db135b6-0bf1-46a6-b65f-dfac19a93838.png",
-      "68b78c4e-ea21-4563-8819-eee3b57f38e6.png",
-      "6bd8fb72-327d-4022-98c7-af7dd72d0cf4.png",
-      "f1c33d99-2aa8-4691-81ff-f4e3eeb096ed.png",
-      "c31e3a87-2e9d-4322-951a-8389878eb0f7.png",
-      "0b66acc3-bde6-40e7-85fc-fb72c838505c.png",
-      "dab49524-eb8a-4b6f-948d-e34b7fe161a1.png",
-      "8c2db166-b42c-4869-937e-392b1bc62075.png",
-      "85a98760-8cd6-4632-b4af-945eb5be621b.png"
+      "Batch Seed 18",
+      "Batch Seed 17",
+      "Batch Seed 16",
+      "Batch Seed 15",
+      "Batch Seed 14",
+      "Batch Seed 13",
+      "Batch Seed 12",
+      "Batch Seed 11",
+      "Batch Seed 10",
+      "Batch Seed 9",
+      "Batch Seed 8",
+      "Batch Seed 7",
+      "Batch Seed 6"
     ],
-    "afterReloadCount": 7
+    "afterReloadCount": 6
   },
   "completionToken": "BATCH_DELETE_REPAIRED=true"
 }

@@ -118,10 +118,24 @@ bootstrapMediaFromBackend,
 feedHasRealContent,
 hasLocalMediaCache,
 hydrateVaultFromReels,
-reelsToVideoVaultEntries,
-ingestThumbReelsToVault
+reelsToVideoVaultEntries
 } from '../lib/mediaBootstrap.js';
 import { createContentAgents } from '../lib/viewer/contentAgents.js';
+import {
+  filterStaleOrphanEntries,
+  isThumbnailImageReel,
+  thumbnailEntryFileKey
+} from '../lib/viewer/thumbnailCanonicalization.js';
+import {
+  reconcileThumbnailVault,
+  syncCollectionStore,
+  readThumbnailVault,
+  writeThumbnailVault,
+  deriveCollectionKeys,
+  upgradeThumbnailVaultFromBackendReels,
+  THUMBNAIL_KEY
+} from '../lib/viewer/thumbnailVault.js';
+import { traceThumbStoreWrite } from '../lib/viewer/thumbStoreWriteTrace.js';
 import { createAiCleanupAgent } from '../lib/viewer/aiCleanupAgent.js';
 import { createUiAgent } from '../lib/viewer/uiAgent.js';
 import { createVaultUtils } from '../lib/viewer/vaultUtils.js';
@@ -150,6 +164,7 @@ HERO_VIDEO_STORAGE_KEY: 'reelforge_hero_video',
 HERO_IMAGE_STORAGE_KEY: 'reelforge_hero_image',
 CATEGORY_NAMES_KEY: 'reelforge_category_names',
 THUMBNAIL_STORAGE_KEY: 'personal_thumbnails',
+THUMBNAIL_INDEX_KEY: 'personal_thumbnail_index',
 TITLES_STORAGE_KEY: 'reel_titles_persistent',
 RECENTLY_VIEWED_KEY: 'recently_viewed',
 VAULT_KEY: 'reel_vault',
@@ -191,7 +206,10 @@ resetLocalData();
 }
 function persistPersonalVault(videos) {
 const filtered = filterNonHeroAssets(videos);
-safeLocalStorageSet(CONFIG.VIDEO_VAULT_KEY, filtered, { thumbnailKey: CONFIG.THUMBNAIL_STORAGE_KEY });
+safeLocalStorageSet(CONFIG.VIDEO_VAULT_KEY, filtered, {
+thumbnailKey: CONFIG.THUMBNAIL_STORAGE_KEY,
+minimalFields: ['id', 'name', 'fileName', 'type', 'size', 'addedAt', 'thumbnail']
+});
 }
 // ==========================================
 // Store Factory
@@ -269,7 +287,12 @@ const selectedFile = writable(null);
 const videoSource = writable('');
 const isAutoDetecting = writable(false);
 const detectedCategory = writable('');
-const personalThumbnailCollection = createPersistentStore(CONFIG.THUMBNAIL_STORAGE_KEY, []);
+const personalThumbnailCollection = writable([]);
+function setPersonalThumbnailCollection(value, functionName) {
+  const prev = get(personalThumbnailCollection) || [];
+  personalThumbnailCollection.set(value);
+  traceThumbStoreWrite(functionName, 'personalThumbnailCollection', prev, value);
+}
 const personalVideos = writable([]);
 const usePersonalThumbnails = writable(false);
 const personalStudioMode = writable(false);
@@ -322,7 +345,7 @@ const isCleaning = writable(false);
 const lastAiCleanup = writable(null);
 const storageHealth = writable({ score: 100, issues: [] });
 const HERO_BACKGROUND_VIDEO = writable(CONFIG.HERO_VIDEO_PATHS[0]);
-const HERO_POSTER_IMAGE = writable('/thumbs/IMG_0113.JPEG');
+const HERO_POSTER_IMAGE = writable('');
 const heroVideoAttempt = writable(0);
 const heroPendingFile = writable(null);
 const heroIsDragOver = writable(false);
@@ -755,30 +778,27 @@ return typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_ses
 // Sync Function (fixed to merge personal videos)
 // ==========================================
 function reloadVaultStoresFromStorage() {
-const thumbs = JSON.parse((typeof window !== 'undefined' ? localStorage.getItem(CONFIG.THUMBNAIL_STORAGE_KEY) : null) || '[]');
-console.info('[HERO_STORE_READ]', {
-stage: 'reloadVaultStoresFromStorage:thumbs',
-key: CONFIG.THUMBNAIL_STORAGE_KEY,
-count: Array.isArray(thumbs) ? thumbs.length : 0,
+const thumbs = readThumbnailVault(CONFIG.THUMBNAIL_STORAGE_KEY);
+console.info('[VAULT_RELOAD]', {
+action: 'reloadVaultStoresFromStorage:start',
+personal_thumbnails: thumbs.length,
 ts: new Date().toISOString()
 });
 if (thumbs.length > 0) {
 const nonHeroThumbs = filterNonHeroAssets(thumbs);
-const normalizedThumbs = nonHeroThumbs.map((t) => {
-if (typeof t === 'string') {
-return { name: t, url: `/thumbs/${t}`, addedAt: new Date().toISOString() };
-}
-const rel = t?.url ? toRelativeMediaPath(t.url) : (t?.name ? `/thumbs/${t.name}` : '');
-if (t?.name && rel) {
-return { ...t, url: rel.startsWith('/thumbs/') || rel.startsWith('/videos/') ? rel : `/thumbs/${t.name}` };
-}
-return t;
+writeThumbnailVault(nonHeroThumbs, CONFIG.THUMBNAIL_STORAGE_KEY);
+syncCollectionStore(personalThumbnailCollection, CONFIG.THUMBNAIL_STORAGE_KEY);
+console.info('[VAULT_RELOAD]', {
+action: 'reloadVaultStoresFromStorage:mutate',
+personal_thumbnails: nonHeroThumbs.length,
+ts: new Date().toISOString()
 });
-safeStorageSet(CONFIG.THUMBNAIL_STORAGE_KEY, normalizedThumbs);
-personalThumbnailCollection.set(normalizedThumbs.map((t) => t?.name).filter(Boolean));
-console.info('[STORE_UPDATE]', {
-store: 'personalThumbnailCollection',
-count: normalizedThumbs.length,
+} else {
+setPersonalThumbnailCollection([], 'reloadVaultStoresFromStorage:clear');
+writeThumbnailVault([], CONFIG.THUMBNAIL_STORAGE_KEY);
+console.info('[VAULT_RELOAD]', {
+action: 'reloadVaultStoresFromStorage:clear',
+personal_thumbnails: 0,
 ts: new Date().toISOString()
 });
 }
@@ -821,10 +841,41 @@ return merged;
 let syncFromVaultInFlight = null;
 let lastSyncFromVaultAt = 0;
 const wsCreatedSyncCooldownByReel = new Map();
-async function syncFromVault(preserveLocal = false) {
+
+function reconcileStaleThumbnailsOnStartup(rawData, backendReachable) {
+if (!backendReachable || typeof window === 'undefined') {
+console.info('[STARTUP_RECONCILE]', {
+action: 'skipped',
+reason: backendReachable ? 'no_window' : 'backend_unreachable',
+ts: new Date().toISOString()
+});
+return { purged: [], examined: 0 };
+}
+const imageReels = (rawData || []).filter(isThumbnailImageReel);
+const pending = get(pendingThumbnail);
+const pendingFileKeys = new Set();
+if (pending?.name) pendingFileKeys.add(String(pending.name).trim());
+const result = reconcileThumbnailVault(imageReels, {
+backendReachable: true,
+pendingFileKeys,
+storageKey: CONFIG.THUMBNAIL_STORAGE_KEY,
+purgeGhostCanonical: true
+});
+syncCollectionStore(personalThumbnailCollection, CONFIG.THUMBNAIL_STORAGE_KEY);
+console.info('[STARTUP_RECONCILE]', {
+action: result.purged.length ? 'purge' : 'noop',
+examined: result.examined ?? result.entries.length,
+purgedCount: result.purged.length,
+remaining: result.entries.length,
+backendThumbReels: imageReels.length,
+ts: new Date().toISOString()
+});
+return result;
+}
+async function syncFromVault(preserveLocal = false, force = false) {
 if (syncFromVaultInFlight) return syncFromVaultInFlight;
 const now = Date.now();
-if (now - lastSyncFromVaultAt < 5000) return;
+if (!force && now - lastSyncFromVaultAt < 5000) return;
 syncFromVaultInFlight = (async () => {
 const debugApi = import.meta.env.VITE_DEBUG_API === 'true';
 if (debugApi) console.info('[SYNC_DEBUG] syncFromVault:start', { preserveLocal, now });
@@ -850,17 +901,23 @@ return;
 }
 rawData = normalizeReels(JSON.parse(localStorage.getItem(CONFIG.VAULT_KEY) || '[]'), 'localStorage fallback');
 } else {
-const res = await fetchWithRetry(`${API_BASE_URL}/api/reels?t=${Date.now()}`, {}, { retries: 3, retryDelayMs: 750 });
+const res = await fetchWithRetry(
+`${API_BASE_URL}/api/reels?t=${Date.now()}`,
+{ headers: getAdminAuthorizationHeader(getAdminToken()) },
+{ retries: 3, retryDelayMs: 750 }
+);
+// Any successful catalog response means backend is reachable for reconcile.
 if (res.ok) {
+backendReachable = true;
 const contentType = res.headers.get('content-type') || '';
 if (!contentType.includes('application/json')) throw new Error(`Expected JSON but received ${contentType}`);
 rawData = normalizeReels(await res.json(), 'GET /api/reels');
-backendReachable = true;
 logVaultFieldAuditList('GET /api/reels response (syncFromVault)', rawData);
 uploadStatus.set('✅ Synced with backend');
 } else {
-console.warn(`⚠️ Backend returned ${res.status}, using localStorage fallback`);
-uploadStatus.set(`⚠️ Sync failed (${res.status}) — using saved content`);
+backendReachable = false;
+console.warn(`⚠️ Backend returned ${res.status}, preserving local vault (offline reconcile skipped)`);
+uploadStatus.set(`⚠️ Sync failed (${res.status}) — showing saved content`);
 rawData = normalizeReels(JSON.parse(localStorage.getItem(CONFIG.VAULT_KEY) || '[]'), 'localStorage fallback');
 }
 }
@@ -868,8 +925,25 @@ rawData = normalizeReels(JSON.parse(localStorage.getItem(CONFIG.VAULT_KEY) || '[
 const hydratedFeed = {};
 const allCategories = [...new Set(rawData.map(r => r.category || 'Trending'))];
 allCategories.forEach(cat => hydratedFeed[cat] = []);
-ingestThumbReelsToVault(rawData, CONFIG.THUMBNAIL_STORAGE_KEY);
+const thumbsBeforeSync = readThumbnailVault(CONFIG.THUMBNAIL_STORAGE_KEY);
+console.info('[VAULT_SYNC]', {
+action: 'syncFromVault:pre-upgrade',
+backendReels: rawData.length,
+personal_thumbnails: thumbsBeforeSync.length,
+ts: new Date().toISOString()
+});
+upgradeThumbnailVaultFromBackendReels(rawData, CONFIG.THUMBNAIL_STORAGE_KEY);
 reloadVaultStoresFromStorage();
+const thumbsAfterSync = readThumbnailVault(CONFIG.THUMBNAIL_STORAGE_KEY);
+console.info('[VAULT_SYNC]', {
+action: 'syncFromVault:post-reload',
+personal_thumbnails: thumbsAfterSync.length,
+collectionStore: get(personalThumbnailCollection).length,
+ts: new Date().toISOString()
+});
+if (backendReachable) {
+reconcileStaleThumbnailsOnStartup(rawData, true);
+}
 const seenVideoUrls = new Set();
 rawData.forEach((reel) => {
 if (!isVideoReel(reel)) return;
@@ -889,13 +963,27 @@ reel.isPersonalVideo = true;
 reel.isPersonalThumbnail = false;
 reel.personal_video_id = reel.personal_video_id || reel.id;
 reel.match = reel.match || '🎬 EPISODE';
-if (!reel.thumbnailUrl) {
-const stem = String(reel.fileName || reel.name || '').replace(/\.[^.]+$/, '');
-const thumbName = get(personalThumbnailCollection).find((t) =>
-String(t).replace(/\.[^.]+$/, '').toLowerCase() === stem.toLowerCase()
-);
-if (thumbName) {
-reel.thumbnailUrl = `/thumbs/${thumbName}`;
+reel.url = toRelativeMediaPath(String(reel.url || reel.video_url || '')) || reel.url;
+if (reel.thumbnailUrl) {
+reel.thumbnailUrl = toRelativeMediaPath(String(reel.thumbnailUrl)) || reel.thumbnailUrl;
+} else if (!reel.thumbnailUrl) {
+const storedThumbs = JSON.parse((typeof window !== 'undefined' ? localStorage.getItem(CONFIG.THUMBNAIL_STORAGE_KEY) : null) || '[]');
+const fileKey = String(reel.fileName || reel.file_name || '').trim();
+const entry = (Array.isArray(storedThumbs) ? storedThumbs : []).find((t) => {
+if (!t) return false;
+if (typeof t === 'string') return t === fileKey;
+const byId = String(t.id || '').trim();
+const byFile = String(t.fileName || t.file_name || '').trim();
+const byUrl = String(t.url || '').trim();
+return (fileKey && byFile === fileKey) || (byUrl && toRelativeMediaPath(byUrl) === toRelativeMediaPath(String(reel.url || '')));
+});
+if (entry && typeof entry === 'object' && entry.url) {
+reel.thumbnailUrl = toRelativeMediaPath(String(entry.url)) || entry.url;
+} else if (fileKey) {
+const match = (Array.isArray(storedThumbs) ? storedThumbs : []).find((t) => t && String(t.fileName || t.file_name || '').trim() === fileKey);
+if (match?.url) {
+reel.thumbnailUrl = toRelativeMediaPath(String(match.url)) || match.url;
+}
 }
 }
 const cat = reel.category || 'Trending';
@@ -948,9 +1036,9 @@ thumbCountBefore: get(personalThumbnailCollection).length,
 videoCountBefore: get(personalVideos).length,
 ts: new Date().toISOString()
 });
-personalThumbnailCollection.set([]);
+writeThumbnailVault([], CONFIG.THUMBNAIL_STORAGE_KEY);
+syncCollectionStore(personalThumbnailCollection, CONFIG.THUMBNAIL_STORAGE_KEY);
 personalVideos.set([]);
-storageSet(CONFIG.THUMBNAIL_STORAGE_KEY, []);
 storageSet(CONFIG.VIDEO_VAULT_KEY, []);
 const demoFeed = {
 'Trending': buildDemoFeedReels(),
@@ -1024,10 +1112,6 @@ console.log(
 `[syncFromVault] Video vault merged (local + backend): ${existingVaultVideos.length} + ${backendVaultVideos.length} => ${nonHeroMergedVaultVideos.length}`
 );
 if (!AI_CLEANUP_AGENT.syncThumbnailsToFeed()) return;
-if (get(personalThumbnailCollection).length === 0) {
-await hydrateVaultFromReels(CONFIG.THUMBNAIL_STORAGE_KEY, CONFIG.VIDEO_VAULT_KEY, { thumbsOnly: true });
-reloadVaultStoresFromStorage();
-}
 diagnoseStalePlaceholders(get(feed));
 } else if (!backendReachable) {
 console.log('🌐 Backend unreachable, using localStorage data');
@@ -1164,10 +1248,15 @@ function handleHeroManagerUpdated(event) {
 }
 
 function applyHeroBackgroundFromIntelligence() {
-  if (hasUserHeroOverride(CONFIG)) return;
-
   const managerConfig = loadHeroManagerConfig();
   const stores = getHeroBackgroundStores();
+
+  if (hasUserHeroOverride(CONFIG)) {
+    if (managerConfig.backgroundSource === 'custom_video' || managerConfig.backgroundSource === 'custom_image') {
+      applyManagerBackgroundFromConfig(managerConfig);
+    }
+    return;
+  }
 
   if (managerConfig.backgroundSource === 'selection') {
     applyHeroSelection(get(heroSelection), stores, {
@@ -1284,7 +1373,7 @@ thumbnailKey: CONFIG.THUMBNAIL_STORAGE_KEY,
 videoVaultKey: CONFIG.VIDEO_VAULT_KEY
 });
 reloadVaultStoresFromStorage();
-await syncFromVault(true);
+await syncFromVault(true, true);
 }
 
 // ==========================================
@@ -1468,33 +1557,13 @@ storeImage: get(HERO_POSTER_IMAGE)?.slice(0, 80) || '',
 heroVideoFailed: get(heroVideoFailed)
 }, 'A');
 const unsubscribeHeroVideo = HERO_BACKGROUND_VIDEO.subscribe(v => {
-if (v) {
-const result = storageSet(CONFIG.HERO_VIDEO_STORAGE_KEY, v);
-console.info('[HERO_PERSIST]', {
-stage: 'hero-video-store-write',
-key: CONFIG.HERO_VIDEO_STORAGE_KEY,
-ok: result?.ok !== false,
-length: String(v || '').length,
-ts: new Date().toISOString()
-});
-heroDebugLog('Viewer.svelte:heroVideo:persist', 'persist hero video', { valuePreview: v.slice(0, 120), valueLen: v.length, storageOk: result?.ok !== false }, 'C');
-} else {
+if (!v) {
 clearHeroVideoStorage();
 heroDebugLog('Viewer.svelte:heroVideo:clearPersist', 'cleared hero video storage', { localStorageStillHas: Boolean(localStorage.getItem(CONFIG.HERO_VIDEO_STORAGE_KEY)) }, 'D');
 }
 });
 const unsubscribeHeroImage = HERO_POSTER_IMAGE.subscribe(v => {
-if (v) {
-const result = storageSet(CONFIG.HERO_IMAGE_STORAGE_KEY, v);
-console.info('[HERO_PERSIST]', {
-stage: 'hero-image-store-write',
-key: CONFIG.HERO_IMAGE_STORAGE_KEY,
-ok: result?.ok !== false,
-length: String(v || '').length,
-ts: new Date().toISOString()
-});
-heroDebugLog('Viewer.svelte:heroImage:persist', 'persist hero image', { valuePreview: v.slice(0, 80), valueLen: v.length, storageOk: result?.ok !== false }, 'C');
-} else {
+if (!v) {
 clearHeroImageStorage();
 heroDebugLog('Viewer.svelte:heroImage:clearPersist', 'cleared hero image storage', { localStorageStillHas: Boolean(localStorage.getItem(CONFIG.HERO_IMAGE_STORAGE_KEY)) }, 'D');
 }
@@ -1540,6 +1609,9 @@ console.log('[onMount] Loaded 0 thumbnails from [none]');
 }
 
 await syncFromVault(true);
+if (hasUserHeroOverride(CONFIG)) {
+applyManagerBackgroundFromConfig(loadHeroManagerConfig());
+}
 runEpisodeBridgeSync('post-sync');
 applyHeroIntelligence(true);
 const onHeroIntelRefresh = () => applyHeroIntelligence(false);

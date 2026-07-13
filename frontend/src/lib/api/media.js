@@ -24,6 +24,16 @@ import { enforceUploadPolicy } from '../security/securityPolicyEngine.js';
 export const CREATE_REEL_URL = '/api/reels';
 
 /**
+ * Canonical production upload pipeline (Mission 4.5):
+ * Drag/Drop or UI → uploadMedia | uploadThumbnail | uploadVideo (wrappers)
+ * → createReel() → POST /api/reels → handlers.rs → media_api.rs
+ * → ingestion/upload.rs → worker.rs → ffmpeg.rs → Postgres
+ * → pollIngestionUntilReady → mediaBootstrap / syncFromVault → Viewer
+ *
+ * All file uploads MUST delegate to createReel(). Do not add alternate fetch targets.
+ */
+
+/**
  * POST /api/reels — unified multipart create (video, thumbnail, title, description).
  * @param {FormData} formData
  * @param {Record<string, string>} [headers]
@@ -32,9 +42,11 @@ export const CREATE_REEL_URL = '/api/reels';
 import { pollIngestionUntilReady } from './ingestPoll.js';
 import { normalizeReel, normalizeReels, createLocalReel } from './reelContract.js';
 import { getDemoPlaceholders } from '../demoPlaceholders.js';
+import { pipelineDiag, pipelineDiagCors } from '../diagnostics/pipelineDiag.js';
 
 export async function createReel(formData, headers = {}) {
     const fileInfo = {};
+    let primaryFileName = null;
     if (formData instanceof FormData) {
         for (const [key, value] of formData.entries()) {
             if (value instanceof File) {
@@ -43,9 +55,15 @@ export async function createReel(formData, headers = {}) {
                     type: value.type || '',
                     size: value.size || 0
                 };
+                if (!primaryFileName) primaryFileName = value.name;
             }
         }
     }
+    pipelineDiag('UPLOAD', 'createReel', 'media.js', {
+        fileName: primaryFileName,
+        result: 'request_start',
+        detail: { endpoint: CREATE_REEL_URL, fileInfo }
+    });
     console.info('[HERO_CLASSIFY]', {
         stage: 'createReel:request',
         hasVideo: formData instanceof FormData ? formData.has('video') : false,
@@ -67,6 +85,11 @@ export async function createReel(formData, headers = {}) {
     });
     const uploadPolicy = enforceUploadPolicy({ operation: 'create_reel' });
     if (!uploadPolicy.allowed) {
+        pipelineDiag('UPLOAD', 'createReel', 'media.js', {
+            fileName: primaryFileName,
+            result: 'blocked_by_policy',
+            detail: uploadPolicy.reason || 'blocked-by-policy'
+        });
         console.error('[UPLOAD_FAILED]', {
             reason: uploadPolicy.reason || 'blocked-by-policy',
             ts: new Date().toISOString()
@@ -77,10 +100,32 @@ export async function createReel(formData, headers = {}) {
         await new Promise((resolve) => setTimeout(resolve, uploadPolicy.throttleMs));
     }
 
+    pipelineDiag('API', 'createReel', 'media.js', {
+        fileName: primaryFileName,
+        result: 'fetch_post_start',
+        detail: { url: `${API_BASE_URL}${CREATE_REEL_URL}` }
+    });
+
     const response = await fetch(`${API_BASE_URL}${CREATE_REEL_URL}`, {
         method: 'POST',
         headers,
         body: formData
+    }).catch((networkError) => {
+        pipelineDiagCors('createReel', 'media.js', networkError, { fileName: primaryFileName });
+        const message = String(networkError?.message || networkError || '');
+        if (/failed to fetch|networkerror|load failed|cors/i.test(message)) {
+            throw new Error(
+                'Upload blocked by network/CORS — redeploy with VITE_USE_SAME_ORIGIN_API=true (Netlify _redirects proxy).'
+            );
+        }
+        throw networkError;
+    });
+
+    pipelineDiag('RESPONSE', 'createReel', 'media.js', {
+        fileName: primaryFileName,
+        assetId: null,
+        result: `http_${response.status}`,
+        detail: { ok: response.ok }
     });
 
     if (!response.ok) {
@@ -90,6 +135,11 @@ export async function createReel(formData, headers = {}) {
             error: err.error || 'create-reel-failed',
             ts: new Date().toISOString()
         });
+        pipelineDiag('UPLOAD', 'createReel', 'media.js', {
+            fileName: primaryFileName,
+            result: 'http_error',
+            detail: { status: response.status, error: err.error || 'create-reel-failed' }
+        });
         throw new Error(err.error || `Create reel failed (${response.status})`);
     }
 
@@ -98,6 +148,11 @@ export async function createReel(formData, headers = {}) {
     // Async ingestion: 202 Accepted with pending status
     if (response.status === 202 || body.status === 'pending') {
         const reelId = body.id;
+        pipelineDiag('INGEST', 'createReel', 'media.js', {
+            assetId: reelId,
+            fileName: primaryFileName,
+            result: 'accepted_pending'
+        });
         if (!reelId) throw new Error('Ingestion accepted but no reel id returned');
         const ready = await pollIngestionUntilReady(reelId, {
             onProgress: (status) => {
@@ -113,6 +168,12 @@ export async function createReel(formData, headers = {}) {
             thumbnailUrl: ready?.thumbnailUrl || '',
             ts: new Date().toISOString()
         });
+        pipelineDiag('UPLOAD', 'createReel', 'media.js', {
+            assetId: ready?.id || reelId,
+            fileName: primaryFileName,
+            result: 'ready',
+            detail: { url: ready?.url || '', thumbnailUrl: ready?.thumbnailUrl || '' }
+        });
         console.info('[HERO_ROUTE]', {
             stage: 'createReel:pending-ready',
             id: ready?.id || reelId,
@@ -127,6 +188,12 @@ export async function createReel(formData, headers = {}) {
     if (body.status === 'ready' && body.id) {
         const normalized = normalizeReel(body, 'create-reel');
         if (normalized) {
+            pipelineDiag('UPLOAD', 'createReel', 'media.js', {
+                assetId: normalized.id,
+                fileName: primaryFileName,
+                result: 'ready_immediate',
+                detail: { url: normalized.url || '', thumbnailUrl: normalized.thumbnailUrl || '' }
+            });
             console.info('[UPLOAD_SUCCESS]', {
                 id: normalized.id,
                 status: normalized.status || 'ready',
@@ -154,6 +221,12 @@ export async function createReel(formData, headers = {}) {
             body.thumbnailUrl || body.thumbnail_url || body.thumbnailPath || body.thumbnail_path || '',
         ts: new Date().toISOString()
     });
+    pipelineDiag('UPLOAD', 'createReel', 'media.js', {
+        assetId: body.id || null,
+        fileName: primaryFileName,
+        result: body.status || 'unknown',
+        detail: { url: body.url || body.videoUrl || body.video_url || '' }
+    });
     console.info('[HERO_ROUTE]', {
         stage: 'createReel:raw-response',
         id: body.id || '',
@@ -170,8 +243,13 @@ export async function createReel(formData, headers = {}) {
  * @param {Record<string, string>} [headers]
  * @param {{ title?: string; description?: string; category?: string }} [meta]
  * @returns {Promise<CreatedReelResponse>}
+ * @deprecated Use createReel directly when building FormData; this wrapper delegates only.
  */
 export async function uploadThumbnail(file, headers = {}, meta = {}) {
+    pipelineDiag('UPLOAD', 'uploadThumbnail', 'media.js', {
+        fileName: file?.name || null,
+        result: 'start'
+    });
     const formData = new FormData();
     formData.append('thumbnail', file);
     if (meta.title) formData.append('title', meta.title);
@@ -185,8 +263,13 @@ export async function uploadThumbnail(file, headers = {}, meta = {}) {
  * @param {Record<string, string>} [headers]
  * @param {{ title?: string; description?: string; category?: string; thumbnail?: File }} [meta]
  * @returns {Promise<CreatedReelResponse>}
+ * @deprecated Use createReel directly when building FormData; this wrapper delegates only.
  */
 export async function uploadVideo(file, headers = {}, meta = {}) {
+    pipelineDiag('UPLOAD', 'uploadVideo', 'media.js', {
+        fileName: file?.name || null,
+        result: 'start'
+    });
     const formData = new FormData();
     formData.append('video', file);
     if (meta.thumbnail) formData.append('thumbnail', meta.thumbnail);
@@ -201,15 +284,21 @@ export async function uploadVideo(file, headers = {}, meta = {}) {
  * @param {File | FormData} fileOrFormData
  * @param {Record<string, string> | string} [headersOrMime]
  * @returns {Promise<CreatedReelResponse>}
+ * @deprecated Use createReel directly when building FormData; this wrapper delegates only.
  */
 export async function uploadMedia(fileOrFormData, headersOrMime = {}) {
     if (fileOrFormData instanceof FormData) {
         const headers =
             headersOrMime && typeof headersOrMime === 'object' ? headersOrMime : {};
+        pipelineDiag('UPLOAD', 'uploadMedia', 'media.js', { result: 'formData_delegate' });
         return createReel(fileOrFormData, headers);
     }
 
     const file = fileOrFormData;
+    pipelineDiag('UPLOAD', 'uploadMedia', 'media.js', {
+        fileName: file?.name || null,
+        result: 'single_file_start'
+    });
     const mimeType =
         typeof headersOrMime === 'string' ? headersOrMime : file.type || 'image/jpeg';
     const headers =
@@ -332,11 +421,13 @@ export async function fetchReadyReels(headers = {}) {
     const raw = Array.isArray(body) ? body : [];
 
     // Normalize server payloads
+    let normalized = [];
+    let readyCount = 0;
     try {
-        const normalized = normalizeReels(raw, 'GET /api/reels');
+        normalized = normalizeReels(raw, 'GET /api/reels');
         if (Array.isArray(normalized) && normalized.length > 0) {
             // Check if any reels are "ready" (status=ready or readiness>=100)
-            const readyCount = normalized.filter(r => 
+            readyCount = normalized.filter(r => 
                 r.status === 'ready' || r.readiness >= 100
             ).length;
             

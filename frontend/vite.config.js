@@ -61,10 +61,11 @@ function requireProductionBackendUrl() {
     config(_config, { command, mode }) {
       if (command === 'build') {
         const env = loadEnv(mode, process.cwd(), '');
+        const sameOrigin = env.VITE_USE_SAME_ORIGIN_API === 'true';
         const url = env.VITE_API_URL || env.VITE_BACKEND_URL || env.VITE_API_BASE_URL;
-        if (!url || !String(url).trim()) {
+        if (!sameOrigin && (!url || !String(url).trim())) {
             throw new Error(
-                'Production build requires VITE_API_URL (or VITE_BACKEND_URL / VITE_API_BASE_URL). See frontend/.env.example'
+                'Production build requires VITE_API_URL (or VITE_BACKEND_URL / VITE_API_BASE_URL), or set VITE_USE_SAME_ORIGIN_API=true. See frontend/.env.example'
             );
         }
       }

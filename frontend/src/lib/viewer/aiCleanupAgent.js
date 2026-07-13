@@ -2,9 +2,12 @@ import { get } from 'svelte/store';
 import { createLocalReel } from '../api/reelContract.js';
 import { deleteMediaFile, deleteReelById, fetchReadyReels } from '../api/media.js';
 import { filenameFromMediaRef } from '../vaultMedia.js';
+import { toRelativeMediaPath } from '../config.js';
 import { logDeletionPropagation } from '../deletionSync.js';
 import { isStorageFull, wouldExceedQuota } from '../storage.js';
 import { isHeroAsset, filterNonHeroAssets } from '../hero/heroDomainGuard.js';
+import { removeThumbnailVaultByIndex, syncCollectionStore } from './thumbnailVault.js';
+import { traceThumbStoreWrite } from './thumbStoreWriteTrace.js';
 
 export function createAiCleanupAgent(deps) {
   const {
@@ -212,8 +215,8 @@ export function createAiCleanupAgent(deps) {
   id: String(videoData.id),
   name: videoData.name.replace(/\.[^/.]+$/, ''),
   type: 'video',
-  url: videoData.url,
-  thumbnailUrl: videoData.thumbnail,
+  url: toRelativeMediaPath(String(videoData.url || '')) || String(videoData.url || ''),
+  thumbnailUrl: videoData.thumbnail ? (toRelativeMediaPath(String(videoData.thumbnail)) || String(videoData.thumbnail)) : '',
   category: primaryCategory,
   isPlaceholder: false,
   isPersonalVideo: true,
@@ -306,6 +309,8 @@ export function createAiCleanupAgent(deps) {
   }
   const storedThumbs = JSON.parse((typeof window !== 'undefined' ? localStorage.getItem(CONFIG.THUMBNAIL_STORAGE_KEY) : null) || '[]');
   if (!storedThumbs || !Array.isArray(storedThumbs) || storedThumbs.length === 0) return true;
+  const prevFeed = get(feed);
+  const prevPlaceholders = Object.values(prevFeed).flat().filter((r) => r?.isPersonalThumbnail).length;
   const categoriesList = ['Trending', 'Romance', 'Cyber-Action', 'Suspense'];
   feed.update((currentFeed) => {
   const newFeed = { ...currentFeed };
@@ -316,25 +321,35 @@ export function createAiCleanupAgent(deps) {
   });
   storedThumbs.forEach((thumb, thumbIndex) => {
   if (!thumb) return;
-  const thumbName = typeof thumb === 'string' ? thumb : String(thumb.name || '');
+  const thumbKey =
+  typeof thumb === 'string'
+  ? thumb
+  : String(thumb.fileName || thumb.file_name || '').trim() || filenameFromMediaRef(thumb.url);
   const thumbAddedAt = typeof thumb === 'string' ? new Date().toISOString() : thumb.addedAt;
   if (typeof thumb === 'string') {
   if (isHeroAsset({ id: thumb, name: thumb, url: thumb, thumbnail: thumb })) return;
   } else {
-  if (!thumbName) return;
+  if (!thumbKey) return;
   if (isHeroAsset(thumb)) return;
   }
   const rawThumbUrl = typeof thumb === 'string' ? '' : String(thumb.url || '').trim();
-  const thumbUrl = rawThumbUrl
-  ? (rawThumbUrl.startsWith('/') ? rawThumbUrl : `/thumbs/${rawThumbUrl.replace(/^\/+/, '')}`)
-  : `/thumbs/${thumbName}`;
-  const detectedCategory = CATEGORY_DETECTOR.detectFromTitle(String(thumbName).replace(/\.[^/.]+$/, ''));
+  const fileKey = thumbKey;
+  let thumbUrl = '';
+  if (rawThumbUrl) {
+    const rel = toRelativeMediaPath(rawThumbUrl);
+    thumbUrl = rel.startsWith('/thumbs/') ? rel : (fileKey ? `/thumbs/${fileKey}` : '');
+  } else if (fileKey) {
+    thumbUrl = `/thumbs/${fileKey}`;
+  }
+  if (!thumbUrl) return;
+  const displayLabel = typeof thumb === 'string' ? thumb : String(thumb.title || thumb.name || fileKey);
+  const detectedCategory = CATEGORY_DETECTOR.detectFromTitle(String(displayLabel).replace(/\.[^/.]+$/, ''));
   const primaryCategory = categoriesList.includes(detectedCategory) ? detectedCategory : 'Trending';
-  const placeholder = createLocalReel({ id: `personal-thumb-${thumbName}`, name: `Personal Content ${thumbIndex + 1} - ${primaryCategory}`, category: primaryCategory, type: 'image', url: thumbUrl, thumbnailUrl: thumbUrl, isPlaceholder: true, isPersonalThumbnail: true, personal_thumbnail: thumbName, likes: Math.floor(Math.random() * 100) + 50, views: Math.floor(Math.random() * 500) + 100, match: 'PERSONAL THUMBNAIL', ai_tags: ['personal-thumbnail', 'user-uploaded'], createdAt: thumbAddedAt || new Date().toISOString() });
+  const placeholder = createLocalReel({ id: thumb.id ? `personal-thumb-${thumb.id}` : `personal-thumb-${fileKey}`, name: `Personal Content ${thumbIndex + 1} - ${primaryCategory}`, category: primaryCategory, type: 'image', url: thumbUrl, thumbnailUrl: thumbUrl, isPlaceholder: true, isPersonalThumbnail: true, personal_thumbnail: fileKey, likes: Math.floor(Math.random() * 100) + 50, views: Math.floor(Math.random() * 500) + 100, match: 'PERSONAL THUMBNAIL', ai_tags: ['personal-thumbnail', 'user-uploaded'], createdAt: thumbAddedAt || new Date().toISOString() });
   console.info('[PLACEHOLDER_INSERT]', {
   stage: 'AI_CLEANUP_AGENT.syncThumbnailsToFeed',
   placeholderId: placeholder.id,
-  thumbnailName: thumbName,
+  thumbnailName: fileKey,
   destination: `feed:${primaryCategory}`,
   ts: new Date().toISOString()
   });
@@ -343,6 +358,11 @@ export function createAiCleanupAgent(deps) {
   return newFeed;
   });
   const nextFeed = get(feed);
+  const nextPlaceholders = Object.values(nextFeed).flat().filter((r) => r?.isPersonalThumbnail).length;
+  traceThumbStoreWrite('syncThumbnailsToFeed', 'reelforge_feed', prevPlaceholders, nextPlaceholders, {
+    storedThumbCount: storedThumbs.length,
+    first3: storedThumbs.slice(0, 3)
+  });
   if (wouldExceedQuota(CONFIG.FEED_STORAGE_KEY, nextFeed)) {
   console.warn('[storage] syncThumbnailsToFeed aborted — projected feed exceeds quota');
   uploadStatus.set('Storage full, clear data to continue');
@@ -408,10 +428,8 @@ export function createAiCleanupAgent(deps) {
   console.log(`✅ [THUMB DELETE] Backend deletion successful: ${thumbnailName}`);
   } catch (apiError) { console.warn('⚠️ [THUMB DELETE] Backend API call failed:', apiError); }
   } else { console.warn('⚠️ [THUMB DELETE] No admin token available, skipping backend deletion'); }
-  personalThumbnailCollection.update(c => c.filter((_, i) => i !== index));
-  const storedThumbs = JSON.parse(localStorage.getItem(CONFIG.THUMBNAIL_STORAGE_KEY) || '[]');
-  const updatedThumbs = storedThumbs.filter(t => t.name !== thumbnailName);
-  storageSet(CONFIG.THUMBNAIL_STORAGE_KEY, updatedThumbs);
+  removeThumbnailVaultByIndex(thumbnailName, CONFIG.THUMBNAIL_STORAGE_KEY);
+  syncCollectionStore(personalThumbnailCollection, CONFIG.THUMBNAIL_STORAGE_KEY);
   AI_CLEANUP_AGENT.removeThumbnailFromCategories(thumbnailName);
   const afterCount = get(personalThumbnailCollection).length;
   console.info('[DELETE_STORE_UPDATE]', {

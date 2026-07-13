@@ -1,0 +1,46 @@
+{
+  "generatedAt": "2026-07-11T16:26:30.928Z",
+  "baseUrl": "http://127.0.0.1:5173",
+  "checks": {
+    "heroBackground": true,
+    "thumbnailPlaceholder": true,
+    "videoCard": true,
+    "reloadPersistence": true,
+    "batchDelete": true
+  },
+  "evidence": {
+    "viewerState": {
+      "placeholderUrls": [
+        {
+          "id": "personal-thumb-mission-541-thumb-5.png",
+          "url": "/thumbs/b93f0a94-132a-4ef6-a64b-10eea303d1f0.png",
+          "thumb": "/thumbs/b93f0a94-132a-4ef6-a64b-10eea303d1f0.png"
+        },
+        {
+          "id": "personal-thumb-mission-541-thumb-4.png",
+          "url": "/thumbs/6a1e452a-f2db-47aa-bf53-a060a0771a24.png",
+          "thumb": "/thumbs/6a1e452a-f2db-47aa-bf53-a060a0771a24.png"
+        },
+        {
+          "id": "personal-thumb-mission-541-thumb-3.png",
+          "url": "/thumbs/d11c8ea5-60f9-4b94-88c8-48ae9b4b559f.png",
+          "thumb": "/thumbs/d11c8ea5-60f9-4b94-88c8-48ae9b4b559f.png"
+        }
+      ],
+      "videoUrls": [],
+      "heroVideo": "",
+      "heroMgr": {},
+      "heroMode": "video",
+      "heroUnavailable": false,
+      "videoCardCount": 20,
+      "thumbCardCount": 20,
+      "flatFeedCount": 20
+    },
+    "batchDelete": {
+      "before": 20,
+      "after": 19
+    },
+    "afterReloadFeedCount": 20
+  },
+  "completionToken": "VIEWER_RESOLUTION_RESTORED=true"
+}

@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from 'svelte';
   import { get } from 'svelte/store';
   import { createVaultUtils } from '../../lib/viewer/vaultUtils.js';
   import { isImage, isVideo } from '../../lib/vaultMedia.js';
@@ -15,13 +16,29 @@
     logDrag,
     VAULT_SOURCES
   } from '../../lib/drag-drop.js';
+  import { pipelineDiag } from '../../lib/diagnostics/pipelineDiag.js';
   import { uploadMedia, uploadThumbnail, fetchReadyReels as apiFetchReadyReels, deleteReelById as apiDeleteReelById } from '../../lib/api/media.js';
   import { logHeroImagePipeline } from '../../lib/hero/heroIntelligence.js';
   import { reelToVaultEntry } from '../../lib/api/reelContract.js';
   import { validateVideoFile } from '../../lib/runtime-guards.js';
-  import { storeThumbnailMetadata } from '../../lib/storage.js';
-  import { toRelativeMediaPath } from '../../lib/config.js';
+  import { API_BASE_URL, toRelativeMediaPath } from '../../lib/config.js';
+  import { fetchWithRetry } from '../../lib/api.js';
   import { isHeroAsset } from '../../lib/hero/heroDomainGuard.js';
+  import { isDemoDebugMode } from '../../lib/debugMode.js';
+  import {
+    filterStaleOrphanEntries,
+    isThumbnailImageReel,
+    thumbnailEntryFileKey
+  } from '../../lib/viewer/thumbnailCanonicalization.js';
+  import {
+    reconcileThumbnailVault,
+    deleteThumbnailVaultEntries,
+    appendThumbnailVaultEntry,
+    removeThumbnailVaultByIndex,
+    syncCollectionStore,
+    readThumbnailVault
+  } from '../../lib/viewer/thumbnailVault.js';
+  import { assertDeleteReducedCount } from '../../lib/viewer/thumbnailInvariants.js';
 
   export let showPersonalControls = true;
 
@@ -54,8 +71,10 @@
   export let getFallbackImage = () => '';
   let vaultDeleteDragActive = false;
   let deleteAuditLogged = false;
-  let selectedThumbnailNames = [];
+  let selectedThumbnailIds = [];
   let selectedVideoIds = [];
+  let thumbnailCanonicalizationDone = false;
+  let thumbnailCanonInFlight = false;
 
   $: utils =
     vaultUtils ||
@@ -73,16 +92,56 @@
     logVaultFieldAudit,
     getStoredThumbnailEntries
   } = utils);
+  $: if (typeof window !== 'undefined' && getVaultImageReel) {
+    const collection = ($personalThumbnailCollection ?? []).filter(Boolean);
+    collection.forEach((img, i) => {
+      const stored = getStoredThumbnailEntries();
+      const reel = getVaultImageReel(img, i);
+      const key = typeof img === 'string' ? img : String(img?.fileName || img?.file_name || img?.id || '').trim();
+      const entry = stored.find((t) => {
+        if (!t) return false;
+        if (typeof t === 'string') return String(t).trim() === key;
+        return String(t.fileName || t.file_name || '').trim() === key || String(t.id || '').trim() === key;
+      });
+      console.info('[VAULT_RENDER]', {
+        renderIndex: i,
+        storeOrigin: 'personalThumbnailCollection',
+        componentOrigin: 'VaultExperience',
+        collectionItem: img,
+        displayName: reel?.name,
+        id: entry && typeof entry === 'object' ? entry.id : undefined,
+        fileName: entry && typeof entry === 'object' ? entry.fileName || entry.file_name : key,
+        url: reel?.url,
+        thumbnail: entry && typeof entry === 'object' ? entry.thumbnail : undefined,
+        thumbnailUrl: reel?.thumbnailUrl,
+        placeholder: !(isImage(reel) && reel?.url),
+        orphaned: entry && typeof entry === 'object' ? Boolean(entry.orphaned) : undefined,
+        active_upload: entry && typeof entry === 'object' ? Boolean(String(entry.url || '').startsWith('blob:') || String(entry.url || '').startsWith('data:')) : false,
+        ts: new Date().toISOString()
+      });
+    });
+  }
   $: console.info('[VAULT_ITEM_COUNT]', {
     images: ($personalThumbnailCollection ?? []).filter(Boolean).length,
     videos: ($personalVideos ?? []).filter(Boolean).length,
     ts: new Date().toISOString()
   });
-  $: console.info('[VAULT_RENDER]', {
-    imageItems: ($personalThumbnailCollection ?? []).filter(Boolean).length,
-    videoItems: ($personalVideos ?? []).filter(Boolean).length,
-    ts: new Date().toISOString()
-  });
+  $: demoDebugMode = isDemoDebugMode();
+  $: shouldShowVaultDemoCards =
+    demoDebugMode ||
+    (($personalVideos?.length ?? 0) === 0 && ($personalThumbnailCollection?.length ?? 0) === 0);
+  $: if (typeof window !== 'undefined') {
+    console.info('[DEMO_DEBUG]', {
+      personalVideosLength: ($personalVideos ?? []).filter(Boolean).length,
+      personalThumbsLength: ($personalThumbnailCollection ?? []).filter(Boolean).length,
+      shouldShowDemo: shouldShowVaultDemoCards,
+      debugParam: demoDebugMode ? 'demo' : null,
+      timestamp: new Date().toISOString()
+    });
+    if (demoDebugMode) {
+      console.info('[DEMO_FALLBACK_TRIGGERED]', { source: 'VaultExperience', reason: 'debug=demo' });
+    }
+  }
 
   function resolveThumbnailPath(nameOrUrl, index = 0) {
     return utils.resolveThumbnailPath(nameOrUrl, index);
@@ -104,12 +163,103 @@
   }
 
   async function deleteReelById(reelId) {
+    const t0 = Date.now();
+    console.info('[DELETE_API]', { stage: 'start', reelId, ts: t0 });
     try {
-      return await apiDeleteReelById(reelId, authHeaders());
+      await apiDeleteReelById(reelId, authHeaders());
+      console.info('[DELETE_API]', { stage: 'success', reelId, elapsedMs: Date.now() - t0 });
+      return true;
     } catch (e) {
+      console.info('[DELETE_API]', {
+        stage: 'failure',
+        reelId,
+        elapsedMs: Date.now() - t0,
+        error: String(e?.message || e)
+      });
       console.error('deleteReelById failed', e);
       return false;
     }
+  }
+
+  async function ensureThumbnailCanonicalization() {
+    if (thumbnailCanonInFlight || typeof window === 'undefined') return;
+    if (thumbnailCanonicalizationDone) {
+      window.__thumbCanonicalizationReady = true;
+      return;
+    }
+
+    thumbnailCanonInFlight = true;
+    window.__thumbCanonicalizationReady = false;
+    try {
+      let backendReachable = false;
+      let imageReels = [];
+      try {
+        const res = await fetchWithRetry(
+          `${API_BASE_URL}/api/reels?t=${Date.now()}`,
+          { headers: authHeaders() },
+          { retries: 2, retryDelayMs: 500 }
+        );
+        backendReachable = res.ok;
+        if (res.ok) {
+          const body = await res.json().catch(() => []);
+          const reels = Array.isArray(body) ? body : [];
+          imageReels = reels.filter(isThumbnailImageReel);
+        } else {
+          console.warn(`[STARTUP_RECONCILE] Backend returned ${res.status}, skipping ghost reconcile`);
+        }
+      } catch (e) {
+        console.info('[STARTUP_RECONCILE]', {
+          action: 'skipped',
+          reason: 'fetch_failed',
+          source: 'VaultExperience.ensureThumbnailCanonicalization',
+          ts: new Date().toISOString()
+        });
+      }
+
+      if (backendReachable) {
+        const pending = get(pendingThumbnail);
+        const pendingFileKeys = new Set();
+        if (pending?.name) pendingFileKeys.add(String(pending.name).trim());
+        const reconciled = reconcileThumbnailVault(imageReels, {
+          backendReachable: true,
+          pendingFileKeys,
+          storageKey: CONFIG.THUMBNAIL_STORAGE_KEY
+        });
+        console.info('[STARTUP_RECONCILE]', {
+          action: reconciled.purged.length ? 'purge' : 'noop',
+          source: 'VaultExperience.ensureThumbnailCanonicalization',
+          examined: reconciled.examined ?? reconciled.entries.length,
+          purgedCount: reconciled.purged.length,
+          remaining: reconciled.entries.length,
+          ts: new Date().toISOString()
+        });
+      }
+
+      // Never write stale snapshots — derive collection from authoritative vault only.
+      syncCollectionStore(personalThumbnailCollection, CONFIG.THUMBNAIL_STORAGE_KEY);
+      thumbnailCanonicalizationDone = true;
+      window.__thumbCanonicalizationReady = true;
+    } finally {
+      thumbnailCanonInFlight = false;
+    }
+  }
+
+  onMount(async () => {
+    await ensureThumbnailCanonicalization();
+  });
+
+  $: thumbVaultSize = ($personalThumbnailCollection ?? []).filter(Boolean).length;
+  $: if (typeof window !== 'undefined') {
+    const rendered = document.querySelectorAll('.vault-grid--images .vault-card').length;
+    console.info('[DELETE_REACTIVE]', {
+      storeCount: thumbVaultSize,
+      renderedCount: rendered,
+      selectedCount: selectedThumbnailIds.length,
+      ts: Date.now()
+    });
+  }
+  $: if (typeof window !== 'undefined' && thumbVaultSize >= 0) {
+    void ensureThumbnailCanonicalization();
   }
 
   function basenameFromMediaRef(value) {
@@ -132,18 +282,132 @@
     return false;
   }
 
-  function thumbnailSelectionId(item) {
-    if (typeof item === 'string') return item.trim();
+  function applyVideoDeleteTombstone(deletedIds) {
+    if (!deletedIds?.length) return;
+    const deletedIdSet = new Set(deletedIds.map((id) => String(id || '').trim()).filter(Boolean));
+    personalVideos.update((videos) =>
+      (videos || []).filter((video) => !deletedIdSet.has(String(video?.id || '').trim()))
+    );
+    persistPersonalVault(get(personalVideos));
+  }
+
+  async function purgeStaleOrphanThumbnails(deletedIds, imageReels = null) {
+    const reels = imageReels || (await fetchReadyReels()).filter(isThumbnailImageReel);
+    const pending = get(pendingThumbnail);
+    const pendingFileKeys = new Set();
+    if (pending?.name) pendingFileKeys.add(String(pending.name).trim());
+    const result = reconcileThumbnailVault(reels, {
+      backendReachable: true,
+      pendingFileKeys,
+      storageKey: CONFIG.THUMBNAIL_STORAGE_KEY,
+      purgeGhostCanonical: true,
+      purgeMarkedOrphans: true
+    });
+    syncCollectionStore(personalThumbnailCollection, CONFIG.THUMBNAIL_STORAGE_KEY);
+    if (result.purged.length) {
+      console.info('[ORPHAN_PURGE]', {
+        deletedIds: [...(deletedIds || [])],
+        purgedCount: result.purged.length,
+        purged: result.purged,
+        remaining: result.entries.length
+      });
+    }
+    return { purged: result.purged };
+  }
+
+  function applyThumbnailDeleteTombstone(deletedIds, failedIds = [], imageReels = []) {
+    if (!deletedIds?.length && !failedIds?.length) return;
+    const before = get(personalThumbnailCollection).length;
+    const result = deleteThumbnailVaultEntries(deletedIds, imageReels, {
+      backendReachable: true,
+      storageKey: CONFIG.THUMBNAIL_STORAGE_KEY,
+      failedIds
+    });
+    syncCollectionStore(personalThumbnailCollection, CONFIG.THUMBNAIL_STORAGE_KEY);
+    const after = get(personalThumbnailCollection).length;
+    console.info('[DELETE_STORE]', {
+      action: 'applyThumbnailDeleteTombstone',
+      deletedIds: [...deletedIds],
+      failedIds: [...failedIds],
+      before,
+      after,
+      purged: result.purged?.length || 0,
+      ts: Date.now()
+    });
+    assertDeleteReducedCount(before, after, deletedIds.length + failedIds.length);
+  }
+
+  function logDeletePipeline(vault, stage, payload = {}) {
+    console.info('[DELETE_PIPELINE]', { vault, stage, ...payload, timestamp: Date.now() });
+  }
+
+  function resolveThumbnailStoredEntry(item, index = 0) {
+    const stored = getStoredThumbnailEntries();
+    const key = typeof item === 'string' ? String(item || '').trim() : '';
+    if (key) {
+      for (const entry of stored) {
+        if (!entry) continue;
+        if (typeof entry === 'string') {
+          if (String(entry).trim() === key) {
+            const objectMatch = stored.find(
+              (candidate) =>
+                candidate &&
+                typeof candidate === 'object' &&
+                (String(candidate.fileName || candidate.file_name || '').trim() === key ||
+                  basenameFromMediaRef(candidate.url || candidate.thumbnailUrl || '') === key)
+            );
+            return objectMatch || { fileName: key };
+          }
+          continue;
+        }
+        const id = String(entry.id || '').trim();
+        const fileName = String(entry.fileName || entry.file_name || '').trim();
+        const urlName = basenameFromMediaRef(entry.url || entry.thumbnailUrl || '');
+        if (key === id || key === fileName || key === urlName) return entry;
+      }
+    }
+    const aligned = stored.find((entry, idx) => {
+      if (!entry || typeof entry !== 'object') return false;
+      return idx === index && String(entry.fileName || entry.file_name || '').trim() === key;
+    });
+    if (aligned) return aligned;
+    return null;
+  }
+
+  function resolveThumbnailCanonicalId(item, index = 0) {
+    const entry = resolveThumbnailStoredEntry(item, index);
+    return String(entry?.id || '').trim();
+  }
+
+  function resolveThumbnailDeleteKey(item) {
+    const stored = getStoredThumbnailEntries();
+    if (typeof item === 'string') {
+      const key = String(item || '').trim();
+      if (!key) return '';
+      const entry = stored.find((t) => {
+        if (typeof t === 'string') return String(t).trim() === key;
+        const name = String(t?.name || '').trim();
+        const fileName = String(t?.fileName || '').trim();
+        const urlName = basenameFromMediaRef(t?.url || t?.thumbnailUrl || '');
+        return key === name || key === fileName || key === urlName;
+      });
+      if (typeof entry === 'string') return String(entry).trim();
+      return String(entry?.fileName || entry?.name || key).trim();
+    }
     if (!item || typeof item !== 'object') return '';
     return String(
+      item.fileName ||
       basenameFromMediaRef(item.url) ||
       basenameFromMediaRef(item.thumbnailUrl) ||
-      item.fileName ||
-      item.id ||
       item.name ||
+      item.id ||
       item.title ||
       ''
     ).trim();
+  }
+
+  function thumbnailSelectionId(item, index = 0) {
+    return resolveThumbnailCanonicalId(item, index);
   }
 
   function resolveThumbnailNameFromPayload(payload) {
@@ -154,21 +418,21 @@
     return path.split('/').pop() || direct.replace(/^personal-thumb-/, '');
   }
 
-  function toggleThumbnailSelection(name) {
-    const key = String(name || '').trim();
+  function toggleThumbnailSelection(reelId) {
+    const key = String(reelId || '').trim();
     if (!key) return;
-    const wasSelected = selectedThumbnailNames.includes(key);
-    selectedThumbnailNames = selectedThumbnailNames.includes(key)
-      ? selectedThumbnailNames.filter((entry) => entry !== key)
-      : [...selectedThumbnailNames, key];
+    const wasSelected = selectedThumbnailIds.includes(key);
+    selectedThumbnailIds = selectedThumbnailIds.includes(key)
+      ? selectedThumbnailIds.filter((entry) => entry !== key)
+      : [...selectedThumbnailIds, key];
     console.info('[BATCH_SELECT]', {
-      selectedCount: selectedThumbnailNames.length,
-      selectedIds: [...selectedThumbnailNames]
+      selectedCount: selectedThumbnailIds.length,
+      selectedIds: [...selectedThumbnailIds]
     });
     console.info('[BATCH_SELECT_TOGGLE]', {
       itemId: key,
       action: wasSelected ? 'removed' : 'added',
-      newCount: selectedThumbnailNames.length
+      newCount: selectedThumbnailIds.length
     });
   }
 
@@ -181,21 +445,20 @@
   }
 
   $: {
-    const availableThumbs = new Set();
-    for (const item of get(personalThumbnailCollection) || []) {
-      availableThumbs.add(String(item || '').trim());
-    }
+    const availableIds = new Set();
     for (const entry of getStoredThumbnailEntries()) {
-      const byName = String(entry?.name || '').trim();
-      const byFile = String(entry?.fileName || '').trim();
-      const byUrl = basenameFromMediaRef(entry?.url || entry?.thumbnailUrl || '');
-      if (byName) availableThumbs.add(byName);
-      if (byFile) availableThumbs.add(byFile);
-      if (byUrl) availableThumbs.add(byUrl);
+      if (!entry || typeof entry !== 'object') continue;
+      const id = String(entry.id || '').trim();
+      if (id) availableIds.add(id);
     }
-    const filteredThumbs = selectedThumbnailNames.filter((entry) => availableThumbs.has(entry));
-    if (filteredThumbs.length !== selectedThumbnailNames.length) {
-      selectedThumbnailNames = filteredThumbs;
+    const collection = get(personalThumbnailCollection) || [];
+    for (let i = 0; i < collection.length; i += 1) {
+      const id = resolveThumbnailCanonicalId(collection[i], i);
+      if (id) availableIds.add(id);
+    }
+    const filteredThumbs = selectedThumbnailIds.filter((entry) => availableIds.has(entry));
+    if (filteredThumbs.length !== selectedThumbnailIds.length) {
+      selectedThumbnailIds = filteredThumbs;
     }
     const availableVideos = new Set(
       (get(personalVideos) || []).map((item) => String(item?.id || '').trim()).filter(Boolean)
@@ -207,11 +470,27 @@
   }
 
   export async function batchDeleteSelectedThumbnails() {
-    const selected = [...selectedThumbnailNames];
+    console.info('[DELETE_HANDLER]', {
+      handler: 'batchDeleteSelectedThumbnails',
+      entered: true,
+      ts: Date.now()
+    });
+    const selected = [...selectedThumbnailIds];
+    console.info('[DELETE_CLICK]', { button: 'DELETE_SELECTED_THUMBS', selectedCount: selected.length });
+    console.info('[DELETE_SELECTION]', { selectedIds: selected, storeSize: get(personalThumbnailCollection).length });
     console.info('[BATCH_DELETE_CLICK]', {
       selectedCount: selected.length
     });
     if (!selected.length) {
+      console.info('[DELETE_HANDLER]', {
+        handler: 'batchDeleteSelectedThumbnails',
+        earlyReturn: 'aborted_no_selection',
+        ts: Date.now()
+      });
+      logDeletePipeline('thumbnail-vault', 'aborted_no_selection', {
+        selectedThumbnailIds: [...selectedThumbnailIds],
+        storeSize: get(personalThumbnailCollection).length
+      });
       uploadStatus.set('⚠️ Select thumbnails to delete');
       resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
       return;
@@ -225,75 +504,85 @@
       selectedIds: [...selected]
     });
     const beforeCount = get(personalThumbnailCollection).length;
-    const reels = await fetchReadyReels().catch(() => []);
-    const selectedSet = new Set(selected.map((name) => String(name || '').trim()));
-    const imageReels = reels.filter((reel) => {
-      const type = String(reel?.type || '').toLowerCase();
-      return type === 'image' || String(reel?.url || '').includes('/thumbs/');
+    logDeletePipeline('thumbnail-vault', 'delete_targets', {
+      selectedIds: [...selected],
+      resolvedAssetIds: [...selected],
+      storeSizeBefore: beforeCount
     });
     let removed = 0;
     let backendFailures = 0;
-    const deletedNames = [];
+    const deletedIds = [];
+    const ghostIds = [];
+    const storedSnapshot = getStoredThumbnailEntries();
+    const feedCleanupNames = [];
+    const reelsBefore = await fetchReadyReels();
+    const imageReels = (reelsBefore || []).filter(isThumbnailImageReel);
     for (let i = 0; i < selected.length; i += 1) {
-      const itemName = String(selected[i] || '').trim();
-      if (!itemName) continue;
+      const reelId = String(selected[i] || '').trim();
+      if (!reelId) continue;
       console.info('[BATCH_DELETE_ITERATION]', {
         current: i + 1,
         total: selected.length,
-        itemId: itemName
+        itemId: reelId
       });
-      const reel = imageReels.find((entry) => {
-        const thumbName = basenameFromMediaRef(
-          entry?.thumbnailUrl || entry?.thumbnail_url || entry?.url || ''
-        );
-        const fileName = String(entry?.fileName || entry?.file_name || '').trim();
-        return thumbName === itemName || fileName === itemName;
-      });
-      let deleted = false;
-      if (reel?.id) {
-        deleted = await deleteReelById(reel.id);
-      }
-      if (!deleted) {
-        deleted = await deleteThumbnailFileByName(itemName);
-      }
+      const deleted = await deleteReelById(reelId);
       if (deleted) {
         removed += 1;
-        deletedNames.push(itemName);
+        deletedIds.push(reelId);
+        const entry = storedSnapshot.find((t) => t && String(t.id || '').trim() === reelId);
+        const fileName = String(entry?.fileName || entry?.file_name || basenameFromMediaRef(entry?.url || '')).trim();
+        if (fileName) feedCleanupNames.push(fileName);
       } else {
         backendFailures += 1;
+        ghostIds.push(reelId);
       }
       console.info('[BATCH_DELETE_ITEM]', {
         index: i + 1,
-        itemId: itemName,
+        itemId: reelId,
         registrySizeBefore: get(personalThumbnailCollection).length
       });
     }
-    if (deletedNames.length > 0) {
-      const deletedSet = new Set(deletedNames);
-      personalThumbnailCollection.update((collection) =>
-        (collection || []).filter((entry) => !deletedSet.has(String(entry || '').trim()))
-      );
-      const nextStored = getStoredThumbnailEntries().filter((entry) => {
-        const byName = String(entry?.name || '').trim();
-        const byUrl = basenameFromMediaRef(entry?.url || '');
-        return !deletedSet.has(byName) && !deletedSet.has(byUrl);
-      });
-      storeThumbnailMetadata(CONFIG.THUMBNAIL_STORAGE_KEY, nextStored);
+    if (deletedIds.length > 0 || ghostIds.length > 0) {
+      applyThumbnailDeleteTombstone(deletedIds, ghostIds, imageReels);
+      for (const fileName of feedCleanupNames) {
+        AI_CLEANUP_AGENT.removeThumbnailFromCategories(fileName);
+      }
     }
     let persisted = true;
     try {
-      await syncFromVault(true);
+      await syncFromVault(true, true);
+      const reelsAfter = await fetchReadyReels();
+      const imageReelsAfter = (reelsAfter || []).filter(isThumbnailImageReel);
+      applyThumbnailDeleteTombstone(deletedIds, ghostIds, imageReelsAfter);
+      await purgeStaleOrphanThumbnails([...deletedIds, ...ghostIds], imageReelsAfter);
     } catch {
       persisted = false;
     }
-    selectedThumbnailNames = [];
+    selectedThumbnailIds = [];
     const afterCount = get(personalThumbnailCollection).length;
+    const renderedAfter = typeof document !== 'undefined'
+      ? document.querySelectorAll('.vault-grid--images .vault-card').length
+      : -1;
+    console.info('[DELETE_RENDER]', {
+      mechanism: 'selected',
+      beforeCount,
+      afterCount,
+      renderedAfter,
+      deletedIdsCount: deletedIds.length,
+      removed,
+      ts: Date.now()
+    });
+    logDeletePipeline('thumbnail-vault', 'store_after', {
+      storeSizeBefore: beforeCount,
+      storeSizeAfter: afterCount,
+      deletedCount: removed
+    });
     console.info('[BATCH_STORE_UPDATE]', {
       beforeCount,
       afterCount
     });
     console.info('[BATCH_PERSIST]', {
-      success: persisted && backendFailures === 0
+      success: persisted && backendFailures === 0 && removed > 0
     });
     console.info('[BATCH_UI_REFRESH]', {
       newCount: afterCount
@@ -302,13 +591,21 @@
       deletedCount: removed,
       finalRegistrySize: afterCount
     });
-    uploadStatus.set(`🗑️ Deleted ${removed}/${selected.length} selected thumbnails`);
+    uploadStatus.set(
+      removed > 0
+        ? `🗑️ Deleted ${removed}/${selected.length} selected thumbnails`
+        : `❌ Delete failed — could not remove selected thumbnails`
+    );
     resourceManager.setTimeout(() => uploadStatus.set('Standby'), 3000);
   }
 
   export async function batchDeleteSelectedVideos() {
     const selected = [...selectedVideoIds];
     if (!selected.length) {
+      logDeletePipeline('video-vault', 'aborted_no_selection', {
+        selectedVideoIds: [...selectedVideoIds],
+        storeSize: get(personalVideos).length
+      });
       uploadStatus.set('⚠️ Select videos to delete');
       resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
       return;
@@ -329,18 +626,40 @@
       timestamp: Date.now()
     });
     const beforeCount = get(personalVideos).length;
+    logDeletePipeline('video-vault', 'delete_targets', {
+      selectedIds: [...selected],
+      resolvedAssetIds: [...selected],
+      storeSizeBefore: beforeCount
+    });
     let removed = 0;
+    const deletedIds = [];
     for (const reelId of selected) {
-      if (await deleteReelById(reelId)) removed += 1;
+      if (await deleteReelById(reelId)) {
+        removed += 1;
+        deletedIds.push(String(reelId || '').trim());
+      }
     }
-    await syncFromVault(true);
+    if (deletedIds.length > 0) {
+      applyVideoDeleteTombstone(deletedIds);
+    }
+    await syncFromVault(true, true);
+    applyVideoDeleteTombstone(deletedIds);
     selectedVideoIds = [];
     const afterCount = get(personalVideos).length;
+    logDeletePipeline('video-vault', 'store_after', {
+      storeSizeBefore: beforeCount,
+      storeSizeAfter: afterCount,
+      deletedCount: removed
+    });
     console.info('[DELETE_STORE_UPDATE]', { vault: 'video-vault', mechanism: 'batch', mode: 'selected', beforeCount, afterCount, timestamp: Date.now() });
-    console.info('[DELETE_PERSISTENCE]', { vault: 'video-vault', mechanism: 'batch', mode: 'selected', success: removed > 0 || selected.length === 0, removed, attempted: selected.length, timestamp: Date.now() });
+    console.info('[DELETE_PERSISTENCE]', { vault: 'video-vault', mechanism: 'batch', mode: 'selected', success: removed > 0, removed, attempted: selected.length, timestamp: Date.now() });
     console.info('[DELETE_UI_REFRESH]', { vault: 'video-vault', mechanism: 'batch', mode: 'selected', newCount: afterCount, timestamp: Date.now() });
     console.info('[DELETE_COMPLETE]', { vault: 'video-vault', mechanism: 'batch', mode: 'selected', removed, timestamp: Date.now() });
-    uploadStatus.set(`🗑️ Deleted ${removed}/${selected.length} selected videos`);
+    uploadStatus.set(
+      removed > 0
+        ? `🗑️ Deleted ${removed}/${selected.length} selected videos`
+        : `❌ Delete failed — could not remove selected videos`
+    );
     resourceManager.setTimeout(() => uploadStatus.set('Standby'), 3000);
   }
 
@@ -417,6 +736,7 @@
     event.stopPropagation();
     thumbnailDragActive.set(false);
     logDrag('thumbnail-vault:drop');
+    pipelineDiag('DND', 'handleVaultThumbnailDrop', 'VaultExperience.svelte', { result: 'drop_received' });
     console.info('[DROP_RECEIVED]', {
       vault: 'thumbnail',
       fileCount: event.dataTransfer?.files?.length || 0,
@@ -425,6 +745,7 @@
 
     const file = Array.from(event.dataTransfer?.files || []).find((f) => f.type.startsWith('image/'));
     if (!file) {
+      pipelineDiag('DND', 'handleVaultThumbnailDrop', 'VaultExperience.svelte', { result: 'rejected_not_image' });
       uploadStatus.set('⚠️ Please drop an image');
       resourceManager.setTimeout(() => uploadStatus.set('Standby'), 3000);
       return;
@@ -439,6 +760,10 @@
       type: file.type
     };
     pendingThumbnail.set(pending);
+    pipelineDiag('DND', 'handleVaultThumbnailDrop', 'VaultExperience.svelte', {
+      fileName: pending.name,
+      result: 'preview_pending_accept'
+    });
     logVaultFieldAudit('thumbnail-vault:drop (local only — upload happens on Accept)', {
       name: pending.name,
       type: pending.type,
@@ -467,6 +792,7 @@
     event.stopPropagation();
     videoDragActive.set(false);
     logDrag('video-vault:drop');
+    pipelineDiag('DND', 'handleVaultVideoDrop', 'VaultExperience.svelte', { result: 'drop_received' });
     console.info('[DROP_RECEIVED]', {
       vault: 'video',
       fileCount: event.dataTransfer?.files?.length || 0,
@@ -485,6 +811,7 @@
     });
 
     if (!file) {
+      pipelineDiag('DND', 'handleVaultVideoDrop', 'VaultExperience.svelte', { result: 'rejected_invalid_file' });
       uploadStatus.set('⚠️ Drop a valid video file');
       return;
     }
@@ -502,6 +829,10 @@
     }
 
     uploadStatus.set('🎬 Uploading to backend...');
+    pipelineDiag('UPLOAD', 'handleVaultVideoDrop', 'VaultExperience.svelte', {
+      fileName: file.name,
+      result: 'upload_start'
+    });
     console.info('[UPLOAD_STARTED]', {
       vault: 'video',
       name: file.name,
@@ -518,29 +849,26 @@
       const response = await uploadMedia(formData, headers);
       logVaultFieldAudit('POST /api/reels response (video vault drop)', response);
 
+      const resolvedUrl =
+        response?.url ||
+        response?.videoUrl ||
+        response?.video_url ||
+        '';
+      const canonicalFileName =
+        response?.fileName ||
+        response?.file_name ||
+        (resolvedUrl ? String(resolvedUrl).split('/').pop()?.split('?')[0] || '' : '');
       const normalizedResponse = {
         ...response,
-        url:
-          response?.url ||
-          response?.videoUrl ||
-          response?.video_url ||
-          '',
+        url: resolvedUrl,
         thumbnailUrl:
           response?.thumbnailUrl ||
           response?.thumbnail_url ||
           response?.thumbnailPath ||
           response?.thumbnail_path ||
           '',
-        name:
-          response?.name ||
-          response?.title ||
-          response?.fileName ||
-          response?.file_name ||
-          file.name,
-        fileName:
-          response?.fileName ||
-          response?.file_name ||
-          file.name
+        name: file.name || response?.name || response?.title || 'Untitled',
+        fileName: canonicalFileName
       };
 
       const vaultEntry = reelToVaultEntry(normalizedResponse);
@@ -581,6 +909,11 @@
       });
       persistPersonalVault(get(personalVideos));
       AI_CLEANUP_AGENT.distributeVideoToFeed(entry);
+      pipelineDiag('VIEWER', 'handleVaultVideoDrop', 'VaultExperience.svelte', {
+        assetId: entry.id,
+        fileName: file.name,
+        result: 'distributed_to_feed'
+      });
       feed.update((current) => ({ ...current }));
       console.info('[UPLOAD_SUCCESS]', {
         vault: 'video',
@@ -590,8 +923,18 @@
         ts: new Date().toISOString()
       });
       uploadStatus.set(`✅ Added to vault & feed: ${file.name}`);
+      pipelineDiag('UPLOAD', 'handleVaultVideoDrop', 'VaultExperience.svelte', {
+        assetId: entry.id,
+        fileName: file.name,
+        result: 'success'
+      });
     } catch (error) {
       console.error('Failed to process video:', error);
+      pipelineDiag('UPLOAD', 'handleVaultVideoDrop', 'VaultExperience.svelte', {
+        fileName: file?.name || null,
+        result: 'error',
+        detail: error?.message || String(error)
+      });
       console.error('[UPLOAD_FAILED]', {
         vault: 'video',
         name: file?.name || '',
@@ -656,6 +999,10 @@
     const pending = get(pendingThumbnail);
     if (!pending) return;
     const { file, preview, name } = pending;
+    pipelineDiag('UPLOAD', 'acceptPendingThumbnail', 'VaultExperience.svelte', {
+      fileName: name,
+      result: 'accept_start'
+    });
     uploadStatus.set('📤 Uploading thumbnail...');
     console.info('[UPLOAD_STARTED]', {
       vault: 'thumbnail',
@@ -684,9 +1031,9 @@
 
       const entryName = String(thumbPath).split('/').pop() || name;
       const entry = {
-        id: response.id,
-        name: entryName,
+        id: String(response.id || ''),
         fileName: entryName,
+        name: name,
         title: name,
         type: response.type || response.media_type || 'image',
         url: thumbPath,
@@ -706,21 +1053,8 @@
         ts: new Date().toISOString()
       });
 
-      personalThumbnailCollection.update((collection) => [
-        entryName,
-        ...collection.filter((item) => item !== entryName)
-      ]);
-
-      const stored = getStoredThumbnailEntries().filter(
-        (item) => item?.name !== entryName && !(item?.url && String(item.url).startsWith('data:'))
-      );
-      stored.push(entry);
-      console.info('[STORE_WRITE]', {
-        store: CONFIG.THUMBNAIL_STORAGE_KEY,
-        count: stored.length,
-        ts: new Date().toISOString()
-      });
-      storeThumbnailMetadata(CONFIG.THUMBNAIL_STORAGE_KEY, stored);
+      appendThumbnailVaultEntry(entry, CONFIG.THUMBNAIL_STORAGE_KEY);
+      syncCollectionStore(personalThumbnailCollection, CONFIG.THUMBNAIL_STORAGE_KEY);
       AI_CLEANUP_AGENT.distributeThumbnailAcrossCategories(entryName, thumbPath);
       console.info('[PLACEHOLDER_INSERT]', {
         source: 'VaultExperience.acceptPendingThumbnail',
@@ -741,17 +1075,32 @@
         ts: new Date().toISOString()
       });
       uploadStatus.set(`✅ ${name} uploaded`);
+      pipelineDiag('UPLOAD', 'acceptPendingThumbnail', 'VaultExperience.svelte', {
+        assetId: entry.id || entryName,
+        fileName: name,
+        result: 'success'
+      });
       logHeroImagePipeline('vault-upload', {
         assetId: entry.id || entryName,
         assetType: entry.type || 'image/jpeg',
         mediaUrl: thumbPath,
         resolved: true
       });
-      await syncFromVault(true);
+      await syncFromVault(true, true);
+      pipelineDiag('VIEWER', 'acceptPendingThumbnail', 'VaultExperience.svelte', {
+        assetId: entry.id || entryName,
+        fileName: name,
+        result: 'sync_complete'
+      });
       if (preview?.startsWith('blob:')) resourceManager.revokeBlobUrl(preview);
       pendingThumbnail.set(null);
     } catch (error) {
       console.error('Upload failed:', error);
+      pipelineDiag('UPLOAD', 'acceptPendingThumbnail', 'VaultExperience.svelte', {
+        fileName: name,
+        result: 'error',
+        detail: error?.message || String(error)
+      });
       console.error('[UPLOAD_FAILED]', {
         vault: 'thumbnail',
         name,
@@ -776,6 +1125,15 @@
   }
 
   export async function batchDeleteThumbnails() {
+    console.info('[DELETE_HANDLER]', {
+      handler: 'batchDeleteThumbnails',
+      entered: true,
+      ts: Date.now()
+    });
+    console.info('[DELETE_CLICK]', {
+      button: 'BATCH_DELETE_ALL',
+      storeSize: get(personalThumbnailCollection).length
+    });
     console.info('[DELETE_HANDLER_FIRED]', {
       mechanism: 'batch',
       vault: 'thumbnail-vault',
@@ -802,12 +1160,38 @@
         .map((reel) => reel.id)
         .filter(Boolean);
       let removed = 0;
+      const deletedIds = [];
       for (const reelId of idsToDelete) {
         // Backend reel delete is authoritative (DB + disk + WS DELETED).
-        if (await deleteReelById(reelId)) removed += 1;
+        if (await deleteReelById(reelId)) {
+          removed += 1;
+          deletedIds.push(String(reelId || '').trim());
+        }
       }
-      await syncFromVault(true);
+      const reelsPostDelete = await fetchReadyReels();
+      const imageReels = (reelsPostDelete || []).filter(isThumbnailImageReel);
+      if (deletedIds.length > 0 || removed > 0) {
+        applyThumbnailDeleteTombstone(deletedIds, [], imageReels);
+      }
+      await syncFromVault(true, true);
+      const reelsAfter = await fetchReadyReels();
+      const imageReelsAfter = (reelsAfter || []).filter(isThumbnailImageReel);
+      applyThumbnailDeleteTombstone(deletedIds, [], imageReelsAfter);
+      await purgeStaleOrphanThumbnails(deletedIds, imageReelsAfter);
       const afterCount = get(personalThumbnailCollection).length;
+      const renderedAfter = typeof document !== 'undefined'
+        ? document.querySelectorAll('.vault-grid--images .vault-card').length
+        : -1;
+      console.info('[DELETE_RENDER]', {
+        mechanism: 'batch',
+        beforeCount,
+        afterCount,
+        renderedAfter,
+        deletedIdsCount: deletedIds.length,
+        idsToDeleteCount: idsToDelete.length,
+        removed,
+        ts: Date.now()
+      });
       console.info('[DELETE_STORE_UPDATE]', {
         vault: 'thumbnail-vault',
         mechanism: 'batch',
@@ -869,10 +1253,21 @@
       const beforeCount = videos.length;
       const idsToDelete = videos.map((video) => video?.id).filter(Boolean);
       let removed = 0;
+      const deletedIds = [];
       for (const reelId of idsToDelete) {
-        if (await deleteReelById(reelId)) removed += 1;
+        if (await deleteReelById(reelId)) {
+          removed += 1;
+          deletedIds.push(String(reelId || '').trim());
+        }
       }
-      await syncFromVault(true);
+      if (deletedIds.length > 0) {
+        const deletedIdSet = new Set(deletedIds);
+        personalVideos.update((items) =>
+          (items || []).filter((video) => !deletedIdSet.has(String(video?.id || '').trim()))
+        );
+        persistPersonalVault(get(personalVideos));
+      }
+      await syncFromVault(true, true);
       const afterCount = get(personalVideos).length;
       console.info('[DELETE_STORE_UPDATE]', {
         vault: 'video-vault',
@@ -962,12 +1357,22 @@
     <div style="display: flex; gap: 8px;">
       <button
         class="batch-delete-btn"
-        on:click={batchDeleteSelectedThumbnails}
-        disabled={selectedThumbnailNames.length === 0}
+        data-vault="thumbnail"
+        on:click={() => {
+          console.info('[DELETE_CLICK]', { button: 'DELETE_SELECTED_THUMBS_DOM', disabled: selectedThumbnailIds.length === 0 });
+          batchDeleteSelectedThumbnails();
+        }}
+        disabled={selectedThumbnailIds.length === 0}
       >
-        🗑️ DELETE SELECTED ({selectedThumbnailNames.length})
+        🗑️ DELETE SELECTED THUMBS ({selectedThumbnailIds.length})
       </button>
-      <button class="batch-delete-btn" on:click={batchDeleteThumbnails}>🗑️ BATCH DELETE ALL</button>
+      <button
+        class="batch-delete-btn"
+        on:click={() => {
+          console.info('[DELETE_CLICK]', { button: 'BATCH_DELETE_ALL_DOM' });
+          batchDeleteThumbnails();
+        }}
+      >🗑️ BATCH DELETE ALL</button>
     </div>
   </div>
   <div
@@ -1007,6 +1412,7 @@
   <div class="thumbnail-grid vault-grid vault-grid--images">
     {#each ($personalThumbnailCollection ?? []).filter(Boolean) as img, i (img?.id || img?.url || img?.fileName || `${img}-${i}`)}
       {@const reel = getVaultImageReel(img, i)}
+      {@const selectId = thumbnailSelectionId(img, i)}
       <div
         class="vault-card thumbnail-item"
         class:image={isImage(reel)}
@@ -1045,14 +1451,15 @@
           >
             ✕
           </button>
-          <label class="batch-select-label">
+          <label class="batch-select-label" class:orphan-entry={!selectId}>
             <input
               type="checkbox"
               class="batch-select-checkbox"
-              checked={selectedThumbnailNames.includes(thumbnailSelectionId(img))}
-              on:change|stopPropagation={() => toggleThumbnailSelection(thumbnailSelectionId(img))}
+              disabled={!selectId}
+              checked={selectId && selectedThumbnailIds.includes(selectId)}
+              on:change|stopPropagation={() => toggleThumbnailSelection(selectId)}
             />
-            Select
+            {!selectId ? 'Orphan' : 'Select'}
           </label>
         </div>
       </div>
@@ -1067,10 +1474,11 @@
     <div style="display: flex; gap: 8px;">
       <button
         class="batch-delete-btn"
+        data-vault="video"
         on:click={batchDeleteSelectedVideos}
         disabled={selectedVideoIds.length === 0}
       >
-        🗑️ DELETE SELECTED ({selectedVideoIds.length})
+        🗑️ DELETE SELECTED VIDEOS ({selectedVideoIds.length})
       </button>
       <button
         class="batch-delete-btn"
@@ -1193,7 +1601,7 @@
   {/if}
 </div>
 <!-- 🎯 DEMO: Visible placeholder cards when no personal media exists (FOR SHARING) -->
-{#if ($personalVideos?.length ?? 0) === 0 && ($personalThumbnailCollection?.length ?? 0) === 0}
+{#if shouldShowVaultDemoCards}
   <div style="padding:3rem 2rem;text-align:center;background:#f8fafc;border-radius:12px;margin:2rem 0;border:1px dashed #cbd5e1;">
     <h3 style="margin:0 0 1.5rem 0;color:#1e293b;font-size:1.25rem;font-weight:600;">✨ Demo Placeholder Cards</h3>
     <p style="margin:0 0 2rem 0;color:#64748b;font-size:1rem;">No personal media yet. Here are demo cards to show your backend is connected:</p>

@@ -25,6 +25,14 @@ import {
     normalizeHeroAssetRecord,
     resolveHeroAssetById
 } from './heroAssetBridge.js';
+import {
+    loadHeroReel,
+    saveHeroReel,
+    heroReelToVaultItem,
+    applyHeroReelToStores,
+    migrateLegacyHeroStorageIfNeeded,
+    HERO_REEL_STORAGE_KEY
+} from './heroReelIdentity.js';
 
 export const HERO_MODES = /** @type {const} */ ([
     'TRENDING',
@@ -818,73 +826,20 @@ export function normalizeDiscoveryHeroType(type) {
 export function loadHeroVaultItems() {
     if (typeof window === 'undefined') return [];
     try {
-        const managerConfig = loadHeroManagerConfig();
-        const heroVideo = String(localStorage.getItem(HERO_VIDEO_STORAGE_KEY) || '').trim();
-        const heroImage = String(localStorage.getItem(HERO_IMAGE_STORAGE_KEY) || '').trim();
-        const heroAssetId = String(managerConfig?.heroAssetId || '').trim();
-        const backgroundSource = String(managerConfig?.backgroundSource || 'selection');
-        const items = [];
-
-        const sourceAuthority = {
-            authorityA: {
-                key: HERO_MANAGER_STORAGE_KEY,
-                heroAssetId,
-                backgroundSource
-            },
-            authorityB: {
-                key: HERO_IMAGE_STORAGE_KEY,
-                hasValue: Boolean(heroImage)
-            },
-            authorityC: {
-                key: HERO_VIDEO_STORAGE_KEY,
-                hasValue: Boolean(heroVideo)
-            }
-        };
-
-        if (backgroundSource === 'custom_image' && heroImage) {
-            items.push({
-                id: heroAssetId || 'hero-image',
-                name: 'Hero Image',
-                title: 'Hero Image',
-                url: heroImage,
-                type: mimeFromStoredValue(heroImage, 'image/jpeg')
-            });
-        }
-        if (backgroundSource === 'custom_video' && heroVideo) {
-            items.push({
-                id: heroAssetId || 'hero-video',
-                name: 'Hero Video',
-                title: 'Hero Video',
-                url: heroVideo,
-                thumbnail: heroImage || '',
-                type: mimeFromStoredValue(heroVideo, 'video/mp4')
-            });
-        }
-        console.info('[HERO_STORAGE_AUTHORITIES]', {
-            ...sourceAuthority,
-            winner: {
-                key: HERO_MANAGER_STORAGE_KEY,
-                backgroundSource,
-                heroAssetId
-            },
-            timestamp: Date.now()
-        });
-        console.info('[HERO_ASSET_ID_TRACE]', {
-            stage: 'loadHeroVaultItems:build',
-            assetId: items[0]?.id || '',
-            heroAssetId,
-            source: backgroundSource === 'custom_video' ? HERO_VIDEO_STORAGE_KEY : HERO_IMAGE_STORAGE_KEY,
-            timestamp: Date.now()
-        });
+        migrateLegacyHeroStorageIfNeeded();
+        const manager = loadHeroManagerConfig();
+        const reel = loadHeroReel();
+        if (!reel?.id || !reel?.url) return [];
+        if (String(manager?.heroAssetId || '').trim() !== reel.id) return [];
         console.info('[HERO_STORE_READ]', {
             stage: 'loadHeroVaultItems',
-            videoKey: HERO_VIDEO_STORAGE_KEY,
-            thumbKey: HERO_IMAGE_STORAGE_KEY,
-            videoCount: backgroundSource === 'custom_video' && heroVideo ? 1 : 0,
-            thumbCount: backgroundSource === 'custom_image' && heroImage ? 1 : 0,
+            key: HERO_REEL_STORAGE_KEY,
+            id: reel.id,
+            fileName: reel.fileName,
+            url: reel.url,
             ts: new Date().toISOString()
         });
-        return items.filter(Boolean);
+        return [heroReelToVaultItem(reel)];
     } catch {
         return [];
     }
@@ -921,32 +876,26 @@ export function inferHeroAssetType(url, mimeHint = '') {
 export function resolveHeroBackgroundAsset(config = loadHeroManagerConfig(), vaultItems = null, options = {}) {
     const items = vaultItems || loadHeroVaultItems();
     const heroAssetId = String(config.heroAssetId || config.backgroundAsset || '').trim();
+    const canonicalReel = loadHeroReel();
     console.info('[HERO_CLASSIFY]', {
         stage: 'resolveHeroBackgroundAsset:start',
         heroAssetId,
+        canonicalReelId: canonicalReel?.id || '',
         backgroundSource: config.backgroundSource || '',
         vaultItemsCount: Array.isArray(items) ? items.length : 0,
         ts: new Date().toISOString()
     });
-    const bridgeAsset = resolveHeroAssetById(heroAssetId, items);
-    const persistedVideo = typeof window !== 'undefined' ? String(localStorage.getItem(HERO_VIDEO_STORAGE_KEY) || '') : '';
-    const persistedImage = typeof window !== 'undefined' ? String(localStorage.getItem(HERO_IMAGE_STORAGE_KEY) || '') : '';
-    const fallbackLegacy = normalizeHeroAssetRecord(
-        {
-            id: heroAssetId,
-            url:
-                config.backgroundSource === 'custom_video'
-                    ? (persistedVideo || config.backgroundVideo || '')
-                    : (persistedImage || config.backgroundImage || ''),
-            thumbnail: persistedImage || config.backgroundImage || '',
-            type:
-                config.backgroundSource === 'custom_video'
-                    ? mimeFromStoredValue(persistedVideo, 'video/mp4')
-                    : mimeFromStoredValue(persistedImage, 'image/jpeg')
-        },
-        { storageSource: 'hero_legacy_config' }
-    );
-    const resolvedAsset = bridgeAsset || fallbackLegacy;
+
+    let bridgeAsset = null;
+    if (canonicalReel?.id && canonicalReel?.url && heroAssetId === canonicalReel.id) {
+        bridgeAsset = normalizeHeroAssetRecord(heroReelToVaultItem(canonicalReel), {
+            storageSource: 'hero_reel'
+        });
+    }
+    if (!bridgeAsset) {
+        bridgeAsset = resolveHeroAssetById(heroAssetId, items);
+    }
+    const resolvedAsset = bridgeAsset;
     const mediaUrl = resolvedAsset?.mediaUrl || '';
     const resolvedAssetType = resolvedAsset?.assetType || 'unknown';
     const videoUrl = isVideoHeroAssetType(resolvedAssetType) ? mediaUrl : '';
@@ -955,7 +904,7 @@ export function resolveHeroBackgroundAsset(config = loadHeroManagerConfig(), vau
         : mediaUrl;
 
     const resolved = {
-        assetId: heroAssetId || resolvedAsset?.assetId || '',
+        assetId: canonicalReel?.id || heroAssetId || resolvedAsset?.assetId || '',
         vaultMatch: Boolean(bridgeAsset),
         mediaUrl,
         assetType: resolvedAssetType,
@@ -1977,24 +1926,16 @@ export function selectHeroContent(mode = 'TRENDING', feed, options = {}) {
  */
 export function hasUserHeroOverride(config = {}) {
     if (typeof window === 'undefined') return false;
-    const videoKey = config.HERO_VIDEO_STORAGE_KEY || 'reelforge_hero_video';
-    const imageKey = config.HERO_IMAGE_STORAGE_KEY || 'reelforge_hero_image';
+    const canonical = loadHeroReel();
+    if (canonical?.id && canonical?.url) return true;
+
     const defaultPaths = new Set([
         DEFAULT_HERO_BACKGROUND_VIDEO,
         ...(config.HERO_VIDEO_PATHS || [])
     ]);
 
-    const savedVideo = localStorage.getItem(videoKey);
-    const savedImage = localStorage.getItem(imageKey);
-    if (savedImage?.startsWith('data:')) return true;
-    if (resolveUserPosterUrl(savedImage)) return true;
-    if (savedVideo && !savedVideo.startsWith('blob:') && !defaultPaths.has(savedVideo)) return true;
-
     const managerConfig = loadHeroManagerConfig();
-    if (managerConfig.backgroundSource === 'custom_video') {
-        if (String(managerConfig.heroAssetId || '').trim()) return true;
-    }
-    if (managerConfig.backgroundSource === 'custom_image') {
+    if (managerConfig.backgroundSource === 'custom_video' || managerConfig.backgroundSource === 'custom_image') {
         if (String(managerConfig.heroAssetId || '').trim()) return true;
     }
     return false;
@@ -2007,6 +1948,26 @@ export function hasUserHeroOverride(config = {}) {
  */
 export async function hydrateHeroBackgroundStores(stores = {}, appConfig = {}) {
     if (typeof window === 'undefined') return 'unchanged';
+
+    migrateLegacyHeroStorageIfNeeded();
+    const managerConfig = loadHeroManagerConfig();
+    const canonicalReel = loadHeroReel();
+    if (
+        canonicalReel?.url &&
+        String(managerConfig?.heroAssetId || '').trim() === canonicalReel.id &&
+        (managerConfig.backgroundSource === 'custom_image' ||
+            managerConfig.backgroundSource === 'custom_video')
+    ) {
+        applyHeroReelToStores(canonicalReel, stores);
+        console.info('[HERO_LOAD]', {
+            stage: 'hydrateHeroBackgroundStores:hero_reel',
+            id: canonicalReel.id,
+            url: canonicalReel.url,
+            backgroundSource: canonicalReel.backgroundSource,
+            ts: new Date().toISOString()
+        });
+        return canonicalReel.backgroundSource === 'custom_image' ? 'image' : 'video';
+    }
 
     const videoKey = appConfig.HERO_VIDEO_STORAGE_KEY || 'reelforge_hero_video';
     const imageKey = appConfig.HERO_IMAGE_STORAGE_KEY || 'reelforge_hero_image';
@@ -2028,7 +1989,6 @@ export async function hydrateHeroBackgroundStores(stores = {}, appConfig = {}) {
         savedVideo = null;
     }
 
-    const managerConfig = loadHeroManagerConfig();
     if (
         (managerConfig.backgroundSource === 'custom_image' ||
             managerConfig.backgroundSource === 'custom_video') &&

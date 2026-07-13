@@ -3,6 +3,8 @@ const BACKEND_PORT =
     import.meta.env.BACKEND_PORT ||
     '8080';
 
+import { pipelineDiag } from './diagnostics/pipelineDiag.js';
+
 function isLoopbackOrigin(url) {
     if (!url || typeof url !== 'string') return false;
     try {
@@ -39,7 +41,24 @@ function resolveConfiguredApiUrl() {
     return '';
 }
 
+/** Netlify static hosts must use same-origin /api (see public/_redirects). */
+function isNetlifyStaticHost() {
+    if (typeof window === 'undefined') return false;
+    const host = window.location.hostname.toLowerCase();
+    return host.endsWith('.netlify.app') || host.endsWith('.netlify.live');
+}
+
+function shouldUseSameOriginApi() {
+    if (import.meta.env.VITE_USE_SAME_ORIGIN_API === 'true') return true;
+    // Drop/manual deploys may omit build env; never call Railway directly from the browser on Netlify.
+    if (import.meta.env.PROD && isNetlifyStaticHost()) return true;
+    return false;
+}
+
 function resolveBackendUrl() {
+    if (shouldUseSameOriginApi()) {
+        return '';
+    }
     const configured = resolveConfiguredApiUrl();
     if (configured) return configured;
     if (import.meta.env.DEV) {
@@ -52,6 +71,9 @@ function resolveBackendUrl() {
     }
     return '';
 }
+
+/** When true, production uses same-origin /api and /videos (Netlify _redirects proxy). */
+export const USE_SAME_ORIGIN_API = shouldUseSameOriginApi();
 
 /** Origin for static media (/videos, /thumbs). */
 export const BACKEND_URL = resolveBackendUrl();
@@ -72,15 +94,50 @@ console.info('[ASSET_RESOLUTION_HOTFIX_APPLIED]', {
 
 /**
  * Base URL for API fetch calls.
- * Empty string in dev uses the Vite proxy; production uses BACKEND_URL unless overridden.
+ * Empty string uses same-origin /api (Vite proxy in dev, Netlify _redirects in prod).
  */
-export const API_BASE_URL =
-    import.meta.env.DEV && import.meta.env.VITE_FORCE_DIRECT_BACKEND_API !== 'true'
-        ? ''
-        : resolveConfiguredApiUrl() || BACKEND_URL;
+function resolveApiBaseUrl() {
+    if (shouldUseSameOriginApi()) return '';
+    if (import.meta.env.DEV && import.meta.env.VITE_FORCE_DIRECT_BACKEND_API !== 'true') {
+        return '';
+    }
+    const configured = resolveConfiguredApiUrl() || BACKEND_URL;
+    // Mission 3 root cause: prod builds must never POST to localhost from remote browsers.
+    if (import.meta.env.PROD && (!configured || isLoopbackOrigin(configured))) {
+        return '';
+    }
+    return configured;
+}
+
+export const API_BASE_URL = resolveApiBaseUrl();
+
+pipelineDiag('ROUTER', 'resolveApiBaseUrl', 'config.js', {
+    result: API_BASE_URL || 'same-origin',
+    detail: {
+        sameOrigin: USE_SAME_ORIGIN_API,
+        backendUrl: BACKEND_URL || '(same-origin-relative-media)'
+    }
+});
+
+console.info('[API_ROUTING]', {
+    sameOrigin: USE_SAME_ORIGIN_API,
+    apiBase: API_BASE_URL || '(same-origin)',
+    backendUrl: BACKEND_URL || '(same-origin-relative-media)'
+});
 
 /** Opt-in: use same-origin /videos via Vite proxy instead of direct backend URLs. */
 const USE_VITE_MEDIA_PROXY = import.meta.env.VITE_USE_VITE_MEDIA_PROXY === 'true';
+
+/**
+ * Dev media routing mirrors resolveApiBaseUrl(): same-origin /thumbs and /videos via Vite proxy
+ * unless VITE_FORCE_DIRECT_BACKEND_API=true or VITE_USE_VITE_MEDIA_PROXY is explicitly set false
+ * with direct backend forced.
+ */
+function shouldUseSameOriginMediaInDev() {
+    if (!import.meta.env.DEV) return false;
+    if (USE_VITE_MEDIA_PROXY) return true;
+    return import.meta.env.VITE_FORCE_DIRECT_BACKEND_API !== 'true';
+}
 
 function isMediaPath(pathname) {
     return pathname.startsWith('/videos/') || pathname.startsWith('/thumbs/');
@@ -100,6 +157,10 @@ export function toRelativeMediaPath(path) {
     if (/^https?:\/\//i.test(trimmed)) {
         try {
             const u = new URL(trimmed);
+            // Keep third-party URLs (e.g. via.placeholder.com demo thumbnails) intact.
+            if (!isMediaPath(u.pathname)) {
+                return trimmed;
+            }
             return u.pathname + u.search;
         } catch {
             return trimmed;
@@ -130,10 +191,16 @@ export function toBackendMediaUrl(path) {
 
     const relative = toRelativeMediaPath(trimmed);
 
-    if (/^https?:\/\//i.test(trimmed) && isMediaPath(relative) && BACKEND_URL) {
-        const resolved = `${BACKEND_URL}${relative}`;
-        logResolvedMediaUrl('media', resolved, trimmed, 'toBackendMediaUrl:absolute');
-        return resolved;
+    if (/^https?:\/\//i.test(trimmed) && isMediaPath(relative)) {
+        if (shouldUseSameOriginMediaInDev()) {
+            logResolvedMediaUrl('media', relative, trimmed, 'toBackendMediaUrl:dev-same-origin-rewrite');
+            return relative;
+        }
+        if (BACKEND_URL) {
+            const resolved = `${BACKEND_URL}${relative}`;
+            logResolvedMediaUrl('media', resolved, trimmed, 'toBackendMediaUrl:absolute');
+            return resolved;
+        }
     }
 
     if (!relative.startsWith('/')) {
@@ -141,8 +208,8 @@ export function toBackendMediaUrl(path) {
         return trimmed;
     }
 
-    if (import.meta.env.DEV && USE_VITE_MEDIA_PROXY) {
-        logResolvedMediaUrl('media', relative, trimmed, 'toBackendMediaUrl:vite-proxy');
+    if (shouldUseSameOriginMediaInDev()) {
+        logResolvedMediaUrl('media', relative, trimmed, 'toBackendMediaUrl:dev-same-origin');
         return relative;
     }
 

@@ -175,7 +175,26 @@
           uploadStatus.set(`ERROR: ${validation.reason || 'Invalid video file'}`);
           return;
         }
-      } else if (!isValidVideoUrl(videoRef)) {
+        const token =
+          typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
+        const { uploadMedia } = await import('../../lib/api/media.js');
+        const { getAdminAuthorizationHeader } = await import('../../lib/api.js');
+        const formData = new FormData();
+        formData.append('video', file);
+        formData.append('title', title);
+        formData.append('category', targetCategory);
+        await uploadMedia(formData, getAdminAuthorizationHeader(token));
+        uploadStatus.set(`✅ SUCCESS! Placed in ${targetCategory}`);
+        newTitle.set('');
+        videoSource.set('');
+        selectedFile.set(null);
+        newCategory.set('Auto-Detect');
+        forceDisplayInStudio();
+        await syncFromVault(true);
+        return;
+      }
+
+      if (!isValidVideoUrl(videoRef)) {
         uploadStatus.set('ERROR: Invalid video URL — use a direct MP4/MOV link or browse a file');
         return;
       }
@@ -185,7 +204,7 @@
         id: crypto.randomUUID(),
         title,
         category: targetCategory,
-        video_url: file ? file.name : videoRef,
+        video_url: videoRef,
         thumbnail_url: thumbnailUrl,
         normalized_thumbnail: thumbnailUrl,
         likes: 0,
