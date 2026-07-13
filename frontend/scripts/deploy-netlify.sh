@@ -7,6 +7,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
 SITE="${NETLIFY_SITE_NAME:-strong-lolly-a9fcb4}"
+NETLIFY_SITE_ID="${NETLIFY_SITE_ID:-791fc14c-cee0-4876-986b-a5c455f10d2a}"
 MESSAGE="${1:-ReelForge production deploy}"
 DEPLOY_URL="https://${SITE}.netlify.app"
 
@@ -69,11 +70,11 @@ VITE_USE_SAME_ORIGIN_API=true npm run build
 
 verify_dist_redirects
 
-echo "==> Deploying dist/ to Netlify site: ${SITE}"
-netlify deploy --prod --dir=dist --site="${SITE}" --message="${MESSAGE}"
+echo "==> Deploying dist/ to Netlify site: ${SITE} (${NETLIFY_SITE_ID})"
+netlify deploy --prod --dir=dist --site="${NETLIFY_SITE_ID}" --message="${MESSAGE}"
 
 verify_live_routes
 
 echo ""
-echo "Deployed to site: ${SITE}"
+echo "Deployed to site: ${SITE} (${NETLIFY_SITE_ID})"
 echo "Live URL: ${DEPLOY_URL}"
