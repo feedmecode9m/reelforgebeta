@@ -14,7 +14,9 @@ COPY . .
 RUN cargo build --release -p backend
 
 
-FROM debian:trixie-slim
+FROM debian:13-slim
+
+RUN echo "RUNTIME GLIBC CHECK" && ldd --version
 
 WORKDIR /app
 
