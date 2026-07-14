@@ -26,6 +26,13 @@
   } from '../../lib/hero/heroReelIdentity.js';
   import { validateVideoFile } from '../../lib/runtime-guards.js';
   import { DEFAULT_AVATAR_PLACEHOLDER, DEFAULT_MEDIA_PLACEHOLDER } from '../../lib/config.js';
+  import { pipelineCheckpoint } from '../../lib/diagnostics/pipelineDiag.js';
+  import { reelResStoreMutation, reelResReelSnapshot } from '../../lib/diagnostics/reelResolutionTrace.js';
+  import {
+    logHeroRenderGatePre,
+    logHeroConfigSaveAudit,
+    logRenderGate
+  } from '../../lib/diagnostics/renderGateForensics.js';
 
   /** @type {'stage' | 'replace' | 'both'} */
   export let section = 'stage';
@@ -126,6 +133,32 @@ export let sanitizeViewer = false;
   $: heroBackgroundPresentation = resolveHeroBackgroundPresentation(
     heroManagerConfig || loadHeroManagerConfig()
   );
+  $: {
+    const nextHeroUsesImageBackground =
+      heroBackgroundPresentation.backgroundSource === 'custom_image' &&
+      Boolean(heroBackgroundPresentation.imageUrl);
+    const nextHeroRenderVideo =
+      heroBackgroundPresentation.backgroundSource === 'custom_video' &&
+      heroBackgroundPresentation.videoUrl
+        ? heroBackgroundPresentation.videoUrl
+        : nextHeroUsesImageBackground
+          ? ''
+          : $HERO_BACKGROUND_VIDEO;
+    logHeroRenderGatePre({
+      heroManagerConfig,
+      heroManagerConfigPersisted: loadHeroManagerConfig(),
+      heroUsesImageBackground: nextHeroUsesImageBackground,
+      backgroundSource: heroBackgroundPresentation.backgroundSource,
+      heroRenderVideo: nextHeroRenderVideo,
+      activeHeroMediaMode,
+      HERO_BACKGROUND_VIDEO: $HERO_BACKGROUND_VIDEO,
+      pendingHero: $heroPendingFile,
+      heroUploadState,
+      heroUploadProcessing,
+      prioritizedHeroVideo: null,
+      heroBackgroundPresentationVideoUrl: heroBackgroundPresentation.videoUrl || null
+    });
+  }
   $: heroUsesImageBackground =
     heroBackgroundPresentation.backgroundSource === 'custom_image' &&
     Boolean(heroBackgroundPresentation.imageUrl);
@@ -282,6 +315,31 @@ $: heroBadgeLabel = sanitizeViewer
       activeHeroMediaMode = 'image';
     } else {
       activeHeroMediaMode = 'fallback';
+    }
+    logHeroRenderGatePre({
+      heroManagerConfig,
+      heroManagerConfigPersisted: loadHeroManagerConfig(),
+      heroUsesImageBackground,
+      backgroundSource: heroBackgroundPresentation.backgroundSource,
+      heroRenderVideo,
+      activeHeroMediaMode,
+      HERO_BACKGROUND_VIDEO: $HERO_BACKGROUND_VIDEO,
+      pendingHero: $heroPendingFile,
+      heroUploadState,
+      heroUploadProcessing,
+      prioritizedHeroVideo,
+      heroBackgroundPresentationVideoUrl: heroBackgroundPresentation.videoUrl || null
+    });
+    const persistedCfg = loadHeroManagerConfig();
+    if (
+      heroManagerConfig?.backgroundSource !== persistedCfg?.backgroundSource ||
+      heroManagerConfig?.heroAssetId !== persistedCfg?.heroAssetId
+    ) {
+      logRenderGate('[HERO][STALE CONFIG DETECTED]', {
+        inMemoryObject: heroManagerConfig,
+        persistedObject: persistedCfg,
+        message: 'in-memory heroManagerConfig differs from localStorage before render'
+      });
     }
   }
   $: if (sanitizeViewer) {
@@ -892,6 +950,10 @@ $: heroBadgeLabel = sanitizeViewer
   export function handleHeroVideoLoad() {
     heroVideoLoaded.set(true);
     heroVideoFailed.set(false);
+    pipelineCheckpoint('VIDEO_ATTACHED', {
+      vault: 'hero',
+      videoSrc: prioritizedHeroVideo || get(HERO_BACKGROUND_VIDEO) || ''
+    });
     heroVideoFailureCount = 0;
     heroCarouselMediaPlaying = true;
     if (!mediaPlaceholderFixLogged) {
@@ -960,6 +1022,13 @@ $: heroBadgeLabel = sanitizeViewer
     event.stopPropagation();
     heroIsDragOver.set(false);
     const file = event.dataTransfer?.files?.[0];
+    pipelineCheckpoint('DROP_RECEIVED', {
+      filename: file?.name || null,
+      vault: 'hero',
+      kind: file ? (isProbablyVideo(file) ? 'hero/mp4' : 'hero/image') : 'unknown',
+      id: null,
+      fileCount: event.dataTransfer?.files?.length || 0
+    });
     if (file) handleHeroFileSelect({ target: { files: [file] } });
   }
 
@@ -1072,6 +1141,11 @@ $: heroBadgeLabel = sanitizeViewer
     const isOperationActive = () => operationToken === heroAcceptOperationToken;
     heroUploadProcessing = true;
     await tick();
+    pipelineCheckpoint('UPLOAD_STARTED', {
+      vault: 'hero',
+      kind: pending.type === 'video' ? 'hero/mp4' : 'hero/image',
+      filename: pending.name || pending.file?.name || null
+    });
     console.info('[HERO_ACCEPT]', {
       stage: 'start',
       pendingType: pending.type || '',
@@ -1127,12 +1201,19 @@ $: heroBadgeLabel = sanitizeViewer
           10 * 60 * 1000,
           'Hero video upload'
         );
+        reelResReelSnapshot('acceptHeroFile:created', created, { vault: 'hero' });
         const reel = heroReelFromUploadResponse(created, 'video');
         if (!reel?.id || !reel?.url) {
           throw new Error('Hero upload completed without canonical reel identity');
         }
         saveHeroReel(reel);
+        const heroVideoBefore = get(HERO_BACKGROUND_VIDEO);
         HERO_BACKGROUND_VIDEO.set(reel.url);
+        reelResStoreMutation('HERO_BACKGROUND_VIDEO', heroVideoBefore, reel.url, {
+          trigger: 'acceptHeroFile',
+          heroManagerConfigInMemory: heroManagerConfig?.backgroundSource || null,
+          heroManagerConfigPersisted: loadHeroManagerConfig()?.backgroundSource || null
+        });
         if (reel.thumbnail) HERO_POSTER_IMAGE.set(reel.thumbnail);
         heroVideoLoaded.set(false);
         heroVideoFailed.set(false);
@@ -1142,6 +1223,7 @@ $: heroBadgeLabel = sanitizeViewer
           backgroundStyle: 'video',
           ...viewerPatch
         });
+        logHeroConfigSaveAudit(loadHeroManagerConfig(), heroManagerConfig);
         const registry = buildHeroAssetRegistry(loadHeroVaultItems(), { storageSource: 'hero_registry' });
         console.info('[HERO_ACCEPT]', {
           stage: 'complete',
@@ -1153,6 +1235,11 @@ $: heroBadgeLabel = sanitizeViewer
           ts: new Date().toISOString()
         });
         uploadStatus.set('✅ Hero video uploaded');
+        pipelineCheckpoint('VIDEO_READY', {
+          vault: 'hero',
+          videoSrc: reel.url,
+          reelId: reel.id
+        });
         if (typeof preview === 'string' && preview.startsWith('blob:')) {
           resourceManager.revokeBlobUrl(preview);
         }
@@ -1194,6 +1281,7 @@ $: heroBadgeLabel = sanitizeViewer
           backgroundStyle: 'image',
           ...viewerPatch
         });
+        logHeroConfigSaveAudit(loadHeroManagerConfig(), heroManagerConfig);
         const registry = buildHeroAssetRegistry(loadHeroVaultItems(), { storageSource: 'hero_registry' });
         console.info('[HERO_ACCEPT]', {
           stage: 'complete',

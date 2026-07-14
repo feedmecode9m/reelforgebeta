@@ -41,3 +41,15 @@ export function pipelineDiagCors(functionName, sourceFile, error, meta = {}) {
         detail: message
     });
 }
+
+/**
+ * Mission BG-5A canonical checkpoint — logging only, no control-flow changes.
+ * @param {string} checkpoint e.g. DROP_RECEIVED, POST_API_REELS
+ * @param {Record<string, unknown>} [meta]
+ */
+export function pipelineCheckpoint(checkpoint, meta = {}) {
+    console.info(`[PIPELINE] ${checkpoint}`, {
+        timestamp: new Date().toISOString(),
+        ...meta
+    });
+}

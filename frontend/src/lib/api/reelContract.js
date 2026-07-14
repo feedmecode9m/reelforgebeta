@@ -17,6 +17,7 @@
  */
 
 import { toBackendMediaUrl, logResolvedMediaUrl, toRelativeMediaPath } from '../config.js';
+import { reelResEntry, reelResExit, reelResNormalizeBranch, reelResReelSnapshot } from '../diagnostics/reelResolutionTrace.js';
 
 const REEL_TYPES = new Set(['video', 'image', 'thumbnail']);
 const DEV = import.meta.env.DEV;
@@ -175,13 +176,26 @@ function fromLegacy(raw) {
  * @returns {Record<string, unknown> | null}
  */
 export function normalizeReel(raw, endpoint = 'unknown') {
-    if (!raw || typeof raw !== 'object') return null;
+    const t0 = performance.now();
+    reelResEntry('normalizeReel', { endpoint, rawType: typeof raw });
+    if (!raw || typeof raw !== 'object') {
+        reelResNormalizeBranch('early_return_null_not_object', { endpoint });
+        reelResExit('normalizeReel', t0, { endpoint, result: null, reason: 'not_object' });
+        return null;
+    }
 
     const thumbRaw =
         raw.thumbnailUrl ?? raw.thumbnail_url ?? raw.thumbnailPath ?? raw.thumbnail_path;
     const type = inferMediaType(raw);
+    const useDirectContract = Boolean(raw.url && (raw.name || raw.title));
+    reelResNormalizeBranch(useDirectContract ? 'direct_contract_path' : 'fromLegacy_path', {
+        endpoint,
+        hasUrl: Boolean(raw.url),
+        hasName: Boolean(raw.name || raw.title),
+        inferredType: type
+    });
     const contract =
-        raw.url && (raw.name || raw.title)
+        useDirectContract
             ? {
                   id: String(raw.id),
                   name: String(raw.name ?? raw.title ?? 'Untitled'),
@@ -223,6 +237,12 @@ export function normalizeReel(raw, endpoint = 'unknown') {
         endpoint !== 'ingest-poll' &&
         !isReadyCatalog
     ) {
+        reelResNormalizeBranch('early_return_null_status_gate', {
+            endpoint,
+            status,
+            isPlaceholder: Boolean(raw.isPlaceholder)
+        });
+        reelResExit('normalizeReel', t0, { endpoint, result: null, reason: 'status_gate' });
         return null;
     }
 
@@ -234,6 +254,20 @@ export function normalizeReel(raw, endpoint = 'unknown') {
     ) {
         assertReelContract(merged, endpoint);
     }
+    reelResReelSnapshot('normalizeReel:result', merged, {
+        endpoint,
+        urlEmpty: !merged.url,
+        thumbnailEmpty: merged.thumbnailUrl === '' || merged.thumbnailUrl == null,
+        idMissing: !merged.id
+    });
+    reelResExit('normalizeReel', t0, {
+        endpoint,
+        id: merged.id,
+        url: merged.url,
+        thumbnailUrl: merged.thumbnailUrl,
+        status: merged.status,
+        category: merged.category
+    });
     return merged;
 }
 

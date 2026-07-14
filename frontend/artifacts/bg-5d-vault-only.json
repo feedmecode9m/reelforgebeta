@@ -1,0 +1,96 @@
+{
+  "slice": [],
+  "pipes": [
+    {
+      "tag": "[PIPELINE] DROP_RECEIVED {timestamp: 2026-07-13T17:26:58.714Z, filename: null, vault: mp4, kind: mp4-vault, id: null}",
+      "payload": {
+        "timestamp": "2026-07-13T17:26:58.714Z",
+        "filename": null,
+        "vault": "mp4",
+        "kind": "mp4-vault",
+        "id": null,
+        "fileCount": 1
+      },
+      "text": "[PIPELINE] DROP_RECEIVED {timestamp: 2026-07-13T17:26:58.714Z, filename: null, vault: mp4, kind: mp4-vault, id: null}"
+    },
+    {
+      "tag": "[PIPELINE] DROP_RECEIVED {timestamp: 2026-07-13T17:26:58.714Z, filename: bg5d-vault-only-1783963618677.mp4, vault: mp4, kind: mp4-vault, id: null}",
+      "payload": {
+        "timestamp": "2026-07-13T17:26:58.714Z",
+        "filename": "bg5d-vault-only-1783963618677.mp4",
+        "vault": "mp4",
+        "kind": "mp4-vault",
+        "id": null
+      },
+      "text": "[PIPELINE] DROP_RECEIVED {timestamp: 2026-07-13T17:26:58.714Z, filename: bg5d-vault-only-1783963618677.mp4, vault: mp4, kind: mp4-vault, id: null}"
+    },
+    {
+      "tag": "[PIPELINE] UPLOAD_STARTED {timestamp: 2026-07-13T17:26:58.835Z, vault: mp4, filename: bg5d-vault-only-1783963618677.mp4, size: 2276}",
+      "payload": {
+        "timestamp": "2026-07-13T17:26:58.835Z",
+        "vault": "mp4",
+        "filename": "bg5d-vault-only-1783963618677.mp4",
+        "size": 2276
+      },
+      "text": "[PIPELINE] UPLOAD_STARTED {timestamp: 2026-07-13T17:26:58.835Z, vault: mp4, filename: bg5d-vault-only-1783963618677.mp4, size: 2276}"
+    },
+    {
+      "tag": "[PIPELINE] UPLOAD_STARTED {timestamp: 2026-07-13T17:26:58.836Z, fileName: bg5d-vault-only-1783963618677.mp4, endpoint: /api/reels, fileInfo: Object}",
+      "payload": {
+        "timestamp": "2026-07-13T17:26:58.836Z",
+        "fileName": "bg5d-vault-only-1783963618677.mp4",
+        "endpoint": "/api/reels",
+        "fileInfo": {
+          "video": {
+            "name": "bg5d-vault-only-1783963618677.mp4",
+            "type": "video/mp4",
+            "size": 2276
+          }
+        }
+      },
+      "text": "[PIPELINE] UPLOAD_STARTED {timestamp: 2026-07-13T17:26:58.836Z, fileName: bg5d-vault-only-1783963618677.mp4, endpoint: /api/reels, fileInfo: Object}"
+    },
+    {
+      "tag": "[PIPELINE] POST_API_REELS {timestamp: 2026-07-13T17:26:58.837Z, requestUrl: /api/reels, payloadSummary: Object}",
+      "payload": {
+        "timestamp": "2026-07-13T17:26:58.837Z",
+        "requestUrl": "/api/reels",
+        "payloadSummary": {
+          "video": {
+            "name": "bg5d-vault-only-1783963618677.mp4",
+            "type": "video/mp4",
+            "size": 2276
+          }
+        }
+      },
+      "text": "[PIPELINE] POST_API_REELS {timestamp: 2026-07-13T17:26:58.837Z, requestUrl: /api/reels, payloadSummary: Object}"
+    },
+    {
+      "tag": "[PIPELINE] POST_COMPLETED {timestamp: 2026-07-13T17:26:59.323Z, status: 202, returnedId: 2abe1f98-47a4-4bb4-9805-71cf404b220b}",
+      "payload": {
+        "timestamp": "2026-07-13T17:26:59.323Z",
+        "status": 202,
+        "returnedId": "2abe1f98-47a4-4bb4-9805-71cf404b220b"
+      },
+      "text": "[PIPELINE] POST_COMPLETED {timestamp: 2026-07-13T17:26:59.323Z, status: 202, returnedId: 2abe1f98-47a4-4bb4-9805-71cf404b220b}"
+    },
+    {
+      "tag": "[PIPELINE] WAITING_FOR_INGEST {timestamp: 2026-07-13T17:26:59.324Z, reelId: 2abe1f98-47a4-4bb4-9805-71cf404b220b, status: pending}",
+      "payload": {
+        "timestamp": "2026-07-13T17:26:59.324Z",
+        "reelId": "2abe1f98-47a4-4bb4-9805-71cf404b220b",
+        "status": "pending"
+      },
+      "text": "[PIPELINE] WAITING_FOR_INGEST {timestamp: 2026-07-13T17:26:59.324Z, reelId: 2abe1f98-47a4-4bb4-9805-71cf404b220b, status: pending}"
+    },
+    {
+      "tag": "[PIPELINE] WAITING_FOR_INGEST {timestamp: 2026-07-13T17:26:59.325Z, reelId: 2abe1f98-47a4-4bb4-9805-71cf404b220b, phase: poll_start}",
+      "payload": {
+        "timestamp": "2026-07-13T17:26:59.325Z",
+        "reelId": "2abe1f98-47a4-4bb4-9805-71cf404b220b",
+        "phase": "poll_start"
+      },
+      "text": "[PIPELINE] WAITING_FOR_INGEST {timestamp: 2026-07-13T17:26:59.325Z, reelId: 2abe1f98-47a4-4bb4-9805-71cf404b220b, phase: poll_start}"
+    }
+  ]
+}

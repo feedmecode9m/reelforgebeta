@@ -1,7 +1,10 @@
 <script>
-    import { onMount } from 'svelte';
+    import { onMount, createEventDispatcher } from 'svelte';
     import { DEFAULT_MEDIA_PLACEHOLDER, videoMimeForPath } from '../../lib/config.js';
     import { resolveMediaForRender, resolveValidatedVideoUrl, isPassthroughMediaUrl } from './resolveDisplayUrl.js';
+    import { logMediaRendererEvent } from '../../lib/diagnostics/renderGateForensics.js';
+
+    const dispatch = createEventDispatcher();
 
     /** @type {'video' | 'thumbnail' | 'poster'} */
     export let type = 'thumbnail';
@@ -96,7 +99,18 @@
 
     $: imgLoading = lazyLoad ? 'lazy' : undefined;
 
+    function mediaCtx() {
+        return { url, resolvedSrc, mediaType };
+    }
+
+    function forwardVideoEvent(name, event) {
+        const target = /** @type {HTMLVideoElement | null} */ (event?.currentTarget || videoElement);
+        logMediaRendererEvent(name, target, mediaCtx());
+        dispatch(name, event);
+    }
+
     onMount(() => {
+        logMediaRendererEvent('mounted', videoElement, mediaCtx());
         if (!import.meta.env.DEV) return;
         const element = mediaType === 'video' ? 'video' : mediaType === 'poster' ? 'div' : 'img';
         console.debug('[MediaRenderer]', {
@@ -147,9 +161,9 @@
             width={width || undefined}
             height={height || undefined}
             use:action={action}
-            on:loadeddata
-            on:loadedmetadata
-            on:error
+            on:loadeddata={(e) => forwardVideoEvent('loadeddata', e)}
+            on:loadedmetadata={(e) => forwardVideoEvent('loadedmetadata', e)}
+            on:error={(e) => forwardVideoEvent('error', e)}
             on:play
             on:pause
             on:ended
@@ -182,9 +196,9 @@
             preload={preload || undefined}
             width={width || undefined}
             height={height || undefined}
-            on:loadeddata
-            on:loadedmetadata
-            on:error
+            on:loadeddata={(e) => forwardVideoEvent('loadeddata', e)}
+            on:loadedmetadata={(e) => forwardVideoEvent('loadedmetadata', e)}
+            on:error={(e) => forwardVideoEvent('error', e)}
             on:play
             on:pause
             on:ended

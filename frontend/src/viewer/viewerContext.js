@@ -25,6 +25,7 @@ import {
     buildHeroCommandBrief,
     hasUserHeroOverride,
     hydrateHeroBackgroundStores,
+    hydrateHeroBackgroundStoresSync,
     initHeroIntelligence,
     loadHeroManagerConfig,
     mapPlatformHeroMode,
@@ -120,7 +121,13 @@ hasLocalMediaCache,
 hydrateVaultFromReels,
 reelsToVideoVaultEntries
 } from '../lib/mediaBootstrap.js';
+import { pipelineCheckpoint } from '../lib/diagnostics/pipelineDiag.js';
+import { reelResReelSnapshot, reelResStoreMutation } from '../lib/diagnostics/reelResolutionTrace.js';
 import { createContentAgents } from '../lib/viewer/contentAgents.js';
+import {
+  logHeroBackgroundVideoChange,
+  logPersonalVideosChange
+} from '../lib/diagnostics/renderGateForensics.js';
 import {
   filterStaleOrphanEntries,
   isThumbnailImageReel,
@@ -877,11 +884,12 @@ if (syncFromVaultInFlight) return syncFromVaultInFlight;
 const now = Date.now();
 if (!force && now - lastSyncFromVaultAt < 5000) return;
 syncFromVaultInFlight = (async () => {
+pipelineCheckpoint('SYNC_FROM_VAULT', { phase: 'start', preserveLocal, force });
 const debugApi = import.meta.env.VITE_DEBUG_API === 'true';
 if (debugApi) console.info('[SYNC_DEBUG] syncFromVault:start', { preserveLocal, now });
+let rawData = [];
 try {
 const localTitles = get(persistentTitles);
-let rawData = [];
 let backendReachable = false;
 uploadStatus.set('🔄 Syncing with backend...');
 const healthy = await checkBackendHealth();
@@ -1150,6 +1158,11 @@ AI_CLEANUP_AGENT.syncVideoVaultToFeed();
 } finally {
 lastSyncFromVaultAt = Date.now();
 syncFromVaultInFlight = null;
+pipelineCheckpoint('SYNC_FROM_VAULT', {
+phase: 'finish',
+count: rawData?.length ?? 0,
+ids: (rawData || []).slice(0, 20).map((r) => r?.id).filter(Boolean)
+});
 if (debugApi) console.info('[SYNC_DEBUG] syncFromVault:finish', { at: lastSyncFromVaultAt });
 loading.set(false);
 resourceManager.setTimeout(() => {
@@ -1206,6 +1219,24 @@ function getHeroBackgroundStores() {
     setPoster: (url) => HERO_POSTER_IMAGE.set(url),
     setFailed: (failed) => heroVideoFailed.set(failed)
   };
+}
+
+function logHeroHydration(phase, extra = {}) {
+  console.info('[HERO_HYDRATION]', {
+    phase,
+    HERO_BACKGROUND_VIDEO: get(HERO_BACKGROUND_VIDEO),
+    hydrationCompleteTimestamp: phase === 'after' ? new Date().toISOString() : undefined,
+    ...extra
+  });
+}
+
+if (typeof window !== 'undefined') {
+  logHeroHydration('before');
+  const syncHydrateResult = hydrateHeroBackgroundStoresSync(getHeroBackgroundStores(), {
+    ...CONFIG,
+    resolveVideoUrl: normalizeVideoUrl
+  });
+  logHeroHydration('after', { result: syncHydrateResult, stage: 'module-init' });
 }
 
 function applyManagerBackgroundFromConfig(config = loadHeroManagerConfig()) {
@@ -1387,6 +1418,7 @@ function checkIsVideo(file) {
 }
 
 async function mountViewer() {
+pipelineCheckpoint('VIEWER_BOOTSTRAP', { phase: 'start' });
 initSeriesMetadata();
 initStudioSync();
 initWorkflowEngine();
@@ -1541,9 +1573,21 @@ storeImageBefore: get(HERO_POSTER_IMAGE)?.slice(0, 80) || '',
 imageHeroMode: isPersistedImageHero(savedHeroImage)
 }, 'B');
 
+console.info('[HERO_HYDRATION]', {
+  phase: 'before-async',
+  HERO_BACKGROUND_VIDEO: get(HERO_BACKGROUND_VIDEO),
+  stage: 'mountViewer'
+});
 const hydrateResult = await hydrateHeroBackgroundStores(getHeroBackgroundStores(), {
   ...CONFIG,
   resolveVideoUrl: normalizeVideoUrl
+});
+console.info('[HERO_HYDRATION]', {
+  phase: 'after-async',
+  HERO_BACKGROUND_VIDEO: get(HERO_BACKGROUND_VIDEO),
+  hydrationCompleteTimestamp: new Date().toISOString(),
+  result: hydrateResult,
+  stage: 'mountViewer'
 });
 console.info('[HERO_LOAD]', {
 stage: 'viewer:onMount:hydrate-result',
@@ -1556,7 +1600,12 @@ storeVideo: get(HERO_BACKGROUND_VIDEO)?.slice(0, 120) || '',
 storeImage: get(HERO_POSTER_IMAGE)?.slice(0, 80) || '',
 heroVideoFailed: get(heroVideoFailed)
 }, 'A');
+let prevHeroVideoForGate = get(HERO_BACKGROUND_VIDEO);
 const unsubscribeHeroVideo = HERO_BACKGROUND_VIDEO.subscribe(v => {
+if (prevHeroVideoForGate !== v) {
+logHeroBackgroundVideoChange(prevHeroVideoForGate, v);
+prevHeroVideoForGate = v;
+}
 if (!v) {
 clearHeroVideoStorage();
 heroDebugLog('Viewer.svelte:heroVideo:clearPersist', 'cleared hero video storage', { localStorageStillHas: Boolean(localStorage.getItem(CONFIG.HERO_VIDEO_STORAGE_KEY)) }, 'D');
@@ -1593,7 +1642,10 @@ return normalized;
 }));
 }
 
+let prevPersonalVideosForGate = get(personalVideos);
 const unsubscribeVault = personalVideos.subscribe(vault => {
+logPersonalVideosChange(prevPersonalVideosForGate, vault);
+prevPersonalVideosForGate = vault;
 persistPersonalVault(vault);
 });
 
@@ -1609,6 +1661,7 @@ console.log('[onMount] Loaded 0 thumbnails from [none]');
 }
 
 await syncFromVault(true);
+pipelineCheckpoint('VIEWER_BOOTSTRAP', { phase: 'post-syncFromVault' });
 if (hasUserHeroOverride(CONFIG)) {
 applyManagerBackgroundFromConfig(loadHeroManagerConfig());
 }
@@ -1627,6 +1680,17 @@ resourceManager.setTimeout(() => AI_CLEANUP_AGENT.syncVideoVaultToFeed(), 200);
 const closeWs = connectReelEventSocket({
 onCreated: (reel) => {
 if (!reel?.id) return;
+reelResReelSnapshot('viewerContext:onCreated', reel, { listener: 'connectReelEventSocket.onCreated' });
+const heroIgnored = isHeroAsset(reel);
+reelResReelSnapshot('viewerContext:onCreated:heroFilter', reel, {
+  heroIgnored,
+  reason: heroIgnored ? 'isHeroAsset_true_syncFromVault_still_runs' : 'not_hero'
+});
+pipelineCheckpoint('CANONICAL_REEL_RECEIVED', {
+source: 'websocket',
+reelId: reel.id,
+url: reel.url || reel.video_url || ''
+});
 const reelId = String(reel.id);
 const now = Date.now();
 const lastAt = wsCreatedSyncCooldownByReel.get(reelId) || 0;

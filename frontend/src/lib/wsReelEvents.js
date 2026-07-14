@@ -1,5 +1,6 @@
 import { BACKEND_URL, USE_SAME_ORIGIN_API } from './config.js';
 import { normalizeReel } from './api/reelContract.js';
+import { reelResEntry, reelResExit, reelResReelSnapshot } from './diagnostics/reelResolutionTrace.js';
 
 const WS_DEBUG = import.meta.env.VITE_DEBUG_API === 'true';
 
@@ -37,20 +38,53 @@ export function connectReelEventSocket(handlers = {}) {
     };
 
     socket.onmessage = (event) => {
+        const t0 = performance.now();
+        reelResEntry('connectReelEventSocket.onmessage', {
+            size: String(event?.data || '').length
+        });
         if (WS_DEBUG) console.info('[WS_DEBUG] message', { size: String(event?.data || '').length });
         try {
             const msg = JSON.parse(event.data);
             const eventType = msg.eventType || msg.type;
+            reelResReelSnapshot('WebSocket:rawPayload', msg, {
+                eventType,
+                listener: 'connectReelEventSocket.onmessage'
+            });
 
             if (eventType === 'CREATED' && handlers.onCreated) {
                 const reel = normalizeReel(msg, 'WS CREATED');
-                if (reel) handlers.onCreated(reel);
+                reelResReelSnapshot('WebSocket:normalizedBeforeOnCreated', reel, {
+                    eventType,
+                    consumedBy: 'handlers.onCreated',
+                    ignored: !reel
+                });
+                if (reel) {
+                    reelResExit('connectReelEventSocket.onmessage', t0, {
+                        eventType: 'CREATED',
+                        deliveredTo: 'onCreated',
+                        id: reel.id,
+                        url: reel.url,
+                        category: reel.category
+                    });
+                    handlers.onCreated(reel);
+                } else {
+                    reelResExit('connectReelEventSocket.onmessage', t0, {
+                        eventType: 'CREATED',
+                        deliveredTo: 'none',
+                        reason: 'normalizeReel_returned_null'
+                    });
+                }
             }
             if (eventType === 'DELETED' && handlers.onDeleted) {
+                reelResExit('connectReelEventSocket.onmessage', t0, {
+                    eventType: 'DELETED',
+                    id: msg.id
+                });
                 handlers.onDeleted({ id: String(msg.id) });
             }
         } catch (e) {
             console.warn('[ws] bad message', e);
+            reelResExit('connectReelEventSocket.onmessage', t0, { error: e?.message || String(e) });
         }
     };
 

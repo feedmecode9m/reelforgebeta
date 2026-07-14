@@ -8,6 +8,7 @@ import { isStorageFull, wouldExceedQuota } from '../storage.js';
 import { isHeroAsset, filterNonHeroAssets } from '../hero/heroDomainGuard.js';
 import { removeThumbnailVaultByIndex, syncCollectionStore } from './thumbnailVault.js';
 import { traceThumbStoreWrite } from './thumbStoreWriteTrace.js';
+import { pipelineCheckpoint } from '../diagnostics/pipelineDiag.js';
 
 export function createAiCleanupAgent(deps) {
   const {
@@ -201,6 +202,14 @@ export function createAiCleanupAgent(deps) {
   const newFeed = { ...currentFeed };
   categoriesList.forEach((cat) => {
   if (!newFeed[cat]) newFeed[cat] = [];
+  const removedPlaceholders = newFeed[cat].filter(
+  (r) => r.isPlaceholder && (r.personal_video_id === videoData.id || (r.url && videoData.url && r.url === videoData.url))
+  );
+  if (removedPlaceholders.length > 0) {
+  removedPlaceholders.forEach((old) => {
+  pipelineCheckpoint('PLACEHOLDER_REPLACED', { oldId: old.id, newId: String(videoData.id), vault: 'mp4' });
+  });
+  }
   // Remove any previously distributed copies of the same personal video.
   newFeed[cat] = newFeed[cat].filter(
   (r) =>

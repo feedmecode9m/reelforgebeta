@@ -42,7 +42,7 @@ export const CREATE_REEL_URL = '/api/reels';
 import { pollIngestionUntilReady } from './ingestPoll.js';
 import { normalizeReel, normalizeReels, createLocalReel } from './reelContract.js';
 import { getDemoPlaceholders } from '../demoPlaceholders.js';
-import { pipelineDiag, pipelineDiagCors } from '../diagnostics/pipelineDiag.js';
+import { pipelineDiag, pipelineDiagCors, pipelineCheckpoint } from '../diagnostics/pipelineDiag.js';
 
 export async function createReel(formData, headers = {}) {
     const fileInfo = {};
@@ -59,6 +59,11 @@ export async function createReel(formData, headers = {}) {
             }
         }
     }
+    pipelineCheckpoint('UPLOAD_STARTED', {
+        fileName: primaryFileName,
+        endpoint: CREATE_REEL_URL,
+        fileInfo
+    });
     pipelineDiag('UPLOAD', 'createReel', 'media.js', {
         fileName: primaryFileName,
         result: 'request_start',
@@ -105,6 +110,10 @@ export async function createReel(formData, headers = {}) {
         result: 'fetch_post_start',
         detail: { url: `${API_BASE_URL}${CREATE_REEL_URL}` }
     });
+    pipelineCheckpoint('POST_API_REELS', {
+        requestUrl: `${API_BASE_URL}${CREATE_REEL_URL}`,
+        payloadSummary: fileInfo
+    });
 
     const response = await fetch(`${API_BASE_URL}${CREATE_REEL_URL}`, {
         method: 'POST',
@@ -130,6 +139,10 @@ export async function createReel(formData, headers = {}) {
 
     if (!response.ok) {
         const err = await response.json().catch(() => ({}));
+        pipelineCheckpoint('POST_COMPLETED', {
+            status: response.status,
+            returnedId: err?.id ?? null
+        });
         console.error('[UPLOAD_FAILED]', {
             status: response.status,
             error: err.error || 'create-reel-failed',
@@ -144,10 +157,15 @@ export async function createReel(formData, headers = {}) {
     }
 
     const body = await response.json();
+    pipelineCheckpoint('POST_COMPLETED', {
+        status: response.status,
+        returnedId: body?.id ?? null
+    });
 
     // Async ingestion: 202 Accepted with pending status
     if (response.status === 202 || body.status === 'pending') {
         const reelId = body.id;
+        pipelineCheckpoint('WAITING_FOR_INGEST', { reelId, status: body.status || 'pending' });
         pipelineDiag('INGEST', 'createReel', 'media.js', {
             assetId: reelId,
             fileName: primaryFileName,

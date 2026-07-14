@@ -4,6 +4,7 @@
  */
 import { toRelativeMediaPath } from '../config.js';
 import { normalizeReel } from '../api/reelContract.js';
+import { reelResEntry, reelResExit, reelResReelSnapshot } from '../diagnostics/reelResolutionTrace.js';
 
 export const HERO_REEL_STORAGE_KEY = 'reelforge_hero_reel';
 const HERO_VIDEO_STORAGE_KEY = 'reelforge_hero_video';
@@ -27,11 +28,23 @@ const HERO_MANAGER_STORAGE_KEY = 'reelforge_hero_manager_config';
  * @returns {HeroReel | null}
  */
 export function heroReelFromUploadResponse(raw, mediaKind = 'image') {
+    const t0 = performance.now();
+    reelResEntry('heroReelFromUploadResponse', { mediaKind });
     const normalized = normalizeReel(raw, 'hero-upload');
-    if (!normalized?.id) return null;
+    if (!normalized?.id) {
+        reelResExit('heroReelFromUploadResponse', t0, { result: null, reason: 'missing_id' });
+        return null;
+    }
 
     const url = toRelativeMediaPath(String(normalized.url || ''));
-    if (!url) return null;
+    if (!url) {
+        reelResExit('heroReelFromUploadResponse', t0, {
+            result: null,
+            reason: 'empty_url_after_toRelativeMediaPath',
+            normalizedUrl: normalized.url
+        });
+        return null;
+    }
 
     const fileName =
         String(normalized.fileName || normalized.file_name || '').trim() ||
@@ -44,7 +57,7 @@ export function heroReelFromUploadResponse(raw, mediaKind = 'image') {
     const thumbnail =
         mediaKind === 'video' && thumbnailRaw ? toRelativeMediaPath(thumbnailRaw) : '';
 
-    return {
+    const result = {
         id: String(normalized.id),
         fileName,
         name: String(normalized.name || normalized.title || 'Hero'),
@@ -53,6 +66,13 @@ export function heroReelFromUploadResponse(raw, mediaKind = 'image') {
         type: String(normalized.type || (mediaKind === 'video' ? 'video/mp4' : 'image/jpeg')),
         backgroundSource: mediaKind === 'video' ? 'custom_video' : 'custom_image'
     };
+    reelResReelSnapshot('heroReelFromUploadResponse:result', result, { mediaKind });
+    reelResExit('heroReelFromUploadResponse', t0, {
+        id: result.id,
+        url: result.url,
+        backgroundSource: result.backgroundSource
+    });
+    return result;
 }
 
 /** @returns {HeroReel | null} */

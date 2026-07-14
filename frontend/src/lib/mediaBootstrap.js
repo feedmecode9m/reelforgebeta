@@ -11,7 +11,7 @@ import { safeStorageSet } from './storage.js';
 import { readThumbnailVault, upgradeThumbnailVaultFromBackendReels } from './viewer/thumbnailVault.js';
 import { toRelativeMediaPath } from './config.js';
 import { isHeroAsset } from './hero/heroDomainGuard.js';
-import { pipelineDiag } from './diagnostics/pipelineDiag.js';
+import { pipelineDiag, pipelineCheckpoint } from './diagnostics/pipelineDiag.js';
 
 /**
  * Media catalog bootstrap — reads authoritative catalog from GET /api/reels (Postgres).
@@ -58,6 +58,7 @@ function dedupeVideoEntries(entries) {
  * @param {{ thumbnailKey?: string; videoVaultKey?: string }} [config]
  */
 export async function bootstrapMediaFromBackend(config = {}) {
+    pipelineCheckpoint('VIEWER_BOOTSTRAP', { phase: 'bootstrapMediaFromBackend:start' });
     pipelineDiag('BOOTSTRAP', 'bootstrapMediaFromBackend', 'mediaBootstrap.js', { result: 'start' });
     const thumbnailKey = config.thumbnailKey || THUMBNAIL_KEY;
     const videoVaultKey = config.videoVaultKey || VIDEO_VAULT_KEY;

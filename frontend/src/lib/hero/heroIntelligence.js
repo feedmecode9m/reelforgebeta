@@ -1942,11 +1942,13 @@ export function hasUserHeroOverride(config = {}) {
 }
 
 /**
- * Restore hero background from localStorage, manager config, then server default asset.
+ * Synchronously restore hero background from persisted localStorage and manager config.
+ * Does not probe server defaults (that requires async HEAD fetch).
  * @param {{ setVideo?: (url: string) => void; setPoster?: (url: string) => void; setFailed?: (failed: boolean) => void }} stores
- * @param {{ HERO_VIDEO_STORAGE_KEY?: string; HERO_IMAGE_STORAGE_KEY?: string; HERO_VIDEO_PATHS?: string[]; resolveVideoUrl?: (path: string) => string }} [appConfig]
+ * @param {{ HERO_VIDEO_STORAGE_KEY?: string; HERO_IMAGE_STORAGE_KEY?: string }} [appConfig]
+ * @returns {'unchanged' | 'image' | 'video' | 'pending_default'}
  */
-export async function hydrateHeroBackgroundStores(stores = {}, appConfig = {}) {
+export function hydrateHeroBackgroundStoresSync(stores = {}, appConfig = {}) {
     if (typeof window === 'undefined') return 'unchanged';
 
     migrateLegacyHeroStorageIfNeeded();
@@ -1960,7 +1962,7 @@ export async function hydrateHeroBackgroundStores(stores = {}, appConfig = {}) {
     ) {
         applyHeroReelToStores(canonicalReel, stores);
         console.info('[HERO_LOAD]', {
-            stage: 'hydrateHeroBackgroundStores:hero_reel',
+            stage: 'hydrateHeroBackgroundStoresSync:hero_reel',
             id: canonicalReel.id,
             url: canonicalReel.url,
             backgroundSource: canonicalReel.backgroundSource,
@@ -1971,12 +1973,6 @@ export async function hydrateHeroBackgroundStores(stores = {}, appConfig = {}) {
 
     const videoKey = appConfig.HERO_VIDEO_STORAGE_KEY || 'reelforge_hero_video';
     const imageKey = appConfig.HERO_IMAGE_STORAGE_KEY || 'reelforge_hero_image';
-    const defaultPaths = appConfig.HERO_VIDEO_PATHS?.length
-        ? appConfig.HERO_VIDEO_PATHS
-        : [DEFAULT_HERO_BACKGROUND_VIDEO];
-    const resolveVideoUrl =
-        appConfig.resolveVideoUrl ||
-        ((path) => (path.startsWith('http') || path.startsWith('blob:') ? path : path));
 
     let savedVideo = localStorage.getItem(videoKey);
     const savedImage = localStorage.getItem(imageKey);
@@ -1995,7 +1991,7 @@ export async function hydrateHeroBackgroundStores(stores = {}, appConfig = {}) {
         applyHeroManagerBackground(managerConfig, stores)
     ) {
         console.info('[HERO_LOAD]', {
-            stage: 'hydrateHeroBackgroundStores:manager',
+            stage: 'hydrateHeroBackgroundStoresSync:manager',
             backgroundSource: managerConfig.backgroundSource,
             heroAssetId: managerConfig.heroAssetId || '',
             ts: new Date().toISOString()
@@ -2058,6 +2054,29 @@ export async function hydrateHeroBackgroundStores(stores = {}, appConfig = {}) {
         });
         return 'video';
     }
+
+    return 'pending_default';
+}
+
+/**
+ * Restore hero background from localStorage, manager config, then server default asset.
+ * @param {{ setVideo?: (url: string) => void; setPoster?: (url: string) => void; setFailed?: (failed: boolean) => void }} stores
+ * @param {{ HERO_VIDEO_STORAGE_KEY?: string; HERO_IMAGE_STORAGE_KEY?: string; HERO_VIDEO_PATHS?: string[]; resolveVideoUrl?: (path: string) => string }} [appConfig]
+ */
+export async function hydrateHeroBackgroundStores(stores = {}, appConfig = {}) {
+    if (typeof window === 'undefined') return 'unchanged';
+
+    const syncResult = hydrateHeroBackgroundStoresSync(stores, appConfig);
+    if (syncResult !== 'pending_default') {
+        return syncResult;
+    }
+
+    const defaultPaths = appConfig.HERO_VIDEO_PATHS?.length
+        ? appConfig.HERO_VIDEO_PATHS
+        : [DEFAULT_HERO_BACKGROUND_VIDEO];
+    const resolveVideoUrl =
+        appConfig.resolveVideoUrl ||
+        ((path) => (path.startsWith('http') || path.startsWith('blob:') ? path : path));
 
     for (const path of defaultPaths) {
         const resolvedUrl = resolveVideoUrl(path);
@@ -2404,6 +2423,7 @@ export function initHeroIntelligence() {
         resolveHeroBackgroundPresentation,
         resolveHeroBackgroundAsset,
         applyHeroManagerBackground,
+        hydrateHeroBackgroundStoresSync,
         hydrateHeroBackgroundStores,
         DEFAULT_HERO_BACKGROUND_VIDEO,
         loadHeroVaultItems,

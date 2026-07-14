@@ -16,7 +16,13 @@
     logDrag,
     VAULT_SOURCES
   } from '../../lib/drag-drop.js';
-  import { pipelineDiag } from '../../lib/diagnostics/pipelineDiag.js';
+  import { pipelineDiag, pipelineCheckpoint } from '../../lib/diagnostics/pipelineDiag.js';
+  import { reelResStoreMutation, reelResReelSnapshot } from '../../lib/diagnostics/reelResolutionTrace.js';
+  import { isVideoReel } from '../../lib/api/reelContract.js';
+  import {
+    logVaultRenderGate,
+    logVaultPlaceholderGate
+  } from '../../lib/diagnostics/renderGateForensics.js';
   import { uploadMedia, uploadThumbnail, fetchReadyReels as apiFetchReadyReels, deleteReelById as apiDeleteReelById } from '../../lib/api/media.js';
   import { logHeroImagePipeline } from '../../lib/hero/heroIntelligence.js';
   import { reelToVaultEntry } from '../../lib/api/reelContract.js';
@@ -793,6 +799,14 @@
     videoDragActive.set(false);
     logDrag('video-vault:drop');
     pipelineDiag('DND', 'handleVaultVideoDrop', 'VaultExperience.svelte', { result: 'drop_received' });
+    pipelineCheckpoint('DROP_RECEIVED', {
+      filename: null,
+      vault: 'mp4',
+      kind: 'mp4-vault',
+      id: null,
+      fileCount: event.dataTransfer?.files?.length || 0,
+      timestamp: new Date().toISOString()
+    });
     console.info('[DROP_RECEIVED]', {
       vault: 'video',
       fileCount: event.dataTransfer?.files?.length || 0,
@@ -815,6 +829,13 @@
       uploadStatus.set('⚠️ Drop a valid video file');
       return;
     }
+    pipelineCheckpoint('DROP_RECEIVED', {
+      filename: file.name,
+      vault: 'mp4',
+      kind: 'mp4-vault',
+      id: null,
+      timestamp: new Date().toISOString()
+    });
 
     if (file.size > CONFIG.MAX_VIDEO_SIZE) {
       uploadStatus.set(`⚠️ Video too large. Max ${CONFIG.MAX_VIDEO_SIZE / 1024 / 1024}MB`);
@@ -833,6 +854,11 @@
       fileName: file.name,
       result: 'upload_start'
     });
+    pipelineCheckpoint('UPLOAD_STARTED', {
+      vault: 'mp4',
+      filename: file.name,
+      size: file.size
+    });
     console.info('[UPLOAD_STARTED]', {
       vault: 'video',
       name: file.name,
@@ -848,6 +874,7 @@
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
       const response = await uploadMedia(formData, headers);
       logVaultFieldAudit('POST /api/reels response (video vault drop)', response);
+      reelResReelSnapshot('handleVaultVideoDrop:uploadResponse', response, { vault: 'mp4' });
 
       const resolvedUrl =
         response?.url ||
@@ -872,6 +899,10 @@
       };
 
       const vaultEntry = reelToVaultEntry(normalizedResponse);
+      reelResReelSnapshot('handleVaultVideoDrop:vaultEntry', vaultEntry, {
+        vault: 'mp4',
+        isVideoUrl: Boolean(vaultEntry?.url && String(vaultEntry.url).includes('/videos/'))
+      });
       const entry = {
         ...vaultEntry,
         size: file.size,
@@ -892,8 +923,14 @@
       });
 
       personalVideos.update((videos) => {
+        const before = videos;
         const next = [entry, ...videos.filter((item) => item?.id !== entry.id && item?.url !== entry.url)];
         if (next.length > CONFIG.MAX_VAULT_ITEMS) next.pop();
+        reelResStoreMutation('personalVideos', before, next, {
+          trigger: 'handleVaultVideoDrop',
+          entryId: entry.id,
+          entryUrl: entry.url
+        });
         return next;
       });
       console.info('[STORE_UPDATE]', {
@@ -923,6 +960,11 @@
         ts: new Date().toISOString()
       });
       uploadStatus.set(`✅ Added to vault & feed: ${file.name}`);
+      pipelineCheckpoint('VIDEO_READY', {
+        vault: 'mp4',
+        videoSrc: entry.url,
+        reelId: entry.id
+      });
       pipelineDiag('UPLOAD', 'handleVaultVideoDrop', 'VaultExperience.svelte', {
         assetId: entry.id,
         fileName: file.name,
@@ -1527,6 +1569,7 @@
         {#if video}
           {@const reel = getVaultVideoReel(video)}
           {@const microDrama = isMicroDramaContent(video) || isMicroDramaContent(reel)}
+          {@const _vaultRenderGateBranch = logVaultRenderGate(video, reel, vi, { isVideo, isVideoReel })}
           <div
             class="vault-card thumbnail-item video-vault-item"
             class:video={isVideo(reel)}
@@ -1553,6 +1596,11 @@
                 height="100%"
                 on:loadeddata={(event) => {
                   console.info('[VIDEO_RENDER]', { index: vi, url: reel.url, ts: new Date().toISOString() });
+                  pipelineCheckpoint('VIDEO_ATTACHED', {
+                    vault: 'mp4',
+                    videoSrc: reel.url,
+                    reelId: video?.id || reel?.id || null
+                  });
                   handleVaultVideoLoaded(event, reel);
                 }}
                 on:loadedmetadata={(event) =>
@@ -1563,6 +1611,7 @@
                 on:error={(event) => handleVaultVideoElementError(event, video, reel)}
               />
             {:else}
+              {@const _vaultPlaceholderGate = logVaultPlaceholderGate(video, reel, vi)}
               <div class="placeholder" aria-hidden="true">▶</div>
             {/if}
             <div class="vault-grid-chrome">
