@@ -1,4 +1,4 @@
-FROM rust:1.92-slim as builder
+FROM rust:1.92-bookworm as builder
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y \
@@ -6,11 +6,12 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
+# Build context MUST be repository root (schemas/, workspace Cargo.toml).
 COPY . .
 
-# We don't need SQLX_OFFLINE=true if we use unchecked queries, 
+# We don't need SQLX_OFFLINE=true if we use unchecked queries,
 # but keeping it doesn't hurt.
-RUN cargo build --release
+RUN cargo build --release -p backend
 
 # Runtime stage
 FROM debian:bookworm-slim

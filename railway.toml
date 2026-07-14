@@ -1,0 +1,17 @@
+# ReelForge backend — Railway config (reelforge-deploy service)
+# Requires repository-root build context so backend/Dockerfile can COPY schemas/.
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "backend/Dockerfile"
+watchPatterns = [
+  "backend/**",
+  "schemas/**",
+  "Cargo.toml",
+  "Cargo.lock",
+  "rust-toolchain.toml",
+]
+
+[deploy]
+healthcheckPath = "/health"
+restartPolicyType = "ON_FAILURE"

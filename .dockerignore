@@ -1,0 +1,12 @@
+# Docker build context exclusions (repo root → backend/Dockerfile)
+.git
+.github
+.cursor
+frontend
+**/target
+**/node_modules
+**/.env
+**/.env.*
+backend/public
+*.md
+!backend/docs
