@@ -35,6 +35,18 @@ pub struct MediaStorageResponse {
     pub videos: Vec<String>,
     pub thumbnails: Vec<String>,
     pub invalid_videos: Vec<InvalidVideoEntry>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub inventory: Option<crate::media_durability::StorageInventoryReport>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub filesystem: Option<FilesystemInventory>,
+}
+
+#[derive(Serialize)]
+pub struct FilesystemInventory {
+    pub videos: Vec<String>,
+    pub thumbnails: Vec<String>,
 }
 
 #[derive(Serialize)]
@@ -459,12 +471,35 @@ pub async fn media_storage(
     videos_path: web::Data<VideosDir>,
     thumbs_path: web::Data<ThumbsDir>,
 ) -> impl Responder {
-    let (videos, thumbnails, source) = if **db_available {
+    let fs_videos = media_seed::list_media_files(&videos_path.0, "videos");
+    let fs_thumbnails = media_seed::list_media_files(&thumbs_path.0, "thumbs");
+    let filesystem = FilesystemInventory {
+        videos: fs_videos.clone(),
+        thumbnails: fs_thumbnails.clone(),
+    };
+
+    let (videos, thumbnails, source, inventory) = if **db_available {
         match (
             crate::db::reels::list_ready_video_basenames(db.get_ref()).await,
             crate::db::reels::list_ready_thumbnail_basenames(db.get_ref()).await,
         ) {
-            (Ok(v), Ok(t)) => (v, t, "postgres"),
+            (Ok(v), Ok(t)) => {
+                let public_root = videos_path.0.parent().unwrap_or(videos_path.0.as_path());
+                let storage = crate::media_durability::build_storage_diagnostics(
+                    public_root,
+                    &videos_path.0,
+                    &thumbs_path.0,
+                );
+                let split = crate::media_durability::compare_db_filesystem(
+                    &v,
+                    &t,
+                    &videos_path.0,
+                    &thumbs_path.0,
+                    storage,
+                );
+                let inv = crate::media_durability::inventory_from_split_brain(&split);
+                (v, t, "postgres".to_string(), Some(inv))
+            }
             (Err(e), _) | (_, Err(e)) => {
                 return HttpResponse::InternalServerError().json(serde_json::json!({
                     "error": e.to_string()
@@ -472,10 +507,22 @@ pub async fn media_storage(
             }
         }
     } else {
+        let inv = crate::media_durability::StorageInventoryReport {
+            db_video_count: 0,
+            db_thumb_count: 0,
+            filesystem_video_count: fs_videos.len(),
+            filesystem_thumb_count: fs_thumbnails.len(),
+            missing_videos: Vec::new(),
+            missing_thumbs: Vec::new(),
+            orphan_videos: fs_videos.clone(),
+            orphan_thumbs: fs_thumbnails.clone(),
+            split_brain: false,
+        };
         (
-            media_seed::list_media_files(&videos_path.0, "videos"),
-            media_seed::list_media_files(&thumbs_path.0, "thumbs"),
-            "filesystem-admin",
+            fs_videos.clone(),
+            fs_thumbnails.clone(),
+            "filesystem-admin".to_string(),
+            Some(inv),
         )
     };
 
@@ -485,18 +532,49 @@ pub async fn media_storage(
         .collect();
 
     eprintln!(
-        "GET /api/media/storage — {} videos, {} thumbs, {} invalid [{}]",
+        "GET /api/media/storage — {} videos, {} thumbs, {} invalid [{}] | fs: {} videos, {} thumbs",
         videos.len(),
         thumbnails.len(),
         invalid_videos.len(),
-        source
+        source,
+        filesystem.videos.len(),
+        filesystem.thumbnails.len()
     );
 
     HttpResponse::Ok().json(MediaStorageResponse {
         videos,
         thumbnails,
         invalid_videos,
+        source: Some(source),
+        inventory,
+        filesystem: Some(filesystem),
     })
+}
+
+pub async fn media_storage_diagnostics(
+    db: web::Data<Pool<Postgres>>,
+    db_available: web::Data<bool>,
+    videos_path: web::Data<VideosDir>,
+    thumbs_path: web::Data<ThumbsDir>,
+) -> impl Responder {
+    if !**db_available {
+        return crate::ingestion::IngestionService::require_db_response();
+    }
+
+    let public_root = videos_path.0.parent().unwrap_or(videos_path.0.as_path());
+    match crate::media_durability::split_brain_from_db(
+        db.get_ref(),
+        public_root,
+        &videos_path.0,
+        &thumbs_path.0,
+    )
+    .await
+    {
+        Ok(report) => HttpResponse::Ok().json(report),
+        Err(e) => HttpResponse::InternalServerError().json(serde_json::json!({
+            "error": e.to_string()
+        })),
+    }
 }
 
 #[derive(Debug, Deserialize)]

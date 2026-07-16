@@ -12,6 +12,7 @@ pub mod events;
 pub mod handlers;
 pub mod pipeline_diag;
 pub mod ingestion;
+pub mod media_durability;
 pub mod media_api;
 pub mod media_seed;
 pub mod media_validator;
@@ -219,6 +220,33 @@ async fn main() -> std::io::Result<()> {
 
     let _ = std::fs::create_dir_all(&thumbs_path);
     let _ = std::fs::create_dir_all(&videos_path);
+
+    let split_brain_report = if db_available {
+        match media_durability::split_brain_from_db(
+            &pool,
+            &public_path,
+            &videos_path,
+            &thumbs_path,
+        )
+        .await
+        {
+            Ok(report) => Some(report),
+            Err(e) => {
+                eprintln!("⚠️ Split-brain check skipped: {}", e);
+                None
+            }
+        }
+    } else {
+        None
+    };
+
+    let startup_storage = media_durability::verify_startup_storage(
+        &public_path,
+        &videos_path,
+        &thumbs_path,
+        split_brain_report,
+    );
+    media_durability::log_startup_diagnostics(&startup_storage);
 
     crate::video_stream::log_media_directory("public/videos", &videos_path);
     crate::video_stream::log_media_directory("public/thumbs", &thumbs_path);
@@ -618,6 +646,10 @@ async fn main() -> std::io::Result<()> {
                         web::scope("/media")
                             .route("/validate", web::post().to(media_api::media_validate))
                             .route("/storage", web::get().to(media_api::media_storage))
+                            .route(
+                                "/storage/diagnostics",
+                                web::get().to(media_api::media_storage_diagnostics),
+                            )
                             .route(
                                 "/storage/{filename:.*}",
                                 web::delete().to(media_api::media_storage_delete),
