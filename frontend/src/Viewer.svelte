@@ -12,6 +12,8 @@ import HeroExperienceBridge from './components/viewer/HeroExperienceBridge.svelt
 import FeedExperienceBridge from './components/viewer/FeedExperienceBridge.svelte';
 import TheaterExperienceBridge from './components/viewer/TheaterExperienceBridge.svelte';
 import StudioLauncher from './components/viewer/StudioLauncher.svelte';
+import GlobalOperationStatus from './components/viewer/GlobalOperationStatus.svelte';
+import BackendHealthBanner from './components/viewer/BackendHealthBanner.svelte';
 import FeaturedCollectionPanel from './components/discovery/FeaturedCollectionPanel.svelte';
 
 const ctx = createViewerContext();
@@ -159,6 +161,8 @@ $: studioSeriesMetadataReelLabel = (() => {
 </script>
 
 <ObservabilityBridge />
+<BackendHealthBanner />
+<GlobalOperationStatus {uploadStatus} />
 
 <main class:blur={$activeReel || $controlCenterOpen}>
   <header>

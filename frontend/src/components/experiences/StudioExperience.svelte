@@ -35,6 +35,8 @@
   import ContentIntelligencePanel from '../studio/ContentIntelligencePanel.svelte';
   import CollectionsManagerPanel from '../studio/CollectionsManagerPanel.svelte';
   import ProductionCommandCenter from '../studio/ProductionCommandCenter.svelte';
+  import EpisodeReelAttachmentPanel from '../studio/EpisodeReelAttachmentPanel.svelte';
+  import { emitCreatorProductionUpdated } from '../../lib/studio/creatorActionRouter.js';
   import StudioWalkthrough from '../studio/StudioWalkthrough.svelte';
   import VaultExperience from './VaultExperience.svelte';
   import HeroExperience from './HeroExperience.svelte';
@@ -141,6 +143,19 @@
     'textarea:not([disabled])',
     '[tabindex]:not([tabindex="-1"])'
   ].join(', ');
+
+  /** @param {CustomEvent<{ reelId?: string }>} event */
+  function handleMetadataSaved(event) {
+    const reelId = event.detail?.reelId || '';
+    emitCreatorProductionUpdated({
+      reelId,
+      actionType: 'missing-metadata',
+      source: 'metadata-editor'
+    });
+    if (typeof handleEpisodeAssetChanged === 'function') {
+      handleEpisodeAssetChanged();
+    }
+  }
 
   export async function handleUploadWithFaces() {
     const title = get(newTitle);
@@ -629,6 +644,15 @@
   seriesId={studioFeedReels?.[0]?.seriesId || 'series-neon-vengeance'}
   feedReels={studioFeedReels}
 />
+<EpisodeReelAttachmentPanel
+  {uploadStatus}
+  {studioAttachEpisodeId}
+  {studioAttachReelId}
+  personalVideos={$personalVideos}
+  studioProjectTree={$studioProjectTree}
+  loadStudioHierarchy={loadStudioHierarchy}
+  onAttached={handleEpisodeAssetChanged}
+/>
 <div class="smart-header">
               <div class="ai-badge">AI-POWERED</div>
               <h3>Smart Category Detection Active</h3>
@@ -858,22 +882,6 @@
                 >
                   + Add episode
                 </button>
-                <label class="input-label-wrapper">
-                  ATTACH REEL — EPISODE ID
-                  <input bind:value={$studioAttachEpisodeId} placeholder="Episode UUID" />
-                </label>
-                <label class="input-label-wrapper">
-                  REEL ID
-                  <input bind:value={$studioAttachReelId} placeholder="Reel UUID from catalog" />
-                </label>
-                <button
-                  class="batch-upload-btn"
-                  type="button"
-                  on:click={handleAttachReelToEpisode}
-                  disabled={!$studioAttachEpisodeId || !$studioAttachReelId}
-                >
-                  🔗 Attach reel
-                </button>
               </div>
             {/if}
           </div>
@@ -899,6 +907,7 @@
               <SeriesMetadataEditor
                 reelId={$studioSeriesMetadataReelId}
                 reelLabel={studioSeriesMetadataReelLabel}
+                on:saved={handleMetadataSaved}
               />
             </div>
             <PublishingProfileSelector />

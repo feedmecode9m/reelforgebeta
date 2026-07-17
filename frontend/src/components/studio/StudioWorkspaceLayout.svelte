@@ -26,6 +26,7 @@
     import { buildStudioActionPlan } from '../../lib/series/actionEngine.js';
     import SeriesHealthDashboard from '../series/SeriesHealthDashboard.svelte';
     import ProductionReadinessMeter from '../series/ProductionReadinessMeter.svelte';
+    import CreatorEpisodeReadinessBoard from './CreatorEpisodeReadinessBoard.svelte';
     import EpisodeOperationsTable from '../series/EpisodeOperationsTable.svelte';
     import MissingAssetQueue from '../series/MissingAssetQueue.svelte';
     import StudioContextualWarnings from '../studio/StudioContextualWarnings.svelte';
@@ -45,6 +46,7 @@
         initGuideMeEngine,
         isGuideMeModeEnabled
     } from '../../lib/studio/guideMeEngine.js';
+    import { CREATOR_PRODUCTION_UPDATED } from '../../lib/studio/creatorActionRouter.js';
     import { emitAccessibilityAudit } from '../../lib/accessibility/accessibilityAudit.js';
     import GuideMeAssistantPanel from '../studio/GuideMeAssistantPanel.svelte';
     import GlobalSearchBar from '../discovery/GlobalSearchBar.svelte';
@@ -128,11 +130,17 @@
             refreshKey += 1;
             refreshSnapshot('refresh');
         };
+        const onProductionUpdated = () => {
+            refreshKey += 1;
+            refreshSnapshot('refresh');
+            dispatch('changed');
+        };
         window.addEventListener('reelforge:workflow-tasks-updated', onUpdate);
         window.addEventListener('reelforge:teams-updated', onUpdate);
         window.addEventListener('reelforge:notifications-updated', onUpdate);
         window.addEventListener('reelforge:pipeline-updated', onUpdate);
         window.addEventListener('reelforge:release-schedule-updated', onUpdate);
+        window.addEventListener(CREATOR_PRODUCTION_UPDATED, onProductionUpdated);
         window.addEventListener('reelforge:search-navigate', handleSearchNavigate);
         return () => {
             window.removeEventListener('reelforge:workflow-tasks-updated', onUpdate);
@@ -140,6 +148,7 @@
             window.removeEventListener('reelforge:notifications-updated', onUpdate);
             window.removeEventListener('reelforge:pipeline-updated', onUpdate);
             window.removeEventListener('reelforge:release-schedule-updated', onUpdate);
+            window.removeEventListener(CREATOR_PRODUCTION_UPDATED, onProductionUpdated);
             window.removeEventListener('reelforge:search-navigate', handleSearchNavigate);
         };
     });
@@ -187,7 +196,7 @@
         logStudioWorkspaceDiag('STUDIO_REFRESH', { phase: 'manual', tab: activeTab });
     }
 
-    function handleQueueAttached() {
+    function handleQueueAttached(event) {
         auditEpisodeAssets(feedReels, true);
         refreshKey += 1;
         dispatch('changed');
@@ -449,6 +458,7 @@
             </div>
         {:else if activeTab === 'Production'}
             <div data-workspace-panel-production data-command-section-production data-guide-me-section="production">
+                <CreatorEpisodeReadinessBoard rows={operationRows} {actionPlan} seriesId={selectedSeriesId} />
                 <slot name="production" />
                 <div class="production-command-center__health-row">
                     <SeriesHealthDashboard {health} />

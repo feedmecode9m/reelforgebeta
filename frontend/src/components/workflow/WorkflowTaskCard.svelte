@@ -1,6 +1,6 @@
 <script>
     import { createEventDispatcher } from 'svelte';
-    import { navigateToTarget } from '../../lib/navigation/deepNavigation.js';
+    import { routeWorkflowNavigation } from '../../lib/studio/creatorActionRouter.js';
     import { resolveTaskNavigation } from '../../lib/workflow/workflowEngine.js';
 
     const dispatch = createEventDispatcher();
@@ -42,11 +42,9 @@
 
     function handleNavigate() {
         const navigation = resolveTaskNavigation(task);
-        navigateToTarget({
-            type: 'workflow',
-            workflowNavigation: navigation,
-            tab: 'Production',
-            dashboardSection: 'production'
+        void routeWorkflowNavigation(navigation, {
+            source: 'workflow-task',
+            episodeId: task.episodeId
         });
         dispatch('navigate', { taskId: task.id, navigation });
         if (typeof window !== 'undefined') {

@@ -5,7 +5,7 @@
 [build.environment]
   # Same-origin API via public/_redirects → Railway (fixes upload CORS on Netlify Drop)
   VITE_USE_SAME_ORIGIN_API = "true"
-  VITE_ALLOW_UI_PLACEHOLDERS = "true"
+  VITE_ALLOW_UI_PLACEHOLDERS = "false"
 
 [[redirects]]
   from = "/api/*"

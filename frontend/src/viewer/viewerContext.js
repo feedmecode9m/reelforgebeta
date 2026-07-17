@@ -1049,7 +1049,7 @@ syncCollectionStore(personalThumbnailCollection, CONFIG.THUMBNAIL_STORAGE_KEY);
 personalVideos.set([]);
 storageSet(CONFIG.VIDEO_VAULT_KEY, []);
 const demoFeed = {
-'Trending': buildDemoFeedReels(),
+'Trending': ALLOW_UI_PLACEHOLDERS ? buildDemoFeedReels() : [],
 'Romance': [],
 'Cyber-Action': [],
 'Suspense': []

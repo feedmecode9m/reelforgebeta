@@ -505,9 +505,70 @@ margin: 0;
 .ai-rules li::before { content: '✓'; position: absolute; left: 0; color: var(--neon-cyan); }
 .ai-rules li.active { color: var(--neon-cyan); }
 .hero-replace-section { margin-bottom: 2rem; }
+.hero-replace-subtitle {
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.62);
+  line-height: 1.45;
+  max-width: 42rem;
+}
+.hero-replace-state-panel {
+  margin-bottom: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+}
+.hero-replace-state-panel--active {
+  border-color: rgba(0, 242, 255, 0.35);
+  background: rgba(0, 242, 255, 0.06);
+}
+.hero-replace-state-panel--preview_pending {
+  border-color: rgba(255, 215, 0, 0.45);
+  background: rgba(255, 215, 0, 0.08);
+  box-shadow: 0 0 24px rgba(255, 215, 0, 0.12);
+}
+.hero-replace-state-panel--processing {
+  border-color: rgba(255, 165, 0, 0.45);
+  background: rgba(255, 165, 0, 0.08);
+}
+.hero-replace-state-panel--committed {
+  border-color: rgba(34, 197, 94, 0.45);
+  background: rgba(34, 197, 94, 0.1);
+  box-shadow: 0 0 24px rgba(34, 197, 94, 0.15);
+}
+.hero-replace-state-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+}
+.hero-replace-state-detail {
+  margin: 0.35rem 0 0;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.45;
+}
 .hero-drop-zone { border: 2px dashed rgba(255,255,255,0.3); border-radius: 8px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.3s; background: rgba(0,0,0,0.3); }
 .hero-drop-zone.active { border-color: var(--neon-gold); background: rgba(255,215,0,0.1); box-shadow: 0 0 30px rgba(255,215,0,0.2); }
 .hero-pending-preview { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+.hero-pending-copy { text-align: center; max-width: 28rem; }
+.hero-pending-title {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--neon-gold);
+  letter-spacing: 0.03em;
+}
+.hero-pending-lead {
+  margin: 0;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.45;
+}
+.hero-replace-confirm-btn { min-width: 11rem; }
+.hero-replace-cancel-btn { min-width: 6rem; }
 .hero-preview { max-width: 300px; max-height: 200px; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.5); border: 2px solid var(--neon-gold); object-fit: contain; }
 .hero-batch-controls { display: flex; gap: 0.5rem; }
 .category-stats { margin-bottom: 2rem; }

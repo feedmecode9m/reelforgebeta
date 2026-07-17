@@ -28,6 +28,7 @@
   import { reelToVaultEntry } from '../../lib/api/reelContract.js';
   import { validateVideoFile } from '../../lib/runtime-guards.js';
   import { API_BASE_URL, toRelativeMediaPath } from '../../lib/config.js';
+  import { ALLOW_UI_PLACEHOLDERS } from '../../lib/mediaBootstrap.js';
   import { fetchWithRetry } from '../../lib/api.js';
   import { isHeroAsset } from '../../lib/hero/heroDomainGuard.js';
   import { isDemoDebugMode } from '../../lib/debugMode.js';
@@ -134,8 +135,9 @@
   });
   $: demoDebugMode = isDemoDebugMode();
   $: shouldShowVaultDemoCards =
-    demoDebugMode ||
-    (($personalVideos?.length ?? 0) === 0 && ($personalThumbnailCollection?.length ?? 0) === 0);
+    ALLOW_UI_PLACEHOLDERS &&
+    (demoDebugMode ||
+    (($personalVideos?.length ?? 0) === 0 && ($personalThumbnailCollection?.length ?? 0) === 0));
   $: if (typeof window !== 'undefined') {
     console.info('[DEMO_DEBUG]', {
       personalVideosLength: ($personalVideos ?? []).filter(Boolean).length,

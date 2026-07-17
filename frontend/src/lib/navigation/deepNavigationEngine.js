@@ -4,7 +4,7 @@
  */
 
 import { getEpisodeById } from '../series/seriesStore.js';
-import { executeWorkflowNavigation } from '../studio/studioWorkflowNavigation.js';
+import { routeWorkflowNavigation } from '../studio/creatorActionRouter.js';
 
 /**
  * @typedef {Object} DeepNavigationTarget
@@ -198,19 +198,15 @@ export function navigateToWorkflow(workflowTarget) {
         target
     });
     if ('target' in target && target.target) {
-        const ok = executeWorkflowNavigation(target);
-        if (ok && typeof window !== 'undefined') {
-            window.dispatchEvent(
-                new CustomEvent('reelforge:workflow-navigate', {
-                    detail: {
-                        target: target.target,
-                        episodeId: target.episodeId || null,
-                        reelId: target.reelId || null
-                    }
-                })
-            );
-        }
-        emitNavigationDiagnostic(ok ? 'NAVIGATION_SUCCESS' : 'NAVIGATION_FAILURE', {
+        void routeWorkflowNavigation(
+            /** @type {import('../series/workflowEngine.js').WorkflowNavigation} */ (target),
+            {
+                source: target.source || 'workflow',
+                actionType: target.actionType || null,
+                episodeId: target.episodeId || null
+            }
+        );
+        emitNavigationDiagnostic('NAVIGATION_SUCCESS', {
             route: 'workflow',
             source: target.source || 'workflow_navigation',
             target: {
@@ -219,7 +215,7 @@ export function navigateToWorkflow(workflowTarget) {
                 reelId: target.reelId || null
             }
         });
-        return ok;
+        return true;
     }
 
     const ok = dispatchSearchNavigate({

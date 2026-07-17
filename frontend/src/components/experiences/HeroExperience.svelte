@@ -120,6 +120,30 @@ export let sanitizeViewer = false;
   let heroUploadState = 'idle';
   let lastHeroUploadState = 'idle';
   let pendingHeroFile = null;
+  let heroCommitBannerVisible = false;
+  /** @type {ReturnType<typeof resourceManager.setTimeout> | null} */
+  let heroCommitBannerTimer = null;
+  const HERO_COMMIT_BANNER_MS = 8000;
+
+  function showHeroCommitBanner() {
+    heroCommitBannerVisible = true;
+    if (heroCommitBannerTimer != null) {
+      resourceManager.clearTimeout(heroCommitBannerTimer);
+    }
+    heroCommitBannerTimer = resourceManager.setTimeout(() => {
+      heroCommitBannerVisible = false;
+      heroCommitBannerTimer = null;
+    }, HERO_COMMIT_BANNER_MS);
+  }
+
+  $: heroReplaceUxPhase =
+    heroUploadState === 'processing'
+      ? 'processing'
+      : heroCommitBannerVisible
+        ? 'committed'
+        : $heroPendingFile
+          ? 'preview_pending'
+          : 'active';
   const INTERNAL_VIEWER_TEXT_PATTERNS = [
     /^hero\s+video$/i,
     /^hero\s+image$/i,
@@ -1064,7 +1088,8 @@ $: heroBadgeLabel = sanitizeViewer
         type: 'video'
       });
       heroPreviewUrl.set(preview);
-      uploadStatus.set(`🎬 Preview: ${file.name} - Accept or Reject`);
+      uploadStatus.set(`🎬 Uploading hero video (${file.name})...`);
+      beginHeroAutoAccept();
     } else if (file.type.startsWith('image/')) {
       const reader = new FileReader();
       reader.onload = (loadEvent) => {
@@ -1076,11 +1101,17 @@ $: heroBadgeLabel = sanitizeViewer
           type: 'image'
         });
         heroPreviewUrl.set(loadEvent.target.result);
-        uploadStatus.set(`🖼️ Preview: ${file.name} - Accept or Reject`);
+        uploadStatus.set(`🖼️ Uploading hero image (${file.name})...`);
+        beginHeroAutoAccept();
       };
       reader.readAsDataURL(file);
     }
     if (event.target) event.target.value = '';
+  }
+
+  /** BG-7A: invoke the proven acceptHeroFile() pipeline after drop validation. */
+  function beginHeroAutoAccept() {
+    void acceptHeroFile();
   }
 
   function fileToDataUrl(file) {
@@ -1234,7 +1265,8 @@ $: heroBadgeLabel = sanitizeViewer
           registrySize: registry.length,
           ts: new Date().toISOString()
         });
-        uploadStatus.set('✅ Hero video uploaded');
+        uploadStatus.set('✅ Hero Updated Successfully');
+        showHeroCommitBanner();
         pipelineCheckpoint('VIDEO_READY', {
           vault: 'hero',
           videoSrc: reel.url,
@@ -1292,7 +1324,8 @@ $: heroBadgeLabel = sanitizeViewer
           registrySize: registry.length,
           ts: new Date().toISOString()
         });
-        uploadStatus.set('✅ Hero image uploaded');
+        uploadStatus.set('✅ Hero Updated Successfully');
+        showHeroCommitBanner();
         heroPendingFile.set(null);
         heroPreviewUrl.set(null);
         emitHeroDevLog('accept-complete', {
@@ -1339,7 +1372,7 @@ $: heroBadgeLabel = sanitizeViewer
       stage: 'complete',
       ts: new Date().toISOString()
     });
-    uploadStatus.set('🗑️ Rejected');
+    uploadStatus.set('Hero replacement cancelled');
     resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
   }
 
@@ -1379,6 +1412,10 @@ $: heroBadgeLabel = sanitizeViewer
 
   onDestroy(() => {
     clearCarouselTimers();
+    if (heroCommitBannerTimer != null) {
+      resourceManager.clearTimeout(heroCommitBannerTimer);
+      heroCommitBannerTimer = null;
+    }
     if (detachHeroPersistence) {
       detachHeroPersistence();
       detachHeroPersistence = null;
@@ -2075,10 +2112,38 @@ $: heroBadgeLabel = sanitizeViewer
 </style>
 
 {#if section === 'replace' || section === 'both'}
-  <div class="hero-replace-section" data-viewer-media-exempt>
+  <div
+    class="hero-replace-section"
+    data-viewer-media-exempt
+    data-hero-replace-ux-phase={heroReplaceUxPhase}
+  >
     <div class="smart-header">
       <div class="ai-badge">🎬 HERO CUSTOMIZER</div>
       <h3>Replace Background</h3>
+      <p class="hero-replace-subtitle">
+        Drop or click to upload — your hero background updates automatically
+      </p>
+    </div>
+    <div
+      class="hero-replace-state-panel hero-replace-state-panel--{heroReplaceUxPhase}"
+      role="status"
+      aria-live="polite"
+    >
+      {#if heroReplaceUxPhase === 'committed'}
+        <p class="hero-replace-state-title">Hero Updated Successfully</p>
+        <p class="hero-replace-state-detail">Your homepage hero background has been replaced.</p>
+      {:else if heroReplaceUxPhase === 'preview_pending'}
+        <p class="hero-replace-state-title">Upload Needs Attention</p>
+        <p class="hero-replace-state-detail">Retry below or cancel to choose a different file</p>
+      {:else if heroReplaceUxPhase === 'processing'}
+        <p class="hero-replace-state-title">Replacing Hero</p>
+        <p class="hero-replace-state-detail">Uploading and applying your new hero…</p>
+      {:else}
+        <p class="hero-replace-state-title">Current Hero Active</p>
+        <p class="hero-replace-state-detail">
+          Drop a file below to replace your homepage hero background.
+        </p>
+      {/if}
     </div>
     <input
       bind:this={heroFileInput}
@@ -2099,7 +2164,7 @@ $: heroBadgeLabel = sanitizeViewer
       role="button"
       tabindex="0"
       on:keydown={handleHeroFilePickerKeydown}
-      aria-label="Drop or click to replace hero media"
+      aria-label="Drop or click to replace hero background"
     >
       {#if heroUploadState === 'processing'}
         <div class="hero-pending-preview">
@@ -2109,9 +2174,19 @@ $: heroBadgeLabel = sanitizeViewer
           </div>
         </div>
       {:else if $heroPendingFile}
-        <div class="hero-pending-preview">
+        <div class="hero-pending-preview" data-hero-preview-pending>
+          <div class="hero-pending-copy">
+            <h4 class="hero-pending-title">Hero Upload Paused</h4>
+            <p class="hero-pending-lead">
+              {#if $heroPendingFile.type === 'video'}
+                Retry to upload your hero video.
+              {:else}
+                Retry to upload your hero image.
+              {/if}
+            </p>
+          </div>
           {#if $heroPendingFile.type === 'image'}
-            <MediaThumbnail url={$heroPreviewUrl} raw className="hero-preview" alt="Preview" />
+            <MediaThumbnail url={$heroPreviewUrl} raw className="hero-preview" alt="Hero preview" />
           {:else}
             <MediaRenderer
               type="video"
@@ -2125,7 +2200,9 @@ $: heroBadgeLabel = sanitizeViewer
           {/if}
           <div class="hero-batch-controls">
             <button
-              class="accept-btn"
+              type="button"
+              class="accept-btn hero-replace-confirm-btn"
+              aria-label="Retry hero background upload"
               on:click={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
@@ -2133,23 +2210,25 @@ $: heroBadgeLabel = sanitizeViewer
                 acceptHeroFile();
               }}
             >
-              Accept
+              Retry Upload
             </button>
             <button
-              class="reject-btn"
+              type="button"
+              class="reject-btn hero-replace-cancel-btn"
+              aria-label="Cancel hero replacement preview"
               on:click={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
                 rejectHeroFile();
               }}
             >
-              Reject
+              Cancel
             </button>
           </div>
         </div>
       {:else}
         <span>🖼️ / 🎬 DROP OR CLICK TO REPLACE HERO</span>
-        <small>Accepts: JPG, PNG, MP4, MOV (4s loops)</small>
+        <small>Accepts: JPG, PNG, MP4, MOV (4s loops) · Uploads automatically</small>
       {/if}
     </div>
   </div>

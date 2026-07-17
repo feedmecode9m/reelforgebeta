@@ -2,6 +2,7 @@
     import { createEventDispatcher } from 'svelte';
     import SmartHelpTooltip from '../studio/SmartHelpTooltip.svelte';
     import { attachEpisodeReel } from '../../lib/series/seriesStore.js';
+    import { emitCreatorProductionUpdated } from '../../lib/studio/creatorActionRouter.js';
 
     const dispatch = createEventDispatcher();
 
@@ -34,6 +35,12 @@
         const ok = attachEpisodeReel(episodeId, reelId);
         if (ok) {
             dispatch('attached', { episodeId, reelId });
+            emitCreatorProductionUpdated({
+                episodeId,
+                reelId,
+                actionType: 'missing-asset',
+                source: 'missing-asset-queue'
+            });
             attachSelections = { ...attachSelections, [episodeId]: '' };
         }
     }

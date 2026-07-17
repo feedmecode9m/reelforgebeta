@@ -22,12 +22,13 @@ const TASK_ESTIMATES = {
     'missing-asset': 3,
     'missing-description': 2,
     'missing-runtime': 1,
+    'missing-metadata': 2,
     'missing-thumbnail': 2,
     'unpublished-episode': 2,
     'unscheduled-episode': 3
 };
 
-/** @typedef {'missing-asset' | 'missing-description' | 'missing-runtime' | 'missing-thumbnail' | 'unpublished-episode' | 'unscheduled-episode'} WorkflowActionType */
+/** @typedef {'missing-asset' | 'missing-description' | 'missing-runtime' | 'missing-metadata' | 'missing-thumbnail' | 'unpublished-episode' | 'unscheduled-episode'} WorkflowActionType */
 
 /** @typedef {'episode-editor' | 'reel-attach' | 'metadata-editor' | 'release-scheduler'} WorkflowNavTarget */
 
@@ -74,6 +75,7 @@ const ACTION_NAV_MAP = {
     'missing-asset': 'reel-attach',
     'missing-description': 'metadata-editor',
     'missing-runtime': 'metadata-editor',
+    'missing-metadata': 'metadata-editor',
     'missing-thumbnail': 'episode-editor',
     'unpublished-episode': 'release-scheduler',
     'unscheduled-episode': 'release-scheduler'
@@ -84,6 +86,7 @@ const ACTION_FOCUS_MAP = {
     'missing-asset': null,
     'missing-description': 'description',
     'missing-runtime': 'runtime',
+    'missing-metadata': null,
     'missing-thumbnail': null,
     'unpublished-episode': 'episodeStatus',
     'unscheduled-episode': 'episodeStatus'
