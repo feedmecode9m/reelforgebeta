@@ -1,23 +1,36 @@
 {
   "release_id": "RC1-2026-07-18-001",
   "gate": 3,
-  "status": "blocked",
-  "attempted_at_utc": "2026-07-18T18:51:00Z",
-  "source_commit_intended": "044a5a2c2b2fd4ec164b1ba635f3e0a7dfe406b2",
-  "commits_ahead_of_origin": 11,
-  "push_commit": null,
-  "push_result": "failed — no GitHub credentials in execution environment (HTTPS origin)",
+  "status": "in_progress",
+  "push_commit": "(operator confirmed push passed)",
+  "push_result": "passed",
+  "local_build": {
+    "status": "passed",
+    "fixed_at_utc": "2026-07-18T18:58:00Z",
+    "blocker_was": "EACCES on dist/assets — root-owned files from prior root build",
+    "fix": "chown -R youloose2dafish:youloose2dafish frontend/dist; npm run build as project user (not sudo)",
+    "bundle_local": "assets/index-DQeGd3cl.js",
+    "markers_local": {
+      "BG7V_HERO_RESTORE_REASON": true,
+      "hero-restore": true
+    }
+  },
   "netlify_deploy_id": null,
   "deploy_finished_utc": null,
   "netlify_deploy_message": "RC1-2026-07-18-001: BG-7W hero restore deploy",
-  "production_bundle_pre_attempt": "assets/index-DwXGyOoS.js",
+  "production_bundle_pre_deploy": "assets/index-DwXGyOoS.js",
   "production_bundle_post_deploy": null,
-  "markers": {
+  "markers_production": {
     "BG7V_HERO_RESTORE_REASON": null,
     "hero-restore": null
   },
   "gate_3_complete": false,
-  "untracked_artifact_policy": "leave_untracked — no git add . before push",
-  "next_action": "Run push + deploy from operator machine with GitHub + NETLIFY_AUTH_TOKEN",
-  "notes": "Gate 3 pivot not reached. Gates 4–8 remain invalid until bundle marker check passes on new deploy."
+  "gate_3_checklist": {
+    "push": true,
+    "local_build": true,
+    "netlify_deploy": false,
+    "bundle_verification": false
+  },
+  "next_action": "export NETLIFY_AUTH_TOKEN && bash scripts/deploy-netlify.sh (as youloose2dafish, not root)",
+  "notes": "Do not sudo npm run build. Gate 3 complete only after production bundle changes and marker grep succeeds."
 }
