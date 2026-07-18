@@ -19,6 +19,47 @@ During RC1 pursuit: **no PRODUCT missions**. Release engineering only.
 
 ---
 
+## Freeze rule (until RC1 signed off)
+
+Prevents “just one more improvement” from delaying release or introducing regressions.
+
+**Allowed:**
+
+- Release fixes
+- Deployment fixes
+- Regression fixes
+- RA-discovered issues (after post-deploy classification)
+- Documentation updates
+
+**Not allowed:**
+
+- New PRODUCT missions
+- UI redesigns
+- Refactors
+- New features
+- Architectural experiments
+
+Everything outside the [RC1 critical path](#rc1-critical-path) is out of scope until RC1 is complete.
+
+---
+
+## RC1 critical path
+
+Official release path — execute in order:
+
+```text
+BG-7W                    ✅ Local verification complete
+Push to GitHub           ⏳
+Netlify deployment       ⏳
+Production verification  ⏳
+RA-01                    ⏳
+Address verified RA findings only (if any)  ⏳
+RA-02                    ⏳
+RC1-STABLE               ⏳
+```
+
+---
+
 ## RC1 definition
 
 Release Candidate 1 is declared when:
@@ -300,6 +341,26 @@ node scripts/mission-bg-7s-shelf-presentation-validate.mjs
 
 ## Sign-off criteria (Gate 8)
 
+### Definition of done
+
+RC1 is complete only when **all** requirements are true:
+
+| Requirement | Status |
+|-------------|--------|
+| BG-7W deployed to production | ⏳ |
+| Production bundle verified | ⏳ |
+| Hero restore passes in a fresh browser | ⏳ |
+| RA-01 passes after deployment | ⏳ |
+| Any RA findings resolved and reverified | ⏳ |
+| RA-02 passes | ⏳ |
+| Regression suite passes | ⏳ |
+| RC1 checklist signed off | ⏳ |
+| RC1-STABLE tag created | ⏳ |
+
+Update the **Status** column as each gate completes. All must be ✅ before sign-off.
+
+### Gate checklist
+
 RC1 may be declared when **all** are true:
 
 - [ ] Gates 1–7 PASS on the same commit SHA
@@ -341,6 +402,7 @@ git push origin RC1-STABLE
 - `268e99e` — BG-7V/7W hero restore fix
 - `4ddabba` — RA-01 verification script
 - `de225da` — BG-7W / RA-01 deliverables
+- `756f29f` — RC1 release checklist
 
 ---
 
@@ -357,6 +419,18 @@ RC1 tag      ⏸ after all gates
 ```
 
 **Do not start PRODUCT-07** until RC1 is signed off.
+
+---
+
+## After RC1 (post-release)
+
+Once RC1 is signed off:
+
+1. Create `RC1-STABLE` tag (see Gate 8)
+2. Open a new branch or milestone for post-release work (e.g. `vNext`, `PRODUCT-07`)
+3. Resume feature development on that branch without jeopardizing the released baseline
+
+The RC1 branch/tag remains the rollback and support reference.
 
 ---
 
