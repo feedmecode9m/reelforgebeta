@@ -33,6 +33,32 @@
     logHeroConfigSaveAudit,
     logRenderGate
   } from '../../lib/diagnostics/renderGateForensics.js';
+  import { logBg7jHeroGate } from '../../lib/diagnostics/bg7jHydrationGate.js';
+  import {
+    isLikelyMediaDrag,
+    logDropMiss,
+    markMediaUploadIntent
+  } from '../../lib/dropAffordance.js';
+
+  const PENDING_HERO_BACKGROUND_PRESENTATION = {
+    style: 'gradient_overlay',
+    containerClasses: [],
+    overlayClasses: ['hero-bg-gradient-overlay'],
+    useVideo: false,
+    useImage: false,
+    ambientMotion: false,
+    cinematicBlur: false,
+    gradientOverlay: true,
+    backgroundSource: 'selection',
+    backgroundAsset: '',
+    heroAssetId: '',
+    assetId: '',
+    vaultMatch: false,
+    mediaUrl: '',
+    assetType: 'unknown',
+    videoUrl: '',
+    imageUrl: ''
+  };
 
   /** @type {'stage' | 'replace' | 'both'} */
   export let section = 'stage';
@@ -48,6 +74,7 @@
   export let heroPreviewUrl;
   export let personalVideos;
   export let uploadStatus;
+  export let viewerHydrationReady;
 
   export let resourceManager;
   export let CONFIG;
@@ -123,6 +150,8 @@ export let sanitizeViewer = false;
   let heroCommitBannerVisible = false;
   /** @type {ReturnType<typeof resourceManager.setTimeout> | null} */
   let heroCommitBannerTimer = null;
+  let heroStageUploadHintVisible = false;
+  let heroStageDragDepth = 0;
   const HERO_COMMIT_BANNER_MS = 8000;
 
   function showHeroCommitBanner() {
@@ -154,9 +183,18 @@ export let sanitizeViewer = false;
     /^hero[-_ ](video|image)\b/i
   ];
 
-  $: heroBackgroundPresentation = resolveHeroBackgroundPresentation(
-    heroManagerConfig || loadHeroManagerConfig()
-  );
+  let lastHeroGateAction = null;
+  $: {
+    const action = $viewerHydrationReady ? 'resolved' : 'waiting';
+    if (action !== lastHeroGateAction) {
+      logBg7jHeroGate($viewerHydrationReady, action);
+      lastHeroGateAction = action;
+    }
+  }
+
+  $: heroBackgroundPresentation = $viewerHydrationReady
+    ? resolveHeroBackgroundPresentation(heroManagerConfig || loadHeroManagerConfig())
+    : PENDING_HERO_BACKGROUND_PRESENTATION;
   $: {
     const nextHeroUsesImageBackground =
       heroBackgroundPresentation.backgroundSource === 'custom_image' &&
@@ -1028,8 +1066,60 @@ $: heroBadgeLabel = sanitizeViewer
     }
   }
 
-  export function handleHeroDragEnter() {
+  export function handleHeroStageDragEnter(event) {
+    if (section !== 'stage' || !sanitizeViewer) return;
+    if (!isLikelyMediaDrag(event)) return;
+    event.preventDefault();
+    heroStageDragDepth += 1;
+    heroStageUploadHintVisible = true;
+    markMediaUploadIntent('homepage-hero-stage');
+  }
+
+  export function handleHeroStageDragLeave() {
+    if (section !== 'stage' || !sanitizeViewer) return;
+    heroStageDragDepth = Math.max(0, heroStageDragDepth - 1);
+    if (heroStageDragDepth === 0) {
+      heroStageUploadHintVisible = false;
+    }
+  }
+
+  export function handleHeroStageDragOver(event) {
+    if (section !== 'stage' || !sanitizeViewer) return;
+    if (!isLikelyMediaDrag(event)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'none';
+    }
+  }
+
+  export function handleHeroStageDrop(event) {
+    if (section !== 'stage' || !sanitizeViewer) return;
+    event.preventDefault();
+    event.stopPropagation();
+    heroStageDragDepth = 0;
+    heroStageUploadHintVisible = false;
+    const file = event.dataTransfer?.files?.[0];
+    logDropMiss('homepage-hero-stage', 'no_upload_handler_on_viewer_hero_stage', {
+      fileName: file?.name || null,
+      fileSize: file?.size ?? null,
+      fileCount: event.dataTransfer?.files?.length || 0
+    });
+  }
+
+  export function handleHeroDragEnter(event) {
     heroIsDragOver.set(true);
+    console.info('[BG7G_DROP]', {
+      ts: new Date().toISOString(),
+      component: 'handleHeroDragEnter',
+      file: 'HeroExperience.svelte',
+      fileName: null,
+      fileSize: null,
+      uploadUrl: null,
+      state: 'dragenter',
+      section,
+      fileCount: event?.dataTransfer?.types?.length || 0
+    });
   }
 
   export function handleHeroDragLeave() {
@@ -1046,6 +1136,18 @@ $: heroBadgeLabel = sanitizeViewer
     event.stopPropagation();
     heroIsDragOver.set(false);
     const file = event.dataTransfer?.files?.[0];
+    console.info('[BG7G_DROP]', {
+      ts: new Date().toISOString(),
+      component: 'handleHeroDrop',
+      file: 'HeroExperience.svelte',
+      fileName: file?.name || null,
+      fileSize: file?.size ?? null,
+      uploadUrl: null,
+      state: file ? 'drop_received' : 'failure',
+      section,
+      fileCount: event.dataTransfer?.files?.length || 0,
+      reason: file ? null : 'no_file_in_dataTransfer'
+    });
     pipelineCheckpoint('DROP_RECEIVED', {
       filename: file?.name || null,
       vault: 'hero',
@@ -1059,6 +1161,16 @@ $: heroBadgeLabel = sanitizeViewer
   export function handleHeroFileSelect(event) {
     const file = event.target.files?.[0];
     if (!file) return;
+    console.info('[BG7G_DROP]', {
+      ts: new Date().toISOString(),
+      component: 'handleHeroFileSelect',
+      file: 'HeroExperience.svelte',
+      fileName: file.name,
+      fileSize: file.size,
+      uploadUrl: null,
+      state: 'file_selected',
+      inferredKind: isProbablyVideo(file) ? 'video' : file.type.startsWith('image/') ? 'image' : 'unknown'
+    });
     console.log('[HERO_FILE_SELECTED]', {
       fileName: file.name || '',
       fileType: file.type || '',
@@ -1089,6 +1201,16 @@ $: heroBadgeLabel = sanitizeViewer
       });
       heroPreviewUrl.set(preview);
       uploadStatus.set(`🎬 Uploading hero video (${file.name})...`);
+      console.info('[BG7G_UPLOAD]', {
+        ts: new Date().toISOString(),
+        component: 'handleHeroFileSelect',
+        file: 'HeroExperience.svelte',
+        fileName: file.name,
+        fileSize: file.size,
+        uploadUrl: '/api/reels',
+        state: 'auto_accept_start',
+        kind: 'video'
+      });
       beginHeroAutoAccept();
     } else if (file.type.startsWith('image/')) {
       const reader = new FileReader();
@@ -1102,9 +1224,31 @@ $: heroBadgeLabel = sanitizeViewer
         });
         heroPreviewUrl.set(loadEvent.target.result);
         uploadStatus.set(`🖼️ Uploading hero image (${file.name})...`);
+        console.info('[BG7G_UPLOAD]', {
+          ts: new Date().toISOString(),
+          component: 'handleHeroFileSelect',
+          file: 'HeroExperience.svelte',
+          fileName: file.name,
+          fileSize: file.size,
+          uploadUrl: '/api/reels',
+          state: 'auto_accept_start',
+          kind: 'image'
+        });
         beginHeroAutoAccept();
       };
       reader.readAsDataURL(file);
+    } else {
+      console.info('[BG7G_DROP]', {
+        ts: new Date().toISOString(),
+        component: 'handleHeroFileSelect',
+        file: 'HeroExperience.svelte',
+        fileName: file.name,
+        fileSize: file.size,
+        uploadUrl: null,
+        state: 'failure',
+        reason: 'unsupported_mime_or_extension',
+        mime: file.type || ''
+      });
     }
     if (event.target) event.target.value = '';
   }
@@ -1218,11 +1362,21 @@ $: heroBadgeLabel = sanitizeViewer
         if (!validation.valid) throw new Error(validation.reason || 'Invalid video file');
         uploadStatus.set('🎬 Uploading hero video...');
         const { uploadVideo } = await import('../../lib/api/media.js');
-        const { getAdminAuthorizationHeader } = await import('../../lib/api.js');
+        const { getAdminAuthorizationHeader, API_BASE_URL } = await import('../../lib/api.js');
         const token =
           typeof window !== 'undefined'
             ? localStorage.getItem('reelforge_admin_session_token')
             : null;
+        console.info('[BG7G_UPLOAD]', {
+          ts: new Date().toISOString(),
+          component: 'acceptHeroFile',
+          file: 'HeroExperience.svelte',
+          fileName: file.name,
+          fileSize: file.size,
+          uploadUrl: `${API_BASE_URL}/api/reels`,
+          state: 'upload_start',
+          kind: 'video'
+        });
         const created = await withTimeout(
           uploadVideo(file, getAdminAuthorizationHeader(token), {
             title: derivedHeadline,
@@ -1240,6 +1394,16 @@ $: heroBadgeLabel = sanitizeViewer
         saveHeroReel(reel);
         const heroVideoBefore = get(HERO_BACKGROUND_VIDEO);
         HERO_BACKGROUND_VIDEO.set(reel.url);
+        console.info('[BG7G_STORE]', {
+          ts: new Date().toISOString(),
+          component: 'HERO_BACKGROUND_VIDEO.set',
+          file: 'HeroExperience.svelte',
+          fileName: reel.fileName || file.name,
+          fileSize: file.size,
+          uploadUrl: reel.url,
+          state: 'success',
+          reelId: reel.id
+        });
         reelResStoreMutation('HERO_BACKGROUND_VIDEO', heroVideoBefore, reel.url, {
           trigger: 'acceptHeroFile',
           heroManagerConfigInMemory: heroManagerConfig?.backgroundSource || null,
@@ -1266,6 +1430,16 @@ $: heroBadgeLabel = sanitizeViewer
           ts: new Date().toISOString()
         });
         uploadStatus.set('✅ Hero Updated Successfully');
+        console.info('[BG7G_RENDER]', {
+          ts: new Date().toISOString(),
+          component: 'acceptHeroFile',
+          file: 'HeroExperience.svelte',
+          fileName: reel.fileName || file.name,
+          fileSize: file.size,
+          uploadUrl: reel.url,
+          state: 'hero_video_committed',
+          backgroundSource: 'custom_video'
+        });
         showHeroCommitBanner();
         pipelineCheckpoint('VIDEO_READY', {
           vault: 'hero',
@@ -1325,6 +1499,16 @@ $: heroBadgeLabel = sanitizeViewer
           ts: new Date().toISOString()
         });
         uploadStatus.set('✅ Hero Updated Successfully');
+        console.info('[BG7G_RENDER]', {
+          ts: new Date().toISOString(),
+          component: 'acceptHeroFile',
+          file: 'HeroExperience.svelte',
+          fileName: reel.fileName || file.name,
+          fileSize: file.size,
+          uploadUrl: reel.url,
+          state: 'hero_image_committed',
+          backgroundSource: 'custom_image'
+        });
         showHeroCommitBanner();
         heroPendingFile.set(null);
         heroPreviewUrl.set(null);
@@ -1338,6 +1522,16 @@ $: heroBadgeLabel = sanitizeViewer
       }
     } catch (error) {
       if (!isOperationActive() && operationTimedOut) return;
+      console.info('[BG7G_UPLOAD]', {
+        ts: new Date().toISOString(),
+        component: 'acceptHeroFile',
+        file: 'HeroExperience.svelte',
+        fileName: pending?.name || pending?.file?.name || null,
+        fileSize: pending?.file?.size ?? null,
+        uploadUrl: '/api/reels',
+        state: 'failure',
+        reason: error?.message || String(error)
+      });
       console.error('❌ Failed to accept hero file:', error);
       console.info('[HERO_ACCEPT]', {
         stage: 'failed',
@@ -1427,6 +1621,7 @@ $: heroBadgeLabel = sanitizeViewer
   <section
     class="hero-stage"
     class:hero-stage--viewer={sanitizeViewer}
+    class:hero-stage--upload-hint={heroStageUploadHintVisible}
     data-hero-intelligence
     data-hero-carousel
     data-active-hero-media-mode={activeHeroMediaMode}
@@ -1436,7 +1631,19 @@ $: heroBadgeLabel = sanitizeViewer
     data-hero-source={heroSelection?.source || 'static'}
     on:pointerenter={pauseCarousel}
     on:pointerleave={resumeCarousel}
+    on:dragenter={handleHeroStageDragEnter}
+    on:dragover={handleHeroStageDragOver}
+    on:dragleave={handleHeroStageDragLeave}
+    on:drop={handleHeroStageDrop}
   >
+    {#if heroStageUploadHintVisible && sanitizeViewer}
+      <div class="hero-stage-upload-hint" role="status" aria-live="polite">
+        <span class="hero-stage-upload-hint__icon" aria-hidden="true">🎬</span>
+        <p class="hero-stage-upload-hint__message">
+          Open Studio → Content → Replace Background to upload hero video
+        </p>
+      </div>
+    {/if}
     <div
       class="hero-video-container hero-background"
       class:hero-transition-fade={heroTransitionStyle === 'fade'}
@@ -2078,6 +2285,36 @@ $: heroBadgeLabel = sanitizeViewer
   .hero-carousel-timeline__marker--active {
     background: #00f2ff;
     border-color: #00f2ff;
+  }
+  .hero-stage--upload-hint {
+    outline: 2px dashed rgba(255, 215, 0, 0.65);
+    outline-offset: -4px;
+  }
+  .hero-stage-upload-hint {
+    position: absolute;
+    inset: 0;
+    z-index: 40;
+    display: grid;
+    place-items: center;
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(6px);
+    pointer-events: none;
+    text-align: center;
+  }
+  .hero-stage-upload-hint__icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+  .hero-stage-upload-hint__message {
+    margin: 0;
+    max-width: 22rem;
+    color: #fff;
+    font-size: 1rem;
+    line-height: 1.45;
+    letter-spacing: 0.02em;
+    text-shadow: 0 0 18px rgba(255, 215, 0, 0.35);
   }
   .hero-motion-gradient {
     position: absolute;

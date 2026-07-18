@@ -18,6 +18,7 @@
 
 import { toBackendMediaUrl, logResolvedMediaUrl, toRelativeMediaPath } from '../config.js';
 import { reelResEntry, reelResExit, reelResNormalizeBranch, reelResReelSnapshot } from '../diagnostics/reelResolutionTrace.js';
+import { logBg7kCardNormalize } from '../diagnostics/bg7kCardRenderTrace.js';
 
 const REEL_TYPES = new Set(['video', 'image', 'thumbnail']);
 const DEV = import.meta.env.DEV;
@@ -260,6 +261,16 @@ export function normalizeReel(raw, endpoint = 'unknown') {
         thumbnailEmpty: merged.thumbnailUrl === '' || merged.thumbnailUrl == null,
         idMissing: !merged.id
     });
+    const originalUrl = String(
+        raw.url ?? raw.video_url ?? raw.videoUrl ?? raw.videoPath ?? raw.src ?? ''
+    );
+    logBg7kCardNormalize(
+        String(merged.id || ''),
+        originalUrl,
+        String(merged.url || ''),
+        String(merged.thumbnailUrl || ''),
+        endpoint
+    );
     reelResExit('normalizeReel', t0, {
         endpoint,
         id: merged.id,

@@ -64,6 +64,16 @@ export async function createReel(formData, headers = {}) {
         endpoint: CREATE_REEL_URL,
         fileInfo
     });
+    console.info('[BG7G_API]', {
+        ts: new Date().toISOString(),
+        component: 'createReel',
+        file: 'media.js',
+        fileName: primaryFileName,
+        fileSize: fileInfo?.video?.size || fileInfo?.thumbnail?.size || fileInfo?.image?.size || null,
+        uploadUrl: `${API_BASE_URL}${CREATE_REEL_URL}`,
+        state: 'request_start',
+        fileInfo
+    });
     pipelineDiag('UPLOAD', 'createReel', 'media.js', {
         fileName: primaryFileName,
         result: 'request_start',
@@ -136,6 +146,16 @@ export async function createReel(formData, headers = {}) {
         result: `http_${response.status}`,
         detail: { ok: response.ok }
     });
+    console.info('[BG7G_API]', {
+        ts: new Date().toISOString(),
+        component: 'createReel',
+        file: 'media.js',
+        fileName: primaryFileName,
+        fileSize: fileInfo?.video?.size || fileInfo?.thumbnail?.size || fileInfo?.image?.size || null,
+        uploadUrl: `${API_BASE_URL}${CREATE_REEL_URL}`,
+        state: response.ok ? 'http_success' : 'http_failure',
+        status: response.status
+    });
 
     if (!response.ok) {
         const err = await response.json().catch(() => ({}));
@@ -191,6 +211,17 @@ export async function createReel(formData, headers = {}) {
             fileName: primaryFileName,
             result: 'ready',
             detail: { url: ready?.url || '', thumbnailUrl: ready?.thumbnailUrl || '' }
+        });
+        console.info('[BG7G_API]', {
+            ts: new Date().toISOString(),
+            component: 'createReel',
+            file: 'media.js',
+            fileName: primaryFileName,
+            fileSize: fileInfo?.video?.size || fileInfo?.thumbnail?.size || null,
+            uploadUrl: ready?.url || `${API_BASE_URL}${CREATE_REEL_URL}`,
+            state: 'success',
+            reelId: ready?.id || reelId,
+            ingest: 'pending_ready'
         });
         console.info('[HERO_ROUTE]', {
             stage: 'createReel:pending-ready',
@@ -308,6 +339,15 @@ export async function uploadMedia(fileOrFormData, headersOrMime = {}) {
     if (fileOrFormData instanceof FormData) {
         const headers =
             headersOrMime && typeof headersOrMime === 'object' ? headersOrMime : {};
+        console.info('[BG7G_UPLOAD]', {
+            ts: new Date().toISOString(),
+            component: 'uploadMedia',
+            file: 'media.js',
+            fileName: null,
+            fileSize: null,
+            uploadUrl: `${API_BASE_URL}${CREATE_REEL_URL}`,
+            state: 'formData_delegate'
+        });
         pipelineDiag('UPLOAD', 'uploadMedia', 'media.js', { result: 'formData_delegate' });
         return createReel(fileOrFormData, headers);
     }
@@ -524,6 +564,29 @@ export async function cleanupOrphanMedia(headers = {}) {
     return response.json();
 }
 
+/**
+ * PATCH /api/reels/{id}/category — reassign shelf category for an existing reel.
+ * @param {string} reelId
+ * @param {string} category
+ * @param {Record<string, string>} [headers]
+ * @returns {Promise<{ id: string; category: string; updated: boolean }>}
+ */
+export async function patchReelCategory(reelId, category, headers = {}) {
+    const response = await fetchWithRetry(`${API_BASE_URL}/api/reels/${reelId}/category`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            ...headers
+        },
+        body: JSON.stringify({ category })
+    });
+    if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || `Category update failed (${response.status})`);
+    }
+    return response.json();
+}
+
 export const MEDIA_API = {
     createReel,
     upload: uploadMedia,
@@ -531,6 +594,7 @@ export const MEDIA_API = {
     uploadVideo,
     deleteReelById,
     fetchReadyReels,
+    patchReelCategory,
     validate: validateMedia,
     storage: fetchMediaStorage,
     deleteFile: deleteMediaFile,

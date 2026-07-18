@@ -1,4 +1,6 @@
 import { get } from 'svelte/store';
+import { logBg7kPlaceholderFallback } from '../diagnostics/bg7kCardRenderTrace.js';
+import { logBg7nStage } from '../diagnostics/bg7nPipelineTrace.js';
 
 export function createUiAgent(deps) {
   const {
@@ -40,6 +42,7 @@ export function createUiAgent(deps) {
   startScroll: (_e) => {},
   stopScroll: (_e) => {},
   fillLandscape: (reels, category) => {
+  logBg7nStage('fillLandscape:input', reels || [], { category });
   const real = [...(reels || [])]
   .filter((r) => ALLOW_UI_PLACEHOLDERS || (!r?.isPlaceholder && !r?.isBlackStoriesPlaceholder))
   .sort((a, b) => {
@@ -47,14 +50,27 @@ export function createUiAgent(deps) {
   const bVid = hasPlayableVideo(b) ? 0 : b?.isPlaceholder ? 2 : 1;
   return aVid - bVid;
   });
-  if (!ALLOW_UI_PLACEHOLDERS) return real;
-  if (!real.length) return BLACK_STORIES_MATCHER.fillBlackStoriesUntilVideo(0, category);
-  if (real.length >= CONFIG.TARGET_LANDSCAPE_COUNT) return real;
+  if (!ALLOW_UI_PLACEHOLDERS) {
+  logBg7nStage('fillLandscape:output', real, { category });
+  return real;
+  }
+  if (!real.length) {
+  const filled = BLACK_STORIES_MATCHER.fillBlackStoriesUntilVideo(0, category);
+  logBg7nStage('fillLandscape:output', filled, { category, branch: 'blackStoriesEmpty' });
+  return filled;
+  }
+  if (real.length >= CONFIG.TARGET_LANDSCAPE_COUNT) {
+  logBg7nStage('fillLandscape:output', real, { category, branch: 'sufficient' });
+  return real;
+  }
   const placeholders = BLACK_STORIES_MATCHER.fillBlackStoriesUntilVideo(real.length, category);
-  return [...real, ...placeholders];
+  const merged = [...real, ...placeholders];
+  logBg7nStage('fillLandscape:output', merged, { category, branch: 'padded' });
+  return merged;
   },
   handleImageError: (_imgElement, reel, category, index) => {
   if (!reel?.id) return;
+  logBg7kPlaceholderFallback(String(reel.id), 'image_load_error', { category, index });
   const fallback = BLACK_STORIES_MATCHER.matchToContent(reel.title || '', category, index);
   feedCardImageFallbacks.update((m) => ({ ...m, [reel.id]: fallback }));
   },

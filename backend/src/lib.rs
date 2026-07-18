@@ -11,6 +11,7 @@ pub mod media;
 pub mod viewer_sim;
 pub mod events;
 pub mod handlers;
+pub mod health_state;
 pub mod pipeline_diag;
 pub mod ingestion;
 pub mod media_durability;

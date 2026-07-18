@@ -338,6 +338,19 @@ export function safeStorageSet(key, value, options = {}) {
             });
         }
         localStorage.setItem(key, json);
+        if (key === 'personal_video_vault' || key === 'video_vault_index') {
+            console.info('[BG7G_STORE]', {
+                ts: new Date().toISOString(),
+                component: 'safeStorageSet',
+                file: 'storage.js',
+                fileName: null,
+                fileSize: size,
+                uploadUrl: null,
+                state: 'success',
+                key,
+                itemCount: Array.isArray(payload) ? payload.length : null
+            });
+        }
         if (STORAGE_DEBUG) {
             console.log(`[storage:set] ok key=${key} totalAfter=${formatBytes(getLocalStorageSize())}`);
         }

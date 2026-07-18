@@ -18,6 +18,7 @@
   export let CONFIG;
   export let syncFromVault;
   export let persistPersonalVault;
+  export let viewerHydrationReady;
   export let sanitizeViewer = true;
 </script>
 
@@ -40,5 +41,6 @@
   {CONFIG}
   {syncFromVault}
   {persistPersonalVault}
+  {viewerHydrationReady}
   {sanitizeViewer}
 />

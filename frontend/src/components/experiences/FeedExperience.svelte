@@ -1,5 +1,6 @@
 <script>
   import ReelshortExperience from '../vertical/ReelshortExperience.svelte';
+  import { logBg7nLoadingGate, logBg7nStage } from '../../lib/diagnostics/bg7nPipelineTrace.js';
 
   export let loading;
   export let feed;
@@ -21,6 +22,11 @@
   export let handleCardVideoError;
   /** @type {(img: HTMLImageElement, src?: string) => void} */
   export let logVaultImageError;
+
+  $: logBg7nLoadingGate($loading);
+  $: if (!$loading) {
+    logBg7nStage('FeedExperience:render', $feed, { loading: false });
+  }
 </script>
 
 {#if $loading}

@@ -54,7 +54,13 @@
     "prepublishOnly": "npm run release:check",
     "organize": "node scripts/organize.js",
     "format": "prettier --write src/**/*.svelte",
-    "lint": "eslint src/**/*.svelte"
+    "lint": "eslint src/**/*.svelte",
+    "test:hero-confirmation": "node scripts/mission-bg-7a-hero-auto-accept.mjs",
+    "test:hero-auto-accept": "node scripts/mission-bg-7a-hero-auto-accept.mjs",
+    "test:bg-7a1-release": "node scripts/mission-bg-7a1-production-release-validation.mjs",
+    "test:hero-playwright": "playwright test tests/hero-confirmation.e2e.spec.js",
+    "test:episode-attachment": "playwright test tests/episode-reel-attachment.e2e.spec.js",
+    "test:episode-attachment:mission": "node scripts/mission-product-03-episode-attach.mjs"
   },
   "dependencies": {
     "svelte": "^4.0.0"

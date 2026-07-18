@@ -251,10 +251,12 @@ fn aggregate_status(probes: &[DirectoryProbe], volume_mounted: bool) -> StorageS
     }
 }
 
-pub fn build_storage_diagnostics(
+fn storage_diagnostics_from_probes(
     public_root: &Path,
     videos_path: &Path,
     thumbs_path: &Path,
+    filesystem_video_count: usize,
+    filesystem_thumb_count: usize,
 ) -> StorageDiagnostics {
     let probes = [
         probe_directory("media_root", public_root),
@@ -266,8 +268,6 @@ pub fn build_storage_diagnostics(
     let ephemeral_storage_risk = is_production_deployed() && !volume_mounted;
     let status = aggregate_status(&probes, volume_mounted);
     let writable = probes.iter().all(|p| p.writable);
-    let fs_videos = media_seed::list_media_files(videos_path, "videos");
-    let fs_thumbs = media_seed::list_media_files(thumbs_path, "thumbs");
 
     StorageDiagnostics {
         status: status.as_str().to_string(),
@@ -278,10 +278,35 @@ pub fn build_storage_diagnostics(
         volume_mounted,
         ephemeral_storage_risk,
         writable,
-        filesystem_video_count: fs_videos.len(),
-        filesystem_thumb_count: fs_thumbs.len(),
+        filesystem_video_count,
+        filesystem_thumb_count,
         directories: probes.to_vec(),
     }
+}
+
+/// Probe-only diagnostics (no directory inventory / ffprobe). Used for health warming snapshots.
+pub fn build_storage_probe_diagnostics(
+    public_root: &Path,
+    videos_path: &Path,
+    thumbs_path: &Path,
+) -> StorageDiagnostics {
+    storage_diagnostics_from_probes(public_root, videos_path, thumbs_path, 0, 0)
+}
+
+pub fn build_storage_diagnostics(
+    public_root: &Path,
+    videos_path: &Path,
+    thumbs_path: &Path,
+) -> StorageDiagnostics {
+    let fs_videos = media_seed::list_media_files(videos_path, "videos");
+    let fs_thumbs = media_seed::list_media_files(thumbs_path, "thumbs");
+    storage_diagnostics_from_probes(
+        public_root,
+        videos_path,
+        thumbs_path,
+        fs_videos.len(),
+        fs_thumbs.len(),
+    )
 }
 
 pub fn compare_db_filesystem(

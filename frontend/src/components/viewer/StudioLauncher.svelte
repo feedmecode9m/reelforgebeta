@@ -64,6 +64,7 @@
   export let vaultUtils;
   export let syncFromVault;
   export let persistPersonalVault;
+  export let viewerHydrationReady;
   export let storageSet;
   export let clearApplicationCache;
   export let resetAllLocalData;
@@ -295,6 +296,7 @@
   {vaultUtils}
   {syncFromVault}
   {persistPersonalVault}
+  {viewerHydrationReady}
   {storageSet}
   {clearApplicationCache}
   {resetAllLocalData}

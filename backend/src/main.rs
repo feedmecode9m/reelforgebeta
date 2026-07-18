@@ -10,6 +10,7 @@ pub mod media;
 pub mod viewer_sim;
 pub mod events;
 pub mod handlers;
+pub mod health_state;
 pub mod pipeline_diag;
 pub mod ingestion;
 pub mod media_durability;
@@ -221,77 +222,14 @@ async fn main() -> std::io::Result<()> {
     let _ = std::fs::create_dir_all(&thumbs_path);
     let _ = std::fs::create_dir_all(&videos_path);
 
-    let split_brain_report = if db_available {
-        match media_durability::split_brain_from_db(
-            &pool,
-            &public_path,
-            &videos_path,
-            &thumbs_path,
-        )
-        .await
-        {
-            Ok(report) => Some(report),
-            Err(e) => {
-                eprintln!("⚠️ Split-brain check skipped: {}", e);
-                None
-            }
-        }
-    } else {
-        None
-    };
-
-    let startup_storage = media_durability::verify_startup_storage(
+    let health_snapshot = health_state::HealthSnapshot::warming(
         &public_path,
         &videos_path,
         &thumbs_path,
-        split_brain_report,
+        db_available,
     );
-    media_durability::log_startup_diagnostics(&startup_storage);
-
-    crate::video_stream::log_media_directory("public/videos", &videos_path);
-    crate::video_stream::log_media_directory("public/thumbs", &thumbs_path);
-    crate::video_stream::verify_media_directories(&videos_path, &thumbs_path);
-    crate::media_seed::log_asset_inventory(&videos_path, &thumbs_path);
-
-    if db_available && db::ingestion_v2_enabled() && db::startup_reconcile_enabled() {
-        let reconcile_bus = std::sync::Arc::new(event_bus.get_ref().clone());
-        match ingestion::reconcile::reconcile_videos(
-            &pool,
-            &videos_path,
-            &thumbs_path,
-            ingestion::reconcile::ReconcileOptions::startup(),
-            Some(reconcile_bus),
-        )
-        .await
-        {
-            Ok(report) => {
-                println!(
-                    "[reconcile] scanned={} imported={} skipped_cataloged={} skipped_invalid={} quarantined={} skipped_duplicate={} jobs_enqueued={} marked_ready={}",
-                    report.scanned,
-                    report.imported,
-                    report.skipped_cataloged,
-                    report.skipped_invalid,
-                    report.quarantined,
-                    report.skipped_duplicate_content,
-                    report.jobs_enqueued,
-                    report.marked_ready,
-                );
-                if !report.errors.is_empty() {
-                    eprintln!("[reconcile] errors: {:?}", report.errors);
-                }
-            }
-            Err(e) => eprintln!("[reconcile] failed: {}", e),
-        }
-
-        let (confirmed, rejected) =
-            crate::db::reels::backfill_validated_ready_reels(&pool, &videos_path).await;
-        if confirmed > 0 || rejected > 0 {
-            println!(
-                "[validation-backfill] confirmed={} rejected={}",
-                confirmed, rejected
-            );
-        }
-    }
+    let shared_health = health_state::new_shared_health_state(health_snapshot);
+    let health_state_data = web::Data::new(shared_health.clone());
 
     let videos_path_data = web::Data::new(crate::video_stream::VideosDir(videos_path.clone()));
     let thumbs_path_data = web::Data::new(crate::video_stream::ThumbsDir(thumbs_path.clone()));
@@ -311,6 +249,19 @@ async fn main() -> std::io::Result<()> {
     let bind_address = format!("0.0.0.0:{}", port);
     println!("🚀 Binding to {}", bind_address);
 
+    let refresh_ctx = health_state::HealthRefreshContext {
+        pool: pool.clone(),
+        db_available,
+        public_path: public_path.clone(),
+        videos_path: videos_path.clone(),
+        thumbs_path: thumbs_path.clone(),
+        event_bus: event_bus.get_ref().clone(),
+        health_state: shared_health.clone(),
+    };
+    actix_web::rt::spawn(async move {
+        health_state::run_post_bind_startup(refresh_ctx).await;
+    });
+
     HttpServer::new(move || {
         App::new()
             .wrap(configure_cors())
@@ -324,6 +275,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(event_bus.clone())
             .app_data(videos_path_data.clone())
             .app_data(thumbs_path_data.clone())
+            .app_data(health_state_data.clone())
             .route("/health", web::get().to(handlers::health_check))
             .route("/api/status", web::get().to(handlers::health_check))
             .route("/admin/auth", web::post().to(handlers::admin_auth))

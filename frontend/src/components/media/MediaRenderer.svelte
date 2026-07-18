@@ -1,8 +1,9 @@
 <script>
     import { onMount, createEventDispatcher } from 'svelte';
     import { DEFAULT_MEDIA_PLACEHOLDER, videoMimeForPath } from '../../lib/config.js';
-    import { resolveMediaForRender, resolveValidatedVideoUrl, isPassthroughMediaUrl } from './resolveDisplayUrl.js';
+    import { logBg7kPlaceholderFallback } from '../../lib/diagnostics/bg7kCardRenderTrace.js';
     import { logMediaRendererEvent } from '../../lib/diagnostics/renderGateForensics.js';
+    import { resolveMediaForRender, resolveValidatedVideoUrl, isPassthroughMediaUrl } from './resolveDisplayUrl.js';
 
     const dispatch = createEventDispatcher();
 
@@ -74,8 +75,18 @@
 
     $: resolvedSrc = (() => {
         if (raw) return url || '';
-        if (mediaType === 'video' && validateVideo) return resolveValidatedVideoUrl(url);
-        return resolveMediaForRender(url, mediaType, 'MediaRenderer');
+        if (mediaType === 'video' && validateVideo) {
+            const validated = resolveValidatedVideoUrl(url);
+            if (!validated && url) {
+                logBg7kPlaceholderFallback('', 'video_url_validation_failed', { url: String(url) });
+            }
+            return validated;
+        }
+        const resolved = resolveMediaForRender(url, mediaType, 'MediaRenderer');
+        if (!resolved && url) {
+            logBg7kPlaceholderFallback('', 'media_resolve_empty', { url: String(url), mediaType });
+        }
+        return resolved;
     })();
 
     $: resolvedPoster = poster
@@ -129,6 +140,10 @@
             const absoluteCurrent = new URL(currentSrc, window.location.href).href;
             const absoluteFallback = new URL(resolvedFallback, window.location.href).href;
             if (absoluteCurrent !== absoluteFallback) {
+                logBg7kPlaceholderFallback('', 'image_error_fallback_svg', {
+                    failedSrc: currentSrc,
+                    fallbackSrc: resolvedFallback
+                });
                 node.setAttribute('src', resolvedFallback);
             }
         };

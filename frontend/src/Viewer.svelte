@@ -38,6 +38,7 @@ const {
   CONFIG,
   syncFromVault,
   persistPersonalVault,
+  viewerHydrationReady,
   loading,
   normalizedFeed,
   totalReelsCount,
@@ -186,6 +187,7 @@ $: studioSeriesMetadataReelLabel = (() => {
     {CONFIG}
     {syncFromVault}
     {persistPersonalVault}
+    {viewerHydrationReady}
     sanitizeViewer={true}
   />
   <FeaturedCollectionPanel />
@@ -284,6 +286,7 @@ $: studioSeriesMetadataReelLabel = (() => {
   {vaultUtils}
   {syncFromVault}
   {persistPersonalVault}
+  {viewerHydrationReady}
   {storageSet}
   {clearApplicationCache}
   {resetAllLocalData}

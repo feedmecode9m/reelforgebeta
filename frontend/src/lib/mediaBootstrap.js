@@ -12,6 +12,10 @@ import { readThumbnailVault, upgradeThumbnailVaultFromBackendReels } from './vie
 import { toRelativeMediaPath } from './config.js';
 import { isHeroAsset } from './hero/heroDomainGuard.js';
 import { pipelineDiag, pipelineCheckpoint } from './diagnostics/pipelineDiag.js';
+import { logBg7kCatalogReceive } from './diagnostics/bg7kCardRenderTrace.js';
+import { loadHeroManagerConfig } from './hero/heroIntelligence.js';
+import { heroReelFromUploadResponse, loadHeroReel, saveHeroReel } from './hero/heroReelIdentity.js';
+import { logBg7jHeroRestore } from './diagnostics/bg7jHydrationGate.js';
 
 /**
  * Media catalog bootstrap — reads authoritative catalog from GET /api/reels (Postgres).
@@ -40,7 +44,6 @@ function readVaultJson(key) {
     }
 }
 
-/** @param {Array<Record<string, unknown>>} entries */
 function dedupeVideoEntries(entries) {
     const seen = new Set();
     return entries.filter((entry) => {
@@ -51,6 +54,46 @@ function dedupeVideoEntries(entries) {
         seen.add(key);
         return true;
     });
+}
+
+/**
+ * Restore canonical hero reel identity from API catalog when manager config exists locally.
+ * @param {Array<Record<string, unknown>>} reels
+ */
+function restoreHeroReelIdentityFromReels(reels) {
+    if (typeof window === 'undefined') return;
+
+    const manager = loadHeroManagerConfig();
+    const heroAssetId = String(manager?.heroAssetId || manager?.backgroundAsset || '').trim();
+    if (!heroAssetId) return;
+
+    const existing = loadHeroReel();
+    if (existing?.id) {
+        logBg7jHeroRestore(heroAssetId, false, existing.id);
+        return;
+    }
+
+    const matched = reels.find((reel) => String(reel?.id || '').trim() === heroAssetId);
+    if (!matched) {
+        logBg7jHeroRestore(heroAssetId, false, null);
+        return;
+    }
+
+    const mediaUrl = resolveMediaUrl(matched);
+    if (!mediaUrl) {
+        logBg7jHeroRestore(heroAssetId, false, String(matched.id || ''));
+        return;
+    }
+
+    const mediaKind = manager.backgroundSource === 'custom_image' ? 'image' : 'video';
+    const reel = heroReelFromUploadResponse(matched, mediaKind);
+    if (!reel?.id || reel.id !== heroAssetId || !reel.url) {
+        logBg7jHeroRestore(heroAssetId, false, String(matched.id || ''));
+        return;
+    }
+
+    saveHeroReel(reel);
+    logBg7jHeroRestore(heroAssetId, true, reel.id);
 }
 
 /**
@@ -115,7 +158,14 @@ export async function hydrateVaultFromReels(thumbnailKey, videoVaultKey, options
         });
         if (!res.ok) return { thumbnails: 0, videos: 0 };
 
-        const reels = normalizeReels(await res.json(), 'GET /api/reels (vault hydrate)');
+        const raw = await res.json();
+        const reels = normalizeReels(raw, 'GET /api/reels (vault hydrate)');
+        logBg7kCatalogReceive(
+            reels.length,
+            reels.map((r) => String(r?.id || '')).filter(Boolean),
+            'mediaBootstrap:GET /api/reels'
+        );
+        restoreHeroReelIdentityFromReels(reels);
         const videoEntries = [];
 
         for (const reel of reels) {

@@ -77,6 +77,9 @@
   /** @type {() => string} */
   export let getFallbackImage = () => '';
   let vaultDeleteDragActive = false;
+  /** Shelf category for vault uploads (video + thumbnail). */
+  let vaultUploadCategory = 'Trending';
+  $: vaultShelfCategories = (CONFIG?.CATEGORIES ?? []).filter((c) => c !== 'Auto-Detect');
   let deleteAuditLogged = false;
   let selectedThumbnailIds = [];
   let selectedVideoIds = [];
@@ -782,9 +785,19 @@
     uploadStatus.set(`🖼️ Preview: ${file.name} - Accept or Reject`);
   }
 
-  export function handleVaultVideoDragEnter() {
+  export function handleVaultVideoDragEnter(event) {
     videoDragActive.set(true);
     logDrag('video-vault:dragenter');
+    console.info('[BG7G_DROP]', {
+      ts: new Date().toISOString(),
+      component: 'handleVaultVideoDragEnter',
+      file: 'VaultExperience.svelte',
+      fileName: null,
+      fileSize: null,
+      uploadUrl: null,
+      state: 'dragenter',
+      fileCount: event?.dataTransfer?.types?.length || 0
+    });
   }
 
   export function handleVaultVideoDragLeave() {
@@ -799,6 +812,16 @@
     event.preventDefault();
     event.stopPropagation();
     videoDragActive.set(false);
+    console.info('[BG7G_DROP]', {
+      ts: new Date().toISOString(),
+      component: 'handleVaultVideoDrop',
+      file: 'VaultExperience.svelte',
+      fileName: null,
+      fileSize: null,
+      uploadUrl: null,
+      state: 'drop_received',
+      fileCount: event.dataTransfer?.files?.length || 0
+    });
     logDrag('video-vault:drop');
     pipelineDiag('DND', 'handleVaultVideoDrop', 'VaultExperience.svelte', { result: 'drop_received' });
     pipelineCheckpoint('DROP_RECEIVED', {
@@ -827,10 +850,30 @@
     });
 
     if (!file) {
+      console.info('[BG7G_DROP]', {
+        ts: new Date().toISOString(),
+        component: 'handleVaultVideoDrop',
+        file: 'VaultExperience.svelte',
+        fileName: null,
+        fileSize: null,
+        uploadUrl: null,
+        state: 'failure',
+        reason: 'rejected_invalid_file'
+      });
       pipelineDiag('DND', 'handleVaultVideoDrop', 'VaultExperience.svelte', { result: 'rejected_invalid_file' });
       uploadStatus.set('⚠️ Drop a valid video file');
       return;
     }
+    console.info('[BG7G_DROP]', {
+      ts: new Date().toISOString(),
+      component: 'handleVaultVideoDrop',
+      file: 'VaultExperience.svelte',
+      fileName: file.name,
+      fileSize: file.size,
+      uploadUrl: null,
+      state: 'file_accepted',
+      mime: file.type || ''
+    });
     pipelineCheckpoint('DROP_RECEIVED', {
       filename: file.name,
       vault: 'mp4',
@@ -846,11 +889,30 @@
 
     const validation = await validateVideoFile(file);
     if (!validation.valid) {
+      console.info('[BG7G_DROP]', {
+        ts: new Date().toISOString(),
+        component: 'validateVideoFile',
+        file: 'VaultExperience.svelte',
+        fileName: file.name,
+        fileSize: file.size,
+        uploadUrl: null,
+        state: 'failure',
+        reason: validation.reason || 'Invalid video file'
+      });
       uploadStatus.set(`⚠️ ${validation.reason || 'Invalid video file'}`);
       resourceManager.setTimeout(() => uploadStatus.set('Standby'), 3000);
       return;
     }
 
+    console.info('[BG7G_UPLOAD]', {
+      ts: new Date().toISOString(),
+      component: 'handleVaultVideoDrop',
+      file: 'VaultExperience.svelte',
+      fileName: file.name,
+      fileSize: file.size,
+      uploadUrl: `${API_BASE_URL}/api/reels`,
+      state: 'upload_start'
+    });
     uploadStatus.set('🎬 Uploading to backend...');
     pipelineDiag('UPLOAD', 'handleVaultVideoDrop', 'VaultExperience.svelte', {
       fileName: file.name,
@@ -871,10 +933,25 @@
     try {
       const formData = new FormData();
       formData.append('video', file);
+      formData.append('category', vaultUploadCategory || 'Trending');
       const token =
         typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
       const response = await uploadMedia(formData, headers);
+      console.info('[BG7G_UPLOAD]', {
+        ts: new Date().toISOString(),
+        component: 'handleVaultVideoDrop',
+        file: 'VaultExperience.svelte',
+        fileName: file.name,
+        fileSize: file.size,
+        uploadUrl:
+          response?.url ||
+          response?.videoUrl ||
+          response?.video_url ||
+          `${API_BASE_URL}/api/reels`,
+        state: 'success',
+        reelId: response?.id || null
+      });
       logVaultFieldAudit('POST /api/reels response (video vault drop)', response);
       reelResReelSnapshot('handleVaultVideoDrop:uploadResponse', response, { vault: 'mp4' });
 
@@ -912,6 +989,16 @@
         addedAt: response.createdAt || response.created_at || new Date().toISOString()
       };
       if (isHeroAsset(entry)) {
+        console.info('[BG7G_STORE]', {
+          ts: new Date().toISOString(),
+          component: 'handleVaultVideoDrop',
+          file: 'VaultExperience.svelte',
+          fileName: file.name,
+          fileSize: file.size,
+          uploadUrl: entry.url || null,
+          state: 'failure',
+          reason: 'hero_asset_blocked_from_vault'
+        });
         uploadStatus.set('⚠️ Hero media blocked from content vault');
         return;
       }
@@ -928,6 +1015,18 @@
         const before = videos;
         const next = [entry, ...videos.filter((item) => item?.id !== entry.id && item?.url !== entry.url)];
         if (next.length > CONFIG.MAX_VAULT_ITEMS) next.pop();
+        console.info('[BG7G_STORE]', {
+          ts: new Date().toISOString(),
+          component: 'personalVideos.update',
+          file: 'VaultExperience.svelte',
+          fileName: entry.fileName || entry.name || file.name,
+          fileSize: file.size,
+          uploadUrl: entry.url || null,
+          state: 'success',
+          beforeCount: before.length,
+          afterCount: next.length,
+          entryId: entry.id || null
+        });
         reelResStoreMutation('personalVideos', before, next, {
           trigger: 'handleVaultVideoDrop',
           entryId: entry.id,
@@ -954,6 +1053,17 @@
         result: 'distributed_to_feed'
       });
       feed.update((current) => ({ ...current }));
+      console.info('[BG7G_RENDER]', {
+        ts: new Date().toISOString(),
+        component: 'handleVaultVideoDrop',
+        file: 'VaultExperience.svelte',
+        fileName: entry.fileName || entry.name || file.name,
+        fileSize: file.size,
+        uploadUrl: entry.url || null,
+        state: 'vault_grid_refresh',
+        vaultCount: get(personalVideos).length,
+        hasPlayableUrl: Boolean(entry.url)
+      });
       console.info('[UPLOAD_SUCCESS]', {
         vault: 'video',
         id: entry.id,
@@ -973,6 +1083,16 @@
         result: 'success'
       });
     } catch (error) {
+      console.info('[BG7G_UPLOAD]', {
+        ts: new Date().toISOString(),
+        component: 'handleVaultVideoDrop',
+        file: 'VaultExperience.svelte',
+        fileName: file?.name || null,
+        fileSize: file?.size ?? null,
+        uploadUrl: `${API_BASE_URL}/api/reels`,
+        state: 'failure',
+        reason: error?.message || String(error)
+      });
       console.error('Failed to process video:', error);
       pipelineDiag('UPLOAD', 'handleVaultVideoDrop', 'VaultExperience.svelte', {
         fileName: file?.name || null,
@@ -1059,7 +1179,10 @@
       const token =
         typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      const response = await uploadThumbnail(file, headers, { title: name });
+      const response = await uploadThumbnail(file, headers, {
+        title: name,
+        category: vaultUploadCategory || 'Trending'
+      });
       logVaultFieldAudit('POST /api/reels response', response);
 
       const rawThumbPath =
@@ -1395,6 +1518,18 @@
 {/if}
 
 <div class="personal-media-grid">
+  <div class="vault-category-row">
+    <label class="input-label-wrapper">
+      SHELF CATEGORY (uploads)
+      <div class="category-selector">
+        <select bind:value={vaultUploadCategory} aria-label="Vault upload shelf category">
+          {#each vaultShelfCategories as cat}
+            <option value={cat}>📁 {cat}</option>
+          {/each}
+        </select>
+      </div>
+    </label>
+  </div>
   <h4>Your Thumbnails ({$personalThumbnailCollection.length})</h4>
   <div style="display: flex; justify-content: space-between; align-items: center;">
     <p class="thumbnail-hint">Click thumbnail to remove • Drag & drop to add</p>

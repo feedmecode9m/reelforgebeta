@@ -118,11 +118,22 @@
 </script>
 
 <script>
+    import { afterUpdate } from 'svelte';
     import MediaRenderer from '../media/MediaRenderer.svelte';
     import MediaThumbnail from '../media/MediaThumbnail.svelte';
     import MediaPoster from '../media/MediaPoster.svelte';
     import { prefersHoverPreview } from '../../lib/vertical/feedCardAutoplay.js';
     import { videoMimeForPath } from '../../lib/config.js';
+    import { logBg7kCardRender, logBg7kPlaceholderFallback } from '../../lib/diagnostics/bg7kCardRenderTrace.js';
+    import {
+        logBg7nStage,
+        logBg7nDomStage,
+        noteBg7nMediaRendererCard,
+        flushBg7nMediaRendererStage,
+        resetBg7nMediaRendererCards
+    } from '../../lib/diagnostics/bg7nPipelineTrace.js';
+    import { logBg7pShelfDistribution, shelfCountsFromFeed } from '../../lib/diagnostics/bg7pShelfDistribution.js';
+    import { fillShelfPresentation } from '../../lib/feed/fillShelfPresentation.js';
 
     /** @type {'feed' | 'theater-ambient' | 'theater-chrome'} */
     export let section = 'feed';
@@ -166,6 +177,51 @@
 
     /** @type {Record<string, HTMLDivElement | null>} */
     let rowRefs = {};
+    /** @type {HTMLElement | null} */
+    let feedSectionRoot = null;
+
+    $: if (section === 'feed') {
+        logBg7nStage('ReelshortExperience:props:feed', $feed);
+        logBg7nStage('ReelshortExperience:props:normalizedFeed', $normalizedFeed);
+        logBg7pShelfDistribution('ReelshortExperience:shelfRender', $feed);
+    }
+
+    afterUpdate(() => {
+        if (section !== 'feed') return;
+        flushBg7nMediaRendererStage();
+        logBg7nDomStage(feedSectionRoot);
+        resetBg7nMediaRendererCards();
+        const shelfDomCounts = {};
+        const shelfRealDomCounts = {};
+        for (const cat of Object.keys($feed || {}).filter((c) => c !== 'Auto-Detect')) {
+            const row = feedSectionRoot?.querySelector(`[aria-label="${cat} content row"]`);
+            shelfDomCounts[cat] = row ? row.querySelectorAll('.reel-card').length : 0;
+            shelfRealDomCounts[cat] = row
+                ? row.querySelectorAll('.reel-card:not(.presentation-slot)').length
+                : 0;
+        }
+        console.info('[BG7P_SHELF_DOM]', {
+            stage: 'ReelshortExperience:domPerShelf',
+            shelfDomCounts,
+            shelfRealDomCounts,
+            feedShelfCounts: shelfCountsFromFeed($feed),
+            timestamp: new Date().toISOString()
+        });
+        console.info('[BG7S_SHELF_DOM]', {
+            stage: 'ReelshortExperience:domPerShelf',
+            shelfRealDomCounts,
+            shelfDisplayDomCounts: shelfDomCounts,
+            feedShelfCounts: shelfCountsFromFeed($feed),
+            timestamp: new Date().toISOString()
+        });
+    });
+
+    /** Real feed cards → sorted real-only → presentation padding (BG-7S). */
+    function getShelfDisplayItems(category) {
+        const source = $normalizedFeed[category] || $feed[category] || [];
+        const real = UIAgent.fillLandscape ? UIAgent.fillLandscape(source, category) : source;
+        return fillShelfPresentation(real, category);
+    }
 
     function getRowStep(row) {
         if (!row) return 360;
@@ -205,9 +261,28 @@
         ].join('::');
     }
 
+    function traceFeedCardRender(reel, category, branch, mediaSrc) {
+        noteBg7nMediaRendererCard(reel?.id);
+        if (reel?.isPlaceholder) {
+            logBg7kPlaceholderFallback(String(reel?.id || ''), 'ghost_placeholder_card', {
+                category,
+                branch
+            });
+        }
+        if (branch === 'empty') {
+            logBg7kPlaceholderFallback(String(reel?.id || ''), 'no_media_url', { category });
+        }
+        logBg7kCardRender(String(reel?.id || ''), mediaSrc || '', {
+            category,
+            branch,
+            isPlaceholder: Boolean(reel?.isPlaceholder)
+        });
+    }
+
 </script>
 
 {#if section === 'feed'}
+    <div class="reelshort-feed-root" bind:this={feedSectionRoot}>
     {#each Object.keys($feed).filter((cat) => cat !== 'Auto-Detect') as category}
         {@const config = UIAgent.getStudioConfigs(category)}
         {@const displayName = categoryNames.getName(category)}
@@ -230,7 +305,24 @@
                     on:mouseleave={UIAgent.stopScroll}
                     on:wheel={(event) => handleRowWheel(event, category)}
                 >
-                    {#each UIAgent.fillLandscape($normalizedFeed[category] || $feed[category] || [], category) as reel, i (reelListKey(reel, category, i))}
+                    {#each getShelfDisplayItems(category) as reel, i (reelListKey(reel, category, i))}
+                        {#if reel.isPresentationOnly}
+                            <div
+                                class="reel-card presentation-slot"
+                                data-reel-id={reel.id}
+                                role="presentation"
+                                aria-hidden="true"
+                            >
+                                <div class="card-inner vault-card presentation-card-inner">
+                                    <div class="presentation-frame" style="--shelf-accent: {config.color}">
+                                        <span class="presentation-badge">{headingLabel}</span>
+                                        <span class="presentation-lock" aria-hidden="true">🔒</span>
+                                        <p class="presentation-copy">Coming Soon</p>
+                                    </div>
+                                </div>
+                                <h3 class="reel-title presentation-title-label">Coming Soon</h3>
+                            </div>
+                        {:else}
                         <button
                             class="reel-card"
                             class:is-ghost={reel.isPlaceholder}
@@ -254,6 +346,7 @@
                             <div class="card-inner vault-card">
                                 {#if hasPlayableVideo(reel) && reel.url}
                                     {#if $feedCardVideoFallbacks.has(reel.id)}
+                                        {traceFeedCardRender(reel, category, 'video_fallback_thumbnail', reel.thumbnailUrl || getImg(reel, category, i))}
                                         <MediaThumbnail
                                             url={reel.thumbnailUrl || getImg(reel, category, i)}
                                             alt={reel.title || reel.name || 'Video poster'}
@@ -261,6 +354,7 @@
                                             className="card-visual card-video-fallback"
                                         />
                                     {:else}
+                                        {traceFeedCardRender(reel, category, 'video', reel.url)}
                                         <MediaRenderer
                                             type="video"
                                             url={reel.url}
@@ -280,6 +374,7 @@
                                         />
                                     {/if}
                                 {:else if reel.url}
+                                    {traceFeedCardRender(reel, category, 'image', $feedCardImageFallbacks[reel.id] || reel.url)}
                                     <MediaThumbnail
                                         url={$feedCardImageFallbacks[reel.id] || reel.url}
                                         alt="{reel.name || reel.title} - {category} production"
@@ -289,6 +384,7 @@
                                         on:error={(e) => { logVaultImageError(e.currentTarget, reel.url); onImageError(e.currentTarget, reel, category, i); }}
                                     />
                                 {:else}
+                                    {traceFeedCardRender(reel, category, 'empty', '')}
                                     <div class="vault-card-empty" aria-label="Media unavailable">⚠️</div>
                                 {/if}
                                 <div class="savvy-hover">
@@ -307,6 +403,7 @@
                             <h3 class="reel-title">{reel.title}</h3>
                             {#if reel.views}<div class="reel-meta">👁️ {reel.views}k • ❤️ {reel.likes}</div>{/if}
                         </button>
+                        {/if}
                     {/each}
                 </div>
                 <button
@@ -318,6 +415,7 @@
             </div>
         </section>
     {/each}
+    </div>
 {:else if section === 'theater-ambient' && $theaterChromeFlags.ambientBlur && theaterVideoSrc}
     <MediaPoster
         url={activeReel?.thumbnailUrl || theaterPlayback?.poster || ''}
@@ -415,7 +513,6 @@
     .reel-card {
         flex: 0 0 clamp(280px, 28vw, 380px);
         scroll-snap-align: start;
-        cursor: pointer;
         transition: transform 0.22s ease;
         background: none;
         border: none;
@@ -424,8 +521,61 @@
         transform-origin: center center;
         will-change: transform;
     }
+    button.reel-card {
+        cursor: pointer;
+    }
+    .reel-card.presentation-slot {
+        cursor: default;
+        pointer-events: none;
+        user-select: none;
+    }
+    .presentation-card-inner {
+        aspect-ratio: 16 / 9;
+        min-height: 160px;
+        background: linear-gradient(145deg, rgba(12, 14, 22, 0.96), rgba(24, 26, 36, 0.88));
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        overflow: hidden;
+    }
+    .presentation-frame {
+        width: 100%;
+        height: 100%;
+        min-height: 160px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 1rem;
+        background:
+            radial-gradient(circle at 20% 20%, color-mix(in srgb, var(--shelf-accent, #666) 18%, transparent), transparent 55%),
+            linear-gradient(160deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.35));
+    }
+    .presentation-badge {
+        font-size: 0.65rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 0.25rem 0.55rem;
+        border: 1px solid color-mix(in srgb, var(--shelf-accent, #666) 55%, transparent);
+        border-radius: 999px;
+        color: var(--shelf-accent, #aaa);
+    }
+    .presentation-lock {
+        font-size: 1.1rem;
+        opacity: 0.55;
+    }
+    .presentation-copy {
+        margin: 0;
+        font-size: 0.95rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.72);
+    }
+    .presentation-title-label {
+        color: rgba(255, 255, 255, 0.45);
+        font-weight: 500;
+    }
     @media (hover: hover) and (pointer: fine) {
-        .reel-card:hover {
+        button.reel-card:hover {
             transform: scale(1.04);
             z-index: 10;
         }

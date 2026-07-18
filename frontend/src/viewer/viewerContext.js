@@ -112,7 +112,12 @@ logStorageState,
 resetLocalData,
 formatBytes
 } from '../lib/storage.js';
-import { buildDemoFeedReels } from '../lib/demoPlaceholders.js';
+import {
+    buildHomeFeed,
+    applyPlaceholderFallbackIfEmpty,
+    countRealFeedCards,
+    emptyFeedMap
+} from '../lib/feed/buildHomeFeed.js';
 import {
 ALLOW_UI_PLACEHOLDERS,
 bootstrapMediaFromBackend,
@@ -122,6 +127,14 @@ hydrateVaultFromReels,
 reelsToVideoVaultEntries
 } from '../lib/mediaBootstrap.js';
 import { pipelineCheckpoint } from '../lib/diagnostics/pipelineDiag.js';
+import { logBg7jHydrationReady } from '../lib/diagnostics/bg7jHydrationGate.js';
+import { logBg7kCatalogReceive, logBg7kPlaceholderFallback } from '../lib/diagnostics/bg7kCardRenderTrace.js';
+import { traceCatalogFeedDecisions, emitBg7lFeedSummary } from '../lib/diagnostics/bg7lFeedContract.js';
+import {
+    logBg7nStage,
+    logBg7nLocalStorageFeed
+} from '../lib/diagnostics/bg7nPipelineTrace.js';
+import { logBg7pShelfDistribution } from '../lib/diagnostics/bg7pShelfDistribution.js';
 import { reelResReelSnapshot, reelResStoreMutation } from '../lib/diagnostics/reelResolutionTrace.js';
 import { createContentAgents } from '../lib/viewer/contentAgents.js';
 import {
@@ -213,6 +226,17 @@ resetLocalData();
 }
 function persistPersonalVault(videos) {
 const filtered = filterNonHeroAssets(videos);
+console.info('[BG7G_STORE]', {
+ts: new Date().toISOString(),
+component: 'persistPersonalVault',
+file: 'viewerContext.js',
+fileName: filtered[0]?.fileName || filtered[0]?.name || null,
+fileSize: filtered[0]?.size ?? null,
+uploadUrl: filtered[0]?.url || null,
+state: 'persist_start',
+count: filtered.length,
+storageKey: CONFIG.VIDEO_VAULT_KEY
+});
 safeLocalStorageSet(CONFIG.VIDEO_VAULT_KEY, filtered, {
 thumbnailKey: CONFIG.THUMBNAIL_STORAGE_KEY,
 minimalFields: ['id', 'name', 'fileName', 'type', 'size', 'addedAt', 'thumbnail']
@@ -279,6 +303,7 @@ const feed = writable({});
 // Persist feed to localStorage automatically
 if (typeof window !== 'undefined') {
 feed.subscribe(value => {
+logBg7nStage('feed.subscribe', value);
 storageSet(CONFIG.FEED_STORAGE_KEY, value);
 });
 }
@@ -301,6 +326,7 @@ function setPersonalThumbnailCollection(value, functionName) {
   traceThumbStoreWrite(functionName, 'personalThumbnailCollection', prev, value);
 }
 const personalVideos = writable([]);
+const viewerHydrationReady = writable(false);
 const usePersonalThumbnails = writable(false);
 const personalStudioMode = writable(false);
 const personalThumbnailIndex = writable(0);
@@ -578,6 +604,12 @@ normalized[cat] = $feed[cat].map((reel) => normalizeReel(reel, 'feed'));
 });
 return normalized;
 });
+if (typeof window !== 'undefined') {
+normalizedFeed.subscribe((value) => {
+logBg7nStage('normalizedFeed', value);
+logBg7pShelfDistribution('normalizedFeed', value);
+});
+}
 const totalReelsCount = derived(
 feed,
 ($feed) => Object.values($feed).flat().filter((r) => !r.isPlaceholder).length
@@ -920,6 +952,11 @@ backendReachable = true;
 const contentType = res.headers.get('content-type') || '';
 if (!contentType.includes('application/json')) throw new Error(`Expected JSON but received ${contentType}`);
 rawData = normalizeReels(await res.json(), 'GET /api/reels');
+logBg7kCatalogReceive(
+rawData.length,
+rawData.map((r) => String(r?.id || '')).filter(Boolean),
+'syncFromVault:GET /api/reels'
+);
 logVaultFieldAuditList('GET /api/reels response (syncFromVault)', rawData);
 uploadStatus.set('✅ Synced with backend');
 } else {
@@ -929,10 +966,7 @@ uploadStatus.set(`⚠️ Sync failed (${res.status}) — showing saved content`)
 rawData = normalizeReels(JSON.parse(localStorage.getItem(CONFIG.VAULT_KEY) || '[]'), 'localStorage fallback');
 }
 }
-// Build feed from backend / vault
-const hydratedFeed = {};
-const allCategories = [...new Set(rawData.map(r => r.category || 'Trending'))];
-allCategories.forEach(cat => hydratedFeed[cat] = []);
+// Build feed from backend / vault (eligibility delegated to buildHomeFeed)
 const thumbsBeforeSync = readThumbnailVault(CONFIG.THUMBNAIL_STORAGE_KEY);
 console.info('[VAULT_SYNC]', {
 action: 'syncFromVault:pre-upgrade',
@@ -952,57 +986,17 @@ ts: new Date().toISOString()
 if (backendReachable) {
 reconcileStaleThumbnailsOnStartup(rawData, true);
 }
-const seenVideoUrls = new Set();
-rawData.forEach((reel) => {
-if (!isVideoReel(reel)) return;
-if (isHeroAsset(reel)) return;
-const videoKey = String(reel.url || '').trim();
-if (!videoKey || seenVideoUrls.has(videoKey)) return;
-seenVideoUrls.add(videoKey);
-if (preserveLocal && localTitles[reel.id]) {
-reel.title = localTitles[reel.id].title;
-reel.title_original = localTitles[reel.id].title_original;
-reel._localModified = true;
-} else {
-reel.title_original = reel.title || reel.name || reel.title_original || '';
-}
-reel.isPlaceholder = false;
-reel.isPersonalVideo = true;
-reel.isPersonalThumbnail = false;
-reel.personal_video_id = reel.personal_video_id || reel.id;
-reel.match = reel.match || '🎬 EPISODE';
-reel.url = toRelativeMediaPath(String(reel.url || reel.video_url || '')) || reel.url;
-if (reel.thumbnailUrl) {
-reel.thumbnailUrl = toRelativeMediaPath(String(reel.thumbnailUrl)) || reel.thumbnailUrl;
-} else if (!reel.thumbnailUrl) {
-const storedThumbs = JSON.parse((typeof window !== 'undefined' ? localStorage.getItem(CONFIG.THUMBNAIL_STORAGE_KEY) : null) || '[]');
-const fileKey = String(reel.fileName || reel.file_name || '').trim();
-const entry = (Array.isArray(storedThumbs) ? storedThumbs : []).find((t) => {
-if (!t) return false;
-if (typeof t === 'string') return t === fileKey;
-const byId = String(t.id || '').trim();
-const byFile = String(t.fileName || t.file_name || '').trim();
-const byUrl = String(t.url || '').trim();
-return (fileKey && byFile === fileKey) || (byUrl && toRelativeMediaPath(byUrl) === toRelativeMediaPath(String(reel.url || '')));
+traceCatalogFeedDecisions(rawData, backendReachable ? 'syncFromVault:backend' : 'syncFromVault:localStorage');
+const { feed: catalogFeed, cardCount: catalogCardCount } = buildHomeFeed(rawData, {
+preserveLocal,
+localTitles,
+thumbnailStorageKey: CONFIG.THUMBNAIL_STORAGE_KEY
 });
-if (entry && typeof entry === 'object' && entry.url) {
-reel.thumbnailUrl = toRelativeMediaPath(String(entry.url)) || entry.url;
-} else if (fileKey) {
-const match = (Array.isArray(storedThumbs) ? storedThumbs : []).find((t) => t && String(t.fileName || t.file_name || '').trim() === fileKey);
-if (match?.url) {
-reel.thumbnailUrl = toRelativeMediaPath(String(match.url)) || match.url;
-}
-}
-}
-const cat = reel.category || 'Trending';
-if (!hydratedFeed[cat]) hydratedFeed[cat] = [];
-hydratedFeed[cat].unshift(reel);
-});
-const cleanedFeed = { 'Trending': [], 'Romance': [], 'Cyber-Action': [], 'Suspense': [] };
-Object.keys(hydratedFeed).forEach(cat => {
-const targetCat = cat === 'Network' ? 'Trending' : cat === 'Love' || cat === 'Drama' ? 'Romance' : cat === 'Action' ? 'Cyber-Action' : cat;
-if (cleanedFeed[targetCat]) cleanedFeed[targetCat].push(...hydratedFeed[cat]);
-else cleanedFeed['Trending'].push(...hydratedFeed[cat]);
+console.info('[BUILD_HOME_FEED]', {
+catalogCount: rawData.length,
+cardCount: catalogCardCount,
+source: backendReachable ? 'syncFromVault:backend' : 'syncFromVault:localStorage',
+ts: new Date().toISOString()
 });
 const backendVideoUrls = new Set(
 rawData
@@ -1010,7 +1004,7 @@ rawData
 .map((r) => toRelativeMediaPath(String(r.url || r.video_url || '').split('?')[0]))
 .filter((url) => url.startsWith('/videos/'))
 );
-const { feed: prunedFeed } = pruneFeedAgainstBackendVideos(cleanedFeed, backendVideoUrls);
+const { feed: prunedFeed, removed: pruneRemoved } = pruneFeedAgainstBackendVideos(catalogFeed, backendVideoUrls);
 if (!backendReachable) {
 const personalVideosList = get(personalVideos);
 personalVideosList.forEach((video) => {
@@ -1027,6 +1021,8 @@ AI_CLEANUP_AGENT.distributeVideoToFeed(video);
 });
 }
 feed.set(prunedFeed);
+logBg7nStage('feed.set:prunedFeed', prunedFeed);
+logBg7pShelfDistribution('feed.set:prunedFeed', prunedFeed);
 categories.set(Object.keys(prunedFeed));
 const feedWrite = storageSet(CONFIG.FEED_STORAGE_KEY, prunedFeed);
 if (!feedWrite.ok) {
@@ -1048,13 +1044,12 @@ writeThumbnailVault([], CONFIG.THUMBNAIL_STORAGE_KEY);
 syncCollectionStore(personalThumbnailCollection, CONFIG.THUMBNAIL_STORAGE_KEY);
 personalVideos.set([]);
 storageSet(CONFIG.VIDEO_VAULT_KEY, []);
-const demoFeed = {
-'Trending': ALLOW_UI_PLACEHOLDERS ? buildDemoFeedReels() : [],
-'Romance': [],
-'Cyber-Action': [],
-'Suspense': []
-};
+const { feed: demoFeed, placeholdersInjected: emptyCatalogPlaceholders } = applyPlaceholderFallbackIfEmpty(
+emptyFeedMap(),
+ALLOW_UI_PLACEHOLDERS
+);
 feed.set(demoFeed);
+logBg7nStage('feed.set:emptyBackend', demoFeed);
 categories.set(Object.keys(demoFeed));
 contentEmpty.set(!ALLOW_UI_PLACEHOLDERS);
 storageSet(CONFIG.FEED_STORAGE_KEY, demoFeed);
@@ -1062,6 +1057,8 @@ console.info('[SYNC_RECONCILE_EMPTY_BACKEND]', {
 stage: 'authoritative-empty-catalog:demo-feed',
 demoCount: demoFeed.Trending.length,
 allowUiPlaceholders: ALLOW_UI_PLACEHOLDERS,
+catalogCardCount,
+placeholdersInjected: emptyCatalogPlaceholders,
 ts: new Date().toISOString()
 });
 } else if (backendReachable && rawData.length > 0) {
@@ -1127,23 +1124,35 @@ uploadStatus.set('⚠️ Backend unreachable — showing saved content');
 if (!AI_CLEANUP_AGENT.syncThumbnailsToFeed()) return;
 AI_CLEANUP_AGENT.syncVideoVaultToFeed();
 }
-const flatFeedCount = Object.values(get(feed)).flat().length;
-if (flatFeedCount === 0 && ALLOW_UI_PLACEHOLDERS) {
-const demoFeed = {
-'Trending': buildDemoFeedReels(),
-'Romance': [],
-'Cyber-Action': [],
-'Suspense': []
-};
-feed.set(demoFeed);
-categories.set(Object.keys(demoFeed));
-storageSet(CONFIG.FEED_STORAGE_KEY, demoFeed);
+const flatFeedCount = countRealFeedCards(get(feed));
+let demoInjected = false;
+if (flatFeedCount === 0) {
+const { feed: fallbackFeed, placeholdersInjected } = applyPlaceholderFallbackIfEmpty(
+get(feed),
+ALLOW_UI_PLACEHOLDERS
+);
+if (placeholdersInjected) {
+feed.set(fallbackFeed);
+logBg7nStage('feed.set:placeholderFallback', fallbackFeed);
+categories.set(Object.keys(fallbackFeed));
+storageSet(CONFIG.FEED_STORAGE_KEY, fallbackFeed);
+demoInjected = true;
 console.info('[DEMO_FEED_INJECTED]', {
-demoCount: demoFeed.Trending.length,
+demoCount: fallbackFeed.Trending.length,
 reason: 'empty-feed-after-sync',
+source: 'buildHomeFeed:applyPlaceholderFallbackIfEmpty',
 ts: new Date().toISOString()
 });
 }
+}
+emitBg7lFeedSummary({
+backendCatalogCount: rawData.length,
+finalFeed: get(feed),
+pruneRemoved,
+demoInjected,
+source: backendReachable ? 'syncFromVault:backend' : 'syncFromVault:offline'
+});
+logBg7nLocalStorageFeed();
 } catch (err) {
 console.error('❌ Sync Error:', err);
 if (isStorageFull()) {
@@ -1389,6 +1398,10 @@ url: reel?.url,
 code: video?.error?.code
 });
 if (reel?.id) {
+logBg7kPlaceholderFallback(String(reel.id), 'video_load_error', {
+url: reel?.url || '',
+code: video?.error?.code ?? null
+});
 feedCardVideoFallbacks.update((ids) => {
 const next = new Set(ids);
 next.add(reel.id);
@@ -1418,6 +1431,7 @@ function checkIsVideo(file) {
 }
 
 async function mountViewer() {
+viewerHydrationReady.set(false);
 pipelineCheckpoint('VIEWER_BOOTSTRAP', { phase: 'start' });
 initSeriesMetadata();
 initStudioSync();
@@ -1661,6 +1675,9 @@ console.log('[onMount] Loaded 0 thumbnails from [none]');
 }
 
 await syncFromVault(true);
+const hydratedPersonalVideosCount = get(personalVideos).length;
+viewerHydrationReady.set(true);
+logBg7jHydrationReady(true, hydratedPersonalVideosCount);
 pipelineCheckpoint('VIEWER_BOOTSTRAP', { phase: 'post-syncFromVault' });
 if (hasUserHeroOverride(CONFIG)) {
 applyManagerBackgroundFromConfig(loadHeroManagerConfig());
@@ -1764,6 +1781,7 @@ function destroyViewer() {
     aiMaintenanceMode, isCleaning, lastAiCleanup, storageHealth,
     HERO_BACKGROUND_VIDEO, HERO_POSTER_IMAGE, heroVideoAttempt, heroPendingFile,
     heroIsDragOver, heroPreviewUrl, categoryRotationIndices,
+    viewerHydrationReady,
     categoryNames, persistentTitles, categoryCounts, normalizedFeed, totalReelsCount, hasPersonalContent,
     resourceManager, vaultUtils, UIAgent, AI_CLEANUP_AGENT, AI_IMAGE_GENERATOR, CATEGORY_DETECTOR,
     ProductionAgent, BLACK_STORIES_MATCHER, PersonalUploadSystem,

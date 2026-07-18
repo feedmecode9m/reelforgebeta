@@ -1,5 +1,5 @@
 <script>
-    import { createEventDispatcher, onDestroy, onMount } from 'svelte';
+    import { createEventDispatcher, onDestroy, onMount, tick } from 'svelte';
     import { seriesCatalog } from '../../lib/series/seriesStore.js';
     import {
         auditProductionOperations,
@@ -23,6 +23,7 @@
         saveWorkspaceTab,
         workspaceTabSlug
     } from '../../lib/studio/studioWorkspace.js';
+    import { STUDIO_SELECT_CONTENT_TAB_EVENT } from '../../lib/dropAffordance.js';
     import { buildStudioActionPlan } from '../../lib/series/actionEngine.js';
     import SeriesHealthDashboard from '../series/SeriesHealthDashboard.svelte';
     import ProductionReadinessMeter from '../series/ProductionReadinessMeter.svelte';
@@ -142,6 +143,7 @@
         window.addEventListener('reelforge:release-schedule-updated', onUpdate);
         window.addEventListener(CREATOR_PRODUCTION_UPDATED, onProductionUpdated);
         window.addEventListener('reelforge:search-navigate', handleSearchNavigate);
+        window.addEventListener(STUDIO_SELECT_CONTENT_TAB_EVENT, handleSelectContentTab);
         return () => {
             window.removeEventListener('reelforge:workflow-tasks-updated', onUpdate);
             window.removeEventListener('reelforge:teams-updated', onUpdate);
@@ -150,6 +152,7 @@
             window.removeEventListener('reelforge:release-schedule-updated', onUpdate);
             window.removeEventListener(CREATOR_PRODUCTION_UPDATED, onProductionUpdated);
             window.removeEventListener('reelforge:search-navigate', handleSearchNavigate);
+            window.removeEventListener(STUDIO_SELECT_CONTENT_TAB_EVENT, handleSelectContentTab);
         };
     });
 
@@ -178,6 +181,25 @@
             action: 'tab_change',
             activeTab: tab
         });
+        if (tab === 'Content') {
+            void tick().then(() => scrollUploadZonesIntoView());
+        }
+    }
+
+    function scrollUploadZonesIntoView() {
+        if (typeof document === 'undefined') return;
+        const panel = document.querySelector('[data-workspace-panel-content]');
+        panel?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+        const vaultDrop = document.querySelector('[data-workspace-panel-content] .video-vault-drop');
+        vaultDrop?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+
+    /** @param {CustomEvent<{ scrollUploadZones?: boolean }>} event */
+    function handleSelectContentTab(event) {
+        selectTab('Content');
+        if (event.detail?.scrollUploadZones) {
+            void tick().then(() => scrollUploadZonesIntoView());
+        }
     }
 
     /** @param {Event & { currentTarget: HTMLDetailsElement }} event @param {string} sectionId */
@@ -471,7 +493,12 @@
                 <PipelineBoard {feedReels} seriesId={selectedSeriesId} />
             </div>
         {:else if activeTab === 'Content'}
-            <div data-workspace-panel-content data-command-section-content data-guide-me-section="content">
+            <div
+                data-workspace-panel-content
+                data-command-section-content
+                data-guide-me-section="content"
+                data-upload-zones-emphasis="true"
+            >
                 <slot name="content" />
                 <ReleaseCenter {feedReels} seriesId={selectedSeriesId} on:scheduled={handleReleaseScheduled} />
                 <MissingAssetQueue queue={missingQueue} {feedReels} on:attached={handleQueueAttached} />

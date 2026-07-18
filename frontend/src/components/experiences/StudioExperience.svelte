@@ -40,6 +40,10 @@
   import StudioWalkthrough from '../studio/StudioWalkthrough.svelte';
   import VaultExperience from './VaultExperience.svelte';
   import HeroExperience from './HeroExperience.svelte';
+  import {
+    consumeMediaUploadIntent,
+    requestStudioContentTab
+  } from '../../lib/dropAffordance.js';
 
   export let studioWalkthrough = null;
 
@@ -107,6 +111,7 @@
   export let syncFromVault;
   /** @type {(videos: unknown[]) => void} */
   export let persistPersonalVault;
+  export let viewerHydrationReady;
   /** @type {(key: string, value: unknown) => { ok?: boolean }} */
   export let storageSet;
   /** @type {() => void} */
@@ -133,6 +138,7 @@
   let adminInputElement;
   let controlCenterDialog = null;
   let controlCenterFocusTrapActive = false;
+  let controlCenterWasOpen = false;
   let previousFocusedElement = null;
 
   const FOCUSABLE_SELECTOR = [
@@ -581,6 +587,15 @@
     restoreOverlayFocus();
   }
 
+  $: if ($controlCenterOpen && $adminMode && !controlCenterWasOpen) {
+    controlCenterWasOpen = true;
+    if (consumeMediaUploadIntent()) {
+      requestStudioContentTab({ scrollUploadZones: true, source: 'media-upload-intent' });
+    }
+  } else if (!$controlCenterOpen) {
+    controlCenterWasOpen = false;
+  }
+
   onDestroy(() => {
     restoreOverlayFocus();
   });
@@ -993,6 +1008,7 @@
               {CONFIG}
               {syncFromVault}
               {persistPersonalVault}
+              {viewerHydrationReady}
             />
 
             <div class="category-stats">

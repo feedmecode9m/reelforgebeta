@@ -290,6 +290,7 @@ backdrop-filter: blur(2px);
 .input-label-wrapper { display: block; margin-bottom: 1rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.6); }
 .input-label-wrapper input, .input-label-wrapper select { width: 100%; margin-top: 0.5rem; padding: 0.75rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; color: #fff; font-size: 1rem; transition: all 0.3s; }
 .input-label-wrapper input:focus, .input-label-wrapper select:focus { outline: none; border-color: var(--neon-cyan); box-shadow: 0 0 10px rgba(0,242,255,0.3); }
+.vault-category-row { margin-bottom: 1rem; max-width: 320px; }
 .category-detection-hint { margin: -0.5rem 0 1rem; }
 .detection-preview { padding: 0.75rem; background: rgba(0,242,255,0.1); border-radius: 4px; display: flex; align-items: center; gap: 0.5rem; border-left: 3px solid var(--neon-cyan); }
 .detection-icon { font-size: 1.25rem; }
@@ -434,6 +435,23 @@ margin: 0;
 .thumbnail-hint { margin: 0 0 1rem; font-size: 0.75rem; color: rgba(255,255,255,0.5); }
 .thumbnail-drop-zone, .drop-zone { border: 2px dashed rgba(255,255,255,0.3); border-radius: 8px; padding: 2rem; text-align: center; transition: all 0.3s; min-height: 150px; display: grid; place-items: center; margin-bottom: 1rem; background: rgba(0,0,0,0.3); }
 .thumbnail-drop-zone.drag-active, .drop-zone.active { border-color: var(--neon-cyan); background: rgba(0,242,255,0.1); box-shadow: 0 0 30px rgba(0,242,255,0.2); }
+[data-upload-zones-emphasis="true"] .video-vault-drop,
+[data-upload-zones-emphasis="true"] .hero-drop-zone,
+[data-upload-zones-emphasis="true"] .thumbnail-drop-zone {
+  border-color: var(--neon-gold);
+  background: rgba(255, 215, 0, 0.08);
+  box-shadow: 0 0 36px rgba(255, 215, 0, 0.28);
+  animation: upload-zone-discover-pulse 2.4s ease-in-out infinite;
+}
+[data-upload-zones-emphasis="true"] .video-vault-drop .drop-placeholder,
+[data-upload-zones-emphasis="true"] .hero-drop-zone,
+[data-upload-zones-emphasis="true"] .thumbnail-drop-zone .drop-placeholder {
+  color: rgba(255, 255, 255, 0.88);
+}
+@keyframes upload-zone-discover-pulse {
+  0%, 100% { box-shadow: 0 0 24px rgba(255, 215, 0, 0.22); }
+  50% { box-shadow: 0 0 44px rgba(255, 215, 0, 0.42); }
+}
 .drop-placeholder { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; color: rgba(255,255,255,0.5); }
 .drop-icon { font-size: 2rem; filter: drop-shadow(0 0 10px rgba(0,242,255,0.5)); }
 .pending-preview { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
