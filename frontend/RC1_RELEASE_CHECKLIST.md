@@ -88,20 +88,160 @@ That is a **repeatable release**, not merely green local tests.
 
 ## RC1 acceptance gate
 
-**Nothing skips a gate.**
+**Nothing skips a gate. Do not continue until the current gate's exit criterion is met.**
 
-| # | Gate | Command / action | Pass criteria |
-|---|------|------------------|---------------|
-| 1 | **Local verification** | See [Local verification](#local-verification) | All required scripts exit 0 |
-| 2 | **Commit frozen** | `git status` clean; intended files only | No accidental artifacts/thumbs |
-| 3 | **Push origin/main** | `git push origin main` | Remote matches local HEAD |
-| 4 | **Production deploy** | `bash scripts/deploy-netlify.sh "…"` | Netlify prod deploy succeeds |
-| 5 | **Production smoke** | Bundle + route checks | BG-7W markers live; `/api/reels` 200 |
-| 6 | **Shared-state verification** | `mission-ra-01-shared-state-verify.mjs` | All required RA-01 scenarios PASS |
-| 7 | **Regression suite** | See [Regression commands](#regression-commands) | Core missions exit 0 |
-| 8 | **Sign-off** | Tag + record | `RC1` tag pushed; checklist signed |
+| # | Gate | Exit criterion |
+|---|------|----------------|
+| 1 | Local verification | Required scripts exit 0; local bundle has BG-7W markers |
+| 2 | Commit frozen | Intended files committed; no accidental artifacts |
+| 3 | Push & deploy | Production serves new bundle with BG-7W changes |
+| 4 | Production smoke | Production matches validated local build |
+| 5 | RA-01 | All required scenarios PASS (post-deploy baseline) |
+| 6 | Targeted repairs | Only if RA-01 exposes verified defect; rerun RA-01 |
+| 7 | RA-02 + regression | Stress + core regression suite green |
+| 8 | RC1 sign-off | Definition of done all ✅; `RC1-STABLE` tag |
 
 ---
+
+## Gate execution playbook
+
+Execute gates sequentially. **Stop at any FAIL until resolved.**
+
+### Gate 1–2 — Local verification & commit frozen
+
+See [Local verification](#local-verification). Gate 2: `git status` — only intended release files committed.
+
+**Status (2026-07-18):** ✅ Gates 1–2 complete (7 commits on `main`, BG-7W proven locally).
+
+---
+
+### Gate 3 — Push & deploy
+
+```bash
+cd ~/projects/reelforge
+git push origin main
+
+cd frontend
+export NETLIFY_AUTH_TOKEN='your-netlify-personal-access-token'
+bash scripts/deploy-netlify.sh "RC1: BG-7W hero restore deploy"
+```
+
+Verify deployed bundle is **new** (not cached):
+
+```bash
+FRONTEND=https://strong-lolly-a9fcb4.netlify.app
+BUNDLE=$(curl -sS "$FRONTEND/" | grep -oE 'assets/index-[A-Za-z0-9_-]+\.js' | head -1)
+echo "Live bundle: $BUNDLE"
+curl -sS "$FRONTEND/$BUNDLE" | grep -E 'BG7V_HERO_RESTORE_REASON|hero-restore'
+```
+
+**Exit criterion:** Production serves expected bundle containing BG-7W changes.
+
+**Status:** ⏳ Blocked in CI/agent environment — requires your GitHub + Netlify credentials.
+
+---
+
+### Gate 4 — Production smoke
+
+```bash
+cd frontend
+node scripts/mission-bg-7u-hero-persistence-verify.mjs
+
+curl -sS -o /dev/null -w "health:%{http_code}\n" https://strong-lolly-a9fcb4.netlify.app/health
+curl -sS -o /dev/null -w "reels:%{http_code}\n"  https://strong-lolly-a9fcb4.netlify.app/api/reels
+```
+
+**Pass when:**
+
+- `identityRestoreOk: true`
+- `restoreReason: "RESTORE_SUCCESS"`
+- `/health` and `/api/reels` return 200
+
+**Exit criterion:** Production behaves the same as validated local build.
+
+**Status:** ⏳ After Gate 3.
+
+---
+
+### Gate 5 — RA-01
+
+```bash
+node scripts/mission-ra-01-shared-state-verify.mjs
+# Artifact: frontend/artifacts/mission-ra-01-shared-state-verify.json
+# Report:   frontend/RA-01_SHARED_STATE_REPORT.md
+```
+
+Run **only after** Gate 4 passes. Classify every FAIL:
+
+| Classification | Action |
+|----------------|--------|
+| Deployment / configuration | Redeploy, fix env, re-smoke |
+| Operational | Credentials, timing, external service |
+| Genuine code defect | Narrow RA follow-up → surgical BG fix → rerun scenario → full RA-01 |
+
+**Do not assume a code bug until deployed baseline is verified.**
+
+**Exit criterion:** All required RA-01 scenarios PASS.
+
+**Status:** ⏳ After Gate 4. Pre-deploy run documented in `RA-01_SHARED_STATE_REPORT.md` (Scenario 3 FAIL = deployment blocker).
+
+---
+
+### Gate 6 — Targeted repairs (only if required)
+
+If Gate 5 exposes a verified defect:
+
+1. Create narrowly scoped follow-up (not a feature mission)
+2. Repair only that boundary
+3. Rerun affected RA-01 scenario
+4. Rerun **complete** RA-01
+
+**Do not broaden scope. Do not resume PRODUCT work.**
+
+**Status:** ⏳ Only if Gate 5 requires it.
+
+---
+
+### Gate 7 — RA-02 + regression
+
+**Blocked until Gate 5 is fully green.**
+
+Stress verification (script TBD after RA-01 passes):
+
+- Repeated uploads and refreshes
+- Multiple browser sessions
+- Persistence over time
+- Cache invalidation
+- Regression confirmation
+
+Plus [regression commands](#regression-commands) — hero, attachment, feed baseline.
+
+**Exit criterion:** RA-02 + core regression suite exit 0.
+
+**Status:** ⏳ After RA-01 green.
+
+---
+
+### Gate 8 — RC1 sign-off
+
+Only when [Definition of done](#definition-of-done) is all ✅:
+
+```bash
+git tag RC1-STABLE
+git push origin RC1-STABLE
+```
+
+Archive release artifacts (`frontend/artifacts/`, verification JSON outputs). Freeze RC1. Branch `vNext` for post-release work.
+
+**Success statement (target):**
+
+> Open this Netlify URL in a browser you've never used before. Uploads, attachments, Hero state, and production workflow have been validated through repeatable release acceptance tests.
+
+**Status:** ⏳
+
+---
+
+## Gate reference (commands)
 
 ## Preconditions
 
