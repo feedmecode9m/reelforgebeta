@@ -1,16 +1,23 @@
 {
   "release_id": "RC1-2026-07-18-001",
   "gate": 3,
-  "status": "pending",
+  "status": "blocked",
+  "attempted_at_utc": "2026-07-18T18:51:00Z",
+  "source_commit_intended": "044a5a2c2b2fd4ec164b1ba635f3e0a7dfe406b2",
+  "commits_ahead_of_origin": 11,
   "push_commit": null,
+  "push_result": "failed — no GitHub credentials in execution environment (HTTPS origin)",
   "netlify_deploy_id": null,
   "deploy_finished_utc": null,
   "netlify_deploy_message": "RC1-2026-07-18-001: BG-7W hero restore deploy",
-  "production_bundle": null,
+  "production_bundle_pre_attempt": "assets/index-DwXGyOoS.js",
+  "production_bundle_post_deploy": null,
   "markers": {
     "BG7V_HERO_RESTORE_REASON": null,
     "hero-restore": null
   },
   "gate_3_complete": false,
-  "notes": "Fill all fields with actual values on deploy. Do not mark complete until both markers are present in served bundle."
+  "untracked_artifact_policy": "leave_untracked — no git add . before push",
+  "next_action": "Run push + deploy from operator machine with GitHub + NETLIFY_AUTH_TOKEN",
+  "notes": "Gate 3 pivot not reached. Gates 4–8 remain invalid until bundle marker check passes on new deploy."
 }
