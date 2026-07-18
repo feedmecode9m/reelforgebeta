@@ -95,6 +95,9 @@ That is a **repeatable release**, not merely green local tests.
 | 1 | Local verification | Required scripts exit 0; local bundle has BG-7W markers |
 | 2 | Commit frozen | Intended files committed; no accidental artifacts |
 | 3 | Push & deploy | Production serves new bundle with BG-7W changes |
+
+**Gate 3 is the pivot point.** Until the new bundle is deployed and verified live, Gates 4–8 are potentially invalid — you may still be testing the previous production build.
+
 | 4 | Production smoke | Production matches validated local build |
 | 5 | RA-01 | All required scenarios PASS (post-deploy baseline) |
 | 6 | Targeted repairs | Only if RA-01 exposes verified defect; rerun RA-01 |
@@ -111,22 +114,37 @@ Execute gates sequentially. **Stop at any FAIL until resolved.**
 
 See [Local verification](#local-verification). Gate 2: `git status` — only intended release files committed.
 
-**Status (2026-07-18):** ✅ Gates 1–2 complete (7 commits on `main`, BG-7W proven locally).
+**Status (2026-07-18):** ✅ Gates 1–2 complete (8 commits on `main`, BG-7W proven locally).
 
 ---
 
-### Gate 3 — Push & deploy
+### Gate 3 — Push & deploy (pivot point)
+
+Treat Gate 3 as **formal deployment verification**, not just a deploy command.
+
+**Until Gate 3 exit criterion is met, do not run Gates 4–8.**
+
+#### Step 1 — Push
 
 ```bash
 cd ~/projects/reelforge
 git push origin main
+```
 
+#### Step 2 — Deploy
+
+```bash
 cd frontend
 export NETLIFY_AUTH_TOKEN='your-netlify-personal-access-token'
 bash scripts/deploy-netlify.sh "RC1: BG-7W hero restore deploy"
 ```
 
-Verify deployed bundle is **new** (not cached):
+#### Step 3 — Verify deployment completed
+
+- Confirm Netlify CLI reports a successful production deploy.
+- Record deploy ID and timestamp in [Deployment record](#deployment-record) below.
+
+#### Step 4 — Verify the correct bundle is live
 
 ```bash
 FRONTEND=https://strong-lolly-a9fcb4.netlify.app
@@ -135,9 +153,42 @@ echo "Live bundle: $BUNDLE"
 curl -sS "$FRONTEND/$BUNDLE" | grep -E 'BG7V_HERO_RESTORE_REASON|hero-restore'
 ```
 
-**Exit criterion:** Production serves expected bundle containing BG-7W changes.
+#### Step 5 — Mark Gate 3 complete (only if Step 4 succeeds)
 
-**Status:** ⏳ Blocked in CI/agent environment — requires your GitHub + Netlify credentials.
+If markers are **not** present: **stop**. Investigate why deployment did not produce the expected bundle. Do not run acceptance tests on a stale build.
+
+**Exit criterion:** Production serves expected bundle containing BG-7W changes; verification markers found.
+
+**Status:** ⏳ Requires GitHub push + Netlify credentials (not available in agent environment).
+
+---
+
+## Deployment record
+
+Fill this table when Gate 3 completes. Every RC should have a concise audit trail correlating code, deploy, and verification.
+
+### RC1 (in progress)
+
+| Item | Value |
+|------|-------|
+| Git commit | `f82e012` (local HEAD — update after push) |
+| Git tag | _(pending `RC1-STABLE`)_ |
+| Netlify deploy ID | _(record from deploy output)_ |
+| Deploy timestamp | _(UTC)_ |
+| Production bundle (pre-deploy) | `assets/index-DwXGyOoS.js` |
+| Production bundle (post-deploy) | _(fill after Gate 3 Step 4)_ |
+| Verification marker found | **No** (pre-deploy — markers absent) |
+| Gate 3 complete | ⏳ |
+
+### Post-deploy verification command (copy/paste)
+
+```bash
+FRONTEND=https://strong-lolly-a9fcb4.netlify.app
+BUNDLE=$(curl -sS "$FRONTEND/" | grep -oE 'assets/index-[A-Za-z0-9_-]+\.js' | head -1)
+echo "commit: $(git rev-parse HEAD)"
+echo "bundle: $BUNDLE"
+curl -sS "$FRONTEND/$BUNDLE" | grep -E 'BG7V_HERO_RESTORE_REASON|hero-restore' && echo "markers: YES" || echo "markers: NO"
+```
 
 ---
 
@@ -543,6 +594,8 @@ git push origin RC1-STABLE
 - `4ddabba` — RA-01 verification script
 - `de225da` — BG-7W / RA-01 deliverables
 - `756f29f` — RC1 release checklist
+- `3bbfdc5` — freeze rule + definition of done
+- `f82e012` — gate execution playbook + deployment record
 
 ---
 
