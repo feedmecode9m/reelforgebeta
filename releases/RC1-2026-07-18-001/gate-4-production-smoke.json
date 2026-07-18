@@ -1,0 +1,30 @@
+{
+  "release_id": "RC1-2026-07-18-001",
+  "gate": 4,
+  "status": "PASS",
+  "gate_4_complete": true,
+  "run_at_utc": "2026-07-18T19:08:00Z",
+  "script": "frontend/scripts/mission-bg-7u-hero-persistence-verify.mjs",
+  "artifact": "/tmp/bg-7u-gate4-rc1.json",
+  "production_url": "https://strong-lolly-a9fcb4.netlify.app/",
+  "production_bundle": "assets/index-DQeGd3cl.js",
+  "summary": {
+    "freshDefaultOk": true,
+    "uploadOk": true,
+    "hardRefreshOk": true,
+    "identityRestoreOk": true,
+    "restoreReason": "RESTORE_SUCCESS",
+    "allPassed": true
+  },
+  "identity_restore": {
+    "restored": true,
+    "reason": "RESTORE_SUCCESS",
+    "bg7vRestoreTrace": {
+      "restoreAttempted": true,
+      "restored": true,
+      "reason": "RESTORE_SUCCESS"
+    },
+    "ok": true
+  },
+  "notes": "First valid post-deploy hero persistence evidence. Deployment identity established in Gate 3."
+}

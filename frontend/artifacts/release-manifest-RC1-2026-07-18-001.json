@@ -12,21 +12,21 @@
     "deploy_message": "RC1-2026-07-18-001: BG-7W hero restore deploy"
   },
   "production_bundle_pre_deploy": "assets/index-DwXGyOoS.js",
-  "production_bundle_post_deploy": null,
+  "production_bundle_post_deploy": "assets/index-DQeGd3cl.js",
   "verification_markers": {
-    "BG7V_HERO_RESTORE_REASON": false,
-    "hero-restore": false
+    "BG7V_HERO_RESTORE_REASON": true,
+    "hero-restore": true
   },
   "gates": {
     "0_environment_snapshot": "pass",
     "1_local_verification": "pass",
     "2_commit_frozen": "pass",
-    "3_push_deploy": "pending",
-    "4_production_smoke": "blocked",
-    "5_ra01": "blocked",
+    "3_push_deploy": "pass",
+    "4_production_smoke": "pass",
+    "5_ra01": "pass",
     "6_targeted_repairs": "n/a",
-    "7_ra02_regression": "blocked",
-    "8_sign_off": "blocked"
+    "7_ra02_regression": "pending",
+    "8_sign_off": "pending"
   },
   "artifacts": {
     "checklist": "frontend/RC1_RELEASE_CHECKLIST.md",

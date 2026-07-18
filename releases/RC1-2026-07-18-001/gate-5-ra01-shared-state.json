@@ -1,0 +1,24 @@
+{
+  "release_id": "RC1-2026-07-18-001",
+  "run_id": "RA-01-2026-07-18-001-post",
+  "gate": 5,
+  "status": "PASS",
+  "gate_5_complete": true,
+  "run_at_utc": "2026-07-18T19:10:00Z",
+  "script": "frontend/scripts/mission-ra-01-shared-state-verify.mjs",
+  "artifact": "/tmp/ra-01-gate5-rc1.json",
+  "production_url": "https://strong-lolly-a9fcb4.netlify.app/",
+  "production_bundle": "assets/index-DQeGd3cl.js",
+  "deploy_gate": {
+    "bundle": "index-DQeGd3cl.js",
+    "hasBg7vInstrumentation": true,
+    "hasBg7wFixMarker": true,
+    "ready": true
+  },
+  "summary": {
+    "deployReady": true,
+    "sharedStateReady": true,
+    "pass": true
+  },
+  "notes": "Post-deploy shared-state verification on deployment identity RC1-2026-07-18-001."
+}

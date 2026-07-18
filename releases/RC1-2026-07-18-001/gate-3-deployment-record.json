@@ -1,36 +1,38 @@
 {
   "release_id": "RC1-2026-07-18-001",
   "gate": 3,
-  "status": "in_progress",
-  "push_commit": "(operator confirmed push passed)",
+  "gate_3_complete": true,
+  "status": "PASS",
+  "git_commit": "81b9d8f",
   "push_result": "passed",
   "local_build": {
     "status": "passed",
-    "fixed_at_utc": "2026-07-18T18:58:00Z",
-    "blocker_was": "EACCES on dist/assets — root-owned files from prior root build",
-    "fix": "chown -R youloose2dafish:youloose2dafish frontend/dist; npm run build as project user (not sudo)",
     "bundle_local": "assets/index-DQeGd3cl.js",
     "markers_local": {
       "BG7V_HERO_RESTORE_REASON": true,
       "hero-restore": true
     }
   },
-  "netlify_deploy_id": null,
-  "deploy_finished_utc": null,
+  "netlify_deploy_id": "791fc14c-cee0-4876-986b-a5c455f10d2a",
+  "netlify_site_id": "791fc14c-cee0-4876-986b-a5c455f10d2a",
+  "deploy_finished_utc": "2026-07-18T19:06:00Z",
   "netlify_deploy_message": "RC1-2026-07-18-001: BG-7W hero restore deploy",
+  "production_url": "https://strong-lolly-a9fcb4.netlify.app",
   "production_bundle_pre_deploy": "assets/index-DwXGyOoS.js",
-  "production_bundle_post_deploy": null,
+  "bundle": "assets/index-DQeGd3cl.js",
+  "markers_verified": [
+    "BG7V_HERO_RESTORE_REASON",
+    "hero-restore"
+  ],
   "markers_production": {
-    "BG7V_HERO_RESTORE_REASON": null,
-    "hero-restore": null
+    "BG7V_HERO_RESTORE_REASON": true,
+    "hero-restore": true
   },
-  "gate_3_complete": false,
   "gate_3_checklist": {
     "push": true,
     "local_build": true,
-    "netlify_deploy": false,
-    "bundle_verification": false
+    "netlify_deploy": true,
+    "bundle_verification": true
   },
-  "next_action": "export NETLIFY_AUTH_TOKEN && bash scripts/deploy-netlify.sh (as youloose2dafish, not root)",
-  "notes": "Do not sudo npm run build. Gate 3 complete only after production bundle changes and marker grep succeeds."
+  "notes": "Deployment identity verified. Gates 4–8 are now valid. Previous bundle index-DwXGyOoS.js replaced."
 }
