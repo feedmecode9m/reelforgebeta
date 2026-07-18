@@ -16,6 +16,7 @@ import { logBg7kCatalogReceive } from './diagnostics/bg7kCardRenderTrace.js';
 import { loadHeroManagerConfig } from './hero/heroIntelligence.js';
 import { heroReelFromUploadResponse, loadHeroReel, saveHeroReel } from './hero/heroReelIdentity.js';
 import { logBg7jHeroRestore } from './diagnostics/bg7jHydrationGate.js';
+import { logBg7vHeroRestoreReason } from './diagnostics/bg7vHeroRestoreReason.js';
 
 /**
  * Media catalog bootstrap — reads authoritative catalog from GET /api/reels (Postgres).
@@ -65,35 +66,137 @@ function restoreHeroReelIdentityFromReels(reels) {
 
     const manager = loadHeroManagerConfig();
     const heroAssetId = String(manager?.heroAssetId || manager?.backgroundAsset || '').trim();
-    if (!heroAssetId) return;
+    if (!heroAssetId) {
+        logBg7vHeroRestoreReason({
+            heroAssetId: '',
+            matchedReelId: null,
+            restoreAttempted: false,
+            restored: false,
+            reason: 'NO_HERO_ID'
+        });
+        logBg7jHeroRestore('', false, null);
+        return;
+    }
 
     const existing = loadHeroReel();
     if (existing?.id) {
+        logBg7vHeroRestoreReason({
+            heroAssetId,
+            matchedReelId: existing.id,
+            restoreAttempted: false,
+            restored: false,
+            reason: 'ALREADY_PRESENT'
+        });
         logBg7jHeroRestore(heroAssetId, false, existing.id);
         return;
     }
 
     const matched = reels.find((reel) => String(reel?.id || '').trim() === heroAssetId);
     if (!matched) {
+        logBg7vHeroRestoreReason({
+            heroAssetId,
+            matchedReelId: null,
+            restoreAttempted: true,
+            restored: false,
+            reason: 'NO_CATALOG_MATCH'
+        });
         logBg7jHeroRestore(heroAssetId, false, null);
         return;
     }
 
-    const mediaUrl = resolveMediaUrl(matched);
+    const matchedReelId = String(matched.id || '');
+
+    const matchedMediaUrl = String(
+        matched.url ?? matched.video_url ?? matched.videoUrl ?? matched.videoPath ?? ''
+    ).trim();
+    const mediaUrl = resolveMediaUrl(matchedMediaUrl, 'video', 'hero-restore');
     if (!mediaUrl) {
-        logBg7jHeroRestore(heroAssetId, false, String(matched.id || ''));
+        logBg7vHeroRestoreReason({
+            heroAssetId,
+            matchedReelId,
+            restoreAttempted: true,
+            restored: false,
+            reason: 'INVALID_URL',
+            detail: 'resolveMediaUrl_empty'
+        });
+        logBg7jHeroRestore(heroAssetId, false, matchedReelId);
         return;
     }
 
     const mediaKind = manager.backgroundSource === 'custom_image' ? 'image' : 'video';
     const reel = heroReelFromUploadResponse(matched, mediaKind);
-    if (!reel?.id || reel.id !== heroAssetId || !reel.url) {
-        logBg7jHeroRestore(heroAssetId, false, String(matched.id || ''));
+    if (!reel?.id) {
+        logBg7vHeroRestoreReason({
+            heroAssetId,
+            matchedReelId,
+            restoreAttempted: true,
+            restored: false,
+            reason: 'INVALID_REEL',
+            detail: 'heroReelFromUploadResponse_null'
+        });
+        logBg7jHeroRestore(heroAssetId, false, matchedReelId);
+        return;
+    }
+    if (reel.id !== heroAssetId) {
+        logBg7vHeroRestoreReason({
+            heroAssetId,
+            matchedReelId,
+            restoreAttempted: true,
+            restored: false,
+            reason: 'CONFIG_MISMATCH',
+            detail: { reelId: reel.id, heroAssetId }
+        });
+        logBg7jHeroRestore(heroAssetId, false, matchedReelId);
+        return;
+    }
+    if (!reel.url) {
+        logBg7vHeroRestoreReason({
+            heroAssetId,
+            matchedReelId,
+            restoreAttempted: true,
+            restored: false,
+            reason: 'INVALID_URL',
+            detail: 'reel_url_empty_after_build'
+        });
+        logBg7jHeroRestore(heroAssetId, false, matchedReelId);
         return;
     }
 
-    saveHeroReel(reel);
-    logBg7jHeroRestore(heroAssetId, true, reel.id);
+    let saved;
+    try {
+        saved = saveHeroReel(reel);
+    } catch (err) {
+        logBg7vHeroRestoreReason({
+            heroAssetId,
+            matchedReelId,
+            restoreAttempted: true,
+            restored: false,
+            reason: 'SAVE_EXCEPTION',
+            detail: err?.message || String(err)
+        });
+        logBg7jHeroRestore(heroAssetId, false, matchedReelId);
+        return;
+    }
+    if (!saved) {
+        logBg7vHeroRestoreReason({
+            heroAssetId,
+            matchedReelId,
+            restoreAttempted: true,
+            restored: false,
+            reason: 'SAVE_REJECTED'
+        });
+        logBg7jHeroRestore(heroAssetId, false, matchedReelId);
+        return;
+    }
+
+    logBg7vHeroRestoreReason({
+        heroAssetId,
+        matchedReelId: saved.id,
+        restoreAttempted: true,
+        restored: true,
+        reason: 'RESTORE_SUCCESS'
+    });
+    logBg7jHeroRestore(heroAssetId, true, saved.id);
 }
 
 /**
