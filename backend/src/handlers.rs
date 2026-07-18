@@ -403,8 +403,56 @@ pub async fn list_videos(
     }
 }
 
-pub async fn update_reel_category(path: web::Path<Uuid>) -> impl Responder {
-    HttpResponse::Ok().body(format!("Category updated for reel: {}", path.into_inner()))
+#[derive(Deserialize)]
+pub struct UpdateReelCategoryRequest {
+    pub category: String,
+}
+
+fn normalize_reel_category(raw: &str) -> Option<String> {
+    match raw.trim() {
+        "Trending" | "Network" => Some("Trending".into()),
+        "Romance" | "Love" | "Drama" => Some("Romance".into()),
+        "Cyber-Action" | "Action" => Some("Cyber-Action".into()),
+        "Suspense" => Some("Suspense".into()),
+        "HERO" => Some("HERO".into()),
+        _ => None,
+    }
+}
+
+pub async fn update_reel_category(
+    db: web::Data<Pool<Postgres>>,
+    db_available: web::Data<bool>,
+    path: web::Path<Uuid>,
+    body: web::Json<UpdateReelCategoryRequest>,
+) -> impl Responder {
+    if !**db_available {
+        return crate::ingestion::IngestionService::require_db_response();
+    }
+
+    let id = path.into_inner();
+    let category = match normalize_reel_category(&body.category) {
+        Some(c) => c,
+        None => {
+            return HttpResponse::BadRequest().json(serde_json::json!({
+                "error": "invalid category",
+                "allowed": ["Trending", "Romance", "Cyber-Action", "Suspense", "HERO"]
+            }));
+        }
+    };
+
+    match crate::db::reels::update_category(db.get_ref(), id, &category).await {
+        Ok(Some(row)) => HttpResponse::Ok().json(serde_json::json!({
+            "id": row.id,
+            "category": row.category,
+            "updated": true
+        })),
+        Ok(None) => HttpResponse::NotFound().json(serde_json::json!({
+            "error": "reel not found"
+        })),
+        Err(e) => HttpResponse::InternalServerError().json(serde_json::json!({
+            "error": e.to_string()
+        })),
+    }
 }
 
 pub async fn get_category_stats(

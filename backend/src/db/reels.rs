@@ -264,6 +264,27 @@ pub async fn set_validated(pool: &PgPool, id: Uuid, validated: bool) -> Result<(
     Ok(())
 }
 
+pub async fn update_category(
+    pool: &PgPool,
+    id: Uuid,
+    category: &str,
+) -> Result<Option<ReelRow>, sqlx::Error> {
+    sqlx::query_as::<_, ReelRow>(
+        r#"
+        UPDATE reels
+        SET category = $2, updated_at = now()
+        WHERE id = $1
+        RETURNING id, title, category, description, video_url, thumbnail_url,
+                  status, error_message, file_name, file_size, mime_type, validated,
+                  created_at, updated_at
+        "#,
+    )
+    .bind(id)
+    .bind(category)
+    .fetch_optional(pool)
+    .await
+}
+
 /// Re-verify ready reels that predate the validated column.
 pub async fn backfill_validated_ready_reels(
     pool: &PgPool,
