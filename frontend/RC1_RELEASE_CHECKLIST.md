@@ -1,9 +1,14 @@
 # RC1 Release Checklist
 
+**Release ID:** `RC1-2026-07-18-001`  
+**Use this identifier in:** checklist, Netlify deploy message, RA reports, release manifest, git tag notes.
+
 **Canonical release process for ReelForge Release Candidate 1**  
 **Production:** https://strong-lolly-a9fcb4.netlify.app/  
 **API:** https://reelforge-deploy-production.up.railway.app  
 **Netlify site ID:** `791fc14c-cee0-4876-986b-a5c455f10d2a`
+
+> RC1 is an **operations and verification exercise**, not a coding exercise.
 
 ---
 
@@ -106,6 +111,43 @@ That is a **repeatable release**, not merely green local tests.
 
 ---
 
+## Gate ownership
+
+Each gate produces evidence that becomes input to the next. No ambiguity about what “done” means.
+
+| Gate | Input | Output |
+|------|-------|--------|
+| 3 | Local verified build | **Verified production deployment** (bundle + markers) |
+| 4 | Verified deployment | **Production smoke evidence** (BG-7U, routes) |
+| 5 | Production smoke | **Shared-state evidence** (RA-01 artifact + report) |
+| 6 | RA findings (if any) | **Verified repairs** (surgical fix + rerun) |
+| 7 | Clean RA-01 | **Stress verification evidence** (RA-02 + regression) |
+| 8 | All evidence | **`RC1-STABLE`** tag + archived manifest |
+
+---
+
+## Deployment identity decision rule
+
+**Never diagnose application behavior until deployment identity has been verified.**
+
+```text
+Deployment identity verified?
+        │
+   No ──┴──► Stop (do not run Gates 4–8)
+
+   Yes
+        │
+        ▼
+Run verification
+        │
+        ▼
+Classify findings
+```
+
+Deployment identity = Gate 3 complete: new bundle live + `BG7V_HERO_RESTORE_REASON` and `hero-restore` markers present.
+
+---
+
 ## Gate execution playbook
 
 Execute gates sequentially. **Stop at any FAIL until resolved.**
@@ -136,7 +178,7 @@ git push origin main
 ```bash
 cd frontend
 export NETLIFY_AUTH_TOKEN='your-netlify-personal-access-token'
-bash scripts/deploy-netlify.sh "RC1: BG-7W hero restore deploy"
+bash scripts/deploy-netlify.sh "RC1-2026-07-18-001: BG-7W hero restore deploy"
 ```
 
 #### Step 3 — Verify deployment completed
@@ -161,24 +203,41 @@ If markers are **not** present: **stop**. Investigate why deployment did not pro
 
 **Status:** ⏳ Requires GitHub push + Netlify credentials (not available in agent environment).
 
+#### If Gate 3 fails — deployment vs application
+
+Treat deployment failures **separately** from application failures. None of these automatically imply a code regression:
+
+| Symptom | Classification |
+|---------|----------------|
+| Git push rejected | Source control issue |
+| Netlify deploy failed | Deployment issue |
+| New bundle not served | Publishing / cache issue |
+| Marker absent from served bundle | Deployment verification issue |
+
+Fix the deployment boundary first. Do not open BG missions until deployment identity is verified.
+
 ---
 
 ## Deployment record
 
 Fill this table when Gate 3 completes. Every RC should have a concise audit trail correlating code, deploy, and verification.
 
-### RC1 (in progress)
+### RC1-2026-07-18-001 (in progress)
 
 | Item | Value |
 |------|-------|
-| Git commit | `f82e012` (local HEAD — update after push) |
+| **Release ID** | `RC1-2026-07-18-001` |
+| Git commit | `4400f53` (local HEAD — update after push) |
 | Git tag | _(pending `RC1-STABLE`)_ |
 | Netlify deploy ID | _(record from deploy output)_ |
 | Deploy timestamp | _(UTC)_ |
+| Netlify deploy message | `RC1-2026-07-18-001: BG-7W hero restore deploy` |
 | Production bundle (pre-deploy) | `assets/index-DwXGyOoS.js` |
 | Production bundle (post-deploy) | _(fill after Gate 3 Step 4)_ |
 | Verification marker found | **No** (pre-deploy — markers absent) |
 | Gate 3 complete | ⏳ |
+
+**Release manifest path (fill on sign-off):** `frontend/artifacts/release-manifest-RC1-2026-07-18-001.json`
 
 ### Post-deploy verification command (copy/paste)
 
@@ -234,7 +293,20 @@ Run **only after** Gate 4 passes. Classify every FAIL:
 
 **Exit criterion:** All required RA-01 scenarios PASS.
 
-**Status:** ⏳ After Gate 4. Pre-deploy run documented in `RA-01_SHARED_STATE_REPORT.md` (Scenario 3 FAIL = deployment blocker).
+**Status:** ⏳ After Gate 4. Pre-deploy run (`RA-01-2026-07-18-001-pre`) documented in `RA-01_SHARED_STATE_REPORT.md` — **invalid per deployment identity rule** until Gate 3 passes.
+
+#### If Gate 5 finds an issue — repair discipline
+
+Use the same BG mission discipline:
+
+1. Reproduce  
+2. Instrument if necessary  
+3. Isolate the boundary  
+4. One surgical repair  
+5. Re-run the affected gate  
+6. Re-run the full acceptance gate  
+
+No accumulating “fixes” without proof. No PRODUCT work.
 
 ---
 
@@ -278,7 +350,7 @@ Plus [regression commands](#regression-commands) — hero, attachment, feed base
 Only when [Definition of done](#definition-of-done) is all ✅:
 
 ```bash
-git tag RC1-STABLE
+git tag -a RC1-STABLE -m "Release ID: RC1-2026-07-18-001"
 git push origin RC1-STABLE
 ```
 
@@ -565,7 +637,7 @@ RC1 may be declared when **all** are true:
 **Tag release:**
 
 ```bash
-git tag RC1-STABLE
+git tag -a RC1-STABLE -m "Release ID: RC1-2026-07-18-001"
 git push origin RC1-STABLE
 ```
 

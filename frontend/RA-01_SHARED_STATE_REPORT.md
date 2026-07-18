@@ -1,10 +1,14 @@
 # RA-01 — Shared State Verification Report
 
+**Release ID:** `RC1-2026-07-18-001`  
+**Run ID:** `RA-01-2026-07-18-001-pre` (pre-deploy — deployment identity **not verified**)  
 **Classification:** Release Acceptance (verification only — no code changes)  
 **Date:** 2026-07-18  
 **Target:** https://strong-lolly-a9fcb4.netlify.app/  
 **Script:** `frontend/scripts/mission-ra-01-shared-state-verify.mjs`  
 **Artifact:** `/tmp/ra-01-prod.json`
+
+> **Invalid for Gate 5 sign-off** until Gate 3 confirms new production bundle. Per deployment identity rule: do not diagnose application behavior on stale deploy.
 
 ---
 

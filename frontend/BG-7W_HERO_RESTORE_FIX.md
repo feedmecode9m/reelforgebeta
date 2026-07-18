@@ -1,5 +1,6 @@
 # BG-7W — Hero Restore Boundary Repair
 
+**Release ID:** `RC1-2026-07-18-001` (included in this RC)  
 **Classification:** Infrastructure Repair  
 **Priority:** Critical (Release Gate)  
 **Status:** FIXED locally ✅ · Production deploy **PENDING** ⏳  
