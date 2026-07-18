@@ -1,0 +1,39 @@
+{
+  "release_id": "RC1-2026-07-18-001",
+  "run_id": "RA-02-2026-07-18-001",
+  "gate": 7,
+  "status": "PASS",
+  "gate_7_complete": true,
+  "run_at_utc": "2026-07-18T19:29:39Z",
+  "script": "frontend/scripts/mission-ra-02-stress-verify.mjs",
+  "artifact": "frontend/artifacts/mission-ra-02-stress-verify.json",
+  "production_url": "https://strong-lolly-a9fcb4.netlify.app/",
+  "production_bundle": "assets/index-DQeGd3cl.js",
+  "ra02_summary": {
+    "scenariosPassed": 14,
+    "scenariosTotal": 14,
+    "rcBlockers": 0,
+    "pass": true
+  },
+  "regression_suite": {
+    "test_hero_playwright": { "ok": true },
+    "test_hero_confirmation": { "ok": true },
+    "test_episode_attachment_local_4173": {
+      "ok": false,
+      "classification": "environment",
+      "note": "Empty vault on local preview backend"
+    },
+    "test_episode_attachment_production": {
+      "ok": false,
+      "classification": "existing_defect",
+      "note": "Pre-seeded attachment on ep-neon-s01e04; same parity family as RA-01 optional checks"
+    },
+    "mission_ra01_rerun": {
+      "ok": true,
+      "requiredOk": true,
+      "sharedStateReady": true
+    }
+  },
+  "rc1_recommendation": "Proceed to Gate 8 RC1-STABLE tag",
+  "notes": "No product code modified during Gate 7. Attachment Playwright failures classified non-blocker per RA-01 precedent."
+}
