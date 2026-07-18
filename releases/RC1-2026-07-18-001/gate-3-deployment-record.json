@@ -1,0 +1,16 @@
+{
+  "release_id": "RC1-2026-07-18-001",
+  "gate": 3,
+  "status": "pending",
+  "push_commit": null,
+  "netlify_deploy_id": null,
+  "deploy_finished_utc": null,
+  "netlify_deploy_message": "RC1-2026-07-18-001: BG-7W hero restore deploy",
+  "production_bundle": null,
+  "markers": {
+    "BG7V_HERO_RESTORE_REASON": null,
+    "hero-restore": null
+  },
+  "gate_3_complete": false,
+  "notes": "Fill all fields with actual values on deploy. Do not mark complete until both markers are present in served bundle."
+}

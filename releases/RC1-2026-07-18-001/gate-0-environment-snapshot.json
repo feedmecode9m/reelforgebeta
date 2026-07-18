@@ -1,0 +1,17 @@
+{
+  "release_id": "RC1-2026-07-18-001",
+  "gate": 0,
+  "purpose": "Immutable starting point before push/deploy",
+  "captured_at_utc": "2026-07-18T18:48:15Z",
+  "local_commit": "fc61c41d710d8d29d2550f6fad2851bc9d860fac",
+  "branch": "main",
+  "working_tree_porcelain_lines": 66,
+  "working_tree_clean": false,
+  "local_tags_present": ["BG-7T-STABLE"],
+  "commits_ahead_of_origin_main": 10,
+  "production_bundle_current": "assets/index-DwXGyOoS.js",
+  "production_url": "https://strong-lolly-a9fcb4.netlify.app/",
+  "verification_markers_on_production": false,
+  "gate_0_exit": "blocked",
+  "gate_0_notes": "Working tree must be clean (git status --porcelain empty) before Gate 3 push. Untracked report/artifact files only — no staged release code pending."
+}

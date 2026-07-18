@@ -97,6 +97,7 @@ That is a **repeatable release**, not merely green local tests.
 
 | # | Gate | Exit criterion |
 |---|------|----------------|
+| 0 | Environment snapshot | Immutable pre-push record captured; working tree clean for release commits |
 | 1 | Local verification | Required scripts exit 0; local bundle has BG-7W markers |
 | 2 | Commit frozen | Intended files committed; no accidental artifacts |
 | 3 | Push & deploy | Production serves new bundle with BG-7W changes |
@@ -117,6 +118,7 @@ Each gate produces evidence that becomes input to the next. No ambiguity about w
 
 | Gate | Input | Output |
 |------|-------|--------|
+| 0 | Release intent | **Environment snapshot** (immutable starting point) |
 | 3 | Local verified build | **Verified production deployment** (bundle + markers) |
 | 4 | Verified deployment | **Production smoke evidence** (BG-7U, routes) |
 | 5 | Production smoke | **Shared-state evidence** (RA-01 artifact + report) |
@@ -150,7 +152,41 @@ Deployment identity = Gate 3 complete: new bundle live + `BG7V_HERO_RESTORE_REAS
 
 ## Gate execution playbook
 
+**Execute only.** Do not redesign the checklist, invent gates, expand scope, refactor, or start PRODUCT-07 during this release.
+
 Execute gates sequentially. **Stop at any FAIL until resolved.**
+
+### Gate 0 — Environment snapshot
+
+Capture **before** Gate 3 push. Immutable starting point for the release.
+
+```bash
+cd ~/projects/reelforge
+git rev-parse HEAD
+git branch --show-current
+git status --porcelain   # must be empty before Gate 3 push
+git tag -l 'BG-7T-STABLE' 'RC1-STABLE'
+curl -sS https://strong-lolly-a9fcb4.netlify.app/ | grep -oE 'assets/index-[A-Za-z0-9_-]+\.js'
+date -u +"%Y-%m-%dT%H:%M:%SZ"
+```
+
+Record in `releases/RC1-2026-07-18-001/gate-0-environment-snapshot.json` and [Deployment record](#deployment-record).
+
+| Item | RC1-2026-07-18-001 (captured) |
+|------|-------------------------------|
+| Release ID | `RC1-2026-07-18-001` |
+| Local commit | `fc61c41d710d8d29d2550f6fad2851bc9d860fac` |
+| Branch | `main` |
+| Working tree | **Not clean** — 66 untracked lines (reports/artifacts only; no pending release code) |
+| Local tag | `BG-7T-STABLE` |
+| Production bundle (current) | `assets/index-DwXGyOoS.js` |
+| Timestamp (UTC) | `2026-07-18T18:48:15Z` |
+
+**Exit criterion:** Snapshot recorded. Before Gate 3 push: `git status --porcelain` empty for release scope (or explicitly accept untracked non-release files).
+
+**Status:** ✅ Snapshot captured · ⚠️ Confirm working tree policy before push
+
+---
 
 ### Gate 1–2 — Local verification & commit frozen
 
@@ -196,6 +232,17 @@ curl -sS "$FRONTEND/$BUNDLE" | grep -E 'BG7V_HERO_RESTORE_REASON|hero-restore'
 ```
 
 #### Step 5 — Mark Gate 3 complete (only if Step 4 succeeds)
+
+Record **actual values** in `releases/RC1-2026-07-18-001/gate-3-deployment-record.json`:
+
+| Item | Value (fill on deploy) |
+|------|------------------------|
+| Push commit | _(SHA pushed)_ |
+| Netlify deploy ID | _(from CLI output)_ |
+| Deploy finished (UTC) | _(timestamp)_ |
+| Production bundle | `assets/index-XXXX.js` |
+| Marker `BG7V_HERO_RESTORE_REASON` | ✓ / ✗ |
+| Marker `hero-restore` | ✓ / ✗ |
 
 If markers are **not** present: **stop**. Investigate why deployment did not produce the expected bundle. Do not run acceptance tests on a stale build.
 
@@ -626,6 +673,7 @@ Update the **Status** column as each gate completes. All must be ✅ before sign
 
 RC1 may be declared when **all** are true:
 
+- [ ] Gate 0 environment snapshot recorded
 - [ ] Gates 1–7 PASS on the same commit SHA
 - [ ] Production bundle contains BG-7W restore fix
 - [ ] BG-7U `identityRestoreOk` + `restoreReason: RESTORE_SUCCESS`
@@ -655,6 +703,7 @@ git push origin RC1-STABLE
 | Episode attachment workflow | ✅ |
 | Creator workflow | ✅ |
 | Automation | ✅ |
+| Gate 0 snapshot | ✅ captured |
 | Production deployment | ⏳ pending push + Netlify |
 | Shared-state verification (RA-01) | 🔄 run after deploy |
 | RA-02 stress | ⏸ blocked on RA-01 |
@@ -667,7 +716,8 @@ git push origin RC1-STABLE
 - `de225da` — BG-7W / RA-01 deliverables
 - `756f29f` — RC1 release checklist
 - `3bbfdc5` — freeze rule + definition of done
-- `f82e012` — gate execution playbook + deployment record
+- `fc61c41` — RC1-2026-07-18-001 release ID + gate ownership
+- _(Gate 0 snapshot commit pending)_
 
 ---
 
@@ -696,6 +746,30 @@ Once RC1 is signed off:
 3. Resume feature development on that branch without jeopardizing the released baseline
 
 The RC1 branch/tag remains the rollback and support reference.
+
+---
+
+## Release evidence archive
+
+After `RC1-STABLE`, archive the complete evidence package:
+
+```text
+releases/RC1-2026-07-18-001/
+    gate-0-environment-snapshot.json
+    gate-3-deployment-record.json
+    release-manifest.json
+    RC1_RELEASE_CHECKLIST.md
+    RA-01_SHARED_STATE_REPORT.md
+    RA-02_STRESS_REPORT.md          (when Gate 7 complete)
+    BG-7W_HERO_RESTORE_FIX.md
+    README.md
+```
+
+See `releases/RC1-2026-07-18-001/README.md` for copy commands.
+
+**Success statement:**
+
+> Release `RC1-2026-07-18-001` is traceable from source commit → deployed bundle → production verification → multi-browser acceptance testing.
 
 ---
 

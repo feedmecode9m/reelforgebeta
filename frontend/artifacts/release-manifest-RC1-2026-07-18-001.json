@@ -18,6 +18,7 @@
     "hero-restore": false
   },
   "gates": {
+    "0_environment_snapshot": "pass",
     "1_local_verification": "pass",
     "2_commit_frozen": "pass",
     "3_push_deploy": "pending",
@@ -29,6 +30,8 @@
   },
   "artifacts": {
     "checklist": "frontend/RC1_RELEASE_CHECKLIST.md",
+    "evidence_package": "releases/RC1-2026-07-18-001/",
+    "gate_0_snapshot": "releases/RC1-2026-07-18-001/gate-0-environment-snapshot.json",
     "bg7w_fix": "frontend/BG-7W_HERO_RESTORE_FIX.md",
     "ra01_report_pre": "frontend/RA-01_SHARED_STATE_REPORT.md",
     "ra01_artifact_pre": null,
