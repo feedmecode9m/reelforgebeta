@@ -45,6 +45,22 @@ let syncTimer = null;
 let pushTimer = null;
 let initialized = false;
 let pushPending = false;
+/** Suppress schedule events emitted while applying remote sync payloads. */
+let suppressApplyTriggeredSchedules = false;
+
+/**
+ * Apply remote/local merged payload without letting persist side-effects
+ * re-enter scheduleSyncPush (PRODUCT-08B feedback loop containment).
+ * @param {Record<string, unknown>} payload
+ */
+function applyRemoteSyncPayload(payload) {
+    suppressApplyTriggeredSchedules = true;
+    try {
+        return applySyncPayloadToLocal(payload);
+    } finally {
+        suppressApplyTriggeredSchedules = false;
+    }
+}
 
 /**
  * @param {string} tag
@@ -286,11 +302,11 @@ export async function performSync() {
             });
         }
 
-        applySyncPayloadToLocal(merged);
+        applyRemoteSyncPayload(merged);
 
         const pushResult = await pushSyncState(payloadToPushDomains(merged));
         const mergedPayload = /** @type {Record<string, unknown>} */ (pushResult?.payload || merged);
-        applySyncPayloadToLocal(mergedPayload);
+        applyRemoteSyncPayload(mergedPayload);
 
         logStudioSyncDiag('SYNC_PUSH', {
             domains: SYNC_DOMAINS,
@@ -342,10 +358,24 @@ export function initStudioSync() {
 
         window.addEventListener('reelforge:sync-schedule', (event) => {
             const domain = /** @type {CustomEvent} */ (event).detail?.domain;
+            if (suppressApplyTriggeredSchedules) {
+                logStudioSyncDiag('SYNC_SCHEDULE_SUPPRESSED', {
+                    reason: 'remote-apply',
+                    domain: domain || null
+                });
+                return;
+            }
             scheduleSyncPush(domain);
         });
 
         window.addEventListener('reelforge:workflow-tasks-updated', () => {
+            if (suppressApplyTriggeredSchedules) {
+                logStudioSyncDiag('SYNC_SCHEDULE_SUPPRESSED', {
+                    reason: 'remote-apply',
+                    domain: 'workflowTasks'
+                });
+                return;
+            }
             scheduleSyncPush('workflowTasks');
         });
 
@@ -366,5 +396,7 @@ export function stopStudioSync() {
     if (pushTimer) clearTimeout(pushTimer);
     syncTimer = null;
     pushTimer = null;
+    pushPending = false;
+    suppressApplyTriggeredSchedules = false;
     initialized = false;
 }
