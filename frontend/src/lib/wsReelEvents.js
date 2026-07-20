@@ -12,8 +12,10 @@ const WS_DEBUG = import.meta.env.VITE_DEBUG_API === 'true';
 export function connectReelEventSocket(handlers = {}) {
     if (typeof WebSocket === 'undefined') return () => {};
 
+    const forceDirectWs = import.meta.env.VITE_FORCE_DIRECT_BACKEND_WS === 'true';
+    const devSameOriginWs = import.meta.env.DEV && !forceDirectWs && typeof window !== 'undefined';
     const wsBase =
-        USE_SAME_ORIGIN_API && typeof window !== 'undefined'
+        devSameOriginWs || (USE_SAME_ORIGIN_API && typeof window !== 'undefined')
             ? window.location.origin.replace(/^http/, 'ws')
             : (BACKEND_URL || '').replace(/^http/, 'ws');
     const url = wsBase ? `${wsBase}/ws/control-center` : null;

@@ -6,6 +6,7 @@
 import { METRICS_STORAGE_KEY, getOperationsSnapshot } from './platformMetrics.js';
 import { WORKFLOW_TASK_STORAGE_KEY } from '../workflow/workflowEngine.js';
 import { NOTIFICATION_STORAGE_KEY } from '../notifications/notificationCenter.js';
+import { markFetchPatched, markObservabilityInitialized, shouldStreamDiagnostics } from '../diagnostics/pipelineSnapshot.js';
 
 export const OBSERVABILITY_LATENCY_KEY = 'reelforge_observability_latency';
 
@@ -38,6 +39,7 @@ export const TRACKED_SIGNALS = /** @type {const} */ ([
  * @param {Record<string, unknown>} [detail]
  */
 export function logObservabilityDiag(tag, detail = {}) {
+    if (!shouldStreamDiagnostics()) return;
     console.log(`[${tag}] ${JSON.stringify({ ...detail, timestamp: Date.now() })}`);
 }
 
@@ -353,6 +355,7 @@ let observabilityInitialized = false;
 function patchFetchForLatency() {
     if (fetchPatched || typeof window === 'undefined') return;
     fetchPatched = true;
+    markFetchPatched(true);
 
     const nativeFetch = window.fetch.bind(window);
     window.fetch = async (...args) => {
@@ -380,6 +383,7 @@ function patchFetchForLatency() {
 export function initObservabilityCenter() {
     if (typeof window === 'undefined' || observabilityInitialized) return;
     observabilityInitialized = true;
+    markObservabilityInitialized(true);
 
     patchFetchForLatency();
 
@@ -394,6 +398,8 @@ export function initObservabilityCenter() {
     });
 
     window.__reelforgeObservability = {
+        fetchPatched: () => fetchPatched,
+        observabilityInitialized: () => observabilityInitialized,
         TRACKED_SIGNALS,
         buildEnterpriseObservabilitySnapshot,
         computePlatformHealthScore,

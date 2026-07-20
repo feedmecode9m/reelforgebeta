@@ -33,7 +33,9 @@ import {
     startHeroRotation,
     stopHeroRotation
 } from '../lib/hero/heroIntelligence.js';
+import { loadHeroReel } from '../lib/hero/heroReelIdentity.js';
 import { isHeroAsset, filterNonHeroAssets } from '../lib/hero/heroDomainGuard.js';
+import { shouldStreamDiagnostics } from '../lib/diagnostics/pipelineSnapshot.js';
 import { initReleaseCenter } from '../lib/release/releaseCenter.js';
 import { initPredictiveRepairEngine } from '../lib/repair/predictiveRepairEngine.js';
 import { initCreatorKnowledgeGraph } from '../lib/graph/creatorKnowledgeGraph.js';
@@ -126,7 +128,7 @@ hasLocalMediaCache,
 hydrateVaultFromReels,
 reelsToVideoVaultEntries
 } from '../lib/mediaBootstrap.js';
-import { pipelineCheckpoint } from '../lib/diagnostics/pipelineDiag.js';
+import { pipelineCheckpoint, pipelineDiag } from '../lib/diagnostics/pipelineDiag.js';
 import { logBg7jHydrationReady } from '../lib/diagnostics/bg7jHydrationGate.js';
 import { logBg7kCatalogReceive, logBg7kPlaceholderFallback } from '../lib/diagnostics/bg7kCardRenderTrace.js';
 import { traceCatalogFeedDecisions, emitBg7lFeedSummary } from '../lib/diagnostics/bg7lFeedContract.js';
@@ -207,6 +209,11 @@ cyan: '#00f2ff',
 pink: '#ff00ff',
 gold: '#FFD700'
 });
+
+// BG-7W: transient admission gate to prevent hero reels racing into the video vault
+// before hero identity/config is persisted.
+const pendingHeroAssetIds = new Set();
+let heroUploadInFlight = false;
 // ==========================================
 // Safe LocalStorage with Quota Protection
 // ==========================================
@@ -225,7 +232,27 @@ if (!confirm('Reset ALL local data? Auth tokens and settings will be cleared and
 resetLocalData();
 }
 function persistPersonalVault(videos) {
-const filtered = filterNonHeroAssets(videos);
+let filtered = filterNonHeroAssets(videos);
+if (pendingHeroAssetIds.size) {
+  const before = filtered.length;
+  filtered = filtered.filter((v) => {
+    const id = String(v?.id || '').trim();
+    const blocked = Boolean(id) && pendingHeroAssetIds.has(id);
+    if (blocked) {
+      console.info('[BG7W_HERO_VAULT_GATE]', { reelId: id, blocked: true, reason: 'hero_pending' });
+    }
+    return !blocked;
+  });
+  if (before !== filtered.length) {
+    console.info('[BG7W_HERO_VAULT_GATE]', {
+      reelId: '',
+      blocked: true,
+      reason: 'hero_pending:persistPersonalVault',
+      before,
+      after: filtered.length
+    });
+  }
+}
 console.info('[BG7G_STORE]', {
 ts: new Date().toISOString(),
 component: 'persistPersonalVault',
@@ -867,7 +894,16 @@ const merged = [];
 const seen = new Set();
 for (const entry of [...existingEntries, ...incomingEntries]) {
 if (!entry || typeof entry !== 'object') continue;
-if (isHeroAsset(entry)) continue;
+if (isHeroAsset(entry)) {
+  const id = String(entry?.id || '').trim();
+  console.info('[BG7W_HERO_VAULT_GATE]', { reelId: id, blocked: true, reason: 'hero_identity_match' });
+  continue;
+}
+const pendingId = String(entry?.id || '').trim();
+if (pendingId && pendingHeroAssetIds.has(pendingId)) {
+  console.info('[BG7W_HERO_VAULT_GATE]', { reelId: pendingId, blocked: true, reason: 'hero_pending' });
+  continue;
+}
 const rawUrl = String(entry.url || '').trim();
 const canonicalUrl = rawUrl ? toRelativeMediaPath(rawUrl) : '';
 const key = canonicalUrl || String(entry.fileName || entry.name || '').trim();
@@ -1067,9 +1103,25 @@ console.log(
 `[syncFromVault] Loaded ${rawData.length} reels from [backend] (${videoReelCount} playable video, thumbs → placeholders)`
 );
 contentEmpty.set(videoReelCount > 0 || get(personalThumbnailCollection).length > 0);
-const backendVaultVideos = reelsToVideoVaultEntries(rawData);
+const backendVaultVideosRaw = reelsToVideoVaultEntries(rawData);
+const backendVaultVideos = backendVaultVideosRaw.filter((entry) => {
+const id = String(entry?.id || '').trim();
+const blocked = Boolean(id) && pendingHeroAssetIds.has(id);
+if (blocked) {
+console.info('[BG7W_HERO_VAULT_GATE]', { reelId: id, blocked: true, reason: 'hero_pending' });
+}
+return !blocked;
+});
 const existingVaultVideos = JSON.parse((typeof window !== 'undefined' ? localStorage.getItem(CONFIG.VIDEO_VAULT_KEY) : null) || '[]');
-const mergedVaultVideos = mergeVideoVaultEntries(existingVaultVideos, backendVaultVideos);
+const mergedVaultVideosRaw = mergeVideoVaultEntries(existingVaultVideos, backendVaultVideos);
+const mergedVaultVideos = mergedVaultVideosRaw.filter((entry) => {
+const id = String(entry?.id || '').trim();
+const blocked = Boolean(id) && pendingHeroAssetIds.has(id);
+if (blocked) {
+console.info('[BG7W_HERO_VAULT_GATE]', { reelId: id, blocked: true, reason: 'hero_pending' });
+}
+return !blocked;
+});
 const heroConfigSnapshot = loadHeroManagerConfig();
 const heroAssetIdSnapshot = String(heroConfigSnapshot?.heroAssetId || '').trim();
 for (const item of mergedVaultVideos) {
@@ -1231,6 +1283,7 @@ function getHeroBackgroundStores() {
 }
 
 function logHeroHydration(phase, extra = {}) {
+  if (!shouldStreamDiagnostics()) return;
   console.info('[HERO_HYDRATION]', {
     phase,
     HERO_BACKGROUND_VIDEO: get(HERO_BACKGROUND_VIDEO),
@@ -1244,6 +1297,19 @@ if (typeof window !== 'undefined') {
   const syncHydrateResult = hydrateHeroBackgroundStoresSync(getHeroBackgroundStores(), {
     ...CONFIG,
     resolveVideoUrl: normalizeVideoUrl
+  });
+  const heroCfg = loadHeroManagerConfig();
+  const canonical = loadHeroReel();
+  pipelineDiag('HERO_HYDRATE', 'hydrateHeroBackgroundStoresSync', 'viewerContext.js', {
+    result: String(syncHydrateResult || ''),
+    detail: {
+      assetId: String(heroCfg?.heroAssetId || '').trim(),
+      source: String(heroCfg?.backgroundSource || '').trim(),
+      canonicalUrl: String(canonical?.url || ''),
+      canonicalThumbnail: String(canonical?.thumbnail || ''),
+      storeVideo: String(get(HERO_BACKGROUND_VIDEO) || ''),
+      storePoster: String(get(HERO_POSTER_IMAGE) || '')
+    }
   });
   logHeroHydration('after', { result: syncHydrateResult, stage: 'module-init' });
 }
@@ -1663,6 +1729,30 @@ prevPersonalVideosForGate = vault;
 persistPersonalVault(vault);
 });
 
+const onHeroUpload = (event) => {
+const detail = event?.detail || {};
+const phase = String(detail.phase || '').trim();
+const reelId = String(detail.reelId || '').trim();
+if (phase === 'start') {
+heroUploadInFlight = true;
+return;
+}
+if (phase === 'created') {
+if (reelId) {
+pendingHeroAssetIds.add(reelId);
+console.info('[BG7W_HERO_VAULT_GATE]', { reelId, blocked: true, reason: 'hero_pending' });
+}
+return;
+}
+if (phase === 'committed') {
+if (reelId) pendingHeroAssetIds.delete(reelId);
+heroUploadInFlight = false;
+}
+};
+if (typeof window !== 'undefined') {
+window.addEventListener('reelforge:hero-upload', onHeroUpload);
+}
+
 reloadVaultStoresFromStorage();
 const thumbCount = get(personalThumbnailCollection).length;
 if (thumbCount > 0) {
@@ -1709,6 +1799,10 @@ reelId: reel.id,
 url: reel.url || reel.video_url || ''
 });
 const reelId = String(reel.id);
+if (heroUploadInFlight) {
+pendingHeroAssetIds.add(reelId);
+console.info('[BG7W_HERO_VAULT_GATE]', { reelId, blocked: true, reason: 'hero_pending' });
+}
 const now = Date.now();
 const lastAt = wsCreatedSyncCooldownByReel.get(reelId) || 0;
 if (now - lastAt < 3000) return;
@@ -1746,6 +1840,10 @@ return () => {
 closeWs();
 window.removeEventListener('reelforge:metrics-updated', onHeroIntelRefresh);
 window.removeEventListener('reelforge:release-schedule-updated', onHeroIntelRefresh);
+window.removeEventListener('reelforge:hero-manager-updated', onHeroManagerUpdated);
+if (typeof window !== 'undefined') {
+window.removeEventListener('reelforge:hero-upload', onHeroUpload);
+}
 unsubscribeVault();
 unsubscribeHeroVideo();
 unsubscribeHeroImage();

@@ -32,6 +32,7 @@
   import { fetchWithRetry } from '../../lib/api.js';
   import { isHeroAsset } from '../../lib/hero/heroDomainGuard.js';
   import { isDemoDebugMode } from '../../lib/debugMode.js';
+  import { setPendingUploads, noteFailedUpload } from '../../lib/diagnostics/pipelineSnapshot.js';
   import {
     filterStaleOrphanEntries,
     isThumbnailImageReel,
@@ -85,6 +86,8 @@
   let selectedVideoIds = [];
   let thumbnailCanonicalizationDone = false;
   let thumbnailCanonInFlight = false;
+  // BG-7X: prevent identical duplicate uploads while an upload is in-flight.
+  const pendingVideoUploadKeys = new Set();
 
   $: utils =
     vaultUtils ||
@@ -904,6 +907,62 @@
       return;
     }
 
+    // BG-7X: pre-upload dedupe gate (avoid creating duplicate backend assets).
+    // Identity (cheap): (fileName || name) + size.
+    // Read from persisted vault to cover cases where the store is briefly stale.
+    const incomingName = String(file?.name || '').trim();
+    const incomingSize = Number(file?.size || 0);
+    const uploadKey = `${incomingName.toLowerCase()}|${incomingSize}`;
+    try {
+      if (pendingVideoUploadKeys.has(uploadKey)) {
+        console.info('[BG7X_UPLOAD_DEDUPE]', {
+          blocked: true,
+          reason: 'in_flight_name_and_size_match',
+          existingId: '',
+          incomingName,
+          incomingSize
+        });
+        uploadStatus.set(`⏳ Upload already in progress: ${incomingName || 'video'}`);
+        resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
+        return;
+      }
+      const persisted = JSON.parse(
+        (typeof window !== 'undefined' ? localStorage.getItem(CONFIG.VIDEO_VAULT_KEY) : null) || '[]'
+      );
+      const existing = Array.isArray(persisted) ? persisted : [];
+      const match = existing.find((item) => {
+        if (!item || typeof item !== 'object') return false;
+        const existingSize = Number(item?.size || 0);
+        if (!incomingSize || !existingSize || existingSize !== incomingSize) return false;
+        const existingFileName = String(item?.fileName || item?.file_name || '').trim();
+        const existingName = String(item?.name || item?.title || '').trim();
+        return (
+          (existingFileName && incomingName && existingFileName === incomingName) ||
+          (existingName && incomingName && existingName === incomingName)
+        );
+      });
+      if (match) {
+        console.info('[BG7X_UPLOAD_DEDUPE]', {
+          blocked: true,
+          reason: 'name_or_fileName_and_size_match',
+          existingId: String(match?.id || '').trim(),
+          incomingName,
+          incomingSize
+        });
+        uploadStatus.set(`✅ Already in vault: ${incomingName || 'video'}`);
+        resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
+        return match;
+      }
+    } catch (e) {
+      console.warn('[BG7X_UPLOAD_DEDUPE]', {
+        blocked: false,
+        reason: 'exception_fallback_to_upload',
+        detail: e?.message || String(e)
+      });
+    }
+
+    pendingVideoUploadKeys.add(uploadKey);
+    setPendingUploads(pendingVideoUploadKeys.size);
     console.info('[BG7G_UPLOAD]', {
       ts: new Date().toISOString(),
       component: 'handleVaultVideoDrop',
@@ -989,6 +1048,11 @@
         addedAt: response.createdAt || response.created_at || new Date().toISOString()
       };
       if (isHeroAsset(entry)) {
+        console.info('[BG7W_HERO_VAULT_GATE]', {
+          reelId: String(entry?.id || '').trim(),
+          blocked: true,
+          reason: 'hero_identity_match'
+        });
         console.info('[BG7G_STORE]', {
           ts: new Date().toISOString(),
           component: 'handleVaultVideoDrop',
@@ -1013,7 +1077,28 @@
 
       personalVideos.update((videos) => {
         const before = videos;
-        const next = [entry, ...videos.filter((item) => item?.id !== entry.id && item?.url !== entry.url)];
+        const identityKey = (item) => {
+          const rawUrl = String(item?.url || item?.video_url || '').trim();
+          const canonicalUrl = rawUrl ? toRelativeMediaPath(rawUrl) : '';
+          if (canonicalUrl) return canonicalUrl;
+          const fileName = String(item?.fileName || item?.file_name || '').trim();
+          if (fileName) return fileName;
+          return String(item?.id || '').trim();
+        };
+        const incomingKey = identityKey(entry);
+        const filtered = videos.filter((item) => {
+          const existingKey = identityKey(item);
+          const match = Boolean(incomingKey) && Boolean(existingKey) && incomingKey === existingKey;
+          if (match) {
+            console.info('[BG7W_VIDEO_DEDUPE]', {
+              incomingId: String(entry?.id || '').trim(),
+              existingId: String(item?.id || '').trim(),
+              matchKey: incomingKey
+            });
+          }
+          return !match;
+        });
+        const next = [entry, ...filtered];
         if (next.length > CONFIG.MAX_VAULT_ITEMS) next.pop();
         console.info('[BG7G_STORE]', {
           ts: new Date().toISOString(),
@@ -1083,6 +1168,7 @@
         result: 'success'
       });
     } catch (error) {
+      noteFailedUpload();
       console.info('[BG7G_UPLOAD]', {
         ts: new Date().toISOString(),
         component: 'handleVaultVideoDrop',
@@ -1107,6 +1193,8 @@
       });
       uploadStatus.set('❌ Failed to process video');
     } finally {
+      pendingVideoUploadKeys.delete(uploadKey);
+      setPendingUploads(pendingVideoUploadKeys.size);
       resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
     }
   }
@@ -1607,8 +1695,11 @@
             loading="lazy"
             className="vault-grid-visual {i === ($personalThumbnailIndex % $personalThumbnailCollection.length) ? 'active' : ''}"
             on:load={(event) =>
-              (console.info('[IMAGE_RENDER]', { index: i, url: reel.url, ts: new Date().toISOString() }),
-              logVaultCardLayoutDiagnostics(event.currentTarget.closest('.vault-card'), `thumb-${i}:load`))}
+              (() => {
+                const currentTarget = event?.currentTarget;
+                console.info('[IMAGE_RENDER]', { index: i, url: reel.url, ts: new Date().toISOString() });
+                logVaultCardLayoutDiagnostics(currentTarget?.closest?.('.vault-card'), `thumb-${i}:load`);
+              })()}
             on:error={(event) => {
               console.error('[Vault] Image failed:', reel.url);
               handleVaultThumbnailError(event, img);
@@ -1742,7 +1833,7 @@
                 }}
                 on:loadedmetadata={(event) =>
                   logVaultCardLayoutDiagnostics(
-                    event.currentTarget.closest('.vault-card'),
+                    event?.currentTarget?.closest?.('.vault-card'),
                     `video-${vi}:load`
                   )}
                 on:error={(event) => handleVaultVideoElementError(event, video, reel)}

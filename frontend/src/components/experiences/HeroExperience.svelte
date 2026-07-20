@@ -1361,6 +1361,13 @@ $: heroBadgeLabel = sanitizeViewer
         if (!isOperationActive()) return;
         if (!validation.valid) throw new Error(validation.reason || 'Invalid video file');
         uploadStatus.set('🎬 Uploading hero video...');
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('reelforge:hero-upload', {
+              detail: { phase: 'start', kind: 'video', fileName: file?.name || '' }
+            })
+          );
+        }
         const { uploadVideo } = await import('../../lib/api/media.js');
         const { getAdminAuthorizationHeader, API_BASE_URL } = await import('../../lib/api.js');
         const token =
@@ -1391,7 +1398,22 @@ $: heroBadgeLabel = sanitizeViewer
         if (!reel?.id || !reel?.url) {
           throw new Error('Hero upload completed without canonical reel identity');
         }
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('reelforge:hero-upload', {
+              detail: { phase: 'created', kind: 'video', reelId: reel.id }
+            })
+          );
+        }
         saveHeroReel(reel);
+        // BG-7W: persist manager config as early as possible to avoid syncFromVault admission races.
+        saveHeroManagerConfig({
+          backgroundSource: 'custom_video',
+          heroAssetId: reel.id,
+          backgroundStyle: 'video',
+          ...viewerPatch
+        });
+        logHeroConfigSaveAudit(loadHeroManagerConfig(), heroManagerConfig);
         const heroVideoBefore = get(HERO_BACKGROUND_VIDEO);
         HERO_BACKGROUND_VIDEO.set(reel.url);
         console.info('[BG7G_STORE]', {
@@ -1412,13 +1434,13 @@ $: heroBadgeLabel = sanitizeViewer
         if (reel.thumbnail) HERO_POSTER_IMAGE.set(reel.thumbnail);
         heroVideoLoaded.set(false);
         heroVideoFailed.set(false);
-        saveHeroManagerConfig({
-          backgroundSource: 'custom_video',
-          heroAssetId: reel.id,
-          backgroundStyle: 'video',
-          ...viewerPatch
-        });
-        logHeroConfigSaveAudit(loadHeroManagerConfig(), heroManagerConfig);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('reelforge:hero-upload', {
+              detail: { phase: 'committed', kind: 'video', reelId: reel.id }
+            })
+          );
+        }
         const registry = buildHeroAssetRegistry(loadHeroVaultItems(), { storageSource: 'hero_registry' });
         console.info('[HERO_ACCEPT]', {
           stage: 'complete',
@@ -1458,6 +1480,13 @@ $: heroBadgeLabel = sanitizeViewer
       } else if (type === 'image') {
         if (!isOperationActive()) return;
         uploadStatus.set('🖼️ Uploading hero image...');
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('reelforge:hero-upload', {
+              detail: { phase: 'start', kind: 'image', fileName: file?.name || '' }
+            })
+          );
+        }
         const { uploadThumbnail } = await import('../../lib/api/media.js');
         const { getAdminAuthorizationHeader } = await import('../../lib/api.js');
         const token =
@@ -1477,10 +1506,14 @@ $: heroBadgeLabel = sanitizeViewer
         if (!reel?.id || !reel?.url) {
           throw new Error('Hero upload completed without canonical reel identity');
         }
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('reelforge:hero-upload', {
+              detail: { phase: 'created', kind: 'image', reelId: reel.id }
+            })
+          );
+        }
         saveHeroReel(reel);
-        HERO_POSTER_IMAGE.set(reel.url);
-        HERO_BACKGROUND_VIDEO.set('');
-        heroVideoFailed.set(false);
         saveHeroManagerConfig({
           backgroundSource: 'custom_image',
           heroAssetId: reel.id,
@@ -1488,6 +1521,16 @@ $: heroBadgeLabel = sanitizeViewer
           ...viewerPatch
         });
         logHeroConfigSaveAudit(loadHeroManagerConfig(), heroManagerConfig);
+        HERO_POSTER_IMAGE.set(reel.url);
+        HERO_BACKGROUND_VIDEO.set('');
+        heroVideoFailed.set(false);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('reelforge:hero-upload', {
+              detail: { phase: 'committed', kind: 'image', reelId: reel.id }
+            })
+          );
+        }
         const registry = buildHeroAssetRegistry(loadHeroVaultItems(), { storageSource: 'hero_registry' });
         console.info('[HERO_ACCEPT]', {
           stage: 'complete',

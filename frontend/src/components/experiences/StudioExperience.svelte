@@ -35,6 +35,7 @@
   import ContentIntelligencePanel from '../studio/ContentIntelligencePanel.svelte';
   import CollectionsManagerPanel from '../studio/CollectionsManagerPanel.svelte';
   import ProductionCommandCenter from '../studio/ProductionCommandCenter.svelte';
+  import DeveloperDiagnosticsCenter from '../diagnostics/DeveloperDiagnosticsCenter.svelte';
   import EpisodeReelAttachmentPanel from '../studio/EpisodeReelAttachmentPanel.svelte';
   import { emitCreatorProductionUpdated } from '../../lib/studio/creatorActionRouter.js';
   import StudioWalkthrough from '../studio/StudioWalkthrough.svelte';
@@ -1122,6 +1123,20 @@
             />
           </div>
           <div slot="system" class="studio-workspace-slot">
+          <DeveloperDiagnosticsCenter
+            {adminMode}
+            {feed}
+            {personalThumbnailCollection}
+            {personalVideos}
+            {viewerHydrationReady}
+            {HERO_BACKGROUND_VIDEO}
+            {HERO_POSTER_IMAGE}
+            {heroVideoFailed}
+            {heroVideoLoaded}
+            {heroPendingFile}
+            {storageHealth}
+            {uploadStatus}
+          />
           <SentinelSecurityCard />
           <SentinelAssistantPanel feedReels={studioFeedReels} seriesId={$studioSelectedSeriesId || 'series-neon-vengeance'} />
           <HeroManagerPanel feedReels={studioFeedReels} />

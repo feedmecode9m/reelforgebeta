@@ -1,6 +1,11 @@
 import { API_BASE_URL, BACKEND_URL, toBackendMediaUrl, toRelativeMediaPath, logResolvedMediaUrl } from './config.js';
 import { writable } from 'svelte/store';
 import { pipelineDiag, pipelineDiagCors } from './diagnostics/pipelineDiag.js';
+import {
+    incRetryBackoff,
+    decRetryBackoff,
+    shouldStreamDiagnostics
+} from './diagnostics/pipelineSnapshot.js';
 
 export { API_BASE_URL, BACKEND_URL, toBackendMediaUrl, toRelativeMediaPath, logResolvedMediaUrl };
 
@@ -19,6 +24,12 @@ export const backendConnectionStatus = writable({
     lastOkAt: 0,
     lastAttemptAt: 0,
     lastError: ''
+});
+
+backendConnectionStatus.subscribe((value) => {
+    if (typeof window === 'undefined') return;
+    // Read-only exposure for diagnostics center (no behavior changes).
+    window.__reelforgeBackendConnection = value;
 });
 
 function delay(ms) {
@@ -136,7 +147,9 @@ export async function checkBackendHealth() {
                 setBackendConnectionStatus('degraded', {
                     lastError: error?.message || 'healthcheck failed'
                 });
-                console.warn(`Backend health check failed for ${base}${path}:`, error);
+                if (shouldStreamDiagnostics()) {
+                    console.warn(`Backend health check failed for ${base}${path}:`, error);
+                }
             }
         }
     }
@@ -158,6 +171,7 @@ export async function fetchWithRetry(
     let lastResponse = null;
 
     for (let attempt = 0; attempt <= retries; attempt += 1) {
+        const method = String(options?.method || 'GET').toUpperCase();
         try {
             logApiDebug('request', { url, attempt, options });
             pipelineDiag('FETCH', 'fetchWithRetry', 'api.js', {
@@ -207,7 +221,9 @@ export async function fetchWithRetry(
         }
 
         const backoffMs = Math.min(retryDelayMs * 2 ** attempt, 8000);
+        incRetryBackoff();
         await delay(backoffMs);
+        decRetryBackoff();
     }
 
     if (lastResponse) return lastResponse;

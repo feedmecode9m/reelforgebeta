@@ -5,6 +5,8 @@
  * @typedef {'DND'|'UPLOAD'|'API'|'FETCH'|'CORS'|'RESPONSE'|'BOOTSTRAP'|'VIEWER'} FrontendPipelineTag
  */
 
+import { recordPipelineEvent, recordCheckpoint, shouldStreamDiagnostics } from './pipelineSnapshot.js';
+
 /**
  * @param {FrontendPipelineTag | string} tag
  * @param {string} functionName
@@ -13,6 +15,7 @@
  */
 export function pipelineDiag(tag, functionName, sourceFile, meta = {}) {
     const record = {
+        tag: String(tag),
         timestamp: new Date().toISOString(),
         function: functionName,
         sourceFile,
@@ -23,7 +26,19 @@ export function pipelineDiag(tag, functionName, sourceFile, meta = {}) {
     if (meta.detail !== undefined) {
         record.detail = meta.detail;
     }
-    console.info(`[${tag}]`, record);
+    recordPipelineEvent({
+        ts: Date.now(),
+        tag: String(tag),
+        functionName,
+        sourceFile,
+        assetId: record.assetId,
+        fileName: record.fileName,
+        result: record.result,
+        detail: record.detail
+    });
+    if (shouldStreamDiagnostics()) {
+        console.info(`[${tag}]`, record);
+    }
 }
 
 /**
@@ -48,8 +63,11 @@ export function pipelineDiagCors(functionName, sourceFile, error, meta = {}) {
  * @param {Record<string, unknown>} [meta]
  */
 export function pipelineCheckpoint(checkpoint, meta = {}) {
-    console.info(`[PIPELINE] ${checkpoint}`, {
-        timestamp: new Date().toISOString(),
-        ...meta
-    });
+    recordCheckpoint(String(checkpoint), meta);
+    if (shouldStreamDiagnostics()) {
+        console.info(`[PIPELINE] ${checkpoint}`, {
+            timestamp: new Date().toISOString(),
+            ...meta
+        });
+    }
 }

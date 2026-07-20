@@ -28,6 +28,12 @@ function sanitizeExternalBaseUrl(url, contextLabel) {
     return normalized;
 }
 
+function devAllowsRemoteBackendOrigin() {
+    // Default-dev invariant: never mix local REST proxy + remote websocket/media origins.
+    // Opt-in escape hatch for developers testing against remote backends while running `npm run dev`.
+    return import.meta.env.VITE_USE_CONFIGURED_API_URL_IN_DEV === 'true';
+}
+
 function resolveConfiguredApiUrl() {
     const candidates = [
         ['VITE_API_URL', import.meta.env.VITE_API_URL],
@@ -36,6 +42,10 @@ function resolveConfiguredApiUrl() {
     ];
     for (const [label, value] of candidates) {
         const sanitized = sanitizeExternalBaseUrl(value, label);
+        if (import.meta.env.DEV && sanitized && !devAllowsRemoteBackendOrigin() && !isLoopbackOrigin(sanitized)) {
+            // In dev, ignore remote origins unless explicitly opted-in.
+            continue;
+        }
         if (sanitized) return sanitized;
     }
     return '';

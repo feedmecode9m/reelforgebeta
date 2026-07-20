@@ -5,6 +5,7 @@
 
 import { computeProductionReadiness } from '../series/productionHealth.js';
 import { getWorkflowOperationsSnapshot } from '../workflow/workflowEngine.js';
+import { shouldStreamDiagnostics } from '../diagnostics/pipelineSnapshot.js';
 
 export const ENTERPRISE_VERSION = '1.0.0';
 export const ENTERPRISE_STORAGE_KEY = 'reelforge_enterprise_structure';
@@ -120,6 +121,7 @@ export const ENTERPRISE_HIERARCHY = /** @type {const} */ ([
  * @param {Record<string, unknown>} [detail]
  */
 export function logEnterpriseDiag(tag, detail = {}) {
+    if (!shouldStreamDiagnostics()) return;
     console.log(`[${tag}] ${JSON.stringify({ ...detail, timestamp: Date.now() })}`);
 }
 
