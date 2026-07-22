@@ -1139,7 +1139,15 @@
           />
           <SentinelSecurityCard />
           <SentinelAssistantPanel feedReels={studioFeedReels} seriesId={$studioSelectedSeriesId || 'series-neon-vengeance'} />
-          <HeroManagerPanel feedReels={studioFeedReels} />
+          <HeroManagerPanel
+            feedReels={studioFeedReels}
+            {feed}
+            {personalVideos}
+            {persistPersonalVault}
+            {storageSet}
+            {syncFromVault}
+            {CONFIG}
+          />
           <StudioAppearancePanel />
 <PlatformPublishingProfiles />
           <PlatformConfigPanel

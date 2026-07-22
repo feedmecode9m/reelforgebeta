@@ -87,7 +87,10 @@ import {
 logDeletionPropagation,
 purgeMediaFromClientState,
 pruneFeedAgainstBackendVideos,
-diagnoseStalePlaceholders
+diagnoseStalePlaceholders,
+applyCanonicalDeleteClientEffects,
+filterOutDeletedMedia,
+filterDeletedFromFeedMap
 } from '../lib/deletionSync.js';
 import { normalizeReel, normalizeReels, createLocalReel, isVideoReel, assertReelContract } from '../lib/api/reelContract.js';
 import { resolveTheaterPlayback, logTheaterHandshake } from '../lib/media/theaterPlayback.js';
@@ -889,7 +892,12 @@ ts: new Date().toISOString()
 });
 }
 }
-function mergeVideoVaultEntries(existingEntries = [], incomingEntries = []) {
+function mergeVideoVaultEntries(existingEntries = [], incomingEntries = [], options = {}) {
+const { backendReachable = false } = options;
+if (backendReachable) {
+  // Online: backend catalog projection wins; never keep local-only deleted rows.
+  return filterOutDeletedMedia(Array.isArray(incomingEntries) ? incomingEntries : []);
+}
 const merged = [];
 const seen = new Set();
 for (const entry of [...existingEntries, ...incomingEntries]) {
@@ -911,7 +919,7 @@ if (!key || seen.has(key)) continue;
 seen.add(key);
 merged.push(entry);
 }
-return merged;
+return filterOutDeletedMedia(merged);
 }
 let syncFromVaultInFlight = null;
 let lastSyncFromVaultAt = 0;
@@ -975,7 +983,9 @@ uploadStatus.set('Backend offline and storage full. Clear local data or free up 
 loading.set(false);
 return;
 }
-rawData = normalizeReels(JSON.parse(localStorage.getItem(CONFIG.VAULT_KEY) || '[]'), 'localStorage fallback');
+rawData = filterOutDeletedMedia(
+normalizeReels(JSON.parse(localStorage.getItem(CONFIG.VAULT_KEY) || '[]'), 'localStorage fallback')
+);
 } else {
 const res = await fetchWithRetry(
 `${API_BASE_URL}/api/reels?t=${Date.now()}`,
@@ -987,7 +997,7 @@ if (res.ok) {
 backendReachable = true;
 const contentType = res.headers.get('content-type') || '';
 if (!contentType.includes('application/json')) throw new Error(`Expected JSON but received ${contentType}`);
-rawData = normalizeReels(await res.json(), 'GET /api/reels');
+rawData = filterOutDeletedMedia(normalizeReels(await res.json(), 'GET /api/reels'));
 logBg7kCatalogReceive(
 rawData.length,
 rawData.map((r) => String(r?.id || '')).filter(Boolean),
@@ -999,7 +1009,9 @@ uploadStatus.set('✅ Synced with backend');
 backendReachable = false;
 console.warn(`⚠️ Backend returned ${res.status}, preserving local vault (offline reconcile skipped)`);
 uploadStatus.set(`⚠️ Sync failed (${res.status}) — showing saved content`);
-rawData = normalizeReels(JSON.parse(localStorage.getItem(CONFIG.VAULT_KEY) || '[]'), 'localStorage fallback');
+rawData = filterOutDeletedMedia(
+normalizeReels(JSON.parse(localStorage.getItem(CONFIG.VAULT_KEY) || '[]'), 'localStorage fallback')
+);
 }
 }
 // Build feed from backend / vault (eligibility delegated to buildHomeFeed)
@@ -1041,11 +1053,12 @@ rawData
 .filter((url) => url.startsWith('/videos/'))
 );
 const { feed: prunedFeed, removed: pruneRemoved } = pruneFeedAgainstBackendVideos(catalogFeed, backendVideoUrls);
+const tombstoneSafeFeed = filterDeletedFromFeedMap(prunedFeed);
 if (!backendReachable) {
-const personalVideosList = get(personalVideos);
+const personalVideosList = filterOutDeletedMedia(get(personalVideos));
 personalVideosList.forEach((video) => {
 let exists = false;
-Object.values(prunedFeed).forEach((catArray) => {
+Object.values(tombstoneSafeFeed).forEach((catArray) => {
 if (catArray.some((reel) => reel.isPersonalVideo && reel.personal_video_id === video.id)) {
 exists = true;
 }
@@ -1056,11 +1069,11 @@ AI_CLEANUP_AGENT.distributeVideoToFeed(video);
 }
 });
 }
-feed.set(prunedFeed);
-logBg7nStage('feed.set:prunedFeed', prunedFeed);
-logBg7pShelfDistribution('feed.set:prunedFeed', prunedFeed);
-categories.set(Object.keys(prunedFeed));
-const feedWrite = storageSet(CONFIG.FEED_STORAGE_KEY, prunedFeed);
+feed.set(tombstoneSafeFeed);
+logBg7nStage('feed.set:prunedFeed', tombstoneSafeFeed);
+logBg7pShelfDistribution('feed.set:prunedFeed', tombstoneSafeFeed);
+categories.set(Object.keys(tombstoneSafeFeed));
+const feedWrite = storageSet(CONFIG.FEED_STORAGE_KEY, tombstoneSafeFeed);
 if (!feedWrite.ok) {
 uploadStatus.set('Storage full, clear data to continue');
 loading.set(false);
@@ -1113,7 +1126,9 @@ console.info('[BG7W_HERO_VAULT_GATE]', { reelId: id, blocked: true, reason: 'her
 return !blocked;
 });
 const existingVaultVideos = JSON.parse((typeof window !== 'undefined' ? localStorage.getItem(CONFIG.VIDEO_VAULT_KEY) : null) || '[]');
-const mergedVaultVideosRaw = mergeVideoVaultEntries(existingVaultVideos, backendVaultVideos);
+const mergedVaultVideosRaw = mergeVideoVaultEntries(existingVaultVideos, backendVaultVideos, {
+backendReachable: true
+});
 const mergedVaultVideos = mergedVaultVideosRaw.filter((entry) => {
 const id = String(entry?.id || '').trim();
 const blocked = Boolean(id) && pendingHeroAssetIds.has(id);
@@ -1701,7 +1716,7 @@ heroDebugLog('Viewer.svelte:heroImage:clearPersist', 'cleared hero image storage
 const storedVideos = JSON.parse((typeof window !== 'undefined' ? localStorage.getItem(CONFIG.VIDEO_VAULT_KEY) : null) || '[]');
 console.log(`[onMount] Loaded ${storedVideos.length} videos from [${hadLocalCache ? 'localStorage' : 'backend'}]`);
 if (storedVideos.length > 0) {
-const filteredStoredVideos = filterNonHeroAssets(storedVideos);
+const filteredStoredVideos = filterOutDeletedMedia(filterNonHeroAssets(storedVideos));
 personalVideos.set(filteredStoredVideos.map((video) => {
 const normalized = {
 ...video,
@@ -1824,12 +1839,8 @@ syncFromVault(true).then(() => runEpisodeBridgeSync('ingestion'));
 onDeleted: ({ id }) => {
 if (!id) return;
 console.log('[ws] DELETED — purging', id);
-purgeMediaFromClientState(
-{ feed, personalVideos, activeReel, actions: {
-closeTheater: () => theaterManager.close(),
-persistFeed: (f) => storageSet(CONFIG.FEED_STORAGE_KEY, f),
-persistVault: (v) => storageSet(CONFIG.VAULT_KEY, v)
-}},
+applyCanonicalDeleteClientEffects(
+{ purge: runClientMediaPurge },
 { reelId: id }
 );
 }

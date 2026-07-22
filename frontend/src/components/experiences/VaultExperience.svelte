@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-  import { get } from 'svelte/store';
+  import { get, writable } from 'svelte/store';
   import { createVaultUtils } from '../../lib/viewer/vaultUtils.js';
   import { isImage, isVideo } from '../../lib/vaultMedia.js';
   import MediaRenderer from '../media/MediaRenderer.svelte';
@@ -47,6 +47,7 @@
     readThumbnailVault
   } from '../../lib/viewer/thumbnailVault.js';
   import { assertDeleteReducedCount } from '../../lib/viewer/thumbnailInvariants.js';
+  import { applyCanonicalDeleteClientEffects } from '../../lib/deletionSync.js';
 
   export let showPersonalControls = true;
 
@@ -296,13 +297,24 @@
     return false;
   }
 
+  function buildDeletePurgeCtx() {
+    return {
+      feed,
+      personalVideos,
+      activeReel: writable(null),
+      actions: {
+        persistFeed: (nextFeed) => storageSet(CONFIG?.FEED_STORAGE_KEY || 'reelforge_feed', nextFeed),
+        persistVault: persistPersonalVault
+      }
+    };
+  }
+
   function applyVideoDeleteTombstone(deletedIds) {
     if (!deletedIds?.length) return;
-    const deletedIdSet = new Set(deletedIds.map((id) => String(id || '').trim()).filter(Boolean));
-    personalVideos.update((videos) =>
-      (videos || []).filter((video) => !deletedIdSet.has(String(video?.id || '').trim()))
+    applyCanonicalDeleteClientEffects(
+      { ctx: buildDeletePurgeCtx() },
+      { reelIds: deletedIds }
     );
-    persistPersonalVault(get(personalVideos));
   }
 
   async function purgeStaleOrphanThumbnails(deletedIds, imageReels = null) {
@@ -331,6 +343,12 @@
 
   function applyThumbnailDeleteTombstone(deletedIds, failedIds = [], imageReels = []) {
     if (!deletedIds?.length && !failedIds?.length) return;
+    if (deletedIds?.length) {
+      applyCanonicalDeleteClientEffects(
+        { ctx: buildDeletePurgeCtx() },
+        { reelIds: deletedIds }
+      );
+    }
     const before = get(personalThumbnailCollection).length;
     const result = deleteThumbnailVaultEntries(deletedIds, imageReels, {
       backendReachable: true,
@@ -1516,13 +1534,10 @@
         }
       }
       if (deletedIds.length > 0) {
-        const deletedIdSet = new Set(deletedIds);
-        personalVideos.update((items) =>
-          (items || []).filter((video) => !deletedIdSet.has(String(video?.id || '').trim()))
-        );
-        persistPersonalVault(get(personalVideos));
+        applyVideoDeleteTombstone(deletedIds);
       }
       await syncFromVault(true, true);
+      applyVideoDeleteTombstone(deletedIds);
       const afterCount = get(personalVideos).length;
       console.info('[DELETE_STORE_UPDATE]', {
         vault: 'video-vault',

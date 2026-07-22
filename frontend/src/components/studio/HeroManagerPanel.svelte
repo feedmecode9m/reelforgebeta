@@ -15,9 +15,22 @@
     } from '../../lib/hero/heroIntelligence.js';
     import { buildHeroAssetRegistry, isVideoHeroAssetType } from '../../lib/hero/heroAssetBridge.js';
     import { deleteReelById, fetchReadyReels } from '../../lib/api/media.js';
+    import { applyCanonicalDeleteClientEffects } from '../../lib/deletionSync.js';
 
     /** @type {Record<string, unknown>[]} */
     export let feedReels = [];
+    /** @type {import('svelte/store').Writable<Record<string, unknown[]>> | null} */
+    export let feed = null;
+    /** @type {import('svelte/store').Writable<unknown[]> | null} */
+    export let personalVideos = null;
+    /** @type {(videos: unknown[]) => void} */
+    export let persistPersonalVault = () => {};
+    /** @type {(key: string, value: unknown) => { ok?: boolean }} */
+    export let storageSet = () => ({ ok: true });
+    /** @type {(preserveLocal?: boolean) => Promise<void>} */
+    export let syncFromVault = async () => {};
+    /** @type {{ FEED_STORAGE_KEY?: string } | null} */
+    export let CONFIG = null;
 
     let config = loadHeroManagerConfig();
     let statusMessage = '';
@@ -387,6 +400,22 @@
             try {
                 await deleteReelById(reelId, authHeaders());
                 persistenceOk = true;
+                applyCanonicalDeleteClientEffects(
+                    {
+                        ctx: {
+                            feed,
+                            personalVideos,
+                            activeReel: writable(null),
+                            actions: {
+                                persistFeed: (nextFeed) =>
+                                    storageSet(CONFIG?.FEED_STORAGE_KEY || 'reelforge_feed', nextFeed),
+                                persistVault: persistPersonalVault
+                            }
+                        }
+                    },
+                    { reelId }
+                );
+                await syncFromVault(true);
             } catch (error) {
                 console.warn('[HERO_VAULT_DELETE_BACKEND_FAILED]', {
                     itemId: String(item?.assetId || ''),

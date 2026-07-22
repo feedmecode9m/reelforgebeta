@@ -11,6 +11,173 @@ function videoInventoryKey(url) {
 
 const DEBUG_DELETE = import.meta.env.DEV;
 
+/** Persisted deleted media IDs — survives refresh; blocks vault/feed resurrection. */
+export const DELETED_MEDIA_STORAGE_KEY = 'reelforge_deleted_media_ids';
+
+/** Cap tombstone list to avoid unbounded localStorage growth (newest retained). */
+export const DELETED_MEDIA_IDS_CAP = 200;
+
+/**
+ * @returns {string[]}
+ */
+function readDeletedMediaIds() {
+    if (typeof window === 'undefined') return [];
+    try {
+        const raw = localStorage.getItem(DELETED_MEDIA_STORAGE_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [];
+        return parsed.map((id) => String(id || '').trim()).filter(Boolean);
+    } catch {
+        return [];
+    }
+}
+
+/**
+ * @param {string[]} ids
+ */
+function writeDeletedMediaIds(ids) {
+    if (typeof window === 'undefined') return;
+    try {
+        const capped = ids.slice(0, DELETED_MEDIA_IDS_CAP);
+        localStorage.setItem(DELETED_MEDIA_STORAGE_KEY, JSON.stringify(capped));
+    } catch {
+        // ignore quota failures
+    }
+}
+
+/**
+ * Record successfully deleted media IDs (call only after DELETE /api/reels/{id} succeeds).
+ * Newest IDs are prepended; list is capped.
+ * @param {string | string[] | null | undefined} ids
+ * @returns {string[]} current tombstone list
+ */
+export function recordDeletedMediaIds(ids) {
+    const incoming = (Array.isArray(ids) ? ids : [ids])
+        .map((id) => String(id || '').trim())
+        .filter(Boolean);
+    if (!incoming.length) return readDeletedMediaIds();
+
+    const existing = readDeletedMediaIds();
+    const seen = new Set();
+    const next = [];
+    for (const id of [...incoming, ...existing]) {
+        if (seen.has(id)) continue;
+        seen.add(id);
+        next.push(id);
+    }
+    writeDeletedMediaIds(next);
+    logDeletionPropagation('tombstone-record', { added: incoming, total: next.length });
+    return next;
+}
+
+/**
+ * Canonical post-DELETE client effects (shared by every UI delete caller):
+ * recordDeletedMediaIds → purgeMediaFromClientState / runClientMediaPurge.
+ * Call only after deleteReelById succeeds. Callers still own syncFromVault.
+ *
+ * @param {{
+ *   purge?: (match: { filename?: string; reelId?: string; videoUrl?: string }) => unknown;
+ *   ctx?: Parameters<typeof purgeMediaFromClientState>[0];
+ * }} deps
+ * @param {{ filename?: string; reelId?: string; reelIds?: string[]; videoUrl?: string }} match
+ * @returns {{ tombstoned: string[]; feedRemoved: number; vaultRemoved: number; theaterClosed: boolean }}
+ */
+export function applyCanonicalDeleteClientEffects(deps = {}, match = {}) {
+    const reelIds = [
+        ...((Array.isArray(match.reelIds) ? match.reelIds : [])),
+        match.reelId
+    ]
+        .map((id) => String(id || '').trim())
+        .filter(Boolean);
+    const uniqueIds = [...new Set(reelIds)];
+    recordDeletedMediaIds(uniqueIds);
+
+    const purgeOne = (oneMatch) => {
+        if (typeof deps.purge === 'function') {
+            deps.purge(oneMatch);
+            return { feedRemoved: 0, vaultRemoved: 0, theaterClosed: false };
+        }
+        if (deps.ctx?.feed && deps.ctx?.personalVideos) {
+            return purgeMediaFromClientState(deps.ctx, oneMatch);
+        }
+        logDeletionPropagation('canonical-client-effects-skipped-purge', {
+            reelId: oneMatch?.reelId || null
+        });
+        return { feedRemoved: 0, vaultRemoved: 0, theaterClosed: false };
+    };
+
+    let feedRemoved = 0;
+    let vaultRemoved = 0;
+    let theaterClosed = false;
+    const targets = uniqueIds.length
+        ? uniqueIds.map((reelId) => ({
+              filename: match.filename,
+              videoUrl: match.videoUrl,
+              reelId
+          }))
+        : [match];
+
+    for (const one of targets) {
+        const result = purgeOne(one) || {};
+        feedRemoved += Number(result.feedRemoved || 0);
+        vaultRemoved += Number(result.vaultRemoved || 0);
+        theaterClosed = theaterClosed || Boolean(result.theaterClosed);
+    }
+
+    logDeletionPropagation('canonical-client-effects', {
+        tombstoned: uniqueIds,
+        feedRemoved,
+        vaultRemoved,
+        theaterClosed
+    });
+    return { tombstoned: uniqueIds, feedRemoved, vaultRemoved, theaterClosed };
+}
+
+/**
+ * @param {string | null | undefined} id
+ * @returns {boolean}
+ */
+export function isDeletedMediaId(id) {
+    const key = String(id || '').trim();
+    if (!key) return false;
+    return readDeletedMediaIds().includes(key);
+}
+
+/**
+ * Drop items whose id or personal_video_id is tombstoned.
+ * @template T
+ * @param {T[] | null | undefined} items
+ * @returns {T[]}
+ */
+export function filterOutDeletedMedia(items) {
+    if (!Array.isArray(items) || items.length === 0) return Array.isArray(items) ? items : [];
+    const deleted = new Set(readDeletedMediaIds());
+    if (deleted.size === 0) return items;
+    return items.filter((item) => {
+        if (!item || typeof item !== 'object') return true;
+        const id = String(/** @type {Record<string, unknown>} */ (item).id || '').trim();
+        const personalId = String(
+            /** @type {Record<string, unknown>} */ (item).personal_video_id || ''
+        ).trim();
+        if (id && deleted.has(id)) return false;
+        if (personalId && deleted.has(personalId)) return false;
+        return true;
+    });
+}
+
+/**
+ * @param {Record<string, unknown[]> | null | undefined} feedMap
+ * @returns {Record<string, unknown[]>}
+ */
+export function filterDeletedFromFeedMap(feedMap) {
+    const out = {};
+    Object.keys(feedMap || {}).forEach((cat) => {
+        out[cat] = filterOutDeletedMedia(feedMap[cat] || []);
+    });
+    return out;
+}
+
 /** @param {string} stage @param {Record<string, unknown>} [details] */
 export function logDeletionPropagation(stage, details = {}) {
     if (!DEBUG_DELETE) return;

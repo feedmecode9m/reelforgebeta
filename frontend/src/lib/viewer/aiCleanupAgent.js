@@ -3,7 +3,7 @@ import { createLocalReel } from '../api/reelContract.js';
 import { deleteMediaFile, deleteReelById, fetchReadyReels } from '../api/media.js';
 import { filenameFromMediaRef } from '../vaultMedia.js';
 import { toRelativeMediaPath } from '../config.js';
-import { logDeletionPropagation } from '../deletionSync.js';
+import { logDeletionPropagation, filterOutDeletedMedia, applyCanonicalDeleteClientEffects } from '../deletionSync.js';
 import { isStorageFull, wouldExceedQuota } from '../storage.js';
 import { isHeroAsset, filterNonHeroAssets } from '../hero/heroDomainGuard.js';
 import { removeThumbnailVaultByIndex, syncCollectionStore } from './thumbnailVault.js';
@@ -255,7 +255,7 @@ export function createAiCleanupAgent(deps) {
   },
   syncVideoVaultToFeed() {
   const videos = JSON.parse((typeof window !== 'undefined' ? localStorage.getItem(CONFIG.VIDEO_VAULT_KEY) : null) || '[]');
-  const nonHeroVideos = filterNonHeroAssets(videos);
+  const nonHeroVideos = filterOutDeletedMedia(filterNonHeroAssets(videos));
   console.info('[HERO_STORE_READ]', {
   stage: 'AI_CLEANUP_AGENT.syncVideoVaultToFeed',
   key: CONFIG.VIDEO_VAULT_KEY,
@@ -429,6 +429,10 @@ export function createAiCleanupAgent(deps) {
   if (imageReel?.id) {
   await deleteReelById(imageReel.id, this.authHeaders());
   persistenceSuccess = true;
+  applyCanonicalDeleteClientEffects(
+    { purge: runClientMediaPurge },
+    { reelId: imageReel.id, videoUrl: imageReel?.url || imageReel?.thumbnailUrl }
+  );
   } else {
   // Fallback for legacy records when no reel id mapping is found.
   await deleteMediaFile(thumbnailName, this.authHeaders());
@@ -507,10 +511,16 @@ export function createAiCleanupAgent(deps) {
   try {
   await deleteReelById(videoId, AI_CLEANUP_AGENT.authHeaders());
   persistenceSuccess = true;
+  applyCanonicalDeleteClientEffects(
+    { purge: runClientMediaPurge },
+    { reelId: videoId, filename: diskName, videoUrl: video?.url }
+  );
   logDeletionPropagation('vault-delete-backend-ok', { diskName });
   } catch (apiError) { console.warn('⚠️ [VAULT DELETE] Backend API call failed:', apiError); }
   } else { console.warn('⚠️ [VAULT DELETE] No admin token or filename available, skipping backend deletion'); }
+  if (!persistenceSuccess) {
   runClientMediaPurge({ filename: diskName, reelId: videoId, videoUrl: video?.url });
+  }
   if (video.url && video.url.startsWith('blob:')) { URL.revokeObjectURL(video.url); resourceManager.revokeBlobUrl(video.url); }
   uploadStatus.set('✅ Video deleted');
   await syncFromVault(true);

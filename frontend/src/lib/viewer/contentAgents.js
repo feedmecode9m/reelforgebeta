@@ -1,7 +1,7 @@
 import { get } from 'svelte/store';
 import { deleteReelById } from '../api/media.js';
 import { filenameFromMediaRef } from '../vaultMedia.js';
-import { logDeletionPropagation } from '../deletionSync.js';
+import { logDeletionPropagation, applyCanonicalDeleteClientEffects } from '../deletionSync.js';
 
 export function createContentAgents(deps) {
   const {
@@ -179,6 +179,10 @@ export function createContentAgents(deps) {
   const token = typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
   if (!token) throw new Error('Admin authentication required. Please log in as admin first.');
   await deleteReelById(reelId, { Authorization: `Bearer ${token}` });
+  applyCanonicalDeleteClientEffects(
+    { purge: runClientMediaPurge },
+    { reelId, filename, videoUrl: reel?.url || reel?.video_url }
+  );
   console.info('[DELETE_PERSISTENCE]', {
   vault: String(reel?.category || 'studio-feed'),
   mechanism: 'single',
@@ -186,7 +190,6 @@ export function createContentAgents(deps) {
   itemId: String(reelId),
   timestamp: Date.now()
   });
-  runClientMediaPurge({ filename, reelId, videoUrl: reel?.url || reel?.video_url });
   uploadStatus.set('✅ Production deleted successfully');
   resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
   return true;
