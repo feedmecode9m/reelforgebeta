@@ -144,6 +144,56 @@
   let controlCenterWasOpen = false;
   let previousFocusedElement = null;
 
+  /** Studio inventory browse controls (view-only; do not mutate $feed). */
+  let studioInventoryQuery = '';
+  /** @type {'newest' | 'oldest' | 'title'} */
+  let studioInventorySort = 'newest';
+
+  /** Full production inventory from feed — placeholders excluded, no visibility cap. */
+  $: studioInventoryBase = Object.values($feed || {})
+    .flat()
+    .filter((reel) => reel && !reel.isPlaceholder);
+
+  /** Filtered/sorted view of studioInventoryBase for operator browsing. */
+  $: studioInventoryView = (() => {
+    const q = studioInventoryQuery.trim().toLowerCase();
+    const list = [...studioInventoryBase];
+    const filtered = q
+      ? list.filter((reel) => {
+          const title = String(reel.title || reel.name || '').toLowerCase();
+          const fileName = String(reel.file_name || reel.fileName || '').toLowerCase();
+          const category = String(reel.category || '').toLowerCase();
+          const status = String(reel.status || '').toLowerCase();
+          return (
+            title.includes(q) ||
+            fileName.includes(q) ||
+            category.includes(q) ||
+            (status && status.includes(q))
+          );
+        })
+      : list;
+    if (studioInventorySort === 'oldest') {
+      filtered.sort(
+        (a, b) =>
+          new Date(a.created_at || a.createdAt || 0).getTime() -
+          new Date(b.created_at || b.createdAt || 0).getTime()
+      );
+    } else if (studioInventorySort === 'title') {
+      filtered.sort((a, b) =>
+        String(a.title || a.name || '').localeCompare(String(b.title || b.name || ''), undefined, {
+          sensitivity: 'base'
+        })
+      );
+    } else {
+      filtered.sort(
+        (a, b) =>
+          new Date(b.created_at || b.createdAt || 0).getTime() -
+          new Date(a.created_at || a.createdAt || 0).getTime()
+      );
+    }
+    return filtered;
+  })();
+
   const FOCUSABLE_SELECTOR = [
     'button:not([disabled])',
     '[href]',
@@ -1052,16 +1102,31 @@
               {/each}
             </div>
 
-            <label class="input-label-wrapper">
-              RECENTLY ADDED PRODUCTIONS
+            <div class="input-label-wrapper studio-inventory-section">
+              <div class="studio-inventory-heading">RECENTLY ADDED PRODUCTIONS</div>
+              <div class="studio-inventory-toolbar" role="group" aria-label="Production inventory filters">
+                <input
+                  type="search"
+                  class="studio-inventory-search"
+                  bind:value={studioInventoryQuery}
+                  placeholder="Search title, filename, category, status…"
+                  aria-label="Search productions"
+                />
+                <select
+                  class="studio-inventory-sort"
+                  bind:value={studioInventorySort}
+                  aria-label="Sort productions"
+                >
+                  <option value="newest">Newest first</option>
+                  <option value="oldest">Oldest first</option>
+                  <option value="title">Title A–Z</option>
+                </select>
+                <span class="studio-inventory-count" aria-live="polite">
+                  {studioInventoryView.length}/{studioInventoryBase.length}
+                </span>
+              </div>
               <div class="asset-list">
-                {#each Object.values($feed)
-                  .flat()
-                  .filter((reel) => !reel.isPlaceholder)
-                  .sort(
-                    (a, b) =>
-                      new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
-                  ) as reel}
+                {#each studioInventoryView as reel (reel.id)}
                   {@const reelConfig = UIAgent.getStudioConfigs(reel.category)}
                   <div class="asset-item smart-item" style="border-left: 4px solid {reelConfig.color}">
                     <div class="asset-info">
@@ -1121,8 +1186,11 @@
                     </div>
                   </div>
                 {/each}
+                {#if studioInventoryBase.length > 0 && studioInventoryView.length === 0}
+                  <p class="studio-inventory-empty">No productions match this search.</p>
+                {/if}
               </div>
-            </label>
+            </div>
           </div>
           </div>
           <div slot="analytics" class="studio-workspace-slot">

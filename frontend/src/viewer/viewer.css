@@ -595,6 +595,13 @@ margin: 0;
 .stat-category { font-weight: bold; min-width: 100px; padding-left: 0.5rem; }
 .stat-count { flex: 1; color: rgba(255,255,255,0.6); }
 .personal-count, .video-count { font-size: 0.75rem; }
+.studio-inventory-heading { display: block; margin-bottom: 0.5rem; letter-spacing: 0.04em; }
+.studio-inventory-toolbar { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-bottom: 0.75rem; }
+.studio-inventory-search { flex: 1 1 12rem; min-width: 10rem; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.18); color: #fff; border-radius: 4px; padding: 0.45rem 0.65rem; font-size: 0.8rem; }
+.studio-inventory-search:focus { outline: none; border-color: var(--neon-cyan); }
+.studio-inventory-sort { background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.18); color: #fff; border-radius: 4px; padding: 0.45rem 0.55rem; font-size: 0.8rem; }
+.studio-inventory-count { font-size: 0.75rem; color: rgba(255,255,255,0.55); white-space: nowrap; }
+.studio-inventory-empty { margin: 0.25rem 0 0; font-size: 0.8rem; color: rgba(255,255,255,0.5); }
 .asset-list { display: flex; flex-direction: column; gap: 0.5rem; max-height: 300px; overflow-y: auto; }
 .asset-item { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); transition: all 0.3s; }
 .asset-item:hover { background: rgba(255,255,255,0.1); transform: translateX(5px); }
