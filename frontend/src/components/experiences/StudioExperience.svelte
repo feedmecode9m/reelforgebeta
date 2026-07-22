@@ -164,17 +164,35 @@
   /** @type {HTMLInputElement | null} */
   let studioSelectAllCheckbox = null;
   /**
-   * Bulk action lifecycle. Only bulk delete may enter executing/success/failed.
+   * Bulk action lifecycle. Delete + category metadata may enter executing/success/failed.
    * @type {'idle' | 'reviewing' | 'confirming' | 'executing' | 'success' | 'failed'}
    */
   let studioBulkActionState = 'idle';
-  /** @type {null | 'delete'} */
+  /** @type {null | 'delete' | 'category'} */
   let studioBulkPendingAction = null;
+  /**
+   * Backend-supported shelf categories for PATCH /api/reels/{id}/category only.
+   * Do not invent fields — title/status/etc. have no bulk metadata API.
+   */
+  const STUDIO_BULK_CATEGORY_OPTIONS = [
+    'Trending',
+    'Romance',
+    'Cyber-Action',
+    'Suspense',
+    'HERO'
+  ];
+  /** Target category for bulk metadata update. */
+  let studioBulkCategoryTarget = 'Trending';
   /**
    * Last bulk delete outcome (kept for result visibility / retry).
    * @type {{ deletedCount: number, failedCount: number, remainingCount: number, failed: { id: string, error: string }[] } | null}
    */
   let studioBulkDeleteResult = null;
+  /**
+   * Last bulk category outcome (kept for result visibility / retry).
+   * @type {{ updatedCount: number, failedCount: number, remainingCount: number, category: string, failed: { id: string, error: string }[] } | null}
+   */
+  let studioBulkCategoryResult = null;
 
   /**
    * Map known backend/catalog status only — do not invent states.
@@ -286,6 +304,7 @@
     studioInventorySelected = {};
     studioBulkPendingAction = null;
     studioBulkDeleteResult = null;
+    studioBulkCategoryResult = null;
     setBulkActionState('idle');
   }
 
@@ -305,6 +324,18 @@
     if (studioInventorySelectedCount === 0 || studioBulkActionState === 'executing') return;
     studioBulkPendingAction = 'delete';
     studioBulkDeleteResult = null;
+    studioBulkCategoryResult = null;
+    setBulkActionState('confirming');
+  }
+
+  function enterBulkCategoryConfirm() {
+    if (studioInventorySelectedCount === 0 || studioBulkActionState === 'executing') return;
+    if (!STUDIO_BULK_CATEGORY_OPTIONS.includes(studioBulkCategoryTarget)) {
+      studioBulkCategoryTarget = STUDIO_BULK_CATEGORY_OPTIONS[0];
+    }
+    studioBulkPendingAction = 'category';
+    studioBulkDeleteResult = null;
+    studioBulkCategoryResult = null;
     setBulkActionState('confirming');
   }
 
@@ -317,6 +348,13 @@
   function dismissBulkDeleteResult() {
     if (studioBulkActionState === 'executing') return;
     studioBulkDeleteResult = null;
+    studioBulkPendingAction = null;
+    setBulkActionState(studioInventorySelectedCount > 0 ? 'reviewing' : 'idle');
+  }
+
+  function dismissBulkCategoryResult() {
+    if (studioBulkActionState === 'executing') return;
+    studioBulkCategoryResult = null;
     studioBulkPendingAction = null;
     setBulkActionState(studioInventorySelectedCount > 0 ? 'reviewing' : 'idle');
   }
@@ -407,6 +445,96 @@
     }
   }
 
+  /**
+   * Bulk category update by canonical reel.id — PATCH /api/reels/{id}/category per selection.
+   * Only supported metadata mutation path; partial failures keep failed ids selected.
+   */
+  async function executeBulkCategory() {
+    if (studioBulkActionState === 'executing') return;
+    if (studioBulkPendingAction !== 'category') return;
+    const category = String(studioBulkCategoryTarget || '').trim();
+    if (!STUDIO_BULK_CATEGORY_OPTIONS.includes(category)) {
+      uploadStatus.set('❌ Invalid category for bulk update');
+      return;
+    }
+    const idsToUpdate = [...studioInventorySelectedIds];
+    if (!idsToUpdate.length) return;
+
+    setBulkActionState('executing');
+    studioBulkCategoryResult = null;
+    uploadStatus.set(
+      `🏷️ Updating category to ${category} for ${idsToUpdate.length} production${idsToUpdate.length === 1 ? '' : 's'}…`
+    );
+
+    const token =
+      typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
+    if (!token) {
+      studioBulkCategoryResult = {
+        updatedCount: 0,
+        failedCount: idsToUpdate.length,
+        remainingCount: idsToUpdate.length,
+        category,
+        failed: idsToUpdate.map((id) => ({ id, error: 'Admin authentication required' }))
+      };
+      setBulkActionState('failed');
+      uploadStatus.set('❌ Admin authentication required for bulk category update');
+      return;
+    }
+
+    const { patchReelCategory } = await import('../../lib/api/media.js');
+    const { getAdminAuthorizationHeader } = await import('../../lib/api.js');
+    const headers = getAdminAuthorizationHeader(token);
+
+    /** @type {string[]} */
+    const updatedIds = [];
+    /** @type {{ id: string, error: string }[]} */
+    const failed = [];
+
+    for (const id of idsToUpdate) {
+      try {
+        await patchReelCategory(id, category, headers);
+        updatedIds.push(id);
+      } catch (error) {
+        failed.push({ id, error: error?.message || String(error) });
+      }
+    }
+
+    if (updatedIds.length) {
+      try {
+        await syncFromVault(true);
+      } catch {
+        /* inventory refresh best-effort after successful patches */
+      }
+    }
+
+    const nextSelected = {};
+    for (const item of failed) nextSelected[item.id] = true;
+    studioInventorySelected = nextSelected;
+
+    studioBulkCategoryResult = {
+      updatedCount: updatedIds.length,
+      failedCount: failed.length,
+      remainingCount: failed.length,
+      category,
+      failed
+    };
+    studioBulkPendingAction = failed.length ? 'category' : null;
+
+    if (failed.length === 0) {
+      setBulkActionState('success');
+      uploadStatus.set(
+        `✅ Updated category to ${category} for ${updatedIds.length} production${updatedIds.length === 1 ? '' : 's'}`
+      );
+    } else {
+      setBulkActionState('failed');
+      uploadStatus.set(
+        updatedIds.length
+          ? `⚠️ Bulk category: ${updatedIds.length} updated, ${failed.length} failed`
+          : `❌ Bulk category failed for ${failed.length}`
+      );
+    }
+  }
+
   /** Full production inventory from feed — placeholders excluded, no visibility cap. */
   $: studioInventoryBase = Object.values($feed || {})
     .flat()
@@ -466,6 +594,14 @@
       status: resolveProductionStatus(reel)
     };
   });
+  $: studioBulkCategoryPreview = (() => {
+    const counts = /** @type {Record<string, number>} */ ({});
+    for (const item of studioInventorySelectedSummary) {
+      const key = item.category || '(none)';
+      counts[key] = (counts[key] || 0) + 1;
+    }
+    return Object.entries(counts).map(([category, count]) => ({ category, count }));
+  })();
   $: studioInventoryAllVisibleSelected =
     studioInventoryVisibleIds.length > 0 &&
     studioInventoryVisibleIds.every((id) => !!studioInventorySelected[id]);
@@ -508,7 +644,8 @@
   } else if (
     studioInventorySelectedCount > 0 &&
     (studioBulkActionState === 'success' || studioBulkActionState === 'failed') &&
-    studioBulkPendingAction !== 'delete'
+    studioBulkPendingAction !== 'delete' &&
+    studioBulkPendingAction !== 'category'
   ) {
     studioBulkActionState = 'reviewing';
   }
@@ -1467,7 +1604,7 @@
                   {studioInventoryView.length}/{studioInventoryBase.length}
                 </span>
               </div>
-              {#if studioInventorySelectedCount > 0 || studioBulkDeleteResult}
+              {#if studioInventorySelectedCount > 0 || studioBulkDeleteResult || studioBulkCategoryResult}
                 <div
                   class="studio-bulk-toolbar"
                   role="region"
@@ -1519,11 +1656,25 @@
                     >
                       Bulk delete
                     </button>
+                    <label class="studio-bulk-category-picker">
+                      <span class="studio-bulk-category-label">Category</span>
+                      <select
+                        class="studio-bulk-category-select"
+                        bind:value={studioBulkCategoryTarget}
+                        disabled={studioBulkActionState === 'executing'}
+                        aria-label="Bulk category target"
+                      >
+                        {#each STUDIO_BULK_CATEGORY_OPTIONS as option}
+                          <option value={option}>{option}</option>
+                        {/each}
+                      </select>
+                    </label>
                     <button
                       type="button"
-                      class="studio-bulk-btn is-placeholder"
-                      disabled
-                      title="Bulk category update requires backend support — not available yet"
+                      class="studio-bulk-btn"
+                      on:click={enterBulkCategoryConfirm}
+                      disabled={studioBulkActionState === 'executing'}
+                      title="Update category for selected productions via PATCH /api/reels/:id/category"
                     >
                       Bulk category
                     </button>
@@ -1600,6 +1751,66 @@
                         </button>
                       </div>
                     </div>
+                  {:else if studioBulkPendingAction === 'category' && (studioBulkActionState === 'confirming' || studioBulkActionState === 'executing')}
+                    <div
+                      class="studio-bulk-confirm-preview"
+                      role="group"
+                      aria-label="Bulk category confirmation"
+                    >
+                      <div class="studio-bulk-confirm-title">Confirm bulk category</div>
+                      <p class="studio-bulk-confirm-copy">
+                        {#if studioBulkActionState === 'executing'}
+                          Updating {studioInventorySelectedCount || 'selected'} production{studioInventorySelectedCount === 1 ? '' : 's'}
+                          to {studioBulkCategoryTarget}…
+                        {:else}
+                          Set category to <strong>{studioBulkCategoryTarget}</strong> for
+                          {studioInventorySelectedCount} production{studioInventorySelectedCount === 1 ? '' : 's'}?
+                        {/if}
+                      </p>
+                      <div class="studio-bulk-summary-title">Current categories</div>
+                      <ul class="studio-bulk-summary-list">
+                        {#each studioBulkCategoryPreview as row (row.category)}
+                          <li>
+                            <span class="studio-bulk-summary-name">{row.category}</span>
+                            <span class="studio-bulk-summary-meta">{row.count}</span>
+                          </li>
+                        {/each}
+                      </ul>
+                      <div class="studio-bulk-summary-title">Affected productions</div>
+                      <ul class="studio-bulk-summary-list">
+                        {#each studioInventorySelectedSummary as item (item.id)}
+                          <li>
+                            <span class="studio-bulk-summary-name">{item.title}</span>
+                            <code class="studio-bulk-summary-id">{item.id}</code>
+                            <span class="studio-bulk-summary-meta"
+                              >{item.category || '(none)'} → {studioBulkCategoryTarget}</span
+                            >
+                          </li>
+                        {/each}
+                      </ul>
+                      <div class="studio-bulk-confirm-actions">
+                        <button
+                          type="button"
+                          class="studio-bulk-btn"
+                          on:click={cancelBulkConfirmPreview}
+                          disabled={studioBulkActionState === 'executing'}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          class="studio-bulk-btn"
+                          on:click={executeBulkCategory}
+                          disabled={studioBulkActionState === 'executing'}
+                        >
+                          {#if studioBulkActionState === 'executing'}
+                            Updating…
+                          {:else}
+                            Confirm category update
+                          {/if}
+                        </button>
+                      </div>
+                    </div>
                   {:else if studioBulkActionState === 'confirming'}
                     <div
                       class="studio-bulk-confirm-preview"
@@ -1609,13 +1820,16 @@
                       <div class="studio-bulk-confirm-title">Confirmation preview</div>
                       <p class="studio-bulk-confirm-copy">
                         {studioInventorySelectedCount} production{studioInventorySelectedCount === 1 ? '' : 's'}
-                        selected. Use Bulk delete to permanently remove them.
+                        selected. Use Bulk delete or Bulk category to apply a supported action.
                       </p>
                       <ul class="studio-bulk-summary-list">
                         {#each studioInventorySelectedSummary as item (item.id)}
                           <li>
                             <span class="studio-bulk-summary-name">{item.title}</span>
                             <code class="studio-bulk-summary-id">{item.id}</code>
+                            {#if item.category}
+                              <span class="studio-bulk-summary-meta">{item.category}</span>
+                            {/if}
                           </li>
                         {/each}
                       </ul>
@@ -1648,6 +1862,39 @@
                         type="button"
                         class="studio-bulk-btn"
                         on:click={dismissBulkDeleteResult}
+                      >
+                        Dismiss
+                      </button>
+                    </div>
+                  {/if}
+                  {#if studioBulkCategoryResult && (studioBulkActionState === 'success' || studioBulkActionState === 'failed')}
+                    <div
+                      class="studio-bulk-result"
+                      role="status"
+                      aria-live="polite"
+                      data-bulk-result={studioBulkActionState}
+                    >
+                      <div class="studio-bulk-result-title">Bulk category result</div>
+                      <p class="studio-bulk-confirm-copy">
+                        Target: {studioBulkCategoryResult.category}.
+                        Updated: {studioBulkCategoryResult.updatedCount}.
+                        Failed: {studioBulkCategoryResult.failedCount}.
+                        Remaining selected: {studioBulkCategoryResult.remainingCount}.
+                      </p>
+                      {#if studioBulkCategoryResult.failed.length}
+                        <ul class="studio-bulk-summary-list">
+                          {#each studioBulkCategoryResult.failed as item (item.id)}
+                            <li>
+                              <code class="studio-bulk-summary-id">{item.id}</code>
+                              <span class="studio-bulk-summary-meta">{item.error}</span>
+                            </li>
+                          {/each}
+                        </ul>
+                      {/if}
+                      <button
+                        type="button"
+                        class="studio-bulk-btn"
+                        on:click={dismissBulkCategoryResult}
                       >
                         Dismiss
                       </button>
