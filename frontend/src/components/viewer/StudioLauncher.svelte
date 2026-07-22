@@ -227,7 +227,7 @@
     tabindex="-1"
   >
     <div class="delete-modal-header"><h2 id="delete-modal-title" class="delete-modal-title">⚠️ CONFIRM DELETION</h2><button type="button" class="delete-modal-close" on:click={closeDeleteDialog} aria-label="Cancel deletion">✕</button></div>
-    <div class="delete-modal-content"><div class="delete-warning-icon">🗑️</div><p class="delete-message">Are you sure you want to permanently delete:</p><h3 class="delete-reel-title">"{deleteItemDisplayName}"</h3><p class="delete-details">Category: <span style="color: {UIAgent.getStudioConfigs($deleteConfirmReel.category).color}">{UIAgent.getStudioConfigs($deleteConfirmReel.category).label}</span></p><p class="delete-warning-text">This action cannot be undone.</p></div>
+    <div class="delete-modal-content"><div class="delete-warning-icon">🗑️</div><p class="delete-message">Are you sure you want to permanently delete:</p><h3 class="delete-reel-title">"{deleteItemDisplayName}"</h3><p class="delete-details">Category: <span style="color: {UIAgent.getStudioConfigs($deleteConfirmReel.category).color}">{UIAgent.getStudioConfigs($deleteConfirmReel.category).label}</span></p>{#if $deleteConfirmReel?.status}<p class="delete-details">Status: <span class="production-status-badge status-{String($deleteConfirmReel.status).toLowerCase()}">{String($deleteConfirmReel.status)}</span></p>{/if}{#if $deleteConfirmReel?.id}<p class="delete-details delete-id">ID: <code>{String($deleteConfirmReel.id)}</code></p>{/if}<p class="delete-warning-text">This action cannot be undone.</p></div>
     <div class="delete-modal-actions"><button type="button" class="delete-cancel-btn" on:click={closeDeleteDialog} disabled={$isDeleting}>CANCEL</button><button type="button" class="delete-confirm-btn" on:click={UIAgent.confirmDelete} disabled={$isDeleting}>{#if $isDeleting}<span class="delete-spinner"></span>DELETING...{:else}🗑️ CONFIRM DELETE{/if}</button></div>
   </div>
 </div>
@@ -310,4 +310,6 @@
   {studioFeedReels}
   {studioSeriesMetadataReelOptions}
   {studioSeriesMetadataReelLabel}
+  {isDeleting}
+  {deleteConfirmReel}
 />

@@ -602,6 +602,26 @@ margin: 0;
 .studio-inventory-sort { background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.18); color: #fff; border-radius: 4px; padding: 0.45rem 0.55rem; font-size: 0.8rem; }
 .studio-inventory-count { font-size: 0.75rem; color: rgba(255,255,255,0.55); white-space: nowrap; }
 .studio-inventory-empty { margin: 0.25rem 0 0; font-size: 0.8rem; color: rgba(255,255,255,0.5); }
+.studio-inventory-feedback { margin: 0 0 0.65rem; font-size: 0.75rem; color: rgba(255,255,255,0.7); }
+.studio-inventory-feedback.is-loading { color: var(--neon-cyan, #00f2ff); }
+.studio-inventory-feedback.is-error { color: #f87171; }
+.studio-inventory-feedback.is-ok { color: #86efac; }
+.production-status-badge, .production-type-badge { padding: 0.125rem 0.45rem; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.65rem; border: 1px solid rgba(255,255,255,0.18); color: rgba(255,255,255,0.85); }
+.production-status-badge.status-ready { border-color: rgba(34,197,94,0.55); color: #86efac; background: rgba(34,197,94,0.12); }
+.production-status-badge.status-processing, .production-status-badge.status-pending { border-color: rgba(234,179,8,0.55); color: #fde68a; background: rgba(234,179,8,0.12); }
+.production-status-badge.status-failed { border-color: rgba(239,68,68,0.55); color: #fca5a5; background: rgba(239,68,68,0.12); }
+.production-type-badge.type-video { border-color: rgba(0,242,255,0.35); color: var(--neon-cyan, #00f2ff); }
+.production-type-badge.type-image { border-color: rgba(168,85,247,0.4); color: #e9d5ff; }
+.production-error-text { max-width: 14rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #fca5a5; font-size: 0.7rem; }
+.title-save-feedback { position: absolute; right: 0; top: 0; font-size: 0.6rem; }
+.title-save-feedback.is-saving { color: var(--neon-cyan, #00f2ff); }
+.title-save-feedback.is-saved { color: #86efac; }
+.title-save-feedback.is-local { color: #fde68a; }
+.title-save-feedback.is-error { color: #fca5a5; }
+.asset-item.is-deleting { opacity: 0.55; pointer-events: none; }
+.asset-item.is-rename-busy .asset-title-input { border-bottom-color: var(--neon-cyan, #00f2ff); }
+.delete-btn:disabled, .unveil-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.delete-id code { font-size: 0.7rem; color: rgba(255,255,255,0.65); }
 .asset-list { display: flex; flex-direction: column; gap: 0.5rem; max-height: 300px; overflow-y: auto; }
 .asset-item { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); transition: all 0.3s; }
 .asset-item:hover { background: rgba(255,255,255,0.1); transform: translateX(5px); }

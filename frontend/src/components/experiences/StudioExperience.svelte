@@ -135,6 +135,10 @@
   export let studioFeedReels = [];
   export let studioSeriesMetadataReelOptions = [];
   export let studioSeriesMetadataReelLabel = '';
+  /** @type {import('svelte/store').Writable<boolean>} */
+  export let isDeleting;
+  /** @type {import('svelte/store').Writable<Record<string, unknown> | null>} */
+  export let deleteConfirmReel;
 
   let adminPasswordInput = '';
   let adminLoginError = '';
@@ -148,6 +152,51 @@
   let studioInventoryQuery = '';
   /** @type {'newest' | 'oldest' | 'title'} */
   let studioInventorySort = 'newest';
+
+  /** @type {string | null} */
+  let renameBusyId = null;
+  /** @type {Record<string, { kind: 'saving' | 'saved' | 'local' | 'error'; message: string }>} */
+  let renameRowFeedback = {};
+
+  /**
+   * Map known backend/catalog status only — do not invent states.
+   * @param {Record<string, unknown> | null | undefined} reel
+   */
+  function resolveProductionStatus(reel) {
+    const status = String(reel?.status || '').trim().toLowerCase();
+    if (status === 'pending' || status === 'processing' || status === 'ready' || status === 'failed') {
+      return status;
+    }
+    return '';
+  }
+
+  /**
+   * @param {Record<string, unknown> | null | undefined} reel
+   */
+  function resolveProductionType(reel) {
+    const type = String(reel?.type || '').trim().toLowerCase();
+    if (type === 'video' || type === 'image') return type;
+    if (reel?.isCatalogImage || reel?.isPersonalThumbnail) return 'image';
+    if (reel?.isPersonalVideo) return 'video';
+    return '';
+  }
+
+  /**
+   * @param {string} reelId
+   * @param {'saving' | 'saved' | 'local' | 'error'} kind
+   * @param {string} message
+   */
+  function setRenameRowFeedback(reelId, kind, message) {
+    if (!reelId) return;
+    renameRowFeedback = { ...renameRowFeedback, [reelId]: { kind, message } };
+  }
+
+  function clearRenameRowFeedback(reelId) {
+    if (!reelId || !renameRowFeedback[reelId]) return;
+    const next = { ...renameRowFeedback };
+    delete next[reelId];
+    renameRowFeedback = next;
+  }
 
   /** Full production inventory from feed — placeholders excluded, no visibility cap. */
   $: studioInventoryBase = Object.values($feed || {})
@@ -525,6 +574,8 @@
       });
       return next;
     });
+    renameBusyId = reelId;
+    setRenameRowFeedback(reelId, 'saving', 'Saving…');
     uploadStatus.set(`💾 SAVING: "${trimmed}"...`);
     let syncedWithBackend = false;
     try {
@@ -538,19 +589,25 @@
         reel.title = updated.title || trimmed;
         reel._syncedWithBackend = true;
         syncedWithBackend = true;
+        setRenameRowFeedback(reelId, 'saved', 'Synced');
         uploadStatus.set(`✅ SYNCED: "${reel.title}"`);
       } else {
         throw new Error(`Backend error ${res.status}`);
       }
     } catch {
       // Backend title PATCH is unavailable — keep local persistence; do not claim sync.
+      setRenameRowFeedback(reelId, 'local', 'Saved locally');
       uploadStatus.set(`✅ SAVED LOCALLY: "${trimmed}"`);
     }
     // Avoid destructive resync after failed title persistence (would rebuild from backend titles).
     if (syncedWithBackend) {
       resourceManager.setTimeout(() => syncFromVault(true), 500);
     }
-    resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
+    resourceManager.setTimeout(() => {
+      if (renameBusyId === reelId) renameBusyId = null;
+      clearRenameRowFeedback(reelId);
+      uploadStatus.set('Standby');
+    }, 2000);
   }
 
   export async function unveilToCloud(source) {
@@ -1125,15 +1182,39 @@
                   {studioInventoryView.length}/{studioInventoryBase.length}
                 </span>
               </div>
+              {#if !$viewerHydrationReady}
+                <p class="studio-inventory-feedback is-loading" role="status">Loading productions…</p>
+              {:else if $uploadStatus && $uploadStatus !== 'Standby'}
+                <p
+                  class="studio-inventory-feedback"
+                  class:is-loading={/SAVING|SYNCING|Deleting|DELETING|UPLOADING/i.test($uploadStatus)}
+                  class:is-error={/^❌|ERROR:/i.test($uploadStatus)}
+                  class:is-ok={/^✅/i.test($uploadStatus)}
+                  role="status"
+                >
+                  {$uploadStatus}
+                </p>
+              {/if}
               <div class="asset-list">
                 {#each studioInventoryView as reel (reel.id)}
                   {@const reelConfig = UIAgent.getStudioConfigs(reel.category)}
-                  <div class="asset-item smart-item" style="border-left: 4px solid {reelConfig.color}">
+                  {@const productionStatus = resolveProductionStatus(reel)}
+                  {@const productionType = resolveProductionType(reel)}
+                  {@const rowFeedback = renameRowFeedback[String(reel.id)] || null}
+                  {@const rowDeleting =
+                    !!$isDeleting && $deleteConfirmReel && String($deleteConfirmReel.id) === String(reel.id)}
+                  <div
+                    class="asset-item smart-item"
+                    class:is-deleting={rowDeleting}
+                    class:is-rename-busy={renameBusyId === String(reel.id)}
+                    style="border-left: 4px solid {reelConfig.color}"
+                  >
                     <div class="asset-info">
                       <div class="editable-title-wrapper">
                         <input
                           type="text"
                           value={reel.title || ''}
+                          disabled={rowDeleting || renameBusyId === String(reel.id)}
                           on:input={(event) => (reel.title = event.currentTarget.value)}
                           on:blur={() => updateReelTitle(reel, reel.title)}
                           on:keydown={(event) => {
@@ -1146,7 +1227,17 @@
                           class="asset-title-input"
                           aria-label="Edit production title"
                         />
-                        {#if reel.title !== reel.title_original}
+                        {#if rowFeedback}
+                          <small
+                            class="title-save-feedback"
+                            class:is-saving={rowFeedback.kind === 'saving'}
+                            class:is-saved={rowFeedback.kind === 'saved'}
+                            class:is-local={rowFeedback.kind === 'local'}
+                            class:is-error={rowFeedback.kind === 'error'}
+                          >
+                            {rowFeedback.message}
+                          </small>
+                        {:else if reel.title !== reel.title_original}
                           <small class="title-changed">Changed</small>
                         {/if}
                       </div>
@@ -1157,6 +1248,21 @@
                         >
                           {reel.category}
                         </span>
+                        {#if productionStatus}
+                          <span class="production-status-badge status-{productionStatus}">
+                            {productionStatus}
+                          </span>
+                        {/if}
+                        {#if productionType}
+                          <span class="production-type-badge type-{productionType}">
+                            {productionType}
+                          </span>
+                        {/if}
+                        {#if productionStatus === 'failed' && (reel.error_message || reel.errorMessage)}
+                          <span class="production-error-text" title={String(reel.error_message || reel.errorMessage)}>
+                            {reel.error_message || reel.errorMessage}
+                          </span>
+                        {/if}
                         {#if reel.auto_detected}
                           <span class="detection-meta">
                             🤖 Auto-placed ({reel.detection_confidence || 'High'})
@@ -1173,6 +1279,7 @@
                       {#if reel.isPersonalVideo}
                         <button
                           class="unveil-btn"
+                          disabled={rowDeleting || !!$isDeleting}
                           on:click={() =>
                             unveilToCloud(reel.file_name || reel.personal_video || reel.video_url)}
                           title="Upload to cloud"
@@ -1180,8 +1287,14 @@
                           🚀 UNVEIL
                         </button>
                       {/if}
-                      <button class="delete-btn" on:click={() => UIAgent.deleteProduction(reel.id)}>
-                        DELETE
+                      <button
+                        class="delete-btn"
+                        disabled={!!$isDeleting}
+                        aria-busy={rowDeleting}
+                        on:click={() => UIAgent.deleteProduction(reel.id)}
+                        title="Delete production (confirmation required)"
+                      >
+                        {rowDeleting ? 'DELETING…' : 'DELETE'}
                       </button>
                     </div>
                   </div>
