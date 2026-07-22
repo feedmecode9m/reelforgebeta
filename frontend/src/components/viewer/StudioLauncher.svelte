@@ -60,6 +60,7 @@
   export let AI_CLEANUP_AGENT;
   export let CATEGORY_DETECTOR;
   export let categoryNames;
+  export let persistentTitles = null;
   export let matchToContent;
   export let vaultUtils;
   export let syncFromVault;
@@ -292,6 +293,7 @@
   {AI_CLEANUP_AGENT}
   {CATEGORY_DETECTOR}
   {categoryNames}
+  {persistentTitles}
   {matchToContent}
   {vaultUtils}
   {syncFromVault}

@@ -106,6 +106,8 @@
   export let AI_CLEANUP_AGENT;
   export let CATEGORY_DETECTOR;
   export let categoryNames;
+  /** @type {{ saveTitle?: (reelId: string, titleData: { title?: string, title_original?: string }) => void } | null} */
+  export let persistentTitles = null;
   export let matchToContent;
   export let vaultUtils;
   /** @type {(preserveLocal?: boolean) => Promise<void>} */
@@ -453,9 +455,15 @@
       reel.title = trimmed;
       return;
     }
+    const reelId = String(reel.id);
     reel.title = trimmed;
     reel.title_original = trimmed;
     reel._localModified = true;
+    // Durable title source: canonical reel.id → persistentTitles / TITLES_STORAGE_KEY
+    persistentTitles?.saveTitle?.(reelId, {
+      title: trimmed,
+      title_original: trimmed
+    });
     feed.update((currentFeed) => {
       const next = { ...currentFeed };
       Object.keys(next).forEach((cat) => {
@@ -468,6 +476,7 @@
       return next;
     });
     uploadStatus.set(`💾 SAVING: "${trimmed}"...`);
+    let syncedWithBackend = false;
     try {
       const res = await fetch(`/api/reels/${reel.id}`, {
         method: 'PATCH',
@@ -478,14 +487,19 @@
         const updated = await res.json();
         reel.title = updated.title || trimmed;
         reel._syncedWithBackend = true;
+        syncedWithBackend = true;
         uploadStatus.set(`✅ SYNCED: "${reel.title}"`);
       } else {
         throw new Error(`Backend error ${res.status}`);
       }
     } catch {
+      // Backend title PATCH is unavailable — keep local persistence; do not claim sync.
       uploadStatus.set(`✅ SAVED LOCALLY: "${trimmed}"`);
     }
-    resourceManager.setTimeout(() => syncFromVault(true), 500);
+    // Avoid destructive resync after failed title persistence (would rebuild from backend titles).
+    if (syncedWithBackend) {
+      resourceManager.setTimeout(() => syncFromVault(true), 500);
+    }
     resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
   }
 

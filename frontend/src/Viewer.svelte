@@ -48,6 +48,7 @@ const {
   feedCardImageFallbacks,
   UIAgent,
   categoryNames,
+  persistentTitles,
   hasPlayableVideo,
   getImg,
   AI_CLEANUP_AGENT,
@@ -282,6 +283,7 @@ $: studioSeriesMetadataReelLabel = (() => {
   {AI_CLEANUP_AGENT}
   CATEGORY_DETECTOR={ctx.CATEGORY_DETECTOR}
   {categoryNames}
+  {persistentTitles}
   matchToContent={BLACK_STORIES_MATCHER.matchToContent.bind(BLACK_STORIES_MATCHER)}
   {vaultUtils}
   {syncFromVault}

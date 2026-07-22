@@ -965,7 +965,17 @@ const debugApi = import.meta.env.VITE_DEBUG_API === 'true';
 if (debugApi) console.info('[SYNC_DEBUG] syncFromVault:start', { preserveLocal, now });
 let rawData = [];
 try {
-const localTitles = get(persistentTitles);
+// Merge in-memory + localStorage titles so Studio renames survive refresh/resync
+// even if the persistentTitles store has not finished hydrating yet.
+let localTitles = { ...get(persistentTitles) };
+try {
+  const fromLs = JSON.parse(localStorage.getItem(CONFIG.TITLES_STORAGE_KEY) || '{}');
+  if (fromLs && typeof fromLs === 'object') {
+    localTitles = { ...fromLs, ...localTitles };
+  }
+} catch {
+  /* ignore */
+}
 let backendReachable = false;
 uploadStatus.set('🔄 Syncing with backend...');
 const healthy = await checkBackendHealth();
