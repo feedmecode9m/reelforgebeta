@@ -1047,8 +1047,7 @@
                   .sort(
                     (a, b) =>
                       new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
-                  )
-                  .slice(0, 5) as reel}
+                  ) as reel}
                   {@const reelConfig = UIAgent.getStudioConfigs(reel.category)}
                   <div class="asset-item smart-item" style="border-left: 4px solid {reelConfig.color}">
                     <div class="asset-info">
