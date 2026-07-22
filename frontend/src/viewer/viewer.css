@@ -602,9 +602,18 @@ margin: 0;
 .studio-inventory-row-select { display: flex; align-items: center; padding-right: 0.65rem; flex-shrink: 0; }
 .studio-bulk-toolbar { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin: 0 0 0.75rem; padding: 0.55rem 0.65rem; border: 1px solid rgba(0,242,255,0.25); border-radius: 4px; background: rgba(0,242,255,0.06); }
 .studio-bulk-count { font-size: 0.75rem; color: var(--neon-cyan, #00f2ff); margin-right: 0.25rem; }
+.studio-bulk-state { font-size: 0.7rem; color: rgba(255,255,255,0.55); text-transform: uppercase; letter-spacing: 0.04em; }
 .studio-bulk-btn { padding: 0.35rem 0.65rem; font-size: 0.7rem; letter-spacing: 0.04em; text-transform: uppercase; border-radius: 4px; border: 1px solid rgba(255,255,255,0.22); background: rgba(0,0,0,0.35); color: #fff; cursor: pointer; }
 .studio-bulk-btn:hover:not(:disabled) { border-color: var(--neon-cyan, #00f2ff); color: var(--neon-cyan, #00f2ff); }
 .studio-bulk-btn.is-placeholder, .studio-bulk-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.studio-bulk-summary, .studio-bulk-confirm-preview { flex: 1 1 100%; margin-top: 0.35rem; padding: 0.5rem 0.6rem; border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; background: rgba(0,0,0,0.28); }
+.studio-bulk-summary-title, .studio-bulk-confirm-title { font-size: 0.7rem; letter-spacing: 0.05em; text-transform: uppercase; color: rgba(255,255,255,0.7); margin-bottom: 0.35rem; }
+.studio-bulk-confirm-copy { margin: 0 0 0.45rem; font-size: 0.75rem; color: rgba(255,255,255,0.65); }
+.studio-bulk-summary-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.3rem; max-height: 8rem; overflow-y: auto; }
+.studio-bulk-summary-list li { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: baseline; font-size: 0.72rem; }
+.studio-bulk-summary-name { color: #fff; }
+.studio-bulk-summary-id { font-size: 0.65rem; color: rgba(255,255,255,0.55); }
+.studio-bulk-summary-meta { color: rgba(255,255,255,0.45); }
 .asset-item.is-selected { background: rgba(0,242,255,0.08); border-color: rgba(0,242,255,0.28); }
 .studio-inventory-search { flex: 1 1 12rem; min-width: 10rem; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.18); color: #fff; border-radius: 4px; padding: 0.45rem 0.65rem; font-size: 0.8rem; }
 .studio-inventory-search:focus { outline: none; border-color: var(--neon-cyan); }

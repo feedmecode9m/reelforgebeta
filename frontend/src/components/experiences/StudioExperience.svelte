@@ -163,6 +163,11 @@
   let studioInventorySelected = {};
   /** @type {HTMLInputElement | null} */
   let studioSelectAllCheckbox = null;
+  /**
+   * UI-only bulk action lifecycle. Never triggers API/mutation.
+   * @type {'idle' | 'reviewing' | 'confirming' | 'executing' | 'success' | 'failed'}
+   */
+  let studioBulkActionState = 'idle';
 
   /**
    * Map known backend/catalog status only — do not invent states.
@@ -204,12 +209,51 @@
     renameRowFeedback = next;
   }
 
+  /** @param {unknown} reelId */
+  function normalizeInventorySelectionId(reelId) {
+    return String(reelId ?? '').trim();
+  }
+
+  /**
+   * Selectable = canonical id present and not a placeholder.
+   * @param {Record<string, unknown> | null | undefined} reel
+   */
+  function isSelectableInventoryReel(reel) {
+    if (!reel || reel.isPlaceholder) return false;
+    return !!normalizeInventorySelectionId(reel.id);
+  }
+
+  /** @param {string} id */
+  function findInventoryReelById(id) {
+    const needle = normalizeInventorySelectionId(id);
+    if (!needle) return null;
+    return (
+      studioInventoryBase.find((reel) => normalizeInventorySelectionId(reel?.id) === needle) || null
+    );
+  }
+
+  function setBulkActionState(next) {
+    const allowed = new Set(['idle', 'reviewing', 'confirming', 'executing', 'success', 'failed']);
+    if (!allowed.has(next)) return;
+    // Safety: never enter executing — no bulk mutation path exists yet.
+    if (next === 'executing' || next === 'success' || next === 'failed') {
+      studioBulkActionState = studioInventorySelectedCount > 0 ? 'reviewing' : 'idle';
+      return;
+    }
+    studioBulkActionState = next;
+  }
+
   /** @param {string | number | null | undefined} reelId */
   function toggleInventorySelection(reelId) {
-    const id = String(reelId || '').trim();
+    const id = normalizeInventorySelectionId(reelId);
     if (!id) return;
+    const currentlySelected = !!studioInventorySelected[id];
+    if (!currentlySelected) {
+      const reel = findInventoryReelById(id);
+      if (!isSelectableInventoryReel(reel)) return;
+    }
     const next = { ...studioInventorySelected };
-    if (next[id]) delete next[id];
+    if (currentlySelected) delete next[id];
     else next[id] = true;
     studioInventorySelected = next;
   }
@@ -217,8 +261,8 @@
   function selectAllVisibleInventory() {
     const next = { ...studioInventorySelected };
     for (const reel of studioInventoryView) {
-      const id = String(reel?.id || '').trim();
-      if (id) next[id] = true;
+      if (!isSelectableInventoryReel(reel)) continue;
+      next[normalizeInventorySelectionId(reel.id)] = true;
     }
     studioInventorySelected = next;
   }
@@ -226,7 +270,7 @@
   function clearVisibleInventorySelection() {
     const next = { ...studioInventorySelected };
     for (const reel of studioInventoryView) {
-      const id = String(reel?.id || '').trim();
+      const id = normalizeInventorySelectionId(reel?.id);
       if (id) delete next[id];
     }
     studioInventorySelected = next;
@@ -234,11 +278,21 @@
 
   function clearInventorySelection() {
     studioInventorySelected = {};
+    setBulkActionState('idle');
   }
 
   function toggleSelectAllVisibleInventory() {
     if (studioInventoryAllVisibleSelected) clearVisibleInventorySelection();
     else selectAllVisibleInventory();
+  }
+
+  function enterBulkConfirmPreview() {
+    if (studioInventorySelectedCount === 0) return;
+    setBulkActionState('confirming');
+  }
+
+  function cancelBulkConfirmPreview() {
+    setBulkActionState(studioInventorySelectedCount > 0 ? 'reviewing' : 'idle');
   }
 
   /** Full production inventory from feed — placeholders excluded, no visibility cap. */
@@ -287,9 +341,19 @@
   })();
 
   $: studioInventoryVisibleIds = studioInventoryView
-    .map((reel) => String(reel?.id || '').trim())
-    .filter(Boolean);
-  $: studioInventorySelectedCount = Object.keys(studioInventorySelected).length;
+    .filter((reel) => isSelectableInventoryReel(reel))
+    .map((reel) => normalizeInventorySelectionId(reel.id));
+  $: studioInventorySelectedIds = Object.keys(studioInventorySelected);
+  $: studioInventorySelectedCount = studioInventorySelectedIds.length;
+  $: studioInventorySelectedSummary = studioInventorySelectedIds.map((id) => {
+    const reel = findInventoryReelById(id);
+    return {
+      id,
+      title: String(reel?.title || reel?.name || id),
+      category: String(reel?.category || ''),
+      status: resolveProductionStatus(reel)
+    };
+  });
   $: studioInventoryAllVisibleSelected =
     studioInventoryVisibleIds.length > 0 &&
     studioInventoryVisibleIds.every((id) => !!studioInventorySelected[id]);
@@ -300,10 +364,12 @@
     studioSelectAllCheckbox.indeterminate = studioInventorySomeVisibleSelected;
   }
 
-  // Drop selections for ids no longer in the inventory (e.g. after delete/sync).
+  // Drop selections for ids no longer selectable (deleted / placeholder / missing).
   $: {
     const validIds = new Set(
-      studioInventoryBase.map((reel) => String(reel?.id || '').trim()).filter(Boolean)
+      studioInventoryBase
+        .filter((reel) => isSelectableInventoryReel(reel))
+        .map((reel) => normalizeInventorySelectionId(reel.id))
     );
     const selectedIds = Object.keys(studioInventorySelected);
     if (selectedIds.some((id) => !validIds.has(id))) {
@@ -313,6 +379,13 @@
       }
       studioInventorySelected = next;
     }
+  }
+
+  // Keep bulk UI state aligned with selection — never invent executing/success/failed.
+  $: if (studioInventorySelectedCount === 0 && studioBulkActionState !== 'idle') {
+    studioBulkActionState = 'idle';
+  } else if (studioInventorySelectedCount > 0 && studioBulkActionState === 'idle') {
+    studioBulkActionState = 'reviewing';
   }
 
   const FOCUSABLE_SELECTOR = [
@@ -622,7 +695,10 @@
   export async function updateReelTitle(reel, nextTitle) {
     if (!reel?.id || !nextTitle?.trim()) return;
     const trimmed = nextTitle.trim();
-    if (trimmed === (reel.title_original || reel.title)) {
+    // Compare against title_original only — do not fall back to reel.title.
+    // Input handlers mutate reel.title before blur/Enter, which would skip persistence.
+    const original = String(reel.title_original ?? '').trim();
+    if (original && trimmed === original) {
       reel.title = trimmed;
       return;
     }
@@ -1267,9 +1343,17 @@
                 </span>
               </div>
               {#if studioInventorySelectedCount > 0}
-                <div class="studio-bulk-toolbar" role="region" aria-label="Bulk production actions">
+                <div
+                  class="studio-bulk-toolbar"
+                  role="region"
+                  aria-label="Bulk production actions"
+                  data-bulk-action-state={studioBulkActionState}
+                >
                   <span class="studio-bulk-count" aria-live="polite">
                     {studioInventorySelectedCount} selected
+                  </span>
+                  <span class="studio-bulk-state" aria-live="polite">
+                    State: {studioBulkActionState}
                   </span>
                   <button
                     type="button"
@@ -1278,6 +1362,23 @@
                   >
                     Clear selection
                   </button>
+                  {#if studioBulkActionState !== 'confirming'}
+                    <button
+                      type="button"
+                      class="studio-bulk-btn"
+                      on:click={enterBulkConfirmPreview}
+                    >
+                      Review selection
+                    </button>
+                  {:else}
+                    <button
+                      type="button"
+                      class="studio-bulk-btn"
+                      on:click={cancelBulkConfirmPreview}
+                    >
+                      Back to review
+                    </button>
+                  {/if}
                   <button
                     type="button"
                     class="studio-bulk-btn is-placeholder"
@@ -1302,6 +1403,52 @@
                   >
                     Bulk export
                   </button>
+                  <div class="studio-bulk-summary" aria-label="Selected productions summary">
+                    <div class="studio-bulk-summary-title">Selected items</div>
+                    <ul class="studio-bulk-summary-list">
+                      {#each studioInventorySelectedSummary as item (item.id)}
+                        <li>
+                          <span class="studio-bulk-summary-name">{item.title}</span>
+                          <code class="studio-bulk-summary-id">{item.id}</code>
+                          {#if item.category}
+                            <span class="studio-bulk-summary-meta">{item.category}</span>
+                          {/if}
+                          {#if item.status}
+                            <span class="studio-bulk-summary-meta">{item.status}</span>
+                          {/if}
+                        </li>
+                      {/each}
+                    </ul>
+                  </div>
+                  {#if studioBulkActionState === 'confirming'}
+                    <div
+                      class="studio-bulk-confirm-preview"
+                      role="group"
+                      aria-label="Bulk action confirmation preview"
+                    >
+                      <div class="studio-bulk-confirm-title">Confirmation preview</div>
+                      <p class="studio-bulk-confirm-copy">
+                        {studioInventorySelectedCount} production{studioInventorySelectedCount === 1 ? '' : 's'}
+                        ready for a future bulk action. No bulk mutation will run.
+                      </p>
+                      <ul class="studio-bulk-summary-list">
+                        {#each studioInventorySelectedSummary as item (item.id)}
+                          <li>
+                            <span class="studio-bulk-summary-name">{item.title}</span>
+                            <code class="studio-bulk-summary-id">{item.id}</code>
+                          </li>
+                        {/each}
+                      </ul>
+                      <button
+                        type="button"
+                        class="studio-bulk-btn is-placeholder"
+                        disabled
+                        title="Bulk confirmation is preview-only until backend support exists"
+                      >
+                        Confirm bulk action (unavailable)
+                      </button>
+                    </div>
+                  {/if}
                 </div>
               {/if}
               {#if !$viewerHydrationReady}
