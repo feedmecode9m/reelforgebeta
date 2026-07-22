@@ -164,10 +164,17 @@
   /** @type {HTMLInputElement | null} */
   let studioSelectAllCheckbox = null;
   /**
-   * UI-only bulk action lifecycle. Never triggers API/mutation.
+   * Bulk action lifecycle. Only bulk delete may enter executing/success/failed.
    * @type {'idle' | 'reviewing' | 'confirming' | 'executing' | 'success' | 'failed'}
    */
   let studioBulkActionState = 'idle';
+  /** @type {null | 'delete'} */
+  let studioBulkPendingAction = null;
+  /**
+   * Last bulk delete outcome (kept for result visibility / retry).
+   * @type {{ deletedCount: number, failedCount: number, remainingCount: number, failed: { id: string, error: string }[] } | null}
+   */
+  let studioBulkDeleteResult = null;
 
   /**
    * Map known backend/catalog status only — do not invent states.
@@ -235,16 +242,12 @@
   function setBulkActionState(next) {
     const allowed = new Set(['idle', 'reviewing', 'confirming', 'executing', 'success', 'failed']);
     if (!allowed.has(next)) return;
-    // Safety: never enter executing — no bulk mutation path exists yet.
-    if (next === 'executing' || next === 'success' || next === 'failed') {
-      studioBulkActionState = studioInventorySelectedCount > 0 ? 'reviewing' : 'idle';
-      return;
-    }
     studioBulkActionState = next;
   }
 
   /** @param {string | number | null | undefined} reelId */
   function toggleInventorySelection(reelId) {
+    if (studioBulkActionState === 'executing') return;
     const id = normalizeInventorySelectionId(reelId);
     if (!id) return;
     const currentlySelected = !!studioInventorySelected[id];
@@ -259,6 +262,7 @@
   }
 
   function selectAllVisibleInventory() {
+    if (studioBulkActionState === 'executing') return;
     const next = { ...studioInventorySelected };
     for (const reel of studioInventoryView) {
       if (!isSelectableInventoryReel(reel)) continue;
@@ -268,6 +272,7 @@
   }
 
   function clearVisibleInventorySelection() {
+    if (studioBulkActionState === 'executing') return;
     const next = { ...studioInventorySelected };
     for (const reel of studioInventoryView) {
       const id = normalizeInventorySelectionId(reel?.id);
@@ -277,22 +282,129 @@
   }
 
   function clearInventorySelection() {
+    if (studioBulkActionState === 'executing') return;
     studioInventorySelected = {};
+    studioBulkPendingAction = null;
+    studioBulkDeleteResult = null;
     setBulkActionState('idle');
   }
 
   function toggleSelectAllVisibleInventory() {
+    if (studioBulkActionState === 'executing') return;
     if (studioInventoryAllVisibleSelected) clearVisibleInventorySelection();
     else selectAllVisibleInventory();
   }
 
   function enterBulkConfirmPreview() {
-    if (studioInventorySelectedCount === 0) return;
+    if (studioInventorySelectedCount === 0 || studioBulkActionState === 'executing') return;
+    studioBulkPendingAction = null;
+    setBulkActionState('confirming');
+  }
+
+  function enterBulkDeleteConfirm() {
+    if (studioInventorySelectedCount === 0 || studioBulkActionState === 'executing') return;
+    studioBulkPendingAction = 'delete';
+    studioBulkDeleteResult = null;
     setBulkActionState('confirming');
   }
 
   function cancelBulkConfirmPreview() {
+    if (studioBulkActionState === 'executing') return;
+    studioBulkPendingAction = null;
     setBulkActionState(studioInventorySelectedCount > 0 ? 'reviewing' : 'idle');
+  }
+
+  function dismissBulkDeleteResult() {
+    if (studioBulkActionState === 'executing') return;
+    studioBulkDeleteResult = null;
+    studioBulkPendingAction = null;
+    setBulkActionState(studioInventorySelectedCount > 0 ? 'reviewing' : 'idle');
+  }
+
+  /**
+   * Bulk delete by canonical reel.id only — DELETE /api/reels/{id} per selection.
+   * Partial failures keep failed ids selected for retry.
+   */
+  async function executeBulkDelete() {
+    if (studioBulkActionState === 'executing') return;
+    if (studioBulkPendingAction !== 'delete') return;
+    const idsToDelete = [...studioInventorySelectedIds];
+    if (!idsToDelete.length) return;
+
+    setBulkActionState('executing');
+    studioBulkDeleteResult = null;
+    uploadStatus.set(`🗑️ Bulk deleting ${idsToDelete.length} production${idsToDelete.length === 1 ? '' : 's'}…`);
+
+    const token =
+      typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
+    if (!token) {
+      studioBulkDeleteResult = {
+        deletedCount: 0,
+        failedCount: idsToDelete.length,
+        remainingCount: idsToDelete.length,
+        failed: idsToDelete.map((id) => ({ id, error: 'Admin authentication required' }))
+      };
+      setBulkActionState('failed');
+      uploadStatus.set('❌ Admin authentication required for bulk delete');
+      return;
+    }
+
+    const { deleteReelById } = await import('../../lib/api/media.js');
+    const { applyCanonicalDeleteClientEffects } = await import('../../lib/deletionSync.js');
+    const { getAdminAuthorizationHeader } = await import('../../lib/api.js');
+    const headers = getAdminAuthorizationHeader(token);
+
+    /** @type {string[]} */
+    const deletedIds = [];
+    /** @type {{ id: string, error: string }[]} */
+    const failed = [];
+
+    for (const id of idsToDelete) {
+      try {
+        await deleteReelById(id, headers);
+        deletedIds.push(id);
+      } catch (error) {
+        failed.push({ id, error: error?.message || String(error) });
+      }
+    }
+
+    if (deletedIds.length) {
+      applyCanonicalDeleteClientEffects(
+        { ctx: { feed, personalVideos } },
+        { reelIds: deletedIds }
+      );
+      try {
+        await syncFromVault(true);
+      } catch {
+        /* inventory refresh best-effort; tombstones already applied */
+      }
+    }
+
+    const nextSelected = {};
+    for (const item of failed) nextSelected[item.id] = true;
+    studioInventorySelected = nextSelected;
+
+    studioBulkDeleteResult = {
+      deletedCount: deletedIds.length,
+      failedCount: failed.length,
+      remainingCount: failed.length,
+      failed
+    };
+    studioBulkPendingAction = failed.length ? 'delete' : null;
+
+    if (failed.length === 0) {
+      setBulkActionState('success');
+      uploadStatus.set(
+        `✅ Bulk deleted ${deletedIds.length} production${deletedIds.length === 1 ? '' : 's'}`
+      );
+    } else {
+      setBulkActionState('failed');
+      uploadStatus.set(
+        deletedIds.length
+          ? `⚠️ Bulk delete: ${deletedIds.length} deleted, ${failed.length} failed`
+          : `❌ Bulk delete failed for ${failed.length}`
+      );
+    }
   }
 
   /** Full production inventory from feed — placeholders excluded, no visibility cap. */
@@ -381,10 +493,23 @@
     }
   }
 
-  // Keep bulk UI state aligned with selection — never invent executing/success/failed.
-  $: if (studioInventorySelectedCount === 0 && studioBulkActionState !== 'idle') {
+  // Keep bulk UI state aligned with selection (preserve execute/result states).
+  $: if (
+    studioInventorySelectedCount === 0 &&
+    studioBulkActionState !== 'idle' &&
+    studioBulkActionState !== 'executing' &&
+    studioBulkActionState !== 'success' &&
+    studioBulkActionState !== 'failed'
+  ) {
     studioBulkActionState = 'idle';
+    studioBulkPendingAction = null;
   } else if (studioInventorySelectedCount > 0 && studioBulkActionState === 'idle') {
+    studioBulkActionState = 'reviewing';
+  } else if (
+    studioInventorySelectedCount > 0 &&
+    (studioBulkActionState === 'success' || studioBulkActionState === 'failed') &&
+    studioBulkPendingAction !== 'delete'
+  ) {
     studioBulkActionState = 'reviewing';
   }
 
@@ -1316,7 +1441,7 @@
                     type="checkbox"
                     class="studio-inventory-checkbox"
                     checked={studioInventoryAllVisibleSelected}
-                    disabled={studioInventoryVisibleIds.length === 0}
+                    disabled={studioInventoryVisibleIds.length === 0 || studioBulkActionState === 'executing'}
                     on:change={toggleSelectAllVisibleInventory}
                     aria-label="Select all visible productions"
                   />
@@ -1342,94 +1467,107 @@
                   {studioInventoryView.length}/{studioInventoryBase.length}
                 </span>
               </div>
-              {#if studioInventorySelectedCount > 0}
+              {#if studioInventorySelectedCount > 0 || studioBulkDeleteResult}
                 <div
                   class="studio-bulk-toolbar"
                   role="region"
                   aria-label="Bulk production actions"
                   data-bulk-action-state={studioBulkActionState}
                 >
-                  <span class="studio-bulk-count" aria-live="polite">
-                    {studioInventorySelectedCount} selected
-                  </span>
+                  {#if studioInventorySelectedCount > 0}
+                    <span class="studio-bulk-count" aria-live="polite">
+                      {studioInventorySelectedCount} selected
+                    </span>
+                  {/if}
                   <span class="studio-bulk-state" aria-live="polite">
                     State: {studioBulkActionState}
                   </span>
-                  <button
-                    type="button"
-                    class="studio-bulk-btn"
-                    on:click={clearInventorySelection}
-                  >
-                    Clear selection
-                  </button>
-                  {#if studioBulkActionState !== 'confirming'}
+                  {#if studioInventorySelectedCount > 0}
                     <button
                       type="button"
                       class="studio-bulk-btn"
-                      on:click={enterBulkConfirmPreview}
+                      on:click={clearInventorySelection}
+                      disabled={studioBulkActionState === 'executing'}
                     >
-                      Review selection
+                      Clear selection
                     </button>
-                  {:else}
+                    {#if studioBulkActionState !== 'confirming'}
+                      <button
+                        type="button"
+                        class="studio-bulk-btn"
+                        on:click={enterBulkConfirmPreview}
+                        disabled={studioBulkActionState === 'executing'}
+                      >
+                        Review selection
+                      </button>
+                    {:else}
+                      <button
+                        type="button"
+                        class="studio-bulk-btn"
+                        on:click={cancelBulkConfirmPreview}
+                        disabled={studioBulkActionState === 'executing'}
+                      >
+                        Back to review
+                      </button>
+                    {/if}
                     <button
                       type="button"
-                      class="studio-bulk-btn"
-                      on:click={cancelBulkConfirmPreview}
+                      class="studio-bulk-btn is-destructive"
+                      on:click={enterBulkDeleteConfirm}
+                      disabled={studioBulkActionState === 'executing'}
+                      title="Delete selected productions by id"
                     >
-                      Back to review
+                      Bulk delete
                     </button>
+                    <button
+                      type="button"
+                      class="studio-bulk-btn is-placeholder"
+                      disabled
+                      title="Bulk category update requires backend support — not available yet"
+                    >
+                      Bulk category
+                    </button>
+                    <button
+                      type="button"
+                      class="studio-bulk-btn is-placeholder"
+                      disabled
+                      title="Bulk export requires backend support — not available yet"
+                    >
+                      Bulk export
+                    </button>
+                    <div class="studio-bulk-summary" aria-label="Selected productions summary">
+                      <div class="studio-bulk-summary-title">Selected items</div>
+                      <ul class="studio-bulk-summary-list">
+                        {#each studioInventorySelectedSummary as item (item.id)}
+                          <li>
+                            <span class="studio-bulk-summary-name">{item.title}</span>
+                            <code class="studio-bulk-summary-id">{item.id}</code>
+                            {#if item.category}
+                              <span class="studio-bulk-summary-meta">{item.category}</span>
+                            {/if}
+                            {#if item.status}
+                              <span class="studio-bulk-summary-meta">{item.status}</span>
+                            {/if}
+                          </li>
+                        {/each}
+                      </ul>
+                    </div>
                   {/if}
-                  <button
-                    type="button"
-                    class="studio-bulk-btn is-placeholder"
-                    disabled
-                    title="Bulk delete requires backend support — not available yet"
-                  >
-                    Bulk delete
-                  </button>
-                  <button
-                    type="button"
-                    class="studio-bulk-btn is-placeholder"
-                    disabled
-                    title="Bulk category update requires backend support — not available yet"
-                  >
-                    Bulk category
-                  </button>
-                  <button
-                    type="button"
-                    class="studio-bulk-btn is-placeholder"
-                    disabled
-                    title="Bulk export requires backend support — not available yet"
-                  >
-                    Bulk export
-                  </button>
-                  <div class="studio-bulk-summary" aria-label="Selected productions summary">
-                    <div class="studio-bulk-summary-title">Selected items</div>
-                    <ul class="studio-bulk-summary-list">
-                      {#each studioInventorySelectedSummary as item (item.id)}
-                        <li>
-                          <span class="studio-bulk-summary-name">{item.title}</span>
-                          <code class="studio-bulk-summary-id">{item.id}</code>
-                          {#if item.category}
-                            <span class="studio-bulk-summary-meta">{item.category}</span>
-                          {/if}
-                          {#if item.status}
-                            <span class="studio-bulk-summary-meta">{item.status}</span>
-                          {/if}
-                        </li>
-                      {/each}
-                    </ul>
-                  </div>
-                  {#if studioBulkActionState === 'confirming'}
+                  {#if studioBulkPendingAction === 'delete' && (studioBulkActionState === 'confirming' || studioBulkActionState === 'executing')}
                     <div
                       class="studio-bulk-confirm-preview"
                       role="group"
-                      aria-label="Bulk action confirmation preview"
+                      aria-label="Bulk delete confirmation"
                     >
-                      <div class="studio-bulk-confirm-title">Confirmation preview</div>
+                      <div class="studio-bulk-confirm-title">Confirm bulk delete</div>
                       <p class="studio-bulk-confirm-copy">
-                        {studioInventorySelectedCount} production{studioInventorySelectedCount === 1 ? '' : 's'}
-                        ready for a future bulk action. No bulk mutation will run.
+                        {#if studioBulkActionState === 'executing'}
+                          Deleting {studioInventorySelectedCount || 'selected'} production{studioInventorySelectedCount === 1 ? '' : 's'}…
+                        {:else}
+                          Permanently delete
+                          {studioInventorySelectedCount} production{studioInventorySelectedCount === 1 ? '' : 's'}?
+                          This cannot be undone.
+                        {/if}
                       </p>
                       <ul class="studio-bulk-summary-list">
                         {#each studioInventorySelectedSummary as item (item.id)}
@@ -1439,13 +1577,79 @@
                           </li>
                         {/each}
                       </ul>
+                      <div class="studio-bulk-confirm-actions">
+                        <button
+                          type="button"
+                          class="studio-bulk-btn"
+                          on:click={cancelBulkConfirmPreview}
+                          disabled={studioBulkActionState === 'executing'}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          class="studio-bulk-btn is-destructive"
+                          on:click={executeBulkDelete}
+                          disabled={studioBulkActionState === 'executing'}
+                        >
+                          {#if studioBulkActionState === 'executing'}
+                            Deleting…
+                          {:else}
+                            Confirm delete
+                          {/if}
+                        </button>
+                      </div>
+                    </div>
+                  {:else if studioBulkActionState === 'confirming'}
+                    <div
+                      class="studio-bulk-confirm-preview"
+                      role="group"
+                      aria-label="Bulk action confirmation preview"
+                    >
+                      <div class="studio-bulk-confirm-title">Confirmation preview</div>
+                      <p class="studio-bulk-confirm-copy">
+                        {studioInventorySelectedCount} production{studioInventorySelectedCount === 1 ? '' : 's'}
+                        selected. Use Bulk delete to permanently remove them.
+                      </p>
+                      <ul class="studio-bulk-summary-list">
+                        {#each studioInventorySelectedSummary as item (item.id)}
+                          <li>
+                            <span class="studio-bulk-summary-name">{item.title}</span>
+                            <code class="studio-bulk-summary-id">{item.id}</code>
+                          </li>
+                        {/each}
+                      </ul>
+                    </div>
+                  {/if}
+                  {#if studioBulkDeleteResult && (studioBulkActionState === 'success' || studioBulkActionState === 'failed')}
+                    <div
+                      class="studio-bulk-result"
+                      role="status"
+                      aria-live="polite"
+                      data-bulk-result={studioBulkActionState}
+                    >
+                      <div class="studio-bulk-result-title">Bulk delete result</div>
+                      <p class="studio-bulk-confirm-copy">
+                        Deleted: {studioBulkDeleteResult.deletedCount}.
+                        Failed: {studioBulkDeleteResult.failedCount}.
+                        Remaining selected: {studioBulkDeleteResult.remainingCount}.
+                      </p>
+                      {#if studioBulkDeleteResult.failed.length}
+                        <ul class="studio-bulk-summary-list">
+                          {#each studioBulkDeleteResult.failed as item (item.id)}
+                            <li>
+                              <code class="studio-bulk-summary-id">{item.id}</code>
+                              <span class="studio-bulk-summary-meta">{item.error}</span>
+                            </li>
+                          {/each}
+                        </ul>
+                      {/if}
                       <button
                         type="button"
-                        class="studio-bulk-btn is-placeholder"
-                        disabled
-                        title="Bulk confirmation is preview-only until backend support exists"
+                        class="studio-bulk-btn"
+                        on:click={dismissBulkDeleteResult}
                       >
-                        Confirm bulk action (unavailable)
+                        Dismiss
                       </button>
                     </div>
                   {/if}
@@ -1486,7 +1690,7 @@
                         type="checkbox"
                         class="studio-inventory-checkbox"
                         checked={rowSelected}
-                        disabled={rowDeleting}
+                        disabled={rowDeleting || studioBulkActionState === 'executing'}
                         on:change={() => toggleInventorySelection(reelId)}
                         aria-label="Select production {reel.title || reelId}"
                       />

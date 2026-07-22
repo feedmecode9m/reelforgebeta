@@ -606,9 +606,14 @@ margin: 0;
 .studio-bulk-btn { padding: 0.35rem 0.65rem; font-size: 0.7rem; letter-spacing: 0.04em; text-transform: uppercase; border-radius: 4px; border: 1px solid rgba(255,255,255,0.22); background: rgba(0,0,0,0.35); color: #fff; cursor: pointer; }
 .studio-bulk-btn:hover:not(:disabled) { border-color: var(--neon-cyan, #00f2ff); color: var(--neon-cyan, #00f2ff); }
 .studio-bulk-btn.is-placeholder, .studio-bulk-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-.studio-bulk-summary, .studio-bulk-confirm-preview { flex: 1 1 100%; margin-top: 0.35rem; padding: 0.5rem 0.6rem; border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; background: rgba(0,0,0,0.28); }
-.studio-bulk-summary-title, .studio-bulk-confirm-title { font-size: 0.7rem; letter-spacing: 0.05em; text-transform: uppercase; color: rgba(255,255,255,0.7); margin-bottom: 0.35rem; }
+.studio-bulk-btn.is-destructive { border-color: rgba(255, 80, 80, 0.55); color: #ff9a9a; }
+.studio-bulk-btn.is-destructive:hover:not(:disabled) { border-color: #ff5050; color: #ff5050; }
+.studio-bulk-summary, .studio-bulk-confirm-preview, .studio-bulk-result { flex: 1 1 100%; margin-top: 0.35rem; padding: 0.5rem 0.6rem; border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; background: rgba(0,0,0,0.28); }
+.studio-bulk-summary-title, .studio-bulk-confirm-title, .studio-bulk-result-title { font-size: 0.7rem; letter-spacing: 0.05em; text-transform: uppercase; color: rgba(255,255,255,0.7); margin-bottom: 0.35rem; }
 .studio-bulk-confirm-copy { margin: 0 0 0.45rem; font-size: 0.75rem; color: rgba(255,255,255,0.65); }
+.studio-bulk-confirm-actions { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 0.45rem; }
+.studio-bulk-result[data-bulk-result="success"] { border-color: rgba(80, 220, 140, 0.45); }
+.studio-bulk-result[data-bulk-result="failed"] { border-color: rgba(255, 80, 80, 0.45); }
 .studio-bulk-summary-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.3rem; max-height: 8rem; overflow-y: auto; }
 .studio-bulk-summary-list li { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: baseline; font-size: 0.72rem; }
 .studio-bulk-summary-name { color: #fff; }
