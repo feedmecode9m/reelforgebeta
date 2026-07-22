@@ -1,0 +1,87 @@
+{
+  "mission": "RELEASE-01",
+  "capturedAt": "2026-07-22T23:02:42.757Z",
+  "productionUrl": "https://strong-lolly-a9fcb4.netlify.app",
+  "apiUrl": "https://reelforge-deploy-production.up.railway.app",
+  "gitBaseline": "7aacae7",
+  "checks": {
+    "frontend_live": {
+      "pass": true,
+      "http": 200,
+      "js": "assets/index-CndLAw4Y.js"
+    },
+    "bundle_identity": {
+      "pass": true,
+      "file": "assets/index-CndLAw4Y.js",
+      "bytes": 1576342,
+      "sha256": "fb6245b5a65fde12fc3a74376ff77ecbdc59c829530092c2c70edfd110c3bed6",
+      "markers": {
+        "confirmBulkDelete": true,
+        "confirmCategoryUpdate": true
+      }
+    },
+    "backend_health_netlify": {
+      "pass": true,
+      "http": 200,
+      "database": "connected",
+      "storage": "ready"
+    },
+    "backend_health_railway": {
+      "pass": true,
+      "http": 200,
+      "database": "connected",
+      "storage": "ready"
+    },
+    "viewer_catalog": {
+      "pass": true,
+      "count": 17,
+      "unique": 17
+    },
+    "admin_auth": {
+      "pass": true,
+      "tokenPresent": true
+    },
+    "viewer_shell": {
+      "pass": true,
+      "bodyTextLen": 2247
+    },
+    "studio_operational": {
+      "pass": true,
+      "before": {
+        "hasSelectVisible": true,
+        "hasSearch": true,
+        "rowish": 139
+      },
+      "studio": {
+        "hasSearch": true,
+        "hasSelectVisible": true,
+        "hasBulkDelete": false,
+        "hasBulkCategory": false,
+        "hasDeselect": false,
+        "selectedMention": true
+      }
+    },
+    "sample_media": {
+      "pass": true,
+      "mediaResults": [
+        {
+          "id": "4e67d1b3-f6c9-4ac4-bd75-7807978d26f3",
+          "http": 200,
+          "ok": true
+        },
+        {
+          "id": "61c56ffe-f17b-42cd-b338-00fca6799c83",
+          "http": 200,
+          "ok": true
+        },
+        {
+          "id": "eb081031-a03f-4f21-957e-9c196617225f",
+          "http": 200,
+          "ok": true
+        }
+      ]
+    }
+  },
+  "overall": "PASS",
+  "failed": []
+}

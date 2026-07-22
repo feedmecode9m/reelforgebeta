@@ -1,0 +1,74 @@
+{
+  "mission": "RELEASE-01",
+  "release_id": "RELEASE-01-2026-07-22",
+  "verified_at": "2026-07-22T23:03:45Z",
+  "release_commit": {
+    "full": "7aacae75342eb373a93fb71fe463f462fb5f3f95",
+    "short": "7aacae7",
+    "subject": "PRODUCT-STUDIO-09",
+    "authored": "2026-07-22T18:14:12-04:00",
+    "branch": "main"
+  },
+  "checks": {
+    "head_matches_baseline_7aacae7": true,
+    "dist_not_tracked_in_release_commit": true,
+    "studio_release_files_clean_vs_head": true,
+    "working_tree_has_unrelated_wip": true,
+    "wip_excluded_from_release_freeze": true
+  },
+  "working_tree_note": "Local WIP exists (backend/netlify/config drafts, reports, thumbs, artifacts) and is explicitly NOT part of RELEASE-01. Freeze identity is git commit 7aacae7 + live Netlify bundle index-CndLAw4Y.js.",
+  "dirty_summary": {
+    "modified_count": 15,
+    "untracked_count": 164,
+    "modified_sample": [
+      "Cargo.lock",
+      "backend/Cargo.toml",
+      "backend/src/api/mod.rs",
+      "backend/src/db/reels.rs",
+      "backend/src/handlers.rs",
+      "backend/src/health_state.rs",
+      "backend/src/ingestion/upload.rs",
+      "backend/src/lib.rs",
+      "backend/src/main.rs",
+      "backend/src/reel_contract.rs",
+      "frontend/netlify.toml",
+      "frontend/public/_redirects",
+      "frontend/src/lib/config.js",
+      "frontend/src/lib/viewer/aiCleanupAgent.js",
+      "scripts/start-dev.sh"
+    ],
+    "untracked_sample": [
+      ".cursor/rules/",
+      ".cursor/skills/reelforge-release-engineer/",
+      "BG_7B_3_PRODUCTION_CONNECTIVITY_REPORT.md",
+      "BG_7B_4_PRODUCTION_VALIDATION.md",
+      "BG_7C_PLACEHOLDER_AUDIT.md",
+      "BG_7D_FEED_ELIGIBILITY_REPORT.md",
+      "BG_7E_CATALOG_COMPOSITION_REPORT.md",
+      "BG_7F_CATALOG_CLEANUP_REPORT.md",
+      "BG_7F_PRE_CLEANUP_CATALOG.json",
+      "BG_7G_FEED_RESTORE_REPORT.md",
+      "BG_7H_PLACEHOLDER_DISABLE_REPORT.md",
+      "BG_7I_NETLIFY_DEPLOY_VALIDATION.md",
+      "BG_7L_FEED_CONTRACT_REPORT.md",
+      "BG_7M_CANONICAL_FEED_BUILDER_REPORT.md",
+      "BG_7N_PIPELINE_TRACE_REPORT.md",
+      "BG_7O_DEPLOYMENT_AUDIT_REPORT.md",
+      "BG_7P_SHELF_DISTRIBUTION_REPORT.md",
+      "BG_7Q_SHELF_DISTRIBUTION_REPORT.md",
+      "BG_7R_CATEGORY_ASSIGNMENT_REPORT.md",
+      "BG_7S_SHELF_PRESENTATION_REPORT.md",
+      "BG_7U_HERO_PERSISTENCE_REPORT.md",
+      "DEV_HEALTH_2A_ARCHAEOLOGY_REPORT.md",
+      "DEV_HEALTH_2B_IMPLEMENTATION.md",
+      "DEV_HEALTH_2C_VALIDATION_REPORT.md",
+      "DEV_HEALTH_LATENCY_REPORT.md"
+    ]
+  },
+  "generated_artifacts_policy": {
+    "frontend_dist": "not tracked; build output only",
+    "netlify_deploy": "CLI deploy PRODUCT-RC-DEPLOY-01; no app-source change",
+    "release_package_path": "releases/RELEASE-01-2026-07-22/"
+  },
+  "verdict": "PASS"
+}

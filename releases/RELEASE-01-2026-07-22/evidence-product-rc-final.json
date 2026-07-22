@@ -1,0 +1,190 @@
+{
+  "mission": "PRODUCT-RC-FINAL",
+  "baseline": "7aacae7",
+  "measured_at": "2026-07-22T22:19:59Z",
+  "catalog_count": 17,
+  "matrix": [
+    {
+      "area": "Studio",
+      "check": "no inventory cap",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "area": "Studio",
+      "check": "inventory full feed flat",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "area": "Studio",
+      "check": "selection by reel.id",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "area": "Studio",
+      "check": "search/sort derived view",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "area": "Studio",
+      "check": "rename persistence path",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "area": "Studio",
+      "check": "single delete path",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "area": "Studio",
+      "check": "bulk delete execute",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "area": "Studio",
+      "check": "bulk category execute",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "area": "Studio",
+      "check": "no invented bulk title API",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "area": "Studio",
+      "check": "bulk export still placeholder",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "area": "Studio",
+      "check": "derived view copies before sort",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "area": "Studio",
+      "check": "failed keep selected",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "area": "Viewer",
+      "check": "catalog loads",
+      "pass": true,
+      "detail": "count=17"
+    },
+    {
+      "area": "Viewer",
+      "check": "no duplicate ids",
+      "pass": true,
+      "detail": "count=17 unique=17"
+    },
+    {
+      "area": "Viewer",
+      "check": "all have id",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "area": "Viewer",
+      "check": "media url present",
+      "pass": true,
+      "detail": "missing_url=0"
+    },
+    {
+      "area": "Viewer",
+      "check": "categories populated",
+      "pass": true,
+      "detail": "dist={'Cyber-Action': 2, 'Trending': 15}"
+    },
+    {
+      "area": "Viewer",
+      "check": "sample media reachable",
+      "pass": true,
+      "detail": "ok=5 fail=[]"
+    },
+    {
+      "area": "Studio",
+      "check": "bulk-category API (single id path)",
+      "pass": true,
+      "detail": "Cyber-Action->Romance"
+    },
+    {
+      "area": "Studio",
+      "check": "delete safety unknown id",
+      "pass": true,
+      "detail": "status=404"
+    },
+    {
+      "area": "Hero/Vault",
+      "check": "backend health",
+      "pass": true,
+      "detail": "{\"status\": \"ok\", \"timestamp\": 1784758773942, \"service\": \"reelforge-backend\", \"database\": \"connected\", \"reels_source\": \"p"
+    },
+    {
+      "area": "Hero/Vault",
+      "check": "upload route present (POST /api/reels)",
+      "pass": true,
+      "detail": "status=400"
+    },
+    {
+      "area": "Hero/Vault",
+      "check": "rename refresh contract (LS by id)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "area": "Deploy",
+      "check": "frontend 200",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "area": "Deploy",
+      "check": "index references assets",
+      "pass": true,
+      "detail": "js=['/assets/index-DSOnrqEK.js', '/assets/vendor--4zkZYWh.js'] css=['/assets/index-Ca0FtI5y.css']"
+    },
+    {
+      "area": "Deploy",
+      "check": "deployed assets available",
+      "pass": true,
+      "detail": "[('/assets/index-DSOnrqEK.js', 200, 'application/javascript; charset=UTF-8'), ('/assets/vendor--4zkZYWh.js', 200, 'application/javascript; charset=UTF-8'), ('/assets/index-Ca0FtI5y.css', 200, 'text/css; charset=UTF-8')]"
+    },
+    {
+      "area": "Deploy",
+      "check": "API connectivity from RC probe",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "area": "Deploy",
+      "check": "prod API base configured",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "area": "Deploy",
+      "check": "local production build artifacts",
+      "pass": true,
+      "detail": "js=4 css=1"
+    },
+    {
+      "area": "Studio",
+      "check": "bulk delete no filename usage in execute",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "failed": [],
+  "blocker_count": 0
+}

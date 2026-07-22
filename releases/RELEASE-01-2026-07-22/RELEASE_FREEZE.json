@@ -1,0 +1,89 @@
+{
+  "mission": "RELEASE-01",
+  "release_id": "RELEASE-01-2026-07-22",
+  "tag": "RELEASE-01",
+  "status": "FROZEN",
+  "frozenAt": "2026-07-22T23:03:45Z",
+  "purpose": "Freeze validated production release after PRODUCT-RC-FINAL acceptance and PRODUCT-RC-DEPLOY-01 Netlify sync.",
+  "codeBaseline": {
+    "gitCommitFull": "7aacae75342eb373a93fb71fe463f462fb5f3f95",
+    "gitCommitShort": "7aacae7",
+    "gitCommitMessage": "PRODUCT-STUDIO-09",
+    "gitCommitTimestamp": "2026-07-22T18:14:12-04:00",
+    "branch": "main",
+    "tag": "RELEASE-01"
+  },
+  "deploymentIdentity": {
+    "productionUrl": "https://strong-lolly-a9fcb4.netlify.app",
+    "uniqueDeployUrl": "https://6a61431380a6c474c1c25be2--strong-lolly-a9fcb4.netlify.app",
+    "netlifyDeployId": "6a61431380a6c474c1c25be2",
+    "netlifyDeployMessage": "PRODUCT-RC-DEPLOY-01 sync baseline 7aacae7",
+    "deployConsoleUrl": "https://app.netlify.com/projects/strong-lolly-a9fcb4/deploys/6a61431380a6c474c1c25be2",
+    "backendUrl": "https://reelforge-deploy-production.up.railway.app",
+    "bundleJs": "assets/index-CndLAw4Y.js",
+    "bundleCss": "assets/index-DsUttNDv.css",
+    "bundleJsBytes": 1576342,
+    "bundleJsSha256": "fb6245b5a65fde12fc3a74376ff77ecbdc59c829530092c2c70edfd110c3bed6",
+    "vendorJs": "assets/vendor--4zkZYWh.js",
+    "markers": {
+      "Confirm bulk delete": true,
+      "Confirm category update": true,
+      "Bulk delete requires backend support": false,
+      "Bulk category update requires backend support": false
+    }
+  },
+  "acceptanceEvidence": {
+    "PRODUCT-RC-FINAL": {
+      "artifact": "releases/RELEASE-01-2026-07-22/evidence-product-rc-final.json",
+      "baseline": "7aacae7",
+      "measured_at": "2026-07-22T22:19:59Z",
+      "blocker_count": 0,
+      "note": "Code/API RC PASS (30/30). At measurement time Netlify still served stale index-DSOnrqEK.js; corrected by PRODUCT-RC-DEPLOY-01."
+    },
+    "PRODUCT-RC-DEPLOY-01": {
+      "deployId": "6a61431380a6c474c1c25be2",
+      "bundle": "index-CndLAw4Y.js",
+      "productionUrl": "https://strong-lolly-a9fcb4.netlify.app",
+      "result": "PASS \u2014 production matches baseline 7aacae7"
+    },
+    "PRODUCT-STUDIO-RA-01": {
+      "artifact": "frontend/artifacts/product-studio-ra-01-acceptance.json",
+      "note": "Studio release-acceptance invariants validated on Studio track prior to STUDIO-07/08/09."
+    },
+    "PRODUCT-STUDIO-09": {
+      "commit": "7aacae7",
+      "feature": "Bulk category confirmation flow via PATCH /api/reels/{id}/category"
+    },
+    "PRODUCT-STUDIO-10": {
+      "mode": "measurement-only audit",
+      "result": "No release blockers; scale CPU fine at N=50/100"
+    },
+    "RELEASE-01_smoke": {
+      "artifact": "releases/RELEASE-01-2026-07-22/gate-smoke-confirmation.json",
+      "overall": "PASS"
+    }
+  },
+  "smokeConfirmation": {
+    "frontend_live": true,
+    "backend_healthy": true,
+    "studio_operational": true,
+    "viewer_operational": true,
+    "catalog_count": 17
+  },
+  "knownLimitations": [
+    "Bulk title update is not offered (no backend title PATCH; titles persist locally via reel_titles_persistent).",
+    "Bulk export remains a placeholder in Studio.",
+    "Rename persistence is client-local (survives refresh/restart in-browser; not a backend title field).",
+    "Production catalog size at freeze was 17 reels (not a large-scale dataset).",
+    "Local working tree contains unrelated WIP (backend/netlify/config drafts, reports, thumbs) excluded from this freeze.",
+    "Branch main is ahead of origin/main by 11 commits at freeze time; RELEASE-01 tag is local until explicitly pushed.",
+    "BG-7A milestone status historically listed Release Blocked for older credential gating; this RELEASE-01 freeze supersedes for the PRODUCT Studio RC track only."
+  ],
+  "treeVerification": "PASS",
+  "rollback": {
+    "frontend_bundle_prior_to_rc_deploy": "index-DSOnrqEK.js",
+    "code_baseline": "7aacae75342eb373a93fb71fe463f462fb5f3f95",
+    "netlify_deploy_id": "6a61431380a6c474c1c25be2",
+    "netlify_url": "https://strong-lolly-a9fcb4.netlify.app"
+  }
+}
