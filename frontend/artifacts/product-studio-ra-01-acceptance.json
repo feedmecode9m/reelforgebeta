@@ -1,0 +1,118 @@
+{
+  "mission": "PRODUCT-STUDIO-RA-01",
+  "mode": "release-acceptance",
+  "timestamp": "2026-07-22T21:16:43Z",
+  "baselines": [
+    "288a71f PRODUCT-STUDIO-01",
+    "7a7db6e PRODUCT-STUDIO-03"
+  ],
+  "head": "7a7db6e",
+  "build": {
+    "ok": true,
+    "bundleFile": "dist/assets/index-BusI90It.js",
+    "bundleBytes": 1539198,
+    "sha256": "8339a6e5e143b7aee162ad13fd7762ea4dfc2d879793cadf159211cdcfc63709"
+  },
+  "bundleLive": "https://strong-lolly-a9fcb4.netlify.app/assets/index-BusI90It.js",
+  "inventory": {
+    "apiCount": 29,
+    "feedCount": 29,
+    "uiCount": 29,
+    "newestFirst": true
+  },
+  "deleteTarget": {
+    "id": "4df21643-a89d-4782-bbdd-e753c9fb3aea",
+    "index": 1,
+    "title": "PS02-01"
+  },
+  "checks": {
+    "apiCatalog": {
+      "status": 200,
+      "count": 29,
+      "pass": true
+    },
+    "bundleMatch": {
+      "live": "https://strong-lolly-a9fcb4.netlify.app/assets/index-BusI90It.js",
+      "expectedContains": "index-BusI90It.js",
+      "pass": true
+    },
+    "fullCollectionLoads": {
+      "apiCount": 29,
+      "uiCount": 29,
+      "feedCount": 29,
+      "pass": true
+    },
+    "newestFirst": {
+      "pass": true,
+      "sampleIds": [
+        "20e7ee1e-9a56-4cbd-9e0c-6477b41758b7",
+        "4df21643-a89d-4782-bbdd-e753c9fb3aea",
+        "fe71be58-f450-401b-9835-343485190f7c",
+        "09114f9b-04ff-4e8f-a767-88edc69e66dc",
+        "f1154316-99bf-446a-b578-9160eaf06050"
+      ]
+    },
+    "renameStatus": {
+      "savedLocally": true,
+      "falselySynced": false,
+      "pass": true
+    },
+    "renamePersistedById": {
+      "id": "20e7ee1e-9a56-4cbd-9e0c-6477b41758b7",
+      "entry": {
+        "title": "PSRA01-RENAME-1784754901377",
+        "title_original": "PSRA01-RENAME-1784754901377",
+        "savedAt": "2026-07-22T21:15:16.995Z"
+      },
+      "pass": true
+    },
+    "renameSurvivesRefresh": {
+      "lsTitle": "PSRA01-RENAME-1784754901377",
+      "found": true,
+      "count": 29,
+      "pass": true
+    },
+    "renameSurvivesBrowserRestart": {
+      "lsTitle": "PSRA01-RENAME-1784754901377",
+      "found": true,
+      "count": 29,
+      "pass": true
+    },
+    "syncDoesNotEraseLocalTitles": {
+      "titleBefore": "PSRA01-RENAME-1784754901377",
+      "titleAfter": "PSRA01-RENAME-1784754901377",
+      "lsSurvived": true,
+      "uiHas": true,
+      "fromLsKeys": 1,
+      "pass": true
+    },
+    "localTitlesSurviveBackendUnavailable": {
+      "found": false,
+      "lsTitle": "PSRA01-RENAME-1784754901377",
+      "opened": true,
+      "pass": true
+    },
+    "deleteApi": {
+      "id": "4df21643-a89d-4782-bbdd-e753c9fb3aea",
+      "status": 200,
+      "pass": true
+    },
+    "deleteDisappearsAfterReload": {
+      "id": "4df21643-a89d-4782-bbdd-e753c9fb3aea",
+      "stillInUi": false,
+      "stillInApi": false,
+      "uiCount": 28,
+      "pass": true
+    },
+    "staticLiveBundle": {
+      "hasSlice05": true,
+      "deleteById": true,
+      "saveTitle": true,
+      "titlesKey": true,
+      "pass": true
+    }
+  },
+  "blockers": [],
+  "failed": [],
+  "overall": "PASS"
+}
