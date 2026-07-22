@@ -158,6 +158,12 @@
   /** @type {Record<string, { kind: 'saving' | 'saved' | 'local' | 'error'; message: string }>} */
   let renameRowFeedback = {};
 
+  /** Selection by canonical reel.id only (UI foundation; does not mutate $feed). */
+  /** @type {Record<string, true>} */
+  let studioInventorySelected = {};
+  /** @type {HTMLInputElement | null} */
+  let studioSelectAllCheckbox = null;
+
   /**
    * Map known backend/catalog status only — do not invent states.
    * @param {Record<string, unknown> | null | undefined} reel
@@ -196,6 +202,43 @@
     const next = { ...renameRowFeedback };
     delete next[reelId];
     renameRowFeedback = next;
+  }
+
+  /** @param {string | number | null | undefined} reelId */
+  function toggleInventorySelection(reelId) {
+    const id = String(reelId || '').trim();
+    if (!id) return;
+    const next = { ...studioInventorySelected };
+    if (next[id]) delete next[id];
+    else next[id] = true;
+    studioInventorySelected = next;
+  }
+
+  function selectAllVisibleInventory() {
+    const next = { ...studioInventorySelected };
+    for (const reel of studioInventoryView) {
+      const id = String(reel?.id || '').trim();
+      if (id) next[id] = true;
+    }
+    studioInventorySelected = next;
+  }
+
+  function clearVisibleInventorySelection() {
+    const next = { ...studioInventorySelected };
+    for (const reel of studioInventoryView) {
+      const id = String(reel?.id || '').trim();
+      if (id) delete next[id];
+    }
+    studioInventorySelected = next;
+  }
+
+  function clearInventorySelection() {
+    studioInventorySelected = {};
+  }
+
+  function toggleSelectAllVisibleInventory() {
+    if (studioInventoryAllVisibleSelected) clearVisibleInventorySelection();
+    else selectAllVisibleInventory();
   }
 
   /** Full production inventory from feed — placeholders excluded, no visibility cap. */
@@ -242,6 +285,35 @@
     }
     return filtered;
   })();
+
+  $: studioInventoryVisibleIds = studioInventoryView
+    .map((reel) => String(reel?.id || '').trim())
+    .filter(Boolean);
+  $: studioInventorySelectedCount = Object.keys(studioInventorySelected).length;
+  $: studioInventoryAllVisibleSelected =
+    studioInventoryVisibleIds.length > 0 &&
+    studioInventoryVisibleIds.every((id) => !!studioInventorySelected[id]);
+  $: studioInventorySomeVisibleSelected =
+    studioInventoryVisibleIds.some((id) => !!studioInventorySelected[id]) &&
+    !studioInventoryAllVisibleSelected;
+  $: if (studioSelectAllCheckbox) {
+    studioSelectAllCheckbox.indeterminate = studioInventorySomeVisibleSelected;
+  }
+
+  // Drop selections for ids no longer in the inventory (e.g. after delete/sync).
+  $: {
+    const validIds = new Set(
+      studioInventoryBase.map((reel) => String(reel?.id || '').trim()).filter(Boolean)
+    );
+    const selectedIds = Object.keys(studioInventorySelected);
+    if (selectedIds.some((id) => !validIds.has(id))) {
+      const next = /** @type {Record<string, true>} */ ({});
+      for (const id of selectedIds) {
+        if (validIds.has(id)) next[id] = true;
+      }
+      studioInventorySelected = next;
+    }
+  }
 
   const FOCUSABLE_SELECTOR = [
     'button:not([disabled])',
@@ -1162,6 +1234,18 @@
             <div class="input-label-wrapper studio-inventory-section">
               <div class="studio-inventory-heading">RECENTLY ADDED PRODUCTIONS</div>
               <div class="studio-inventory-toolbar" role="group" aria-label="Production inventory filters">
+                <label class="studio-inventory-select-all">
+                  <input
+                    bind:this={studioSelectAllCheckbox}
+                    type="checkbox"
+                    class="studio-inventory-checkbox"
+                    checked={studioInventoryAllVisibleSelected}
+                    disabled={studioInventoryVisibleIds.length === 0}
+                    on:change={toggleSelectAllVisibleInventory}
+                    aria-label="Select all visible productions"
+                  />
+                  <span>Select visible</span>
+                </label>
                 <input
                   type="search"
                   class="studio-inventory-search"
@@ -1182,6 +1266,44 @@
                   {studioInventoryView.length}/{studioInventoryBase.length}
                 </span>
               </div>
+              {#if studioInventorySelectedCount > 0}
+                <div class="studio-bulk-toolbar" role="region" aria-label="Bulk production actions">
+                  <span class="studio-bulk-count" aria-live="polite">
+                    {studioInventorySelectedCount} selected
+                  </span>
+                  <button
+                    type="button"
+                    class="studio-bulk-btn"
+                    on:click={clearInventorySelection}
+                  >
+                    Clear selection
+                  </button>
+                  <button
+                    type="button"
+                    class="studio-bulk-btn is-placeholder"
+                    disabled
+                    title="Bulk delete requires backend support — not available yet"
+                  >
+                    Bulk delete
+                  </button>
+                  <button
+                    type="button"
+                    class="studio-bulk-btn is-placeholder"
+                    disabled
+                    title="Bulk category update requires backend support — not available yet"
+                  >
+                    Bulk category
+                  </button>
+                  <button
+                    type="button"
+                    class="studio-bulk-btn is-placeholder"
+                    disabled
+                    title="Bulk export requires backend support — not available yet"
+                  >
+                    Bulk export
+                  </button>
+                </div>
+              {/if}
               {#if !$viewerHydrationReady}
                 <p class="studio-inventory-feedback is-loading" role="status">Loading productions…</p>
               {:else if $uploadStatus && $uploadStatus !== 'Standby'}
@@ -1197,24 +1319,37 @@
               {/if}
               <div class="asset-list">
                 {#each studioInventoryView as reel (reel.id)}
+                  {@const reelId = String(reel.id)}
                   {@const reelConfig = UIAgent.getStudioConfigs(reel.category)}
                   {@const productionStatus = resolveProductionStatus(reel)}
                   {@const productionType = resolveProductionType(reel)}
-                  {@const rowFeedback = renameRowFeedback[String(reel.id)] || null}
+                  {@const rowFeedback = renameRowFeedback[reelId] || null}
+                  {@const rowSelected = !!studioInventorySelected[reelId]}
                   {@const rowDeleting =
-                    !!$isDeleting && $deleteConfirmReel && String($deleteConfirmReel.id) === String(reel.id)}
+                    !!$isDeleting && $deleteConfirmReel && String($deleteConfirmReel.id) === reelId}
                   <div
                     class="asset-item smart-item"
+                    class:is-selected={rowSelected}
                     class:is-deleting={rowDeleting}
-                    class:is-rename-busy={renameBusyId === String(reel.id)}
+                    class:is-rename-busy={renameBusyId === reelId}
                     style="border-left: 4px solid {reelConfig.color}"
                   >
+                    <label class="studio-inventory-row-select">
+                      <input
+                        type="checkbox"
+                        class="studio-inventory-checkbox"
+                        checked={rowSelected}
+                        disabled={rowDeleting}
+                        on:change={() => toggleInventorySelection(reelId)}
+                        aria-label="Select production {reel.title || reelId}"
+                      />
+                    </label>
                     <div class="asset-info">
                       <div class="editable-title-wrapper">
                         <input
                           type="text"
                           value={reel.title || ''}
-                          disabled={rowDeleting || renameBusyId === String(reel.id)}
+                          disabled={rowDeleting || renameBusyId === reelId}
                           on:input={(event) => (reel.title = event.currentTarget.value)}
                           on:blur={() => updateReelTitle(reel, reel.title)}
                           on:keydown={(event) => {
