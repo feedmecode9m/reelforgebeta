@@ -2,6 +2,7 @@
 
 pub mod ai_detector;
 pub mod api;
+pub mod auth;
 pub mod db;
 pub mod asset_resolution;
 pub mod asset_runtime;
@@ -211,6 +212,7 @@ async fn main() -> std::io::Result<()> {
 
     let event_bus = web::Data::new(EventBus::new(100));
     println!("📡 Real-time event system initialized");
+    let admin_sessions = web::Data::new(crate::auth::AdminSessionStore::from_env());
 
     let public_path = std::path::PathBuf::from("./public");
     let thumbs_path = public_path.join("thumbs");
@@ -273,6 +275,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(pool_data.clone())
             .app_data(db_available_data.clone())
             .app_data(event_bus.clone())
+            .app_data(admin_sessions.clone())
             .app_data(videos_path_data.clone())
             .app_data(thumbs_path_data.clone())
             .app_data(health_state_data.clone())
@@ -282,6 +285,7 @@ async fn main() -> std::io::Result<()> {
             .route("/ws/control-center", web::get().to(control_center_ws))
             .service(
                 web::scope("/api")
+                    .wrap(crate::auth::AdminAuth)
                     .route(
                         "/studio/local-videos",
                         web::get().to(handlers::list_local_videos),

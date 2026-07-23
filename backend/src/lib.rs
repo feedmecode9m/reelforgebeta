@@ -1,5 +1,6 @@
 pub mod ai_detector;
 pub mod api;
+pub mod auth;
 pub mod db;
 pub mod asset_resolution;
 pub mod asset_runtime;

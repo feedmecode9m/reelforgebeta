@@ -18,7 +18,7 @@ pub struct AdminAuthResponse {
     pub token: String,
 }
 
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 pub struct StorageHealthDetail {
     pub media_root: String,
     pub videos_path: String,
@@ -164,7 +164,10 @@ pub async fn ingest_client_log(body: web::Json<Value>) -> impl Responder {
     HttpResponse::Ok().json(serde_json::json!({ "ok": true }))
 }
 
-pub async fn admin_auth(body: web::Json<AdminAuthRequest>) -> impl Responder {
+pub async fn admin_auth(
+    body: web::Json<AdminAuthRequest>,
+    admin_sessions: web::Data<crate::auth::AdminSessionStore>,
+) -> impl Responder {
     if !is_valid_admin_password(&body.password) {
         return HttpResponse::Unauthorized().json(serde_json::json!({
             "success": false,
@@ -173,6 +176,7 @@ pub async fn admin_auth(body: web::Json<AdminAuthRequest>) -> impl Responder {
     }
 
     let token = format!("rf_{}", Uuid::new_v4());
+    admin_sessions.register(token.clone()).await;
     HttpResponse::Ok().json(AdminAuthResponse {
         success: true,
         token,
