@@ -210,6 +210,14 @@ mod tests {
             "/api/reels"
         ));
         assert!(mutating_route_requires_admin(
+            &Method::POST,
+            "/api/uploads/sign"
+        ));
+        assert!(mutating_route_requires_admin(
+            &Method::POST,
+            "/api/reels/finalize"
+        ));
+        assert!(mutating_route_requires_admin(
             &Method::DELETE,
             "/api/reels/00000000-0000-4000-8000-000000000001"
         ));

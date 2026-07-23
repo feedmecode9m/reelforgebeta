@@ -210,6 +210,132 @@ async fn ingest_video_bytes(
     })
 }
 
+/// Ingest a video already written to disk or stored in R2 (signed direct upload finalize).
+pub async fn ingest_stored_video(
+    svc: &IngestionService,
+    asset_id: Uuid,
+    stored_name: &str,
+    original_filename: &str,
+    title: Option<String>,
+    description: Option<String>,
+    category: Option<String>,
+) -> HttpResponse {
+    let video_path = svc.config.videos_path.join(stored_name);
+    let (file_size, video_url) = if video_path.is_file() {
+        let file_size = std::fs::metadata(&video_path)
+            .map(|m| m.len() as i64)
+            .unwrap_or(0);
+        if file_size <= 0 {
+            let _ = std::fs::remove_file(&video_path);
+            return HttpResponse::BadRequest().json(serde_json::json!({
+                "error": "Uploaded video file is empty"
+            }));
+        }
+        if let Err(err) = media_validator::validate_video_path(&video_path) {
+            let _ = media_validator::quarantine_video(&svc.config.videos_path, &video_path, &err);
+            return HttpResponse::BadRequest().json(serde_json::json!({
+                "error": err.to_string()
+            }));
+        }
+        (file_size, format!("/videos/{}", stored_name))
+    } else if let Some(r2) = crate::storage::r2::R2Storage::global() {
+        let head = match r2.head_object(stored_name).await {
+            Ok(h) => h,
+            Err(e) => {
+                return HttpResponse::BadRequest().json(serde_json::json!({
+                    "error": format!("Uploaded video not found in R2: {}", e)
+                }));
+            }
+        };
+        let file_size = head.content_length;
+        if file_size <= 0 {
+            return HttpResponse::BadRequest().json(serde_json::json!({
+                "error": "Uploaded video object is empty"
+            }));
+        }
+        eprintln!(
+            "[STORE_WRITE] kind=video r2_key={} bytes={} signed_upload=true",
+            r2.object_key(stored_name),
+            file_size
+        );
+        (file_size, r2.public_url(stored_name))
+    } else {
+        return HttpResponse::BadRequest().json(serde_json::json!({
+            "error": "Uploaded video file not found"
+        }));
+    };
+
+    crate::pipeline_diag::pipeline_diag(
+        "INGEST",
+        "ingest_stored_video",
+        "upload.rs",
+        Some(&asset_id.to_string()),
+        Some(original_filename),
+        "stored_file_validated",
+    );
+
+    let ext = video_extension(original_filename).unwrap_or(".mp4");
+    let title = title
+        .filter(|s| !s.trim().is_empty())
+        .unwrap_or_else(|| reel_contract::display_name_from_filename(original_filename));
+    let category = category
+        .filter(|s| !s.trim().is_empty())
+        .unwrap_or_else(|| "Trending".to_string());
+    let mime = mime_for_ext(ext);
+
+    if let Err(e) = reels::insert_pending_reel(
+        &svc.pool,
+        asset_id,
+        &title,
+        &category,
+        description.as_deref(),
+        &video_url,
+        None,
+        stored_name,
+        file_size,
+        Some(mime),
+    )
+    .await
+    {
+        if video_path.is_file() {
+            let _ = std::fs::remove_file(&video_path);
+        } else if let Some(r2) = crate::storage::r2::R2Storage::global() {
+            let _ = r2.delete_object(stored_name).await;
+        }
+        return HttpResponse::InternalServerError().json(serde_json::json!({
+            "error": format!("Database insert failed: {}", e)
+        }));
+    }
+
+    if video_path.is_file() {
+        eprintln!(
+            "[STORE_WRITE] kind=video path={} bytes={} signed_upload=true",
+            video_path.display(),
+            file_size
+        );
+    }
+    eprintln!(
+        "[ingest] accepted reel={} file={} thumb_job=true signed_upload=true",
+        asset_id, stored_name
+    );
+
+    if let Err(e) = jobs::enqueue(&svc.pool, asset_id).await {
+        let _ = reels::mark_failed(&svc.pool, asset_id, &e.to_string()).await;
+        return HttpResponse::InternalServerError().json(serde_json::json!({
+            "error": format!("Failed to enqueue ingestion job: {}", e)
+        }));
+    }
+
+    let abs_video = db::canonical_media_url(&video_url);
+    HttpResponse::Accepted().json(IngestAcceptedResponse {
+        id: asset_id.to_string(),
+        status: "pending",
+        video_url: abs_video,
+        thumbnail_url: None,
+        poll_url: format!("/api/reels/{}", asset_id),
+    })
+}
+
 pub async fn ingest_from_reel_multipart(
     svc: &IngestionService,
     payload: &mut Multipart,

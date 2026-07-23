@@ -24,6 +24,8 @@ pub mod no_compress;
 pub mod reel_contract;
 pub mod series_api;
 pub mod security_api;
+pub mod signed_upload;
+pub mod storage;
 pub mod sync_api;
 pub mod analytics_api;
 pub mod notification_api;

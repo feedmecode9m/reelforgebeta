@@ -283,14 +283,28 @@ pub async fn delete_reel(
     path: web::Path<Uuid>,
 ) -> impl Responder {
     let reel_id = path.into_inner();
+    eprintln!(
+        "[VAULT-DELETE-TRACE] handlers::delete_reel:enter id={}",
+        reel_id
+    );
 
     if !**db_available {
         return crate::ingestion::IngestionService::require_db_response();
     }
 
     let row = match crate::db::reels::get_reel_by_id(db.get_ref(), reel_id).await {
-        Ok(Some(r)) => r,
+        Ok(Some(r)) => {
+            eprintln!(
+                "[VAULT-DELETE-TRACE] handlers::delete_reel:before id={} status={} file_name={} video_url={:?} thumb={:?}",
+                r.id, r.status, r.file_name, r.video_url, r.thumbnail_url
+            );
+            r
+        }
         Ok(None) => {
+            eprintln!(
+                "[VAULT-DELETE-TRACE] handlers::delete_reel:not_found id={}",
+                reel_id
+            );
             return HttpResponse::NotFound().json(serde_json::json!({ "error": "Reel not found" }));
         }
         Err(e) => {
@@ -301,20 +315,50 @@ pub async fn delete_reel(
 
     let _ = crate::db::jobs::cancel_for_reel(db.get_ref(), reel_id).await;
 
-    if let Some(ref v) = row.video_url {
-        if let Some(name) = crate::media_seed::media_basename(v) {
-            let p = videos_path.0.join(&name);
-            if p.is_file() {
-                let _ = std::fs::remove_file(&p);
+    let mut video_removed = false;
+    let storage_key = if row.file_name.trim().is_empty() {
+        row.video_url
+            .as_ref()
+            .and_then(|v| crate::media_seed::media_basename(v))
+    } else {
+        Some(row.file_name.clone())
+    };
+    if let Some(name) = storage_key {
+        let p = videos_path.0.join(&name);
+        let existed = p.is_file();
+        if existed {
+            video_removed = std::fs::remove_file(&p).is_ok();
+        }
+        if crate::storage::r2::R2Storage::enabled() {
+            match crate::storage::r2::R2Storage::global()
+                .expect("r2 enabled")
+                .delete_object(&name)
+                .await
+            {
+                Ok(()) => video_removed = true,
+                Err(e) => eprintln!(
+                    "[VAULT-DELETE-TRACE] handlers::delete_reel:r2 id={} key={} err={}",
+                    reel_id, name, e
+                ),
             }
         }
+        eprintln!(
+            "[VAULT-DELETE-TRACE] handlers::delete_reel:video_file id={} path={:?} existed={} removed={}",
+            reel_id, p, existed, video_removed
+        );
     }
+    let mut thumb_removed = false;
     if let Some(ref t) = row.thumbnail_url {
         if let Some(name) = crate::media_seed::media_basename(t) {
             let p = thumbs_path.0.join(&name);
-            if p.is_file() {
-                let _ = std::fs::remove_file(&p);
+            let existed = p.is_file();
+            if existed {
+                thumb_removed = std::fs::remove_file(&p).is_ok();
             }
+            eprintln!(
+                "[VAULT-DELETE-TRACE] handlers::delete_reel:thumb_file id={} path={:?} existed={} removed={}",
+                reel_id, p, existed, thumb_removed
+            );
         }
     }
 
@@ -322,6 +366,13 @@ pub async fn delete_reel(
         return HttpResponse::InternalServerError()
             .json(serde_json::json!({ "error": e.to_string() }));
     }
+
+    let after = crate::db::reels::get_reel_by_id(db.get_ref(), reel_id).await;
+    eprintln!(
+        "[VAULT-DELETE-TRACE] handlers::delete_reel:after_db id={} row_present={}",
+        reel_id,
+        matches!(after, Ok(Some(_)))
+    );
 
     event_bus
         .publish(crate::events::ReelEvent::Deleted {
@@ -513,6 +564,11 @@ pub async fn delete_storage_file(
         let thumb_path = thumbs_path.0.join(&filename);
         if video_path.is_file() {
             let _ = std::fs::remove_file(&video_path);
+        } else if crate::storage::r2::R2Storage::enabled() {
+            let _ = crate::storage::r2::R2Storage::global()
+                .expect("r2 enabled")
+                .delete_object(&filename)
+                .await;
         }
         if let Some(ref t) = row.thumbnail_url {
             if let Some(tn) = crate::media_seed::media_basename(t) {
@@ -544,6 +600,11 @@ pub async fn delete_storage_file(
         let thumb_path = thumbs_path.0.join(&filename);
         if video_path.is_file() {
             let _ = std::fs::remove_file(&video_path);
+        } else if crate::storage::r2::R2Storage::enabled() {
+            let _ = crate::storage::r2::R2Storage::global()
+                .expect("r2 enabled")
+                .delete_object(&filename)
+                .await;
         }
         if thumb_path.is_file() {
             let _ = std::fs::remove_file(&thumb_path);

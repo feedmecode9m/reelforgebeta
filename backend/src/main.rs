@@ -23,6 +23,8 @@ pub mod no_compress;
 pub mod reel_contract;
 pub mod series_api;
 pub mod security_api;
+pub mod signed_upload;
+pub mod storage;
 pub mod sync_api;
 pub mod analytics_api;
 pub mod notification_api;
@@ -213,6 +215,21 @@ async fn main() -> std::io::Result<()> {
     let event_bus = web::Data::new(EventBus::new(100));
     println!("📡 Real-time event system initialized");
     let admin_sessions = web::Data::new(crate::auth::AdminSessionStore::from_env());
+    let signed_upload_store = web::Data::new(crate::signed_upload::SignedUploadStore::from_env());
+
+    let r2_storage = match crate::storage::r2::R2Storage::from_env().await {
+        Ok(opt) => opt,
+        Err(e) => {
+            eprintln!("❌ R2 configuration error: {}", e);
+            std::process::exit(1);
+        }
+    };
+    crate::storage::r2::R2Storage::init(r2_storage);
+    if crate::storage::r2::R2Storage::enabled() {
+        println!("✅ Cloudflare R2 storage enabled (signed uploads → presigned PUT)");
+    } else {
+        println!("ℹ️  R2 not configured — signed uploads use Railway direct PUT");
+    }
 
     let public_path = std::path::PathBuf::from("./public");
     let thumbs_path = public_path.join("thumbs");
@@ -276,6 +293,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(db_available_data.clone())
             .app_data(event_bus.clone())
             .app_data(admin_sessions.clone())
+            .app_data(signed_upload_store.clone())
             .app_data(videos_path_data.clone())
             .app_data(thumbs_path_data.clone())
             .app_data(health_state_data.clone())
@@ -284,8 +302,21 @@ async fn main() -> std::io::Result<()> {
             .route("/admin/auth", web::post().to(handlers::admin_auth))
             .route("/ws/control-center", web::get().to(control_center_ws))
             .service(
+                web::resource("/api/uploads/direct/{upload_id}")
+                    .app_data(web::PayloadConfig::new(600 * 1024 * 1024))
+                    .route(web::put().to(crate::signed_upload::direct_upload)),
+            )
+            .service(
                 web::scope("/api")
                     .wrap(crate::auth::AdminAuth)
+                    .route(
+                        "/uploads/sign",
+                        web::post().to(crate::signed_upload::sign_upload),
+                    )
+                    .route(
+                        "/reels/finalize",
+                        web::post().to(crate::signed_upload::finalize_reel),
+                    )
                     .route(
                         "/studio/local-videos",
                         web::get().to(handlers::list_local_videos),

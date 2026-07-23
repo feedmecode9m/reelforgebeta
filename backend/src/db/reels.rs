@@ -123,10 +123,21 @@ pub async fn mark_failed(pool: &PgPool, id: Uuid, error: &str) -> Result<(), sql
 
 pub async fn delete_reel(pool: &PgPool, id: Uuid) -> Result<Option<ReelRow>, sqlx::Error> {
     let row = get_reel_by_id(pool, id).await?;
+    eprintln!(
+        "[VAULT-DELETE-TRACE] db::reels::delete_reel:before id={} present={}",
+        id,
+        row.is_some()
+    );
     sqlx::query("DELETE FROM reels WHERE id = $1")
         .bind(id)
         .execute(pool)
         .await?;
+    let after = get_reel_by_id(pool, id).await?;
+    eprintln!(
+        "[VAULT-DELETE-TRACE] db::reels::delete_reel:after id={} present={}",
+        id,
+        after.is_some()
+    );
     Ok(row)
 }
 
