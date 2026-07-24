@@ -205,6 +205,11 @@ async function uploadVideoSigned(file, headers = {}, meta = {}) {
     const signBody = await signResponse.json();
     const uploadUrl = String(signBody.uploadUrl || `${DIRECT_UPLOAD_BASE_URL}/api/uploads/direct/${signBody.uploadId}`);
     const uploadToken = String(signBody.uploadToken || '');
+    const isR2PresignedPut = uploadUrl.includes('r2.cloudflarestorage.com');
+    const putHeaders = {
+        'Content-Type': file.type || 'video/mp4',
+        ...(!isR2PresignedPut && uploadToken ? { 'X-Upload-Token': uploadToken } : {})
+    };
 
     console.info('[BG7G_SIGNED_UPLOAD]', {
         stage: 'direct:put',
@@ -216,10 +221,7 @@ async function uploadVideoSigned(file, headers = {}, meta = {}) {
 
     const putResponse = await fetch(uploadUrl, {
         method: 'PUT',
-        headers: {
-            'Content-Type': file.type || 'video/mp4',
-            'X-Upload-Token': uploadToken
-        },
+        headers: putHeaders,
         body: file
     });
     if (!putResponse.ok) {
