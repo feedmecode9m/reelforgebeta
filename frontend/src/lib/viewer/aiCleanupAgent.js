@@ -324,8 +324,8 @@ export function createAiCleanupAgent(deps) {
   const newFeed = { ...currentFeed };
   categoriesList.forEach((cat) => {
   if (!newFeed[cat]) newFeed[cat] = [];
-  // Keep a single source placeholder per thumbnail across the full feed.
-  newFeed[cat] = newFeed[cat].filter((r) => !(r.isPlaceholder && r.personal_thumbnail === thumbnailName));
+  // Keep a single source card per thumbnail across the full feed.
+  newFeed[cat] = newFeed[cat].filter((r) => !(r.isPersonalThumbnail && r.personal_thumbnail === thumbnailName));
   });
   const placeholder = createLocalReel({
   id: `personal-thumb-${thumbnailName}`,
@@ -334,7 +334,7 @@ export function createAiCleanupAgent(deps) {
   type: 'image',
   url: base64Data,
   thumbnailUrl: base64Data,
-  isPlaceholder: true,
+  isPlaceholder: false,
   isPersonalThumbnail: true,
   personal_thumbnail: thumbnailName,
   likes: Math.floor(Math.random() * 100) + 50,
@@ -342,7 +342,7 @@ export function createAiCleanupAgent(deps) {
   match: 'PERSONAL THUMBNAIL',
   ai_tags: ['personal-thumbnail', 'user-uploaded']
   });
-  console.info('[PLACEHOLDER_INSERT]', {
+  console.info('[PERSONAL_THUMBNAIL_INSERT]', {
   stage: 'AI_CLEANUP_AGENT.distributeThumbnailAcrossCategories',
   placeholderId: placeholder.id,
   thumbnailName: String(thumbnailName || ''),
@@ -358,7 +358,7 @@ export function createAiCleanupAgent(deps) {
   },
   removeThumbnailFromCategories(thumbnailName) {
   if (!thumbnailName) return;
-  feed.update((currentFeed) => { const newFeed = {}; Object.keys(currentFeed).forEach((cat) => { newFeed[cat] = currentFeed[cat].filter((r) => !(r.isPlaceholder && r.personal_thumbnail === thumbnailName)); }); return newFeed; });
+  feed.update((currentFeed) => { const newFeed = {}; Object.keys(currentFeed).forEach((cat) => { newFeed[cat] = currentFeed[cat].filter((r) => !(r.isPersonalThumbnail && r.personal_thumbnail === thumbnailName)); }); return newFeed; });
   storageSet(CONFIG.FEED_STORAGE_KEY, get(feed));
   },
   syncThumbnailsToFeed() {
@@ -375,9 +375,9 @@ export function createAiCleanupAgent(deps) {
   feed.update((currentFeed) => {
   const newFeed = { ...currentFeed };
   categoriesList.forEach((cat) => { if (!newFeed[cat]) newFeed[cat] = []; });
-  // Remove stale thumbnail placeholders and rebuild from authoritative thumbnail store.
+  // Remove stale personal thumbnail cards and rebuild from authoritative thumbnail store.
   categoriesList.forEach((cat) => {
-  newFeed[cat] = (newFeed[cat] || []).filter((r) => !r?.isPlaceholder || !r?.isPersonalThumbnail);
+  newFeed[cat] = (newFeed[cat] || []).filter((r) => !r?.isPersonalThumbnail);
   });
   storedThumbs.forEach((thumb, thumbIndex) => {
   if (!thumb) return;
@@ -405,8 +405,8 @@ export function createAiCleanupAgent(deps) {
   const displayLabel = typeof thumb === 'string' ? thumb : String(thumb.title || thumb.name || fileKey);
   const detectedCategory = CATEGORY_DETECTOR.detectFromTitle(String(displayLabel).replace(/\.[^/.]+$/, ''));
   const primaryCategory = categoriesList.includes(detectedCategory) ? detectedCategory : 'Trending';
-  const placeholder = createLocalReel({ id: thumb.id ? `personal-thumb-${thumb.id}` : `personal-thumb-${fileKey}`, name: `Personal Content ${thumbIndex + 1} - ${primaryCategory}`, category: primaryCategory, type: 'image', url: thumbUrl, thumbnailUrl: thumbUrl, isPlaceholder: true, isPersonalThumbnail: true, personal_thumbnail: fileKey, likes: Math.floor(Math.random() * 100) + 50, views: Math.floor(Math.random() * 500) + 100, match: 'PERSONAL THUMBNAIL', ai_tags: ['personal-thumbnail', 'user-uploaded'], createdAt: thumbAddedAt || new Date().toISOString() });
-  console.info('[PLACEHOLDER_INSERT]', {
+  const placeholder = createLocalReel({ id: thumb.id ? `personal-thumb-${thumb.id}` : `personal-thumb-${fileKey}`, name: `Personal Content ${thumbIndex + 1} - ${primaryCategory}`, category: primaryCategory, type: 'image', url: thumbUrl, thumbnailUrl: thumbUrl, isPlaceholder: false, isPersonalThumbnail: true, personal_thumbnail: fileKey, likes: Math.floor(Math.random() * 100) + 50, views: Math.floor(Math.random() * 500) + 100, match: 'PERSONAL THUMBNAIL', ai_tags: ['personal-thumbnail', 'user-uploaded'], createdAt: thumbAddedAt || new Date().toISOString() });
+  console.info('[PERSONAL_THUMBNAIL_INSERT]', {
   stage: 'AI_CLEANUP_AGENT.syncThumbnailsToFeed',
   placeholderId: placeholder.id,
   thumbnailName: fileKey,
@@ -632,6 +632,15 @@ export function createAiCleanupAgent(deps) {
   runClientMediaPurge({ filename: diskName, reelId: videoId, videoUrl: video?.url });
   }
   if (video.url && video.url.startsWith('blob:')) { URL.revokeObjectURL(video.url); resourceManager.revokeBlobUrl(video.url); }
+  deleteThumbnailVaultEntries([String(videoId)], [], {
+    backendReachable: persistenceSuccess,
+    storageKey: CONFIG.THUMBNAIL_STORAGE_KEY
+  });
+  const thumbKey = filenameFromMediaRef(video?.thumbnail || video?.thumbnailUrl || '');
+  if (thumbKey) {
+    removeThumbnailVaultByIndex(thumbKey, CONFIG.THUMBNAIL_STORAGE_KEY);
+  }
+  syncCollectionStore(personalThumbnailCollection, CONFIG.THUMBNAIL_STORAGE_KEY);
   uploadStatus.set('✅ Video deleted');
   await syncFromVault(true);
   const afterCount = get(personalVideos).length;
