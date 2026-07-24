@@ -1,0 +1,2794 @@
+{
+  "generatedAt": "2026-07-24T20:52:30.226Z",
+  "mission": "BG-7J-DEPLOY",
+  "frontend": "https://strong-lolly-a9fcb4.netlify.app",
+  "gitCommit": "087b9d1",
+  "bundleHash": "index-DiOs5biL.js",
+  "deployId": "6a63d0690f70c2f2faa9cd90",
+  "bootstrap": {
+    "health": {
+      "status": 200,
+      "ok": true
+    },
+    "reels": {
+      "status": 200,
+      "ok": true,
+      "count": 37
+    }
+  },
+  "localStorage": {
+    "personal_thumbnails": 2,
+    "reelforge_feedPersonalCards": 2,
+    "sampleFeedCard": {
+      "isPersonalThumbnail": true,
+      "isPlaceholder": false,
+      "type": "image",
+      "url": "/thumbs/d1539feb-54c9-47e8-b40d-9318b9f87fb2.jpg"
+    },
+    "allPersonalMatchContract": true,
+    "domReelCards": 54,
+    "domFeedSelectors": 54,
+    "domThumbImages": 17
+  },
+  "feedContract": {
+    "personal_thumbnails_gt_0": true,
+    "personalThumbnailCollection_gt_0": true,
+    "feedHasPersonalImageCards": true,
+    "contractShapeOk": true,
+    "seed": {
+      "seeded": 3,
+      "sample": {
+        "id": "d1539feb-54c9-47e8-b40d-9318b9f87fb2",
+        "fileName": "d1539feb-54c9-47e8-b40d-9318b9f87fb2.jpg",
+        "url": "/thumbs/d1539feb-54c9-47e8-b40d-9318b9f87fb2.jpg",
+        "name": "vh03-playwright-thumb.jpg",
+        "title": "vh03-playwright-thumb.jpg",
+        "category": "Trending",
+        "addedAt": "2026-07-24T16:21:54.538199+00:00"
+      }
+    }
+  },
+  "buildHomeFeedDecisions": [],
+  "consoleTrace": [
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 0, first: null, last: null, timestamp: 2026-07-24T20:52:31.024Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 0, first: null, last: null, timestamp: 2026-07-24T20:52:31.025Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7J_HERO_GATE] {hydrationReady: false, action: waiting, timestamp: 2026-07-24T20:52:31.028Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: FeedExperience:loading, count: -1, first: null, last: null, loading: true}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7J_HERO_RESTORE] {heroAssetId: , restored: false, matchedReelId: null, timestamp: 2026-07-24T20:52:34.024Z}"
+    },
+    {
+      "type": "info",
+      "text": "[VAULT_REFRESH_RESTORE] {vaultType: thumbnail, assetId: null, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}"
+    },
+    {
+      "type": "info",
+      "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:start, personal_thumbnails: 0, ts: 2026-07-24T20:52:34.151Z}"
+    },
+    {
+      "type": "info",
+      "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:clear, personal_thumbnails: 0, ts: 2026-07-24T20:52:34.151Z}"
+    },
+    {
+      "type": "info",
+      "text": "[VAULT-DELETE-TRACE] syncFromVault:bootstrap_reload {source: GET /api/reels, catalogCount: 37, ids: Array(20), ts: 2026-07-24T20:52:37.021Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7K_CATALOG_RECEIVE] {count: 37, sampleIds: Array(8), source: syncFromVault:GET /api/reels, timestamp: 2026-07-24T20:52:37.021Z}"
+    },
+    {
+      "type": "startGroup",
+      "text": "[Vault Field Audit] GET /api/reels response (syncFromVault) (37 items)"
+    },
+    {
+      "type": "startGroup",
+      "text": "[Vault Field Audit] GET /api/reels response (syncFromVault)[0]"
+    },
+    {
+      "type": "startGroup",
+      "text": "[Vault Field Audit] GET /api/reels response (syncFromVault)[1]"
+    },
+    {
+      "type": "startGroup",
+      "text": "[Vault Field Audit] GET /api/reels response (syncFromVault)[2]"
+    },
+    {
+      "type": "info",
+      "text": "[VAULT_SYNC] {action: syncFromVault:pre-upgrade, backendReels: 37, personal_thumbnails: 0, ts: 2026-07-24T20:52:37.022Z}"
+    },
+    {
+      "type": "info",
+      "text": "[VAULT_REFRESH_RESTORE] {vaultType: thumbnail, assetId: null, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}"
+    },
+    {
+      "type": "info",
+      "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:start, personal_thumbnails: 0, ts: 2026-07-24T20:52:37.022Z}"
+    },
+    {
+      "type": "info",
+      "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:clear, personal_thumbnails: 0, ts: 2026-07-24T20:52:37.023Z}"
+    },
+    {
+      "type": "info",
+      "text": "[VAULT_SYNC] {action: syncFromVault:post-reload, personal_thumbnails: 0, collectionStore: 0, ts: 2026-07-24T20:52:37.023Z}"
+    },
+    {
+      "type": "info",
+      "text": "[THUMB_STORE_WRITE] {timestamp: 2026-07-24T20:52:37.024Z, function: syncCollectionStore, store: personalThumbnailCollection, previousCount: 0, newCount: 0}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: buildHomeFeed, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.024Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7P_SHELF_DISTRIBUTION] {stage: buildHomeFeed, feedKeys: Array(4), shelfCounts: Object, totalCards: 37, timestamp: 2026-07-24T20:52:37.025Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7P_CATALOG_TO_SHELF] {stage: buildHomeFeed:catalogMapping, timestamp: 2026-07-24T20:52:37.025Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 8e40f3ca-e220-40f7-a636-b828b4008f68, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: d1539feb-54c9-47e8-b40d-9318b9f87fb2, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 6060c258-a3f6-40ba-b642-c758562c7cb7, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 723642c0-fb56-4b67-a6aa-4c61efcf4064, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: aa4f01b0-2b08-4e39-93cb-6bfce1776e97, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: c4ea71cf-1d04-4e18-9d0a-76385524aa18, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: abb2152c-a63e-415e-9eea-19e31e4a8799, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 284a4dfc-666f-44f7-99df-14cb3cbb63a2, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: d121fb4f-b330-4f63-9477-0a2548718e60, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 2966b48d-4f5f-4554-a6cf-c89796a2fc44, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: c656af89-108b-4403-a09a-5e0120a0b084, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: e8ea86bb-716f-48bd-9638-e2e56f67f7aa, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 1aaaa063-a877-4268-8aeb-7343831c1752, category: HERO, mediaType: video, eligible: true, rejectionReason: hero_video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 46f97e75-fcb5-4ace-b500-ae146898e284, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 0c335922-ef31-450b-b4d3-9d24a08210cf, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: bbfe2e70-404a-4635-97ca-7fbd0196030b, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 010ff031-cd44-41ad-8d61-fd3cf3ac054a, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 995c7491-f056-42eb-a252-4f416eaa487a, category: HERO, mediaType: video, eligible: true, rejectionReason: hero_video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: b8bd9cee-899a-45b6-8671-5bd5165aaaf1, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, category: Cyber-Action, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 61c56ffe-f17b-42cd-b338-00fca6799c83, category: Cyber-Action, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: eb081031-a03f-4f21-957e-9c196617225f, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 5d64b611-a677-4db1-9e9e-cd34782c0caa, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: e6573dc5-f5cc-4f2e-b74f-4f09980b260e, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 6d4e8087-0ffa-4077-a1b9-4c69858ac2de, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: a29c0119-c570-4f5f-b522-fc2405696892, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: b2efa08f-a1e5-4135-bf58-bc5539f9f920, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 99070858-4567-4ef0-9ba5-9412aeb31120, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 96eccf6f-0165-47eb-a3c7-55db88bb29b2, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 9c696259-99a3-411f-a1f5-f6a3fc3fb92a, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 0b983310-293c-44d0-8c3c-9310f36982bd, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 9a48cf44-1a5b-4a8d-9c52-126c0c1795b5, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 49716f87-c489-4bd0-af7c-c50015e9b480, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: bd444390-343e-49a5-aabe-ff0e1de270b7, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: eb4684cd-74ad-4763-ada8-347134ac1228, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: dff70497-d198-4ff5-84a4-1b7265d2f8eb, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: buildHomeFeed, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.027Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7P_SHELF_DISTRIBUTION] {stage: buildHomeFeed, feedKeys: Array(4), shelfCounts: Object, totalCards: 37, timestamp: 2026-07-24T20:52:37.027Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7P_CATALOG_TO_SHELF] {stage: buildHomeFeed:catalogMapping, timestamp: 2026-07-24T20:52:37.028Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BUILD_HOME_FEED] {catalogCount: 37, cardCount: 37, source: syncFromVault:backend, ts: 2026-07-24T20:52:37.028Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.029Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.034Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.set:prunedFeed, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.035Z}"
+    },
+    {
+      "type": "log",
+      "text": "[syncFromVault] Loaded 37 reels from [backend] (22 playable video, thumbs → placeholders)"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 8e40f3ca-e220-40f7-a636-b828b4008f68, url: /videos/8e40f3ca-e220-40f7-a636-b828b4008f68.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 6060c258-a3f6-40ba-b642-c758562c7cb7, url: https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/6060c258-a3f6-40ba-b642-c758562c7cb7.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 0c335922-ef31-450b-b4d3-9d24a08210cf, url: /videos/8de95c34-a61a-4d24-988b-ba0c115624c9.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7, url: /videos/cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: bbfe2e70-404a-4635-97ca-7fbd0196030b, url: /videos/bbfe2e70-404a-4635-97ca-7fbd0196030b.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 010ff031-cd44-41ad-8d61-fd3cf3ac054a, url: /videos/010ff031-cd44-41ad-8d61-fd3cf3ac054a.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: b8bd9cee-899a-45b6-8671-5bd5165aaaf1, url: /videos/b8bd9cee-899a-45b6-8671-5bd5165aaaf1.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, url: /videos/4e67d1b3-f6c9-4ac4-bd75-7807978d26f3.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 61c56ffe-f17b-42cd-b338-00fca6799c83, url: /videos/61c56ffe-f17b-42cd-b338-00fca6799c83.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: eb081031-a03f-4f21-957e-9c196617225f, url: /videos/eb081031-a03f-4f21-957e-9c196617225f.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: e6573dc5-f5cc-4f2e-b74f-4f09980b260e, url: /videos/e6573dc5-f5cc-4f2e-b74f-4f09980b260e.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 6d4e8087-0ffa-4077-a1b9-4c69858ac2de, url: /videos/6d4e8087-0ffa-4077-a1b9-4c69858ac2de.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: a29c0119-c570-4f5f-b522-fc2405696892, url: /videos/a29c0119-c570-4f5f-b522-fc2405696892.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: b2efa08f-a1e5-4135-bf58-bc5539f9f920, url: /videos/b2efa08f-a1e5-4135-bf58-bc5539f9f920.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 99070858-4567-4ef0-9ba5-9412aeb31120, url: /videos/99070858-4567-4ef0-9ba5-9412aeb31120.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 96eccf6f-0165-47eb-a3c7-55db88bb29b2, url: /videos/96eccf6f-0165-47eb-a3c7-55db88bb29b2.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 9c696259-99a3-411f-a1f5-f6a3fc3fb92a, url: /videos/9c696259-99a3-411f-a1f5-f6a3fc3fb92a.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 49716f87-c489-4bd0-af7c-c50015e9b480, url: /videos/49716f87-c489-4bd0-af7c-c50015e9b480.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: eb4684cd-74ad-4763-ada8-347134ac1228, url: /videos/eb4684cd-74ad-4763-ada8-347134ac1228.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: dff70497-d198-4ff5-84a4-1b7265d2f8eb, url: /videos/dff70497-d198-4ff5-84a4-1b7265d2f8eb.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[STORE_UPDATE] {store: personalVideos, source: syncFromVault, count: 20, ts: 2026-07-24T20:52:37.038Z}"
+    },
+    {
+      "type": "info",
+      "text": "[STORE_WRITE] {store: personal_video_vault, source: syncFromVault, count: 20, ts: 2026-07-24T20:52:37.038Z}"
+    },
+    {
+      "type": "info",
+      "text": "[HERO_STORE_WRITE] {stage: syncFromVault:video-vault-persist, key: personal_video_vault, count: 20, heroAssetId: , ts: 2026-07-24T20:52:37.038Z}"
+    },
+    {
+      "type": "log",
+      "text": "[syncFromVault] Video vault merged (local + backend): 20 + 20 => 20"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_SUMMARY] {backendCatalogCount: 37, heroVideoCount: 4, imageCount: 15, eligibleVideoCount: 22, eligibleImageCount: 15}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: localStorage:reelforge_feed, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.038Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: FeedExperience:loading, count: 0, first: null, last: null, loading: false}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: FeedExperience:render, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, loading: false}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: ReelshortExperience:props:feed, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.040Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: ReelshortExperience:props:normalizedFeed, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.040Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 35, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 8e40f3ca-e220-40f7-a636-b828b4008f68, category: Trending}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 35, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, category: Trending}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 0, first: null, last: null, category: Romance}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 0, first: null, last: null, category: Romance}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 2, first: 61c56ffe-f17b-42cd-b338-00fca6799c83, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, category: Cyber-Action}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 2, first: 61c56ffe-f17b-42cd-b338-00fca6799c83, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, category: Cyber-Action}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 0, first: null, last: null, category: Suspense}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 0, first: null, last: null, category: Suspense}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: MediaRenderer, count: 0, first: null, last: null, mountedCardVisuals: 37}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: DOM:reel-card, count: 0, first: null, last: null, domNodes: 50}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7J_HYDRATION_READY] {ready: true, personalVideosCount: 20, timestamp: 2026-07-24T20:52:37.057Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.059Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.066Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7J_HERO_GATE] {hydrationReady: true, action: resolved, timestamp: 2026-07-24T20:52:37.069Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: FeedExperience:render, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, loading: false}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: ReelshortExperience:props:feed, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.070Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: ReelshortExperience:props:normalizedFeed, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.070Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 35, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 8e40f3ca-e220-40f7-a636-b828b4008f68, category: Trending}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 35, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, category: Trending}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 0, first: null, last: null, category: Romance}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 0, first: null, last: null, category: Romance}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 2, first: 61c56ffe-f17b-42cd-b338-00fca6799c83, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, category: Cyber-Action}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 2, first: 61c56ffe-f17b-42cd-b338-00fca6799c83, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, category: Cyber-Action}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 0, first: null, last: null, category: Suspense}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 0, first: null, last: null, category: Suspense}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: MediaRenderer, count: 0, first: null, last: null, mountedCardVisuals: 37}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: DOM:reel-card, count: 0, first: null, last: null, domNodes: 50}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 8e40f3ca-e220-40f7-a636-b828b4008f68, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.271Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 8e40f3ca-e220-40f7-a636-b828b4008f68, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.282Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 8e40f3ca-e220-40f7-a636-b828b4008f68, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.284Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 8e40f3ca-e220-40f7-a636-b828b4008f68, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.294Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 6060c258-a3f6-40ba-b642-c758562c7cb7, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.298Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 6060c258-a3f6-40ba-b642-c758562c7cb7, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.308Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 6060c258-a3f6-40ba-b642-c758562c7cb7, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.309Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 6060c258-a3f6-40ba-b642-c758562c7cb7, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.316Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 0c335922-ef31-450b-b4d3-9d24a08210cf, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.317Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 0c335922-ef31-450b-b4d3-9d24a08210cf, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.324Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 0c335922-ef31-450b-b4d3-9d24a08210cf, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.325Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 0c335922-ef31-450b-b4d3-9d24a08210cf, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.336Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.341Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.349Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.350Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.356Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: bbfe2e70-404a-4635-97ca-7fbd0196030b, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.358Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: bbfe2e70-404a-4635-97ca-7fbd0196030b, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.364Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: bbfe2e70-404a-4635-97ca-7fbd0196030b, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.365Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: bbfe2e70-404a-4635-97ca-7fbd0196030b, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.372Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 010ff031-cd44-41ad-8d61-fd3cf3ac054a, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.374Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 010ff031-cd44-41ad-8d61-fd3cf3ac054a, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.385Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 010ff031-cd44-41ad-8d61-fd3cf3ac054a, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.386Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 010ff031-cd44-41ad-8d61-fd3cf3ac054a, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.397Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: b8bd9cee-899a-45b6-8671-5bd5165aaaf1, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.400Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: b8bd9cee-899a-45b6-8671-5bd5165aaaf1, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.410Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: b8bd9cee-899a-45b6-8671-5bd5165aaaf1, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.411Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: b8bd9cee-899a-45b6-8671-5bd5165aaaf1, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:37.421Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, last: 61c56ffe-f17b-42cd-b338-00fca6799c83, timestamp: 2026-07-24T20:52:37.426Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, last: 61c56ffe-f17b-42cd-b338-00fca6799c83, timestamp: 2026-07-24T20:52:37.436Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, last: 61c56ffe-f17b-42cd-b338-00fca6799c83, timestamp: 2026-07-24T20:52:37.437Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, last: 61c56ffe-f17b-42cd-b338-00fca6799c83, timestamp: 2026-07-24T20:52:37.449Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 61c56ffe-f17b-42cd-b338-00fca6799c83, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.452Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 61c56ffe-f17b-42cd-b338-00fca6799c83, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.462Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 61c56ffe-f17b-42cd-b338-00fca6799c83, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.463Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 61c56ffe-f17b-42cd-b338-00fca6799c83, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.473Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: eb081031-a03f-4f21-957e-9c196617225f, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.476Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: eb081031-a03f-4f21-957e-9c196617225f, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.486Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: eb081031-a03f-4f21-957e-9c196617225f, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.487Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: eb081031-a03f-4f21-957e-9c196617225f, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.499Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: e6573dc5-f5cc-4f2e-b74f-4f09980b260e, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.503Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: e6573dc5-f5cc-4f2e-b74f-4f09980b260e, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.513Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: e6573dc5-f5cc-4f2e-b74f-4f09980b260e, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.515Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: e6573dc5-f5cc-4f2e-b74f-4f09980b260e, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.525Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 6d4e8087-0ffa-4077-a1b9-4c69858ac2de, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.528Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 6d4e8087-0ffa-4077-a1b9-4c69858ac2de, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.538Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 6d4e8087-0ffa-4077-a1b9-4c69858ac2de, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.539Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 6d4e8087-0ffa-4077-a1b9-4c69858ac2de, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.549Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: a29c0119-c570-4f5f-b522-fc2405696892, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.552Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: a29c0119-c570-4f5f-b522-fc2405696892, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.561Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: a29c0119-c570-4f5f-b522-fc2405696892, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.563Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: a29c0119-c570-4f5f-b522-fc2405696892, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.573Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: b2efa08f-a1e5-4135-bf58-bc5539f9f920, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.575Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: b2efa08f-a1e5-4135-bf58-bc5539f9f920, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.586Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: b2efa08f-a1e5-4135-bf58-bc5539f9f920, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.587Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: b2efa08f-a1e5-4135-bf58-bc5539f9f920, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.597Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 99070858-4567-4ef0-9ba5-9412aeb31120, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.600Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 99070858-4567-4ef0-9ba5-9412aeb31120, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.611Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 99070858-4567-4ef0-9ba5-9412aeb31120, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.612Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 99070858-4567-4ef0-9ba5-9412aeb31120, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.624Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 96eccf6f-0165-47eb-a3c7-55db88bb29b2, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.628Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 96eccf6f-0165-47eb-a3c7-55db88bb29b2, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.638Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 96eccf6f-0165-47eb-a3c7-55db88bb29b2, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.639Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 96eccf6f-0165-47eb-a3c7-55db88bb29b2, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.649Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 9c696259-99a3-411f-a1f5-f6a3fc3fb92a, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.652Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 9c696259-99a3-411f-a1f5-f6a3fc3fb92a, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.663Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 9c696259-99a3-411f-a1f5-f6a3fc3fb92a, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.664Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 9c696259-99a3-411f-a1f5-f6a3fc3fb92a, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.672Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 49716f87-c489-4bd0-af7c-c50015e9b480, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.673Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 49716f87-c489-4bd0-af7c-c50015e9b480, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.681Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 49716f87-c489-4bd0-af7c-c50015e9b480, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.683Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 49716f87-c489-4bd0-af7c-c50015e9b480, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.693Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: eb4684cd-74ad-4763-ada8-347134ac1228, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.695Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: eb4684cd-74ad-4763-ada8-347134ac1228, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.705Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: eb4684cd-74ad-4763-ada8-347134ac1228, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.706Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: eb4684cd-74ad-4763-ada8-347134ac1228, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.717Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.719Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.726Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.727Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.733Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: FeedExperience:render, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, loading: false}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: ReelshortExperience:props:feed, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.735Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: ReelshortExperience:props:normalizedFeed, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:37.735Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, category: Trending}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, category: Trending}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 0, first: null, last: null, category: Romance}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 0, first: null, last: null, category: Romance}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 0, first: null, last: null, category: Cyber-Action}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 0, first: null, last: null, category: Cyber-Action}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 0, first: null, last: null, category: Suspense}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 0, first: null, last: null, category: Suspense}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: MediaRenderer, count: 0, first: null, last: null, mountedCardVisuals: 37}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: DOM:reel-card, count: 0, first: null, last: null, domNodes: 52}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 8e40f3ca-e220-40f7-a636-b828b4008f68, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.075Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 8e40f3ca-e220-40f7-a636-b828b4008f68, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.081Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 8e40f3ca-e220-40f7-a636-b828b4008f68, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.082Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 8e40f3ca-e220-40f7-a636-b828b4008f68, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.088Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 6060c258-a3f6-40ba-b642-c758562c7cb7, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.090Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 6060c258-a3f6-40ba-b642-c758562c7cb7, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.096Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 6060c258-a3f6-40ba-b642-c758562c7cb7, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.096Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 6060c258-a3f6-40ba-b642-c758562c7cb7, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.102Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 0c335922-ef31-450b-b4d3-9d24a08210cf, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.104Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 0c335922-ef31-450b-b4d3-9d24a08210cf, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.110Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 0c335922-ef31-450b-b4d3-9d24a08210cf, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.111Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 0c335922-ef31-450b-b4d3-9d24a08210cf, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.118Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.119Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.125Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.126Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.132Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: bbfe2e70-404a-4635-97ca-7fbd0196030b, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.134Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: bbfe2e70-404a-4635-97ca-7fbd0196030b, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.140Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: bbfe2e70-404a-4635-97ca-7fbd0196030b, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.141Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: bbfe2e70-404a-4635-97ca-7fbd0196030b, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.147Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 010ff031-cd44-41ad-8d61-fd3cf3ac054a, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.148Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 010ff031-cd44-41ad-8d61-fd3cf3ac054a, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.154Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 010ff031-cd44-41ad-8d61-fd3cf3ac054a, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.155Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 010ff031-cd44-41ad-8d61-fd3cf3ac054a, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.167Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: b8bd9cee-899a-45b6-8671-5bd5165aaaf1, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.170Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: b8bd9cee-899a-45b6-8671-5bd5165aaaf1, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.180Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: b8bd9cee-899a-45b6-8671-5bd5165aaaf1, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.181Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: b8bd9cee-899a-45b6-8671-5bd5165aaaf1, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.191Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.193Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.199Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.200Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.207Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 61c56ffe-f17b-42cd-b338-00fca6799c83, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.208Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 61c56ffe-f17b-42cd-b338-00fca6799c83, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.215Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 61c56ffe-f17b-42cd-b338-00fca6799c83, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.215Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 61c56ffe-f17b-42cd-b338-00fca6799c83, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.222Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: eb081031-a03f-4f21-957e-9c196617225f, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.224Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: eb081031-a03f-4f21-957e-9c196617225f, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.230Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: eb081031-a03f-4f21-957e-9c196617225f, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.231Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: eb081031-a03f-4f21-957e-9c196617225f, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.237Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: e6573dc5-f5cc-4f2e-b74f-4f09980b260e, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.239Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: e6573dc5-f5cc-4f2e-b74f-4f09980b260e, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.244Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: e6573dc5-f5cc-4f2e-b74f-4f09980b260e, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.245Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: e6573dc5-f5cc-4f2e-b74f-4f09980b260e, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.252Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 6d4e8087-0ffa-4077-a1b9-4c69858ac2de, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.253Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 6d4e8087-0ffa-4077-a1b9-4c69858ac2de, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.259Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 6d4e8087-0ffa-4077-a1b9-4c69858ac2de, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.260Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 6d4e8087-0ffa-4077-a1b9-4c69858ac2de, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.266Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: a29c0119-c570-4f5f-b522-fc2405696892, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.267Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: a29c0119-c570-4f5f-b522-fc2405696892, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.273Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: a29c0119-c570-4f5f-b522-fc2405696892, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.274Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: a29c0119-c570-4f5f-b522-fc2405696892, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.280Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: b2efa08f-a1e5-4135-bf58-bc5539f9f920, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.282Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: b2efa08f-a1e5-4135-bf58-bc5539f9f920, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.288Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: b2efa08f-a1e5-4135-bf58-bc5539f9f920, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.289Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: b2efa08f-a1e5-4135-bf58-bc5539f9f920, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.295Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 99070858-4567-4ef0-9ba5-9412aeb31120, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.299Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 99070858-4567-4ef0-9ba5-9412aeb31120, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.310Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 99070858-4567-4ef0-9ba5-9412aeb31120, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.311Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 99070858-4567-4ef0-9ba5-9412aeb31120, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.322Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 96eccf6f-0165-47eb-a3c7-55db88bb29b2, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.326Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 96eccf6f-0165-47eb-a3c7-55db88bb29b2, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.336Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 96eccf6f-0165-47eb-a3c7-55db88bb29b2, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.337Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 96eccf6f-0165-47eb-a3c7-55db88bb29b2, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.348Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 9c696259-99a3-411f-a1f5-f6a3fc3fb92a, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.351Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 9c696259-99a3-411f-a1f5-f6a3fc3fb92a, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.362Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 9c696259-99a3-411f-a1f5-f6a3fc3fb92a, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.363Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 9c696259-99a3-411f-a1f5-f6a3fc3fb92a, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.373Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 49716f87-c489-4bd0-af7c-c50015e9b480, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.376Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 49716f87-c489-4bd0-af7c-c50015e9b480, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.389Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: 49716f87-c489-4bd0-af7c-c50015e9b480, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.391Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: 49716f87-c489-4bd0-af7c-c50015e9b480, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.401Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: eb4684cd-74ad-4763-ada8-347134ac1228, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.405Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: eb4684cd-74ad-4763-ada8-347134ac1228, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.412Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: eb4684cd-74ad-4763-ada8-347134ac1228, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.413Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: eb4684cd-74ad-4763-ada8-347134ac1228, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.419Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.421Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.427Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.428Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.434Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: FeedExperience:render, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, loading: false}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: ReelshortExperience:props:feed, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.435Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: ReelshortExperience:props:normalizedFeed, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, timestamp: 2026-07-24T20:52:39.435Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, category: Trending}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: d1539feb-54c9-47e8-b40d-9318b9f87fb2, category: Trending}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 0, first: null, last: null, category: Romance}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 0, first: null, last: null, category: Romance}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 0, first: null, last: null, category: Cyber-Action}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 0, first: null, last: null, category: Cyber-Action}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 0, first: null, last: null, category: Suspense}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 0, first: null, last: null, category: Suspense}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: MediaRenderer, count: 0, first: null, last: null, mountedCardVisuals: 37}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: DOM:reel-card, count: 0, first: null, last: null, domNodes: 52}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 0, first: null, last: null, timestamp: 2026-07-24T20:52:42.705Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 0, first: null, last: null, timestamp: 2026-07-24T20:52:42.707Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7J_HERO_GATE] {hydrationReady: false, action: waiting, timestamp: 2026-07-24T20:52:42.708Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: FeedExperience:loading, count: -1, first: null, last: null, loading: true}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7J_HERO_RESTORE] {heroAssetId: , restored: false, matchedReelId: null, timestamp: 2026-07-24T20:52:45.761Z}"
+    },
+    {
+      "type": "info",
+      "text": "[VAULT_REFRESH_RESTORE] {vaultType: thumbnail, assetId: null, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}"
+    },
+    {
+      "type": "info",
+      "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:start, personal_thumbnails: 3, ts: 2026-07-24T20:52:45.867Z}"
+    },
+    {
+      "type": "info",
+      "text": "[THUMB_STORE_WRITE] {timestamp: 2026-07-24T20:52:45.868Z, function: storeThumbnailMetadata, store: personal_thumbnails, previousCount: 3, newCount: 3}"
+    },
+    {
+      "type": "info",
+      "text": "[THUMB_STORE_WRITE] {timestamp: 2026-07-24T20:52:45.868Z, function: safeStorageSet, store: personal_thumbnails, previousCount: 1, newCount: 3}"
+    },
+    {
+      "type": "info",
+      "text": "[THUMB_STORE_WRITE] {timestamp: 2026-07-24T20:52:45.868Z, function: writeThumbnailVault:indexMirror, store: personal_thumbnail_index, previousCount: 3, newCount: 3}"
+    },
+    {
+      "type": "info",
+      "text": "[THUMB_STORE_WRITE] {timestamp: 2026-07-24T20:52:45.869Z, function: writeThumbnailVault, store: personal_thumbnails, previousCount: 3, newCount: 3}"
+    },
+    {
+      "type": "info",
+      "text": "[VAULT_PERSIST] {vaultType: thumbnail, assetId: d1539feb-54c9-47e8-b40d-9318b9f87fb2, fileName: d1539feb-54c9-47e8-b40d-9318b9f87fb2.jpg, storageLocation: personal_thumbnails, backendEndpoint: null}"
+    },
+    {
+      "type": "info",
+      "text": "[THUMB_STORE_WRITE] {timestamp: 2026-07-24T20:52:45.869Z, function: syncCollectionStore, store: personalThumbnailCollection, previousCount: 0, newCount: 3}"
+    },
+    {
+      "type": "info",
+      "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:mutate, personal_thumbnails: 3, ts: 2026-07-24T20:52:45.869Z}"
+    },
+    {
+      "type": "info",
+      "text": "[PERSONAL_THUMBNAIL_INSERT] {stage: AI_CLEANUP_AGENT.syncThumbnailsToFeed, placeholderId: personal-thumb-d1539feb-54c9-47e8-b40d-9318b9f87fb2, thumbnailName: d1539feb-54c9-47e8-b40d-9318b9f87fb2.jpg, destination: feed:Trending, ts: 2026-07-24T20:52:45.970Z}"
+    },
+    {
+      "type": "info",
+      "text": "[PERSONAL_THUMBNAIL_INSERT] {stage: AI_CLEANUP_AGENT.syncThumbnailsToFeed, placeholderId: personal-thumb-6060c258-a3f6-40ba-b642-c758562c7cb7, thumbnailName: 6060c258-a3f6-40ba-b642-c758562c7cb7.mp4, destination: feed:Trending, ts: 2026-07-24T20:52:45.971Z}"
+    },
+    {
+      "type": "info",
+      "text": "[PERSONAL_THUMBNAIL_INSERT] {stage: AI_CLEANUP_AGENT.syncThumbnailsToFeed, placeholderId: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, thumbnailName: 723642c0-fb56-4b67-a6aa-4c61efcf4064.jpg, destination: feed:Trending, ts: 2026-07-24T20:52:45.971Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 3, first: personal-thumb-d1539feb-54c9-47e8-b40d-9318b9f87fb2, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:45.971Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 3, first: personal-thumb-d1539feb-54c9-47e8-b40d-9318b9f87fb2, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:45.972Z}"
+    },
+    {
+      "type": "info",
+      "text": "[VAULT-DELETE-TRACE] syncFromVault:bootstrap_reload {source: GET /api/reels, catalogCount: 37, ids: Array(20), ts: 2026-07-24T20:52:48.770Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7K_CATALOG_RECEIVE] {count: 37, sampleIds: Array(8), source: syncFromVault:GET /api/reels, timestamp: 2026-07-24T20:52:48.770Z}"
+    },
+    {
+      "type": "startGroup",
+      "text": "[Vault Field Audit] GET /api/reels response (syncFromVault) (37 items)"
+    },
+    {
+      "type": "startGroup",
+      "text": "[Vault Field Audit] GET /api/reels response (syncFromVault)[0]"
+    },
+    {
+      "type": "startGroup",
+      "text": "[Vault Field Audit] GET /api/reels response (syncFromVault)[1]"
+    },
+    {
+      "type": "startGroup",
+      "text": "[Vault Field Audit] GET /api/reels response (syncFromVault)[2]"
+    },
+    {
+      "type": "info",
+      "text": "[VAULT_SYNC] {action: syncFromVault:pre-upgrade, backendReels: 37, personal_thumbnails: 3, ts: 2026-07-24T20:52:48.770Z}"
+    },
+    {
+      "type": "info",
+      "text": "[VAULT_REFRESH_RESTORE] {vaultType: thumbnail, assetId: null, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}"
+    },
+    {
+      "type": "info",
+      "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:start, personal_thumbnails: 3, ts: 2026-07-24T20:52:48.770Z}"
+    },
+    {
+      "type": "info",
+      "text": "[THUMB_STORE_WRITE] {timestamp: 2026-07-24T20:52:48.771Z, function: storeThumbnailMetadata, store: personal_thumbnails, previousCount: 3, newCount: 3}"
+    },
+    {
+      "type": "info",
+      "text": "[THUMB_STORE_WRITE] {timestamp: 2026-07-24T20:52:48.771Z, function: safeStorageSet, store: personal_thumbnails, previousCount: 1, newCount: 3}"
+    },
+    {
+      "type": "info",
+      "text": "[THUMB_STORE_WRITE] {timestamp: 2026-07-24T20:52:48.771Z, function: writeThumbnailVault:indexMirror, store: personal_thumbnail_index, previousCount: 3, newCount: 3}"
+    },
+    {
+      "type": "info",
+      "text": "[THUMB_STORE_WRITE] {timestamp: 2026-07-24T20:52:48.771Z, function: writeThumbnailVault, store: personal_thumbnails, previousCount: 3, newCount: 3}"
+    },
+    {
+      "type": "info",
+      "text": "[VAULT_PERSIST] {vaultType: thumbnail, assetId: d1539feb-54c9-47e8-b40d-9318b9f87fb2, fileName: d1539feb-54c9-47e8-b40d-9318b9f87fb2.jpg, storageLocation: personal_thumbnails, backendEndpoint: null}"
+    },
+    {
+      "type": "info",
+      "text": "[THUMB_STORE_WRITE] {timestamp: 2026-07-24T20:52:48.771Z, function: syncCollectionStore, store: personalThumbnailCollection, previousCount: 3, newCount: 3}"
+    },
+    {
+      "type": "info",
+      "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:mutate, personal_thumbnails: 3, ts: 2026-07-24T20:52:48.771Z}"
+    },
+    {
+      "type": "info",
+      "text": "[VAULT_SYNC] {action: syncFromVault:post-reload, personal_thumbnails: 3, collectionStore: 3, ts: 2026-07-24T20:52:48.772Z}"
+    },
+    {
+      "type": "info",
+      "text": "[THUMB_STORE_WRITE] {timestamp: 2026-07-24T20:52:48.772Z, function: storeThumbnailMetadata, store: personal_thumbnails, previousCount: 3, newCount: 2}"
+    },
+    {
+      "type": "info",
+      "text": "[THUMB_STORE_WRITE] {timestamp: 2026-07-24T20:52:48.772Z, function: safeStorageSet, store: personal_thumbnails, previousCount: 1, newCount: 2}"
+    },
+    {
+      "type": "info",
+      "text": "[THUMB_STORE_WRITE] {timestamp: 2026-07-24T20:52:48.773Z, function: writeThumbnailVault:indexMirror, store: personal_thumbnail_index, previousCount: 3, newCount: 2}"
+    },
+    {
+      "type": "info",
+      "text": "[THUMB_STORE_WRITE] {timestamp: 2026-07-24T20:52:48.773Z, function: writeThumbnailVault, store: personal_thumbnails, previousCount: 3, newCount: 2}"
+    },
+    {
+      "type": "info",
+      "text": "[VAULT_PERSIST] {vaultType: thumbnail, assetId: d1539feb-54c9-47e8-b40d-9318b9f87fb2, fileName: d1539feb-54c9-47e8-b40d-9318b9f87fb2.jpg, storageLocation: personal_thumbnails, backendEndpoint: null}"
+    },
+    {
+      "type": "info",
+      "text": "[THUMB_STORE_WRITE] {timestamp: 2026-07-24T20:52:48.773Z, function: syncCollectionStore, store: personalThumbnailCollection, previousCount: 3, newCount: 2}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: buildHomeFeed, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:48.773Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7P_SHELF_DISTRIBUTION] {stage: buildHomeFeed, feedKeys: Array(4), shelfCounts: Object, totalCards: 37, timestamp: 2026-07-24T20:52:48.773Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7P_CATALOG_TO_SHELF] {stage: buildHomeFeed:catalogMapping, timestamp: 2026-07-24T20:52:48.774Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 8e40f3ca-e220-40f7-a636-b828b4008f68, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: d1539feb-54c9-47e8-b40d-9318b9f87fb2, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 6060c258-a3f6-40ba-b642-c758562c7cb7, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 723642c0-fb56-4b67-a6aa-4c61efcf4064, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: aa4f01b0-2b08-4e39-93cb-6bfce1776e97, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: c4ea71cf-1d04-4e18-9d0a-76385524aa18, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: abb2152c-a63e-415e-9eea-19e31e4a8799, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 284a4dfc-666f-44f7-99df-14cb3cbb63a2, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: d121fb4f-b330-4f63-9477-0a2548718e60, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 2966b48d-4f5f-4554-a6cf-c89796a2fc44, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: c656af89-108b-4403-a09a-5e0120a0b084, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: e8ea86bb-716f-48bd-9638-e2e56f67f7aa, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 1aaaa063-a877-4268-8aeb-7343831c1752, category: HERO, mediaType: video, eligible: true, rejectionReason: hero_video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 46f97e75-fcb5-4ace-b500-ae146898e284, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 0c335922-ef31-450b-b4d3-9d24a08210cf, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: bbfe2e70-404a-4635-97ca-7fbd0196030b, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 010ff031-cd44-41ad-8d61-fd3cf3ac054a, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 995c7491-f056-42eb-a252-4f416eaa487a, category: HERO, mediaType: video, eligible: true, rejectionReason: hero_video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: b8bd9cee-899a-45b6-8671-5bd5165aaaf1, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, category: Cyber-Action, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 61c56ffe-f17b-42cd-b338-00fca6799c83, category: Cyber-Action, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: eb081031-a03f-4f21-957e-9c196617225f, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 5d64b611-a677-4db1-9e9e-cd34782c0caa, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: e6573dc5-f5cc-4f2e-b74f-4f09980b260e, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 6d4e8087-0ffa-4077-a1b9-4c69858ac2de, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: a29c0119-c570-4f5f-b522-fc2405696892, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: b2efa08f-a1e5-4135-bf58-bc5539f9f920, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 99070858-4567-4ef0-9ba5-9412aeb31120, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 96eccf6f-0165-47eb-a3c7-55db88bb29b2, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 9c696259-99a3-411f-a1f5-f6a3fc3fb92a, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 0b983310-293c-44d0-8c3c-9310f36982bd, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 9a48cf44-1a5b-4a8d-9c52-126c0c1795b5, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: 49716f87-c489-4bd0-af7c-c50015e9b480, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: bd444390-343e-49a5-aabe-ff0e1de270b7, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: eb4684cd-74ad-4763-ada8-347134ac1228, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_DECISION] {reelId: dff70497-d198-4ff5-84a4-1b7265d2f8eb, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: buildHomeFeed, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:48.775Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7P_SHELF_DISTRIBUTION] {stage: buildHomeFeed, feedKeys: Array(4), shelfCounts: Object, totalCards: 37, timestamp: 2026-07-24T20:52:48.775Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7P_CATALOG_TO_SHELF] {stage: buildHomeFeed:catalogMapping, timestamp: 2026-07-24T20:52:48.776Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BUILD_HOME_FEED] {catalogCount: 37, cardCount: 37, source: syncFromVault:backend, ts: 2026-07-24T20:52:48.776Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:48.776Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:48.782Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.set:prunedFeed, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:48.783Z}"
+    },
+    {
+      "type": "log",
+      "text": "[syncFromVault] Loaded 37 reels from [backend] (22 playable video, thumbs → placeholders)"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 8e40f3ca-e220-40f7-a636-b828b4008f68, url: /videos/8e40f3ca-e220-40f7-a636-b828b4008f68.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 6060c258-a3f6-40ba-b642-c758562c7cb7, url: https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/6060c258-a3f6-40ba-b642-c758562c7cb7.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 0c335922-ef31-450b-b4d3-9d24a08210cf, url: /videos/8de95c34-a61a-4d24-988b-ba0c115624c9.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7, url: /videos/cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: bbfe2e70-404a-4635-97ca-7fbd0196030b, url: /videos/bbfe2e70-404a-4635-97ca-7fbd0196030b.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 010ff031-cd44-41ad-8d61-fd3cf3ac054a, url: /videos/010ff031-cd44-41ad-8d61-fd3cf3ac054a.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: b8bd9cee-899a-45b6-8671-5bd5165aaaf1, url: /videos/b8bd9cee-899a-45b6-8671-5bd5165aaaf1.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, url: /videos/4e67d1b3-f6c9-4ac4-bd75-7807978d26f3.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 61c56ffe-f17b-42cd-b338-00fca6799c83, url: /videos/61c56ffe-f17b-42cd-b338-00fca6799c83.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: eb081031-a03f-4f21-957e-9c196617225f, url: /videos/eb081031-a03f-4f21-957e-9c196617225f.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: e6573dc5-f5cc-4f2e-b74f-4f09980b260e, url: /videos/e6573dc5-f5cc-4f2e-b74f-4f09980b260e.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 6d4e8087-0ffa-4077-a1b9-4c69858ac2de, url: /videos/6d4e8087-0ffa-4077-a1b9-4c69858ac2de.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: a29c0119-c570-4f5f-b522-fc2405696892, url: /videos/a29c0119-c570-4f5f-b522-fc2405696892.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: b2efa08f-a1e5-4135-bf58-bc5539f9f920, url: /videos/b2efa08f-a1e5-4135-bf58-bc5539f9f920.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 99070858-4567-4ef0-9ba5-9412aeb31120, url: /videos/99070858-4567-4ef0-9ba5-9412aeb31120.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 96eccf6f-0165-47eb-a3c7-55db88bb29b2, url: /videos/96eccf6f-0165-47eb-a3c7-55db88bb29b2.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 9c696259-99a3-411f-a1f5-f6a3fc3fb92a, url: /videos/9c696259-99a3-411f-a1f5-f6a3fc3fb92a.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 49716f87-c489-4bd0-af7c-c50015e9b480, url: /videos/49716f87-c489-4bd0-af7c-c50015e9b480.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: eb4684cd-74ad-4763-ada8-347134ac1228, url: /videos/eb4684cd-74ad-4763-ada8-347134ac1228.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: dff70497-d198-4ff5-84a4-1b7265d2f8eb, url: /videos/dff70497-d198-4ff5-84a4-1b7265d2f8eb.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[STORE_UPDATE] {store: personalVideos, source: syncFromVault, count: 20, ts: 2026-07-24T20:52:48.785Z}"
+    },
+    {
+      "type": "info",
+      "text": "[STORE_WRITE] {store: personal_video_vault, source: syncFromVault, count: 20, ts: 2026-07-24T20:52:48.785Z}"
+    },
+    {
+      "type": "info",
+      "text": "[HERO_STORE_WRITE] {stage: syncFromVault:video-vault-persist, key: personal_video_vault, count: 20, heroAssetId: , ts: 2026-07-24T20:52:48.785Z}"
+    },
+    {
+      "type": "log",
+      "text": "[syncFromVault] Video vault merged (local + backend): 20 + 20 => 20"
+    },
+    {
+      "type": "info",
+      "text": "[PERSONAL_THUMBNAIL_INSERT] {stage: AI_CLEANUP_AGENT.syncThumbnailsToFeed, placeholderId: personal-thumb-d1539feb-54c9-47e8-b40d-9318b9f87fb2, thumbnailName: d1539feb-54c9-47e8-b40d-9318b9f87fb2.jpg, destination: feed:Trending, ts: 2026-07-24T20:52:48.786Z}"
+    },
+    {
+      "type": "info",
+      "text": "[PERSONAL_THUMBNAIL_INSERT] {stage: AI_CLEANUP_AGENT.syncThumbnailsToFeed, placeholderId: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, thumbnailName: 723642c0-fb56-4b67-a6aa-4c61efcf4064.jpg, destination: feed:Trending, ts: 2026-07-24T20:52:48.786Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:48.786Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:48.793Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7L_FEED_SUMMARY] {backendCatalogCount: 37, heroVideoCount: 4, imageCount: 15, eligibleVideoCount: 22, eligibleImageCount: 15}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: localStorage:reelforge_feed, count: 39, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:48.795Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: FeedExperience:loading, count: 0, first: null, last: null, loading: false}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: FeedExperience:render, count: 39, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, loading: false}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: ReelshortExperience:props:feed, count: 39, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:48.796Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: ReelshortExperience:props:normalizedFeed, count: 39, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:48.796Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, category: Trending}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, category: Trending}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 0, first: null, last: null, category: Romance}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 0, first: null, last: null, category: Romance}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 2, first: 61c56ffe-f17b-42cd-b338-00fca6799c83, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, category: Cyber-Action}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 2, first: 61c56ffe-f17b-42cd-b338-00fca6799c83, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, category: Cyber-Action}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 0, first: null, last: null, category: Suspense}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 0, first: null, last: null, category: Suspense}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: MediaRenderer, count: 0, first: null, last: null, mountedCardVisuals: 39}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: DOM:reel-card, count: 0, first: null, last: null, domNodes: 52}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7J_HYDRATION_READY] {ready: true, personalVideosCount: 20, timestamp: 2026-07-24T20:52:48.811Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:48.814Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:48.827Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7J_HERO_GATE] {hydrationReady: true, action: resolved, timestamp: 2026-07-24T20:52:48.831Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: FeedExperience:render, count: 39, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, loading: false}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: ReelshortExperience:props:feed, count: 39, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:48.833Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: ReelshortExperience:props:normalizedFeed, count: 39, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:48.833Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, category: Trending}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 37, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, category: Trending}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 0, first: null, last: null, category: Romance}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 0, first: null, last: null, category: Romance}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 2, first: 61c56ffe-f17b-42cd-b338-00fca6799c83, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, category: Cyber-Action}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 2, first: 61c56ffe-f17b-42cd-b338-00fca6799c83, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, category: Cyber-Action}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 0, first: null, last: null, category: Suspense}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 0, first: null, last: null, category: Suspense}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: MediaRenderer, count: 0, first: null, last: null, mountedCardVisuals: 39}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: DOM:reel-card, count: 0, first: null, last: null, domNodes: 52}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 8e40f3ca-e220-40f7-a636-b828b4008f68, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:49.034Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 8e40f3ca-e220-40f7-a636-b828b4008f68, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:49.041Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 8e40f3ca-e220-40f7-a636-b828b4008f68, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:49.041Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 8e40f3ca-e220-40f7-a636-b828b4008f68, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:49.048Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 6060c258-a3f6-40ba-b642-c758562c7cb7, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:49.050Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 6060c258-a3f6-40ba-b642-c758562c7cb7, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:49.056Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 6060c258-a3f6-40ba-b642-c758562c7cb7, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:49.057Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 6060c258-a3f6-40ba-b642-c758562c7cb7, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:49.063Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 0c335922-ef31-450b-b4d3-9d24a08210cf, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:49.065Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 0c335922-ef31-450b-b4d3-9d24a08210cf, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:49.072Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 0c335922-ef31-450b-b4d3-9d24a08210cf, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:49.073Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 0c335922-ef31-450b-b4d3-9d24a08210cf, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:49.080Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:49.081Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:49.088Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:49.088Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:49.095Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: bbfe2e70-404a-4635-97ca-7fbd0196030b, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:49.097Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: bbfe2e70-404a-4635-97ca-7fbd0196030b, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:49.103Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: bbfe2e70-404a-4635-97ca-7fbd0196030b, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:49.104Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: bbfe2e70-404a-4635-97ca-7fbd0196030b, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:49.111Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 010ff031-cd44-41ad-8d61-fd3cf3ac054a, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:49.112Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 010ff031-cd44-41ad-8d61-fd3cf3ac054a, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:49.124Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 010ff031-cd44-41ad-8d61-fd3cf3ac054a, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:49.125Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 010ff031-cd44-41ad-8d61-fd3cf3ac054a, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:49.133Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: b8bd9cee-899a-45b6-8671-5bd5165aaaf1, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:49.135Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: b8bd9cee-899a-45b6-8671-5bd5165aaaf1, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:49.142Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: b8bd9cee-899a-45b6-8671-5bd5165aaaf1, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:49.143Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: b8bd9cee-899a-45b6-8671-5bd5165aaaf1, last: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, timestamp: 2026-07-24T20:52:49.150Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, last: 61c56ffe-f17b-42cd-b338-00fca6799c83, timestamp: 2026-07-24T20:52:49.151Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, last: 61c56ffe-f17b-42cd-b338-00fca6799c83, timestamp: 2026-07-24T20:52:49.157Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, last: 61c56ffe-f17b-42cd-b338-00fca6799c83, timestamp: 2026-07-24T20:52:49.159Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, last: 61c56ffe-f17b-42cd-b338-00fca6799c83, timestamp: 2026-07-24T20:52:49.165Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 61c56ffe-f17b-42cd-b338-00fca6799c83, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.167Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 61c56ffe-f17b-42cd-b338-00fca6799c83, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.173Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 61c56ffe-f17b-42cd-b338-00fca6799c83, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.174Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 61c56ffe-f17b-42cd-b338-00fca6799c83, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.181Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: eb081031-a03f-4f21-957e-9c196617225f, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.182Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: eb081031-a03f-4f21-957e-9c196617225f, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.189Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: eb081031-a03f-4f21-957e-9c196617225f, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.190Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: eb081031-a03f-4f21-957e-9c196617225f, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.196Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: e6573dc5-f5cc-4f2e-b74f-4f09980b260e, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.198Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: e6573dc5-f5cc-4f2e-b74f-4f09980b260e, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.206Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: e6573dc5-f5cc-4f2e-b74f-4f09980b260e, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.206Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: e6573dc5-f5cc-4f2e-b74f-4f09980b260e, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.213Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 6d4e8087-0ffa-4077-a1b9-4c69858ac2de, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.215Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 6d4e8087-0ffa-4077-a1b9-4c69858ac2de, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.222Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 6d4e8087-0ffa-4077-a1b9-4c69858ac2de, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.223Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 6d4e8087-0ffa-4077-a1b9-4c69858ac2de, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.231Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: a29c0119-c570-4f5f-b522-fc2405696892, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.232Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: a29c0119-c570-4f5f-b522-fc2405696892, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.244Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: a29c0119-c570-4f5f-b522-fc2405696892, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.245Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: a29c0119-c570-4f5f-b522-fc2405696892, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.253Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: b2efa08f-a1e5-4135-bf58-bc5539f9f920, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.254Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: b2efa08f-a1e5-4135-bf58-bc5539f9f920, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.262Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: b2efa08f-a1e5-4135-bf58-bc5539f9f920, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.262Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: b2efa08f-a1e5-4135-bf58-bc5539f9f920, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.269Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 99070858-4567-4ef0-9ba5-9412aeb31120, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.271Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 99070858-4567-4ef0-9ba5-9412aeb31120, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.277Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 99070858-4567-4ef0-9ba5-9412aeb31120, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.278Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 99070858-4567-4ef0-9ba5-9412aeb31120, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.289Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 96eccf6f-0165-47eb-a3c7-55db88bb29b2, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.293Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 96eccf6f-0165-47eb-a3c7-55db88bb29b2, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.304Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 96eccf6f-0165-47eb-a3c7-55db88bb29b2, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.305Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 96eccf6f-0165-47eb-a3c7-55db88bb29b2, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.313Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 9c696259-99a3-411f-a1f5-f6a3fc3fb92a, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.315Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 9c696259-99a3-411f-a1f5-f6a3fc3fb92a, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.321Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 9c696259-99a3-411f-a1f5-f6a3fc3fb92a, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.322Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 9c696259-99a3-411f-a1f5-f6a3fc3fb92a, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.329Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 49716f87-c489-4bd0-af7c-c50015e9b480, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.331Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 49716f87-c489-4bd0-af7c-c50015e9b480, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.342Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 49716f87-c489-4bd0-af7c-c50015e9b480, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.343Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 49716f87-c489-4bd0-af7c-c50015e9b480, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.351Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: eb4684cd-74ad-4763-ada8-347134ac1228, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.353Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: eb4684cd-74ad-4763-ada8-347134ac1228, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.360Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: eb4684cd-74ad-4763-ada8-347134ac1228, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.361Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: eb4684cd-74ad-4763-ada8-347134ac1228, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.367Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.369Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.375Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.376Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.383Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: FeedExperience:render, count: 39, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, loading: false}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: ReelshortExperience:props:feed, count: 39, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.385Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: ReelshortExperience:props:normalizedFeed, count: 39, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:49.385Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 39, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, category: Trending}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 39, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, category: Trending}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 0, first: null, last: null, category: Romance}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 0, first: null, last: null, category: Romance}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 0, first: null, last: null, category: Cyber-Action}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 0, first: null, last: null, category: Cyber-Action}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 0, first: null, last: null, category: Suspense}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 0, first: null, last: null, category: Suspense}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: MediaRenderer, count: 0, first: null, last: null, mountedCardVisuals: 39}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: DOM:reel-card, count: 0, first: null, last: null, domNodes: 54}"
+    },
+    {
+      "type": "info",
+      "text": "[PERSONAL_THUMBNAIL_INSERT] {stage: AI_CLEANUP_AGENT.syncThumbnailsToFeed, placeholderId: personal-thumb-d1539feb-54c9-47e8-b40d-9318b9f87fb2, thumbnailName: d1539feb-54c9-47e8-b40d-9318b9f87fb2.jpg, destination: feed:Trending, ts: 2026-07-24T20:52:50.846Z}"
+    },
+    {
+      "type": "info",
+      "text": "[PERSONAL_THUMBNAIL_INSERT] {stage: AI_CLEANUP_AGENT.syncThumbnailsToFeed, placeholderId: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, thumbnailName: 723642c0-fb56-4b67-a6aa-4c61efcf4064.jpg, destination: feed:Trending, ts: 2026-07-24T20:52:50.847Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:50.847Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:50.853Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 8e40f3ca-e220-40f7-a636-b828b4008f68, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:50.857Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 8e40f3ca-e220-40f7-a636-b828b4008f68, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:50.863Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 8e40f3ca-e220-40f7-a636-b828b4008f68, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:50.864Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 8e40f3ca-e220-40f7-a636-b828b4008f68, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:50.875Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 6060c258-a3f6-40ba-b642-c758562c7cb7, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:50.878Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 6060c258-a3f6-40ba-b642-c758562c7cb7, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:50.885Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 6060c258-a3f6-40ba-b642-c758562c7cb7, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:50.886Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 6060c258-a3f6-40ba-b642-c758562c7cb7, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:50.897Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 0c335922-ef31-450b-b4d3-9d24a08210cf, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:50.901Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 0c335922-ef31-450b-b4d3-9d24a08210cf, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:50.913Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 0c335922-ef31-450b-b4d3-9d24a08210cf, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:50.914Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 0c335922-ef31-450b-b4d3-9d24a08210cf, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:50.926Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:50.928Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:50.936Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:50.936Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:50.943Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: bbfe2e70-404a-4635-97ca-7fbd0196030b, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:50.945Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: bbfe2e70-404a-4635-97ca-7fbd0196030b, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:50.951Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: bbfe2e70-404a-4635-97ca-7fbd0196030b, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:50.952Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: bbfe2e70-404a-4635-97ca-7fbd0196030b, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:50.959Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 010ff031-cd44-41ad-8d61-fd3cf3ac054a, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:50.961Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 010ff031-cd44-41ad-8d61-fd3cf3ac054a, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:50.967Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 010ff031-cd44-41ad-8d61-fd3cf3ac054a, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:50.968Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 010ff031-cd44-41ad-8d61-fd3cf3ac054a, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:50.974Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: b8bd9cee-899a-45b6-8671-5bd5165aaaf1, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:50.976Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: b8bd9cee-899a-45b6-8671-5bd5165aaaf1, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:50.983Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: b8bd9cee-899a-45b6-8671-5bd5165aaaf1, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:50.984Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: b8bd9cee-899a-45b6-8671-5bd5165aaaf1, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:50.991Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:50.992Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.000Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.001Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.007Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 61c56ffe-f17b-42cd-b338-00fca6799c83, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.010Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 61c56ffe-f17b-42cd-b338-00fca6799c83, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.017Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 61c56ffe-f17b-42cd-b338-00fca6799c83, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.017Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 61c56ffe-f17b-42cd-b338-00fca6799c83, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.024Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: eb081031-a03f-4f21-957e-9c196617225f, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.026Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: eb081031-a03f-4f21-957e-9c196617225f, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.033Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: eb081031-a03f-4f21-957e-9c196617225f, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.033Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: eb081031-a03f-4f21-957e-9c196617225f, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.040Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: e6573dc5-f5cc-4f2e-b74f-4f09980b260e, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.042Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: e6573dc5-f5cc-4f2e-b74f-4f09980b260e, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.049Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: e6573dc5-f5cc-4f2e-b74f-4f09980b260e, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.049Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: e6573dc5-f5cc-4f2e-b74f-4f09980b260e, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.062Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 6d4e8087-0ffa-4077-a1b9-4c69858ac2de, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.064Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 6d4e8087-0ffa-4077-a1b9-4c69858ac2de, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.071Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 6d4e8087-0ffa-4077-a1b9-4c69858ac2de, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.072Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 6d4e8087-0ffa-4077-a1b9-4c69858ac2de, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.080Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: a29c0119-c570-4f5f-b522-fc2405696892, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.084Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: a29c0119-c570-4f5f-b522-fc2405696892, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.091Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: a29c0119-c570-4f5f-b522-fc2405696892, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.092Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: a29c0119-c570-4f5f-b522-fc2405696892, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.099Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: b2efa08f-a1e5-4135-bf58-bc5539f9f920, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.102Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: b2efa08f-a1e5-4135-bf58-bc5539f9f920, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.108Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: b2efa08f-a1e5-4135-bf58-bc5539f9f920, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.109Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: b2efa08f-a1e5-4135-bf58-bc5539f9f920, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.116Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 99070858-4567-4ef0-9ba5-9412aeb31120, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.118Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 99070858-4567-4ef0-9ba5-9412aeb31120, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.126Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 99070858-4567-4ef0-9ba5-9412aeb31120, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.127Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 99070858-4567-4ef0-9ba5-9412aeb31120, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.134Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 96eccf6f-0165-47eb-a3c7-55db88bb29b2, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.136Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 96eccf6f-0165-47eb-a3c7-55db88bb29b2, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.142Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 96eccf6f-0165-47eb-a3c7-55db88bb29b2, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.143Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 96eccf6f-0165-47eb-a3c7-55db88bb29b2, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.150Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 9c696259-99a3-411f-a1f5-f6a3fc3fb92a, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.153Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 9c696259-99a3-411f-a1f5-f6a3fc3fb92a, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.161Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 9c696259-99a3-411f-a1f5-f6a3fc3fb92a, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.162Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 9c696259-99a3-411f-a1f5-f6a3fc3fb92a, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.172Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 49716f87-c489-4bd0-af7c-c50015e9b480, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.175Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 49716f87-c489-4bd0-af7c-c50015e9b480, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.187Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: 49716f87-c489-4bd0-af7c-c50015e9b480, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.188Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: 49716f87-c489-4bd0-af7c-c50015e9b480, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.197Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: eb4684cd-74ad-4763-ada8-347134ac1228, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.199Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: eb4684cd-74ad-4763-ada8-347134ac1228, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.207Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: eb4684cd-74ad-4763-ada8-347134ac1228, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.208Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: eb4684cd-74ad-4763-ada8-347134ac1228, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.215Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.217Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.223Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: feed.subscribe, count: 39, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.224Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: normalizedFeed, count: 39, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.231Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: FeedExperience:render, count: 39, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, loading: false}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: ReelshortExperience:props:feed, count: 39, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.234Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: ReelshortExperience:props:normalizedFeed, count: 39, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, timestamp: 2026-07-24T20:52:51.234Z}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 39, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, category: Trending}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 39, first: dff70497-d198-4ff5-84a4-1b7265d2f8eb, last: personal-thumb-723642c0-fb56-4b67-a6aa-4c61efcf4064, category: Trending}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 0, first: null, last: null, category: Romance}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 0, first: null, last: null, category: Romance}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 0, first: null, last: null, category: Cyber-Action}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 0, first: null, last: null, category: Cyber-Action}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:input, count: 0, first: null, last: null, category: Suspense}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: fillLandscape:output, count: 0, first: null, last: null, category: Suspense}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: MediaRenderer, count: 0, first: null, last: null, mountedCardVisuals: 39}"
+    },
+    {
+      "type": "info",
+      "text": "[BG7N_STAGE] {stage: DOM:reel-card, count: 0, first: null, last: null, domNodes: 54}"
+    }
+  ],
+  "networkTrace": [
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/health"
+    },
+    {
+      "type": "response",
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/health",
+      "status": 200
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels?t=1784926353793"
+    },
+    {
+      "type": "response",
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels?t=1784926353793",
+      "status": 200
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/health"
+    },
+    {
+      "type": "response",
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/health",
+      "status": 200
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels?t=1784926356824"
+    },
+    {
+      "type": "response",
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels?t=1784926356824",
+      "status": 200
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/health"
+    },
+    {
+      "type": "response",
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/health",
+      "status": 200
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels"
+    },
+    {
+      "type": "response",
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels",
+      "status": 200
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels"
+    },
+    {
+      "type": "response",
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels",
+      "status": 200
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/health"
+    },
+    {
+      "type": "response",
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/health",
+      "status": 200
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels?t=1784926365438"
+    },
+    {
+      "type": "response",
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels?t=1784926365438",
+      "status": 200
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/health"
+    },
+    {
+      "type": "response",
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/health",
+      "status": 200
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels?t=1784926368581"
+    },
+    {
+      "type": "response",
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels?t=1784926368581",
+      "status": 200
+    }
+  ],
+  "dom": {
+    "reelCards": 54,
+    "feedSelectors": 54,
+    "thumbImages": 17,
+    "feedExperienceRendersCards": true
+  },
+  "pass": true,
+  "buildHomeFeedDecisionsSample": [],
+  "verdict": "PASS"
+}
