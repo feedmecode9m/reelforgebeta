@@ -1,5 +1,6 @@
 # Proxy API + media to Railway (same-origin — avoids browser CORS on uploads)
 /api/*  https://reelforge-deploy-production.up.railway.app/api/:splat  200
+/admin/auth  https://reelforge-deploy-production.up.railway.app/admin/auth  200
 /videos/*  https://reelforge-deploy-production.up.railway.app/videos/:splat  200
 /thumbs/*  https://reelforge-deploy-production.up.railway.app/thumbs/:splat  200
 /health  https://reelforge-deploy-production.up.railway.app/health  200

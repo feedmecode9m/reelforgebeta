@@ -1,0 +1,52 @@
+{
+  "mission": "VIDEO-DELETE-RESURRECTION-01",
+  "ts": "2026-07-24T04:49:51.520Z",
+  "frontendUrl": "http://127.0.0.1:4173/",
+  "apiUrl": "https://reelforge-deploy-production.up.railway.app",
+  "fixture": "/tmp/video-resurrection01-20260724T044950Z/RESURRECTION_TEST_20260724T044950Z.mp4",
+  "steps": {
+    "upload": {
+      "ok": true,
+      "reelId": "b9d746b6-6303-430d-93ac-0b1751030537"
+    },
+    "refreshAfterUpload": {
+      "pass": true,
+      "count": 21
+    },
+    "hardRefresh": {
+      "pass": true,
+      "count": 21
+    },
+    "apiDelete": {
+      "ok": true,
+      "status": 200,
+      "catalogGone": true
+    },
+    "postDeleteRefresh": {
+      "pass": true,
+      "resurrected": false,
+      "catalogGone": true,
+      "vaultCount": 22,
+      "tombstones": null
+    },
+    "secondRefresh": {
+      "pass": true,
+      "resurrected": false
+    },
+    "browserRestart": {
+      "pass": true,
+      "resurrected": false
+    }
+  },
+  "pass": true,
+  "consoleTrace": [
+    "[VAULT-DELETE-TRACE] hydrateVaultFromReels:bootstrap_reload {catalogCount: 37, ids: Array(20), ts: 2026-07-24T04:50:03.674Z}",
+    "[VAULT-DELETE-TRACE] hydrateVaultFromReels:video_reconcile {localBefore: 0, backendVideos: 23, prunedLocal: 0, pendingLocal: 0, reconciled: 23}",
+    "[VAULT-DELETE-TRACE] hydrateVaultFromReels:bootstrap_reload {catalogCount: 36, ids: Array(20), ts: 2026-07-24T04:50:19.339Z}",
+    "[VAULT-DELETE-TRACE] hydrateVaultFromReels:video_reconcile {localBefore: 21, backendVideos: 22, prunedLocal: 20, pendingLocal: 0, reconciled: 22}",
+    "[VAULT-DELETE-TRACE] hydrateVaultFromReels:bootstrap_reload {catalogCount: 36, ids: Array(20), ts: 2026-07-24T04:50:22.888Z}",
+    "[VAULT-DELETE-TRACE] hydrateVaultFromReels:video_reconcile {localBefore: 23, backendVideos: 22, prunedLocal: 22, pendingLocal: 0, reconciled: 22}",
+    "[VAULT-DELETE-TRACE] hydrateVaultFromReels:bootstrap_reload {catalogCount: 36, ids: Array(20), ts: 2026-07-24T04:50:26.707Z}",
+    "[VAULT-DELETE-TRACE] hydrateVaultFromReels:video_reconcile {localBefore: 23, backendVideos: 22, prunedLocal: 22, pendingLocal: 0, reconciled: 22}"
+  ]
+}

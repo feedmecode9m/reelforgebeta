@@ -1,0 +1,2239 @@
+{
+  "mission": "VAULT-VERIFY-03",
+  "timestamp": "2026-07-24T05:38:36.565Z",
+  "environment": {
+    "frontend": "https://strong-lolly-a9fcb4.netlify.app/",
+    "backend": "https://reelforge-deploy-production.up.railway.app",
+    "railwayDeploy": "unknown",
+    "netlifyDeploy": "6a62f9d35a89dc03412d7f49"
+  },
+  "testIdentity": {
+    "dir": "/tmp/vault-verify03-20260724T053828Z",
+    "ts": "20260724T053828Z",
+    "thumb": "/tmp/vault-verify03-20260724T053828Z/VAULT_TEST_THUMB_20260724T053828Z.jpg",
+    "videoSmall": "/tmp/vault-verify03-20260724T053828Z/VAULT_TEST_VIDEO_SMALL_20260724T053828Z.mp4",
+    "videoLarge": "/tmp/vault-verify03-20260724T053828Z/VAULT_TEST_VIDEO_LARGE_20260724T053828Z.mp4",
+    "hero": "/tmp/vault-verify03-20260724T053828Z/VAULT_TEST_HERO_20260724T053828Z.mp4"
+  },
+  "bundleHash": "index-q8wTbWuf.js",
+  "markers": {
+    "VAULT_BOOTSTRAP": [
+      {
+        "ts": 1784871527844,
+        "text": "[VAULT_BOOTSTRAP] {action: hydrateVaultFromReels:thumbs, localCount: 0, backendReels: 38, ts: 2026-07-24T05:38:47.843Z}"
+      },
+      {
+        "ts": 1784871527844,
+        "text": "[VAULT_BOOTSTRAP] {action: upgradeThumbnailVaultFromBackendReels:complete, before: 0, after: 0, ts: 2026-07-24T05:38:47.844Z}"
+      },
+      {
+        "ts": 1784871527845,
+        "text": "[VAULT_BOOTSTRAP] {action: bootstrapMediaFromBackend:complete, source: api-reels, thumbnails: 0, videos: 22, ts: 2026-07-24T05:38:47.845Z}"
+      },
+      {
+        "ts": 1784871586962,
+        "text": "[VAULT_BOOTSTRAP] {action: hydrateVaultFromReels:thumbs, localCount: 1, backendReels: 39, ts: 2026-07-24T05:39:46.951Z}"
+      },
+      {
+        "ts": 1784871586962,
+        "text": "[VAULT_BOOTSTRAP] {action: upgradeThumbnailVaultFromBackendReels:complete, before: 1, after: 1, ts: 2026-07-24T05:39:46.952Z}"
+      },
+      {
+        "ts": 1784871586962,
+        "text": "[VAULT_BOOTSTRAP] {action: bootstrapMediaFromBackend:complete, source: api-reels, thumbnails: 1, videos: 22, ts: 2026-07-24T05:39:46.952Z}"
+      },
+      {
+        "ts": 1784871612532,
+        "text": "[VAULT_BOOTSTRAP] {action: hydrateVaultFromReels:thumbs, localCount: 0, backendReels: 38, ts: 2026-07-24T05:40:12.530Z}"
+      },
+      {
+        "ts": 1784871612533,
+        "text": "[VAULT_BOOTSTRAP] {action: upgradeThumbnailVaultFromBackendReels:complete, before: 0, after: 0, ts: 2026-07-24T05:40:12.530Z}"
+      },
+      {
+        "ts": 1784871612533,
+        "text": "[VAULT_BOOTSTRAP] {action: bootstrapMediaFromBackend:complete, source: api-reels, thumbnails: 0, videos: 22, ts: 2026-07-24T05:40:12.531Z}"
+      },
+      {
+        "ts": 1784871800081,
+        "text": "[VAULT_BOOTSTRAP] {action: hydrateVaultFromReels:thumbs, localCount: 0, backendReels: 39, ts: 2026-07-24T05:43:20.078Z}"
+      },
+      {
+        "ts": 1784871800081,
+        "text": "[VAULT_BOOTSTRAP] {action: upgradeThumbnailVaultFromBackendReels:complete, before: 0, after: 0, ts: 2026-07-24T05:43:20.078Z}"
+      },
+      {
+        "ts": 1784871800081,
+        "text": "[VAULT_BOOTSTRAP] {action: bootstrapMediaFromBackend:complete, source: api-reels, thumbnails: 0, videos: 23, ts: 2026-07-24T05:43:20.079Z}"
+      },
+      {
+        "ts": 1784871806898,
+        "text": "[VAULT_BOOTSTRAP] {action: hydrateVaultFromReels:thumbs, localCount: 0, backendReels: 38, ts: 2026-07-24T05:43:26.891Z}"
+      },
+      {
+        "ts": 1784871806898,
+        "text": "[VAULT_BOOTSTRAP] {action: upgradeThumbnailVaultFromBackendReels:complete, before: 0, after: 0, ts: 2026-07-24T05:43:26.891Z}"
+      },
+      {
+        "ts": 1784871806898,
+        "text": "[VAULT_BOOTSTRAP] {action: bootstrapMediaFromBackend:complete, source: api-reels, thumbnails: 0, videos: 22, ts: 2026-07-24T05:43:26.892Z}"
+      },
+      {
+        "ts": 1784872429195,
+        "text": "[VAULT_BOOTSTRAP] {action: hydrateVaultFromReels:thumbs, localCount: 0, backendReels: 38, ts: 2026-07-24T05:53:49.192Z}"
+      },
+      {
+        "ts": 1784872429195,
+        "text": "[VAULT_BOOTSTRAP] {action: upgradeThumbnailVaultFromBackendReels:complete, before: 0, after: 0, ts: 2026-07-24T05:53:49.192Z}"
+      },
+      {
+        "ts": 1784872429196,
+        "text": "[VAULT_BOOTSTRAP] {action: bootstrapMediaFromBackend:complete, source: api-reels, thumbnails: 0, videos: 22, ts: 2026-07-24T05:53:49.193Z}"
+      },
+      {
+        "ts": 1784873373818,
+        "text": "[VAULT_BOOTSTRAP] {action: hydrateVaultFromReels:thumbs, localCount: 0, backendReels: 38, ts: 2026-07-24T06:09:33.818Z}"
+      },
+      {
+        "ts": 1784873373818,
+        "text": "[VAULT_BOOTSTRAP] {action: upgradeThumbnailVaultFromBackendReels:complete, before: 0, after: 0, ts: 2026-07-24T06:09:33.818Z}"
+      },
+      {
+        "ts": 1784873373820,
+        "text": "[VAULT_BOOTSTRAP] {action: bootstrapMediaFromBackend:complete, source: api-reels, thumbnails: 0, videos: 22, ts: 2026-07-24T06:09:33.819Z}"
+      }
+    ],
+    "VAULT_PERSIST": [
+      {
+        "ts": 1784871528031,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 9522e561-bd5d-432e-be22-aaf2ebb4df62, fileName: 9522e561-bd5d-432e-be22-aaf2ebb4df62.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871528034,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 3cb00194-6a8b-4624-898d-f3840fa7a4e0, fileName: 3cb00194-6a8b-4624-898d-f3840fa7a4e0.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871543040,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 3cb00194-6a8b-4624-898d-f3840fa7a4e0, fileName: 3cb00194-6a8b-4624-898d-f3840fa7a4e0.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871574588,
+        "text": "[VAULT_PERSIST] {vaultType: thumbnail, assetId: 1adadad6-eddb-4e21-8c18-b7e7b89e85a7, fileName: 1adadad6-eddb-4e21-8c18-b7e7b89e85a7.jpg, storageLocation: personal_thumbnails, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871587031,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 9522e561-bd5d-432e-be22-aaf2ebb4df62, fileName: 9522e561-bd5d-432e-be22-aaf2ebb4df62.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871587032,
+        "text": "[VAULT_PERSIST] {vaultType: thumbnail, assetId: 1adadad6-eddb-4e21-8c18-b7e7b89e85a7, fileName: 1adadad6-eddb-4e21-8c18-b7e7b89e85a7.jpg, storageLocation: personal_thumbnails, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871587033,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 3cb00194-6a8b-4624-898d-f3840fa7a4e0, fileName: 3cb00194-6a8b-4624-898d-f3840fa7a4e0.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871598073,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 3cb00194-6a8b-4624-898d-f3840fa7a4e0, fileName: 3cb00194-6a8b-4624-898d-f3840fa7a4e0.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871598074,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 3cb00194-6a8b-4624-898d-f3840fa7a4e0, fileName: 3cb00194-6a8b-4624-898d-f3840fa7a4e0.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871598075,
+        "text": "[VAULT_PERSIST] {vaultType: thumbnail, assetId: null, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871612600,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 9522e561-bd5d-432e-be22-aaf2ebb4df62, fileName: 9522e561-bd5d-432e-be22-aaf2ebb4df62.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871612602,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 3cb00194-6a8b-4624-898d-f3840fa7a4e0, fileName: 3cb00194-6a8b-4624-898d-f3840fa7a4e0.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871637635,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 3cb00194-6a8b-4624-898d-f3840fa7a4e0, fileName: 3cb00194-6a8b-4624-898d-f3840fa7a4e0.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871637656,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 9522e561-bd5d-432e-be22-aaf2ebb4df62, fileName: 9522e561-bd5d-432e-be22-aaf2ebb4df62.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871637657,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 9522e561-bd5d-432e-be22-aaf2ebb4df62, fileName: 9522e561-bd5d-432e-be22-aaf2ebb4df62.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871683700,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 5d869f08-8383-428f-82d2-845515637d93, fileName: 5d869f08-8383-428f-82d2-845515637d93.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871683701,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 5d869f08-8383-428f-82d2-845515637d93, fileName: 5d869f08-8383-428f-82d2-845515637d93.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871800143,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 5d869f08-8383-428f-82d2-845515637d93, fileName: 5d869f08-8383-428f-82d2-845515637d93.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871800144,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 3cb00194-6a8b-4624-898d-f3840fa7a4e0, fileName: 3cb00194-6a8b-4624-898d-f3840fa7a4e0.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871808456,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 9522e561-bd5d-432e-be22-aaf2ebb4df62, fileName: 9522e561-bd5d-432e-be22-aaf2ebb4df62.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871808458,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 3cb00194-6a8b-4624-898d-f3840fa7a4e0, fileName: 3cb00194-6a8b-4624-898d-f3840fa7a4e0.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871812333,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 3cb00194-6a8b-4624-898d-f3840fa7a4e0, fileName: 3cb00194-6a8b-4624-898d-f3840fa7a4e0.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871812350,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 9522e561-bd5d-432e-be22-aaf2ebb4df62, fileName: 9522e561-bd5d-432e-be22-aaf2ebb4df62.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871812351,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 9522e561-bd5d-432e-be22-aaf2ebb4df62, fileName: 9522e561-bd5d-432e-be22-aaf2ebb4df62.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784872437092,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 9522e561-bd5d-432e-be22-aaf2ebb4df62, fileName: 9522e561-bd5d-432e-be22-aaf2ebb4df62.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784872437095,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 3cb00194-6a8b-4624-898d-f3840fa7a4e0, fileName: 3cb00194-6a8b-4624-898d-f3840fa7a4e0.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784872442794,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 3cb00194-6a8b-4624-898d-f3840fa7a4e0, fileName: 3cb00194-6a8b-4624-898d-f3840fa7a4e0.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784872442807,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 9522e561-bd5d-432e-be22-aaf2ebb4df62, fileName: 9522e561-bd5d-432e-be22-aaf2ebb4df62.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784872442807,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 9522e561-bd5d-432e-be22-aaf2ebb4df62, fileName: 9522e561-bd5d-432e-be22-aaf2ebb4df62.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784873373875,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 9522e561-bd5d-432e-be22-aaf2ebb4df62, fileName: 9522e561-bd5d-432e-be22-aaf2ebb4df62.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784873373877,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 3cb00194-6a8b-4624-898d-f3840fa7a4e0, fileName: 3cb00194-6a8b-4624-898d-f3840fa7a4e0.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784873377059,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 3cb00194-6a8b-4624-898d-f3840fa7a4e0, fileName: 3cb00194-6a8b-4624-898d-f3840fa7a4e0.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784873377072,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 9522e561-bd5d-432e-be22-aaf2ebb4df62, fileName: 9522e561-bd5d-432e-be22-aaf2ebb4df62.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784873377073,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 9522e561-bd5d-432e-be22-aaf2ebb4df62, fileName: 9522e561-bd5d-432e-be22-aaf2ebb4df62.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      }
+    ],
+    "VAULT_REFRESH_RESTORE": [
+      {
+        "ts": 1784871528032,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: thumbnail, assetId: null, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871528034,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: video, assetId: null, fileName: null, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871543039,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: thumbnail, assetId: null, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871543040,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: video, assetId: null, fileName: null, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871587032,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: thumbnail, assetId: null, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871587033,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: video, assetId: null, fileName: null, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871612601,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: thumbnail, assetId: null, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871612602,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: video, assetId: null, fileName: null, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871637635,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: thumbnail, assetId: null, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871637635,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: video, assetId: null, fileName: null, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871800144,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: thumbnail, assetId: null, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871800144,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: video, assetId: null, fileName: null, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871808457,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: thumbnail, assetId: null, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871808459,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: video, assetId: null, fileName: null, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871812333,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: thumbnail, assetId: null, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871812334,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: video, assetId: null, fileName: null, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784872437094,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: thumbnail, assetId: null, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784872437095,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: video, assetId: null, fileName: null, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784872442793,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: thumbnail, assetId: null, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784872442794,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: video, assetId: null, fileName: null, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784873373876,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: thumbnail, assetId: null, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784873373877,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: video, assetId: null, fileName: null, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784873377059,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: thumbnail, assetId: null, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784873377060,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: video, assetId: null, fileName: null, storageLocation: personal_video_vault, backendEndpoint: null}"
+      }
+    ],
+    "VAULT_RELOAD": [
+      {
+        "ts": 1784871528032,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:start, personal_thumbnails: 0, ts: 2026-07-24T05:38:48.031Z}"
+      },
+      {
+        "ts": 1784871528033,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:clear, personal_thumbnails: 0, ts: 2026-07-24T05:38:48.032Z}"
+      },
+      {
+        "ts": 1784871543039,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:start, personal_thumbnails: 0, ts: 2026-07-24T05:39:03.038Z}"
+      },
+      {
+        "ts": 1784871543039,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:clear, personal_thumbnails: 0, ts: 2026-07-24T05:39:03.039Z}"
+      },
+      {
+        "ts": 1784871587032,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:start, personal_thumbnails: 1, ts: 2026-07-24T05:39:47.030Z}"
+      },
+      {
+        "ts": 1784871587033,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:mutate, personal_thumbnails: 1, ts: 2026-07-24T05:39:47.031Z}"
+      },
+      {
+        "ts": 1784871612601,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:start, personal_thumbnails: 0, ts: 2026-07-24T05:40:12.600Z}"
+      },
+      {
+        "ts": 1784871612601,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:clear, personal_thumbnails: 0, ts: 2026-07-24T05:40:12.600Z}"
+      },
+      {
+        "ts": 1784871637635,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:start, personal_thumbnails: 0, ts: 2026-07-24T05:40:37.628Z}"
+      },
+      {
+        "ts": 1784871637635,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:clear, personal_thumbnails: 0, ts: 2026-07-24T05:40:37.629Z}"
+      },
+      {
+        "ts": 1784871800144,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:start, personal_thumbnails: 0, ts: 2026-07-24T05:43:20.143Z}"
+      },
+      {
+        "ts": 1784871800144,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:clear, personal_thumbnails: 0, ts: 2026-07-24T05:43:20.143Z}"
+      },
+      {
+        "ts": 1784871808457,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:start, personal_thumbnails: 0, ts: 2026-07-24T05:43:28.456Z}"
+      },
+      {
+        "ts": 1784871808457,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:clear, personal_thumbnails: 0, ts: 2026-07-24T05:43:28.456Z}"
+      },
+      {
+        "ts": 1784871812333,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:start, personal_thumbnails: 0, ts: 2026-07-24T05:43:32.332Z}"
+      },
+      {
+        "ts": 1784871812333,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:clear, personal_thumbnails: 0, ts: 2026-07-24T05:43:32.332Z}"
+      },
+      {
+        "ts": 1784872437094,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:start, personal_thumbnails: 0, ts: 2026-07-24T05:53:57.093Z}"
+      },
+      {
+        "ts": 1784872437094,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:clear, personal_thumbnails: 0, ts: 2026-07-24T05:53:57.093Z}"
+      },
+      {
+        "ts": 1784872442793,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:start, personal_thumbnails: 0, ts: 2026-07-24T05:54:02.780Z}"
+      },
+      {
+        "ts": 1784872442793,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:clear, personal_thumbnails: 0, ts: 2026-07-24T05:54:02.780Z}"
+      },
+      {
+        "ts": 1784873373876,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:start, personal_thumbnails: 0, ts: 2026-07-24T06:09:33.876Z}"
+      },
+      {
+        "ts": 1784873373876,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:clear, personal_thumbnails: 0, ts: 2026-07-24T06:09:33.876Z}"
+      },
+      {
+        "ts": 1784873377059,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:start, personal_thumbnails: 0, ts: 2026-07-24T06:09:37.044Z}"
+      },
+      {
+        "ts": 1784873377059,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:clear, personal_thumbnails: 0, ts: 2026-07-24T06:09:37.045Z}"
+      }
+    ],
+    "VAULT_ACCEPT": [
+      {
+        "ts": 1784871559341,
+        "text": "[VAULT_ACCEPT] {vaultType: thumbnail, assetId: null, fileName: VAULT_TEST_THUMB_20260724T053828Z.jpg, storageLocation: personal_thumbnails, backendEndpoint: /api/reels}"
+      }
+    ],
+    "VAULT_UPLOAD_SUCCESS": [
+      {
+        "ts": 1784871574606,
+        "text": "[VAULT_UPLOAD_SUCCESS] {vaultType: thumbnail, assetId: 1adadad6-eddb-4e21-8c18-b7e7b89e85a7, fileName: 1adadad6-eddb-4e21-8c18-b7e7b89e85a7.jpg, storageLocation: /thumbs/1adadad6-eddb-4e21-8c18-b7e7b89e85a7.jpg, backendEndpoint: /api/reels}"
+      },
+      {
+        "ts": 1784871683740,
+        "text": "[VAULT_UPLOAD_SUCCESS] {vaultType: video, assetId: 5d869f08-8383-428f-82d2-845515637d93, fileName: 5d869f08-8383-428f-82d2-845515637d93.mp4, storageLocation: /videos/5d869f08-8383-428f-82d2-845515637d93.mp4, backendEndpoint: /api/reels}"
+      }
+    ],
+    "VAULT_RENDER": [
+      {
+        "ts": 1784871574606,
+        "text": "[VAULT_RENDER] {renderIndex: 0, storeOrigin: personalThumbnailCollection, componentOrigin: VaultExperience, collectionItem: 1adadad6-eddb-4e21-8c18-b7e7b89e85a7.jpg, displayName: VAULT_TEST_THUMB_20260724T053828Z.jpg}"
+      },
+      {
+        "ts": 1784871586941,
+        "text": "[VAULT_RENDER] {renderIndex: 0, storeOrigin: personalThumbnailCollection, componentOrigin: VaultExperience, collectionItem: 1adadad6-eddb-4e21-8c18-b7e7b89e85a7.jpg, displayName: VAULT_TEST_THUMB_20260724T053828Z.jpg}"
+      },
+      {
+        "ts": 1784871587034,
+        "text": "[VAULT_RENDER] {renderIndex: 0, storeOrigin: personalThumbnailCollection, componentOrigin: VaultExperience, collectionItem: 1adadad6-eddb-4e21-8c18-b7e7b89e85a7.jpg, displayName: VAULT_TEST_THUMB_20260724T053828Z.jpg}"
+      }
+    ],
+    "VAULT_DELETE_START": [
+      {
+        "ts": 1784871592105,
+        "text": "[VAULT_DELETE_START] {vaultType: thumbnail, assetId: 1adadad6-eddb-4e21-8c18-b7e7b89e85a7, fileName: 1adadad6-eddb-4e21-8c18-b7e7b89e85a7.jpg, storageLocation: personal_thumbnails, backendEndpoint: /api/reels}"
+      },
+      {
+        "ts": 1784871598075,
+        "text": "[VAULT_DELETE_START] {vaultType: thumbnail, assetId: 1adadad6-eddb-4e21-8c18-b7e7b89e85a7, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}"
+      }
+    ],
+    "VAULT_DELETE_SUCCESS": [
+      {
+        "ts": 1784871598076,
+        "text": "[VAULT_DELETE_SUCCESS] {vaultType: thumbnail, assetId: 1adadad6-eddb-4e21-8c18-b7e7b89e85a7, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784871598077,
+        "text": "[VAULT_DELETE_SUCCESS] {vaultType: thumbnail, assetId: 1adadad6-eddb-4e21-8c18-b7e7b89e85a7, fileName: 1adadad6-eddb-4e21-8c18-b7e7b89e85a7.jpg, storageLocation: personal_thumbnails, backendEndpoint: /api/reels}"
+      }
+    ]
+  },
+  "network": {
+    "summary": {
+      "sign": [],
+      "finalize": [],
+      "r2Put": [],
+      "reelPost": [
+        {
+          "ts": 1784871565328,
+          "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels",
+          "method": "POST",
+          "status": 202,
+          "ok": true,
+          "kind": "response"
+        },
+        {
+          "ts": 1784871674943,
+          "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels",
+          "method": "POST",
+          "status": 202,
+          "ok": true,
+          "kind": "response"
+        }
+      ],
+      "reelDelete": [
+        {
+          "ts": 1784871597050,
+          "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels/1adadad6-eddb-4e21-8c18-b7e7b89e85a7",
+          "method": "DELETE",
+          "status": 200,
+          "ok": true,
+          "kind": "response"
+        }
+      ]
+    },
+    "tail": [
+      {
+        "ts": 1784873373977,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/eb4684cd-74ad-4763-ada8-347134ac1228.jpg",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873373978,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/dff70497-d198-4ff5-84a4-1b7265d2f8eb.jpg",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873373980,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873373980,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873374026,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/3cb00194-6a8b-4624-898d-f3840fa7a4e0.jpg",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873374238,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873374239,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/8de95c34-a61a-4d24-988b-ba0c115624c9.mp4",
+        "method": "GET",
+        "status": 206,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873376864,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7.mp4",
+        "method": "GET",
+        "status": 206,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873376865,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/bbfe2e70-404a-4635-97ca-7fbd0196030b.mp4",
+        "method": "GET",
+        "status": 206,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873376866,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/health",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873376870,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873376922,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/010ff031-cd44-41ad-8d61-fd3cf3ac054a.mp4",
+        "method": "GET",
+        "status": 206,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873376923,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/b8bd9cee-899a-45b6-8671-5bd5165aaaf1.mp4",
+        "method": "GET",
+        "status": 206,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873376923,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/4e67d1b3-f6c9-4ac4-bd75-7807978d26f3.mp4",
+        "method": "GET",
+        "status": 206,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873376924,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/61c56ffe-f17b-42cd-b338-00fca6799c83.mp4",
+        "method": "GET",
+        "status": 206,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873376924,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/eb081031-a03f-4f21-957e-9c196617225f.mp4",
+        "method": "GET",
+        "status": 206,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873377016,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873377018,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels?t=1784873376865",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873377018,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/e6573dc5-f5cc-4f2e-b74f-4f09980b260e.mp4",
+        "method": "GET",
+        "status": 206,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873377018,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/6d4e8087-0ffa-4077-a1b9-4c69858ac2de.mp4",
+        "method": "GET",
+        "status": 206,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873377029,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/a29c0119-c570-4f5f-b522-fc2405696892.mp4",
+        "method": "GET",
+        "status": 206,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873377029,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/b2efa08f-a1e5-4135-bf58-bc5539f9f920.mp4",
+        "method": "GET",
+        "status": 206,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873377029,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/99070858-4567-4ef0-9ba5-9412aeb31120.mp4",
+        "method": "GET",
+        "status": 206,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873377030,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/96eccf6f-0165-47eb-a3c7-55db88bb29b2.mp4",
+        "method": "GET",
+        "status": 206,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873377030,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/9c696259-99a3-411f-a1f5-f6a3fc3fb92a.mp4",
+        "method": "GET",
+        "status": 206,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873377030,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/49716f87-c489-4bd0-af7c-c50015e9b480.mp4",
+        "method": "GET",
+        "status": 206,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873377030,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/eb4684cd-74ad-4763-ada8-347134ac1228.mp4",
+        "method": "GET",
+        "status": 206,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873377031,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/dff70497-d198-4ff5-84a4-1b7265d2f8eb.mp4",
+        "method": "GET",
+        "status": 206,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873377294,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/995c7491-f056-42eb-a252-4f416eaa487a.jpg",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873377294,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/1aaaa063-a877-4268-8aeb-7343831c1752.jpg",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873377294,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873377297,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/9522e561-bd5d-432e-be22-aaf2ebb4df62.jpg",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873377297,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/fdcab448-8605-4412-8f59-87e627e59860.jpg",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873377297,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/995c7491-f056-42eb-a252-4f416eaa487a.mp4",
+        "method": "GET",
+        "status": 206,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873377310,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873381430,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873381430,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/723642c0-fb56-4b67-a6aa-4c61efcf4064.jpg",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873381432,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/aa4f01b0-2b08-4e39-93cb-6bfce1776e97.jpg",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873381432,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/c4ea71cf-1d04-4e18-9d0a-76385524aa18.jpg",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873381673,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/d121fb4f-b330-4f63-9477-0a2548718e60.jpg",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873381674,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/abb2152c-a63e-415e-9eea-19e31e4a8799.jpg",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873381674,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/c656af89-108b-4403-a09a-5e0120a0b084.jpg",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873381675,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/2966b48d-4f5f-4554-a6cf-c89796a2fc44.jpg",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873381675,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/e8ea86bb-716f-48bd-9638-e2e56f67f7aa.jpg",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873381675,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/46f97e75-fcb5-4ace-b500-ae146898e284.jpg",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873381676,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/5d64b611-a677-4db1-9e9e-cd34782c0caa.jpg",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873381677,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/0b983310-293c-44d0-8c3c-9310f36982bd.jpg",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873381678,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/9a48cf44-1a5b-4a8d-9c52-126c0c1795b5.jpg",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873381679,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/bd444390-343e-49a5-aabe-ff0e1de270b7.jpg",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873381680,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/284a4dfc-666f-44f7-99df-14cb3cbb63a2.jpg",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873381689,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873381690,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873381979,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873381980,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873382445,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873382447,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873382607,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873382743,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873383007,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873383007,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873383270,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873383270,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873383553,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873383554,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873383840,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873383841,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873384066,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873384170,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873384440,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873384440,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873384708,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873384708,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873401587,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873401736,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/state",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873401883,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873402012,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873402012,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push",
+        "method": "POST",
+        "status": 401,
+        "ok": false,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873402067,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873402155,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/security/events",
+        "method": "POST",
+        "status": 201,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873402161,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "method": "POST",
+        "status": 401,
+        "ok": false,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873402501,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873402501,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/analytics/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873403653,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/analytics/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873403653,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873403653,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873403653,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873403653,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/series/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873403657,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873403657,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/IMG_0113.JPEG",
+        "method": "GET",
+        "status": 404,
+        "ok": false,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873403657,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873403657,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/state",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873403658,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/series",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873403934,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873403935,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push",
+        "method": "POST",
+        "status": 401,
+        "ok": false,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873403935,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873403936,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels?t=1784873403744",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873403936,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/studio/status",
+        "method": "GET",
+        "status": 404,
+        "ok": false,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873403936,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/watch/continue?viewer_id=99ea543c-01d8-4cc6-9c41-d79fe63a27bf&limit=10",
+        "method": "GET",
+        "status": 404,
+        "ok": false,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873404091,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/security/events",
+        "method": "POST",
+        "status": 201,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784873404222,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "method": "POST",
+        "status": 401,
+        "ok": false,
+        "kind": "response"
+      }
+    ]
+  },
+  "storageSnapshots": {
+    "thumbnailAfterRefresh": {
+      "thumbs": [
+        {
+          "id": "1adadad6-eddb-4e21-8c18-b7e7b89e85a7",
+          "fileName": "1adadad6-eddb-4e21-8c18-b7e7b89e85a7.jpg",
+          "name": "VAULT_TEST_THUMB_20260724T053828Z.jpg",
+          "title": "VAULT_TEST_THUMB_20260724T053828Z.jpg",
+          "url": "/thumbs/1adadad6-eddb-4e21-8c18-b7e7b89e85a7.jpg",
+          "size": 674,
+          "type": "image",
+          "addedAt": "2026-07-24T05:39:34.575Z"
+        }
+      ],
+      "ids": [
+        "1adadad6-eddb-4e21-8c18-b7e7b89e85a7"
+      ]
+    },
+    "thumbnailAfterDelete": {
+      "thumbs": [],
+      "ids": []
+    },
+    "thumbnailAfterReRefresh": [],
+    "videoSmall": {
+      "vault": [
+        {
+          "id": "5d869f08-8383-428f-82d2-845515637d93",
+          "name": "5d869f08-8383-428f-82d2-845515637d93",
+          "fileName": "5d869f08-8383-428f-82d2-845515637d93.mp4",
+          "url": "/videos/5d869f08-8383-428f-82d2-845515637d93.mp4",
+          "thumbnail": "/thumbs/5d869f08-8383-428f-82d2-845515637d93.jpg",
+          "type": "video/mp4",
+          "addedAt": "2026-07-24T05:41:10.355340+00:00"
+        },
+        {
+          "id": "9522e561-bd5d-432e-be22-aaf2ebb4df62",
+          "name": "VIDEO-DELETE-RESURRECTION-01 RESURRECTION_TEST_20260724T044918Z.mp4",
+          "fileName": "9522e561-bd5d-432e-be22-aaf2ebb4df62.mp4",
+          "url": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/9522e561-bd5d-432e-be22-aaf2ebb4df62.mp4",
+          "thumbnail": "/thumbs/9522e561-bd5d-432e-be22-aaf2ebb4df62.jpg",
+          "type": "video/mp4",
+          "addedAt": "2026-07-24T04:49:24.571569+00:00"
+        },
+        {
+          "id": "fdcab448-8605-4412-8f59-87e627e59860",
+          "name": "VIDEO-DELETE-RESURRECTION-01 RESURRECTION_TEST_20260724T044507Z.mp4",
+          "fileName": "fdcab448-8605-4412-8f59-87e627e59860.mp4",
+          "url": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/fdcab448-8605-4412-8f59-87e627e59860.mp4",
+          "thumbnail": "/thumbs/fdcab448-8605-4412-8f59-87e627e59860.jpg",
+          "type": "video/mp4",
+          "addedAt": "2026-07-24T04:45:14.634143+00:00"
+        },
+        {
+          "id": "3cb00194-6a8b-4624-898d-f3840fa7a4e0",
+          "name": "VIDEO-DELETE-RESURRECTION-01 RESURRECTION_TEST_20260724T043749Z.mp4",
+          "fileName": "3cb00194-6a8b-4624-898d-f3840fa7a4e0.mp4",
+          "url": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/3cb00194-6a8b-4624-898d-f3840fa7a4e0.mp4",
+          "thumbnail": "/thumbs/3cb00194-6a8b-4624-898d-f3840fa7a4e0.jpg",
+          "type": "video/mp4",
+          "addedAt": "2026-07-24T04:37:51.605856+00:00"
+        },
+        {
+          "id": "80e6bd3d-f707-4436-9a54-a734d32955a8",
+          "name": "VAULT TEST VIDEO 20260723T165708Z",
+          "fileName": "80e6bd3d-f707-4436-9a54-a734d32955a8.mp4",
+          "url": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/80e6bd3d-f707-4436-9a54-a734d32955a8.mp4",
+          "thumbnail": "/thumbs/80e6bd3d-f707-4436-9a54-a734d32955a8.jpg",
+          "type": "video/mp4",
+          "addedAt": "2026-07-23T17:12:48.826175+00:00"
+        },
+        {
+          "id": "0c335922-ef31-450b-b4d3-9d24a08210cf",
+          "name": "8de95c34-a61a-4d24-988b-ba0c115624c9",
+          "fileName": "8de95c34-a61a-4d24-988b-ba0c115624c9.mp4",
+          "url": "/videos/8de95c34-a61a-4d24-988b-ba0c115624c9.mp4",
+          "thumbnail": "/thumbs/0c335922-ef31-450b-b4d3-9d24a08210cf.jpg",
+          "type": "video/mp4",
+          "addedAt": "2026-07-23T12:49:10.821676+00:00"
+        },
+        {
+          "id": "cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7",
+          "name": "bg7h-transport-test",
+          "fileName": "cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7.mp4",
+          "url": "/videos/cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7.mp4",
+          "thumbnail": "/thumbs/cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7.jpg",
+          "type": "video/mp4",
+          "addedAt": "2026-07-23T04:49:39.184571+00:00"
+        },
+        {
+          "id": "bbfe2e70-404a-4635-97ca-7fbd0196030b",
+          "name": "bg7h-transport-test",
+          "fileName": "bbfe2e70-404a-4635-97ca-7fbd0196030b.mp4",
+          "url": "/videos/bbfe2e70-404a-4635-97ca-7fbd0196030b.mp4",
+          "thumbnail": "/thumbs/bbfe2e70-404a-4635-97ca-7fbd0196030b.jpg",
+          "type": "video/mp4",
+          "addedAt": "2026-07-23T04:47:00.346791+00:00"
+        },
+        {
+          "id": "010ff031-cd44-41ad-8d61-fd3cf3ac054a",
+          "name": "010ff031-cd44-41ad-8d61-fd3cf3ac054a",
+          "fileName": "010ff031-cd44-41ad-8d61-fd3cf3ac054a.mp4",
+          "url": "/videos/010ff031-cd44-41ad-8d61-fd3cf3ac054a.mp4",
+          "thumbnail": "/thumbs/010ff031-cd44-41ad-8d61-fd3cf3ac054a.jpg",
+          "type": "video/mp4",
+          "addedAt": "2026-07-23T04:34:17.995616+00:00"
+        },
+        {
+          "id": "b8bd9cee-899a-45b6-8671-5bd5165aaaf1",
+          "name": "probe10",
+          "fileName": "b8bd9cee-899a-45b6-8671-5bd5165aaaf1.mp4",
+          "url": "/videos/b8bd9cee-899a-45b6-8671-5bd5165aaaf1.mp4",
+          "thumbnail": "/thumbs/b8bd9cee-899a-45b6-8671-5bd5165aaaf1.jpg",
+          "type": "video/mp4",
+          "addedAt": "2026-07-23T04:14:28.672845+00:00"
+        },
+        {
+          "id": "4e67d1b3-f6c9-4ac4-bd75-7807978d26f3",
+          "name": "PS02-05",
+          "fileName": "4e67d1b3-f6c9-4ac4-bd75-7807978d26f3.mp4",
+          "url": "/videos/4e67d1b3-f6c9-4ac4-bd75-7807978d26f3.mp4",
+          "thumbnail": "/thumbs/4e67d1b3-f6c9-4ac4-bd75-7807978d26f3.jpg",
+          "type": "video/mp4",
+          "addedAt": "2026-07-22T19:55:17.890844+00:00"
+        },
+        {
+          "id": "61c56ffe-f17b-42cd-b338-00fca6799c83",
+          "name": "PS02-04",
+          "fileName": "61c56ffe-f17b-42cd-b338-00fca6799c83.mp4",
+          "url": "/videos/61c56ffe-f17b-42cd-b338-00fca6799c83.mp4",
+          "thumbnail": "/thumbs/61c56ffe-f17b-42cd-b338-00fca6799c83.jpg",
+          "type": "video/mp4",
+          "addedAt": "2026-07-22T19:55:17.161873+00:00"
+        },
+        {
+          "id": "eb081031-a03f-4f21-957e-9c196617225f",
+          "name": "PS01-RENAME-TARGET",
+          "fileName": "eb081031-a03f-4f21-957e-9c196617225f.mp4",
+          "url": "/videos/eb081031-a03f-4f21-957e-9c196617225f.mp4",
+          "thumbnail": "/thumbs/eb081031-a03f-4f21-957e-9c196617225f.jpg",
+          "type": "video/mp4",
+          "addedAt": "2026-07-22T19:47:33.838996+00:00"
+        },
+        {
+          "id": "e6573dc5-f5cc-4f2e-b74f-4f09980b260e",
+          "name": "PS01-08",
+          "fileName": "e6573dc5-f5cc-4f2e-b74f-4f09980b260e.mp4",
+          "url": "/videos/e6573dc5-f5cc-4f2e-b74f-4f09980b260e.mp4",
+          "thumbnail": "/thumbs/e6573dc5-f5cc-4f2e-b74f-4f09980b260e.jpg",
+          "type": "video/mp4",
+          "addedAt": "2026-07-22T19:45:33.458346+00:00"
+        },
+        {
+          "id": "6d4e8087-0ffa-4077-a1b9-4c69858ac2de",
+          "name": "PS01-07",
+          "fileName": "6d4e8087-0ffa-4077-a1b9-4c69858ac2de.mp4",
+          "url": "/videos/6d4e8087-0ffa-4077-a1b9-4c69858ac2de.mp4",
+          "thumbnail": "/thumbs/6d4e8087-0ffa-4077-a1b9-4c69858ac2de.jpg",
+          "type": "video/mp4",
+          "addedAt": "2026-07-22T19:45:32.901500+00:00"
+        },
+        {
+          "id": "a29c0119-c570-4f5f-b522-fc2405696892",
+          "name": "PS01-06",
+          "fileName": "a29c0119-c570-4f5f-b522-fc2405696892.mp4",
+          "url": "/videos/a29c0119-c570-4f5f-b522-fc2405696892.mp4",
+          "thumbnail": "/thumbs/a29c0119-c570-4f5f-b522-fc2405696892.jpg",
+          "type": "video/mp4",
+          "addedAt": "2026-07-22T19:45:32.295488+00:00"
+        },
+        {
+          "id": "b2efa08f-a1e5-4135-bf58-bc5539f9f920",
+          "name": "PS01-05",
+          "fileName": "b2efa08f-a1e5-4135-bf58-bc5539f9f920.mp4",
+          "url": "/videos/b2efa08f-a1e5-4135-bf58-bc5539f9f920.mp4",
+          "thumbnail": "/thumbs/b2efa08f-a1e5-4135-bf58-bc5539f9f920.jpg",
+          "type": "video/mp4",
+          "addedAt": "2026-07-22T19:45:31.522064+00:00"
+        },
+        {
+          "id": "99070858-4567-4ef0-9ba5-9412aeb31120",
+          "name": "PS01-04",
+          "fileName": "99070858-4567-4ef0-9ba5-9412aeb31120.mp4",
+          "url": "/videos/99070858-4567-4ef0-9ba5-9412aeb31120.mp4",
+          "thumbnail": "/thumbs/99070858-4567-4ef0-9ba5-9412aeb31120.jpg",
+          "type": "video/mp4",
+          "addedAt": "2026-07-22T19:45:30.931700+00:00"
+        },
+        {
+          "id": "96eccf6f-0165-47eb-a3c7-55db88bb29b2",
+          "name": "PS01-02",
+          "fileName": "96eccf6f-0165-47eb-a3c7-55db88bb29b2.mp4",
+          "url": "/videos/96eccf6f-0165-47eb-a3c7-55db88bb29b2.mp4",
+          "thumbnail": "/thumbs/96eccf6f-0165-47eb-a3c7-55db88bb29b2.jpg",
+          "type": "video/mp4",
+          "addedAt": "2026-07-22T19:45:29.649503+00:00"
+        },
+        {
+          "id": "9c696259-99a3-411f-a1f5-f6a3fc3fb92a",
+          "name": "PS01-01",
+          "fileName": "9c696259-99a3-411f-a1f5-f6a3fc3fb92a.mp4",
+          "url": "/videos/9c696259-99a3-411f-a1f5-f6a3fc3fb92a.mp4",
+          "thumbnail": "/thumbs/9c696259-99a3-411f-a1f5-f6a3fc3fb92a.jpg",
+          "type": "video/mp4",
+          "addedAt": "2026-07-22T19:45:29.056404+00:00"
+        },
+        {
+          "id": "49716f87-c489-4bd0-af7c-c50015e9b480",
+          "name": "PU01-VideoProbe",
+          "fileName": "49716f87-c489-4bd0-af7c-c50015e9b480.mp4",
+          "url": "/videos/49716f87-c489-4bd0-af7c-c50015e9b480.mp4",
+          "thumbnail": "/thumbs/49716f87-c489-4bd0-af7c-c50015e9b480.jpg",
+          "type": "video/mp4",
+          "addedAt": "2026-07-22T19:20:54.214416+00:00"
+        },
+        {
+          "id": "eb4684cd-74ad-4763-ada8-347134ac1228",
+          "name": "PD07-Regression",
+          "fileName": "eb4684cd-74ad-4763-ada8-347134ac1228.mp4",
+          "url": "/videos/eb4684cd-74ad-4763-ada8-347134ac1228.mp4",
+          "thumbnail": "/thumbs/eb4684cd-74ad-4763-ada8-347134ac1228.jpg",
+          "type": "video/mp4",
+          "addedAt": "2026-07-22T19:04:52.555407+00:00"
+        },
+        {
+          "id": "dff70497-d198-4ff5-84a4-1b7265d2f8eb",
+          "name": "PD06F-Regression",
+          "fileName": "dff70497-d198-4ff5-84a4-1b7265d2f8eb.mp4",
+          "url": "/videos/dff70497-d198-4ff5-84a4-1b7265d2f8eb.mp4",
+          "thumbnail": "/thumbs/dff70497-d198-4ff5-84a4-1b7265d2f8eb.jpg",
+          "type": "video/mp4",
+          "addedAt": "2026-07-22T18:44:53.482948+00:00"
+        }
+      ],
+      "vaultAfter": [
+        {
+          "id": "3cb00194-6a8b-4624-898d-f3840fa7a4e0",
+          "name": "VIDEO-DELETE-RESURRECTION-01 RESURRECTION_TEST_20260724T043749Z.mp4",
+          "fileName": "3cb00194-6a8b-4624-898d-f3840fa7a4e0.mp4",
+          "type": "video/mp4",
+          "addedAt": "2026-07-24T04:37:51.605856+00:00",
+          "thumbnail": "/thumbs/3cb00194-6a8b-4624-898d-f3840fa7a4e0.jpg",
+          "url": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/3cb00194-6a8b-4624-898d-f3840fa7a4e0.mp4"
+        },
+        {
+          "id": "80e6bd3d-f707-4436-9a54-a734d32955a8",
+          "name": "VAULT TEST VIDEO 20260723T165708Z",
+          "fileName": "80e6bd3d-f707-4436-9a54-a734d32955a8.mp4",
+          "type": "video/mp4",
+          "addedAt": "2026-07-23T17:12:48.826175+00:00",
+          "thumbnail": "/thumbs/80e6bd3d-f707-4436-9a54-a734d32955a8.jpg",
+          "url": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/80e6bd3d-f707-4436-9a54-a734d32955a8.mp4"
+        },
+        {
+          "id": "0c335922-ef31-450b-b4d3-9d24a08210cf",
+          "name": "8de95c34-a61a-4d24-988b-ba0c115624c9",
+          "fileName": "8de95c34-a61a-4d24-988b-ba0c115624c9.mp4",
+          "type": "video/mp4",
+          "addedAt": "2026-07-23T12:49:10.821676+00:00",
+          "thumbnail": "/thumbs/0c335922-ef31-450b-b4d3-9d24a08210cf.jpg",
+          "url": "/videos/8de95c34-a61a-4d24-988b-ba0c115624c9.mp4"
+        },
+        {
+          "id": "cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7",
+          "name": "bg7h-transport-test",
+          "fileName": "cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7.mp4",
+          "type": "video/mp4",
+          "addedAt": "2026-07-23T04:49:39.184571+00:00",
+          "thumbnail": "/thumbs/cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7.jpg",
+          "url": "/videos/cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7.mp4"
+        },
+        {
+          "id": "bbfe2e70-404a-4635-97ca-7fbd0196030b",
+          "name": "bg7h-transport-test",
+          "fileName": "bbfe2e70-404a-4635-97ca-7fbd0196030b.mp4",
+          "type": "video/mp4",
+          "addedAt": "2026-07-23T04:47:00.346791+00:00",
+          "thumbnail": "/thumbs/bbfe2e70-404a-4635-97ca-7fbd0196030b.jpg",
+          "url": "/videos/bbfe2e70-404a-4635-97ca-7fbd0196030b.mp4"
+        },
+        {
+          "id": "010ff031-cd44-41ad-8d61-fd3cf3ac054a",
+          "name": "010ff031-cd44-41ad-8d61-fd3cf3ac054a",
+          "fileName": "010ff031-cd44-41ad-8d61-fd3cf3ac054a.mp4",
+          "type": "video/mp4",
+          "addedAt": "2026-07-23T04:34:17.995616+00:00",
+          "thumbnail": "/thumbs/010ff031-cd44-41ad-8d61-fd3cf3ac054a.jpg",
+          "url": "/videos/010ff031-cd44-41ad-8d61-fd3cf3ac054a.mp4"
+        },
+        {
+          "id": "b8bd9cee-899a-45b6-8671-5bd5165aaaf1",
+          "name": "probe10",
+          "fileName": "b8bd9cee-899a-45b6-8671-5bd5165aaaf1.mp4",
+          "type": "video/mp4",
+          "addedAt": "2026-07-23T04:14:28.672845+00:00",
+          "thumbnail": "/thumbs/b8bd9cee-899a-45b6-8671-5bd5165aaaf1.jpg",
+          "url": "/videos/b8bd9cee-899a-45b6-8671-5bd5165aaaf1.mp4"
+        },
+        {
+          "id": "4e67d1b3-f6c9-4ac4-bd75-7807978d26f3",
+          "name": "PS02-05",
+          "fileName": "4e67d1b3-f6c9-4ac4-bd75-7807978d26f3.mp4",
+          "type": "video/mp4",
+          "addedAt": "2026-07-22T19:55:17.890844+00:00",
+          "thumbnail": "/thumbs/4e67d1b3-f6c9-4ac4-bd75-7807978d26f3.jpg",
+          "url": "/videos/4e67d1b3-f6c9-4ac4-bd75-7807978d26f3.mp4"
+        },
+        {
+          "id": "61c56ffe-f17b-42cd-b338-00fca6799c83",
+          "name": "PS02-04",
+          "fileName": "61c56ffe-f17b-42cd-b338-00fca6799c83.mp4",
+          "type": "video/mp4",
+          "addedAt": "2026-07-22T19:55:17.161873+00:00",
+          "thumbnail": "/thumbs/61c56ffe-f17b-42cd-b338-00fca6799c83.jpg",
+          "url": "/videos/61c56ffe-f17b-42cd-b338-00fca6799c83.mp4"
+        },
+        {
+          "id": "eb081031-a03f-4f21-957e-9c196617225f",
+          "name": "PS01-RENAME-TARGET",
+          "fileName": "eb081031-a03f-4f21-957e-9c196617225f.mp4",
+          "type": "video/mp4",
+          "addedAt": "2026-07-22T19:47:33.838996+00:00",
+          "thumbnail": "/thumbs/eb081031-a03f-4f21-957e-9c196617225f.jpg",
+          "url": "/videos/eb081031-a03f-4f21-957e-9c196617225f.mp4"
+        },
+        {
+          "id": "e6573dc5-f5cc-4f2e-b74f-4f09980b260e",
+          "name": "PS01-08",
+          "fileName": "e6573dc5-f5cc-4f2e-b74f-4f09980b260e.mp4",
+          "type": "video/mp4",
+          "addedAt": "2026-07-22T19:45:33.458346+00:00",
+          "thumbnail": "/thumbs/e6573dc5-f5cc-4f2e-b74f-4f09980b260e.jpg",
+          "url": "/videos/e6573dc5-f5cc-4f2e-b74f-4f09980b260e.mp4"
+        },
+        {
+          "id": "6d4e8087-0ffa-4077-a1b9-4c69858ac2de",
+          "name": "PS01-07",
+          "fileName": "6d4e8087-0ffa-4077-a1b9-4c69858ac2de.mp4",
+          "type": "video/mp4",
+          "addedAt": "2026-07-22T19:45:32.901500+00:00",
+          "thumbnail": "/thumbs/6d4e8087-0ffa-4077-a1b9-4c69858ac2de.jpg",
+          "url": "/videos/6d4e8087-0ffa-4077-a1b9-4c69858ac2de.mp4"
+        },
+        {
+          "id": "a29c0119-c570-4f5f-b522-fc2405696892",
+          "name": "PS01-06",
+          "fileName": "a29c0119-c570-4f5f-b522-fc2405696892.mp4",
+          "type": "video/mp4",
+          "addedAt": "2026-07-22T19:45:32.295488+00:00",
+          "thumbnail": "/thumbs/a29c0119-c570-4f5f-b522-fc2405696892.jpg",
+          "url": "/videos/a29c0119-c570-4f5f-b522-fc2405696892.mp4"
+        },
+        {
+          "id": "b2efa08f-a1e5-4135-bf58-bc5539f9f920",
+          "name": "PS01-05",
+          "fileName": "b2efa08f-a1e5-4135-bf58-bc5539f9f920.mp4",
+          "type": "video/mp4",
+          "addedAt": "2026-07-22T19:45:31.522064+00:00",
+          "thumbnail": "/thumbs/b2efa08f-a1e5-4135-bf58-bc5539f9f920.jpg",
+          "url": "/videos/b2efa08f-a1e5-4135-bf58-bc5539f9f920.mp4"
+        },
+        {
+          "id": "99070858-4567-4ef0-9ba5-9412aeb31120",
+          "name": "PS01-04",
+          "fileName": "99070858-4567-4ef0-9ba5-9412aeb31120.mp4",
+          "type": "video/mp4",
+          "addedAt": "2026-07-22T19:45:30.931700+00:00",
+          "thumbnail": "/thumbs/99070858-4567-4ef0-9ba5-9412aeb31120.jpg",
+          "url": "/videos/99070858-4567-4ef0-9ba5-9412aeb31120.mp4"
+        },
+        {
+          "id": "96eccf6f-0165-47eb-a3c7-55db88bb29b2",
+          "name": "PS01-02",
+          "fileName": "96eccf6f-0165-47eb-a3c7-55db88bb29b2.mp4",
+          "type": "video/mp4",
+          "addedAt": "2026-07-22T19:45:29.649503+00:00",
+          "thumbnail": "/thumbs/96eccf6f-0165-47eb-a3c7-55db88bb29b2.jpg",
+          "url": "/videos/96eccf6f-0165-47eb-a3c7-55db88bb29b2.mp4"
+        },
+        {
+          "id": "9c696259-99a3-411f-a1f5-f6a3fc3fb92a",
+          "name": "PS01-01",
+          "fileName": "9c696259-99a3-411f-a1f5-f6a3fc3fb92a.mp4",
+          "type": "video/mp4",
+          "addedAt": "2026-07-22T19:45:29.056404+00:00",
+          "thumbnail": "/thumbs/9c696259-99a3-411f-a1f5-f6a3fc3fb92a.jpg",
+          "url": "/videos/9c696259-99a3-411f-a1f5-f6a3fc3fb92a.mp4"
+        },
+        {
+          "id": "49716f87-c489-4bd0-af7c-c50015e9b480",
+          "name": "PU01-VideoProbe",
+          "fileName": "49716f87-c489-4bd0-af7c-c50015e9b480.mp4",
+          "type": "video/mp4",
+          "addedAt": "2026-07-22T19:20:54.214416+00:00",
+          "thumbnail": "/thumbs/49716f87-c489-4bd0-af7c-c50015e9b480.jpg",
+          "url": "/videos/49716f87-c489-4bd0-af7c-c50015e9b480.mp4"
+        },
+        {
+          "id": "eb4684cd-74ad-4763-ada8-347134ac1228",
+          "name": "PD07-Regression",
+          "fileName": "eb4684cd-74ad-4763-ada8-347134ac1228.mp4",
+          "type": "video/mp4",
+          "addedAt": "2026-07-22T19:04:52.555407+00:00",
+          "thumbnail": "/thumbs/eb4684cd-74ad-4763-ada8-347134ac1228.jpg",
+          "url": "/videos/eb4684cd-74ad-4763-ada8-347134ac1228.mp4"
+        },
+        {
+          "id": "dff70497-d198-4ff5-84a4-1b7265d2f8eb",
+          "name": "PD06F-Regression",
+          "fileName": "dff70497-d198-4ff5-84a4-1b7265d2f8eb.mp4",
+          "type": "video/mp4",
+          "addedAt": "2026-07-22T18:44:53.482948+00:00",
+          "thumbnail": "/thumbs/dff70497-d198-4ff5-84a4-1b7265d2f8eb.jpg",
+          "url": "/videos/dff70497-d198-4ff5-84a4-1b7265d2f8eb.mp4"
+        }
+      ],
+      "reelId": "5d869f08-8383-428f-82d2-845515637d93"
+    },
+    "videoLargeR2": {
+      "sign": {
+        "status": 200,
+        "ok": true,
+        "uploadId": "c8d39681-4e76-4181-afd7-28f11aa22bc5",
+        "reelId": "ce7b5ef3-550f-43ae-a55e-9aa29e23a7af",
+        "ms": 298
+      },
+      "r2Put": {
+        "ok": false,
+        "attempt": 3,
+        "error": "fetch failed",
+        "ms": 614075,
+        "target": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-medi"
+      }
+    },
+    "hero": {
+      "before": {
+        "manager": null,
+        "heroReel": null
+      },
+      "after": {
+        "manager": null,
+        "heroReel": null
+      }
+    }
+  },
+  "vaults": {
+    "thumbnail": {
+      "pass": true,
+      "tests": {
+        "drop": {
+          "pass": true,
+          "acceptVisible": true,
+          "countBefore": 0,
+          "countAfterDrop": 0,
+          "noBackendBeforeAccept": true
+        },
+        "accept": {
+          "pass": true,
+          "postStatus": 202,
+          "reelId": "1adadad6-eddb-4e21-8c18-b7e7b89e85a7",
+          "idsUpdated": true,
+          "thumbsUpdated": true
+        },
+        "refresh": {
+          "pass": true,
+          "survives": true,
+          "duplicateCount": 1,
+          "idsPresent": true,
+          "catalogMatch": true,
+          "count": 1
+        },
+        "delete": {
+          "pass": true,
+          "deleteStatus": 200,
+          "catalogGone": true,
+          "idsRemoved": true,
+          "storageNetlify": {
+            "ok": false,
+            "status": 404,
+            "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/1adadad6-eddb-4e21-8c18-b7e7b89e85a7.jpg?_cb=1784871600784"
+          },
+          "storageOrigin": {
+            "ok": false,
+            "status": 404,
+            "url": "https://reelforge-deploy-production.up.railway.app/thumbs/1adadad6-eddb-4e21-8c18-b7e7b89e85a7.jpg?_cb=1784871601235"
+          },
+          "storageEventually404": true
+        },
+        "rerefresh": {
+          "pass": true,
+          "resurrected": false,
+          "catalogGone": true
+        }
+      }
+    },
+    "videoSmall": {
+      "pass": true,
+      "tests": {
+        "upload": {
+          "pass": true,
+          "reelId": "5d869f08-8383-428f-82d2-845515637d93",
+          "postStatus": 202
+        },
+        "refresh": {
+          "pass": true,
+          "survives": true
+        },
+        "delete": {
+          "pass": true,
+          "catalogGone": true
+        },
+        "rerefresh": {
+          "pass": true,
+          "resurrected": false
+        }
+      }
+    },
+    "videoLarge": {
+      "pass": false,
+      "error": "fetch failed"
+    },
+    "hero": {
+      "signedPath": {
+        "signOk": false,
+        "finalizeOk": false
+      },
+      "persist": {
+        "heroAssetId": null,
+        "notInMp4Vault": true,
+        "hasHeroVideoKey": false
+      },
+      "refresh": {
+        "survives": false
+      },
+      "delete": {
+        "heroDeleted": false,
+        "resurrected": null
+      }
+    }
+  },
+  "identityAudit": {
+    "deleteUsesReelId": true,
+    "legacyFallbackDocumented": "basename fallback only when metadata id missing in aiCleanupAgent.handleThumbnailRemove",
+    "sampleLines": [
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/contentAgents.js:2:import { deleteReelById } from '../api/media.js';",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/contentAgents.js:187:  await deleteReelById(reelId, { Authorization: `Bearer ${token}` });",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/aiCleanupAgent.js:3:import { deleteMediaFile, deleteReelById, fetchReadyReels } from '../api/media.js';",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/aiCleanupAgent.js:10:  deleteThumbnailVaultEntries,",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/aiCleanupAgent.js:12:  removeThumbnailVaultByIndex,",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/aiCleanupAgent.js:438:  async handleThumbnailRemove(index) {",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/aiCleanupAgent.js:495:  await deleteReelById(reelId, this.authHeaders());",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/aiCleanupAgent.js:511:  await deleteReelById(imageReel.id, this.authHeaders());",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/aiCleanupAgent.js:526:  deleteThumbnailVaultEntries([reelId], [], {",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/aiCleanupAgent.js:531:  removeThumbnailVaultByIndex(thumbnailKey, CONFIG.THUMBNAIL_STORAGE_KEY);",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/aiCleanupAgent.js:616:  await deleteReelById(videoId, AI_CLEANUP_AGENT.authHeaders());",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbnailVault.js:425:export function deleteThumbnailVaultEntries(deletedIds = [], imageReels = [], options = {}) {",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbnailVault.js:538:export function removeThumbnailVaultByIndex(fileKey, storageKey = THUMBNAIL_KEY) {",
+      ""
+    ]
+  },
+  "storageAudit": {
+    "thumbnail": {
+      "thumbs": [],
+      "ids": []
+    },
+    "splitBrain": []
+  },
+  "defects": [
+    {
+      "vault": "videoLarge",
+      "error": "fetch failed"
+    }
+  ],
+  "result": "FAIL",
+  "consoleTail": [
+    {
+      "ts": 1784872437092,
+      "text": "[BG7G_STORE] {ts: 2026-07-24T05:53:57.091Z, component: persistPersonalVault, file: viewerContext.js, fileName: 9522e561-bd5d-432e-be22-aaf2ebb4df62.mp4, fileSize: null}"
+    },
+    {
+      "ts": 1784872437092,
+      "text": "[VAULT_PERSIST] {vaultType: video, assetId: 9522e561-bd5d-432e-be22-aaf2ebb4df62, fileName: 9522e561-bd5d-432e-be22-aaf2ebb4df62.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+    },
+    {
+      "ts": 1784872437093,
+      "text": "[BG7G_STORE] {ts: 2026-07-24T05:53:57.092Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 12646}"
+    },
+    {
+      "ts": 1784872437094,
+      "text": "[VAULT_REFRESH_RESTORE] {vaultType: thumbnail, assetId: null, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}"
+    },
+    {
+      "ts": 1784872437094,
+      "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:start, personal_thumbnails: 0, ts: 2026-07-24T05:53:57.093Z}"
+    },
+    {
+      "ts": 1784872437094,
+      "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:clear, personal_thumbnails: 0, ts: 2026-07-24T05:53:57.093Z}"
+    },
+    {
+      "ts": 1784872437095,
+      "text": "[BG7G_STORE] {ts: 2026-07-24T05:53:57.093Z, component: persistPersonalVault, file: viewerContext.js, fileName: 3cb00194-6a8b-4624-898d-f3840fa7a4e0.mp4, fileSize: null}"
+    },
+    {
+      "ts": 1784872437095,
+      "text": "[VAULT_PERSIST] {vaultType: video, assetId: 3cb00194-6a8b-4624-898d-f3840fa7a4e0, fileName: 3cb00194-6a8b-4624-898d-f3840fa7a4e0.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+    },
+    {
+      "ts": 1784872437095,
+      "text": "[BG7G_STORE] {ts: 2026-07-24T05:53:57.094Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 12646}"
+    },
+    {
+      "ts": 1784872437095,
+      "text": "[VAULT_REFRESH_RESTORE] {vaultType: video, assetId: null, fileName: null, storageLocation: personal_video_vault, backendEndpoint: null}"
+    },
+    {
+      "ts": 1784872437096,
+      "text": "[VAULT_ITEM_COUNT] {images: 0, videos: 20, ts: 2026-07-24T05:53:57.094Z}"
+    },
+    {
+      "ts": 1784872440351,
+      "text": "[BG7G_DROP] {ts: 2026-07-24T05:54:00.350Z, component: handleHeroFileSelect, file: HeroExperience.svelte, fileName: VAULT_TEST_HERO_20260724T053828Z.mp4, fileSize: 30223729}"
+    },
+    {
+      "ts": 1784872440352,
+      "text": "[BG7G_UPLOAD] {ts: 2026-07-24T05:54:00.352Z, component: handleHeroFileSelect, file: HeroExperience.svelte, fileName: VAULT_TEST_HERO_20260724T053828Z.mp4, fileSize: 30223729}"
+    },
+    {
+      "ts": 1784872442793,
+      "text": "[VAULT_SYNC] {action: syncFromVault:pre-upgrade, backendReels: 38, personal_thumbnails: 0, ts: 2026-07-24T05:54:02.780Z}"
+    },
+    {
+      "ts": 1784872442793,
+      "text": "[VAULT_REFRESH_RESTORE] {vaultType: thumbnail, assetId: null, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}"
+    },
+    {
+      "ts": 1784872442793,
+      "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:start, personal_thumbnails: 0, ts: 2026-07-24T05:54:02.780Z}"
+    },
+    {
+      "ts": 1784872442793,
+      "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:clear, personal_thumbnails: 0, ts: 2026-07-24T05:54:02.780Z}"
+    },
+    {
+      "ts": 1784872442794,
+      "text": "[BG7G_STORE] {ts: 2026-07-24T05:54:02.781Z, component: persistPersonalVault, file: viewerContext.js, fileName: 3cb00194-6a8b-4624-898d-f3840fa7a4e0.mp4, fileSize: null}"
+    },
+    {
+      "ts": 1784872442794,
+      "text": "[VAULT_PERSIST] {vaultType: video, assetId: 3cb00194-6a8b-4624-898d-f3840fa7a4e0, fileName: 3cb00194-6a8b-4624-898d-f3840fa7a4e0.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+    },
+    {
+      "ts": 1784872442794,
+      "text": "[BG7G_STORE] {ts: 2026-07-24T05:54:02.781Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 12646}"
+    },
+    {
+      "ts": 1784872442794,
+      "text": "[VAULT_REFRESH_RESTORE] {vaultType: video, assetId: null, fileName: null, storageLocation: personal_video_vault, backendEndpoint: null}"
+    },
+    {
+      "ts": 1784872442794,
+      "text": "[VAULT_SYNC] {action: syncFromVault:post-reload, personal_thumbnails: 0, collectionStore: 0, ts: 2026-07-24T05:54:02.781Z}"
+    },
+    {
+      "ts": 1784872442807,
+      "text": "[BG7G_STORE] {ts: 2026-07-24T05:54:02.797Z, component: persistPersonalVault, file: viewerContext.js, fileName: 9522e561-bd5d-432e-be22-aaf2ebb4df62.mp4, fileSize: null}"
+    },
+    {
+      "ts": 1784872442807,
+      "text": "[VAULT_PERSIST] {vaultType: video, assetId: 9522e561-bd5d-432e-be22-aaf2ebb4df62, fileName: 9522e561-bd5d-432e-be22-aaf2ebb4df62.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+    },
+    {
+      "ts": 1784872442807,
+      "text": "[BG7G_STORE] {ts: 2026-07-24T05:54:02.797Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 12646}"
+    },
+    {
+      "ts": 1784872442807,
+      "text": "[BG7G_STORE] {ts: 2026-07-24T05:54:02.797Z, component: persistPersonalVault, file: viewerContext.js, fileName: 9522e561-bd5d-432e-be22-aaf2ebb4df62.mp4, fileSize: null}"
+    },
+    {
+      "ts": 1784872442807,
+      "text": "[VAULT_PERSIST] {vaultType: video, assetId: 9522e561-bd5d-432e-be22-aaf2ebb4df62, fileName: 9522e561-bd5d-432e-be22-aaf2ebb4df62.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+    },
+    {
+      "ts": 1784872442808,
+      "text": "[BG7G_STORE] {ts: 2026-07-24T05:54:02.797Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 12646}"
+    },
+    {
+      "ts": 1784872442808,
+      "text": "[VAULT_ITEM_COUNT] {images: 0, videos: 22, ts: 2026-07-24T05:54:02.798Z}"
+    },
+    {
+      "ts": 1784873370759,
+      "text": "[VAULT_ITEM_COUNT] {images: 0, videos: 0, ts: 2026-07-24T06:09:30.758Z}"
+    },
+    {
+      "ts": 1784873370759,
+      "text": "[VAULT_STORAGE] {key: personal_thumbnails, action: getStoredThumbnailEntries, count: 0, ts: 2026-07-24T06:09:30.759Z}"
+    },
+    {
+      "ts": 1784873370759,
+      "text": "[DELETE_REACTIVE] {storeCount: 0, renderedCount: 0, selectedCount: 0, ts: 1784873370759}"
+    },
+    {
+      "ts": 1784873370760,
+      "text": "[DELETE_AUDIT_START] {scope: vault-experience, timestamp: 1784873370760}"
+    },
+    {
+      "ts": 1784873370761,
+      "text": "[DELETE_HANDLER_ATTACHED] {vault: thumbnail-vault, mechanism: single, timestamp: 1784873370760}"
+    },
+    {
+      "ts": 1784873370761,
+      "text": "[DELETE_HANDLER_ATTACHED] {vault: video-vault, mechanism: single, timestamp: 1784873370760}"
+    },
+    {
+      "ts": 1784873370761,
+      "text": "[DELETE_HANDLER_ATTACHED] {vault: thumbnail-vault, mechanism: batch, timestamp: 1784873370760}"
+    },
+    {
+      "ts": 1784873370761,
+      "text": "[DELETE_HANDLER_ATTACHED] {vault: video-vault, mechanism: batch, timestamp: 1784873370760}"
+    },
+    {
+      "ts": 1784873370761,
+      "text": "[DELETE_HANDLER_ATTACHED] {vault: vault-delete-zone, mechanism: drag-drop, timestamp: 1784873370760}"
+    },
+    {
+      "ts": 1784873373662,
+      "text": "[VAULT_ITEM_COUNT] {images: 0, videos: 0, ts: 2026-07-24T06:09:33.662Z}"
+    },
+    {
+      "ts": 1784873373818,
+      "text": "[VAULT_BOOTSTRAP] {action: hydrateVaultFromReels:thumbs, localCount: 0, backendReels: 38, ts: 2026-07-24T06:09:33.818Z}"
+    },
+    {
+      "ts": 1784873373818,
+      "text": "[VAULT_BOOTSTRAP] {action: upgradeThumbnailVaultFromBackendReels:complete, before: 0, after: 0, ts: 2026-07-24T06:09:33.818Z}"
+    },
+    {
+      "ts": 1784873373819,
+      "text": "[BG7G_STORE] {ts: 2026-07-24T06:09:33.819Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 14286}"
+    },
+    {
+      "ts": 1784873373820,
+      "text": "[VAULT_BOOTSTRAP] {action: bootstrapMediaFromBackend:complete, source: api-reels, thumbnails: 0, videos: 22, ts: 2026-07-24T06:09:33.819Z}"
+    },
+    {
+      "ts": 1784873373875,
+      "text": "[BG7G_STORE] {ts: 2026-07-24T06:09:33.874Z, component: persistPersonalVault, file: viewerContext.js, fileName: 9522e561-bd5d-432e-be22-aaf2ebb4df62.mp4, fileSize: null}"
+    },
+    {
+      "ts": 1784873373875,
+      "text": "[VAULT_PERSIST] {vaultType: video, assetId: 9522e561-bd5d-432e-be22-aaf2ebb4df62, fileName: 9522e561-bd5d-432e-be22-aaf2ebb4df62.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+    },
+    {
+      "ts": 1784873373876,
+      "text": "[BG7G_STORE] {ts: 2026-07-24T06:09:33.875Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 12646}"
+    },
+    {
+      "ts": 1784873373876,
+      "text": "[VAULT_REFRESH_RESTORE] {vaultType: thumbnail, assetId: null, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}"
+    },
+    {
+      "ts": 1784873373876,
+      "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:start, personal_thumbnails: 0, ts: 2026-07-24T06:09:33.876Z}"
+    },
+    {
+      "ts": 1784873373876,
+      "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:clear, personal_thumbnails: 0, ts: 2026-07-24T06:09:33.876Z}"
+    },
+    {
+      "ts": 1784873373877,
+      "text": "[BG7G_STORE] {ts: 2026-07-24T06:09:33.877Z, component: persistPersonalVault, file: viewerContext.js, fileName: 3cb00194-6a8b-4624-898d-f3840fa7a4e0.mp4, fileSize: null}"
+    },
+    {
+      "ts": 1784873373877,
+      "text": "[VAULT_PERSIST] {vaultType: video, assetId: 3cb00194-6a8b-4624-898d-f3840fa7a4e0, fileName: 3cb00194-6a8b-4624-898d-f3840fa7a4e0.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+    },
+    {
+      "ts": 1784873373877,
+      "text": "[BG7G_STORE] {ts: 2026-07-24T06:09:33.877Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 12646}"
+    },
+    {
+      "ts": 1784873373877,
+      "text": "[VAULT_REFRESH_RESTORE] {vaultType: video, assetId: null, fileName: null, storageLocation: personal_video_vault, backendEndpoint: null}"
+    },
+    {
+      "ts": 1784873373878,
+      "text": "[VAULT_ITEM_COUNT] {images: 0, videos: 20, ts: 2026-07-24T06:09:33.878Z}"
+    },
+    {
+      "ts": 1784873377059,
+      "text": "[VAULT_SYNC] {action: syncFromVault:pre-upgrade, backendReels: 38, personal_thumbnails: 0, ts: 2026-07-24T06:09:37.044Z}"
+    },
+    {
+      "ts": 1784873377059,
+      "text": "[VAULT_REFRESH_RESTORE] {vaultType: thumbnail, assetId: null, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}"
+    },
+    {
+      "ts": 1784873377059,
+      "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:start, personal_thumbnails: 0, ts: 2026-07-24T06:09:37.044Z}"
+    },
+    {
+      "ts": 1784873377059,
+      "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:clear, personal_thumbnails: 0, ts: 2026-07-24T06:09:37.045Z}"
+    },
+    {
+      "ts": 1784873377059,
+      "text": "[BG7G_STORE] {ts: 2026-07-24T06:09:37.045Z, component: persistPersonalVault, file: viewerContext.js, fileName: 3cb00194-6a8b-4624-898d-f3840fa7a4e0.mp4, fileSize: null}"
+    },
+    {
+      "ts": 1784873377059,
+      "text": "[VAULT_PERSIST] {vaultType: video, assetId: 3cb00194-6a8b-4624-898d-f3840fa7a4e0, fileName: 3cb00194-6a8b-4624-898d-f3840fa7a4e0.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+    },
+    {
+      "ts": 1784873377059,
+      "text": "[BG7G_STORE] {ts: 2026-07-24T06:09:37.046Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 12646}"
+    },
+    {
+      "ts": 1784873377060,
+      "text": "[VAULT_REFRESH_RESTORE] {vaultType: video, assetId: null, fileName: null, storageLocation: personal_video_vault, backendEndpoint: null}"
+    },
+    {
+      "ts": 1784873377060,
+      "text": "[VAULT_SYNC] {action: syncFromVault:post-reload, personal_thumbnails: 0, collectionStore: 0, ts: 2026-07-24T06:09:37.046Z}"
+    },
+    {
+      "ts": 1784873377072,
+      "text": "[BG7G_STORE] {ts: 2026-07-24T06:09:37.071Z, component: persistPersonalVault, file: viewerContext.js, fileName: 9522e561-bd5d-432e-be22-aaf2ebb4df62.mp4, fileSize: null}"
+    },
+    {
+      "ts": 1784873377072,
+      "text": "[VAULT_PERSIST] {vaultType: video, assetId: 9522e561-bd5d-432e-be22-aaf2ebb4df62, fileName: 9522e561-bd5d-432e-be22-aaf2ebb4df62.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+    },
+    {
+      "ts": 1784873377073,
+      "text": "[BG7G_STORE] {ts: 2026-07-24T06:09:37.072Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 12646}"
+    },
+    {
+      "ts": 1784873377073,
+      "text": "[BG7G_STORE] {ts: 2026-07-24T06:09:37.072Z, component: persistPersonalVault, file: viewerContext.js, fileName: 9522e561-bd5d-432e-be22-aaf2ebb4df62.mp4, fileSize: null}"
+    },
+    {
+      "ts": 1784873377073,
+      "text": "[VAULT_PERSIST] {vaultType: video, assetId: 9522e561-bd5d-432e-be22-aaf2ebb4df62, fileName: 9522e561-bd5d-432e-be22-aaf2ebb4df62.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+    },
+    {
+      "ts": 1784873377073,
+      "text": "[BG7G_STORE] {ts: 2026-07-24T06:09:37.072Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 12646}"
+    },
+    {
+      "ts": 1784873377075,
+      "text": "[VAULT_ITEM_COUNT] {images: 0, videos: 22, ts: 2026-07-24T06:09:37.074Z}"
+    },
+    {
+      "ts": 1784873403743,
+      "text": "[VAULT_ITEM_COUNT] {images: 0, videos: 0, ts: 2026-07-24T06:10:03.740Z}"
+    },
+    {
+      "ts": 1784873403744,
+      "text": "[VAULT_STORAGE] {key: personal_thumbnails, action: getStoredThumbnailEntries, count: 0, ts: 2026-07-24T06:10:03.742Z}"
+    },
+    {
+      "ts": 1784873403744,
+      "text": "[DELETE_REACTIVE] {storeCount: 0, renderedCount: 0, selectedCount: 0, ts: 1784873403743}"
+    },
+    {
+      "ts": 1784873403746,
+      "text": "[DELETE_AUDIT_START] {scope: vault-experience, timestamp: 1784873403744}"
+    },
+    {
+      "ts": 1784873403746,
+      "text": "[DELETE_HANDLER_ATTACHED] {vault: thumbnail-vault, mechanism: single, timestamp: 1784873403745}"
+    },
+    {
+      "ts": 1784873403746,
+      "text": "[DELETE_HANDLER_ATTACHED] {vault: video-vault, mechanism: single, timestamp: 1784873403745}"
+    },
+    {
+      "ts": 1784873403746,
+      "text": "[DELETE_HANDLER_ATTACHED] {vault: thumbnail-vault, mechanism: batch, timestamp: 1784873403745}"
+    },
+    {
+      "ts": 1784873403746,
+      "text": "[DELETE_HANDLER_ATTACHED] {vault: video-vault, mechanism: batch, timestamp: 1784873403745}"
+    },
+    {
+      "ts": 1784873403747,
+      "text": "[DELETE_HANDLER_ATTACHED] {vault: vault-delete-zone, mechanism: drag-drop, timestamp: 1784873403745}"
+    },
+    {
+      "ts": 1784873404048,
+      "text": "[VAULT_ITEM_COUNT] {images: 0, videos: 0, ts: 2026-07-24T06:10:04.047Z}"
+    }
+  ],
+  "releaseGate": {
+    "expectedBundle": "index-CAYxiokM",
+    "deployedBundle": "index-q8wTbWuf.js",
+    "bundleMatch": false,
+    "netlifyDeployBlocked": false,
+    "matrix": {
+      "thumbnailRefresh": true,
+      "thumbnailDelete404": true,
+      "videoSmallRefresh": true,
+      "videoSmallNoResurrection": true,
+      "videoLargePlayback": false,
+      "videoLargeNoResurrection": false,
+      "heroLifecycle": false,
+      "harnessCleanRun": false
+    }
+  }
+}

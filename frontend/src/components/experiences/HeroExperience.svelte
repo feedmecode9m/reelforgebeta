@@ -39,6 +39,7 @@
     logDropMiss,
     markMediaUploadIntent
   } from '../../lib/dropAffordance.js';
+  import { vaultForensic } from '../../lib/diagnostics/vaultForensics.js';
 
   const PENDING_HERO_BACKGROUND_PRESENTATION = {
     style: 'gradient_overlay',
@@ -1156,6 +1157,13 @@ $: heroBadgeLabel = sanitizeViewer
       fileCount: event.dataTransfer?.files?.length || 0
     });
     if (file) handleHeroFileSelect({ target: { files: [file] } });
+    vaultForensic('VAULT_DROP', {
+      vaultType: 'hero',
+      fileName: file?.name || null,
+      storageLocation: 'heroPendingFile',
+      backendEndpoint: null,
+      result: file ? 'drop_received' : 'no_file'
+    });
   }
 
   export function handleHeroFileSelect(event) {
@@ -1327,6 +1335,13 @@ $: heroBadgeLabel = sanitizeViewer
       name: pending.name || '',
       ts: new Date().toISOString()
     });
+    vaultForensic('VAULT_ACCEPT', {
+      vaultType: 'hero',
+      fileName: pending.name || pending.file?.name || null,
+      storageLocation: 'reelforge_hero_manager_config',
+      backendEndpoint: `${API_BASE_URL || ''}/api/reels`,
+      result: 'accept_start'
+    });
     emitHeroDevLog('accept-start', {
       pendingType: pending.type || '',
       fileName: pending.name || ''
@@ -1452,6 +1467,14 @@ $: heroBadgeLabel = sanitizeViewer
           ts: new Date().toISOString()
         });
         uploadStatus.set('✅ Hero Updated Successfully');
+        vaultForensic('VAULT_UPLOAD_SUCCESS', {
+          vaultType: 'hero',
+          assetId: reel.id || null,
+          fileName: reel.fileName || file.name,
+          storageLocation: reel.url || null,
+          backendEndpoint: `${API_BASE_URL}/api/reels`,
+          result: 'canonical_created'
+        });
         console.info('[BG7G_RENDER]', {
           ts: new Date().toISOString(),
           component: 'acceptHeroFile',
@@ -1542,6 +1565,14 @@ $: heroBadgeLabel = sanitizeViewer
           ts: new Date().toISOString()
         });
         uploadStatus.set('✅ Hero Updated Successfully');
+        vaultForensic('VAULT_UPLOAD_SUCCESS', {
+          vaultType: 'hero',
+          assetId: reel.id || null,
+          fileName: reel.fileName || file.name,
+          storageLocation: reel.url || null,
+          backendEndpoint: `${API_BASE_URL}/api/reels`,
+          result: 'canonical_created'
+        });
         console.info('[BG7G_RENDER]', {
           ts: new Date().toISOString(),
           component: 'acceptHeroFile',
@@ -1590,6 +1621,13 @@ $: heroBadgeLabel = sanitizeViewer
         reason: error?.message || String(error)
       });
       uploadStatus.set(`❌ Failed: ${error.message}`);
+      vaultForensic('VAULT_UPLOAD_FAIL', {
+        vaultType: 'hero',
+        fileName: pending?.name || pending?.file?.name || null,
+        storageLocation: 'reelforge_hero_manager_config',
+        backendEndpoint: `${API_BASE_URL || ''}/api/reels`,
+        result: error?.message || String(error)
+      });
     } finally {
       cancelWatchdog();
       if (isOperationActive()) {

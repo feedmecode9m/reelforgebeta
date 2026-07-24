@@ -17,6 +17,11 @@ import { loadHeroManagerConfig } from './hero/heroIntelligence.js';
 import { heroReelFromUploadResponse, loadHeroReel, saveHeroReel } from './hero/heroReelIdentity.js';
 import { logBg7jHeroRestore } from './diagnostics/bg7jHydrationGate.js';
 import { logBg7vHeroRestoreReason } from './diagnostics/bg7vHeroRestoreReason.js';
+import {
+    filterOutDeletedMedia,
+    isPendingLocalVideoVaultEntry,
+    pruneGhostVideoVaultEntries
+} from './deletionSync.js';
 
 /**
  * Media catalog bootstrap — reads authoritative catalog from GET /api/reels (Postgres).
@@ -263,6 +268,11 @@ export async function hydrateVaultFromReels(thumbnailKey, videoVaultKey, options
 
         const raw = await res.json();
         const reels = normalizeReels(raw, 'GET /api/reels (vault hydrate)');
+        console.info('[VAULT-DELETE-TRACE] hydrateVaultFromReels:bootstrap_reload', {
+            catalogCount: reels.length,
+            ids: reels.map((r) => String(r?.id || '')).filter(Boolean).slice(0, 20),
+            ts: new Date().toISOString()
+        });
         logBg7kCatalogReceive(
             reels.length,
             reels.map((r) => String(r?.id || '')).filter(Boolean),
@@ -296,23 +306,37 @@ export async function hydrateVaultFromReels(thumbnailKey, videoVaultKey, options
                 backendReels: reels.length,
                 ts: new Date().toISOString()
             });
-            if (localCount > 0) {
-                const before = localCount;
-                thumbnailCount = upgradeThumbnailVaultFromBackendReels(reels, thumbnailKey);
-                console.info('[VAULT_BOOTSTRAP]', {
-                    action: 'upgradeThumbnailVaultFromBackendReels:complete',
-                    before,
-                    after: thumbnailCount,
-                    ts: new Date().toISOString()
-                });
+            const before = localCount;
+            thumbnailCount = upgradeThumbnailVaultFromBackendReels(reels, thumbnailKey);
+            console.info('[VAULT_BOOTSTRAP]', {
+                action: 'upgradeThumbnailVaultFromBackendReels:complete',
+                before,
+                after: thumbnailCount,
+                ts: new Date().toISOString()
+            });
+            if (thumbnailCount > before) {
+                console.log(`[mediaBootstrap] Hydrated ${thumbnailCount} thumbnails from [GET /api/reels]`);
+            } else if (before > 0) {
                 console.log(`[mediaBootstrap] Notified thumbnailVault to refresh ${thumbnailCount} local thumbnails from [GET /api/reels]`);
             }
         }
-        if (!thumbsOnly && videoEntries.length > 0) {
-            const merged = dedupeVideoEntries([...readVaultJson(videoVaultKey), ...videoEntries]);
-            safeStorageSet(videoVaultKey, merged);
-            videoCount = merged.length;
-            console.log(`[mediaBootstrap] Hydrated ${videoCount} videos from [GET /api/reels]`);
+        if (!thumbsOnly) {
+            const localVideos = readVaultJson(videoVaultKey);
+            const prunedLocal = pruneGhostVideoVaultEntries(localVideos, videoEntries);
+            const pendingLocal = prunedLocal.filter((entry) => isPendingLocalVideoVaultEntry(entry));
+            const merged = dedupeVideoEntries([...videoEntries, ...pendingLocal]);
+            const reconciled = filterOutDeletedMedia(merged);
+            safeStorageSet(videoVaultKey, reconciled);
+            videoCount = reconciled.length;
+            console.info('[VAULT-DELETE-TRACE] hydrateVaultFromReels:video_reconcile', {
+                localBefore: localVideos.length,
+                backendVideos: videoEntries.length,
+                prunedLocal: prunedLocal.length,
+                pendingLocal: pendingLocal.length,
+                reconciled: reconciled.length,
+                ts: new Date().toISOString()
+            });
+            console.log(`[mediaBootstrap] Reconciled ${videoCount} videos from [GET /api/reels]`);
         }
     } catch (error) {
         pipelineDiag('BOOTSTRAP', 'hydrateVaultFromReels', 'mediaBootstrap.js', {

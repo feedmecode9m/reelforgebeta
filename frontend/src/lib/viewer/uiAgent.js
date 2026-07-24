@@ -81,6 +81,10 @@ export function createUiAgent(deps) {
       itemId: String(id || ''),
       timestamp: Date.now()
     });
+    console.info('[VAULT-DELETE-TRACE] uiAgent.deleteProduction:click', {
+      reelId: String(id || ''),
+      ts: new Date().toISOString()
+    });
     const currentFeed = get(feed);
     const reel = Object.values(currentFeed).flat().find((r) => r && r.id === id);
     if (!reel) return;
@@ -108,6 +112,12 @@ export function createUiAgent(deps) {
         mechanism: 'single',
         vault: String(reel.category || 'studio-feed'),
         timestamp: Date.now()
+      });
+      console.info('[VAULT-DELETE-TRACE] uiAgent.confirmDelete:start', {
+        reelId: String(reel.id || ''),
+        category: String(reel.category || ''),
+        url: String(reel.url || reel.video_url || ''),
+        ts: new Date().toISOString()
       });
       const beforeCount = Object.values(get(feed) || {}).flat().length;
       const success = await ProductionAgent.deleteReel(reel.id);

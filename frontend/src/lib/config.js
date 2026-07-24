@@ -121,6 +121,38 @@ function resolveApiBaseUrl() {
 
 export const API_BASE_URL = resolveApiBaseUrl();
 
+/** Feature flag: enable signed direct-to-storage uploads for large media. */
+export const USE_SIGNED_UPLOADS =
+    import.meta.env.VITE_USE_SIGNED_UPLOADS === 'true' ||
+    (import.meta.env.PROD &&
+        isNetlifyStaticHost() &&
+        import.meta.env.VITE_USE_SIGNED_UPLOADS !== 'false');
+
+/** Minimum size (bytes) to use signed upload flow when enabled. */
+export const SIGNED_UPLOADS_MIN_BYTES = Number.parseInt(
+    import.meta.env.VITE_SIGNED_UPLOADS_MIN_BYTES || '',
+    10
+) || 25_000_000;
+
+/** Direct Railway origin for large PUT uploads (bypasses Netlify multipart proxy). */
+function resolveDirectUploadBaseUrl() {
+    const candidates = [
+        import.meta.env.VITE_DIRECT_UPLOAD_BASE_URL,
+        import.meta.env.VITE_BACKEND_URL,
+        import.meta.env.VITE_API_URL
+    ];
+    for (const value of candidates) {
+        const sanitized = sanitizeExternalBaseUrl(value, 'VITE_DIRECT_UPLOAD_BASE_URL');
+        if (sanitized) return sanitized;
+    }
+    if (import.meta.env.DEV) {
+        return `http://localhost:${BACKEND_PORT}`;
+    }
+    return 'https://reelforge-deploy-production.up.railway.app';
+}
+
+export const DIRECT_UPLOAD_BASE_URL = resolveDirectUploadBaseUrl();
+
 pipelineDiag('ROUTER', 'resolveApiBaseUrl', 'config.js', {
     result: API_BASE_URL || 'same-origin',
     detail: {

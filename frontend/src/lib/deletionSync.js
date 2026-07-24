@@ -92,6 +92,11 @@ export function applyCanonicalDeleteClientEffects(deps = {}, match = {}) {
         .filter(Boolean);
     const uniqueIds = [...new Set(reelIds)];
     recordDeletedMediaIds(uniqueIds);
+    console.info('[VAULT-DELETE-TRACE] applyCanonicalDeleteClientEffects:tombstone', {
+        reelIds: uniqueIds,
+        filename: match.filename || null,
+        ts: new Date().toISOString()
+    });
 
     const purgeOne = (oneMatch) => {
         if (typeof deps.purge === 'function') {
@@ -257,6 +262,36 @@ export function purgeMediaFromClientState(ctx, match) {
     });
 
     return { feedRemoved, vaultRemoved, theaterClosed };
+}
+
+/**
+ * In-flight vault uploads may still use blob: URLs before finalize — keep during reconcile.
+ * @param {Record<string, unknown> | null | undefined} entry
+ */
+export function isPendingLocalVideoVaultEntry(entry) {
+    const url = String(entry?.url || entry?.video_url || '').trim();
+    return url.startsWith('blob:');
+}
+
+/**
+ * Remove local video vault rows whose reel id is absent from the backend catalog.
+ * @param {unknown[] | null | undefined} localEntries
+ * @param {unknown[] | null | undefined} backendVaultEntries
+ */
+export function pruneGhostVideoVaultEntries(localEntries, backendVaultEntries) {
+    if (!Array.isArray(localEntries) || localEntries.length === 0) return [];
+    const backendIds = new Set(
+        (backendVaultEntries || [])
+            .map((entry) => String(entry?.id || '').trim())
+            .filter(Boolean)
+    );
+    return localEntries.filter((entry) => {
+        if (!entry || typeof entry !== 'object') return false;
+        if (isPendingLocalVideoVaultEntry(entry)) return true;
+        const id = String(entry.id || '').trim();
+        if (!id) return false;
+        return backendIds.has(id);
+    });
 }
 
 /**

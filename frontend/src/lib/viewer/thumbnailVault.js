@@ -17,6 +17,7 @@ import {
 import { assertThumbnailVaultInvariants } from './thumbnailInvariants.js';
 import { traceThumbStoreWrite } from './thumbStoreWriteTrace.js';
 import { enterThumbnailVaultWrite, exitThumbnailVaultWrite } from './thumbnailOwnerGuard.js';
+import { vaultForensic } from '../diagnostics/vaultForensics.js';
 
 export const THUMBNAIL_STATES = {
   UPLOAD_PENDING: 'UPLOAD_PENDING',
@@ -31,6 +32,62 @@ export const THUMBNAIL_STATES = {
 
 const THUMBNAIL_KEY = 'personal_thumbnails';
 const INDEX_MIRROR_KEY = 'personal_thumbnail_index';
+const PERSONAL_THUMB_IDS_KEY = 'personal_thumbnail_reel_ids';
+
+/** @returns {string[]} */
+function readPersonalThumbnailReelIds() {
+  if (typeof window === 'undefined') return [];
+  try {
+    const parsed = JSON.parse(localStorage.getItem(PERSONAL_THUMB_IDS_KEY) || '[]');
+    return Array.isArray(parsed)
+      ? [...new Set(parsed.map((id) => String(id || '').trim()).filter(Boolean))]
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+/** @param {string[]} ids */
+function writePersonalThumbnailReelIds(ids) {
+  if (typeof window === 'undefined') return [];
+  const list = [...new Set((Array.isArray(ids) ? ids : []).map((id) => String(id || '').trim()).filter(Boolean))];
+  localStorage.setItem(PERSONAL_THUMB_IDS_KEY, JSON.stringify(list));
+  return list;
+}
+
+/** @param {string} reelId */
+function addPersonalThumbnailReelId(reelId) {
+  const id = String(reelId || '').trim();
+  if (!id) return readPersonalThumbnailReelIds();
+  return writePersonalThumbnailReelIds([...readPersonalThumbnailReelIds(), id]);
+}
+
+/** @param {string[]} reelIds */
+function removePersonalThumbnailReelIds(reelIds = []) {
+  const remove = new Set(reelIds.map((id) => String(id || '').trim()).filter(Boolean));
+  if (!remove.size) return readPersonalThumbnailReelIds();
+  return writePersonalThumbnailReelIds(readPersonalThumbnailReelIds().filter((id) => !remove.has(id)));
+}
+
+/** @param {Record<string, unknown>} reel */
+function backendThumbReelToVaultEntry(reel) {
+  const url = String(reel?.url || '');
+  const relUrl = url ? toRelativeMediaPath(url) : '';
+  const fileName =
+    String(reel?.fileName || reel?.file_name || '').trim() ||
+    (relUrl ? relUrl.split('/').pop()?.split('?')[0] || '' : '');
+  const displayName = String(reel?.name || reel?.title || fileName);
+  const reelId = reel?.id ? String(reel.id) : '';
+  return {
+    id: reelId,
+    fileName,
+    url: relUrl || (fileName ? `/thumbs/${fileName.replace(/^thumbs\//, '')}` : ''),
+    name: displayName,
+    title: displayName,
+    origin: 'backend_hydrate',
+    vaultState: reelId ? THUMBNAIL_STATES.CANONICAL : THUMBNAIL_STATES.INGESTING
+  };
+}
 
 function isBackendThumbReel(reel) {
   return isImageReel(reel) && String(reel?.url || '').includes('/thumbs/');
@@ -46,10 +103,11 @@ function dedupeThumbEntries(entries) {
       seen.add(key);
       return true;
     }
+    const id = typeof entry === 'object' ? String(entry?.id || '').trim() : '';
     const url = String(entry?.url || '').trim();
     const name = String(entry?.name || '').trim();
     const fileName = String(entry?.fileName || '').trim();
-    const key = url || fileName || name;
+    const key = id || url || fileName || name;
     if (!key || seen.has(key)) return false;
     seen.add(key);
     return true;
@@ -136,6 +194,15 @@ export function writeThumbnailVault(entries, storageKey = THUMBNAIL_KEY) {
     }
   }
   traceThumbStoreWrite('writeThumbnailVault', 'personal_thumbnails', prev, list, { storageKey });
+  vaultForensic('VAULT_PERSIST', {
+    vaultType: 'thumbnail',
+    assetId: list[0]?.id || null,
+    fileName: list[0]?.fileName || list[0]?.name || null,
+    storageLocation: storageKey,
+    backendEndpoint: null,
+    result: 'localStorage_write',
+    count: list.length
+  });
   return list;
   } finally {
     exitThumbnailVaultWrite();
@@ -156,14 +223,50 @@ export function syncCollectionStore(collectionStore, storageKey = THUMBNAIL_KEY)
 }
 
 /**
- * Upgrade existing local vault entries from backend thumb reels only (never insert new rows).
+ * Hydrate an empty local vault from durable reel-id membership + backend catalog.
+ * @param {Record<string, unknown>[]} reels
+ * @param {string} [storageKey]
+ * @returns {number}
+ */
+function hydrateEmptyThumbnailVaultFromBackendReels(reels, storageKey = THUMBNAIL_KEY) {
+  const targetIds = new Set(readPersonalThumbnailReelIds());
+  if (!targetIds.size) return 0;
+
+  const entries = [];
+  for (const reel of reels || []) {
+    if (!isBackendThumbReel(reel)) continue;
+    if (isHeroAsset(reel)) continue;
+    const reelId = String(reel?.id || '').trim();
+    if (!reelId || !targetIds.has(reelId)) continue;
+    entries.push(backendThumbReelToVaultEntry(reel));
+  }
+
+  const deduped = dedupeThumbEntries(entries);
+  if (deduped.length) {
+    writeThumbnailVault(deduped, storageKey);
+    traceThumbStoreWrite('hydrateEmptyThumbnailVaultFromBackendReels', storageKey, [], deduped);
+    vaultForensic('VAULT_REFRESH_RESTORE', {
+      vaultType: 'thumbnail',
+      assetId: deduped.map((e) => e?.id).filter(Boolean).join(',') || null,
+      fileName: null,
+      storageLocation: storageKey,
+      backendEndpoint: 'GET /api/reels',
+      result: 'hydrate_empty_vault',
+      count: deduped.length
+    });
+  }
+  return deduped.length;
+}
+
+/**
+ * Upgrade existing local vault entries from backend thumb reels; hydrate empty vault by reel.id membership.
  * @param {Record<string, unknown>[]} reels
  * @param {string} [storageKey]
  * @returns {number} entry count after upgrade
  */
 export function upgradeThumbnailVaultFromBackendReels(reels, storageKey = THUMBNAIL_KEY) {
   const existing = readThumbnailVault(storageKey);
-  if (!existing.length) return 0;
+  if (!existing.length) return hydrateEmptyThumbnailVaultFromBackendReels(reels, storageKey);
 
   const entries = [...existing];
   let changed = false;
@@ -328,6 +431,15 @@ export function deleteThumbnailVaultEntries(deletedIds = [], imageReels = [], op
   } = options;
 
   const deletedSet = new Set([...deletedIds, ...failedIds].map((id) => String(id || '').trim()).filter(Boolean));
+  vaultForensic('VAULT_DELETE_START', {
+    vaultType: 'thumbnail',
+    assetId: [...deletedSet].join(',') || null,
+    fileName: null,
+    storageLocation: storageKey,
+    backendEndpoint: null,
+    result: 'delete_start',
+    count: deletedSet.size
+  });
   const before = readThumbnailVault(storageKey);
 
   const afterTombstone = before.filter((entry) => {
@@ -338,12 +450,23 @@ export function deleteThumbnailVaultEntries(deletedIds = [], imageReels = [], op
   });
 
   writeThumbnailVault(afterTombstone, storageKey);
+  removePersonalThumbnailReelIds([...deletedSet]);
 
   const reconcile = reconcileThumbnailVault(imageReels, {
     backendReachable,
     pendingFileKeys,
     storageKey,
     purgeGhostCanonical: backendReachable
+  });
+
+  vaultForensic('VAULT_DELETE_SUCCESS', {
+    vaultType: 'thumbnail',
+    assetId: [...deletedSet].join(',') || null,
+    fileName: null,
+    storageLocation: storageKey,
+    backendEndpoint: null,
+    result: 'delete_local_reconcile',
+    after: reconcile.entries.length
   });
 
   return {
@@ -384,13 +507,31 @@ export function appendThumbnailVaultEntry(entry, storageKey = THUMBNAIL_KEY) {
 
   filtered.push(next);
   writeThumbnailVault(filtered, storageKey);
+  if (id) addPersonalThumbnailReelId(id);
   assertThumbnailVaultInvariants(filtered, [], { backendReachable: false, label: 'append' });
   return filtered;
 }
 
 /**
- * Remove by collection index (fileName key).
- * @param {number} index
+ * Remove by canonical reel.id.
+ * @param {string} reelId
+ * @param {string} [storageKey]
+ */
+export function removeThumbnailVaultById(reelId, storageKey = THUMBNAIL_KEY) {
+  const id = String(reelId || '').trim();
+  if (!id) return readThumbnailVault(storageKey);
+  const stored = readThumbnailVault(storageKey);
+  const updated = stored.filter((t) => {
+    if (!t || typeof t !== 'object') return true;
+    return String(t.id || '').trim() !== id;
+  });
+  writeThumbnailVault(updated, storageKey);
+  removePersonalThumbnailReelIds([id]);
+  return updated;
+}
+
+/**
+ * Remove by collection display key (legacy fileName fallback).
  * @param {string} fileKey
  * @param {string} [storageKey]
  */
@@ -409,4 +550,10 @@ export function removeThumbnailVaultByIndex(fileKey, storageKey = THUMBNAIL_KEY)
   return updated;
 }
 
-export { THUMBNAIL_KEY, INDEX_MIRROR_KEY };
+export {
+  THUMBNAIL_KEY,
+  INDEX_MIRROR_KEY,
+  PERSONAL_THUMB_IDS_KEY,
+  readPersonalThumbnailReelIds,
+  writePersonalThumbnailReelIds
+};

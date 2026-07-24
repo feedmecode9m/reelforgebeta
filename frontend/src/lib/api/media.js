@@ -1,4 +1,9 @@
 import { API_BASE_URL, fetchWithRetry } from '../api.js';
+import {
+    DIRECT_UPLOAD_BASE_URL,
+    SIGNED_UPLOADS_MIN_BYTES,
+    USE_SIGNED_UPLOADS
+} from '../config.js';
 import { enforceUploadPolicy } from '../security/securityPolicyEngine.js';
 
 /** @typedef {{ valid: boolean; kind: string; filename: string; error?: string; checks: Record<string, boolean> }} MediaValidationResult */
@@ -22,6 +27,245 @@ import { enforceUploadPolicy } from '../security/securityPolicyEngine.js';
  * }} CreatedReelResponse */
 
 export const CREATE_REEL_URL = '/api/reels';
+export const UPLOADS_SIGN_URL = '/api/uploads/sign';
+export const REELS_FINALIZE_URL = '/api/reels/finalize';
+
+/**
+ * @param {File | null | undefined} file
+ * @returns {boolean}
+ */
+function shouldUseSignedVideoUpload(file) {
+    return Boolean(
+        USE_SIGNED_UPLOADS &&
+            file instanceof File &&
+            Number(file.size || 0) >= SIGNED_UPLOADS_MIN_BYTES
+    );
+}
+
+/**
+ * Shared post-ingest handling for multipart and signed finalize responses.
+ * @param {Record<string, unknown>} body
+ * @param {string | null} primaryFileName
+ * @param {number} httpStatus
+ * @returns {Promise<CreatedReelResponse>}
+ */
+async function processIngestAcceptedResponse(body, primaryFileName, httpStatus) {
+    if (httpStatus === 202 || body.status === 'pending') {
+        const reelId = String(body.id || '');
+        pipelineCheckpoint('WAITING_FOR_INGEST', { reelId, status: body.status || 'pending' });
+        pipelineDiag('INGEST', 'createReel', 'media.js', {
+            assetId: reelId,
+            fileName: primaryFileName,
+            result: 'accepted_pending'
+        });
+        if (!reelId) throw new Error('Ingestion accepted but no reel id returned');
+        const ready = await pollIngestionUntilReady(reelId, {
+            onProgress: (status) => {
+                if (import.meta.env.DEV) {
+                    console.log(`[ingest-poll] ${reelId} → ${status}`);
+                }
+            }
+        });
+        console.info('[UPLOAD_SUCCESS]', {
+            id: ready?.id || reelId,
+            status: 'ready',
+            url: ready?.url || '',
+            thumbnailUrl: ready?.thumbnailUrl || '',
+            ts: new Date().toISOString()
+        });
+        pipelineDiag('UPLOAD', 'createReel', 'media.js', {
+            assetId: ready?.id || reelId,
+            fileName: primaryFileName,
+            result: 'ready',
+            detail: { url: ready?.url || '', thumbnailUrl: ready?.thumbnailUrl || '' }
+        });
+        console.info('[BG7G_API]', {
+            ts: new Date().toISOString(),
+            component: 'createReel',
+            file: 'media.js',
+            fileName: primaryFileName,
+            uploadUrl: ready?.url || `${API_BASE_URL}${CREATE_REEL_URL}`,
+            state: 'success',
+            reelId: ready?.id || reelId,
+            ingest: 'pending_ready'
+        });
+        console.info('[HERO_ROUTE]', {
+            stage: 'createReel:pending-ready',
+            id: ready?.id || reelId,
+            status: 'ready',
+            url: ready?.url || '',
+            thumbnailUrl: ready?.thumbnailUrl || '',
+            ts: new Date().toISOString()
+        });
+        return ready;
+    }
+
+    if (body.status === 'ready' && body.id) {
+        const normalized = normalizeReel(body, 'create-reel');
+        if (normalized) {
+            pipelineDiag('UPLOAD', 'createReel', 'media.js', {
+                assetId: normalized.id,
+                fileName: primaryFileName,
+                result: 'ready_immediate',
+                detail: { url: normalized.url || '', thumbnailUrl: normalized.thumbnailUrl || '' }
+            });
+            console.info('[UPLOAD_SUCCESS]', {
+                id: normalized.id,
+                status: normalized.status || 'ready',
+                url: normalized.url || '',
+                thumbnailUrl: normalized.thumbnailUrl || '',
+                ts: new Date().toISOString()
+            });
+            console.info('[HERO_ROUTE]', {
+                stage: 'createReel:normalized-ready',
+                id: normalized.id,
+                type: normalized.type || '',
+                url: normalized.url || '',
+                thumbnailUrl: normalized.thumbnailUrl || '',
+                ts: new Date().toISOString()
+            });
+            return normalized;
+        }
+    }
+
+    console.info('[UPLOAD_SUCCESS]', {
+        id: body.id || '',
+        status: body.status || 'unknown',
+        url: body.url || body.videoUrl || body.video_url || '',
+        thumbnailUrl:
+            body.thumbnailUrl || body.thumbnail_url || body.thumbnailPath || body.thumbnail_path || '',
+        ts: new Date().toISOString()
+    });
+    pipelineDiag('UPLOAD', 'createReel', 'media.js', {
+        assetId: body.id || null,
+        fileName: primaryFileName,
+        result: body.status || 'unknown',
+        detail: { url: body.url || body.videoUrl || body.video_url || '' }
+    });
+    console.info('[HERO_ROUTE]', {
+        stage: 'createReel:raw-response',
+        id: body.id || '',
+        status: body.status || 'unknown',
+        url: body.url || body.videoUrl || body.video_url || '',
+        thumbnailUrl: body.thumbnailUrl || body.thumbnail_url || '',
+        ts: new Date().toISOString()
+    });
+    return body;
+}
+
+/**
+ * Signed direct upload: sign → PUT bytes to Railway → JSON finalize via same-origin API.
+ * @param {File} file
+ * @param {Record<string, string>} headers
+ * @param {{ title?: string; description?: string; category?: string }} [meta]
+ */
+async function uploadVideoSigned(file, headers = {}, meta = {}) {
+    const primaryFileName = file?.name || null;
+    const uploadPolicy = enforceUploadPolicy({ operation: 'create_reel' });
+    if (!uploadPolicy.allowed) {
+        throw new Error(uploadPolicy.reason);
+    }
+    if (uploadPolicy.throttleMs > 0) {
+        await new Promise((resolve) => setTimeout(resolve, uploadPolicy.throttleMs));
+    }
+
+    pipelineCheckpoint('UPLOAD_STARTED', {
+        fileName: primaryFileName,
+        endpoint: UPLOADS_SIGN_URL,
+        fileInfo: { video: { name: file.name, size: file.size, type: file.type } },
+        transport: 'signed-direct'
+    });
+    console.info('[BG7G_SIGNED_UPLOAD]', {
+        stage: 'sign:request',
+        fileName: primaryFileName,
+        fileSize: file.size,
+        minBytes: SIGNED_UPLOADS_MIN_BYTES,
+        ts: new Date().toISOString()
+    });
+
+    const signResponse = await fetch(`${API_BASE_URL}${UPLOADS_SIGN_URL}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            ...headers
+        },
+        body: JSON.stringify({
+            filename: file.name,
+            contentType: file.type || 'video/mp4',
+            sizeBytes: file.size,
+            title: meta.title,
+            description: meta.description,
+            category: meta.category
+        })
+    });
+    if (!signResponse.ok) {
+        const err = await signResponse.json().catch(() => ({}));
+        throw new Error(err.error || `Signed upload sign failed (${signResponse.status})`);
+    }
+    const signBody = await signResponse.json();
+    const uploadUrl = String(signBody.uploadUrl || `${DIRECT_UPLOAD_BASE_URL}/api/uploads/direct/${signBody.uploadId}`);
+    const uploadToken = String(signBody.uploadToken || '');
+
+    console.info('[BG7G_SIGNED_UPLOAD]', {
+        stage: 'direct:put',
+        uploadId: signBody.uploadId,
+        reelId: signBody.reelId,
+        uploadUrl,
+        ts: new Date().toISOString()
+    });
+
+    const putResponse = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': file.type || 'video/mp4',
+            'X-Upload-Token': uploadToken
+        },
+        body: file
+    });
+    if (!putResponse.ok) {
+        const errText = await putResponse.text().catch(() => '');
+        let errMsg = errText;
+        try {
+            errMsg = JSON.parse(errText).error || errText;
+        } catch {
+            /* keep text */
+        }
+        throw new Error(errMsg || `Direct storage upload failed (${putResponse.status})`);
+    }
+
+    console.info('[BG7G_SIGNED_UPLOAD]', {
+        stage: 'finalize:request',
+        uploadId: signBody.uploadId,
+        endpoint: REELS_FINALIZE_URL,
+        ts: new Date().toISOString()
+    });
+
+    const finalizeResponse = await fetch(`${API_BASE_URL}${REELS_FINALIZE_URL}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            ...headers
+        },
+        body: JSON.stringify({
+            uploadId: signBody.uploadId,
+            title: meta.title,
+            description: meta.description,
+            category: meta.category
+        })
+    });
+    if (!finalizeResponse.ok) {
+        const err = await finalizeResponse.json().catch(() => ({}));
+        throw new Error(err.error || `Finalize reel failed (${finalizeResponse.status})`);
+    }
+
+    const body = await finalizeResponse.json();
+    pipelineCheckpoint('POST_COMPLETED', {
+        status: finalizeResponse.status,
+        returnedId: body?.id ?? null,
+        transport: 'signed-direct'
+    });
+    return processIngestAcceptedResponse(body, primaryFileName, finalizeResponse.status);
+}
 
 /**
  * Canonical production upload pipeline (Mission 4.5):
@@ -33,17 +277,17 @@ export const CREATE_REEL_URL = '/api/reels';
  * All file uploads MUST delegate to createReel(). Do not add alternate fetch targets.
  */
 
+import { pollIngestionUntilReady } from './ingestPoll.js';
+import { normalizeReel, normalizeReels, createLocalReel } from './reelContract.js';
+import { getDemoPlaceholders } from '../demoPlaceholders.js';
+import { pipelineDiag, pipelineDiagCors, pipelineCheckpoint } from '../diagnostics/pipelineDiag.js';
+
 /**
  * POST /api/reels — unified multipart create (video, thumbnail, title, description).
  * @param {FormData} formData
  * @param {Record<string, string>} [headers]
  * @returns {Promise<CreatedReelResponse>}
  */
-import { pollIngestionUntilReady } from './ingestPoll.js';
-import { normalizeReel, normalizeReels, createLocalReel } from './reelContract.js';
-import { getDemoPlaceholders } from '../demoPlaceholders.js';
-import { pipelineDiag, pipelineDiagCors, pipelineCheckpoint } from '../diagnostics/pipelineDiag.js';
-
 export async function createReel(formData, headers = {}) {
     const fileInfo = {};
     let primaryFileName = null;
@@ -182,109 +426,7 @@ export async function createReel(formData, headers = {}) {
         returnedId: body?.id ?? null
     });
 
-    // Async ingestion: 202 Accepted with pending status
-    if (response.status === 202 || body.status === 'pending') {
-        const reelId = body.id;
-        pipelineCheckpoint('WAITING_FOR_INGEST', { reelId, status: body.status || 'pending' });
-        pipelineDiag('INGEST', 'createReel', 'media.js', {
-            assetId: reelId,
-            fileName: primaryFileName,
-            result: 'accepted_pending'
-        });
-        if (!reelId) throw new Error('Ingestion accepted but no reel id returned');
-        const ready = await pollIngestionUntilReady(reelId, {
-            onProgress: (status) => {
-                if (import.meta.env.DEV) {
-                    console.log(`[ingest-poll] ${reelId} → ${status}`);
-                }
-            }
-        });
-        console.info('[UPLOAD_SUCCESS]', {
-            id: ready?.id || reelId,
-            status: 'ready',
-            url: ready?.url || '',
-            thumbnailUrl: ready?.thumbnailUrl || '',
-            ts: new Date().toISOString()
-        });
-        pipelineDiag('UPLOAD', 'createReel', 'media.js', {
-            assetId: ready?.id || reelId,
-            fileName: primaryFileName,
-            result: 'ready',
-            detail: { url: ready?.url || '', thumbnailUrl: ready?.thumbnailUrl || '' }
-        });
-        console.info('[BG7G_API]', {
-            ts: new Date().toISOString(),
-            component: 'createReel',
-            file: 'media.js',
-            fileName: primaryFileName,
-            fileSize: fileInfo?.video?.size || fileInfo?.thumbnail?.size || null,
-            uploadUrl: ready?.url || `${API_BASE_URL}${CREATE_REEL_URL}`,
-            state: 'success',
-            reelId: ready?.id || reelId,
-            ingest: 'pending_ready'
-        });
-        console.info('[HERO_ROUTE]', {
-            stage: 'createReel:pending-ready',
-            id: ready?.id || reelId,
-            status: 'ready',
-            url: ready?.url || '',
-            thumbnailUrl: ready?.thumbnailUrl || '',
-            ts: new Date().toISOString()
-        });
-        return ready;
-    }
-
-    if (body.status === 'ready' && body.id) {
-        const normalized = normalizeReel(body, 'create-reel');
-        if (normalized) {
-            pipelineDiag('UPLOAD', 'createReel', 'media.js', {
-                assetId: normalized.id,
-                fileName: primaryFileName,
-                result: 'ready_immediate',
-                detail: { url: normalized.url || '', thumbnailUrl: normalized.thumbnailUrl || '' }
-            });
-            console.info('[UPLOAD_SUCCESS]', {
-                id: normalized.id,
-                status: normalized.status || 'ready',
-                url: normalized.url || '',
-                thumbnailUrl: normalized.thumbnailUrl || '',
-                ts: new Date().toISOString()
-            });
-            console.info('[HERO_ROUTE]', {
-                stage: 'createReel:normalized-ready',
-                id: normalized.id,
-                type: normalized.type || '',
-                url: normalized.url || '',
-                thumbnailUrl: normalized.thumbnailUrl || '',
-                ts: new Date().toISOString()
-            });
-            return normalized;
-        }
-    }
-
-    console.info('[UPLOAD_SUCCESS]', {
-        id: body.id || '',
-        status: body.status || 'unknown',
-        url: body.url || body.videoUrl || body.video_url || '',
-        thumbnailUrl:
-            body.thumbnailUrl || body.thumbnail_url || body.thumbnailPath || body.thumbnail_path || '',
-        ts: new Date().toISOString()
-    });
-    pipelineDiag('UPLOAD', 'createReel', 'media.js', {
-        assetId: body.id || null,
-        fileName: primaryFileName,
-        result: body.status || 'unknown',
-        detail: { url: body.url || body.videoUrl || body.video_url || '' }
-    });
-    console.info('[HERO_ROUTE]', {
-        stage: 'createReel:raw-response',
-        id: body.id || '',
-        status: body.status || 'unknown',
-        url: body.url || body.videoUrl || body.video_url || '',
-        thumbnailUrl: body.thumbnailUrl || body.thumbnail_url || '',
-        ts: new Date().toISOString()
-    });
-    return body;
+    return processIngestAcceptedResponse(body, primaryFileName, response.status);
 }
 
 /**
@@ -319,6 +461,9 @@ export async function uploadVideo(file, headers = {}, meta = {}) {
         fileName: file?.name || null,
         result: 'start'
     });
+    if (shouldUseSignedVideoUpload(file)) {
+        return uploadVideoSigned(file, headers, meta);
+    }
     const formData = new FormData();
     formData.append('video', file);
     if (meta.thumbnail) formData.append('thumbnail', meta.thumbnail);
@@ -339,6 +484,14 @@ export async function uploadMedia(fileOrFormData, headersOrMime = {}) {
     if (fileOrFormData instanceof FormData) {
         const headers =
             headersOrMime && typeof headersOrMime === 'object' ? headersOrMime : {};
+        const videoEntry = fileOrFormData.get('video');
+        if (videoEntry instanceof File && shouldUseSignedVideoUpload(videoEntry)) {
+            return uploadVideoSigned(videoEntry, headers, {
+                title: String(fileOrFormData.get('title') || '').trim() || undefined,
+                description: String(fileOrFormData.get('description') || '').trim() || undefined,
+                category: String(fileOrFormData.get('category') || '').trim() || undefined
+            });
+        }
         console.info('[BG7G_UPLOAD]', {
             ts: new Date().toISOString(),
             component: 'uploadMedia',
@@ -455,15 +608,30 @@ export async function deleteMediaFile(filename, headers = {}) {
 export async function deleteReelById(reelId, headers = {}) {
     const id = String(reelId || '').trim();
     if (!id) throw new Error('Missing reel id');
-    const response = await fetch(`${API_BASE_URL}/api/reels/${encodeURIComponent(id)}`, {
+    const url = `${API_BASE_URL}/api/reels/${encodeURIComponent(id)}`;
+    console.info('[VAULT-DELETE-TRACE] deleteReelById:request', {
+        method: 'DELETE',
+        url,
+        hasAuth: Boolean(headers?.Authorization),
+        ts: new Date().toISOString()
+    });
+    const response = await fetch(url, {
         method: 'DELETE',
         headers
     });
+    const bodyText = await response.text();
+    let body = {};
+    try { body = bodyText ? JSON.parse(bodyText) : {}; } catch { body = { raw: bodyText }; }
+    console.info('[VAULT-DELETE-TRACE] deleteReelById:response', {
+        status: response.status,
+        ok: response.ok,
+        body,
+        ts: new Date().toISOString()
+    });
     if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err.error || `Delete reel failed (${response.status})`);
+        throw new Error(body.error || `Delete reel failed (${response.status})`);
     }
-    return response.json().catch(() => ({ success: true, id }));
+    return body.success !== undefined ? body : { success: true, id, ...body };
 }
 
 /**

@@ -175,10 +175,20 @@ export function createContentAgents(deps) {
   const currentFeed = get(feed);
   const reel = Object.values(currentFeed).flat().find((r) => r && r.id === reelId);
   const filename = filenameFromMediaRef(reel) || (reelId.startsWith('reel-') ? reelId.substring(5) : reelId);
+  console.info('[VAULT-DELETE-TRACE] ProductionAgent.deleteReel:start', {
+    reelId: String(reelId),
+    filename,
+    videoUrl: reel?.url || reel?.video_url || null,
+    ts: new Date().toISOString()
+  });
   logDeletionPropagation('production-delete-start', { reelId, filename });
   const token = typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
   if (!token) throw new Error('Admin authentication required. Please log in as admin first.');
   await deleteReelById(reelId, { Authorization: `Bearer ${token}` });
+  console.info('[VAULT-DELETE-TRACE] ProductionAgent.deleteReel:api_ok', {
+    reelId: String(reelId),
+    ts: new Date().toISOString()
+  });
   applyCanonicalDeleteClientEffects(
     { purge: runClientMediaPurge },
     { reelId, filename, videoUrl: reel?.url || reel?.video_url }

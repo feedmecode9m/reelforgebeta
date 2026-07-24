@@ -36,6 +36,7 @@ import {
 import { loadHeroReel } from '../lib/hero/heroReelIdentity.js';
 import { isHeroAsset, filterNonHeroAssets } from '../lib/hero/heroDomainGuard.js';
 import { shouldStreamDiagnostics } from '../lib/diagnostics/pipelineSnapshot.js';
+import { vaultForensic } from '../lib/diagnostics/vaultForensics.js';
 import { initReleaseCenter } from '../lib/release/releaseCenter.js';
 import { initPredictiveRepairEngine } from '../lib/repair/predictiveRepairEngine.js';
 import { initCreatorKnowledgeGraph } from '../lib/graph/creatorKnowledgeGraph.js';
@@ -235,7 +236,7 @@ if (!confirm('Reset ALL local data? Auth tokens and settings will be cleared and
 resetLocalData();
 }
 function persistPersonalVault(videos) {
-let filtered = filterNonHeroAssets(videos);
+let filtered = filterOutDeletedMedia(filterNonHeroAssets(videos));
 if (pendingHeroAssetIds.size) {
   const before = filtered.length;
   filtered = filtered.filter((v) => {
@@ -266,6 +267,15 @@ uploadUrl: filtered[0]?.url || null,
 state: 'persist_start',
 count: filtered.length,
 storageKey: CONFIG.VIDEO_VAULT_KEY
+});
+vaultForensic('VAULT_PERSIST', {
+  vaultType: 'video',
+  assetId: filtered[0]?.id || null,
+  fileName: filtered[0]?.fileName || filtered[0]?.name || null,
+  storageLocation: CONFIG.VIDEO_VAULT_KEY,
+  backendEndpoint: null,
+  result: 'localStorage_write',
+  count: filtered.length
 });
 safeLocalStorageSet(CONFIG.VIDEO_VAULT_KEY, filtered, {
 thumbnailKey: CONFIG.THUMBNAIL_STORAGE_KEY,
@@ -848,6 +858,15 @@ return typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_ses
 // ==========================================
 function reloadVaultStoresFromStorage() {
 const thumbs = readThumbnailVault(CONFIG.THUMBNAIL_STORAGE_KEY);
+vaultForensic('VAULT_REFRESH_RESTORE', {
+  vaultType: 'thumbnail',
+  assetId: null,
+  fileName: null,
+  storageLocation: CONFIG.THUMBNAIL_STORAGE_KEY,
+  backendEndpoint: null,
+  result: 'reload_start',
+  count: thumbs.length
+});
 console.info('[VAULT_RELOAD]', {
 action: 'reloadVaultStoresFromStorage:start',
 personal_thumbnails: thumbs.length,
@@ -864,7 +883,6 @@ ts: new Date().toISOString()
 });
 } else {
 setPersonalThumbnailCollection([], 'reloadVaultStoresFromStorage:clear');
-writeThumbnailVault([], CONFIG.THUMBNAIL_STORAGE_KEY);
 console.info('[VAULT_RELOAD]', {
 action: 'reloadVaultStoresFromStorage:clear',
 personal_thumbnails: 0,
@@ -879,12 +897,21 @@ count: Array.isArray(storedVideos) ? storedVideos.length : 0,
 ts: new Date().toISOString()
 });
 if (storedVideos.length > 0) {
-const filteredStoredVideos = filterNonHeroAssets(storedVideos);
+const filteredStoredVideos = filterOutDeletedMedia(filterNonHeroAssets(storedVideos));
 personalVideos.set(filteredStoredVideos.map((video) => ({
 ...video,
 url: video.url ? toRelativeMediaPath(video.url) : '',
 thumbnail: resolveUserPosterUrl(video.thumbnail) || ''
 })));
+vaultForensic('VAULT_REFRESH_RESTORE', {
+  vaultType: 'video',
+  assetId: null,
+  fileName: null,
+  storageLocation: CONFIG.VIDEO_VAULT_KEY,
+  backendEndpoint: null,
+  result: 'reload_videos',
+  count: filteredStoredVideos.length
+});
 console.info('[STORE_UPDATE]', {
 store: 'personalVideos',
 count: filteredStoredVideos.length,
@@ -1008,6 +1035,12 @@ backendReachable = true;
 const contentType = res.headers.get('content-type') || '';
 if (!contentType.includes('application/json')) throw new Error(`Expected JSON but received ${contentType}`);
 rawData = filterOutDeletedMedia(normalizeReels(await res.json(), 'GET /api/reels'));
+console.info('[VAULT-DELETE-TRACE] syncFromVault:bootstrap_reload', {
+  source: 'GET /api/reels',
+  catalogCount: rawData.length,
+  ids: rawData.map((r) => String(r?.id || '')).filter(Boolean).slice(0, 20),
+  ts: new Date().toISOString()
+});
 logBg7kCatalogReceive(
 rawData.length,
 rawData.map((r) => String(r?.id || '')).filter(Boolean),
@@ -1789,7 +1822,7 @@ resourceManager.setTimeout(() => AI_CLEANUP_AGENT.syncThumbnailsToFeed(), 100);
 console.log('[onMount] Loaded 0 thumbnails from [none]');
 }
 
-await syncFromVault(true);
+await syncFromVault(true, true);
 const hydratedPersonalVideosCount = get(personalVideos).length;
 viewerHydrationReady.set(true);
 logBg7jHydrationReady(true, hydratedPersonalVideosCount);

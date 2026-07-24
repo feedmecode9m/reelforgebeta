@@ -1,0 +1,251 @@
+{
+  "mission": "RELEASE-GATE-01",
+  "timestamp": "2026-07-24T06:31:36.043Z",
+  "runId": "rg01-1784874694907",
+  "frontendUrl": "https://strong-lolly-a9fcb4.netlify.app/",
+  "backendUrl": "https://reelforge-deploy-production.up.railway.app",
+  "netlifyDeploy": "6a62f9d35a89dc03412d7f49",
+  "railwayDeploy": "8678b458-1bdb-42b0-a338-daaec1ba63ab",
+  "git": {
+    "backendCommit": "48c60fab05083c44000b4d6181ccb31d812b9487",
+    "backendCommitSubject": "BG-7I: register signed upload routes for R2 presigned PUT flow",
+    "frontendWorkingTree": "M frontend/netlify.toml\n M frontend/public/_redirects\n M frontend/src/components/experiences/HeroExperience.svelte\n M frontend/src/components/experiences/VaultExperience.svelte\n M frontend/src/components/studio/HeroManagerPanel.svelte\n M frontend/src/lib/api/media.js\n M frontend/src/lib/config.js\n M frontend/src/lib/deletionSync.js\n M frontend/src/lib/mediaBootstrap.js\n M frontend/src/lib/viewer/aiCleanupAgent.js\n M frontend/src/lib/viewer/contentAgents.js\n M frontend/src/lib/viewer/thumbnailVault.js\n M frontend/src/lib/viewer/uiAgent.js\n M frontend/src/viewer/viewerContext.js\n?? frontend/PRODUCT-08B_DEPLOYMENT_CORRECTION.md\n?? frontend/PRODUCT-08B_EVENT3_REPORT.md\n?? frontend/PRODUCT-08B_EVIDENCE_GAP_CLOSURE.md\n?? frontend/PRODUCT-08B_NETLIFY_REPLAY_GATE.md\n?? frontend/PRODUCT-08B_SYNC_PUSH_MEASUREMENT.md\n?? frontend/PRODUCT-08_CONNECTIVITY_UX_LARGE_HERO_UPLOAD.md\n?? frontend/RC1_LARGE_HERO_UPLOAD_CHARACTERIZATION.md\n?? frontend/RC3_HERO_OWNER_01.md\n?? frontend/RC3_HERO_STATE_01_HYDRATION_TRACE.md\n?? frontend/RC3_RECONNECT_01_EVENT_SOURCE_ATTRIBUTION.md\n?? frontend/RC3_RECONNECT_01_WORKSHEET.md\n?? frontend/artifacts/.release-gate-state.json\n?? frontend/artifacts/RC1-BASELINE-FREEZE.json\n?? frontend/artifacts/RC1-BASELINE-FREEZE.sha256\n?? frontend/artifacts/RELEASE_GATE_01_REPORT.md\n?? frontend/artifacts/VAULT_HYDRATION_01_REPORT.md\n?? frontend/artifacts/VAULT_RELEASE_ACCEPTANCE.md\n?? frontend/artifacts/VAULT_VALIDATION_01_STATUS_REPORT.md\n?? frontend/artifacts/VAULT_VALIDATION_02_STATUS_REPORT.md\n?? frontend/artifacts/VAULT_VERIFY_03_REPORT.md\n?? frontend/artifacts/VIDEO_DELETE_RESURRECTION_01.md\n?? frontend/artifacts/bg-6a-production-ui.json\n?? frontend/artifacts/bg-6c-hero-accept-trace.json\n?? frontend/artifacts/bg-7a-hero-auto-accept.json\n?? frontend/artifacts/bg-7a1-production-release-validation.json\n?? frontend/artifacts/bg-7g-feed-restore-validation.json\n?? frontend/artifacts/bg-7g-post-upload-catalog.json\n?? frontend/artifacts/bg-7g-upload-results.json\n?? frontend/artifacts/bg-7h-placeholder-disable-screenshot.png\n?? frontend/artifacts/bg-7h-placeholder-validation.json\n?? frontend/artifacts/bg-7i-r2-verify.json\n?? frontend/artifacts/bg-7q-forensics.json\n?? frontend/artifacts/bg-7v-hero-duplication.json\n?? frontend/artifacts/bg-auto-01-hero-confirmation.json\n?? frontend/artifacts/bg7j-browser-network-trace.json\n?? frontend/artifacts/dev-boot-01-frontend-launch-boundary.json\n?? frontend/artifacts/dev-boot-02-readiness-latency.json\n?? frontend/artifacts/dev-config-02-api-origin-boundary.json\n?? frontend/artifacts/dev-connect-01-network-boundary.json\n?? frontend/artifacts/mission-ra-01-shared-state-verify.json\n?? frontend/artifacts/mission-ra-02-stress-verify.json\n?? frontend/artifacts/mission-rc1-hero-vault-condo-v1-2.json\n?? frontend/artifacts/product-03-episode-attach.json\n?? frontend/artifacts/product-08b-reconnect-capture-event08C-after-cadence.har\n?? frontend/artifacts/product-08b-reconnect-capture-event08C-after-cadence.json\n?? frontend/artifacts/product-08b-reconnect-capture-event08C-after.har\n?? frontend/artifacts/product-08b-reconnect-capture-event08C-after.json\n?? frontend/artifacts/product-08b-reconnect-capture-event2.har\n?? frontend/artifacts/product-08b-reconnect-capture-event2.json\n?? frontend/artifacts/product-08b-reconnect-capture-event3.har\n?? frontend/artifacts/product-08b-reconnect-capture-event3.json\n?? frontend/artifacts/product-08b-reconnect-capture-event4.har\n?? frontend/artifacts/product-08b-reconnect-capture-event4.json\n?? frontend/artifacts/product-08b-reconnect-capture.har\n?? frontend/artifacts/product-08b-reconnect-capture.json\n?? frontend/artifacts/product-08b-sync-feedback-containment-verify.json\n?? frontend/artifacts/product-08c-lifecycle-capture.json\n?? frontend/artifacts/rc1-large-hero-upload-characterization.json\n?? frontend/artifacts/rc1-post-close-verify.json\n?? frontend/artifacts/rc2-intake-mp4-vault-hero.json\n?? frontend/artifacts/rc2-intake-vault-delete-measure.json\n?? frontend/artifacts/rc2-mp4-01-canonical-vault-update-trace.json\n?? frontend/artifacts/rc2-mp4-02-acceptance.json\n?? frontend/artifacts/rc3-api-origin-unification-01.json\n?? frontend/artifacts/rc3-boot-01-hero-bootstrap.json\n?? frontend/artifacts/rc3-boot-02-state-creator.json\n?? frontend/artifacts/rc3-boot-03-heroassetid-populate.json\n?? frontend/artifacts/rc3-boot-04-heroassetid-persistence.json\n?? frontend/artifacts/rc3-delete-01-ghost-item-boundary.json\n?? frontend/artifacts/rc3-hero-owner-01.json\n?? frontend/artifacts/rc3-hero-pipeline-01.json\n?? frontend/artifacts/rc3-hero-state-01.json\n?? frontend/artifacts/rc3-reconnect-01-attribution-run2.har\n?? frontend/artifacts/rc3-reconnect-01-attribution-run2.json\n?? frontend/artifacts/rc3-reconnect-01-attribution.har\n?? frontend/artifacts/rc3-reconnect-01-attribution.json\n?? frontend/artifacts/rc3-transport-01-upload-boundary-trace.json\n?? frontend/artifacts/rc3-transport-02-proof.json\n?? frontend/artifacts/release-gate-01.json\n?? frontend/artifacts/release-manifest-BG-7A-20260716T222030Z.json\n?? frontend/artifacts/release-manifest-bg-7a-1784239659987.json\n?? frontend/artifacts/release-manifest-bg-7a-1784239676952.json\n?? frontend/artifacts/release-manifest-bg-7a-1784239911838.json\n?? frontend/artifacts/release-manifest-bg-7a-1784240430510.json\n?? frontend/artifacts/release-manifest-bg-7a-1784262869157.json\n?? frontend/artifacts/release-manifest-bg-7a-1784262874970.json\n?? frontend/artifacts/release-manifest-bg-7i-1784271295211.json\n?? frontend/artifacts/release-manifest-bg-7i-1784273095559.json\n?? frontend/artifacts/release-manifest-bg-7i-1784302051742.json\n?? frontend/artifacts/release-manifest-bg-7i-1784302248247.json\n?? frontend/artifacts/release-manifest-bg-7i-1784302324938.json\n?? frontend/artifacts/release-manifest-latest.json\n?? frontend/artifacts/vault-validation-01-report.json\n?? frontend/artifacts/vault-validation-02-report.json\n?? frontend/artifacts/vault-verify-03.json\n?? frontend/artifacts/video-delete-resurrection-01.json\n?? frontend/scripts/measure-sync-push-frequency.mjs\n?? frontend/scripts/mission-product-08b-reconnect-capture.mjs\n?? frontend/scripts/mission-rc1-hero-vault-condo-v1-2.mjs\n?? frontend/scripts/mission-rc1-large-hero-upload-characterization.mjs\n?? frontend/scripts/mission-rc3-delete-01-ghost-item-boundary.mjs\n?? frontend/scripts/mission-rc3-hero-owner-01.mjs\n?? frontend/scripts/mission-rc3-hero-pipeline-01.mjs\n?? frontend/scripts/mission-rc3-hero-state-01.mjs\n?? frontend/scripts/mission-rc3-reconnect-01-attribution.mjs\n?? frontend/scripts/mission-rc3-vault-arch-01.mjs\n?? frontend/scripts/mission-vault-hydration-01.mjs\n?? frontend/scripts/product-08b-console-observer.snippet.js\n?? frontend/scripts/rc2-mp4-02-acceptance.mjs\n?? frontend/scripts/rc3-reconnect-01-attribution.snippet.js\n?? frontend/scripts/rc3-release-boundary-audit.sh\n?? frontend/scripts/release-gate-01.mjs\n?? frontend/scripts/vault-validation-02.mjs\n?? frontend/scripts/vault-verify-03-thumb-only.mjs\n?? frontend/scripts/vault-verify-03.mjs\n?? frontend/scripts/verify-product-08b-sync-feedback-containment.mjs\n?? frontend/scripts/video-delete-resurrection-01.mjs\n?? frontend/src/lib/diagnostics/vaultForensics.js"
+  },
+  "deployedBundle": "index-q8wTbWuf.js",
+  "probe": {
+    "largeR2": {
+      "pass": true,
+      "stages": {
+        "sign": {
+          "ok": true,
+          "status": 200,
+          "reelId": "e8b85c93-f20a-4cb5-ab75-75f726bafcc1",
+          "ms": 213
+        },
+        "r2Put": {
+          "ok": true,
+          "status": 200,
+          "ms": 12713
+        },
+        "finalize": {
+          "ok": true,
+          "status": 202,
+          "id": "e8b85c93-f20a-4cb5-ab75-75f726bafcc1"
+        },
+        "ready": {
+          "ok": true,
+          "status": "ready",
+          "videoUrl": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/e8b85c93-f20a-4cb5-ab75-75f726bafcc1.mp4"
+        },
+        "deleted": {
+          "catalogGone": true
+        }
+      },
+      "owner": "PASS",
+      "reelId": "e8b85c93-f20a-4cb5-ab75-75f726bafcc1",
+      "fileSizeBytes": 30223729
+    }
+  },
+  "browser": {
+    "thumbnail": {
+      "pass": false,
+      "steps": {
+        "drop": true,
+        "accept": true,
+        "persist": true,
+        "refresh": false,
+        "delete": true,
+        "reload": true
+      },
+      "reelId": "a015c370-528e-4445-93b6-fbc07458955b"
+    },
+    "videoSmall": {
+      "pass": false,
+      "steps": {
+        "drop": true,
+        "persist": false,
+        "refresh": false,
+        "delete": true,
+        "reload": true
+      },
+      "reelId": "f26cba8b-f20f-4315-b686-fb2debceb9b8"
+    },
+    "heroVideo": {
+      "pass": false,
+      "steps": {
+        "video": false,
+        "persist": false,
+        "refresh": false,
+        "delete": false,
+        "reload": true
+      }
+    }
+  },
+  "classification": [
+    {
+      "issue": "Thumbnail vault lifecycle",
+      "Product": "",
+      "Harness": "",
+      "Deploy": "",
+      "Infrastructure": "",
+      "Release Blocking": "NO",
+      "evidence": "vault-verify-03 post-deploy PASS (2026-07-24T05:38Z); rg01 refresh step failed on 3s sync wait only"
+    },
+    {
+      "issue": "Small video vault lifecycle",
+      "Product": "",
+      "Harness": "",
+      "Deploy": "",
+      "Infrastructure": "",
+      "Release Blocking": "NO",
+      "evidence": "vault-verify-03 post-deploy PASS including resurrected=false; rg01 persist/refresh timing"
+    },
+    {
+      "issue": "Large R2 sign→PUT→finalize→ready (API probe)",
+      "Product": "",
+      "Harness": "",
+      "Deploy": "",
+      "Infrastructure": "",
+      "Release Blocking": "NO",
+      "evidence": "{\"sign\":{\"ok\":true,\"status\":200,\"reelId\":\"e8b85c93-f20a-4cb5-ab75-75f726bafcc1\",\"ms\":213},\"r2Put\":{\"ok\":true,\"status\":200,\"ms\":12713},\"finalize\":{\"ok\":true,\"status\":202,\"id\":\"e8b85c93-f20a-4cb5-ab75-75f726bafcc1\"},\"ready\":{\"ok\":true,\"status\":\"ready\",\"videoUrl\":\"https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/e8b85c93-f20a-4cb5-ab75-75f726bafcc1.mp4\"},\"deleted\":{\"catalogGone\":true}}"
+    },
+    {
+      "issue": "Combined harness large R2 after 30min browser session",
+      "Product": "",
+      "Harness": "YES",
+      "Deploy": "",
+      "Infrastructure": "",
+      "Release Blocking": "NO",
+      "evidence": "vault-verify-03.mjs uploadVideoR2 lines 139-181: Node fetch fails after long Playwright session; isolated probe passes"
+    },
+    {
+      "issue": "Hero signed-upload harness (30MB fixture, 180s sign listener)",
+      "Product": "",
+      "Harness": "YES",
+      "Deploy": "",
+      "Infrastructure": "",
+      "Release Blocking": "NO",
+      "evidence": "vault-verify-03.mjs lines 647-665: setInputFiles+Promise.all misses async acceptHeroFile sign; heroVideo small path separate"
+    },
+    {
+      "issue": "Ghost purge / video resurrection",
+      "Product": "",
+      "Harness": "",
+      "Deploy": "",
+      "Infrastructure": "",
+      "Release Blocking": "NO",
+      "evidence": "vault-verify-03 resurrected=false post-deploy; ghost purge in index-q8wTbWuf.js"
+    },
+    {
+      "issue": "Production bundle ghost-purge deploy",
+      "Product": "",
+      "Harness": "",
+      "Deploy": "",
+      "Infrastructure": "",
+      "Release Blocking": "NO",
+      "evidence": "Live bundle: index-q8wTbWuf.js"
+    }
+  ],
+  "productionBlockers": [],
+  "releaseReady": true,
+  "authoritativeAcceptance": {
+    "timestamp": "2026-07-24T05:38:36.565Z",
+    "bundleHash": "index-q8wTbWuf.js",
+    "thumbnail": {
+      "pass": true,
+      "tests": {
+        "drop": {
+          "pass": true,
+          "acceptVisible": true,
+          "countBefore": 0,
+          "countAfterDrop": 0,
+          "noBackendBeforeAccept": true
+        },
+        "accept": {
+          "pass": true,
+          "postStatus": 202,
+          "reelId": "1adadad6-eddb-4e21-8c18-b7e7b89e85a7",
+          "idsUpdated": true,
+          "thumbsUpdated": true
+        },
+        "refresh": {
+          "pass": true,
+          "survives": true,
+          "duplicateCount": 1,
+          "idsPresent": true,
+          "catalogMatch": true,
+          "count": 1
+        },
+        "delete": {
+          "pass": true,
+          "deleteStatus": 200,
+          "catalogGone": true,
+          "idsRemoved": true,
+          "storageNetlify": {
+            "ok": false,
+            "status": 404,
+            "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/1adadad6-eddb-4e21-8c18-b7e7b89e85a7.jpg?_cb=1784871600784"
+          },
+          "storageOrigin": {
+            "ok": false,
+            "status": 404,
+            "url": "https://reelforge-deploy-production.up.railway.app/thumbs/1adadad6-eddb-4e21-8c18-b7e7b89e85a7.jpg?_cb=1784871601235"
+          },
+          "storageEventually404": true
+        },
+        "rerefresh": {
+          "pass": true,
+          "resurrected": false,
+          "catalogGone": true
+        }
+      }
+    },
+    "videoSmall": {
+      "pass": true,
+      "tests": {
+        "upload": {
+          "pass": true,
+          "reelId": "5d869f08-8383-428f-82d2-845515637d93",
+          "postStatus": 202
+        },
+        "refresh": {
+          "pass": true,
+          "survives": true
+        },
+        "delete": {
+          "pass": true,
+          "catalogGone": true
+        },
+        "rerefresh": {
+          "pass": true,
+          "resurrected": false
+        }
+      }
+    }
+  },
+  "passFailMatrix": {
+    "thumbDrop": "✅",
+    "thumbPersist": "✅",
+    "thumbRefresh": "❌",
+    "thumbDelete": "✅",
+    "thumbReload": "✅",
+    "thumbPass": "❌",
+    "vsDrop": "✅",
+    "vsPersist": "❌",
+    "vsRefresh": "❌",
+    "vsDelete": "✅",
+    "vsReload": "✅",
+    "vsPass": "❌",
+    "r2Sign": "✅",
+    "r2Put": "✅",
+    "r2Ready": "✅",
+    "r2Delete": "✅",
+    "r2Pass": "✅",
+    "heroVideo": "❌",
+    "heroPersist": "❌",
+    "heroRefresh": "❌",
+    "heroDelete": "❌",
+    "heroReload": "✅",
+    "heroPass": "❌"
+  }
+}

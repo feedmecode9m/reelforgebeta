@@ -6,10 +6,19 @@
   # Same-origin API via public/_redirects → Railway (fixes upload CORS on Netlify Drop)
   VITE_USE_SAME_ORIGIN_API = "true"
   VITE_ALLOW_UI_PLACEHOLDERS = "false"
+  VITE_USE_SIGNED_UPLOADS = "true"
+  VITE_DIRECT_UPLOAD_BASE_URL = "https://reelforge-deploy-production.up.railway.app"
+  VITE_SIGNED_UPLOADS_MIN_BYTES = "25000000"
 
 [[redirects]]
   from = "/api/*"
   to = "https://reelforge-deploy-production.up.railway.app/api/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/admin/auth"
+  to = "https://reelforge-deploy-production.up.railway.app/admin/auth"
   status = 200
   force = true
 

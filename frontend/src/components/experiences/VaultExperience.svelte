@@ -48,6 +48,7 @@
   } from '../../lib/viewer/thumbnailVault.js';
   import { assertDeleteReducedCount } from '../../lib/viewer/thumbnailInvariants.js';
   import { applyCanonicalDeleteClientEffects } from '../../lib/deletionSync.js';
+  import { vaultForensic } from '../../lib/diagnostics/vaultForensics.js';
 
   export let showPersonalControls = true;
 
@@ -179,12 +180,36 @@
 
   async function deleteReelById(reelId) {
     const t0 = Date.now();
+    vaultForensic('VAULT_DELETE_START', {
+      vaultType: 'unknown',
+      assetId: String(reelId || ''),
+      fileName: null,
+      storageLocation: null,
+      backendEndpoint: `${API_BASE_URL}/api/reels/${reelId}`,
+      result: 'delete_start'
+    });
     console.info('[DELETE_API]', { stage: 'start', reelId, ts: t0 });
     try {
       await apiDeleteReelById(reelId, authHeaders());
+      vaultForensic('VAULT_DELETE_SUCCESS', {
+        vaultType: 'unknown',
+        assetId: String(reelId || ''),
+        fileName: null,
+        storageLocation: null,
+        backendEndpoint: `${API_BASE_URL}/api/reels/${reelId}`,
+        result: 'delete_success'
+      });
       console.info('[DELETE_API]', { stage: 'success', reelId, elapsedMs: Date.now() - t0 });
       return true;
     } catch (e) {
+      vaultForensic('VAULT_DELETE_FAIL', {
+        vaultType: 'unknown',
+        assetId: String(reelId || ''),
+        fileName: null,
+        storageLocation: null,
+        backendEndpoint: `${API_BASE_URL}/api/reels/${reelId}`,
+        result: String(e?.message || e)
+      });
       console.info('[DELETE_API]', {
         stage: 'failure',
         reelId,
@@ -774,6 +799,13 @@
       fileCount: event.dataTransfer?.files?.length || 0,
       ts: new Date().toISOString()
     });
+    vaultForensic('VAULT_DROP', {
+      vaultType: 'thumbnail',
+      fileName: event.dataTransfer?.files?.[0]?.name || null,
+      storageLocation: 'pendingThumbnail',
+      backendEndpoint: null,
+      result: 'drop_received'
+    });
 
     const file = Array.from(event.dataTransfer?.files || []).find((f) => f.type.startsWith('image/'));
     if (!file) {
@@ -857,6 +889,13 @@
       vault: 'video',
       fileCount: event.dataTransfer?.files?.length || 0,
       ts: new Date().toISOString()
+    });
+    vaultForensic('VAULT_DROP', {
+      vaultType: 'video',
+      fileName: event.dataTransfer?.files?.[0]?.name || null,
+      storageLocation: CONFIG?.VIDEO_VAULT_KEY || 'personal_video_vault',
+      backendEndpoint: `${API_BASE_URL}/api/reels`,
+      result: 'drop_received'
     });
 
     const file = Array.from(event.dataTransfer?.files || []).find((f) => {
@@ -991,6 +1030,13 @@
       state: 'upload_start'
     });
     uploadStatus.set('🎬 Uploading to backend...');
+    vaultForensic('VAULT_UPLOAD_START', {
+      vaultType: 'video',
+      fileName: file.name,
+      storageLocation: CONFIG?.VIDEO_VAULT_KEY || 'personal_video_vault',
+      backendEndpoint: `${API_BASE_URL}/api/reels`,
+      result: 'upload_start'
+    });
     pipelineDiag('UPLOAD', 'handleVaultVideoDrop', 'VaultExperience.svelte', {
       fileName: file.name,
       result: 'upload_start'
@@ -1175,6 +1221,14 @@
         ts: new Date().toISOString()
       });
       uploadStatus.set(`✅ Added to vault & feed: ${file.name}`);
+      vaultForensic('VAULT_UPLOAD_SUCCESS', {
+        vaultType: 'video',
+        assetId: entry.id || null,
+        fileName: entry.fileName || file.name,
+        storageLocation: entry.url || null,
+        backendEndpoint: `${API_BASE_URL}/api/reels`,
+        result: 'canonical_created'
+      });
       pipelineCheckpoint('VIDEO_READY', {
         vault: 'mp4',
         videoSrc: entry.url,
@@ -1210,6 +1264,13 @@
         ts: new Date().toISOString()
       });
       uploadStatus.set('❌ Failed to process video');
+      vaultForensic('VAULT_UPLOAD_FAIL', {
+        vaultType: 'video',
+        fileName: file?.name || null,
+        storageLocation: CONFIG?.VIDEO_VAULT_KEY || 'personal_video_vault',
+        backendEndpoint: `${API_BASE_URL}/api/reels`,
+        result: error?.message || String(error)
+      });
     } finally {
       pendingVideoUploadKeys.delete(uploadKey);
       setPendingUploads(pendingVideoUploadKeys.size);
@@ -1274,12 +1335,19 @@
       result: 'accept_start'
     });
     uploadStatus.set('📤 Uploading thumbnail...');
-    console.info('[UPLOAD_STARTED]', {
-      vault: 'thumbnail',
-      name,
-      type: file?.type || '',
-      size: file?.size || 0,
-      ts: new Date().toISOString()
+    vaultForensic('VAULT_ACCEPT', {
+      vaultType: 'thumbnail',
+      fileName: name,
+      storageLocation: CONFIG?.THUMBNAIL_STORAGE_KEY || 'personal_thumbnails',
+      backendEndpoint: `${API_BASE_URL}/api/reels`,
+      result: 'accept_start'
+    });
+    vaultForensic('VAULT_UPLOAD_START', {
+      vaultType: 'thumbnail',
+      fileName: name,
+      storageLocation: 'backend',
+      backendEndpoint: `${API_BASE_URL}/api/reels`,
+      result: 'upload_start'
     });
     try {
       const token =
@@ -1348,6 +1416,14 @@
         ts: new Date().toISOString()
       });
       uploadStatus.set(`✅ ${name} uploaded`);
+      vaultForensic('VAULT_UPLOAD_SUCCESS', {
+        vaultType: 'thumbnail',
+        assetId: entry.id || null,
+        fileName: entryName,
+        storageLocation: thumbPath,
+        backendEndpoint: `${API_BASE_URL}/api/reels`,
+        result: 'canonical_created'
+      });
       pipelineDiag('UPLOAD', 'acceptPendingThumbnail', 'VaultExperience.svelte', {
         assetId: entry.id || entryName,
         fileName: name,
@@ -1381,6 +1457,13 @@
         ts: new Date().toISOString()
       });
       uploadStatus.set(`❌ Upload failed: ${error.message || 'check backend'}`);
+      vaultForensic('VAULT_UPLOAD_FAIL', {
+        vaultType: 'thumbnail',
+        fileName: name,
+        storageLocation: CONFIG?.THUMBNAIL_STORAGE_KEY || 'personal_thumbnails',
+        backendEndpoint: `${API_BASE_URL}/api/reels`,
+        result: error?.message || String(error)
+      });
     }
     resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
   }

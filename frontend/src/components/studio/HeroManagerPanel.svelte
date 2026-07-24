@@ -16,6 +16,7 @@
     import { buildHeroAssetRegistry, isVideoHeroAssetType } from '../../lib/hero/heroAssetBridge.js';
     import { deleteReelById, fetchReadyReels } from '../../lib/api/media.js';
     import { applyCanonicalDeleteClientEffects } from '../../lib/deletionSync.js';
+    import { vaultForensic } from '../../lib/diagnostics/vaultForensics.js';
 
     /** @type {Record<string, unknown>[]} */
     export let feedReels = [];
@@ -393,6 +394,14 @@
             timestamp: Date.now()
         });
         const isVideo = isVideoHeroAssetType(item.assetType);
+        vaultForensic('VAULT_DELETE_START', {
+            vaultType: 'hero',
+            assetId: String(item?.assetId || ''),
+            fileName: displayName,
+            storageLocation: isVideo ? HERO_VIDEO_STORAGE_KEY : HERO_IMAGE_STORAGE_KEY,
+            backendEndpoint: `${CONFIG?.API_BASE_URL || ''}/api/reels`,
+            result: 'delete_start'
+        });
         const beforeCount = get(heroAssetRegistry).length;
         let persistenceOk = false;
         const reelId = await findMatchingHeroReelId(item);
@@ -466,6 +475,14 @@
             mechanism: 'single',
             vault: 'hero-vault',
             timestamp: Date.now()
+        });
+        vaultForensic(persistenceOk || !reelId ? 'VAULT_DELETE_SUCCESS' : 'VAULT_DELETE_FAIL', {
+            vaultType: 'hero',
+            assetId: String(item?.assetId || ''),
+            fileName: displayName,
+            storageLocation: isVideo ? HERO_VIDEO_STORAGE_KEY : HERO_IMAGE_STORAGE_KEY,
+            backendEndpoint: `${CONFIG?.API_BASE_URL || ''}/api/reels/${reelId || ''}`,
+            result: persistenceOk ? 'delete_success' : reelId ? 'backend_delete_failed' : 'local_only_delete'
         });
         config = { ...config };
     }

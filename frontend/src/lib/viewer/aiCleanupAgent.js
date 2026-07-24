@@ -6,9 +6,15 @@ import { toRelativeMediaPath } from '../config.js';
 import { logDeletionPropagation, filterOutDeletedMedia, applyCanonicalDeleteClientEffects } from '../deletionSync.js';
 import { isStorageFull, wouldExceedQuota } from '../storage.js';
 import { isHeroAsset, filterNonHeroAssets } from '../hero/heroDomainGuard.js';
-import { removeThumbnailVaultByIndex, syncCollectionStore } from './thumbnailVault.js';
+import {
+  deleteThumbnailVaultEntries,
+  readThumbnailVault,
+  removeThumbnailVaultByIndex,
+  syncCollectionStore
+} from './thumbnailVault.js';
 import { traceThumbStoreWrite } from './thumbStoreWriteTrace.js';
 import { pipelineCheckpoint } from '../diagnostics/pipelineDiag.js';
+import { vaultForensic } from '../diagnostics/vaultForensics.js';
 
 export function createAiCleanupAgent(deps) {
   const {
@@ -238,6 +244,19 @@ export function createAiCleanupAgent(deps) {
   createdAt: videoData.addedAt || new Date().toISOString()
   })
   };
+  // Keep Studio rename overlay when vault redistribute replaces catalog cards.
+  try {
+    const titles = JSON.parse(localStorage.getItem(CONFIG.TITLES_STORAGE_KEY) || '{}');
+    const saved = titles[String(videoData.id)];
+    if (saved?.title) {
+      reel.title = saved.title;
+      reel.name = saved.title;
+      reel.title_original = saved.title_original || saved.title;
+      reel._localModified = true;
+    }
+  } catch {
+    /* ignore */
+  }
   console.info('[HERO_ROUTE]', {
   stage: 'AI_CLEANUP_AGENT.distributeVideoToFeed',
   id: String(videoData?.id || ''),
@@ -253,6 +272,37 @@ export function createAiCleanupAgent(deps) {
   feed.update(f => ({ ...f }));
   storageSet(CONFIG.FEED_STORAGE_KEY, get(feed));
   },
+  /** Re-apply reel_titles_persistent onto feed cards by canonical id. */
+  applyPersistedTitlesOverlay() {
+    try {
+      const titles = JSON.parse(
+        (typeof window !== 'undefined' ? localStorage.getItem(CONFIG.TITLES_STORAGE_KEY) : null) || '{}'
+      );
+      if (!titles || typeof titles !== 'object') return;
+      const ids = Object.keys(titles).filter((id) => titles[id]?.title);
+      if (!ids.length) return;
+      feed.update((current) => {
+        const next = { ...current };
+        Object.keys(next).forEach((cat) => {
+          next[cat] = (next[cat] || []).map((item) => {
+            const saved = titles[String(item?.id || '')];
+            if (!saved?.title) return item;
+            return {
+              ...item,
+              title: saved.title,
+              name: saved.title,
+              title_original: saved.title_original || saved.title,
+              _localModified: true
+            };
+          });
+        });
+        return next;
+      });
+      storageSet(CONFIG.FEED_STORAGE_KEY, get(feed));
+    } catch {
+      /* ignore */
+    }
+  },
   syncVideoVaultToFeed() {
   const videos = JSON.parse((typeof window !== 'undefined' ? localStorage.getItem(CONFIG.VIDEO_VAULT_KEY) : null) || '[]');
   const nonHeroVideos = filterOutDeletedMedia(filterNonHeroAssets(videos));
@@ -263,6 +313,7 @@ export function createAiCleanupAgent(deps) {
   ts: new Date().toISOString()
   });
   nonHeroVideos.forEach((v) => this.distributeVideoToFeed(v));
+  this.applyPersistedTitlesOverlay();
   },
   distributeThumbnailAcrossCategories(thumbnailName, base64Data) {
   if (isHeroAsset({ id: thumbnailName, name: thumbnailName, url: base64Data, thumbnail: base64Data })) return;
@@ -387,44 +438,74 @@ export function createAiCleanupAgent(deps) {
   async handleThumbnailRemove(index) {
   const collection = get(personalThumbnailCollection);
   if (!collection || index < 0 || index >= collection.length) { console.warn('⚠️ [THUMB DELETE] Invalid index or empty collection'); return; }
-  const thumbnailName = collection[index];
-  if (!thumbnailName) { console.warn('⚠️ [THUMB DELETE] No thumbnail name at index', index); return; }
+  const thumbnailKey = collection[index];
+  if (!thumbnailKey) { console.warn('⚠️ [THUMB DELETE] No thumbnail name at index', index); return; }
+  const stored = readThumbnailVault(CONFIG.THUMBNAIL_STORAGE_KEY);
+  const entry = stored.find((candidate) => {
+    if (!candidate) return false;
+    if (typeof candidate === 'string') return String(candidate).trim() === String(thumbnailKey).trim();
+    const id = String(candidate.id || '').trim();
+    const fileName = String(candidate.fileName || candidate.file_name || '').trim();
+    const urlName = filenameFromMediaRef(candidate.url || candidate.thumbnailUrl || '');
+    return (
+      String(thumbnailKey).trim() === id ||
+      String(thumbnailKey).trim() === fileName ||
+      String(thumbnailKey).trim() === urlName
+    );
+  });
+  const reelId = entry && typeof entry === 'object' ? String(entry.id || '').trim() : '';
   console.info('[DELETE_HANDLER_FIRED]', {
   mechanism: 'single',
   vault: 'thumbnail-vault',
-  itemId: String(thumbnailName),
-  itemName: String(thumbnailName),
+  itemId: reelId || String(thumbnailKey),
+  itemName: String(thumbnailKey),
   timestamp: Date.now()
   });
   console.info('[DELETE_CONFIRMATION_SHOWN]', {
   mechanism: 'single',
   vault: 'thumbnail-vault',
-  itemId: String(thumbnailName),
-  itemName: String(thumbnailName),
+  itemId: reelId || String(thumbnailKey),
+  itemName: String(thumbnailKey),
   timestamp: Date.now()
   });
-  if (!confirm(`Delete thumbnail "${thumbnailName}" permanently?`)) return;
+  if (!confirm(`Delete thumbnail "${thumbnailKey}" permanently?`)) return;
   console.info('[DELETE_CONFIRMED]', {
   mechanism: 'single',
   vault: 'thumbnail-vault',
-  itemId: String(thumbnailName),
+  itemId: reelId || String(thumbnailKey),
   timestamp: Date.now()
   });
-  uploadStatus.set(`🗑️ Deleting ${thumbnailName}...`);
+  uploadStatus.set(`🗑️ Deleting ${thumbnailKey}...`);
+  vaultForensic('VAULT_DELETE_START', {
+    vaultType: 'thumbnail',
+    assetId: reelId || String(thumbnailKey),
+    fileName: String(thumbnailKey),
+    storageLocation: CONFIG.THUMBNAIL_STORAGE_KEY,
+    backendEndpoint: `${CONFIG?.API_BASE_URL || ''}/api/reels`,
+    result: 'delete_start'
+  });
   try {
   const beforeCount = collection.length;
   const token = typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
   let persistenceSuccess = false;
   if (token) {
-  console.log(`🗑️ [THUMB DELETE] Calling backend API for: ${thumbnailName}`);
+  console.log(`🗑️ [THUMB DELETE] Calling backend API for: ${reelId || thumbnailKey}`);
   try {
+  if (reelId) {
+  await deleteReelById(reelId, this.authHeaders());
+  persistenceSuccess = true;
+  applyCanonicalDeleteClientEffects(
+    { purge: runClientMediaPurge },
+    { reelId, videoUrl: entry?.url || entry?.thumbnailUrl }
+  );
+  } else {
   const reels = await fetchReadyReels(this.authHeaders());
   const imageReel = reels.find((reel) => {
   const type = String(reel?.type || '').toLowerCase();
   if (!(type === 'image' || String(reel?.url || '').includes('/thumbs/'))) return false;
   const byThumb = this.mediaBasename(reel?.thumbnailUrl || reel?.thumbnail_url || reel?.url);
   const byFile = this.mediaBasename(reel?.fileName || reel?.file_name || '');
-  return byThumb === thumbnailName || byFile === thumbnailName;
+  return byThumb === thumbnailKey || byFile === thumbnailKey;
   });
   if (imageReel?.id) {
   await deleteReelById(imageReel.id, this.authHeaders());
@@ -434,16 +515,23 @@ export function createAiCleanupAgent(deps) {
     { reelId: imageReel.id, videoUrl: imageReel?.url || imageReel?.thumbnailUrl }
   );
   } else {
-  // Fallback for legacy records when no reel id mapping is found.
-  await deleteMediaFile(thumbnailName, this.authHeaders());
+  await deleteMediaFile(thumbnailKey, this.authHeaders());
   persistenceSuccess = true;
   }
-  console.log(`✅ [THUMB DELETE] Backend deletion successful: ${thumbnailName}`);
+  }
+  console.log(`✅ [THUMB DELETE] Backend deletion successful: ${reelId || thumbnailKey}`);
   } catch (apiError) { console.warn('⚠️ [THUMB DELETE] Backend API call failed:', apiError); }
   } else { console.warn('⚠️ [THUMB DELETE] No admin token available, skipping backend deletion'); }
-  removeThumbnailVaultByIndex(thumbnailName, CONFIG.THUMBNAIL_STORAGE_KEY);
+  if (reelId) {
+  deleteThumbnailVaultEntries([reelId], [], {
+    backendReachable: persistenceSuccess,
+    storageKey: CONFIG.THUMBNAIL_STORAGE_KEY
+  });
+  } else {
+  removeThumbnailVaultByIndex(thumbnailKey, CONFIG.THUMBNAIL_STORAGE_KEY);
+  }
   syncCollectionStore(personalThumbnailCollection, CONFIG.THUMBNAIL_STORAGE_KEY);
-  AI_CLEANUP_AGENT.removeThumbnailFromCategories(thumbnailName);
+  AI_CLEANUP_AGENT.removeThumbnailFromCategories(thumbnailKey);
   const afterCount = get(personalThumbnailCollection).length;
   console.info('[DELETE_STORE_UPDATE]', {
   mechanism: 'single',
@@ -467,8 +555,16 @@ export function createAiCleanupAgent(deps) {
   console.info('[DELETE_COMPLETE]', {
   mechanism: 'single',
   vault: 'thumbnail-vault',
-  itemId: String(thumbnailName),
+  itemId: reelId || String(thumbnailKey),
   timestamp: Date.now()
+  });
+  vaultForensic(persistenceSuccess ? 'VAULT_DELETE_SUCCESS' : 'VAULT_DELETE_FAIL', {
+    vaultType: 'thumbnail',
+    assetId: reelId || String(thumbnailKey),
+    fileName: String(thumbnailKey),
+    storageLocation: CONFIG.THUMBNAIL_STORAGE_KEY,
+    backendEndpoint: `${CONFIG?.API_BASE_URL || ''}/api/reels`,
+    result: persistenceSuccess ? 'delete_success' : 'backend_delete_failed_local_purged'
   });
   uploadStatus.set('✅ Thumbnail deleted');
   } catch (err) { console.error('❌ [THUMB DELETE] Failed:', err); uploadStatus.set(`❌ Delete failed: ${err.message}`); }
@@ -501,6 +597,14 @@ export function createAiCleanupAgent(deps) {
   timestamp: Date.now()
   });
   uploadStatus.set(`🗑️ Deleting ${video.name}...`);
+  vaultForensic('VAULT_DELETE_START', {
+    vaultType: 'video',
+    assetId: String(videoId),
+    fileName: String(video.name || ''),
+    storageLocation: CONFIG.VIDEO_VAULT_KEY,
+    backendEndpoint: `${CONFIG?.API_BASE_URL || ''}/api/reels/${videoId}`,
+    result: 'delete_start'
+  });
   try {
   const beforeCount = vault.length;
   const token = typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
@@ -549,6 +653,14 @@ export function createAiCleanupAgent(deps) {
   vault: 'video-vault',
   itemId: String(videoId),
   timestamp: Date.now()
+  });
+  vaultForensic(persistenceSuccess ? 'VAULT_DELETE_SUCCESS' : 'VAULT_DELETE_FAIL', {
+    vaultType: 'video',
+    assetId: String(videoId),
+    fileName: String(video.name || ''),
+    storageLocation: CONFIG.VIDEO_VAULT_KEY,
+    backendEndpoint: `${CONFIG?.API_BASE_URL || ''}/api/reels/${videoId}`,
+    result: persistenceSuccess ? 'delete_success' : 'backend_delete_failed_client_purge'
   });
   } catch (err) { console.error('Delete failed:', err); uploadStatus.set(`❌ Delete failed: ${err.message}`); }
   resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
