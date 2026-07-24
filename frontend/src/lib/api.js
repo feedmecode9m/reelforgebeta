@@ -164,7 +164,9 @@ export async function fetchWithRetry(
     {
         retries = DEFAULT_RETRY_ATTEMPTS,
         retryDelayMs = DEFAULT_RETRY_DELAY_MS,
-        retryOn = null
+        retryOn = null,
+        /** When false, network errors do not emit global reconnect UX (non-critical APIs). */
+        notifyReconnectOnFailure = true
     } = {}
 ) {
     let lastError;
@@ -209,10 +211,12 @@ export async function fetchWithRetry(
         } catch (error) {
             lastError = error;
             pipelineDiagCors('fetchWithRetry', 'api.js', error, { url });
-            notifyBackendReconnecting();
-            setBackendConnectionStatus('offline', {
-                lastError: error?.message || 'network failure'
-            });
+            if (notifyReconnectOnFailure) {
+                notifyBackendReconnecting();
+                setBackendConnectionStatus('offline', {
+                    lastError: error?.message || 'network failure'
+                });
+            }
             logApiDebug('error', { url, attempt, message: error?.message || String(error) });
 
             if (attempt === retries) {

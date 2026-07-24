@@ -315,50 +315,77 @@ pub async fn delete_reel(
 
     let _ = crate::db::jobs::cancel_for_reel(db.get_ref(), reel_id).await;
 
+    let video_url_str = row.video_url.as_deref().unwrap_or("");
+    let is_image_only =
+        video_url_str.contains("/thumbs/") && !video_url_str.contains("/videos/");
+
     let mut video_removed = false;
-    let storage_key = if row.file_name.trim().is_empty() {
-        row.video_url
-            .as_ref()
-            .and_then(|v| crate::media_seed::media_basename(v))
-    } else {
-        Some(row.file_name.clone())
-    };
-    if let Some(name) = storage_key {
-        let p = videos_path.0.join(&name);
-        let existed = p.is_file();
-        if existed {
-            video_removed = std::fs::remove_file(&p).is_ok();
-        }
-        if crate::storage::r2::R2Storage::enabled() {
-            match crate::storage::r2::R2Storage::global()
-                .expect("r2 enabled")
-                .delete_object(&name)
-                .await
-            {
-                Ok(()) => video_removed = true,
-                Err(e) => eprintln!(
-                    "[VAULT-DELETE-TRACE] handlers::delete_reel:r2 id={} key={} err={}",
-                    reel_id, name, e
-                ),
-            }
-        }
-        eprintln!(
-            "[VAULT-DELETE-TRACE] handlers::delete_reel:video_file id={} path={:?} existed={} removed={}",
-            reel_id, p, existed, video_removed
-        );
-    }
     let mut thumb_removed = false;
-    if let Some(ref t) = row.thumbnail_url {
-        if let Some(name) = crate::media_seed::media_basename(t) {
+
+    if is_image_only {
+        let thumb_name = if !row.file_name.trim().is_empty() {
+            Some(row.file_name.clone())
+        } else {
+            row.thumbnail_url
+                .as_deref()
+                .and_then(crate::media_seed::media_basename)
+                .or_else(|| crate::media_seed::media_basename(video_url_str))
+        };
+        if let Some(name) = thumb_name {
             let p = thumbs_path.0.join(&name);
             let existed = p.is_file();
             if existed {
                 thumb_removed = std::fs::remove_file(&p).is_ok();
             }
             eprintln!(
-                "[VAULT-DELETE-TRACE] handlers::delete_reel:thumb_file id={} path={:?} existed={} removed={}",
+                "[VAULT-DELETE-TRACE] handlers::delete_reel:image_only_thumb id={} path={:?} existed={} removed={}",
                 reel_id, p, existed, thumb_removed
             );
+        }
+    } else {
+        let storage_key = if row.file_name.trim().is_empty() {
+            row.video_url
+                .as_ref()
+                .and_then(|v| crate::media_seed::media_basename(v))
+        } else {
+            Some(row.file_name.clone())
+        };
+        if let Some(name) = storage_key {
+            let p = videos_path.0.join(&name);
+            let existed = p.is_file();
+            if existed {
+                video_removed = std::fs::remove_file(&p).is_ok();
+            }
+            if crate::storage::r2::R2Storage::enabled() {
+                match crate::storage::r2::R2Storage::global()
+                    .expect("r2 enabled")
+                    .delete_object(&name)
+                    .await
+                {
+                    Ok(()) => video_removed = true,
+                    Err(e) => eprintln!(
+                        "[VAULT-DELETE-TRACE] handlers::delete_reel:r2 id={} key={} err={}",
+                        reel_id, name, e
+                    ),
+                }
+            }
+            eprintln!(
+                "[VAULT-DELETE-TRACE] handlers::delete_reel:video_file id={} path={:?} existed={} removed={}",
+                reel_id, p, existed, video_removed
+            );
+        }
+        if let Some(ref t) = row.thumbnail_url {
+            if let Some(name) = crate::media_seed::media_basename(t) {
+                let p = thumbs_path.0.join(&name);
+                let existed = p.is_file();
+                if existed {
+                    thumb_removed = std::fs::remove_file(&p).is_ok();
+                }
+                eprintln!(
+                    "[VAULT-DELETE-TRACE] handlers::delete_reel:thumb_file id={} path={:?} existed={} removed={}",
+                    reel_id, p, existed, thumb_removed
+                );
+            }
         }
     }
 

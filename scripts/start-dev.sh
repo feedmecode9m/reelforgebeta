@@ -445,7 +445,7 @@ if port_in_use "$BACKEND_PORT"; then
 
     log_info "🔧 Starting backend on :$BACKEND_PORT..."
     run_as_dev_user "printf '\n[start-dev] %s restarting backend on :%s\n' \"\$(date -Is)\" \"$BACKEND_PORT\" >> \"$BACKEND_LOG_FILE\""
-    run_as_dev_user_bg "cd \"$BACKEND_DIR\" && cargo run >> \"$BACKEND_LOG_FILE\" 2>&1"
+    run_as_dev_user_bg "cd \"$PROJECT_ROOT\" && cargo run --bin backend >> \"$BACKEND_LOG_FILE\" 2>&1"
     BACKEND_PID=$!
     STARTED_BACKEND=1
 
@@ -460,7 +460,7 @@ if port_in_use "$BACKEND_PORT"; then
 else
   log_info "🔧 Starting backend on :$BACKEND_PORT..."
   run_as_dev_user "printf '\n[start-dev] %s launching backend on :%s\n' \"\$(date -Is)\" \"$BACKEND_PORT\" >> \"$BACKEND_LOG_FILE\""
-  run_as_dev_user_bg "cd \"$BACKEND_DIR\" && cargo run >> \"$BACKEND_LOG_FILE\" 2>&1"
+  run_as_dev_user_bg "cd \"$PROJECT_ROOT\" && cargo run --bin backend >> \"$BACKEND_LOG_FILE\" 2>&1"
   BACKEND_PID=$!
   STARTED_BACKEND=1
 

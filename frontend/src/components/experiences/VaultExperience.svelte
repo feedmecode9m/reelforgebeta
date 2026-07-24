@@ -342,6 +342,17 @@
     );
   }
 
+  async function applyVideoDeleteThumbnailCleanup(deletedIds) {
+    if (!deletedIds?.length) return;
+    const imageReels = (await fetchReadyReels()).filter(isThumbnailImageReel);
+    deleteThumbnailVaultEntries(deletedIds, imageReels, {
+      backendReachable: true,
+      storageKey: CONFIG.THUMBNAIL_STORAGE_KEY
+    });
+    syncCollectionStore(personalThumbnailCollection, CONFIG.THUMBNAIL_STORAGE_KEY);
+    await purgeStaleOrphanThumbnails(deletedIds, imageReels);
+  }
+
   async function purgeStaleOrphanThumbnails(deletedIds, imageReels = null) {
     const reels = imageReels || (await fetchReadyReels()).filter(isThumbnailImageReel);
     const pending = get(pendingThumbnail);
@@ -698,9 +709,13 @@
     }
     if (deletedIds.length > 0) {
       applyVideoDeleteTombstone(deletedIds);
+      await applyVideoDeleteThumbnailCleanup(deletedIds);
     }
     await syncFromVault(true, true);
     applyVideoDeleteTombstone(deletedIds);
+    if (deletedIds.length > 0) {
+      await applyVideoDeleteThumbnailCleanup(deletedIds);
+    }
     selectedVideoIds = [];
     const afterCount = get(personalVideos).length;
     logDeletePipeline('video-vault', 'store_after', {
@@ -1618,9 +1633,13 @@
       }
       if (deletedIds.length > 0) {
         applyVideoDeleteTombstone(deletedIds);
+        await applyVideoDeleteThumbnailCleanup(deletedIds);
       }
       await syncFromVault(true, true);
       applyVideoDeleteTombstone(deletedIds);
+      if (deletedIds.length > 0) {
+        await applyVideoDeleteThumbnailCleanup(deletedIds);
+      }
       const afterCount = get(personalVideos).length;
       console.info('[DELETE_STORE_UPDATE]', {
         vault: 'video-vault',
