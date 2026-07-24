@@ -23,7 +23,10 @@ async function workflowFetch(path, options = {}, meta = {}) {
     const method = options.method || 'GET';
     const isWrite = method !== 'GET' && method !== 'HEAD';
 
-    const res = await fetchWithRetry(`${API_BASE_URL}${path}`, options, { retries: 1 });
+    const res = await fetchWithRetry(`${API_BASE_URL}${path}`, options, {
+        retries: 1,
+        notifyReconnectOnFailure: false
+    });
     if (res.status === 404) {
         const body = await res.json().catch(() => ({}));
         return { disabled: true, error: body.error || 'Workflow API disabled' };
@@ -48,7 +51,7 @@ export async function fetchWorkflowApiStatus() {
         const res = await fetchWithRetry(
             `${API_BASE_URL}/api/workflow/status`,
             { signal: AbortSignal.timeout(4000) },
-            { retries: 0, retryDelayMs: 250 }
+            { retries: 0, retryDelayMs: 250, notifyReconnectOnFailure: false }
         );
         if (res.status === 404) {
             const body = await res.json().catch(() => ({}));

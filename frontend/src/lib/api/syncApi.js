@@ -25,7 +25,7 @@ async function syncFetch(path, options = {}) {
             },
             signal: options.signal || AbortSignal.timeout(5000)
         },
-        { retries: 0, retryDelayMs: 250 }
+        { retries: 0, retryDelayMs: 250, notifyReconnectOnFailure: false }
     );
     if (res.status === 404) {
         const body = await res.json().catch(() => ({}));

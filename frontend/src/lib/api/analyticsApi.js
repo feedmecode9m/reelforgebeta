@@ -140,7 +140,10 @@ async function analyticsFetch(path, options = {}, meta = {}) {
     const requestOptions = signal ? { ...options, signal } : options;
 
     try {
-        const res = await fetchWithRetry(`${API_BASE_URL}${path}`, requestOptions, { retries: 1 });
+        const res = await fetchWithRetry(`${API_BASE_URL}${path}`, requestOptions, {
+            retries: 1,
+            notifyReconnectOnFailure: false
+        });
         if (res.status === 404) {
             const body = await res.json().catch(() => ({}));
             markSuccess();
@@ -194,7 +197,7 @@ export async function fetchAnalyticsApiStatus() {
         const res = await fetchWithRetry(
             `${API_BASE_URL}/api/analytics/status`,
             { signal },
-            { retries: 0, retryDelayMs: 250 }
+            { retries: 0, retryDelayMs: 250, notifyReconnectOnFailure: false }
         );
         if (res.status === 404) {
             const body = await res.json().catch(() => ({}));

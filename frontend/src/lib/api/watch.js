@@ -24,7 +24,7 @@ async function watchFetch(path, options = {}) {
     const res = await fetchWithRetry(`${API_BASE_URL}${path}`, {
         ...options,
         headers: { ...watchHeaders(), ...(options.headers || {}) }
-    }, { retries: 1 });
+    }, { retries: 1, notifyReconnectOnFailure: false });
     if (res.status === 404) {
         const body = await res.json().catch(() => ({}));
         return { disabled: true, error: body.error || 'Watch tracking API disabled' };

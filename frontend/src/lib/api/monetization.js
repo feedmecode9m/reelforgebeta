@@ -9,7 +9,10 @@ export const ACCESS_MODES = [
 ];
 
 async function monetizationFetch(path, options = {}) {
-    const res = await fetchWithRetry(`${API_BASE_URL}${path}`, options, { retries: 1 });
+    const res = await fetchWithRetry(`${API_BASE_URL}${path}`, options, {
+        retries: 1,
+        notifyReconnectOnFailure: false
+    });
     if (res.status === 404) {
         const body = await res.json().catch(() => ({}));
         return { disabled: true, error: body.error || 'Monetization API disabled' };

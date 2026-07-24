@@ -14,7 +14,10 @@ function formatCurrency(cents, currency = 'USD') {
 
 async function revenueFetch(path, options = {}) {
     const method = options.method || 'GET';
-    const res = await fetchWithRetry(`${API_BASE_URL}${path}`, options, { retries: 1 });
+    const res = await fetchWithRetry(`${API_BASE_URL}${path}`, options, {
+        retries: 1,
+        notifyReconnectOnFailure: false
+    });
     const body = await res.json().catch(() => ({}));
     if (res.status === 404) {
         return { disabled: true, error: body.error || 'Revenue API disabled' };

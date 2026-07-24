@@ -1,7 +1,10 @@
 import { API_BASE_URL, fetchWithRetry } from '../api.js';
 
 async function platformFetch(path, options = {}) {
-    const res = await fetchWithRetry(`${API_BASE_URL}${path}`, options, { retries: 1 });
+    const res = await fetchWithRetry(`${API_BASE_URL}${path}`, options, {
+        retries: 1,
+        notifyReconnectOnFailure: false
+    });
     if (res.status === 404) {
         const body = await res.json().catch(() => ({}));
         return { disabled: true, error: body.error || 'Platform configuration disabled' };

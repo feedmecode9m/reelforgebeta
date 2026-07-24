@@ -27,7 +27,10 @@ export function logNotificationRead(detail = {}) {
 }
 
 async function notificationFetch(path, options = {}) {
-    const res = await fetchWithRetry(`${API_BASE_URL}${path}`, options, { retries: 1 });
+    const res = await fetchWithRetry(`${API_BASE_URL}${path}`, options, {
+        retries: 1,
+        notifyReconnectOnFailure: false
+    });
     if (res.status === 404) {
         const body = await res.json().catch(() => ({}));
         return { disabled: true, error: body.error || 'Notification API disabled' };
@@ -45,7 +48,7 @@ export async function fetchNotificationApiStatus() {
         const res = await fetchWithRetry(
             `${API_BASE_URL}/api/notifications/status`,
             { signal: AbortSignal.timeout(4000) },
-            { retries: 0, retryDelayMs: 250 }
+            { retries: 0, retryDelayMs: 250, notifyReconnectOnFailure: false }
         );
         if (res.status === 404) {
             const body = await res.json().catch(() => ({}));
