@@ -3,7 +3,7 @@ import { createLocalReel } from '../api/reelContract.js';
 import { deleteMediaFile, deleteReelById, fetchReadyReels } from '../api/media.js';
 import { filenameFromMediaRef } from '../vaultMedia.js';
 import { toRelativeMediaPath } from '../config.js';
-import { logDeletionPropagation, filterOutDeletedMedia, applyCanonicalDeleteClientEffects } from '../deletionSync.js';
+import { logDeletionPropagation, filterOutDeletedMedia, applyCanonicalDeleteClientEffects, recordDeletedMediaIds } from '../deletionSync.js';
 import { isStorageFull, wouldExceedQuota } from '../storage.js';
 import { isHeroAsset, filterNonHeroAssets } from '../hero/heroDomainGuard.js';
 import {
@@ -623,6 +623,12 @@ export function createAiCleanupAgent(deps) {
   } catch (apiError) { console.warn('⚠️ [VAULT DELETE] Backend API call failed:', apiError); }
   } else { console.warn('⚠️ [VAULT DELETE] No admin token or filename available, skipping backend deletion'); }
   if (!persistenceSuccess) {
+  recordDeletedMediaIds(videoId);
+  console.info('[VIDEO-SYNC-01] deleteVaultVideo:tombstone-before-sync', {
+    reelId: String(videoId),
+    reason: 'local_purge_fallback',
+    ts: new Date().toISOString()
+  });
   runClientMediaPurge({ filename: diskName, reelId: videoId, videoUrl: video?.url });
   }
   if (video.url && video.url.startsWith('blob:')) { URL.revokeObjectURL(video.url); resourceManager.revokeBlobUrl(video.url); }

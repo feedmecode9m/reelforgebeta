@@ -91,7 +91,8 @@ pruneFeedAgainstBackendVideos,
 diagnoseStalePlaceholders,
 applyCanonicalDeleteClientEffects,
 filterOutDeletedMedia,
-filterDeletedFromFeedMap
+filterDeletedFromFeedMap,
+isDeletedMediaId
 } from '../lib/deletionSync.js';
 import { normalizeReel, normalizeReels, createLocalReel, isVideoReel, assertReelContract } from '../lib/api/reelContract.js';
 import { resolveTheaterPlayback, logTheaterHandshake } from '../lib/media/theaterPlayback.js';
@@ -921,13 +922,43 @@ ts: new Date().toISOString()
 }
 function mergeVideoVaultEntries(existingEntries = [], incomingEntries = [], options = {}) {
 const { backendReachable = false } = options;
+const incoming = Array.isArray(incomingEntries) ? incomingEntries : [];
+/** VIDEO-SYNC-01: tombstoned canonical ids must never re-enter vault via catalog projection. */
+const rejectTombstonedVaultEntries = (entries, mergeMode) => {
+  const rejectedIds = [];
+  const kept = (Array.isArray(entries) ? entries : []).filter((entry) => {
+    if (!entry || typeof entry !== 'object') return true;
+    const id = String(entry.id || '').trim();
+    const personalId = String(entry.personal_video_id || '').trim();
+    if (id && isDeletedMediaId(id)) {
+      rejectedIds.push(id);
+      return false;
+    }
+    if (personalId && isDeletedMediaId(personalId)) {
+      rejectedIds.push(personalId);
+      return false;
+    }
+    return true;
+  });
+  if (rejectedIds.length) {
+    console.info('[VIDEO-SYNC-01] mergeVideoVaultEntries:tombstone-reject', {
+      mergeMode,
+      backendReachable,
+      rejectedIds: [...new Set(rejectedIds)],
+      incomingCount: entries.length,
+      keptCount: kept.length,
+      ts: new Date().toISOString()
+    });
+  }
+  return kept;
+};
 if (backendReachable) {
-  // Online: backend catalog projection wins; never keep local-only deleted rows.
-  return filterOutDeletedMedia(Array.isArray(incomingEntries) ? incomingEntries : []);
+  // Online: backend catalog projection wins, but reelforge_deleted_media_ids is authoritative.
+  return rejectTombstonedVaultEntries(incoming, 'backend-projection');
 }
 const merged = [];
 const seen = new Set();
-for (const entry of [...existingEntries, ...incomingEntries]) {
+for (const entry of [...existingEntries, ...incoming]) {
 if (!entry || typeof entry !== 'object') continue;
 if (isHeroAsset(entry)) {
   const id = String(entry?.id || '').trim();
@@ -946,7 +977,7 @@ if (!key || seen.has(key)) continue;
 seen.add(key);
 merged.push(entry);
 }
-return filterOutDeletedMedia(merged);
+return rejectTombstonedVaultEntries(merged, 'offline-merge');
 }
 let syncFromVaultInFlight = null;
 let lastSyncFromVaultAt = 0;
