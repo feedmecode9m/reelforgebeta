@@ -255,15 +255,18 @@ export async function authenticateAdmin(password) {
     }
 }
 
-export function getAdminAuthorizationHeader(token) {
-    if (!token) {
-        return {};
-    }
-
-    return {
-        Authorization: `Bearer ${token}`
-    };
-}
+export {
+    ADMIN_SESSION_TOKEN_KEY,
+    clearAdminSession,
+    getAdminAuthHeaders,
+    getAdminAuthorizationHeader,
+    getAdminToken,
+    handleAdminSessionExpired,
+    isInvalidSessionError,
+    maybeHandleInvalidAdminSession,
+    resetAdminSessionExpiredGuard,
+    setAdminSessionToken
+} from './adminSession.js';
 
 export async function apiRequest(
     endpoint,

@@ -57,7 +57,9 @@ function validateShelfPresentation() {
             realCount,
             displayCount: display.length,
             fillerCount,
-            ok: realCount === items.length && display.length === MIN_SHELF_PRESENTATION_COUNT
+            ok:
+                realCount === items.length &&
+                (realCount === 0 ? display.length === MIN_SHELF_PRESENTATION_COUNT : display.length === realCount)
         };
     });
 
@@ -86,19 +88,23 @@ async function main() {
     });
 
     const synthetic = validateShelfPresentation();
-    const allDisplayFive = rows.every((r) => r.displayCount === MIN_SHELF_PRESENTATION_COUNT);
+    const allDisplayValid = rows.every((r) =>
+        r.realCount === 0
+            ? r.displayCount === MIN_SHELF_PRESENTATION_COUNT
+            : r.displayCount === r.realCount && r.fillerCount === 0
+    );
     const allSyntheticOk = synthetic.every((r) => r.ok);
 
     console.info('[BG7S_VALIDATION]', {
         minVisible: MIN_SHELF_PRESENTATION_COUNT,
         catalogCount: catalog.length,
-        allDisplayFive,
+        allDisplayValid,
         allSyntheticOk,
         rows,
         synthetic
     });
 
-    if (!allDisplayFive || !allSyntheticOk) {
+    if (!allDisplayValid || !allSyntheticOk) {
         throw new Error('BG-7S shelf presentation validation failed');
     }
 }

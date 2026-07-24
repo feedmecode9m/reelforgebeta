@@ -1,0 +1,749 @@
+diff --git a/frontend/scripts/mission-bg-7s-shelf-presentation-validate.mjs b/frontend/scripts/mission-bg-7s-shelf-presentation-validate.mjs
+index d19678d..f39bfd1 100644
+--- a/frontend/scripts/mission-bg-7s-shelf-presentation-validate.mjs
++++ b/frontend/scripts/mission-bg-7s-shelf-presentation-validate.mjs
+@@ -57,7 +57,9 @@ function validateShelfPresentation() {
+             realCount,
+             displayCount: display.length,
+             fillerCount,
+-            ok: realCount === items.length && display.length === MIN_SHELF_PRESENTATION_COUNT
++            ok:
++                realCount === items.length &&
++                (realCount === 0 ? display.length === MIN_SHELF_PRESENTATION_COUNT : display.length === realCount)
+         };
+     });
+ 
+diff --git a/frontend/src/components/experiences/HeroExperience.svelte b/frontend/src/components/experiences/HeroExperience.svelte
+index 2ef47b5..8b4eabf 100644
+--- a/frontend/src/components/experiences/HeroExperience.svelte
++++ b/frontend/src/components/experiences/HeroExperience.svelte
+@@ -1384,11 +1384,7 @@ $: heroBadgeLabel = sanitizeViewer
+           );
+         }
+         const { uploadVideo } = await import('../../lib/api/media.js');
+-        const { getAdminAuthorizationHeader, API_BASE_URL } = await import('../../lib/api.js');
+-        const token =
+-          typeof window !== 'undefined'
+-            ? localStorage.getItem('reelforge_admin_session_token')
+-            : null;
++        const { getAdminAuthHeaders, API_BASE_URL } = await import('../../lib/api.js');
+         console.info('[BG7G_UPLOAD]', {
+           ts: new Date().toISOString(),
+           component: 'acceptHeroFile',
+@@ -1400,7 +1396,7 @@ $: heroBadgeLabel = sanitizeViewer
+           kind: 'video'
+         });
+         const created = await withTimeout(
+-          uploadVideo(file, getAdminAuthorizationHeader(token), {
++          uploadVideo(file, getAdminAuthHeaders(), {
+             title: derivedHeadline,
+             description: 'Hero background upload',
+             category: 'HERO'
+@@ -1511,13 +1507,9 @@ $: heroBadgeLabel = sanitizeViewer
+           );
+         }
+         const { uploadThumbnail } = await import('../../lib/api/media.js');
+-        const { getAdminAuthorizationHeader } = await import('../../lib/api.js');
+-        const token =
+-          typeof window !== 'undefined'
+-            ? localStorage.getItem('reelforge_admin_session_token')
+-            : null;
++        const { getAdminAuthHeaders } = await import('../../lib/api.js');
+         const created = await withTimeout(
+-          uploadThumbnail(file, getAdminAuthorizationHeader(token), {
++          uploadThumbnail(file, getAdminAuthHeaders(), {
+             title: derivedHeadline,
+             description: 'Hero background upload',
+             category: 'HERO'
+diff --git a/frontend/src/components/experiences/StudioExperience.svelte b/frontend/src/components/experiences/StudioExperience.svelte
+index 8ff4701..74a1406 100644
+--- a/frontend/src/components/experiences/StudioExperience.svelte
++++ b/frontend/src/components/experiences/StudioExperience.svelte
+@@ -1,7 +1,7 @@
+ <script>
+   import { get } from 'svelte/store';
+   import { onDestroy, tick } from 'svelte';
+-  import { authenticateAdmin } from '../../lib/api.js';
++  import { authenticateAdmin, getAdminAuthHeaders, getAdminToken, setAdminSessionToken } from '../../lib/api.js';
+   import {
+     fetchStudioStatus,
+     fetchStudioProjects,
+@@ -373,8 +373,7 @@
+     studioBulkDeleteResult = null;
+     uploadStatus.set(`🗑️ Bulk deleting ${idsToDelete.length} production${idsToDelete.length === 1 ? '' : 's'}…`);
+ 
+-    const token =
+-      typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
++    const token = getAdminToken();
+     if (!token) {
+       studioBulkDeleteResult = {
+         deletedCount: 0,
+@@ -389,8 +388,7 @@
+ 
+     const { deleteReelById } = await import('../../lib/api/media.js');
+     const { applyCanonicalDeleteClientEffects } = await import('../../lib/deletionSync.js');
+-    const { getAdminAuthorizationHeader } = await import('../../lib/api.js');
+-    const headers = getAdminAuthorizationHeader(token);
++    const headers = getAdminAuthHeaders();
+ 
+     /** @type {string[]} */
+     const deletedIds = [];
+@@ -466,8 +464,7 @@
+       `🏷️ Updating category to ${category} for ${idsToUpdate.length} production${idsToUpdate.length === 1 ? '' : 's'}…`
+     );
+ 
+-    const token =
+-      typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
++    const token = getAdminToken();
+     if (!token) {
+       studioBulkCategoryResult = {
+         updatedCount: 0,
+@@ -482,8 +479,7 @@
+     }
+ 
+     const { patchReelCategory } = await import('../../lib/api/media.js');
+-    const { getAdminAuthorizationHeader } = await import('../../lib/api.js');
+-    const headers = getAdminAuthorizationHeader(token);
++    const headers = getAdminAuthHeaders();
+ 
+     /** @type {string[]} */
+     const updatedIds = [];
+@@ -705,15 +701,17 @@
+           uploadStatus.set(`ERROR: ${validation.reason || 'Invalid video file'}`);
+           return;
+         }
+-        const token =
+-          typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
++        const token = getAdminToken();
++        if (!token) {
++          uploadStatus.set('❌ Admin authentication required');
++          return;
++        }
+         const { uploadMedia } = await import('../../lib/api/media.js');
+-        const { getAdminAuthorizationHeader } = await import('../../lib/api.js');
+         const formData = new FormData();
+         formData.append('video', file);
+         formData.append('title', title);
+         formData.append('category', targetCategory);
+-        await uploadMedia(formData, getAdminAuthorizationHeader(token));
++        await uploadMedia(formData, getAdminAuthHeaders());
+         uploadStatus.set(`✅ SUCCESS! Placed in ${targetCategory}`);
+         newTitle.set('');
+         videoSource.set('');
+@@ -789,7 +787,7 @@
+     try {
+       const result = await authenticateAdmin(password);
+       if (result.success) {
+-        storageSet('reelforge_admin_session_token', result.token || 'backend_token');
++        setAdminSessionToken(result.token || 'backend_token');
+         adminMode.set(true);
+         controlCenterOpen.set(true);
+         adminLoginError = '';
+@@ -804,7 +802,7 @@
+       console.warn('⚠️ Backend unreachable, attempting secure local dev fallback:', error.message);
+       const localPasswords = ['Gaff1505!', 'SMART_PRODUCTION', CONFIG.ADMIN_PASSWORD || 'admin123'];
+       if (localPasswords.includes(password)) {
+-        storageSet('reelforge_admin_session_token', 'dev_local_session');
++        setAdminSessionToken('dev_local_session');
+         adminMode.set(true);
+         controlCenterOpen.set(true);
+         adminLoginError = '';
+@@ -1039,11 +1037,13 @@
+       const file = new File([blob], filename, { type: blob.type || 'video/mp4' });
+       const formData = new FormData();
+       formData.append('video', file);
+-      const token =
+-        typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
++      const token = getAdminToken();
++      if (!token) {
++        uploadStatus.set('❌ Admin authentication required');
++        return;
++      }
+       const { uploadMedia } = await import('../../lib/api/media.js');
+-      const { getAdminAuthorizationHeader } = await import('../../lib/api.js');
+-      await uploadMedia(formData, getAdminAuthorizationHeader(token));
++      await uploadMedia(formData, getAdminAuthHeaders());
+       uploadStatus.set(`✅ Unveiled ${filename} to vault`);
+       await syncFromVault(true);
+     } catch (error) {
+diff --git a/frontend/src/components/experiences/VaultExperience.svelte b/frontend/src/components/experiences/VaultExperience.svelte
+index eb0130a..609e8db 100644
+--- a/frontend/src/components/experiences/VaultExperience.svelte
++++ b/frontend/src/components/experiences/VaultExperience.svelte
+@@ -28,6 +28,12 @@
+   import { reelToVaultEntry } from '../../lib/api/reelContract.js';
+   import { validateVideoFile } from '../../lib/runtime-guards.js';
+   import { API_BASE_URL, toRelativeMediaPath } from '../../lib/config.js';
++  import {
++    ADMIN_SESSION_TOKEN_KEY,
++    getAdminAuthHeaders,
++    getAdminToken,
++    isInvalidSessionError
++  } from '../../lib/api.js';
+   import { ALLOW_UI_PLACEHOLDERS } from '../../lib/mediaBootstrap.js';
+   import { fetchWithRetry } from '../../lib/api.js';
+   import { isHeroAsset } from '../../lib/hero/heroDomainGuard.js';
+@@ -164,9 +170,13 @@
+   }
+ 
+   function authHeaders() {
+-    const token =
+-      typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
+-    return token ? { Authorization: `Bearer ${token}` } : {};
++    return getAdminAuthHeaders();
++  }
++
++  let adminSessionReady = false;
++
++  function refreshAdminSessionReady() {
++    adminSessionReady = Boolean(getAdminToken());
+   }
+ 
+   async function fetchReadyReels() {
+@@ -285,7 +295,22 @@
+   }
+ 
+   onMount(async () => {
++    refreshAdminSessionReady();
++    const onSessionChange = () => refreshAdminSessionReady();
++    window.addEventListener('reelforge:admin-session-changed', onSessionChange);
++    window.addEventListener('AUTH_SESSION_EXPIRED', onSessionChange);
++    const onStorage = (event) => {
++      if (event.key === ADMIN_SESSION_TOKEN_KEY || event.key === null) {
++        refreshAdminSessionReady();
++      }
++    };
++    window.addEventListener('storage', onStorage);
+     await ensureThumbnailCanonicalization();
++    return () => {
++      window.removeEventListener('reelforge:admin-session-changed', onSessionChange);
++      window.removeEventListener('AUTH_SESSION_EXPIRED', onSessionChange);
++      window.removeEventListener('storage', onStorage);
++    };
+   });
+ 
+   $: thumbVaultSize = ($personalThumbnailCollection ?? []).filter(Boolean).length;
+@@ -1072,10 +1097,7 @@
+       const formData = new FormData();
+       formData.append('video', file);
+       formData.append('category', vaultUploadCategory || 'Trending');
+-      const token =
+-        typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
+-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+-      const response = await uploadMedia(formData, headers);
++      const response = await uploadMedia(formData, getAdminAuthHeaders());
+       console.info('[BG7G_UPLOAD]', {
+         ts: new Date().toISOString(),
+         component: 'handleVaultVideoDrop',
+@@ -1344,6 +1366,11 @@
+   export async function acceptPendingThumbnail() {
+     const pending = get(pendingThumbnail);
+     if (!pending) return;
++    if (!getAdminToken()) {
++      uploadStatus.set('Studio login required.');
++      resourceManager.setTimeout(() => uploadStatus.set('Standby'), 3000);
++      return;
++    }
+     const { file, preview, name } = pending;
+     pipelineDiag('UPLOAD', 'acceptPendingThumbnail', 'VaultExperience.svelte', {
+       fileName: name,
+@@ -1365,10 +1392,7 @@
+       result: 'upload_start'
+     });
+     try {
+-      const token =
+-        typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
+-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+-      const response = await uploadThumbnail(file, headers, {
++      const response = await uploadThumbnail(file, getAdminAuthHeaders(), {
+         title: name,
+         category: vaultUploadCategory || 'Trending'
+       });
+@@ -1460,6 +1484,11 @@
+       pendingThumbnail.set(null);
+     } catch (error) {
+       console.error('Upload failed:', error);
++      if (isInvalidSessionError(error)) {
++        uploadStatus.set('Studio session expired. Please sign in again.');
++      } else {
++        uploadStatus.set(`❌ Upload failed: ${error.message || 'check backend'}`);
++      }
+       pipelineDiag('UPLOAD', 'acceptPendingThumbnail', 'VaultExperience.svelte', {
+         fileName: name,
+         result: 'error',
+@@ -1471,7 +1500,6 @@
+         error: error?.message || String(error),
+         ts: new Date().toISOString()
+       });
+-      uploadStatus.set(`❌ Upload failed: ${error.message || 'check backend'}`);
+       vaultForensic('VAULT_UPLOAD_FAIL', {
+         vaultType: 'thumbnail',
+         fileName: name,
+@@ -1778,9 +1806,18 @@
+           className="pending-thumbnail"
+         />
+         <div class="pending-actions">
+-          <button class="accept-btn" on:click={acceptPendingThumbnail}>✅ ACCEPT</button>
++          <button
++            class="accept-btn"
++            disabled={!adminSessionReady}
++            on:click={acceptPendingThumbnail}
++          >
++            ✅ ACCEPT
++          </button>
+           <button class="reject-btn" on:click={rejectPendingThumbnail}>❌ REJECT</button>
+         </div>
++        {#if !adminSessionReady}
++          <p class="pending-login-hint">Studio login required.</p>
++        {/if}
+         <p class="pending-info">
+           {$pendingThumbnail?.name} • {($pendingThumbnail?.size / 1024).toFixed(0)} KB
+         </p>
+diff --git a/frontend/src/components/studio/HeroManagerPanel.svelte b/frontend/src/components/studio/HeroManagerPanel.svelte
+index c776ded..0d757ab 100644
+--- a/frontend/src/components/studio/HeroManagerPanel.svelte
++++ b/frontend/src/components/studio/HeroManagerPanel.svelte
+@@ -15,6 +15,7 @@
+     } from '../../lib/hero/heroIntelligence.js';
+     import { buildHeroAssetRegistry, isVideoHeroAssetType } from '../../lib/hero/heroAssetBridge.js';
+     import { deleteReelById, fetchReadyReels } from '../../lib/api/media.js';
++    import { getAdminAuthHeaders } from '../../lib/api.js';
+     import { applyCanonicalDeleteClientEffects } from '../../lib/deletionSync.js';
+     import { vaultForensic } from '../../lib/diagnostics/vaultForensics.js';
+ 
+@@ -118,9 +119,7 @@
+ 
+     const heroAssetRegistry = writable([]);
+     function authHeaders() {
+-        const token =
+-            typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
+-        return token ? { Authorization: `Bearer ${token}` } : {};
++        return getAdminAuthHeaders();
+     }
+ 
+     function normalizeComparablePath(value) {
+diff --git a/frontend/src/lib/api.js b/frontend/src/lib/api.js
+index 631dad1..0d128f9 100644
+--- a/frontend/src/lib/api.js
++++ b/frontend/src/lib/api.js
+@@ -255,15 +255,18 @@ export async function authenticateAdmin(password) {
+     }
+ }
+ 
+-export function getAdminAuthorizationHeader(token) {
+-    if (!token) {
+-        return {};
+-    }
+-
+-    return {
+-        Authorization: `Bearer ${token}`
+-    };
+-}
++export {
++    ADMIN_SESSION_TOKEN_KEY,
++    clearAdminSession,
++    getAdminAuthHeaders,
++    getAdminAuthorizationHeader,
++    getAdminToken,
++    handleAdminSessionExpired,
++    isInvalidSessionError,
++    maybeHandleInvalidAdminSession,
++    resetAdminSessionExpiredGuard,
++    setAdminSessionToken
++} from './adminSession.js';
+ 
+ export async function apiRequest(
+     endpoint,
+diff --git a/frontend/src/lib/api/media.js b/frontend/src/lib/api/media.js
+index c594ae2..1884cb7 100644
+--- a/frontend/src/lib/api/media.js
++++ b/frontend/src/lib/api/media.js
+@@ -1,4 +1,5 @@
+ import { API_BASE_URL, fetchWithRetry } from '../api.js';
++import { maybeHandleInvalidAdminSession } from '../adminSession.js';
+ import {
+     DIRECT_UPLOAD_BASE_URL,
+     SIGNED_UPLOADS_MIN_BYTES,
+@@ -200,6 +201,7 @@ async function uploadVideoSigned(file, headers = {}, meta = {}) {
+     });
+     if (!signResponse.ok) {
+         const err = await signResponse.json().catch(() => ({}));
++        maybeHandleInvalidAdminSession(signResponse, err, 'uploadVideoSigned:sign');
+         throw new Error(err.error || `Signed upload sign failed (${signResponse.status})`);
+     }
+     const signBody = await signResponse.json();
+@@ -257,6 +259,7 @@ async function uploadVideoSigned(file, headers = {}, meta = {}) {
+     });
+     if (!finalizeResponse.ok) {
+         const err = await finalizeResponse.json().catch(() => ({}));
++        maybeHandleInvalidAdminSession(finalizeResponse, err, 'uploadVideoSigned:finalize');
+         throw new Error(err.error || `Finalize reel failed (${finalizeResponse.status})`);
+     }
+ 
+@@ -405,6 +408,7 @@ export async function createReel(formData, headers = {}) {
+ 
+     if (!response.ok) {
+         const err = await response.json().catch(() => ({}));
++        maybeHandleInvalidAdminSession(response, err, 'createReel');
+         pipelineCheckpoint('POST_COMPLETED', {
+             status: response.status,
+             returnedId: err?.id ?? null
+diff --git a/frontend/src/lib/feed/fillShelfPresentation.js b/frontend/src/lib/feed/fillShelfPresentation.js
+index 5b51c30..08fbcd0 100644
+--- a/frontend/src/lib/feed/fillShelfPresentation.js
++++ b/frontend/src/lib/feed/fillShelfPresentation.js
+@@ -2,6 +2,11 @@
+ 
+ export const MIN_SHELF_PRESENTATION_COUNT = 5;
+ 
++/** BG-7K — layout-only shelf slots (never counted as episodes/assets). */
++export function isLayoutOnlyCard(item) {
++    return Boolean(item?.isPresentationOnly || item?.layoutOnly);
++}
++
+ /**
+  * @param {string} shelf
+  * @param {number} index
+@@ -11,6 +16,8 @@ export function createPresentationPlaceholder(shelf, index) {
+     return {
+         id: `presentation-placeholder-${shelf}-${index}`,
+         isPresentationOnly: true,
++        layoutOnly: true,
++        isPlaceholder: true,
+         selectable: false,
+         playable: false,
+         title: 'Coming Soon',
+@@ -29,6 +36,7 @@ export function isRealShelfCard(item) {
+     return Boolean(
+         item &&
+             !item.isPresentationOnly &&
++            !item.layoutOnly &&
+             !item.isPlaceholder &&
+             !item.isBlackStoriesPlaceholder
+     );
+@@ -45,6 +53,18 @@ export function fillShelfPresentation(items, shelf, minimumCount = MIN_SHELF_PRE
+     const real = (items || []).filter(isRealShelfCard);
+     const realCount = real.length;
+ 
++    // BG-7K: once any real asset exists, do not pad with presentation fillers.
++    if (realCount > 0) {
++        console.info('[BG7S_SHELF_FILL]', {
++            shelf,
++            realCount,
++            displayCount: realCount,
++            fillerCount: 0,
++            branch: 'bg7k_real_assets_no_padding'
++        });
++        return real;
++    }
++
+     if (realCount >= minimumCount) {
+         console.info('[BG7S_SHELF_FILL]', {
+             shelf,
+diff --git a/frontend/src/lib/hero/heroIntelligence.js b/frontend/src/lib/hero/heroIntelligence.js
+index 1c3c342..cca5787 100644
+--- a/frontend/src/lib/hero/heroIntelligence.js
++++ b/frontend/src/lib/hero/heroIntelligence.js
+@@ -1146,9 +1146,15 @@ export function normalizeHeroMode(mode) {
+  * @returns {Record<string, unknown>[]}
+  */
+ export function flattenFeedReels(feed) {
+-    if (Array.isArray(feed)) return feed.filter(Boolean);
++    if (Array.isArray(feed)) {
++        return feed.filter(
++            (reel) => reel && !reel.isPresentationOnly && !reel.layoutOnly
++        );
++    }
+     if (!feed || typeof feed !== 'object') return [];
+-    return Object.values(feed).flat().filter(Boolean);
++    return Object.values(feed)
++        .flat()
++        .filter((reel) => reel && !reel.isPresentationOnly && !reel.layoutOnly);
+ }
+ 
+ /**
+diff --git a/frontend/src/lib/mediaBootstrap.js b/frontend/src/lib/mediaBootstrap.js
+index e90118b..12d97c3 100644
+--- a/frontend/src/lib/mediaBootstrap.js
++++ b/frontend/src/lib/mediaBootstrap.js
+@@ -1,4 +1,4 @@
+-import { API_BASE_URL, checkBackendHealth, fetchWithRetry, getAdminAuthorizationHeader } from './api.js';
++import { API_BASE_URL, checkBackendHealth, fetchWithRetry, getAdminAuthHeaders } from './api.js';
+ import {
+     normalizeReels,
+     isVideoReel,
+@@ -36,10 +36,6 @@ export const ALLOW_UI_PLACEHOLDERS =
+ const THUMBNAIL_KEY = 'personal_thumbnails';
+ const VIDEO_VAULT_KEY = 'personal_video_vault';
+ 
+-function getAdminToken() {
+-    return typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
+-}
+-
+ function readVaultJson(key) {
+     if (typeof window === 'undefined') return [];
+     try {
+@@ -257,7 +253,7 @@ export async function hydrateVaultFromReels(thumbnailKey, videoVaultKey, options
+         pipelineDiag('BOOTSTRAP', 'hydrateVaultFromReels', 'mediaBootstrap.js', { result: 'fetch_reels_start' });
+         const res = await fetchWithRetry(
+             `${API_BASE_URL}/api/reels?t=${Date.now()}`,
+-            { headers: getAdminAuthorizationHeader(getAdminToken()) },
++            { headers: getAdminAuthHeaders() },
+             { retries: 2 }
+         );
+         pipelineDiag('RESPONSE', 'hydrateVaultFromReels', 'mediaBootstrap.js', {
+diff --git a/frontend/src/lib/security/securityAuditEngine.js b/frontend/src/lib/security/securityAuditEngine.js
+index f80cc07..3887d63 100644
+--- a/frontend/src/lib/security/securityAuditEngine.js
++++ b/frontend/src/lib/security/securityAuditEngine.js
+@@ -4,6 +4,7 @@
+  */
+ 
+ import { API_BASE_URL, BACKEND_URL } from '../config.js';
++import { getAdminToken } from '../adminSession.js';
+ import { PRESERVED_KEYS, getLocalStorageSize, STORAGE_LIMITS } from '../storage.js';
+ import { CREATE_REEL_URL, MEDIA_API } from '../api/media.js';
+ import { NOTIFICATION_STORAGE_KEY } from '../notifications/notificationCenter.js';
+@@ -302,7 +303,7 @@ function probeRuntimeRisks() {
+     if (typeof window === 'undefined') return runtime;
+ 
+     try {
+-        const adminToken = localStorage.getItem('reelforge_admin_session_token');
++        const adminToken = getAdminToken();
+         if (adminToken) {
+             runtime.push({
+                 id: 'runtime-admin-token-present',
+diff --git a/frontend/src/lib/viewer/aiCleanupAgent.js b/frontend/src/lib/viewer/aiCleanupAgent.js
+index 59a7dd9..9203038 100644
+--- a/frontend/src/lib/viewer/aiCleanupAgent.js
++++ b/frontend/src/lib/viewer/aiCleanupAgent.js
+@@ -1,6 +1,7 @@
+ import { get } from 'svelte/store';
+ import { createLocalReel } from '../api/reelContract.js';
+ import { deleteMediaFile, deleteReelById, fetchReadyReels } from '../api/media.js';
++import { getAdminAuthHeaders, getAdminToken } from '../api.js';
+ import { filenameFromMediaRef } from '../vaultMedia.js';
+ import { toRelativeMediaPath } from '../config.js';
+ import { logDeletionPropagation, filterOutDeletedMedia, applyCanonicalDeleteClientEffects, recordDeletedMediaIds } from '../deletionSync.js';
+@@ -37,8 +38,7 @@ export function createAiCleanupAgent(deps) {
+ 
+   const AI_CLEANUP_AGENT = {
+   authHeaders() {
+-  const token = typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
+-  return token ? { Authorization: `Bearer ${token}` } : {};
++  return getAdminAuthHeaders();
+   },
+   mediaBasename(value) {
+   return String(value || '').split('/').pop()?.split('?')[0] || '';
+@@ -486,7 +486,7 @@ export function createAiCleanupAgent(deps) {
+   });
+   try {
+   const beforeCount = collection.length;
+-  const token = typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
++  const token = getAdminToken();
+   let persistenceSuccess = false;
+   if (token) {
+   console.log(`🗑️ [THUMB DELETE] Calling backend API for: ${reelId || thumbnailKey}`);
+@@ -607,7 +607,7 @@ export function createAiCleanupAgent(deps) {
+   });
+   try {
+   const beforeCount = vault.length;
+-  const token = typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
++  const token = getAdminToken();
+   const diskName = filenameFromMediaRef(video) || video.name;
+   let persistenceSuccess = false;
+   if (token && diskName) {
+diff --git a/frontend/src/lib/viewer/contentAgents.js b/frontend/src/lib/viewer/contentAgents.js
+index c8ba6e8..b36a652 100644
+--- a/frontend/src/lib/viewer/contentAgents.js
++++ b/frontend/src/lib/viewer/contentAgents.js
+@@ -182,9 +182,9 @@ export function createContentAgents(deps) {
+     ts: new Date().toISOString()
+   });
+   logDeletionPropagation('production-delete-start', { reelId, filename });
+-  const token = typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
+-  if (!token) throw new Error('Admin authentication required. Please log in as admin first.');
+-  await deleteReelById(reelId, { Authorization: `Bearer ${token}` });
++  const { getAdminAuthHeaders, getAdminToken } = await import('../api.js');
++  if (!getAdminToken()) throw new Error('Admin authentication required. Please log in as admin first.');
++  await deleteReelById(reelId, getAdminAuthHeaders());
+   console.info('[VAULT-DELETE-TRACE] ProductionAgent.deleteReel:api_ok', {
+     reelId: String(reelId),
+     ts: new Date().toISOString()
+diff --git a/frontend/src/viewer/viewerContext.js b/frontend/src/viewer/viewerContext.js
+index fa83afe..e61d3e2 100644
+--- a/frontend/src/viewer/viewerContext.js
++++ b/frontend/src/viewer/viewerContext.js
+@@ -2,7 +2,7 @@
+  * Viewer runtime context — Phase 26 decomposition.
+  */
+ import { writable, derived, get } from 'svelte/store';
+-import { API_BASE_URL, BACKEND_URL, checkBackendHealth, fetchWithRetry, getAdminAuthorizationHeader, notifyBackendReconnecting } from '../lib/api.js';
++import { API_BASE_URL, BACKEND_URL, checkBackendHealth, fetchWithRetry, getAdminAuthHeaders, clearAdminSession, notifyBackendReconnecting } from '../lib/api.js';
+ import { deleteMediaFile, uploadMedia, uploadThumbnail } from '../lib/api/media.js';
+ import {
+ initReelshortProfile,
+@@ -448,7 +448,7 @@ const reels = [];
+ const fromNormalized = get(normalizedFeed);
+ for (const cat of Object.keys(fromNormalized)) {
+ for (const reel of fromNormalized[cat] || []) {
+-if (reel?.id) reels.push(reel);
++if (reel?.id && !reel.isPresentationOnly && !reel.layoutOnly) reels.push(reel);
+ }
+ }
+ return reels;
+@@ -845,11 +845,6 @@ const getImg = (reel, category, i) => UIAgent.getImg?.(reel, category, i) || get
+ // ==========================================
+ // Vault → Studio drag-and-drop
+ // ==========================================
+-function getAdminToken() {
+-return typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
+-}
+-// ==========================================
+-// Thumbnail Handlers (for personal vault)
+ // ==========================================
+ // ==========================================
+ // Upload Handler with Faces
+@@ -1057,7 +1052,7 @@ normalizeReels(JSON.parse(localStorage.getItem(CONFIG.VAULT_KEY) || '[]'), 'loca
+ } else {
+ const res = await fetchWithRetry(
+ `${API_BASE_URL}/api/reels?t=${Date.now()}`,
+-{ headers: getAdminAuthorizationHeader(getAdminToken()) },
++{ headers: getAdminAuthHeaders() },
+ { retries: 3, retryDelayMs: 750 }
+ );
+ // Any successful catalog response means backend is reachable for reconcile.
+@@ -1525,7 +1520,7 @@ function toggleControlCenter() {
+ }
+ function logout() {
+   adminMode.set(false); controlCenterOpen.set(false);
+-  localStorage.removeItem('reelforge_admin_session_token');
++  clearAdminSession();
+   uploadStatus.set('🔐 Admin logged out');
+   resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
+ }
+@@ -1588,6 +1583,15 @@ function checkIsVideo(file) {
+ async function mountViewer() {
+ viewerHydrationReady.set(false);
+ pipelineCheckpoint('VIEWER_BOOTSTRAP', { phase: 'start' });
++if (typeof window !== 'undefined') {
++  const onAuthSessionExpired = () => {
++    adminMode.set(false);
++    controlCenterOpen.set(false);
++    uploadStatus.set('Studio session expired. Please sign in again.');
++    resourceManager.setTimeout(() => uploadStatus.set('Standby'), 4000);
++  };
++  resourceManager.addEventListener(window, 'AUTH_SESSION_EXPIRED', onAuthSessionExpired);
++}
+ initSeriesMetadata();
+ initStudioSync();
+ initWorkflowEngine();
+diff --git a/frontend/src/lib/adminSession.js b/frontend/src/lib/adminSession.js
+new file mode 100644
+index 0000000..dbad1e9
+--- /dev/null
++++ b/frontend/src/lib/adminSession.js
+@@ -0,0 +1,103 @@
++/** Canonical admin session token provider (no config imports — safe for Node tests). */
++
++/** Canonical admin session key — single source of truth for token storage. */
++export const ADMIN_SESSION_TOKEN_KEY = 'reelforge_admin_session_token';
++
++let adminSessionExpiredHandled = false;
++
++function hasBrowserStorage() {
++    return typeof globalThis !== 'undefined' && globalThis.window?.localStorage;
++}
++
++/** @returns {string | null} */
++export function getAdminToken() {
++    if (!hasBrowserStorage()) return null;
++    const token = globalThis.window.localStorage.getItem(ADMIN_SESSION_TOKEN_KEY);
++    const trimmed = token ? String(token).trim() : '';
++    return trimmed || null;
++}
++
++/** @param {string} token */
++export function setAdminSessionToken(token) {
++    if (!hasBrowserStorage() || !token) return;
++    adminSessionExpiredHandled = false;
++    globalThis.window.localStorage.setItem(ADMIN_SESSION_TOKEN_KEY, String(token));
++    globalThis.window.dispatchEvent(
++        new CustomEvent('reelforge:admin-session-changed', { detail: { present: true } })
++    );
++}
++
++/**
++ * Clear admin session token and notify listeners.
++ * @param {{ emitExpired?: boolean; source?: string }} [options]
++ */
++export function clearAdminSession(options = {}) {
++    if (hasBrowserStorage()) {
++        globalThis.window.localStorage.removeItem(ADMIN_SESSION_TOKEN_KEY);
++        globalThis.window.dispatchEvent(
++            new CustomEvent('reelforge:admin-session-changed', { detail: { present: false } })
++        );
++        if (options.emitExpired) {
++            globalThis.window.dispatchEvent(
++                new CustomEvent('AUTH_SESSION_EXPIRED', {
++                    detail: { source: options.source || 'clearAdminSession' }
++                })
++            );
++        }
++    }
++}
++
++/**
++ * Handle stale/invalid backend session exactly once per expiry event.
++ * @param {string} [source]
++ */
++export function handleAdminSessionExpired(source = 'unknown') {
++    if (adminSessionExpiredHandled) return;
++    adminSessionExpiredHandled = true;
++    clearAdminSession({ emitExpired: true, source });
++}
++
++/** Reset expiry guard after a fresh login (called from setAdminSessionToken). */
++export function resetAdminSessionExpiredGuard() {
++    adminSessionExpiredHandled = false;
++}
++
++/**
++ * @param {Response} response
++ * @param {{ error?: string }} [errBody]
++ * @param {string} [source]
++ * @returns {boolean} true when invalid_session was handled
++ */
++export function maybeHandleInvalidAdminSession(response, errBody = {}, source = 'api') {
++    if (response?.status === 401 && errBody?.error === 'invalid_session') {
++        if (adminSessionExpiredHandled) return false;
++        handleAdminSessionExpired(source);
++        return true;
++    }
++    return false;
++}
++
++/** @param {unknown} errorOrMessage */
++export function isInvalidSessionError(errorOrMessage) {
++    const message = String(
++        typeof errorOrMessage === 'string'
++            ? errorOrMessage
++            : errorOrMessage?.message || errorOrMessage?.error || errorOrMessage || ''
++    );
++    return message === 'invalid_session' || /invalid_session/i.test(message);
++}
++
++export function getAdminAuthorizationHeader(token) {
++    if (!token) {
++        return {};
++    }
++
++    return {
++        Authorization: `Bearer ${token}`
++    };
++}
++
++/** Canonical Authorization headers for mutating admin API calls. */
++export function getAdminAuthHeaders() {
++    return getAdminAuthorizationHeader(getAdminToken());
++}

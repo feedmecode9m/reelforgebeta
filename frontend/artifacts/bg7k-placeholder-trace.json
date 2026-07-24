@@ -1,0 +1,162 @@
+{
+  "mission": "BG-7K-ROOTCAUSE",
+  "part": "C",
+  "generatedAt": "2026-07-24T23:30:00.000Z",
+  "userScenario": {
+    "realMp4InVault": 1,
+    "observedPlaceholderEpisodeCards": "multiple (typically 4 presentation fillers per shelf row)"
+  },
+  "counts": {
+    "realReelCountVault": 1,
+    "realFeedCardsAfterBuildHomeFeed": 1,
+    "presentationPlaceholderCount": 4,
+    "demoPlaceholderCountIfFeedEmpty": 3,
+    "blackStoriesGeneratedPerShelf": 11,
+    "blackStoriesVisibleAfterPresentationFilter": 0,
+    "mockSeriesEpisodeMetadataCount": 12,
+    "expectedShelfDisplayCards": 5,
+    "expectedRealOnlyDisplay": 1
+  },
+  "firstPlaceholderBoundary": {
+    "layer": "frontend",
+    "file": "frontend/src/lib/feed/fillShelfPresentation.js",
+    "function": "fillShelfPresentation",
+    "lines": "44-71",
+    "constant": "MIN_SHELF_PRESENTATION_COUNT = 5",
+    "formula": "fillerCount = MIN_SHELF_PRESENTATION_COUNT - realCount; with realCount=1 → fillerCount=4"
+  },
+  "traceSurfaces": {
+    "homeFeed": {
+      "entry": "syncFromVault → buildHomeFeed",
+      "file": "frontend/src/viewer/viewerContext.js",
+      "line": 1112,
+      "placeholderInjection": {
+        "function": "applyPlaceholderFallbackIfEmpty",
+        "file": "frontend/src/lib/feed/buildHomeFeed.js",
+        "line": 243,
+        "trigger": "countRealFeedCards === 0",
+        "count": 3,
+        "source": "demoPlaceholders.js buildDemoFeedReels"
+      }
+    },
+    "vault": {
+      "demoHtmlCards": {
+        "file": "frontend/src/components/experiences/VaultExperience.svelte",
+        "line": 1997,
+        "trigger": "shouldShowVaultDemoCards (zero videos AND zero thumbs)",
+        "count": 3
+      },
+      "gridPlaceholder": {
+        "file": "frontend/src/components/experiences/VaultExperience.svelte",
+        "line": 1825,
+        "trigger": "missing reel.url or image onerror"
+      }
+    },
+    "studio": {
+      "mockSeriesCatalog": {
+        "file": "frontend/src/lib/series/mockSeriesData.js",
+        "line": 7,
+        "episodeCount": 12,
+        "seriesIds": ["series-neon-vengeance", "series-vault-chronicles", "series-trending-shorts"]
+      },
+      "backendHierarchy": {
+        "enabled": false,
+        "probe": "GET /api/studio/status → Studio hierarchy disabled"
+      }
+    },
+    "shelfRender": {
+      "component": "ReelshortExperience.svelte",
+      "function": "getShelfDisplayItems",
+      "line": 220,
+      "pipeline": [
+        "UIAgent.fillLandscape (uiAgent.js:44)",
+        "fillShelfPresentation (fillShelfPresentation.js:44)"
+      ]
+    }
+  },
+  "placeholderGenerators": [
+    {
+      "name": "buildDemoFeedReels",
+      "file": "frontend/src/lib/demoPlaceholders.js",
+      "line": 31,
+      "isPlaceholder": true,
+      "defaultCount": 3,
+      "origin": "hardcoded demo content"
+    },
+    {
+      "name": "injectPlaceholderCards",
+      "file": "frontend/src/lib/feed/buildHomeFeed.js",
+      "line": 229,
+      "trigger": "empty feed after buildHomeFeed"
+    },
+    {
+      "name": "fillBlackStoriesUntilVideo",
+      "file": "frontend/src/lib/viewer/contentAgents.js",
+      "line": 247,
+      "isBlackStoriesPlaceholder": true,
+      "targetCount": "TARGET_LANDSCAPE_COUNT (12) - existingCount"
+    },
+    {
+      "name": "createPresentationPlaceholder",
+      "file": "frontend/src/lib/feed/fillShelfPresentation.js",
+      "line": 10,
+      "isPresentationOnly": true,
+      "title": "Coming Soon"
+    },
+    {
+      "name": "fetchReadyReels demo fallback",
+      "file": "frontend/src/lib/api/media.js",
+      "line": 662,
+      "trigger": "no ready reels in API response"
+    },
+    {
+      "name": "MOCK_SERIES_CATALOG episodes",
+      "file": "frontend/src/lib/series/mockSeriesData.js",
+      "line": 7,
+      "origin": "mock series metadata"
+    }
+  ],
+  "placeholderGenerationGraph": {
+    "nodes": [
+      "GET /api/reels",
+      "buildHomeFeed",
+      "applyPlaceholderFallbackIfEmpty",
+      "feed store reelforge_feed",
+      "ReelshortExperience.getShelfDisplayItems",
+      "UIAgent.fillLandscape",
+      "BLACK_STORIES_MATCHER.fillBlackStoriesUntilVideo",
+      "fillShelfPresentation",
+      "createPresentationPlaceholder",
+      "DOM shelf row"
+    ],
+    "edges": [
+      ["GET /api/reels", "buildHomeFeed"],
+      ["buildHomeFeed", "feed store reelforge_feed"],
+      ["buildHomeFeed cardCount=0", "applyPlaceholderFallbackIfEmpty"],
+      ["applyPlaceholderFallbackIfEmpty", "3 demo placeholders"],
+      ["feed store reelforge_feed", "ReelshortExperience.getShelfDisplayItems"],
+      ["ReelshortExperience.getShelfDisplayItems", "UIAgent.fillLandscape"],
+      ["UIAgent.fillLandscape", "BLACK_STORIES_MATCHER.fillBlackStoriesUntilVideo"],
+      ["UIAgent.fillLandscape", "fillShelfPresentation"],
+      ["fillShelfPresentation realCount=1", "4 createPresentationPlaceholder"],
+      ["fillShelfPresentation", "DOM shelf row"]
+    ]
+  },
+  "originsVerdict": {
+    "seriesMetadata": "12 mock episodes — Studio/Series UI, not the 4 shelf slots",
+    "workflowEngine": "Studio task cards only",
+    "mockData": "demo-1/2/3 when feed empty",
+    "releasePlanner": "Release center cards — not home shelf",
+    "hardcodedDemoContent": "VaultExperience HTML demo block when vault empty",
+    "cachedLocalStorage": "reelforge_feed can cache; syncFromVault rebuilds",
+    "backendCatalog": "Many catalog rows globally; vault merge shows 1 MP4 to user",
+    "primaryCauseOfFourCards": "fillShelfPresentation MIN_SHELF_PRESENTATION_COUNT padding"
+  },
+  "flagsReference": {
+    "isPlaceholder": "demo feed cards",
+    "isBlackStoriesPlaceholder": "AI story filler from contentAgents",
+    "isPresentationOnly": "BG-7S shelf padding Coming Soon slots",
+    "isPersonalVideo": "real vault MP4 in feed",
+    "matchEpisodeLabel": "buildHomeFeed sets match 🎬 EPISODE on real video cards only"
+  }
+}

@@ -1,4 +1,5 @@
 import { API_BASE_URL, fetchWithRetry } from '../api.js';
+import { maybeHandleInvalidAdminSession } from '../adminSession.js';
 import {
     DIRECT_UPLOAD_BASE_URL,
     SIGNED_UPLOADS_MIN_BYTES,
@@ -200,6 +201,7 @@ async function uploadVideoSigned(file, headers = {}, meta = {}) {
     });
     if (!signResponse.ok) {
         const err = await signResponse.json().catch(() => ({}));
+        maybeHandleInvalidAdminSession(signResponse, err, 'uploadVideoSigned:sign');
         throw new Error(err.error || `Signed upload sign failed (${signResponse.status})`);
     }
     const signBody = await signResponse.json();
@@ -257,6 +259,7 @@ async function uploadVideoSigned(file, headers = {}, meta = {}) {
     });
     if (!finalizeResponse.ok) {
         const err = await finalizeResponse.json().catch(() => ({}));
+        maybeHandleInvalidAdminSession(finalizeResponse, err, 'uploadVideoSigned:finalize');
         throw new Error(err.error || `Finalize reel failed (${finalizeResponse.status})`);
     }
 
@@ -405,6 +408,7 @@ export async function createReel(formData, headers = {}) {
 
     if (!response.ok) {
         const err = await response.json().catch(() => ({}));
+        maybeHandleInvalidAdminSession(response, err, 'createReel');
         pipelineCheckpoint('POST_COMPLETED', {
             status: response.status,
             returnedId: err?.id ?? null

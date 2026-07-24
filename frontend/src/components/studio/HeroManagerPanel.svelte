@@ -15,6 +15,7 @@
     } from '../../lib/hero/heroIntelligence.js';
     import { buildHeroAssetRegistry, isVideoHeroAssetType } from '../../lib/hero/heroAssetBridge.js';
     import { deleteReelById, fetchReadyReels } from '../../lib/api/media.js';
+    import { getAdminAuthHeaders } from '../../lib/api.js';
     import { applyCanonicalDeleteClientEffects } from '../../lib/deletionSync.js';
     import { vaultForensic } from '../../lib/diagnostics/vaultForensics.js';
 
@@ -118,9 +119,7 @@
 
     const heroAssetRegistry = writable([]);
     function authHeaders() {
-        const token =
-            typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
-        return token ? { Authorization: `Bearer ${token}` } : {};
+        return getAdminAuthHeaders();
     }
 
     function normalizeComparablePath(value) {

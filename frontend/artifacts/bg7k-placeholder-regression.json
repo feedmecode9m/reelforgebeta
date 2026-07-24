@@ -1,0 +1,32 @@
+{
+  "mission": "BG-7K-HARDEN",
+  "generatedAt": "2026-07-24T23:51:13.606Z",
+  "tests": [
+    {
+      "id": "one_real_card_count",
+      "pass": true,
+      "detail": "display=1"
+    },
+    {
+      "id": "one_real_no_layout_fillers",
+      "pass": true,
+      "detail": "fillers=0"
+    },
+    {
+      "id": "one_real_is_real_shelf",
+      "pass": true,
+      "detail": "all real"
+    },
+    {
+      "id": "zero_uploads_padded",
+      "pass": true,
+      "detail": "display=5"
+    },
+    {
+      "id": "zero_uploads_layout_markers",
+      "pass": true,
+      "detail": "layout-only markers"
+    }
+  ],
+  "pass": true
+}

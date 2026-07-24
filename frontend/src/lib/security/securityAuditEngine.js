@@ -4,6 +4,7 @@
  */
 
 import { API_BASE_URL, BACKEND_URL } from '../config.js';
+import { getAdminToken } from '../adminSession.js';
 import { PRESERVED_KEYS, getLocalStorageSize, STORAGE_LIMITS } from '../storage.js';
 import { CREATE_REEL_URL, MEDIA_API } from '../api/media.js';
 import { NOTIFICATION_STORAGE_KEY } from '../notifications/notificationCenter.js';
@@ -302,7 +303,7 @@ function probeRuntimeRisks() {
     if (typeof window === 'undefined') return runtime;
 
     try {
-        const adminToken = localStorage.getItem('reelforge_admin_session_token');
+        const adminToken = getAdminToken();
         if (adminToken) {
             runtime.push({
                 id: 'runtime-admin-token-present',

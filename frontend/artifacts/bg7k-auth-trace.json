@@ -1,0 +1,170 @@
+{
+  "mission": "BG-7K-ROOTCAUSE",
+  "part": "B",
+  "generatedAt": "2026-07-24T23:30:00.000Z",
+  "tokenKey": "reelforge_admin_session_token",
+  "storage": "localStorage",
+  "firstFailingBoundary": {
+    "layer": "backend",
+    "file": "backend/src/auth.rs",
+    "function": "require_admin",
+    "lines": "52-64",
+    "middleware": "AdminAuthMiddleware::call",
+    "middlewareLines": "134-148",
+    "typicalHttpStatus": 401,
+    "typicalErrors": ["missing_authorization", "invalid_session"]
+  },
+  "producers": [
+    {
+      "function": "attemptAdminLogin",
+      "file": "frontend/src/components/experiences/StudioExperience.svelte",
+      "line": 783,
+      "writes": "reelforge_admin_session_token",
+      "values": ["rf_{uuid} from POST /admin/auth", "dev_local_session on offline fallback"]
+    },
+    {
+      "function": "admin_auth",
+      "file": "backend/src/handlers.rs",
+      "line": 167,
+      "writes": "AdminSessionStore in-memory HashMap",
+      "values": ["rf_{uuid}"]
+    }
+  ],
+  "consumers": [
+    {
+      "function": "acceptPendingThumbnail",
+      "file": "frontend/src/components/experiences/VaultExperience.svelte",
+      "line": 1368,
+      "readMethod": "localStorage.getItem inline",
+      "usesGetAdminAuthorizationHeader": false,
+      "mutatingEndpoint": "POST /api/reels"
+    },
+    {
+      "function": "syncFromVault",
+      "file": "frontend/src/viewer/viewerContext.js",
+      "line": 1060,
+      "readMethod": "getAdminToken + getAdminAuthorizationHeader",
+      "mutatingEndpoint": "GET /api/reels (read-only, token optional)"
+    },
+    {
+      "function": "authHeaders",
+      "file": "frontend/src/lib/viewer/aiCleanupAgent.js",
+      "line": 40,
+      "mutatingEndpoint": "DELETE /api/reels/{id}"
+    },
+    {
+      "function": "attemptAdminLogin",
+      "file": "frontend/src/components/experiences/StudioExperience.svelte",
+      "line": 790,
+      "mutatingEndpoint": "POST /admin/auth"
+    }
+  ],
+  "logout": {
+    "function": "logout",
+    "file": "frontend/src/viewer/viewerContext.js",
+    "line": 1526,
+    "action": "localStorage.removeItem('reelforge_admin_session_token')"
+  },
+  "sessionRefresh": {
+    "exists": false,
+    "ttlSecondsBackend": "86400 default (ADMIN_SESSION_TTL_SECONDS env)",
+    "ttlCheckLocation": "backend/src/auth.rs AdminSessionStore.validate",
+    "clientExpiryCheck": false
+  },
+  "bearerExtraction": {
+    "function": "extract_bearer",
+    "file": "backend/src/auth.rs",
+    "line": 156,
+    "prefix": "Bearer (case-insensitive)"
+  },
+  "devLocalSessionBypass": {
+    "function": "is_dev_local_session_token",
+    "file": "backend/src/auth.rs",
+    "line": 171,
+    "allowedWhen": "non-production env only",
+    "tokenValue": "dev_local_session",
+    "worksOnRailway": false
+  },
+  "401Sources": [
+    {
+      "error": "missing_authorization",
+      "origin": "backend",
+      "file": "backend/src/auth.rs",
+      "line": 57,
+      "condition": "No Authorization header on mutating route"
+    },
+    {
+      "error": "invalid_session",
+      "origin": "backend",
+      "file": "backend/src/auth.rs",
+      "line": 63,
+      "condition": "Bearer present but not in AdminSessionStore and not dev_local on prod"
+    }
+  ],
+  "liveProbes": [
+    {
+      "url": "https://reelforge-deploy-production.up.railway.app/api/reels",
+      "method": "POST",
+      "authorization": null,
+      "status": 401,
+      "body": { "error": "missing_authorization" }
+    },
+    {
+      "url": "https://reelforge-deploy-production.up.railway.app/api/reels",
+      "method": "POST",
+      "authorization": "Bearer invalid_token_xyz",
+      "status": 401,
+      "body": { "error": "invalid_session" }
+    },
+    {
+      "url": "https://reelforge-deploy-production.up.railway.app/api/reels",
+      "method": "POST",
+      "authorization": "Bearer dev_local_session",
+      "status": 401,
+      "body": { "error": "invalid_session" }
+    },
+    {
+      "url": "https://reelforge-deploy-production.up.railway.app/admin/auth",
+      "method": "POST",
+      "body": { "password": "Gaff1505!" },
+      "status": 200,
+      "body": { "success": true, "token": "rf_8a6f61cf-45ab-432c-882a-03b548361f17" }
+    },
+    {
+      "url": "https://reelforge-deploy-production.up.railway.app/api/reels",
+      "method": "POST",
+      "authorization": "Bearer rf_8a6f61cf-45ab-432c-882a-03b548361f17",
+      "status": 202,
+      "bodySummary": "thumbnail accepted, status ready, thumbnailUrl under /thumbs/"
+    }
+  ],
+  "failureModeVerdict": {
+    "frontendLostTokenMidRequest": false,
+    "backendRejectedToken": true,
+    "tokenNeverSent": true,
+    "explanation": "Accept reads token once before fetch. Empty localStorage yields missing_authorization. Stale rf_* or dev_local_session on Railway yields invalid_session. No refresh path."
+  },
+  "authenticationGraph": {
+    "nodes": [
+      "StudioExperience.attemptAdminLogin",
+      "POST /admin/auth",
+      "AdminSessionStore.register",
+      "localStorage.reelforge_admin_session_token",
+      "VaultExperience.acceptPendingThumbnail",
+      "createReel.fetch POST /api/reels",
+      "AdminAuthMiddleware",
+      "require_admin",
+      "handlers.create_reel"
+    ],
+    "edges": [
+      ["attemptAdminLogin", "POST /admin/auth"],
+      ["POST /admin/auth", "AdminSessionStore.register"],
+      ["POST /admin/auth", "localStorage.reelforge_admin_session_token"],
+      ["acceptPendingThumbnail", "localStorage.reelforge_admin_session_token"],
+      ["acceptPendingThumbnail", "createReel.fetch POST /api/reels"],
+      ["createReel.fetch POST /api/reels", "AdminAuthMiddleware"],
+      ["AdminAuthMiddleware", "require_admin"],
+      ["require_admin", "handlers.create_reel"]
+    ]
+  }
+}

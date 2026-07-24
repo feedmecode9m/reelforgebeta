@@ -1146,9 +1146,15 @@ export function normalizeHeroMode(mode) {
  * @returns {Record<string, unknown>[]}
  */
 export function flattenFeedReels(feed) {
-    if (Array.isArray(feed)) return feed.filter(Boolean);
+    if (Array.isArray(feed)) {
+        return feed.filter(
+            (reel) => reel && !reel.isPresentationOnly && !reel.layoutOnly
+        );
+    }
     if (!feed || typeof feed !== 'object') return [];
-    return Object.values(feed).flat().filter(Boolean);
+    return Object.values(feed)
+        .flat()
+        .filter((reel) => reel && !reel.isPresentationOnly && !reel.layoutOnly);
 }
 
 /**

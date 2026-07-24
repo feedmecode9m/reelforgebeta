@@ -28,6 +28,12 @@
   import { reelToVaultEntry } from '../../lib/api/reelContract.js';
   import { validateVideoFile } from '../../lib/runtime-guards.js';
   import { API_BASE_URL, toRelativeMediaPath } from '../../lib/config.js';
+  import {
+    ADMIN_SESSION_TOKEN_KEY,
+    getAdminAuthHeaders,
+    getAdminToken,
+    isInvalidSessionError
+  } from '../../lib/api.js';
   import { ALLOW_UI_PLACEHOLDERS } from '../../lib/mediaBootstrap.js';
   import { fetchWithRetry } from '../../lib/api.js';
   import { isHeroAsset } from '../../lib/hero/heroDomainGuard.js';
@@ -164,9 +170,13 @@
   }
 
   function authHeaders() {
-    const token =
-      typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
-    return token ? { Authorization: `Bearer ${token}` } : {};
+    return getAdminAuthHeaders();
+  }
+
+  let adminSessionReady = false;
+
+  function refreshAdminSessionReady() {
+    adminSessionReady = Boolean(getAdminToken());
   }
 
   async function fetchReadyReels() {
@@ -285,7 +295,22 @@
   }
 
   onMount(async () => {
+    refreshAdminSessionReady();
+    const onSessionChange = () => refreshAdminSessionReady();
+    window.addEventListener('reelforge:admin-session-changed', onSessionChange);
+    window.addEventListener('AUTH_SESSION_EXPIRED', onSessionChange);
+    const onStorage = (event) => {
+      if (event.key === ADMIN_SESSION_TOKEN_KEY || event.key === null) {
+        refreshAdminSessionReady();
+      }
+    };
+    window.addEventListener('storage', onStorage);
     await ensureThumbnailCanonicalization();
+    return () => {
+      window.removeEventListener('reelforge:admin-session-changed', onSessionChange);
+      window.removeEventListener('AUTH_SESSION_EXPIRED', onSessionChange);
+      window.removeEventListener('storage', onStorage);
+    };
   });
 
   $: thumbVaultSize = ($personalThumbnailCollection ?? []).filter(Boolean).length;
@@ -1072,10 +1097,7 @@
       const formData = new FormData();
       formData.append('video', file);
       formData.append('category', vaultUploadCategory || 'Trending');
-      const token =
-        typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      const response = await uploadMedia(formData, headers);
+      const response = await uploadMedia(formData, getAdminAuthHeaders());
       console.info('[BG7G_UPLOAD]', {
         ts: new Date().toISOString(),
         component: 'handleVaultVideoDrop',
@@ -1344,6 +1366,11 @@
   export async function acceptPendingThumbnail() {
     const pending = get(pendingThumbnail);
     if (!pending) return;
+    if (!getAdminToken()) {
+      uploadStatus.set('Studio login required.');
+      resourceManager.setTimeout(() => uploadStatus.set('Standby'), 3000);
+      return;
+    }
     const { file, preview, name } = pending;
     pipelineDiag('UPLOAD', 'acceptPendingThumbnail', 'VaultExperience.svelte', {
       fileName: name,
@@ -1365,10 +1392,7 @@
       result: 'upload_start'
     });
     try {
-      const token =
-        typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      const response = await uploadThumbnail(file, headers, {
+      const response = await uploadThumbnail(file, getAdminAuthHeaders(), {
         title: name,
         category: vaultUploadCategory || 'Trending'
       });
@@ -1460,6 +1484,11 @@
       pendingThumbnail.set(null);
     } catch (error) {
       console.error('Upload failed:', error);
+      if (isInvalidSessionError(error)) {
+        uploadStatus.set('Studio session expired. Please sign in again.');
+      } else {
+        uploadStatus.set(`❌ Upload failed: ${error.message || 'check backend'}`);
+      }
       pipelineDiag('UPLOAD', 'acceptPendingThumbnail', 'VaultExperience.svelte', {
         fileName: name,
         result: 'error',
@@ -1471,7 +1500,6 @@
         error: error?.message || String(error),
         ts: new Date().toISOString()
       });
-      uploadStatus.set(`❌ Upload failed: ${error.message || 'check backend'}`);
       vaultForensic('VAULT_UPLOAD_FAIL', {
         vaultType: 'thumbnail',
         fileName: name,
@@ -1778,9 +1806,18 @@
           className="pending-thumbnail"
         />
         <div class="pending-actions">
-          <button class="accept-btn" on:click={acceptPendingThumbnail}>✅ ACCEPT</button>
+          <button
+            class="accept-btn"
+            disabled={!adminSessionReady}
+            on:click={acceptPendingThumbnail}
+          >
+            ✅ ACCEPT
+          </button>
           <button class="reject-btn" on:click={rejectPendingThumbnail}>❌ REJECT</button>
         </div>
+        {#if !adminSessionReady}
+          <p class="pending-login-hint">Studio login required.</p>
+        {/if}
         <p class="pending-info">
           {$pendingThumbnail?.name} • {($pendingThumbnail?.size / 1024).toFixed(0)} KB
         </p>

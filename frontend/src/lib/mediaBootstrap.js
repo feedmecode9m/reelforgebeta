@@ -1,4 +1,4 @@
-import { API_BASE_URL, checkBackendHealth, fetchWithRetry, getAdminAuthorizationHeader } from './api.js';
+import { API_BASE_URL, checkBackendHealth, fetchWithRetry, getAdminAuthHeaders } from './api.js';
 import {
     normalizeReels,
     isVideoReel,
@@ -35,10 +35,6 @@ export const ALLOW_UI_PLACEHOLDERS =
 
 const THUMBNAIL_KEY = 'personal_thumbnails';
 const VIDEO_VAULT_KEY = 'personal_video_vault';
-
-function getAdminToken() {
-    return typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
-}
 
 function readVaultJson(key) {
     if (typeof window === 'undefined') return [];
@@ -257,7 +253,7 @@ export async function hydrateVaultFromReels(thumbnailKey, videoVaultKey, options
         pipelineDiag('BOOTSTRAP', 'hydrateVaultFromReels', 'mediaBootstrap.js', { result: 'fetch_reels_start' });
         const res = await fetchWithRetry(
             `${API_BASE_URL}/api/reels?t=${Date.now()}`,
-            { headers: getAdminAuthorizationHeader(getAdminToken()) },
+            { headers: getAdminAuthHeaders() },
             { retries: 2 }
         );
         pipelineDiag('RESPONSE', 'hydrateVaultFromReels', 'mediaBootstrap.js', {

@@ -1,6 +1,7 @@
 import { get } from 'svelte/store';
 import { createLocalReel } from '../api/reelContract.js';
 import { deleteMediaFile, deleteReelById, fetchReadyReels } from '../api/media.js';
+import { getAdminAuthHeaders, getAdminToken } from '../api.js';
 import { filenameFromMediaRef } from '../vaultMedia.js';
 import { toRelativeMediaPath } from '../config.js';
 import { logDeletionPropagation, filterOutDeletedMedia, applyCanonicalDeleteClientEffects, recordDeletedMediaIds } from '../deletionSync.js';
@@ -37,8 +38,7 @@ export function createAiCleanupAgent(deps) {
 
   const AI_CLEANUP_AGENT = {
   authHeaders() {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  return getAdminAuthHeaders();
   },
   mediaBasename(value) {
   return String(value || '').split('/').pop()?.split('?')[0] || '';
@@ -486,7 +486,7 @@ export function createAiCleanupAgent(deps) {
   });
   try {
   const beforeCount = collection.length;
-  const token = typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
+  const token = getAdminToken();
   let persistenceSuccess = false;
   if (token) {
   console.log(`🗑️ [THUMB DELETE] Calling backend API for: ${reelId || thumbnailKey}`);
@@ -607,7 +607,7 @@ export function createAiCleanupAgent(deps) {
   });
   try {
   const beforeCount = vault.length;
-  const token = typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
+  const token = getAdminToken();
   const diskName = filenameFromMediaRef(video) || video.name;
   let persistenceSuccess = false;
   if (token && diskName) {

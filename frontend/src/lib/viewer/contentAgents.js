@@ -182,9 +182,9 @@ export function createContentAgents(deps) {
     ts: new Date().toISOString()
   });
   logDeletionPropagation('production-delete-start', { reelId, filename });
-  const token = typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
-  if (!token) throw new Error('Admin authentication required. Please log in as admin first.');
-  await deleteReelById(reelId, { Authorization: `Bearer ${token}` });
+  const { getAdminAuthHeaders, getAdminToken } = await import('../api.js');
+  if (!getAdminToken()) throw new Error('Admin authentication required. Please log in as admin first.');
+  await deleteReelById(reelId, getAdminAuthHeaders());
   console.info('[VAULT-DELETE-TRACE] ProductionAgent.deleteReel:api_ok', {
     reelId: String(reelId),
     ts: new Date().toISOString()

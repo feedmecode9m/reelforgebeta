@@ -2,7 +2,7 @@
  * Viewer runtime context — Phase 26 decomposition.
  */
 import { writable, derived, get } from 'svelte/store';
-import { API_BASE_URL, BACKEND_URL, checkBackendHealth, fetchWithRetry, getAdminAuthorizationHeader, notifyBackendReconnecting } from '../lib/api.js';
+import { API_BASE_URL, BACKEND_URL, checkBackendHealth, fetchWithRetry, getAdminAuthHeaders, clearAdminSession, notifyBackendReconnecting } from '../lib/api.js';
 import { deleteMediaFile, uploadMedia, uploadThumbnail } from '../lib/api/media.js';
 import {
 initReelshortProfile,
@@ -448,7 +448,7 @@ const reels = [];
 const fromNormalized = get(normalizedFeed);
 for (const cat of Object.keys(fromNormalized)) {
 for (const reel of fromNormalized[cat] || []) {
-if (reel?.id) reels.push(reel);
+if (reel?.id && !reel.isPresentationOnly && !reel.layoutOnly) reels.push(reel);
 }
 }
 return reels;
@@ -845,11 +845,6 @@ const getImg = (reel, category, i) => UIAgent.getImg?.(reel, category, i) || get
 // ==========================================
 // Vault → Studio drag-and-drop
 // ==========================================
-function getAdminToken() {
-return typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
-}
-// ==========================================
-// Thumbnail Handlers (for personal vault)
 // ==========================================
 // ==========================================
 // Upload Handler with Faces
@@ -1057,7 +1052,7 @@ normalizeReels(JSON.parse(localStorage.getItem(CONFIG.VAULT_KEY) || '[]'), 'loca
 } else {
 const res = await fetchWithRetry(
 `${API_BASE_URL}/api/reels?t=${Date.now()}`,
-{ headers: getAdminAuthorizationHeader(getAdminToken()) },
+{ headers: getAdminAuthHeaders() },
 { retries: 3, retryDelayMs: 750 }
 );
 // Any successful catalog response means backend is reachable for reconcile.
@@ -1525,7 +1520,7 @@ function toggleControlCenter() {
 }
 function logout() {
   adminMode.set(false); controlCenterOpen.set(false);
-  localStorage.removeItem('reelforge_admin_session_token');
+  clearAdminSession();
   uploadStatus.set('🔐 Admin logged out');
   resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
 }
@@ -1588,6 +1583,15 @@ function checkIsVideo(file) {
 async function mountViewer() {
 viewerHydrationReady.set(false);
 pipelineCheckpoint('VIEWER_BOOTSTRAP', { phase: 'start' });
+if (typeof window !== 'undefined') {
+  const onAuthSessionExpired = () => {
+    adminMode.set(false);
+    controlCenterOpen.set(false);
+    uploadStatus.set('Studio session expired. Please sign in again.');
+    resourceManager.setTimeout(() => uploadStatus.set('Standby'), 4000);
+  };
+  resourceManager.addEventListener(window, 'AUTH_SESSION_EXPIRED', onAuthSessionExpired);
+}
 initSeriesMetadata();
 initStudioSync();
 initWorkflowEngine();

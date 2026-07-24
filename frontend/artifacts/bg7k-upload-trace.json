@@ -1,0 +1,239 @@
+{
+  "mission": "BG-7K-ROOTCAUSE",
+  "part": "A",
+  "generatedAt": "2026-07-24T23:30:00.000Z",
+  "note": "Requested symbols acceptThumbnail/acceptVaultItem do not exist. Actual path documented.",
+  "symbolMapping": {
+    "acceptThumbnail": "acceptPendingThumbnail",
+    "acceptVaultItem": null,
+    "uploadVideoForThumbnailAccept": false
+  },
+  "firstFailingBoundary": {
+    "step": 8,
+    "function": "require_admin",
+    "file": "backend/src/auth.rs",
+    "line": 52,
+    "httpStatus": 401,
+    "error": "missing_authorization | invalid_session",
+    "reachedCreateReelHandler": false
+  },
+  "executionSteps": [
+    {
+      "step": 1,
+      "function": "Accept button on:click",
+      "file": "frontend/src/components/experiences/VaultExperience.svelte",
+      "line": 1781,
+      "arguments": { "handler": "acceptPendingThumbnail" },
+      "authorizationHeader": null,
+      "return": "calls acceptPendingThumbnail",
+      "exception": null
+    },
+    {
+      "step": 2,
+      "function": "acceptPendingThumbnail",
+      "file": "frontend/src/components/experiences/VaultExperience.svelte",
+      "line": 1344,
+      "arguments": {
+        "pending": "get(pendingThumbnail) → { file, preview, name }"
+      },
+      "authorizationHeader": null,
+      "sessionTokenSource": "localStorage key reelforge_admin_session_token at line 1368-1370",
+      "return": "void Promise",
+      "exception": "early return if !pending"
+    },
+    {
+      "step": 3,
+      "function": "token + headers build",
+      "file": "frontend/src/components/experiences/VaultExperience.svelte",
+      "line": 1368,
+      "arguments": {
+        "token": "localStorage.getItem('reelforge_admin_session_token')"
+      },
+      "authorizationHeader": "present only if token truthy: { Authorization: `Bearer ${token}` }",
+      "authorizationHeaderWhenLoggedOut": {},
+      "tokenExpiredCheck": false,
+      "tokenRefresh": false,
+      "return": "headers object",
+      "exception": null
+    },
+    {
+      "step": 4,
+      "function": "uploadThumbnail",
+      "file": "frontend/src/lib/api/media.js",
+      "line": 441,
+      "arguments": {
+        "file": "pending.file",
+        "headers": "from step 3",
+        "meta": { "title": "name", "category": "vaultUploadCategory || Trending" }
+      },
+      "authorizationHeader": "passed through unchanged",
+      "return": "createReel(formData, headers)",
+      "exception": null
+    },
+    {
+      "step": 5,
+      "function": "createReel",
+      "file": "frontend/src/lib/api/media.js",
+      "line": 293,
+      "arguments": {
+        "formData": "thumbnail field + title + category",
+        "headers": "from step 3"
+      },
+      "authorizationHeader": "fetch headers only — no merge with defaults",
+      "return": "CreatedReelResponse from processIngestAcceptedResponse",
+      "exception": "Error(uploadPolicy.reason) | Error(err.error) | network/CORS error"
+    },
+    {
+      "step": 6,
+      "function": "enforceUploadPolicy",
+      "file": "frontend/src/lib/security/securityPolicyEngine.js",
+      "line": 216,
+      "arguments": { "operation": "create_reel" },
+      "authorizationHeader": "n/a",
+      "return": "{ allowed: true, throttleMs: 0 } unless Sentinel lock",
+      "exception": "blocked_by_policy if uploadLocked"
+    },
+    {
+      "step": 7,
+      "function": "fetch POST /api/reels",
+      "file": "frontend/src/lib/api/media.js",
+      "line": 374,
+      "arguments": {
+        "url": "${API_BASE_URL}/api/reels",
+        "method": "POST",
+        "body": "FormData multipart"
+      },
+      "authorizationHeader": "from step 3 — often absent",
+      "return": "Response",
+      "exception": "network Error on CORS/fetch failure"
+    },
+    {
+      "step": 8,
+      "function": "AdminAuthMiddleware::call → require_admin",
+      "file": "backend/src/auth.rs",
+      "line": 134,
+      "arguments": {
+        "method": "POST",
+        "path": "/api/reels"
+      },
+      "authorizationHeader": "required for mutating routes",
+      "return": "401 JSON OR pass to handler",
+      "exception": null,
+      "invalid_sessionOrigin": "backend",
+      "missing_authorizationOrigin": "backend"
+    },
+    {
+      "step": 9,
+      "function": "createReel HTTP error handler",
+      "file": "frontend/src/lib/api/media.js",
+      "line": 406,
+      "arguments": { "response.ok": false },
+      "authorizationHeader": "n/a",
+      "return": "throws Error",
+      "exception": "Error(err.error || `Create reel failed (${status})`)"
+    },
+    {
+      "step": 10,
+      "function": "handlers::create_reel",
+      "file": "backend/src/handlers.rs",
+      "line": 186,
+      "arguments": { "payload": "Multipart" },
+      "authorizationHeader": "already validated",
+      "return": "202/200 JSON reel",
+      "exception": null,
+      "reachableOnlyWhenAuthPasses": true
+    },
+    {
+      "step": 11,
+      "function": "processIngestAcceptedResponse",
+      "file": "frontend/src/lib/api/media.js",
+      "line": 52,
+      "arguments": { "body": "JSON", "httpStatus": 202 },
+      "authorizationHeader": "n/a",
+      "return": "normalized reel with thumbnailUrl",
+      "exception": "Ingestion accepted but no reel id"
+    },
+    {
+      "step": 12,
+      "function": "acceptPendingThumbnail path validation",
+      "file": "frontend/src/components/experiences/VaultExperience.svelte",
+      "line": 1383,
+      "arguments": {
+        "thumbPath": "toRelativeMediaPath(thumbnailUrl|thumbnailPath|url)"
+      },
+      "authorizationHeader": "n/a",
+      "return": "continues accept flow",
+      "exception": "Error Invalid upload response if !thumbPath.startsWith('/thumbs/')",
+      "secondaryBoundary": true
+    },
+    {
+      "step": 13,
+      "function": "acceptPendingThumbnail catch",
+      "file": "frontend/src/components/experiences/VaultExperience.svelte",
+      "line": 1461,
+      "arguments": { "error": "from step 5-12" },
+      "authorizationHeader": "n/a",
+      "return": "uploadStatus ❌ Upload failed: {message}",
+      "exception": "logged to console"
+    }
+  ],
+  "liveProbes": {
+    "withoutAuth": {
+      "status": 401,
+      "body": { "error": "missing_authorization" }
+    },
+    "withValidRfToken": {
+      "status": 202,
+      "bodyFields": ["id", "status", "videoUrl", "thumbnailUrl", "pollUrl"],
+      "thumbnailUrlPattern": "/thumbs/{uuid}.png"
+    }
+  },
+  "surfaces": {
+    "local5173": {
+      "apiBaseUrl": "empty string → Vite proxy /api",
+      "devLocalSessionWorks": "only if local backend non-production",
+      "typicalFailure": "missing_authorization or invalid_session same as prod when hitting Railway"
+    },
+    "netlifyProd": {
+      "url": "https://strong-lolly-a9fcb4.netlify.app",
+      "apiBaseUrl": "same-origin /api proxy to Railway",
+      "typicalFailure": "missing_authorization without Studio login; invalid_session after Railway restart"
+    }
+  },
+  "executionGraph": {
+    "nodes": [
+      "VaultExperience:1781 Accept click",
+      "acceptPendingThumbnail:1344",
+      "localStorage token read:1368",
+      "uploadThumbnail media.js:441",
+      "createReel media.js:293",
+      "enforceUploadPolicy",
+      "fetch POST /api/reels",
+      "AdminAuthMiddleware auth.rs:134",
+      "handlers::create_reel",
+      "processIngestAcceptedResponse",
+      "thumbPath /thumbs/ validate",
+      "appendThumbnailVaultEntry",
+      "syncFromVault"
+    ]
+  },
+  "secondaryFailures": [
+    {
+      "name": "reconcileThumbnailVault purge after accept",
+      "file": "frontend/src/lib/viewer/thumbnailVault.js",
+      "line": 395,
+      "trigger": "syncFromVault post-accept"
+    },
+    {
+      "name": "HTTP 202 forces poll branch even when status ready",
+      "file": "frontend/src/lib/api/media.js",
+      "line": 53
+    }
+  ],
+  "recommendedMinimalFix": [
+    "Use getAdminAuthorizationHeader(getAdminToken()) in acceptPendingThumbnail",
+    "Block Accept UI when token missing; prompt Studio login",
+    "On 401 invalid_session clear token and prompt re-login",
+    "Optional: persist AdminSessionStore server-side on Railway"
+  ]
+}

@@ -1384,11 +1384,7 @@ $: heroBadgeLabel = sanitizeViewer
           );
         }
         const { uploadVideo } = await import('../../lib/api/media.js');
-        const { getAdminAuthorizationHeader, API_BASE_URL } = await import('../../lib/api.js');
-        const token =
-          typeof window !== 'undefined'
-            ? localStorage.getItem('reelforge_admin_session_token')
-            : null;
+        const { getAdminAuthHeaders, API_BASE_URL } = await import('../../lib/api.js');
         console.info('[BG7G_UPLOAD]', {
           ts: new Date().toISOString(),
           component: 'acceptHeroFile',
@@ -1400,7 +1396,7 @@ $: heroBadgeLabel = sanitizeViewer
           kind: 'video'
         });
         const created = await withTimeout(
-          uploadVideo(file, getAdminAuthorizationHeader(token), {
+          uploadVideo(file, getAdminAuthHeaders(), {
             title: derivedHeadline,
             description: 'Hero background upload',
             category: 'HERO'
@@ -1511,13 +1507,9 @@ $: heroBadgeLabel = sanitizeViewer
           );
         }
         const { uploadThumbnail } = await import('../../lib/api/media.js');
-        const { getAdminAuthorizationHeader } = await import('../../lib/api.js');
-        const token =
-          typeof window !== 'undefined'
-            ? localStorage.getItem('reelforge_admin_session_token')
-            : null;
+        const { getAdminAuthHeaders } = await import('../../lib/api.js');
         const created = await withTimeout(
-          uploadThumbnail(file, getAdminAuthorizationHeader(token), {
+          uploadThumbnail(file, getAdminAuthHeaders(), {
             title: derivedHeadline,
             description: 'Hero background upload',
             category: 'HERO'

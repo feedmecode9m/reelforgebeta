@@ -2,6 +2,11 @@
 
 export const MIN_SHELF_PRESENTATION_COUNT = 5;
 
+/** BG-7K — layout-only shelf slots (never counted as episodes/assets). */
+export function isLayoutOnlyCard(item) {
+    return Boolean(item?.isPresentationOnly || item?.layoutOnly);
+}
+
 /**
  * @param {string} shelf
  * @param {number} index
@@ -11,6 +16,8 @@ export function createPresentationPlaceholder(shelf, index) {
     return {
         id: `presentation-placeholder-${shelf}-${index}`,
         isPresentationOnly: true,
+        layoutOnly: true,
+        isPlaceholder: true,
         selectable: false,
         playable: false,
         title: 'Coming Soon',
@@ -29,6 +36,7 @@ export function isRealShelfCard(item) {
     return Boolean(
         item &&
             !item.isPresentationOnly &&
+            !item.layoutOnly &&
             !item.isPlaceholder &&
             !item.isBlackStoriesPlaceholder
     );
@@ -44,6 +52,18 @@ export function isRealShelfCard(item) {
 export function fillShelfPresentation(items, shelf, minimumCount = MIN_SHELF_PRESENTATION_COUNT) {
     const real = (items || []).filter(isRealShelfCard);
     const realCount = real.length;
+
+    // BG-7K: once any real asset exists, do not pad with presentation fillers.
+    if (realCount > 0) {
+        console.info('[BG7S_SHELF_FILL]', {
+            shelf,
+            realCount,
+            displayCount: realCount,
+            fillerCount: 0,
+            branch: 'bg7k_real_assets_no_padding'
+        });
+        return real;
+    }
 
     if (realCount >= minimumCount) {
         console.info('[BG7S_SHELF_FILL]', {

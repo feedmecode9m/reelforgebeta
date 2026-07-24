@@ -1,7 +1,7 @@
 <script>
   import { get } from 'svelte/store';
   import { onDestroy, tick } from 'svelte';
-  import { authenticateAdmin } from '../../lib/api.js';
+  import { authenticateAdmin, getAdminAuthHeaders, getAdminToken, setAdminSessionToken } from '../../lib/api.js';
   import {
     fetchStudioStatus,
     fetchStudioProjects,
@@ -373,8 +373,7 @@
     studioBulkDeleteResult = null;
     uploadStatus.set(`🗑️ Bulk deleting ${idsToDelete.length} production${idsToDelete.length === 1 ? '' : 's'}…`);
 
-    const token =
-      typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
+    const token = getAdminToken();
     if (!token) {
       studioBulkDeleteResult = {
         deletedCount: 0,
@@ -389,8 +388,7 @@
 
     const { deleteReelById } = await import('../../lib/api/media.js');
     const { applyCanonicalDeleteClientEffects } = await import('../../lib/deletionSync.js');
-    const { getAdminAuthorizationHeader } = await import('../../lib/api.js');
-    const headers = getAdminAuthorizationHeader(token);
+    const headers = getAdminAuthHeaders();
 
     /** @type {string[]} */
     const deletedIds = [];
@@ -466,8 +464,7 @@
       `🏷️ Updating category to ${category} for ${idsToUpdate.length} production${idsToUpdate.length === 1 ? '' : 's'}…`
     );
 
-    const token =
-      typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
+    const token = getAdminToken();
     if (!token) {
       studioBulkCategoryResult = {
         updatedCount: 0,
@@ -482,8 +479,7 @@
     }
 
     const { patchReelCategory } = await import('../../lib/api/media.js');
-    const { getAdminAuthorizationHeader } = await import('../../lib/api.js');
-    const headers = getAdminAuthorizationHeader(token);
+    const headers = getAdminAuthHeaders();
 
     /** @type {string[]} */
     const updatedIds = [];
@@ -705,15 +701,17 @@
           uploadStatus.set(`ERROR: ${validation.reason || 'Invalid video file'}`);
           return;
         }
-        const token =
-          typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
+        const token = getAdminToken();
+        if (!token) {
+          uploadStatus.set('❌ Admin authentication required');
+          return;
+        }
         const { uploadMedia } = await import('../../lib/api/media.js');
-        const { getAdminAuthorizationHeader } = await import('../../lib/api.js');
         const formData = new FormData();
         formData.append('video', file);
         formData.append('title', title);
         formData.append('category', targetCategory);
-        await uploadMedia(formData, getAdminAuthorizationHeader(token));
+        await uploadMedia(formData, getAdminAuthHeaders());
         uploadStatus.set(`✅ SUCCESS! Placed in ${targetCategory}`);
         newTitle.set('');
         videoSource.set('');
@@ -789,7 +787,7 @@
     try {
       const result = await authenticateAdmin(password);
       if (result.success) {
-        storageSet('reelforge_admin_session_token', result.token || 'backend_token');
+        setAdminSessionToken(result.token || 'backend_token');
         adminMode.set(true);
         controlCenterOpen.set(true);
         adminLoginError = '';
@@ -804,7 +802,7 @@
       console.warn('⚠️ Backend unreachable, attempting secure local dev fallback:', error.message);
       const localPasswords = ['Gaff1505!', 'SMART_PRODUCTION', CONFIG.ADMIN_PASSWORD || 'admin123'];
       if (localPasswords.includes(password)) {
-        storageSet('reelforge_admin_session_token', 'dev_local_session');
+        setAdminSessionToken('dev_local_session');
         adminMode.set(true);
         controlCenterOpen.set(true);
         adminLoginError = '';
@@ -1039,11 +1037,13 @@
       const file = new File([blob], filename, { type: blob.type || 'video/mp4' });
       const formData = new FormData();
       formData.append('video', file);
-      const token =
-        typeof window !== 'undefined' ? localStorage.getItem('reelforge_admin_session_token') : null;
+      const token = getAdminToken();
+      if (!token) {
+        uploadStatus.set('❌ Admin authentication required');
+        return;
+      }
       const { uploadMedia } = await import('../../lib/api/media.js');
-      const { getAdminAuthorizationHeader } = await import('../../lib/api.js');
-      await uploadMedia(formData, getAdminAuthorizationHeader(token));
+      await uploadMedia(formData, getAdminAuthHeaders());
       uploadStatus.set(`✅ Unveiled ${filename} to vault`);
       await syncFromVault(true);
     } catch (error) {
