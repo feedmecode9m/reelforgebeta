@@ -6,6 +6,7 @@ use sqlx::{Pool, Postgres};
 use uuid::Uuid;
 
 use crate::handlers;
+use crate::create_reel_diag::{self, CreateReel400Log, CreateReelRequestMeta};
 use crate::media_seed;
 use crate::media_validator;
 use crate::reel_contract::{upload_image, upload_video, UploadResponse};
@@ -133,7 +134,9 @@ fn validate_bytes(
     }
 
     if !media_validator::is_valid_video_container(bytes) {
-        return Err("Invalid video file: MP4/MOV must have 'ftyp' at bytes 4-7".to_string());
+        return Err(
+            "Invalid video file: MP4/MOV must have ISO ftyp or QuickTime moov/mdat header".to_string(),
+        );
     }
 
     media_validator::validate_video_bytes(bytes, filename).map_err(|e| e.to_string())?;
@@ -301,12 +304,16 @@ pub struct ParsedReelForm {
     pub title: Option<String>,
     pub description: Option<String>,
     pub category: Option<String>,
+    pub episode_id: Option<String>,
     pub video: Option<(String, Vec<u8>)>,
     pub thumbnail: Option<(String, Vec<u8>)>,
 }
 
 /// Read all multipart parts (video, thumbnail/image, title, description, category).
-pub async fn parse_reel_multipart(payload: &mut Multipart) -> Result<ParsedReelForm, HttpResponse> {
+pub async fn parse_reel_multipart(
+    payload: &mut Multipart,
+    request_meta: CreateReelRequestMeta,
+) -> Result<ParsedReelForm, HttpResponse> {
     crate::pipeline_diag::pipeline_diag(
         "MEDIA_API",
         "parse_reel_multipart",
@@ -319,15 +326,26 @@ pub async fn parse_reel_multipart(payload: &mut Multipart) -> Result<ParsedReelF
         title: None,
         description: None,
         category: None,
+        episode_id: None,
         video: None,
         thumbnail: None,
     };
+    let mut seen_fields: Vec<String> = Vec::new();
 
     while let Some(item) = payload.next().await {
         let mut field = match item {
             Ok(f) => f,
             Err(e) => {
-                return Err(HttpResponse::BadRequest().body(format!("Multipart error: {}", e)));
+                return Err(create_reel_diag::bad_request_create_reel(
+                    CreateReel400Log {
+                        multipart_fields: seen_fields,
+                        request_meta: request_meta.clone(),
+                        validation_boundary: "parse_reel_multipart",
+                        cause: format!("multipart_read_error: {e}"),
+                        ..CreateReel400Log::default()
+                    },
+                    format!("Multipart error: {e}"),
+                ));
             }
         };
 
@@ -335,13 +353,23 @@ pub async fn parse_reel_multipart(payload: &mut Multipart) -> Result<ParsedReelF
             .content_disposition()
             .and_then(|cd| cd.get_name().map(|s| s.to_string()))
             .unwrap_or_default();
+        seen_fields.push(field_name.clone());
 
         let mut bytes = Vec::new();
         while let Some(chunk) = field.next().await {
             match chunk {
                 Ok(data) => bytes.extend_from_slice(&data),
                 Err(e) => {
-                    return Err(HttpResponse::BadRequest().body(format!("Read error: {}", e)));
+                    return Err(create_reel_diag::bad_request_create_reel(
+                        CreateReel400Log {
+                            multipart_fields: seen_fields,
+                            request_meta: request_meta.clone(),
+                            validation_boundary: "parse_reel_multipart",
+                            cause: format!("multipart_chunk_read_error: {e}"),
+                            ..CreateReel400Log::default()
+                        },
+                        format!("Read error: {e}"),
+                    ));
                 }
             }
         }
@@ -352,18 +380,41 @@ pub async fn parse_reel_multipart(payload: &mut Multipart) -> Result<ParsedReelF
                     .content_disposition()
                     .and_then(|cd| cd.get_filename().map(|s| s.to_string()))
                     .unwrap_or_else(|| format!("upload_{}.mp4", Uuid::new_v4()));
+                let content_type = field.content_type().map(|m| m.to_string());
                 let filename = match safe_original_filename(&original) {
                     Ok(name) => name,
                     Err(reason) => {
-                        return Err(HttpResponse::BadRequest().json(serde_json::json!({
-                            "error": reason
-                        })));
+                        return Err(create_reel_diag::bad_request_create_reel(
+                            CreateReel400Log {
+                                filename: Some(original),
+                                content_type,
+                                multipart_fields: seen_fields,
+                                category: form.category.clone(),
+                                file_size: Some(bytes.len() as u64),
+                                request_meta: request_meta.clone(),
+                                validation_boundary: "parse_reel_multipart",
+                                cause: format!("invalid_filename: {reason}"),
+                                ..CreateReel400Log::default()
+                            },
+                            reason,
+                        ));
                     }
                 };
                 if let Err(reason) = validate_bytes(false, &bytes, &filename) {
-                    return Err(
-                        HttpResponse::BadRequest().json(serde_json::json!({ "error": reason }))
-                    );
+                    return Err(create_reel_diag::bad_request_create_reel(
+                        CreateReel400Log {
+                            filename: Some(filename.clone()),
+                            content_type,
+                            multipart_fields: seen_fields,
+                            category: form.category.clone(),
+                            file_size: Some(bytes.len() as u64),
+                            request_meta: request_meta.clone(),
+                            validation_boundary: "parse_reel_multipart",
+                            cause: format!("video_bytes_validation: {reason}"),
+                            ..CreateReel400Log::default()
+                        },
+                        reason,
+                    ));
                 }
                 form.video = Some((filename, bytes));
             }
@@ -372,18 +423,41 @@ pub async fn parse_reel_multipart(payload: &mut Multipart) -> Result<ParsedReelF
                     .content_disposition()
                     .and_then(|cd| cd.get_filename().map(|s| s.to_string()))
                     .unwrap_or_else(|| format!("upload_{}.jpg", Uuid::new_v4()));
+                let content_type = field.content_type().map(|m| m.to_string());
                 let filename = match safe_original_filename(&original) {
                     Ok(name) => name,
                     Err(reason) => {
-                        return Err(HttpResponse::BadRequest().json(serde_json::json!({
-                            "error": reason
-                        })));
+                        return Err(create_reel_diag::bad_request_create_reel(
+                            CreateReel400Log {
+                                filename: Some(original),
+                                content_type,
+                                multipart_fields: seen_fields,
+                                category: form.category.clone(),
+                                file_size: Some(bytes.len() as u64),
+                                request_meta: request_meta.clone(),
+                                validation_boundary: "parse_reel_multipart",
+                                cause: format!("invalid_thumbnail_filename: {reason}"),
+                                ..CreateReel400Log::default()
+                            },
+                            reason,
+                        ));
                     }
                 };
                 if let Err(reason) = validate_bytes(true, &bytes, &filename) {
-                    return Err(
-                        HttpResponse::BadRequest().json(serde_json::json!({ "error": reason }))
-                    );
+                    return Err(create_reel_diag::bad_request_create_reel(
+                        CreateReel400Log {
+                            filename: Some(filename.clone()),
+                            content_type,
+                            multipart_fields: seen_fields,
+                            category: form.category.clone(),
+                            file_size: Some(bytes.len() as u64),
+                            request_meta: request_meta.clone(),
+                            validation_boundary: "parse_reel_multipart",
+                            cause: format!("thumbnail_bytes_validation: {reason}"),
+                            ..CreateReel400Log::default()
+                        },
+                        reason,
+                    ));
                 }
                 form.thumbnail = Some((filename, bytes));
             }
@@ -395,6 +469,9 @@ pub async fn parse_reel_multipart(payload: &mut Multipart) -> Result<ParsedReelF
             }
             "category" => {
                 form.category = Some(String::from_utf8_lossy(&bytes).trim().to_string());
+            }
+            "episodeId" | "episode_id" => {
+                form.episode_id = Some(String::from_utf8_lossy(&bytes).trim().to_string());
             }
             _ => {}
         }

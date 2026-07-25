@@ -94,3 +94,25 @@ export function resolveUploadAbortSignal(ctx) {
     const signal = ctx?.abortSignal;
     return signal instanceof AbortSignal ? signal : undefined;
 }
+
+/**
+ * @param {UploadDiagContext | null | undefined} ctx
+ * @param {'begin' | 'complete' | 'error'} phase
+ * @param {Record<string, unknown>} [extra]
+ */
+export function logBg7xR2Put(ctx, phase, extra = {}) {
+    const payload = {
+        uploadAttemptId: ctx?.uploadAttemptId || '',
+        filename: ctx?.fileName || String(extra.filename || ''),
+        sizeBytes: ctx?.fileSize ?? Number(extra.sizeBytes || 0),
+        uploadStart: extra.uploadStart || null,
+        uploadEnd: extra.uploadEnd || null,
+        durationMs: extra.durationMs ?? null,
+        responseStatus: extra.responseStatus ?? null,
+        abortState: extra.abortState ?? null,
+        errorName: extra.errorName || null,
+        errorMessage: extra.errorMessage || null,
+        ...extra
+    };
+    console.warn('[BG7X_R2_PUT]', payload);
+}

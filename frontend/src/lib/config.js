@@ -128,11 +128,14 @@ export const USE_SIGNED_UPLOADS =
         isNetlifyStaticHost() &&
         import.meta.env.VITE_USE_SIGNED_UPLOADS !== 'false');
 
+/** Netlify edge proxy rejects proxied POST bodies above ~6MB (observed at 6291456 bytes). */
+export const NETLIFY_PROXY_MAX_REQUEST_BYTES = 6_000_000;
+
 /** Minimum size (bytes) to use signed upload flow when enabled. */
 export const SIGNED_UPLOADS_MIN_BYTES = Number.parseInt(
     import.meta.env.VITE_SIGNED_UPLOADS_MIN_BYTES || '',
     10
-) || 25_000_000;
+) || NETLIFY_PROXY_MAX_REQUEST_BYTES;
 
 /** Direct Railway origin for large PUT uploads (bypasses Netlify multipart proxy). */
 function resolveDirectUploadBaseUrl() {

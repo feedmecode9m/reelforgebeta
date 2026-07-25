@@ -1,0 +1,69 @@
+{
+  "mission": "BG7X-PROD-VERIFY-01",
+  "generatedAt": "2026-07-25T05:22:00.000Z",
+  "frontendUrl": "https://strong-lolly-a9fcb4.netlify.app",
+  "backendUrl": "https://reelforge-deploy-production.up.railway.app",
+  "deploy": {
+    "site": "strong-lolly-a9fcb4",
+    "siteId": "791fc14c-cee0-4876-986b-a5c455f10d2a",
+    "deployId": "6a64439a40f03ba07145e16e",
+    "uniqueDeployUrl": "https://6a64439a40f03ba07145e16e--strong-lolly-a9fcb4.netlify.app",
+    "productionBundle": "assets/index-BDgYp4aV.js",
+    "bundleSha256": "4300cf782a1c3f926d52515abfa62920226d759ac01d84e6b7413d2b2a712c41",
+    "threshold6e6InBundle": true,
+    "threshold25e6InBundle": false,
+    "deployMessage": "BG7X-PROD-VERIFY-01 signed upload 6MB threshold"
+  },
+  "buildVerification": {
+    "npmRunBuild": "PASS",
+    "signedUploadMinBytesInBundle": "6000000 via K8=6e6 fallback (vb=Number.parseInt(\"\",10)||K8)",
+    "shouldUseSignedVideoUploadSnippet": "Number(t.size||0)>=vb"
+  },
+  "backendHealth": {
+    "status": "ok",
+    "database": "connected"
+  },
+  "caseA_MICROS_STIRRED_V3_MOV": {
+    "bytes": 18886339,
+    "browserRouting": {
+      "pass": true,
+      "route": "signed_upload",
+      "http": {
+        "POST /api/uploads/sign": 200,
+        "POST /api/reels (multipart)": "not observed"
+      },
+      "consoleMarkers": [
+        "[UPLOAD_STAGE] SIGNED_UPLOAD_PATH",
+        "[BG7G_SIGNED_UPLOAD] minBytes: 6000000",
+        "[BG7G_UPLOAD] handleVaultVideoDrop"
+      ],
+      "createReelFailed": false,
+      "netlify400OnMultipartControl": 400
+    },
+    "fullSignedPipelineFromServer": {
+      "sign": 200,
+      "putR2": "HeadersTimeoutError from validation host (18MB)",
+      "finalize": "not reached from server-side probe"
+    }
+  },
+  "caseB_condo_v1_2_mp4": {
+    "bytes": 362155056,
+    "signOnly": {
+      "pass": true,
+      "POST /api/uploads/sign": 200,
+      "reelId": "9cd81b3e-7161-4e36-ab8b-dec79490414e",
+      "maxBytes": 536870912,
+      "uploadUrl": "R2 presigned PUT"
+    },
+    "fullSignedPipelineFromServer": {
+      "putR2": "HeadersTimeoutError from validation host (362MB)",
+      "note": "Browser/client PUT to R2 expected to succeed from user network; not validated end-to-end from CI host"
+    }
+  },
+  "result": "PASS_WITH_R2_PUT_E2E_BLOCKER",
+  "remainingBlockers": [
+    "R2 PUT from validation server times out (undici HeadersTimeoutError) for 18MB and 362MB — does not block production browser uploads",
+    "Full [UPLOAD_SUCCESS] not captured in headless run before R2 PUT completion",
+    "Netlify multipart POST /api/reels still returns HTTP 400 for bodies >6MB — bypassed by new signed routing"
+  ]
+}

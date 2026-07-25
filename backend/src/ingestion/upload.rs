@@ -3,6 +3,7 @@ use actix_web::HttpResponse;
 use uuid::Uuid;
 
 use crate::db::{self, jobs, reels};
+use crate::create_reel_diag::{self, CreateReel400Log, CreateReelRequestMeta};
 use crate::media_api;
 use crate::media_validator;
 use crate::reel_contract;
@@ -31,18 +32,40 @@ async fn ingest_video_bytes(
     description: Option<String>,
     category: Option<String>,
     user_thumbnail: Option<(String, Vec<u8>)>,
+    episode_id: Option<String>,
+    request_meta: CreateReelRequestMeta,
 ) -> HttpResponse {
     let ext = match video_extension(original_filename) {
         Some(e) => e,
         None => {
-            return HttpResponse::BadRequest().json(serde_json::json!({
-                "error": "Video must be .mp4 or .mov"
-            }));
+            return create_reel_diag::bad_request_create_reel(
+                CreateReel400Log {
+                    filename: Some(original_filename.to_string()),
+                    category: category.clone(),
+                    file_size: Some(bytes.len() as u64),
+                    request_meta,
+                    validation_boundary: "ingest_video_bytes",
+                    cause: "unsupported_video_extension".to_string(),
+                    ..CreateReel400Log::default()
+                },
+                "Video must be .mp4 or .mov",
+            );
         }
     };
 
     if let Err(reason) = media_api::validate_bytes_for_video(bytes, original_filename) {
-        return HttpResponse::BadRequest().json(serde_json::json!({ "error": reason }));
+        return create_reel_diag::bad_request_create_reel(
+            CreateReel400Log {
+                filename: Some(original_filename.to_string()),
+                category: category.clone(),
+                file_size: Some(bytes.len() as u64),
+                request_meta,
+                validation_boundary: "ingest_video_bytes",
+                cause: format!("validate_bytes_for_video: {reason}"),
+                ..CreateReel400Log::default()
+            },
+            reason,
+        );
     }
 
     let asset_id = Uuid::new_v4();
@@ -71,9 +94,18 @@ async fn ingest_video_bytes(
     // Post-write verification — quarantine if disk copy is corrupt.
     if let Err(err) = media_validator::validate_video_path(&video_path) {
         let _ = media_validator::quarantine_video(&svc.config.videos_path, &video_path, &err);
-        return HttpResponse::BadRequest().json(serde_json::json!({
-            "error": err.to_string()
-        }));
+        return create_reel_diag::bad_request_create_reel(
+            CreateReel400Log {
+                filename: Some(original_filename.to_string()),
+                category: category.clone(),
+                file_size: Some(bytes.len() as u64),
+                request_meta,
+                validation_boundary: "ingest_video_bytes",
+                cause: format!("post_write_validate_video_path: {err}"),
+                ..CreateReel400Log::default()
+            },
+            err.to_string(),
+        );
     }
 
     let video_url = format!("/videos/{}", stored_name);
@@ -115,6 +147,7 @@ async fn ingest_video_bytes(
         &stored_name,
         file_size,
         Some(mime),
+        episode_id.as_deref(),
     )
     .await
     {
@@ -219,6 +252,7 @@ pub async fn ingest_stored_video(
     title: Option<String>,
     description: Option<String>,
     category: Option<String>,
+    episode_id: Option<String>,
 ) -> HttpResponse {
     let video_path = svc.config.videos_path.join(stored_name);
     let (file_size, video_url) = if video_path.is_file() {
@@ -294,6 +328,7 @@ pub async fn ingest_stored_video(
         stored_name,
         file_size,
         Some(mime),
+        episode_id.as_deref(),
     )
     .await
     {
@@ -339,6 +374,7 @@ pub async fn ingest_stored_video(
 pub async fn ingest_from_reel_multipart(
     svc: &IngestionService,
     payload: &mut Multipart,
+    request_meta: CreateReelRequestMeta,
 ) -> HttpResponse {
     crate::pipeline_diag::pipeline_diag(
         "INGEST",
@@ -348,7 +384,7 @@ pub async fn ingest_from_reel_multipart(
         None,
         "enter",
     );
-    let form = match media_api::parse_reel_multipart(payload).await {
+    let form = match media_api::parse_reel_multipart(payload, request_meta.clone()).await {
         Ok(f) => f,
         Err(resp) => {
             crate::pipeline_diag::pipeline_diag(
@@ -380,9 +416,16 @@ pub async fn ingest_from_reel_multipart(
             None,
             "400_no_media",
         );
-        return HttpResponse::BadRequest().json(serde_json::json!({
-            "error": "At least one of video or thumbnail is required"
-        }));
+        return create_reel_diag::bad_request_create_reel(
+            CreateReel400Log {
+                category: form.category.clone(),
+                request_meta,
+                validation_boundary: "ingest_from_reel_multipart",
+                cause: "missing_video_and_thumbnail".to_string(),
+                ..CreateReel400Log::default()
+            },
+            "At least one of video or thumbnail is required",
+        );
     }
 
     if let Some((ref filename, ref bytes)) = form.video {
@@ -402,6 +445,8 @@ pub async fn ingest_from_reel_multipart(
             form.description,
             form.category,
             form.thumbnail,
+            form.episode_id,
+            request_meta,
         )
         .await;
     }
@@ -416,7 +461,15 @@ pub async fn ingest_from_reel_multipart(
             Some(filename.as_str()),
             "route_image_only",
         );
-        return ingest_image_only(svc, filename, bytes, form.title, form.category).await;
+        return ingest_image_only(
+            svc,
+            filename,
+            bytes,
+            form.title,
+            form.category,
+            form.episode_id,
+        )
+        .await;
     }
 
     crate::pipeline_diag::pipeline_diag(
@@ -427,7 +480,16 @@ pub async fn ingest_from_reel_multipart(
         None,
         "400_no_valid_media",
     );
-    HttpResponse::BadRequest().json(serde_json::json!({ "error": "No valid media in request" }))
+    create_reel_diag::bad_request_create_reel(
+        CreateReel400Log {
+            category: form.category.clone(),
+            request_meta,
+            validation_boundary: "ingest_from_reel_multipart",
+            cause: "no_valid_media_after_parse".to_string(),
+            ..CreateReel400Log::default()
+        },
+        "No valid media in request",
+    )
 }
 
 async fn ingest_image_only(
@@ -436,6 +498,7 @@ async fn ingest_image_only(
     bytes: &[u8],
     title: Option<String>,
     category: Option<String>,
+    episode_id: Option<String>,
 ) -> HttpResponse {
     if let Err(reason) = media_api::validate_bytes_for_image(bytes, filename) {
         return HttpResponse::BadRequest().json(serde_json::json!({ "error": reason }));
@@ -494,6 +557,7 @@ async fn ingest_image_only(
         &stored_name,
         bytes.len() as i64,
         Some(mime),
+        episode_id.as_deref(),
     )
     .await
     {
@@ -556,8 +620,8 @@ pub async fn ingest_from_media_upload(
         || media_api::is_image_filename(filename);
 
     if is_image {
-        return ingest_image_only(svc, filename, bytes, None, None).await;
+        return ingest_image_only(svc, filename, bytes, None, None, None).await;
     }
 
-    ingest_video_bytes(svc, bytes, filename, None, None, None, None).await
+    ingest_video_bytes(svc, bytes, filename, None, None, None, None, None, CreateReelRequestMeta::default()).await
 }

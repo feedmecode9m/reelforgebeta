@@ -1,0 +1,86 @@
+{
+  "mission": "BG7X-R2-PUT-01",
+  "timestamp": "2026-07-25T13:50:00.000Z",
+  "apiUrl": "https://reelforge-deploy-production.up.railway.app",
+  "productionFrontend": "https://strong-lolly-a9fcb4.netlify.app",
+  "presignedPutRequirements": {
+    "method": "PUT",
+    "contentType": "Must exactly match value sent to POST /api/uploads/sign (e.g. video/quicktime for .mov, video/mp4 for .mp4)",
+    "contentLength": "Browser/curl set automatically from file size; not part of X-Amz-SignedHeaders",
+    "requiredHeaders": ["Content-Type"],
+    "omitOnR2": ["X-Upload-Token"],
+    "signedHeaders": "content-type;host",
+    "expiresSec": 3600,
+    "ttlEnv": "SIGNED_UPLOAD_TTL_SECONDS (default 3600)"
+  },
+  "results": [
+    {
+      "id": "mov_18mb",
+      "fixture": {
+        "label": "MICROS_STIRRED_V3.MOV",
+        "fileName": "MICROS_STIRRED_V3.MOV",
+        "contentType": "video/quicktime",
+        "sizeBytes": 18886339
+      },
+      "sign": { "http": 200, "durationMs": 295 },
+      "put": {
+        "http": 200,
+        "durationMs": 620018,
+        "timeToFirstByteSec": 0.154,
+        "speedUploadBytesPerSec": 30460,
+        "cfRay": "a20b831bbb63dd01-IAH",
+        "failureClass": "none"
+      },
+      "finalize": {
+        "http": 202,
+        "durationMs": 795,
+        "status": "pending",
+        "reelId": "a8315a01-69b0-4442-95dd-be8d267a2969",
+        "dependsOnBrowserSession": false,
+        "dependsOnMultipartBody": false,
+        "dependsOnLocalFile": false
+      },
+      "boundary": "e2e_success"
+    },
+    {
+      "id": "mp4_362mb",
+      "fixture": {
+        "label": "condo_v1_2.mp4",
+        "fileName": "condo_v1_2.mp4",
+        "contentType": "video/mp4",
+        "sizeBytes": 362155056
+      },
+      "sign": { "http": 200, "durationMs": 295 },
+      "put": {
+        "http": null,
+        "durationMs": 900140,
+        "timeToFirstByteSec": null,
+        "responseHeaders": ["HTTP/1.1 100 Continue"],
+        "failureClass": "client_timeout",
+        "failureDetail": "curl probe killed at PUT_TIMEOUT_MS=900000 (~15m); upload still in progress, not R2 4xx"
+      },
+      "finalize": null,
+      "boundary": "put_probe_timeout",
+      "estimatedPutDurationAtObservedSpeedSec": 11880
+    }
+  ],
+  "summary": {
+    "exactFailingBoundary": "Production browser: long single-request R2 PUT stream (net::ERR_FAILED / Failed to fetch) before HTTP response on large files. Validation host: slow uplink causes probe/client timeouts, not R2 signature rejection.",
+    "putPathValidated": true,
+    "finalizePathValidated": true,
+    "firstFailingBoundaryInProduction": "UPLOAD_PUT_BEGIN → browser outbound stream → transport failure before R2 HTTP 200",
+    "nodeFetchPutNote": "Node undici fetch PUT hits HeadersTimeoutError (~300s) on validation host — environmental, not presigned URL mismatch",
+    "vaultAbortTimeoutMsLarge": 1200000
+  },
+  "filesChanged": [
+    "frontend/src/lib/api/media.js",
+    "frontend/src/lib/diagnostics/uploadStageDiag.js",
+    "backend/src/signed_upload.rs",
+    "frontend/scripts/mission-bg7x-r2-put-01.mjs",
+    "frontend/artifacts/bg7x-r2-put-01.json"
+  ],
+  "verification": {
+    "cargoTest": "PASS (92 lib + 81 bin)",
+    "npmRunBuild": "PASS (index-7PDlDgGx.js)"
+  }
+}

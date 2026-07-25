@@ -237,17 +237,61 @@ async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = nu
         ts: new Date().toISOString()
     });
     const putStartedAt = performance.now();
+    const uploadStart = new Date().toISOString();
+    const r2PutAbortState = uploadSignal
+        ? { aborted: uploadSignal.aborted, reason: uploadSignal.reason?.message || null }
+        : null;
+    logBg7xR2Put(diagContext, 'begin', {
+        filename: primaryFileName,
+        sizeBytes: file.size,
+        uploadStart,
+        abortState: r2PutAbortState
+    });
     logUploadStage(diagContext, 'PUT_BEGIN');
 
-    const putResponse = await fetch(uploadUrl, {
-        method: 'PUT',
-        headers: putHeaders,
-        body: file,
-        ...(uploadSignal ? { signal: uploadSignal } : {})
+    let putResponse;
+    try {
+        putResponse = await fetch(uploadUrl, {
+            method: 'PUT',
+            headers: putHeaders,
+            body: file,
+            ...(uploadSignal ? { signal: uploadSignal } : {})
+        });
+    } catch (putError) {
+        const err = putError instanceof Error ? putError : new Error(String(putError));
+        logBg7xR2Put(diagContext, 'error', {
+            filename: primaryFileName,
+            sizeBytes: file.size,
+            uploadStart,
+            uploadEnd: new Date().toISOString(),
+            durationMs: Math.round(performance.now() - putStartedAt),
+            responseStatus: null,
+            abortState: uploadSignal
+                ? { aborted: uploadSignal.aborted, reason: uploadSignal.reason?.message || null }
+                : null,
+            errorName: err.name,
+            errorMessage: err.message
+        });
+        throw putError;
+    }
+    const uploadEnd = new Date().toISOString();
+    const putDurationMs = Math.round(performance.now() - putStartedAt);
+    logBg7xR2Put(diagContext, putResponse.ok ? 'complete' : 'error', {
+        filename: primaryFileName,
+        sizeBytes: file.size,
+        uploadStart,
+        uploadEnd,
+        durationMs: putDurationMs,
+        responseStatus: putResponse.status,
+        abortState: uploadSignal
+            ? { aborted: uploadSignal.aborted, reason: uploadSignal.reason?.message || null }
+            : null,
+        errorName: putResponse.ok ? null : 'HttpError',
+        errorMessage: putResponse.ok ? null : `Direct storage upload failed (${putResponse.status})`
     });
     logUploadStage(diagContext, 'PUT_COMPLETE', {
         status: putResponse.status,
-        putElapsedMs: Math.round(performance.now() - putStartedAt)
+        putElapsedMs: putDurationMs
     });
     if (!putResponse.ok) {
         const errText = await putResponse.text().catch(() => '');
@@ -330,6 +374,7 @@ import { pipelineDiag, pipelineDiagCors, pipelineCheckpoint } from '../diagnosti
 import {
     logUploadStage,
     logUploadError,
+    logBg7xR2Put,
     patchUploadDiagContext,
     resolveUploadAbortSignal
 } from '../diagnostics/uploadStageDiag.js';

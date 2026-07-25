@@ -125,10 +125,20 @@ pub fn is_valid_video_container(bytes: &[u8]) -> bool {
     if &bytes[4..8] == b"ftyp" {
         return true;
     }
+    if is_quicktime_atom(&bytes[4..8]) {
+        return true;
+    }
     if bytes.len() >= 4 && &bytes[0..4] == b"\x1a\x45\xdf\xa3" {
         return true;
     }
     false
+}
+
+fn is_quicktime_atom(tag: &[u8]) -> bool {
+    matches!(
+        tag,
+        b"moov" | b"mdat" | b"wide" | b"free" | b"skip" | b"pnot" | b"PICT"
+    )
 }
 
 pub fn mime_for_video_path(path: &Path) -> Option<&'static str> {
@@ -395,4 +405,47 @@ pub fn quarantine_invalid_loose_files(videos_dir: &Path) -> usize {
         }
     }
     quarantined
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn atom_box(tag: &[u8; 4], payload_len: usize) -> Vec<u8> {
+        let mut out = Vec::with_capacity(8 + payload_len);
+        out.extend_from_slice(&((8 + payload_len) as u32).to_be_bytes());
+        out.extend_from_slice(tag);
+        out.extend_from_slice(&vec![0u8; payload_len]);
+        out
+    }
+
+    #[test]
+    fn accepts_mp4_ftyp_container_header() {
+        let mut bytes = atom_box(b"ftyp", 8);
+        bytes[8..12].copy_from_slice(b"isom");
+        assert!(is_valid_video_container(&bytes));
+    }
+
+    #[test]
+    fn accepts_quicktime_moov_container_header() {
+        let bytes = atom_box(b"moov", 16);
+        assert!(is_valid_video_container(&bytes));
+    }
+
+    #[test]
+    fn accepts_quicktime_mdat_container_header() {
+        let bytes = atom_box(b"mdat", 16);
+        assert!(is_valid_video_container(&bytes));
+    }
+
+    #[test]
+    fn rejects_html_disguised_payload() {
+        assert!(!is_valid_video_container(b"<!doctype html><html>".as_slice()));
+    }
+
+    #[test]
+    fn mime_for_mov_is_quicktime() {
+        assert_eq!(mime_for_video_path(std::path::Path::new("MICROS.MOV")), Some("video/quicktime"));
+        assert_eq!(mime_for_video_path(std::path::Path::new("clip.mp4")), Some("video/mp4"));
+    }
 }

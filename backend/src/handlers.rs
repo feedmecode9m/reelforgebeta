@@ -1,7 +1,7 @@
 use crate::events::EventBus;
 use crate::video_stream::{ThumbsDir, VideosDir};
 use actix_multipart::Multipart;
-use actix_web::{web, HttpResponse, Responder};
+use actix_web::{web, HttpRequest, HttpResponse, Responder};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sqlx::{Pool, Postgres};
@@ -184,6 +184,7 @@ pub async fn admin_auth(
 }
 
 pub async fn create_reel(
+    req: HttpRequest,
     mut payload: Multipart,
     videos_path: web::Data<VideosDir>,
     thumbs_path: web::Data<ThumbsDir>,
@@ -235,7 +236,8 @@ pub async fn create_reel(
         thumbs_path.get_ref().clone(),
         event_bus.get_ref().clone(),
     );
-    crate::ingestion::upload::ingest_from_reel_multipart(&svc, &mut payload).await
+    let request_meta = crate::create_reel_diag::CreateReelRequestMeta::from_request(&req);
+    crate::ingestion::upload::ingest_from_reel_multipart(&svc, &mut payload, request_meta).await
 }
 
 pub async fn get_reels(
@@ -423,6 +425,7 @@ pub async fn list_local_videos() -> impl Responder {
 }
 
 pub async fn upload_video(
+    req: HttpRequest,
     payload: Multipart,
     videos_path: web::Data<VideosDir>,
     thumbs_path: web::Data<ThumbsDir>,
@@ -431,6 +434,7 @@ pub async fn upload_video(
     event_bus: web::Data<EventBus>,
 ) -> impl Responder {
     create_reel(
+        req,
         payload,
         videos_path,
         thumbs_path,
