@@ -7,6 +7,7 @@ import { getOperationsSnapshot } from '../observability/platformMetrics.js';
 import { loadWatchProgressMap } from '../series/seriesWatchProgress.js';
 import { buildReleaseCenterSnapshot } from '../release/releaseCenter.js';
 import { getEpisodeById, getSeriesById, seriesCatalog } from '../series/seriesStore.js';
+import { resolveReelForEpisode } from '../series/episodeBridge.js';
 import { get } from 'svelte/store';
 import { TEAM_STORAGE_KEY } from '../teams/creatorTeams.js';
 import { METRICS_STORAGE_KEY } from '../observability/platformMetrics.js';
@@ -1009,11 +1010,98 @@ export function applyHeroManagerBackground(config = loadHeroManagerConfig(), sto
     return false;
 }
 
-/** @param {HeroManagerConfig} [config] @returns {HeroBackgroundPresentation} */
-export function resolveHeroBackgroundPresentation(config = loadHeroManagerConfig(), vaultItems = null) {
+/**
+ * @param {{
+ *   episodeId?: string | null;
+ *   resolvedReelId?: string;
+ *   foundInFeed?: boolean;
+ *   hasVideoUrl?: boolean;
+ *   source?: string;
+ * }} payload
+ */
+export function logHeroIdentityBridge(payload) {
+    console.info('[HERO_IDENTITY_BRIDGE]', {
+        episodeId: payload.episodeId || null,
+        resolvedReelId: payload.resolvedReelId || '',
+        foundInFeed: payload.foundInFeed === true,
+        hasVideoUrl: payload.hasVideoUrl === true,
+        source: payload.source || 'candidateFromEpisode',
+        ts: new Date().toISOString()
+    });
+}
+
+/**
+ * Selection-mode presentation — uses episode candidate identity, not hero vault config.
+ * @param {HeroManagerConfig} config
+ * @param {HeroSelection | null | undefined} selection
+ * @param {string} style
+ * @returns {HeroBackgroundPresentation}
+ */
+function resolveSelectionHeroBackgroundPresentation(config, selection, style) {
+    const reelId = String(selection?.reelId || '').trim();
+    const videoUrlRaw = String(selection?.videoUrl || '').trim();
+    const posterUrlRaw = String(selection?.posterUrl || '').trim();
+    const videoUrl = videoUrlRaw ? toRelativeMediaPath(videoUrlRaw) || videoUrlRaw : '';
+    const posterUrl = posterUrlRaw
+        ? resolveUserPosterUrl(posterUrlRaw) || toRelativeMediaPath(posterUrlRaw) || posterUrlRaw
+        : '';
+    const mediaUrl = videoUrl || posterUrl;
+    const assetType = mediaUrl ? inferHeroAssetType(mediaUrl) : 'unknown';
+    const isVideo = isVideoHeroAssetType(assetType);
+
+    console.info('[HERO_ROUTE]', {
+        stage: 'resolveHeroBackgroundPresentation:selection',
+        heroAssetId: config.heroAssetId || '',
+        resolvedAssetId: reelId,
+        assetType,
+        mediaUrl,
+        videoUrl: isVideo ? mediaUrl : videoUrl,
+        imageUrl: isVideo ? posterUrl : mediaUrl || posterUrl,
+        vaultMatch: false,
+        ts: new Date().toISOString()
+    });
+
+    return {
+        style,
+        containerClasses: [
+            style === 'ambient_motion' ? 'hero-bg-ambient-motion' : '',
+            style === 'cinematic_blur' ? 'hero-bg-cinematic-blur' : ''
+        ].filter(Boolean),
+        overlayClasses: [
+            style === 'gradient_overlay' ? 'hero-bg-gradient-overlay' : '',
+            style === 'cinematic_blur' ? 'hero-bg-cinematic-overlay' : ''
+        ].filter(Boolean),
+        useVideo: style === 'video' || style === 'ambient_motion' || Boolean(videoUrl),
+        useImage: style === 'image' || Boolean(!videoUrl && posterUrl),
+        ambientMotion: style === 'ambient_motion',
+        cinematicBlur: style === 'cinematic_blur',
+        gradientOverlay: style === 'gradient_overlay',
+        backgroundSource: config.backgroundSource,
+        backgroundAsset: reelId,
+        heroAssetId: config.heroAssetId || '',
+        assetId: reelId,
+        vaultMatch: false,
+        mediaUrl,
+        assetType,
+        videoUrl: isVideo ? mediaUrl : videoUrl,
+        imageUrl: isVideo ? posterUrl : mediaUrl || posterUrl
+    };
+}
+
+/** @param {HeroManagerConfig} [config] @param {Record<string, unknown>[] | null} [vaultItems] @param {HeroSelection | null} [selection] @returns {HeroBackgroundPresentation} */
+export function resolveHeroBackgroundPresentation(
+    config = loadHeroManagerConfig(),
+    vaultItems = null,
+    selection = null
+) {
     const style = HERO_BACKGROUND_STYLES.includes(config.backgroundStyle)
         ? config.backgroundStyle
         : 'gradient_overlay';
+
+    if (config.backgroundSource === 'selection') {
+        return resolveSelectionHeroBackgroundPresentation(config, selection, style);
+    }
+
     const resolved = resolveHeroBackgroundAsset(config, vaultItems, { log: true });
 
     return {
@@ -1331,10 +1419,25 @@ function candidateFromEpisode(episodeId, feedReels, source, score, subtitle, met
     const ctx = getEpisodeById(episodeId);
     if (!ctx) return null;
     const { series, episode } = ctx;
-    const reel =
-        findReelInFeedList(feedReels, episode.reelId) ||
-        findReelInFeedList(feedReels, String(episode.reelId || ''));
+    const reel = resolveReelForEpisode(
+        episodeId,
+        (reelId) => findReelInFeedList(feedReels, reelId),
+        () => feedReels
+    );
     const media = resolveReelMedia(reel, series.poster || '');
+    const resolvedReelId = reel?.id ? String(reel.id) : '';
+    const videoUrl = media.videoUrl || undefined;
+    const posterUrl = media.posterUrl || series.poster || undefined;
+    const mediaUrl = videoUrl || posterUrl || undefined;
+
+    logHeroIdentityBridge({
+        episodeId,
+        resolvedReelId,
+        foundInFeed: Boolean(reel?.id),
+        hasVideoUrl: Boolean(videoUrl),
+        source: 'candidateFromEpisode'
+    });
+
     const candidate = {
         source,
         title: episode.title || series.title,
@@ -1342,13 +1445,21 @@ function candidateFromEpisode(episodeId, feedReels, source, score, subtitle, met
         seriesId: series.id,
         seriesTitle: series.title,
         episodeId: episode.episodeId,
-        reelId: reel?.id ? String(reel.id) : episode.reelId || undefined,
-        videoUrl: media.videoUrl || undefined,
-        posterUrl: media.posterUrl || series.poster || undefined,
+        reelId: resolvedReelId || undefined,
+        videoUrl,
+        posterUrl,
         score,
         meta: {
             ...meta,
-            episodeStatus: episode.status
+            episodeStatus: episode.status,
+            resolvedReel: reel
+                ? {
+                      id: resolvedReelId,
+                      videoUrl: videoUrl || '',
+                      thumbnailUrl: posterUrl || '',
+                      mediaUrl: mediaUrl || ''
+                  }
+                : undefined
         }
     };
     candidate.scoreBreakdown = scoreHeroCandidate(candidate);

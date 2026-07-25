@@ -194,7 +194,11 @@ export let sanitizeViewer = false;
   }
 
   $: heroBackgroundPresentation = $viewerHydrationReady
-    ? resolveHeroBackgroundPresentation(heroManagerConfig || loadHeroManagerConfig())
+    ? resolveHeroBackgroundPresentation(
+        heroManagerConfig || loadHeroManagerConfig(),
+        null,
+        heroSelection
+      )
     : PENDING_HERO_BACKGROUND_PRESENTATION;
   $: {
     const nextHeroUsesImageBackground =
