@@ -1118,6 +1118,7 @@
       fileName: incomingName,
       fileSize: incomingSize
     });
+    try {
     logUploadStage(uploadDiagCtx, 'LOCK_ACQUIRED', {
       pendingLockCountBeforeAdd: pendingVideoUploadKeys.size
     });
@@ -1157,7 +1158,6 @@
       size: file.size || 0,
       ts: new Date().toISOString()
     });
-    try {
       const formData = new FormData();
       formData.append('video', file);
       formData.append('category', vaultUploadCategory || 'Trending');
