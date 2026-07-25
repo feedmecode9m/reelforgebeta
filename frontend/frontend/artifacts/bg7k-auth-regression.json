@@ -1,0 +1,52 @@
+{
+  "mission": "BG-7K-HARDEN",
+  "generatedAt": "2026-07-25T01:29:58.407Z",
+  "tests": [
+    {
+      "id": "logged_out_no_token",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "logged_out_empty_headers",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "fresh_login_token",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "fresh_login_headers",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "invalid_session_handler",
+      "pass": true,
+      "detail": "first call handles"
+    },
+    {
+      "id": "invalid_session_event_once",
+      "pass": true,
+      "detail": "events=1"
+    },
+    {
+      "id": "invalid_session_handler_idempotent",
+      "pass": true,
+      "detail": "second call skipped"
+    },
+    {
+      "id": "invalid_session_clears_token",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "is_invalid_session_error",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "pass": true
+}
