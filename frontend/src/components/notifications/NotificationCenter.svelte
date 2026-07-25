@@ -12,11 +12,19 @@
     let open = false;
     let notifications = [];
     let unreadCount = 0;
+    let refreshInFlight = false;
 
     async function refresh() {
-        await hydrateNotifications();
-        notifications = getNotifications();
-        unreadCount = getUnreadCount();
+        if (refreshInFlight) return;
+
+        refreshInFlight = true;
+        try {
+            await hydrateNotifications();
+            notifications = getNotifications();
+            unreadCount = getUnreadCount();
+        } finally {
+            refreshInFlight = false;
+        }
     }
 
     onMount(() => {

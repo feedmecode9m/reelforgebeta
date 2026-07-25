@@ -60,11 +60,15 @@ function loadNotificationStore() {
 }
 
 /** @param {{ version: number; items: NotificationItem[] }} store */
-function persistNotificationStore(store) {
+function persistNotificationStore(store, { notify = true } = {}) {
     if (typeof window === 'undefined') return;
     const trimmed = { version: 1, items: store.items.slice(-300) };
     localStorage.setItem(NOTIFICATION_STORAGE_KEY, JSON.stringify(trimmed));
-    window.dispatchEvent(new CustomEvent('reelforge:notifications-updated'));
+    if (notify) {
+        window.dispatchEvent(
+            new CustomEvent('reelforge:notifications-updated')
+        );
+    }
 }
 
 /** @returns {Record<string, unknown>} */
@@ -142,7 +146,7 @@ export async function hydrateNotifications(userId = getNotificationUserId()) {
     }
 
     store.items = Array.from(merged.values()).sort((a, b) => b.createdAt - a.createdAt);
-    persistNotificationStore(store);
+    persistNotificationStore(store, { notify: false });
     return store.items.filter((item) => item.userId === userId);
 }
 
