@@ -28,9 +28,15 @@ function isDeletedReel(reel) {
     return String(reel?.status || '').trim().toLowerCase() === 'deleted' || reel?.deleted === true;
 }
 
-function evaluateFeedEligibility(reel) {
+function evaluateFeedEligibility(reel, personalThumbnailReelIds = new Set()) {
     if (isDeletedReel(reel)) return { eligible: false, rejectionReason: 'deleted' };
-    if (isImageReel(reel)) return { eligible: true, rejectionReason: 'thumbnail_card' };
+    if (isImageReel(reel)) {
+        const reelId = String(reel?.id || '').trim();
+        if (!reelId || !personalThumbnailReelIds.has(reelId)) {
+            return { eligible: false, rejectionReason: 'catalog_image_no_vault_ownership' };
+        }
+        return { eligible: true, rejectionReason: 'thumbnail_card' };
+    }
     if (isVideoReel(reel)) {
         return {
             eligible: true,
@@ -40,13 +46,13 @@ function evaluateFeedEligibility(reel) {
     return { eligible: false, rejectionReason: 'unknown_media_type' };
 }
 
-function buildHomeFeed(catalog) {
+function buildHomeFeed(catalog, personalThumbnailReelIds = new Set()) {
     const seen = new Set();
     const decisions = [];
     let cardCount = 0;
     for (const reel of catalog) {
         const mediaType = isVideoReel(reel) ? 'video' : isImageReel(reel) ? 'image' : 'unknown';
-        const eligibility = evaluateFeedEligibility(reel);
+        const eligibility = evaluateFeedEligibility(reel, personalThumbnailReelIds);
         let eligible = eligibility.eligible;
         let rejectionReason = eligibility.rejectionReason;
         if (eligible && mediaType === 'video') {
@@ -68,7 +74,10 @@ function buildHomeFeed(catalog) {
             mediaType,
             eligible,
             rejectionReason,
-            gate: 'buildHomeFeed'
+            gate:
+                rejectionReason === 'catalog_image_no_vault_ownership'
+                    ? 'buildHomeFeed:catalogImageVaultMembership'
+                    : 'buildHomeFeed'
         });
     }
     return { cardCount, decisions };
@@ -78,22 +87,35 @@ async function main() {
     const res = await fetch(`${API_URL}?t=${Date.now()}`);
     if (!res.ok) throw new Error(`API ${res.status}`);
     const catalog = await res.json();
-    const { cardCount, decisions } = buildHomeFeed(catalog);
+    const freshSession = buildHomeFeed(catalog, new Set());
+    const { cardCount, decisions } = freshSession;
+    const imageRejected = decisions.filter(
+        (d) => d.rejectionReason === 'catalog_image_no_vault_ownership'
+    ).length;
     const summary = {
+        mission: 'BG-7I-C',
         backendCatalogCount: catalog.length,
         heroVideoCount: decisions.filter((d) => d.rejectionReason === 'hero_video_card').length,
         imageCount: decisions.filter((d) => d.mediaType === 'image').length,
+        catalogImagesRejectedNoVaultOwnership: imageRejected,
         eligibleVideoCount: decisions.filter((d) => d.mediaType === 'video' && d.eligible).length,
         eligibleImageCount: decisions.filter((d) => d.mediaType === 'image' && d.eligible).length,
         buildHomeFeedCardCount: cardCount,
         finalFeedCardCount: cardCount,
         placeholderCount: cardCount === 0 ? 3 : 0,
-        placeholdersInjected: cardCount === 0
+        placeholdersInjected: cardCount === 0,
+        freshSessionMembership: 'empty personal_thumbnail_reel_ids'
     };
     for (const d of decisions) console.info('[BG7L_FEED_DECISION]', d);
     console.info('[BG7M_BUILD_HOME_FEED]', summary);
+    console.info('[BG7I-C_FEED_ELIGIBILITY]', {
+        gate: 'buildHomeFeed:catalogImageVaultMembership',
+        catalogImagesBlocked: imageRejected,
+        feedCardsAfterGate: cardCount,
+        expectedFreshSession: 'no isCatalogImage cards without vault membership'
+    });
     await import('node:fs').then((fs) =>
-        fs.writeFileSync(OUT, JSON.stringify({ mission: 'BG-7M', summary, decisions }, null, 2))
+        fs.writeFileSync(OUT, JSON.stringify({ mission: 'BG-7I-C', summary, decisions }, null, 2))
     );
     console.log(`Wrote ${OUT}`);
 }

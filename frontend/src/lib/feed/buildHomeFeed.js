@@ -14,6 +14,32 @@ import {
 
 export const FEED_SHELVES = ['Trending', 'Romance', 'Cyber-Action', 'Suspense'];
 
+/** Matches thumbnailVault.js — catalog image feed cards require membership here. */
+export const PERSONAL_THUMB_IDS_KEY = 'personal_thumbnail_reel_ids';
+
+/**
+ * @param {{ personalThumbnailReelIds?: Iterable<string> | Set<string> }} [options]
+ * @returns {Set<string>}
+ */
+function resolvePersonalThumbnailReelIds(options = {}) {
+    if (options.personalThumbnailReelIds !== undefined) {
+        const raw = options.personalThumbnailReelIds;
+        const list = raw instanceof Set ? [...raw] : Array.isArray(raw) ? raw : [];
+        return new Set(list.map((id) => String(id || '').trim()).filter(Boolean));
+    }
+    if (typeof window === 'undefined') return new Set();
+    try {
+        const parsed = JSON.parse(localStorage.getItem(PERSONAL_THUMB_IDS_KEY) || '[]');
+        return new Set(
+            (Array.isArray(parsed) ? parsed : [])
+                .map((id) => String(id || '').trim())
+                .filter(Boolean)
+        );
+    } catch {
+        return new Set();
+    }
+}
+
 /** @returns {Record<string, unknown[]>} */
 export function emptyFeedMap() {
     return {
@@ -42,13 +68,23 @@ export function isDeletedReel(reel) {
 
 /**
  * @param {Record<string, unknown>} reel
+ * @param {{ personalThumbnailReelIds?: Set<string> }} [context]
  * @returns {{ eligible: boolean, rejectionReason: string, cardType: 'video' | 'image' | null, isHeroFeedCard?: boolean }}
  */
-export function evaluateFeedEligibility(reel) {
+export function evaluateFeedEligibility(reel, context = {}) {
     if (isDeletedReel(reel)) {
         return { eligible: false, rejectionReason: 'deleted', cardType: null };
     }
     if (isImageReel(reel)) {
+        const reelId = String(reel?.id || '').trim();
+        const memberIds = context.personalThumbnailReelIds ?? new Set();
+        if (!reelId || !memberIds.has(reelId)) {
+            return {
+                eligible: false,
+                rejectionReason: 'catalog_image_no_vault_ownership',
+                cardType: null
+            };
+        }
         return { eligible: true, rejectionReason: 'thumbnail_card', cardType: 'image' };
     }
     if (isVideoReel(reel)) {
@@ -151,25 +187,30 @@ function prepareFeedCard(reel, eligibility, options) {
  *   preserveLocal?: boolean,
  *   localTitles?: Record<string, { title?: string, title_original?: string }>,
  *   thumbnailStorageKey?: string,
- *   dedupeVideos?: boolean
+ *   dedupeVideos?: boolean,
+ *   personalThumbnailReelIds?: Iterable<string> | Set<string>
  * }} [options]
  */
 export function buildHomeFeed(catalog, options = {}) {
     const { dedupeVideos = true, thumbnailStorageKey = 'personal_thumbnails' } = options;
+    const personalThumbnailReelIds = resolvePersonalThumbnailReelIds(options);
     const hydratedFeed = emptyFeedMap();
     /** @type {Array<Record<string, unknown>>} */
     const decisions = [];
     const seenVideoUrls = new Set();
 
     for (const reel of catalog || []) {
-        const eligibility = evaluateFeedEligibility(reel);
+        const eligibility = evaluateFeedEligibility(reel, { personalThumbnailReelIds });
         const baseDecision = {
             reelId: String(reel?.id || ''),
             category: String(reel?.category || 'Trending'),
             mediaType: isVideoReel(reel) ? 'video' : isImageReel(reel) ? 'image' : 'unknown',
             eligible: eligibility.eligible,
             rejectionReason: eligibility.rejectionReason,
-            gate: 'buildHomeFeed'
+            gate:
+                eligibility.rejectionReason === 'catalog_image_no_vault_ownership'
+                    ? 'buildHomeFeed:catalogImageVaultMembership'
+                    : 'buildHomeFeed'
         };
 
         if (!eligibility.eligible) {
