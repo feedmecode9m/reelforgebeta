@@ -27,7 +27,7 @@
   import { logHeroImagePipeline } from '../../lib/hero/heroIntelligence.js';
   import { reelToVaultEntry } from '../../lib/api/reelContract.js';
   import { validateVideoFile } from '../../lib/runtime-guards.js';
-  import { API_BASE_URL, toRelativeMediaPath } from '../../lib/config.js';
+  import { API_BASE_URL, toRelativeMediaPath, SIGNED_UPLOADS_MIN_BYTES } from '../../lib/config.js';
   import {
     ADMIN_SESSION_TOKEN_KEY,
     getAdminAuthHeaders,
@@ -110,6 +110,8 @@
   let thumbnailCanonInFlight = false;
   // BG-7X: prevent identical duplicate uploads while an upload is in-flight.
   const pendingVideoUploadKeys = new Set();
+  const VAULT_UPLOAD_TIMEOUT_MS_LARGE = 20 * 60 * 1000;
+  const VAULT_UPLOAD_TIMEOUT_MS_DEFAULT = 5 * 60 * 1000;
 
   $: utils =
     vaultUtils ||
@@ -1118,6 +1120,14 @@
       fileName: incomingName,
       fileSize: incomingSize
     });
+    const uploadTimeoutMs =
+      Number(file.size || 0) >= SIGNED_UPLOADS_MIN_BYTES
+        ? VAULT_UPLOAD_TIMEOUT_MS_LARGE
+        : VAULT_UPLOAD_TIMEOUT_MS_DEFAULT;
+    let uploadTimedOut = false;
+    const uploadAbortController = new AbortController();
+    uploadDiagCtx.abortSignal = uploadAbortController.signal;
+    let uploadAbortTimer;
     try {
     logUploadStage(uploadDiagCtx, 'LOCK_ACQUIRED', {
       pendingLockCountBeforeAdd: pendingVideoUploadKeys.size
@@ -1162,6 +1172,16 @@
       formData.append('video', file);
       formData.append('category', vaultUploadCategory || 'Trending');
       logUploadStage(uploadDiagCtx, 'UPLOAD_MEDIA_BEGIN');
+      uploadAbortTimer = setTimeout(() => {
+        uploadTimedOut = true;
+        console.warn('[BG7X_UPLOAD_TIMEOUT]', {
+          uploadAttemptId: uploadDiagCtx.uploadAttemptId,
+          fileName: file.name,
+          fileSize: file.size,
+          timeoutMs: uploadTimeoutMs
+        });
+        uploadAbortController.abort();
+      }, uploadTimeoutMs);
       const response = await uploadMedia(formData, getAdminAuthHeaders(), uploadDiagCtx);
       logUploadStage(uploadDiagCtx, 'UPLOAD_MEDIA_RETURNED', {
         reelId: response?.id || ''
@@ -1349,7 +1369,10 @@
         result: 'success'
       });
     } catch (error) {
-      logUploadError(uploadDiagCtx, error);
+      const failedError = uploadTimedOut
+        ? new Error(`Vault upload timed out after ${uploadTimeoutMs}ms`)
+        : error;
+      logUploadError(uploadDiagCtx, failedError);
       noteFailedUpload();
       console.info('[BG7G_UPLOAD]', {
         ts: new Date().toISOString(),
@@ -1359,29 +1382,32 @@
         fileSize: file?.size ?? null,
         uploadUrl: `${API_BASE_URL}/api/reels`,
         state: 'failure',
-        reason: error?.message || String(error)
+        reason: failedError?.message || String(failedError)
       });
-      console.error('Failed to process video:', error);
+      console.error('Failed to process video:', failedError);
       pipelineDiag('UPLOAD', 'handleVaultVideoDrop', 'VaultExperience.svelte', {
         fileName: file?.name || null,
         result: 'error',
-        detail: error?.message || String(error)
+        detail: failedError?.message || String(failedError)
       });
       console.error('[UPLOAD_FAILED]', {
         vault: 'video',
         name: file?.name || '',
-        error: error?.message || String(error),
+        error: failedError?.message || String(failedError),
         ts: new Date().toISOString()
       });
-      uploadStatus.set('❌ Failed to process video');
+      uploadStatus.set(`❌ Failed: ${failedError.message}`);
       vaultForensic('VAULT_UPLOAD_FAIL', {
         vaultType: 'video',
         fileName: file?.name || null,
         storageLocation: CONFIG?.VIDEO_VAULT_KEY || 'personal_video_vault',
         backendEndpoint: `${API_BASE_URL}/api/reels`,
-        result: error?.message || String(error)
+        result: failedError?.message || String(failedError)
       });
     } finally {
+      if (uploadAbortTimer != null) {
+        clearTimeout(uploadAbortTimer);
+      }
       logUploadStage(uploadDiagCtx, 'FINALLY_ENTERED', {
         pendingLockCountBeforeDelete: pendingVideoUploadKeys.size
       });

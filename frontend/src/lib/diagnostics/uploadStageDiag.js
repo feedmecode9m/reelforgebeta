@@ -11,6 +11,7 @@
  *   t0: number;
  *   reelId: string;
  *   uploadId: string;
+ *   abortSignal?: AbortSignal;
  * }} UploadDiagContext */
 
 let attemptSeq = 0;
@@ -83,4 +84,13 @@ export function logUploadError(ctx, error, stage = 'ERROR') {
         errorMessage: err.message,
         stack: err.stack || ''
     });
+}
+
+/**
+ * @param {UploadDiagContext | null | undefined} ctx
+ * @returns {AbortSignal | undefined}
+ */
+export function resolveUploadAbortSignal(ctx) {
+    const signal = ctx?.abortSignal;
+    return signal instanceof AbortSignal ? signal : undefined;
 }

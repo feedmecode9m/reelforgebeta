@@ -189,6 +189,7 @@ async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = nu
     });
     logUploadStage(diagContext, 'SIGN_BEGIN');
 
+    const uploadSignal = resolveUploadAbortSignal(diagContext);
     const signResponse = await fetch(`${API_BASE_URL}${UPLOADS_SIGN_URL}`, {
         method: 'POST',
         headers: {
@@ -202,7 +203,8 @@ async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = nu
             title: meta.title,
             description: meta.description,
             category: meta.category
-        })
+        }),
+        ...(uploadSignal ? { signal: uploadSignal } : {})
     });
     if (!signResponse.ok) {
         const err = await signResponse.json().catch(() => ({}));
@@ -240,7 +242,8 @@ async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = nu
     const putResponse = await fetch(uploadUrl, {
         method: 'PUT',
         headers: putHeaders,
-        body: file
+        body: file,
+        ...(uploadSignal ? { signal: uploadSignal } : {})
     });
     logUploadStage(diagContext, 'PUT_COMPLETE', {
         status: putResponse.status,
@@ -276,7 +279,8 @@ async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = nu
             title: meta.title,
             description: meta.description,
             category: meta.category
-        })
+        }),
+        ...(uploadSignal ? { signal: uploadSignal } : {})
     });
     if (!finalizeResponse.ok) {
         const err = await finalizeResponse.json().catch(() => ({}));
@@ -326,7 +330,8 @@ import { pipelineDiag, pipelineDiagCors, pipelineCheckpoint } from '../diagnosti
 import {
     logUploadStage,
     logUploadError,
-    patchUploadDiagContext
+    patchUploadDiagContext,
+    resolveUploadAbortSignal
 } from '../diagnostics/uploadStageDiag.js';
 
 /**
@@ -417,10 +422,12 @@ export async function createReel(formData, headers = {}, diagContext = null) {
         payloadSummary: fileInfo
     });
 
+    const uploadSignal = resolveUploadAbortSignal(diagContext);
     const response = await fetch(`${API_BASE_URL}${CREATE_REEL_URL}`, {
         method: 'POST',
         headers,
-        body: formData
+        body: formData,
+        ...(uploadSignal ? { signal: uploadSignal } : {})
     }).catch((networkError) => {
         pipelineDiagCors('createReel', 'media.js', networkError, { fileName: primaryFileName });
         const message = String(networkError?.message || networkError || '');

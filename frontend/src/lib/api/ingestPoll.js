@@ -7,7 +7,7 @@ import {
     reelResThrow,
     reelResReelSnapshot
 } from '../diagnostics/reelResolutionTrace.js';
-import { logUploadStage, logUploadError } from '../diagnostics/uploadStageDiag.js';
+import { logUploadStage, logUploadError, resolveUploadAbortSignal } from '../diagnostics/uploadStageDiag.js';
 
 const DEFAULT_POLL_MS = 800;
 const DEFAULT_TIMEOUT_MS = 120_000;
@@ -57,7 +57,10 @@ export async function pollIngestionUntilReady(reelId, opts = {}) {
             result: 'poll_fetch',
             detail: path
         });
-        const res = await fetch(`${API_BASE_URL}${path}`);
+        const pollSignal = resolveUploadAbortSignal(diagContext);
+        const res = await fetch(`${API_BASE_URL}${path}`, {
+            ...(pollSignal ? { signal: pollSignal } : {})
+        });
         pipelineDiag('RESPONSE', 'pollIngestionUntilReady', 'ingestPoll.js', {
             assetId: reelId,
             result: `http_${res.status}`,
