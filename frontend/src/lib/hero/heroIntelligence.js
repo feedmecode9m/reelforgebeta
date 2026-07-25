@@ -1427,6 +1427,18 @@ function candidateFromEpisode(episodeId, feedReels, source, score, subtitle, met
     const media = resolveReelMedia(reel, series.poster || '');
     const resolvedReelId = reel?.id ? String(reel.id) : '';
     const videoUrl = media.videoUrl || undefined;
+
+    if (!reel || !videoUrl) {
+        logHeroIdentityBridge({
+            episodeId,
+            resolvedReelId,
+            foundInFeed: Boolean(reel?.id),
+            hasVideoUrl: false,
+            source: 'candidateFromEpisode_rejected'
+        });
+        return null;
+    }
+
     const posterUrl = media.posterUrl || series.poster || undefined;
     const mediaUrl = videoUrl || posterUrl || undefined;
 
@@ -1434,7 +1446,7 @@ function candidateFromEpisode(episodeId, feedReels, source, score, subtitle, met
         episodeId,
         resolvedReelId,
         foundInFeed: Boolean(reel?.id),
-        hasVideoUrl: Boolean(videoUrl),
+        hasVideoUrl: true,
         source: 'candidateFromEpisode'
     });
 
