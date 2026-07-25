@@ -42,8 +42,18 @@ function titlesMatch(a, b) {
  * @param {{ episode: { episodeId: string; title: string; reelId?: string | null } } | null} episodeCtx
  * @param {Record<string, { episodeId?: string }>} metaMap
  */
-function resolveReelForEpisode(episodeId, findReelInFeed, getAllFeedReels, episodeCtx, metaMap = {}) {
+function resolveReelForEpisode(
+    episodeId,
+    findReelInFeed,
+    getAllFeedReels,
+    episodeCtx,
+    metaMap = {},
+    uploadRegistry = []
+) {
     if (!episodeId || !episodeCtx) return null;
+    const resolveMediaUrl = (reel) => String(reel?.url || reel?.video_url || '').trim();
+    const isPlayable = (reel) => Boolean(reel?.id && resolveMediaUrl(reel));
+
     const tryIds = new Set();
     if (episodeCtx.episode.reelId) tryIds.add(String(episodeCtx.episode.reelId));
     for (const [reelId, meta] of Object.entries(metaMap)) {
@@ -51,17 +61,21 @@ function resolveReelForEpisode(episodeId, findReelInFeed, getAllFeedReels, episo
     }
     for (const reelId of tryIds) {
         const reel = findReelInFeed(reelId);
-        if (reel) return reel;
+        if (isPlayable(reel)) return reel;
     }
     const feedReels = getAllFeedReels();
     for (const reel of feedReels) {
-        if (!reel?.id) continue;
+        if (!isPlayable(reel)) continue;
         const linkedEpisodeId = reel.episodeId || reel.episode_id;
         if (linkedEpisodeId && String(linkedEpisodeId) === episodeId) return reel;
     }
+    for (const reel of uploadRegistry) {
+        const linkedEpisodeId = reel.episodeId || reel.episode_id;
+        if (linkedEpisodeId && String(linkedEpisodeId) === episodeId && isPlayable(reel)) return reel;
+    }
     const episodeTitle = episodeCtx.episode.title;
     for (const reel of feedReels) {
-        if (!reel?.id) continue;
+        if (!isPlayable(reel)) continue;
         if (titlesMatch(String(reel.name || reel.title || ''), episodeTitle)) return reel;
     }
     return null;
@@ -85,6 +99,17 @@ function candidateFromEpisode(episodeId, feedReels, episodeCtx, metaMap = {}) {
     );
     const media = resolveReelMedia(reel);
     const resolvedReelId = reel?.id ? String(reel.id) : '';
+    if (!reel || !media.videoUrl) {
+        console.info('[HERO_IDENTITY_BRIDGE]', {
+            episodeId,
+            resolvedReelId,
+            foundInFeed: Boolean(reel?.id),
+            hasVideoUrl: false,
+            reason: 'missing_playable_media',
+            source: 'candidateFromEpisode_rejected'
+        });
+        return null;
+    }
     const bridge = {
         episodeId,
         resolvedReelId,
@@ -215,8 +240,41 @@ assert('custom_mode_vault_match', customRoute.vaultMatch === true);
 assert('custom_mode_media_url_present', Boolean(customRoute.mediaUrl));
 assert('custom_path_separate_from_selection', customRoute.resolvedAssetId !== selectionRoute.resolvedAssetId);
 
+const DRAFT_EPISODE_ID = 'ep-neon-s01e04';
+const DRAFT_REGISTRY_REEL_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+const draftEpisodeCtx = {
+    episode: {
+        episodeId: DRAFT_EPISODE_ID,
+        title: 'Zero Day',
+        reelId: null,
+        status: 'draft'
+    }
+};
+
+const draftRejected = candidateFromEpisode(DRAFT_EPISODE_ID, [], draftEpisodeCtx);
+assert('draft_episode_rejected_without_upload', draftRejected === null);
+
+const uploadRegistry = [
+    {
+        id: DRAFT_REGISTRY_REEL_ID,
+        episodeId: DRAFT_EPISODE_ID,
+        url: `/videos/${DRAFT_REGISTRY_REEL_ID}.mp4`
+    }
+];
+const draftResolved = resolveReelForEpisode(
+    DRAFT_EPISODE_ID,
+    () => null,
+    () => [],
+    draftEpisodeCtx,
+    {},
+    uploadRegistry
+);
+assert('draft_episode_resolves_via_upload_registry', draftResolved?.id === DRAFT_REGISTRY_REEL_ID, {
+    actual: draftResolved?.id
+});
+
 const summary = {
-    mission: 'HERO-IDENTITY-BRIDGE-01',
+    mission: 'BG-HERO-IDENTITY-BRIDGE-01',
     allPass: failures.length === 0,
     failures,
     selection: {
@@ -224,6 +282,11 @@ const summary = {
         resolvedReelId: candidate?.reelId,
         mediaUrl: selectionRoute.mediaUrl,
         heroAssetId: selectionRoute.heroAssetId
+    },
+    draftEpisode: {
+        episodeId: DRAFT_EPISODE_ID,
+        rejectedWithoutUpload: draftRejected === null,
+        resolvedReelId: draftResolved?.id || null
     },
     custom: {
         heroAssetId: customRoute.heroAssetId,

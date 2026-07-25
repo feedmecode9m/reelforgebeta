@@ -1025,6 +1025,7 @@ export function logHeroIdentityBridge(payload) {
         resolvedReelId: payload.resolvedReelId || '',
         foundInFeed: payload.foundInFeed === true,
         hasVideoUrl: payload.hasVideoUrl === true,
+        reason: payload.reason || null,
         source: payload.source || 'candidateFromEpisode',
         ts: new Date().toISOString()
     });
@@ -1434,6 +1435,7 @@ function candidateFromEpisode(episodeId, feedReels, source, score, subtitle, met
             resolvedReelId,
             foundInFeed: Boolean(reel?.id),
             hasVideoUrl: false,
+            reason: 'missing_playable_media',
             source: 'candidateFromEpisode_rejected'
         });
         return null;

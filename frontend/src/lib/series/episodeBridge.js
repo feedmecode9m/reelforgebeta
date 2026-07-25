@@ -178,6 +178,84 @@ export function auditEpisodeBridgeCoverage(feedReels = []) {
     };
 }
 
+const PERSONAL_VIDEO_VAULT_KEY = 'personal_video_vault';
+const FEED_STORAGE_KEY = 'reelforge_feed';
+
+/**
+ * @param {Record<string, unknown> | null | undefined} reel
+ */
+function resolveReelMediaUrl(reel) {
+    return String(reel?.url || reel?.video_url || reel?.videoUrl || '').trim();
+}
+
+/** @param {Record<string, unknown> | null | undefined} reel */
+function isPlayableReel(reel) {
+    return Boolean(reel?.id && resolveReelMediaUrl(reel));
+}
+
+/**
+ * @param {{
+ *   episodeId?: string | null;
+ *   attemptedSources?: string[];
+ *   matchedSource?: string;
+ *   matchedReelId?: string;
+ *   matchedVideoUrl?: string;
+ * }} payload
+ */
+function logHeroIdentityResolution(payload) {
+    console.info('[HERO_IDENTITY_RESOLUTION]', {
+        episodeId: payload.episodeId || null,
+        attemptedSources: payload.attemptedSources || [],
+        matchedSource: payload.matchedSource || '',
+        matchedReelId: payload.matchedReelId || '',
+        matchedVideoUrl: payload.matchedVideoUrl || ''
+    });
+}
+
+/** @returns {Record<string, unknown>[]} */
+function loadCanonicalUploadRegistry() {
+    if (typeof window === 'undefined') return [];
+    /** @type {Record<string, unknown>[]} */
+    const entries = [];
+    /** @type {Set<string>} */
+    const seen = new Set();
+
+    const pushEntry = (reel) => {
+        if (!reel || typeof reel !== 'object' || !reel.id) return;
+        const id = String(reel.id);
+        if (seen.has(id)) return;
+        seen.add(id);
+        entries.push(reel);
+    };
+
+    try {
+        const vaultRaw = localStorage.getItem(PERSONAL_VIDEO_VAULT_KEY);
+        if (vaultRaw) {
+            const vault = JSON.parse(vaultRaw);
+            if (Array.isArray(vault)) vault.forEach(pushEntry);
+        }
+    } catch {
+        /* ignore corrupt vault cache */
+    }
+
+    try {
+        const feedRaw = localStorage.getItem(FEED_STORAGE_KEY);
+        if (feedRaw) {
+            const feed = JSON.parse(feedRaw);
+            if (Array.isArray(feed)) feed.forEach(pushEntry);
+            else if (feed && typeof feed === 'object') {
+                for (const shelf of Object.values(feed)) {
+                    if (Array.isArray(shelf)) shelf.forEach(pushEntry);
+                }
+            }
+        }
+    } catch {
+        /* ignore corrupt feed cache */
+    }
+
+    return entries.filter(isPlayableReel);
+}
+
 /**
  * @param {string} episodeId
  * @param {(reelId: string) => Record<string, unknown> | null | undefined} findReelInFeed
@@ -189,35 +267,104 @@ export function resolveReelForEpisode(episodeId, findReelInFeed, getAllFeedReels
     const ctx = getEpisodeById(episodeId);
     if (!ctx) return null;
 
-    const tryIds = new Set();
-    if (ctx.episode.reelId) tryIds.add(String(ctx.episode.reelId));
+    /** @type {string[]} */
+    const attemptedSources = [];
+
+    const finish = (reel, matchedSource) => {
+        const matched = applyEpisodeFieldsToReel(reel, ctx);
+        logHeroIdentityResolution({
+            episodeId,
+            attemptedSources,
+            matchedSource,
+            matchedReelId: String(matched?.id || ''),
+            matchedVideoUrl: resolveReelMediaUrl(matched)
+        });
+        return matched;
+    };
+
+    const tryFeedReelId = (reelId, sourceLabel) => {
+        if (!reelId) return null;
+        attemptedSources.push(sourceLabel);
+        const reel = findReelInFeed(reelId);
+        return isPlayableReel(reel) ? reel : null;
+    };
+
+    /** @type {Set<string>} */
+    const knownReelIds = new Set();
+    if (ctx.episode.reelId) knownReelIds.add(String(ctx.episode.reelId));
 
     const metaMap = { ...loadReelSeriesMetadataMap(), ...get(reelSeriesMetadata) };
+    /** @type {string[]} */
+    const metaReelIds = [];
     for (const [reelId, meta] of Object.entries(metaMap)) {
-        if (meta.episodeId === episodeId) tryIds.add(reelId);
+        if (meta.episodeId === episodeId) {
+            knownReelIds.add(reelId);
+            metaReelIds.push(reelId);
+        }
     }
 
-    for (const reelId of tryIds) {
-        const reel = findReelInFeed(reelId);
-        if (reel) return applyEpisodeFieldsToReel(reel, ctx);
+    if (ctx.episode.reelId) {
+        const reel = tryFeedReelId(String(ctx.episode.reelId), 'catalog.reelId');
+        if (reel) return finish(reel, 'catalog.reelId');
+    }
+
+    for (const reelId of metaReelIds) {
+        const reel = tryFeedReelId(reelId, `metadata.episodeId:${reelId}`);
+        if (reel) return finish(reel, 'metadata.episodeId');
     }
 
     const feedReels = typeof getAllFeedReels === 'function' ? getAllFeedReels() : [];
+    attemptedSources.push(`feed.episodeId:${episodeId}`);
     for (const reel of feedReels) {
-        if (!reel?.id) continue;
+        if (!isPlayableReel(reel)) continue;
         const linkedEpisodeId = reel.episodeId || reel.episode_id;
         if (linkedEpisodeId && String(linkedEpisodeId) === episodeId) {
-            return applyEpisodeFieldsToReel(reel, ctx);
+            return finish(reel, 'feed.episodeId');
+        }
+    }
+
+    const uploadRegistry = loadCanonicalUploadRegistry();
+    attemptedSources.push('uploadRegistry.episodeId');
+    for (const reel of uploadRegistry) {
+        const linkedEpisodeId = reel.episodeId || reel.episode_id;
+        if (linkedEpisodeId && String(linkedEpisodeId) === episodeId) {
+            return finish(reel, 'uploadRegistry.episodeId');
+        }
+    }
+
+    attemptedSources.push('uploadRegistry.reelId');
+    for (const reelId of knownReelIds) {
+        const registryReel = uploadRegistry.find(
+            (reel) => String(reel.id) === reelId || String(reel.reelId || '') === reelId
+        );
+        if (isPlayableReel(registryReel)) {
+            return finish(registryReel, 'uploadRegistry.reelId');
         }
     }
 
     const episodeTitle = ctx.episode.title;
+    attemptedSources.push(`feed.title:${episodeTitle}`);
     for (const reel of feedReels) {
-        if (!reel?.id) continue;
+        if (!isPlayableReel(reel)) continue;
         if (titlesMatch(String(reel.name || reel.title || ''), episodeTitle)) {
-            return applyEpisodeFieldsToReel(reel, ctx);
+            return finish(reel, 'feed.title');
         }
     }
 
+    attemptedSources.push(`uploadRegistry.title:${episodeTitle}`);
+    for (const reel of uploadRegistry) {
+        if (!isPlayableReel(reel)) continue;
+        if (titlesMatch(String(reel.name || reel.title || ''), episodeTitle)) {
+            return finish(reel, 'uploadRegistry.title');
+        }
+    }
+
+    logHeroIdentityResolution({
+        episodeId,
+        attemptedSources,
+        matchedSource: '',
+        matchedReelId: '',
+        matchedVideoUrl: ''
+    });
     return null;
 }
