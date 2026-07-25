@@ -50,9 +50,10 @@ function shouldUseSignedVideoUpload(file) {
  * @param {number} httpStatus
  * @returns {Promise<CreatedReelResponse>}
  */
-async function processIngestAcceptedResponse(body, primaryFileName, httpStatus) {
+async function processIngestAcceptedResponse(body, primaryFileName, httpStatus, diagContext = null) {
     if (httpStatus === 202 || body.status === 'pending') {
         const reelId = String(body.id || '');
+        patchUploadDiagContext(diagContext, { reelId });
         pipelineCheckpoint('WAITING_FOR_INGEST', { reelId, status: body.status || 'pending' });
         pipelineDiag('INGEST', 'createReel', 'media.js', {
             assetId: reelId,
@@ -60,12 +61,14 @@ async function processIngestAcceptedResponse(body, primaryFileName, httpStatus) 
             result: 'accepted_pending'
         });
         if (!reelId) throw new Error('Ingestion accepted but no reel id returned');
+        logUploadStage(diagContext, 'POLL_BEGIN', { reelId });
         const ready = await pollIngestionUntilReady(reelId, {
             onProgress: (status) => {
                 if (import.meta.env.DEV) {
                     console.log(`[ingest-poll] ${reelId} → ${status}`);
                 }
-            }
+            },
+            diagContext
         });
         console.info('[UPLOAD_SUCCESS]', {
             id: ready?.id || reelId,
@@ -160,8 +163,9 @@ async function processIngestAcceptedResponse(body, primaryFileName, httpStatus) 
  * @param {Record<string, string>} headers
  * @param {{ title?: string; description?: string; category?: string }} [meta]
  */
-async function uploadVideoSigned(file, headers = {}, meta = {}) {
+async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = null) {
     const primaryFileName = file?.name || null;
+    try {
     const uploadPolicy = enforceUploadPolicy({ operation: 'create_reel' });
     if (!uploadPolicy.allowed) {
         throw new Error(uploadPolicy.reason);
@@ -183,6 +187,7 @@ async function uploadVideoSigned(file, headers = {}, meta = {}) {
         minBytes: SIGNED_UPLOADS_MIN_BYTES,
         ts: new Date().toISOString()
     });
+    logUploadStage(diagContext, 'SIGN_BEGIN');
 
     const signResponse = await fetch(`${API_BASE_URL}${UPLOADS_SIGN_URL}`, {
         method: 'POST',
@@ -206,6 +211,15 @@ async function uploadVideoSigned(file, headers = {}, meta = {}) {
     }
     const signBody = await signResponse.json();
     const uploadUrl = String(signBody.uploadUrl || `${DIRECT_UPLOAD_BASE_URL}/api/uploads/direct/${signBody.uploadId}`);
+    patchUploadDiagContext(diagContext, {
+        reelId: signBody.reelId,
+        uploadId: signBody.uploadId
+    });
+    logUploadStage(diagContext, 'SIGN_COMPLETE', {
+        uploadUrlPresent: Boolean(uploadUrl),
+        reelId: signBody.reelId || '',
+        uploadId: signBody.uploadId || ''
+    });
     const uploadToken = String(signBody.uploadToken || '');
     const isR2PresignedPut = uploadUrl.includes('r2.cloudflarestorage.com');
     const putHeaders = {
@@ -220,11 +234,17 @@ async function uploadVideoSigned(file, headers = {}, meta = {}) {
         uploadUrl,
         ts: new Date().toISOString()
     });
+    const putStartedAt = performance.now();
+    logUploadStage(diagContext, 'PUT_BEGIN');
 
     const putResponse = await fetch(uploadUrl, {
         method: 'PUT',
         headers: putHeaders,
         body: file
+    });
+    logUploadStage(diagContext, 'PUT_COMPLETE', {
+        status: putResponse.status,
+        putElapsedMs: Math.round(performance.now() - putStartedAt)
     });
     if (!putResponse.ok) {
         const errText = await putResponse.text().catch(() => '');
@@ -243,6 +263,7 @@ async function uploadVideoSigned(file, headers = {}, meta = {}) {
         endpoint: REELS_FINALIZE_URL,
         ts: new Date().toISOString()
     });
+    logUploadStage(diagContext, 'FINALIZE_BEGIN');
 
     const finalizeResponse = await fetch(`${API_BASE_URL}${REELS_FINALIZE_URL}`, {
         method: 'POST',
@@ -264,12 +285,28 @@ async function uploadVideoSigned(file, headers = {}, meta = {}) {
     }
 
     const body = await finalizeResponse.json();
+    patchUploadDiagContext(diagContext, { reelId: body?.id });
+    logUploadStage(diagContext, 'FINALIZE_COMPLETE', {
+        status: finalizeResponse.status,
+        reelId: body?.id || ''
+    });
     pipelineCheckpoint('POST_COMPLETED', {
         status: finalizeResponse.status,
         returnedId: body?.id ?? null,
         transport: 'signed-direct'
     });
-    return processIngestAcceptedResponse(body, primaryFileName, finalizeResponse.status);
+    const result = await processIngestAcceptedResponse(
+        body,
+        primaryFileName,
+        finalizeResponse.status,
+        diagContext
+    );
+    logUploadStage(diagContext, 'UPLOAD_SIGNED_RETURN');
+    return result;
+    } catch (error) {
+        logUploadError(diagContext, error);
+        throw error;
+    }
 }
 
 /**
@@ -286,6 +323,11 @@ import { pollIngestionUntilReady } from './ingestPoll.js';
 import { normalizeReel, normalizeReels, createLocalReel } from './reelContract.js';
 import { getDemoPlaceholders } from '../demoPlaceholders.js';
 import { pipelineDiag, pipelineDiagCors, pipelineCheckpoint } from '../diagnostics/pipelineDiag.js';
+import {
+    logUploadStage,
+    logUploadError,
+    patchUploadDiagContext
+} from '../diagnostics/uploadStageDiag.js';
 
 /**
  * POST /api/reels — unified multipart create (video, thumbnail, title, description).
@@ -293,9 +335,10 @@ import { pipelineDiag, pipelineDiagCors, pipelineCheckpoint } from '../diagnosti
  * @param {Record<string, string>} [headers]
  * @returns {Promise<CreatedReelResponse>}
  */
-export async function createReel(formData, headers = {}) {
+export async function createReel(formData, headers = {}, diagContext = null) {
     const fileInfo = {};
     let primaryFileName = null;
+    try {
     if (formData instanceof FormData) {
         for (const [key, value] of formData.entries()) {
             if (value instanceof File) {
@@ -432,7 +475,11 @@ export async function createReel(formData, headers = {}) {
         returnedId: body?.id ?? null
     });
 
-    return processIngestAcceptedResponse(body, primaryFileName, response.status);
+    return processIngestAcceptedResponse(body, primaryFileName, response.status, diagContext);
+    } catch (error) {
+        logUploadError(diagContext, error);
+        throw error;
+    }
 }
 
 /**
@@ -486,18 +533,27 @@ export async function uploadVideo(file, headers = {}, meta = {}) {
  * @returns {Promise<CreatedReelResponse>}
  * @deprecated Use createReel directly when building FormData; this wrapper delegates only.
  */
-export async function uploadMedia(fileOrFormData, headersOrMime = {}) {
+export async function uploadMedia(fileOrFormData, headersOrMime = {}, diagContext = null) {
+    logUploadStage(diagContext, 'UPLOAD_MEDIA_ENTER');
+    try {
     if (fileOrFormData instanceof FormData) {
         const headers =
             headersOrMime && typeof headersOrMime === 'object' ? headersOrMime : {};
         const videoEntry = fileOrFormData.get('video');
         if (videoEntry instanceof File && shouldUseSignedVideoUpload(videoEntry)) {
-            return uploadVideoSigned(videoEntry, headers, {
-                title: String(fileOrFormData.get('title') || '').trim() || undefined,
-                description: String(fileOrFormData.get('description') || '').trim() || undefined,
-                category: String(fileOrFormData.get('category') || '').trim() || undefined
-            });
+            logUploadStage(diagContext, 'SIGNED_UPLOAD_PATH');
+            return await uploadVideoSigned(
+                videoEntry,
+                headers,
+                {
+                    title: String(fileOrFormData.get('title') || '').trim() || undefined,
+                    description: String(fileOrFormData.get('description') || '').trim() || undefined,
+                    category: String(fileOrFormData.get('category') || '').trim() || undefined
+                },
+                diagContext
+            );
         }
+        logUploadStage(diagContext, 'MULTIPART_UPLOAD_PATH');
         console.info('[BG7G_UPLOAD]', {
             ts: new Date().toISOString(),
             component: 'uploadMedia',
@@ -508,7 +564,7 @@ export async function uploadMedia(fileOrFormData, headersOrMime = {}) {
             state: 'formData_delegate'
         });
         pipelineDiag('UPLOAD', 'uploadMedia', 'media.js', { result: 'formData_delegate' });
-        return createReel(fileOrFormData, headers);
+        return await createReel(fileOrFormData, headers, diagContext);
     }
 
     const file = fileOrFormData;
@@ -522,9 +578,13 @@ export async function uploadMedia(fileOrFormData, headersOrMime = {}) {
         typeof headersOrMime === 'object' && headersOrMime !== null ? headersOrMime : {};
 
     if (mimeType.startsWith('video/')) {
-        return uploadVideo(file, headers);
+        return await uploadVideo(file, headers);
     }
-    return uploadThumbnail(file, headers);
+    return await uploadThumbnail(file, headers);
+    } catch (error) {
+        logUploadError(diagContext, error);
+        throw error;
+    }
 }
 
 /**

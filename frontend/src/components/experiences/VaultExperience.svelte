@@ -36,7 +36,7 @@
   } from '../../lib/api.js';
   import { ALLOW_UI_PLACEHOLDERS } from '../../lib/mediaBootstrap.js';
   import { fetchWithRetry } from '../../lib/api.js';
-  import { isHeroAsset } from '../../lib/hero/heroDomainGuard.js';
+  import { SYNC_DOMAIN } from '../../lib/viewer/domainSync.js';
   import { isDemoDebugMode } from '../../lib/debugMode.js';
   import { setPendingUploads, noteFailedUpload } from '../../lib/diagnostics/pipelineSnapshot.js';
   import {
@@ -55,6 +55,18 @@
   import { assertDeleteReducedCount } from '../../lib/viewer/thumbnailInvariants.js';
   import { applyCanonicalDeleteClientEffects } from '../../lib/deletionSync.js';
   import { vaultForensic } from '../../lib/diagnostics/vaultForensics.js';
+  import {
+    trackUploadLockRegister,
+    trackUploadLockBlock,
+    trackUploadLockRemove,
+    noteUploadLockReelId
+  } from '../../lib/diagnostics/uploadLockDiag.js';
+  import {
+    createUploadAttemptContext,
+    logUploadStage,
+    logUploadError,
+    patchUploadDiagContext
+  } from '../../lib/diagnostics/uploadStageDiag.js';
 
   export let showPersonalControls = true;
 
@@ -79,6 +91,8 @@
   export let vaultUtils = null;
   /** @type {(preserveLocal?: boolean) => Promise<void>} */
   export let syncFromVault = async () => {};
+  /** @type {(domains: string | string[], options?: Record<string, unknown>) => Promise<void>} */
+  export let syncDomain = async () => {};
   /** @type {(videos: unknown[]) => void} */
   export let persistPersonalVault = () => {};
   /** @type {(key: string, value: unknown) => { ok?: boolean }} */
@@ -537,6 +551,40 @@
       : [...selectedVideoIds, key];
   }
 
+  function existingVideoVaultIds() {
+    return (get(personalVideos) || [])
+      .map((item) => String(item?.id || '').trim())
+      .filter(Boolean);
+  }
+
+  function canonicalizeVideoSelectionAfterDelete(deletedIds = [], traceCtx = {}) {
+    const selectedIds = [...selectedVideoIds];
+    const existingVaultIds = existingVideoVaultIds();
+    const remainingSelectedIds = selectedIds.filter((id) => existingVaultIds.includes(id));
+    selectedVideoIds = remainingSelectedIds;
+    console.info('[MP4_DELETE_TRACE]', {
+      beforeCount: traceCtx.beforeCount ?? get(personalVideos).length,
+      selectedIds: traceCtx.selectedIds ?? selectedIds,
+      deletedIds: [...deletedIds],
+      afterCount: get(personalVideos).length,
+      remainingSelectedIds: [...remainingSelectedIds],
+      batchDeleteVisible: remainingSelectedIds.length > 0
+    });
+    return remainingSelectedIds;
+  }
+
+  async function handleVideoDelete(videoId) {
+    const beforeCount = get(personalVideos).length;
+    const selectedIds = [...selectedVideoIds];
+    await AI_CLEANUP_AGENT.deleteVaultVideo(videoId);
+    if (get(personalVideos).length < beforeCount) {
+      canonicalizeVideoSelectionAfterDelete([String(videoId || '').trim()], {
+        beforeCount,
+        selectedIds
+      });
+    }
+  }
+
   $: {
     const availableIds = new Set();
     for (const entry of getStoredThumbnailEntries()) {
@@ -643,7 +691,7 @@
     }
     let persisted = true;
     try {
-      await syncFromVault(true, true);
+      await syncDomain([SYNC_DOMAIN.THUMBNAIL, SYNC_DOMAIN.FEED], { preserveLocal: true, force: true });
       const reelsAfter = await fetchReadyReels();
       const imageReelsAfter = (reelsAfter || []).filter(isThumbnailImageReel);
       applyThumbnailDeleteTombstone(deletedIds, ghostIds, imageReelsAfter);
@@ -719,6 +767,7 @@
       timestamp: Date.now()
     });
     const beforeCount = get(personalVideos).length;
+    const selectedIdsBeforeDelete = [...selected];
     logDeletePipeline('video-vault', 'delete_targets', {
       selectedIds: [...selected],
       resolvedAssetIds: [...selected],
@@ -737,8 +786,13 @@
       applyVideoDeleteTombstone(deletedIds);
       await purgeStaleOrphanThumbnails(deletedIds, imageReels);
     }
-    await syncFromVault(true, true);
-    selectedVideoIds = [];
+    await syncDomain([SYNC_DOMAIN.VIDEO, SYNC_DOMAIN.FEED], { preserveLocal: true, force: true });
+    if (removed > 0) {
+      canonicalizeVideoSelectionAfterDelete(deletedIds, {
+        beforeCount,
+        selectedIds: selectedIdsBeforeDelete
+      });
+    }
     const afterCount = get(personalVideos).length;
     logDeletePipeline('video-vault', 'store_after', {
       storeSizeBefore: beforeCount,
@@ -799,7 +853,7 @@
       await handleThumbnailRemove(index);
       return;
     }
-    await AI_CLEANUP_AGENT.deleteVaultVideo(payload.id);
+    await handleVideoDelete(payload.id);
   }
 
   $: if (!deleteAuditLogged) {
@@ -1009,6 +1063,10 @@
     const uploadKey = `${incomingName.toLowerCase()}|${incomingSize}`;
     try {
       if (pendingVideoUploadKeys.has(uploadKey)) {
+        trackUploadLockBlock(uploadKey, {
+          existingId: '',
+          reason: 'in_flight_name_and_size_match'
+        });
         console.info('[BG7X_UPLOAD_DEDUPE]', {
           blocked: true,
           reason: 'in_flight_name_and_size_match',
@@ -1055,7 +1113,16 @@
       });
     }
 
+    const uploadDiagCtx = createUploadAttemptContext({
+      uploadKey,
+      fileName: incomingName,
+      fileSize: incomingSize
+    });
+    logUploadStage(uploadDiagCtx, 'LOCK_ACQUIRED', {
+      pendingLockCountBeforeAdd: pendingVideoUploadKeys.size
+    });
     pendingVideoUploadKeys.add(uploadKey);
+    trackUploadLockRegister(uploadKey, { reason: 'upload_start' });
     setPendingUploads(pendingVideoUploadKeys.size);
     console.info('[BG7G_UPLOAD]', {
       ts: new Date().toISOString(),
@@ -1094,7 +1161,15 @@
       const formData = new FormData();
       formData.append('video', file);
       formData.append('category', vaultUploadCategory || 'Trending');
-      const response = await uploadMedia(formData, getAdminAuthHeaders());
+      logUploadStage(uploadDiagCtx, 'UPLOAD_MEDIA_BEGIN');
+      const response = await uploadMedia(formData, getAdminAuthHeaders(), uploadDiagCtx);
+      logUploadStage(uploadDiagCtx, 'UPLOAD_MEDIA_RETURNED', {
+        reelId: response?.id || ''
+      });
+      if (response?.id) {
+        noteUploadLockReelId(uploadKey, String(response.id));
+        patchUploadDiagContext(uploadDiagCtx, { reelId: String(response.id) });
+      }
       console.info('[BG7G_UPLOAD]', {
         ts: new Date().toISOString(),
         component: 'handleVaultVideoDrop',
@@ -1274,6 +1349,7 @@
         result: 'success'
       });
     } catch (error) {
+      logUploadError(uploadDiagCtx, error);
       noteFailedUpload();
       console.info('[BG7G_UPLOAD]', {
         ts: new Date().toISOString(),
@@ -1306,7 +1382,17 @@
         result: error?.message || String(error)
       });
     } finally {
+      logUploadStage(uploadDiagCtx, 'FINALLY_ENTERED', {
+        pendingLockCountBeforeDelete: pendingVideoUploadKeys.size
+      });
       pendingVideoUploadKeys.delete(uploadKey);
+      trackUploadLockRemove(uploadKey, {
+        existingId: uploadDiagCtx?.reelId || '',
+        reason: 'finally'
+      });
+      logUploadStage(uploadDiagCtx, 'LOCK_RELEASED', {
+        pendingLockCountAfterDelete: pendingVideoUploadKeys.size
+      });
       setPendingUploads(pendingVideoUploadKeys.size);
       resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
     }
@@ -1471,7 +1557,7 @@
         mediaUrl: thumbPath,
         resolved: true
       });
-      await syncFromVault(true, true);
+      await syncDomain([SYNC_DOMAIN.THUMBNAIL, SYNC_DOMAIN.FEED], { preserveLocal: true, force: true });
       pipelineDiag('VIEWER', 'acceptPendingThumbnail', 'VaultExperience.svelte', {
         assetId: entry.id || entryName,
         fileName: name,
@@ -1569,7 +1655,7 @@
       if (deletedIds.length > 0 || removed > 0) {
         applyThumbnailDeleteTombstone(deletedIds, [], imageReels);
       }
-      await syncFromVault(true, true);
+      await syncDomain([SYNC_DOMAIN.THUMBNAIL, SYNC_DOMAIN.FEED], { preserveLocal: true, force: true });
       const reelsAfter = await fetchReadyReels();
       const imageReelsAfter = (reelsAfter || []).filter(isThumbnailImageReel);
       applyThumbnailDeleteTombstone(deletedIds, [], imageReelsAfter);
@@ -1647,6 +1733,7 @@
     uploadStatus.set('🗑️ Deleting videos from backend...');
     try {
       const beforeCount = videos.length;
+      const selectedIdsBeforeDelete = [...selectedVideoIds];
       const idsToDelete = videos.map((video) => video?.id).filter(Boolean);
       let removed = 0;
       const deletedIds = [];
@@ -1660,12 +1747,18 @@
         applyVideoDeleteTombstone(deletedIds);
         await applyVideoDeleteThumbnailCleanup(deletedIds);
       }
-      await syncFromVault(true, true);
+      await syncDomain([SYNC_DOMAIN.VIDEO, SYNC_DOMAIN.FEED], { preserveLocal: true, force: true });
       applyVideoDeleteTombstone(deletedIds);
       if (deletedIds.length > 0) {
         await applyVideoDeleteThumbnailCleanup(deletedIds);
       }
       const afterCount = get(personalVideos).length;
+      if (removed > 0) {
+        canonicalizeVideoSelectionAfterDelete(deletedIds, {
+          beforeCount,
+          selectedIds: selectedIdsBeforeDelete
+        });
+      }
       console.info('[DELETE_STORE_UPDATE]', {
         vault: 'video-vault',
         mechanism: 'batch',
@@ -2007,7 +2100,7 @@
               <button
                 type="button"
                 class="thumb-delete-btn"
-                on:click|stopPropagation={() => AI_CLEANUP_AGENT.deleteVaultVideo(video.id)}
+                on:click|stopPropagation={() => handleVideoDelete(video.id)}
                 aria-label="Delete video {video.name}"
               >
                 ✕

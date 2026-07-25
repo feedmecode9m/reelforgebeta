@@ -7,6 +7,7 @@ import {
     reelResThrow,
     reelResReelSnapshot
 } from '../diagnostics/reelResolutionTrace.js';
+import { logUploadStage, logUploadError } from '../diagnostics/uploadStageDiag.js';
 
 const DEFAULT_POLL_MS = 800;
 const DEFAULT_TIMEOUT_MS = 120_000;
@@ -27,7 +28,11 @@ const DEFAULT_TIMEOUT_MS = 120_000;
  * @returns {Promise<Record<string, unknown>>}
  */
 export async function pollIngestionUntilReady(reelId, opts = {}) {
+    const diagContext = opts.diagContext || null;
     const t0 = performance.now();
+    logUploadStage(diagContext, 'POLL_ENTER', { reelId });
+    let attempt = 0;
+    try {
     reelResEntry('pollIngestionUntilReady', {
         reelId,
         pollEndpoint: `/api/reels/${reelId}`,
@@ -45,6 +50,7 @@ export async function pollIngestionUntilReady(reelId, opts = {}) {
     pipelineCheckpoint('WAITING_FOR_INGEST', { reelId, phase: 'poll_start' });
 
     while (Date.now() - started < timeoutMs) {
+        attempt += 1;
         const path = `/api/reels/${encodeURIComponent(reelId)}`;
         pipelineDiag('FETCH', 'pollIngestionUntilReady', 'ingestPoll.js', {
             assetId: reelId,
@@ -63,10 +69,17 @@ export async function pollIngestionUntilReady(reelId, opts = {}) {
                 result: 'poll_http_error',
                 detail: res.status
             });
-            throw new Error(`Poll failed (${res.status})`);
+            const httpError = new Error(`Poll failed (${res.status})`);
+            throw httpError;
         }
         const body = await res.json();
         const status = String(body.status || '').toLowerCase();
+        logUploadStage(diagContext, 'POLL_ITERATION', {
+            attempt,
+            pollElapsedMs: Math.round(Date.now() - started),
+            status,
+            reelId
+        });
         reelResReelSnapshot('pollIngestionUntilReady:pollBody', body, {
             pollIteration: Math.floor((Date.now() - started) / pollMs),
             httpStatus: res.status,
@@ -95,11 +108,12 @@ export async function pollIngestionUntilReady(reelId, opts = {}) {
             reelResReelSnapshot('pollIngestionUntilReady:preNormalize', pollPayload, { reelId });
             const normalized = normalizeReel(pollPayload, 'ingest-poll');
             if (!normalized) {
-                reelResThrow('pollIngestionUntilReady', t0, new Error('Invalid reel payload after ingestion'), {
+                const invalidError = new Error('Invalid reel payload after ingestion');
+                reelResThrow('pollIngestionUntilReady', t0, invalidError, {
                     reelId,
                     pollPayload
                 });
-                throw new Error('Invalid reel payload after ingestion');
+                throw invalidError;
             }
             reelResReelSnapshot('pollIngestionUntilReady:postNormalize', normalized, { reelId, ready: true });
             pipelineDiag('INGEST', 'pollIngestionUntilReady', 'ingestPoll.js', {
@@ -117,11 +131,13 @@ export async function pollIngestionUntilReady(reelId, opts = {}) {
                 status: normalized.status,
                 category: normalized.category
             });
+            logUploadStage(diagContext, 'POLL_READY', { attempt, reelId });
             return normalized;
         }
 
         if (status === 'failed') {
-            reelResThrow('pollIngestionUntilReady', t0, new Error(body.errorMessage || body.error_message || 'Ingestion failed'), {
+            const failedError = new Error(body.errorMessage || body.error_message || 'Ingestion failed');
+            reelResThrow('pollIngestionUntilReady', t0, failedError, {
                 reelId,
                 status
             });
@@ -130,7 +146,7 @@ export async function pollIngestionUntilReady(reelId, opts = {}) {
                 result: 'failed',
                 detail: body.errorMessage || body.error_message || 'Ingestion failed'
             });
-            throw new Error(body.errorMessage || body.error_message || 'Ingestion failed');
+            throw failedError;
         }
 
         await new Promise((r) => setTimeout(r, pollMs));
@@ -140,11 +156,21 @@ export async function pollIngestionUntilReady(reelId, opts = {}) {
         assetId: reelId,
         result: 'timeout'
     });
-    reelResThrow('pollIngestionUntilReady', t0, new Error('Ingestion timed out waiting for ready status'), {
+    const timeoutError = new Error('Ingestion timed out waiting for ready status');
+    logUploadStage(diagContext, 'POLL_TIMEOUT', {
+        attempt,
+        pollElapsedMs: Math.round(Date.now() - started),
+        reelId
+    });
+    reelResThrow('pollIngestionUntilReady', t0, timeoutError, {
         reelId,
         timeoutMs
     });
-    throw new Error('Ingestion timed out waiting for ready status');
+    throw timeoutError;
+    } catch (error) {
+        logUploadError(diagContext, error, 'POLL_THROW');
+        throw error;
+    }
 }
 
 /**
