@@ -1017,6 +1017,7 @@ pipelineCheckpoint('SYNC_FROM_VAULT', { phase: 'start', preserveLocal, force });
 const debugApi = import.meta.env.VITE_DEBUG_API === 'true';
 if (debugApi) console.info('[SYNC_DEBUG] syncFromVault:start', { preserveLocal, now });
 let rawData = [];
+let syncCompletedSuccessfully = false;
 try {
 // Merge in-memory + localStorage titles so Studio renames survive refresh/resync
 // even if the persistentTitles store has not finished hydrating yet.
@@ -1289,6 +1290,7 @@ demoInjected,
 source: backendReachable ? 'syncFromVault:backend' : 'syncFromVault:offline'
 });
 logBg7nLocalStorageFeed();
+syncCompletedSuccessfully = true;
 } catch (err) {
 console.error('❌ Sync Error:', err);
 if (isStorageFull()) {
@@ -1311,7 +1313,12 @@ ids: (rawData || []).slice(0, 20).map((r) => r?.id).filter(Boolean)
 if (debugApi) console.info('[SYNC_DEBUG] syncFromVault:finish', { at: lastSyncFromVaultAt });
 loading.set(false);
 resourceManager.setTimeout(() => {
-if (get(uploadStatus).startsWith('✅') || get(uploadStatus).startsWith('⚠️') || get(uploadStatus).startsWith('❌')) {
+if (syncCompletedSuccessfully) {
+uploadStatus.set('Standby');
+return;
+}
+const status = get(uploadStatus);
+if (status.startsWith('✅') || status.startsWith('⚠️') || status.startsWith('❌')) {
 uploadStatus.set('Standby');
 }
 }, 4000);
@@ -1687,6 +1694,8 @@ console.log('[ReelForge media] BACKEND_URL =', BACKEND_URL, '| sample video =', 
 resourceManager.setTimeout(() => auditRenderedMediaUrls(), 2500);
 prepareStorageOnStartup(CONFIG.THUMBNAIL_STORAGE_KEY);
 const onBackendReconnecting = (e) => {
+const status = get(uploadStatus);
+if (status.startsWith('✅')) return;
 uploadStatus.set(`🔄 ${e.detail?.message || 'Backend reconnecting...'}`);
 };
 const onSearchOpenReel = (event) => {

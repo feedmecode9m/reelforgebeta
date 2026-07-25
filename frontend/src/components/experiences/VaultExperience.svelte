@@ -733,14 +733,11 @@
       }
     }
     if (deletedIds.length > 0) {
+      const imageReels = (await fetchReadyReels()).filter(isThumbnailImageReel);
       applyVideoDeleteTombstone(deletedIds);
-      await applyVideoDeleteThumbnailCleanup(deletedIds);
+      await purgeStaleOrphanThumbnails(deletedIds, imageReels);
     }
     await syncFromVault(true, true);
-    applyVideoDeleteTombstone(deletedIds);
-    if (deletedIds.length > 0) {
-      await applyVideoDeleteThumbnailCleanup(deletedIds);
-    }
     selectedVideoIds = [];
     const afterCount = get(personalVideos).length;
     logDeletePipeline('video-vault', 'store_after', {

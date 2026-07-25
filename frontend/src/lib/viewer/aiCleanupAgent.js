@@ -13,6 +13,7 @@ import {
   removeThumbnailVaultByIndex,
   syncCollectionStore
 } from './thumbnailVault.js';
+import { isThumbnailImageReel } from './thumbnailCanonicalization.js';
 import { traceThumbStoreWrite } from './thumbStoreWriteTrace.js';
 import { pipelineCheckpoint } from '../diagnostics/pipelineDiag.js';
 import { vaultForensic } from '../diagnostics/vaultForensics.js';
@@ -620,6 +621,12 @@ export function createAiCleanupAgent(deps) {
     { reelId: videoId, filename: diskName, videoUrl: video?.url }
   );
   logDeletionPropagation('vault-delete-backend-ok', { diskName });
+  const imageReels = (await fetchReadyReels(AI_CLEANUP_AGENT.authHeaders())).filter(isThumbnailImageReel);
+  deleteThumbnailVaultEntries([String(videoId)], imageReels, {
+    backendReachable: persistenceSuccess,
+    storageKey: CONFIG.THUMBNAIL_STORAGE_KEY
+  });
+  syncCollectionStore(personalThumbnailCollection, CONFIG.THUMBNAIL_STORAGE_KEY);
   } catch (apiError) { console.warn('⚠️ [VAULT DELETE] Backend API call failed:', apiError); }
   } else { console.warn('⚠️ [VAULT DELETE] No admin token or filename available, skipping backend deletion'); }
   if (!persistenceSuccess) {
@@ -632,15 +639,10 @@ export function createAiCleanupAgent(deps) {
   runClientMediaPurge({ filename: diskName, reelId: videoId, videoUrl: video?.url });
   }
   if (video.url && video.url.startsWith('blob:')) { URL.revokeObjectURL(video.url); resourceManager.revokeBlobUrl(video.url); }
-  deleteThumbnailVaultEntries([String(videoId)], [], {
-    backendReachable: persistenceSuccess,
-    storageKey: CONFIG.THUMBNAIL_STORAGE_KEY
-  });
   const thumbKey = filenameFromMediaRef(video?.thumbnail || video?.thumbnailUrl || '');
   if (thumbKey) {
     removeThumbnailVaultByIndex(thumbKey, CONFIG.THUMBNAIL_STORAGE_KEY);
   }
-  syncCollectionStore(personalThumbnailCollection, CONFIG.THUMBNAIL_STORAGE_KEY);
   uploadStatus.set('✅ Video deleted');
   await syncFromVault(true);
   const afterCount = get(personalVideos).length;
