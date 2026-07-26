@@ -36,7 +36,6 @@ import {
 import { loadHeroReel } from '../lib/hero/heroReelIdentity.js';
 import { isHeroAsset, filterNonHeroAssets } from '../lib/hero/heroDomainGuard.js';
 import { shouldStreamDiagnostics } from '../lib/diagnostics/pipelineSnapshot.js';
-import { vaultForensic } from '../lib/diagnostics/vaultForensics.js';
 import { initReleaseCenter } from '../lib/release/releaseCenter.js';
 import { initPredictiveRepairEngine } from '../lib/repair/predictiveRepairEngine.js';
 import { initCreatorKnowledgeGraph } from '../lib/graph/creatorKnowledgeGraph.js';
@@ -268,15 +267,6 @@ uploadUrl: filtered[0]?.url || null,
 state: 'persist_start',
 count: filtered.length,
 storageKey: CONFIG.VIDEO_VAULT_KEY
-});
-vaultForensic('VAULT_PERSIST', {
-  vaultType: 'video',
-  assetId: filtered[0]?.id || null,
-  fileName: filtered[0]?.fileName || filtered[0]?.name || null,
-  storageLocation: CONFIG.VIDEO_VAULT_KEY,
-  backendEndpoint: null,
-  result: 'localStorage_write',
-  count: filtered.length
 });
 safeLocalStorageSet(CONFIG.VIDEO_VAULT_KEY, filtered, {
 thumbnailKey: CONFIG.THUMBNAIL_STORAGE_KEY,
@@ -854,15 +844,6 @@ const getImg = (reel, category, i) => UIAgent.getImg?.(reel, category, i) || get
 // ==========================================
 function reloadVaultStoresFromStorage() {
 const thumbs = readThumbnailVault(CONFIG.THUMBNAIL_STORAGE_KEY);
-vaultForensic('VAULT_REFRESH_RESTORE', {
-  vaultType: 'thumbnail',
-  assetId: null,
-  fileName: null,
-  storageLocation: CONFIG.THUMBNAIL_STORAGE_KEY,
-  backendEndpoint: null,
-  result: 'reload_start',
-  count: thumbs.length
-});
 console.info('[VAULT_RELOAD]', {
 action: 'reloadVaultStoresFromStorage:start',
 personal_thumbnails: thumbs.length,
@@ -899,15 +880,6 @@ personalVideos.set(filteredStoredVideos.map((video) => ({
 url: video.url ? toRelativeMediaPath(video.url) : '',
 thumbnail: resolveUserPosterUrl(video.thumbnail) || ''
 })));
-vaultForensic('VAULT_REFRESH_RESTORE', {
-  vaultType: 'video',
-  assetId: null,
-  fileName: null,
-  storageLocation: CONFIG.VIDEO_VAULT_KEY,
-  backendEndpoint: null,
-  result: 'reload_videos',
-  count: filteredStoredVideos.length
-});
 console.info('[STORE_UPDATE]', {
 store: 'personalVideos',
 count: filteredStoredVideos.length,
