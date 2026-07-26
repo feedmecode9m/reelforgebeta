@@ -31,7 +31,8 @@ import {
     mapPlatformHeroMode,
     selectHeroContent,
     startHeroRotation,
-    stopHeroRotation
+    stopHeroRotation,
+    logHeroConfigBootTrace
 } from '../lib/hero/heroIntelligence.js';
 import { loadHeroReel } from '../lib/hero/heroReelIdentity.js';
 import { isHeroAsset, filterNonHeroAssets } from '../lib/hero/heroDomainGuard.js';
@@ -1362,6 +1363,15 @@ if (typeof window !== 'undefined') {
     resolveVideoUrl: normalizeVideoUrl
   });
   const heroCfg = loadHeroManagerConfig();
+  logHeroConfigBootTrace({
+    site: 'viewerContext:module-init',
+    caller: 'viewerContext.js:module-init',
+    storageRawBeforeParse: localStorage.getItem('reelforge_hero_manager_config'),
+    heroAssetId: heroCfg?.heroAssetId || '',
+    backgroundSource: heroCfg?.backgroundSource || '',
+    configSource: 'loadHeroManagerConfig',
+    reason: 'post_hydrateHeroBackgroundStoresSync'
+  });
   const canonical = loadHeroReel();
   pipelineDiag('HERO_HYDRATE', 'hydrateHeroBackgroundStoresSync', 'viewerContext.js', {
     result: String(syncHydrateResult || ''),
@@ -1845,6 +1855,18 @@ logBg7jHydrationReady(true, hydratedPersonalVideosCount);
 pipelineCheckpoint('VIEWER_BOOTSTRAP', { phase: 'post-syncFromVault' });
 if (hasUserHeroOverride(CONFIG)) {
 applyManagerBackgroundFromConfig(loadHeroManagerConfig());
+}
+{
+const postSyncHeroCfg = loadHeroManagerConfig();
+logHeroConfigBootTrace({
+  site: 'viewerContext:onMount-post-sync',
+  caller: 'viewerContext.js:onMount',
+  storageRawBeforeParse: localStorage.getItem('reelforge_hero_manager_config'),
+  heroAssetId: postSyncHeroCfg?.heroAssetId || '',
+  backgroundSource: postSyncHeroCfg?.backgroundSource || '',
+  configSource: 'loadHeroManagerConfig',
+  reason: 'post_syncFromVault_before_applyHeroIntelligence'
+});
 }
 runEpisodeBridgeSync('post-sync');
 applyHeroIntelligence(true);

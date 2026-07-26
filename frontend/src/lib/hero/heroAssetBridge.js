@@ -116,6 +116,21 @@ export function buildHeroAssetRegistry(vaultItems = [], options = {}) {
         dedupe.add(entry.assetId);
         normalized.push(entry);
     }
+    const img0113 = normalized.find(
+        (item) =>
+            String(item?.mediaUrl || '').includes('IMG_0113.JPEG') ||
+            String(item?.assetId || '').includes('IMG_0113.JPEG')
+    );
+    console.info('[HERO_REGISTRY_TRACE]', {
+        stage: 'heroAssetBridge:buildHeroAssetRegistry',
+        vaultItemsCount: vaultItems.length,
+        registryCount: normalized.length,
+        firstFive: normalized.slice(0, 5),
+        img0113Present: Boolean(img0113),
+        img0113AssetId: img0113?.assetId || '',
+        img0113HasAssetId: Boolean(String(img0113?.assetId || '').trim()),
+        ts: new Date().toISOString()
+    });
     return normalized;
 }
 

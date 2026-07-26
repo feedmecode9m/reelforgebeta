@@ -13,7 +13,7 @@ import { toRelativeMediaPath } from './config.js';
 import { isHeroAsset } from './hero/heroDomainGuard.js';
 import { pipelineDiag, pipelineCheckpoint } from './diagnostics/pipelineDiag.js';
 import { logBg7kCatalogReceive } from './diagnostics/bg7kCardRenderTrace.js';
-import { loadHeroManagerConfig } from './hero/heroIntelligence.js';
+import { loadHeroManagerConfig, logHeroConfigBootTrace } from './hero/heroIntelligence.js';
 import { heroReelFromUploadResponse, loadHeroReel, saveHeroReel } from './hero/heroReelIdentity.js';
 import { logBg7jHeroRestore } from './diagnostics/bg7jHydrationGate.js';
 import { logBg7vHeroRestoreReason } from './diagnostics/bg7vHeroRestoreReason.js';
@@ -67,6 +67,15 @@ function restoreHeroReelIdentityFromReels(reels) {
 
     const manager = loadHeroManagerConfig();
     const heroAssetId = String(manager?.heroAssetId || manager?.backgroundAsset || '').trim();
+    logHeroConfigBootTrace({
+        site: 'mediaBootstrap:restoreHeroReelIdentityFromReels',
+        caller: 'mediaBootstrap.js:restoreHeroReelIdentityFromReels',
+        storageRawBeforeParse: localStorage.getItem('reelforge_hero_manager_config'),
+        heroAssetId,
+        backgroundSource: String(manager?.backgroundSource || ''),
+        configSource: 'loadHeroManagerConfig',
+        reason: heroAssetId ? 'restore_attempt' : 'NO_HERO_ID'
+    });
     if (!heroAssetId) {
         logBg7vHeroRestoreReason({
             heroAssetId: '',
@@ -206,6 +215,19 @@ function restoreHeroReelIdentityFromReels(reels) {
  */
 export async function bootstrapMediaFromBackend(config = {}) {
     pipelineCheckpoint('VIEWER_BOOTSTRAP', { phase: 'bootstrapMediaFromBackend:start' });
+    const bootHeroCfg = loadHeroManagerConfig();
+    logHeroConfigBootTrace({
+        site: 'mediaBootstrap:bootstrapMediaFromBackend:start',
+        caller: 'mediaBootstrap.js:bootstrapMediaFromBackend',
+        storageRawBeforeParse:
+            typeof window !== 'undefined'
+                ? localStorage.getItem('reelforge_hero_manager_config')
+                : null,
+        heroAssetId: bootHeroCfg?.heroAssetId || '',
+        backgroundSource: bootHeroCfg?.backgroundSource || '',
+        configSource: 'loadHeroManagerConfig',
+        reason: 'bootstrap_start'
+    });
     pipelineDiag('BOOTSTRAP', 'bootstrapMediaFromBackend', 'mediaBootstrap.js', { result: 'start' });
     const thumbnailKey = config.thumbnailKey || THUMBNAIL_KEY;
     const videoVaultKey = config.videoVaultKey || VIDEO_VAULT_KEY;

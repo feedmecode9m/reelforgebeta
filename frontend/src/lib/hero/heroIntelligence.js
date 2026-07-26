@@ -29,6 +29,7 @@ import {
 import {
     loadHeroReel,
     saveHeroReel,
+    heroReelFromUploadResponse,
     heroReelToVaultItem,
     applyHeroReelToStores,
     migrateLegacyHeroStorageIfNeeded,
@@ -87,6 +88,202 @@ export const DISCOVERY_TYPE_SOURCES = {
 };
 
 export const HERO_MANAGER_STORAGE_KEY = 'reelforge_hero_manager_config';
+const VIDEO_VAULT_STORAGE_KEY = 'personal_video_vault';
+const FEED_STORAGE_KEY = 'reelforge_feed';
+
+/** Prevents loadHeroManagerConfig ↔ saveHeroManagerConfig recovery recursion. */
+let heroIdentityRecoveryInFlight = false;
+
+function readLocalJsonArray(storageKey) {
+    if (typeof window === 'undefined') return [];
+    try {
+        const parsed = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        return [];
+    }
+}
+
+/** @returns {Record<string, unknown>[]} */
+function collectFeedVideoReelRecords() {
+    if (typeof window === 'undefined') return [];
+    try {
+        const feed = JSON.parse(localStorage.getItem(FEED_STORAGE_KEY) || '{}');
+        if (!feed || typeof feed !== 'object') return [];
+        const records = [];
+        for (const items of Object.values(feed)) {
+            if (Array.isArray(items)) records.push(...items);
+        }
+        return records;
+    } catch {
+        return [];
+    }
+}
+
+/** @param {Record<string, unknown> | null | undefined} record */
+function isPlayableHeroVideoCandidate(record) {
+    const id = String(record?.id || record?.assetId || '').trim();
+    if (!id) return false;
+
+    const url = toRelativeMediaPath(
+        String(record?.url || record?.videoUrl || record?.video_url || record?.mediaUrl || '').trim()
+    );
+    if (!url || url.startsWith('blob:') || url.startsWith('data:')) return false;
+
+    const defaultHeroUrl = toRelativeMediaPath(DEFAULT_HERO_BACKGROUND_VIDEO);
+    if (url === defaultHeroUrl) return false;
+
+    const mime = String(record?.type || record?.mime || record?.mimeType || '').toLowerCase();
+    if (mime.startsWith('image/')) return false;
+
+    const thumbnailOnly =
+        !mime.startsWith('video/') &&
+        !HERO_VIDEO_EXTENSIONS.test(url) &&
+        !url.includes('/videos/') &&
+        Boolean(record?.thumbnail || record?.thumbnailUrl || record?.thumbnail_url);
+    if (thumbnailOnly) return false;
+
+    return (
+        mime.startsWith('video/') ||
+        HERO_VIDEO_EXTENSIONS.test(url) ||
+        url.includes('/videos/')
+    );
+}
+
+/**
+ * @param {Record<string, unknown>} record
+ * @param {'reelforge_hero_reel' | 'personal_video_vault' | 'reelforge_feed'} source
+ * @returns {{ reel: import('./heroReelIdentity.js').HeroReel; source: string; priority: number; sortTs: number } | null}
+ */
+function normalizeHeroRecoveryCandidate(record, source) {
+    if (!isPlayableHeroVideoCandidate(record)) return null;
+    const reel = heroReelFromUploadResponse(record, 'video');
+    if (!reel?.id || !reel?.url) return null;
+
+    const priority =
+        source === 'reelforge_hero_reel' ? 0 : source === 'personal_video_vault' ? 1 : 2;
+    const sortTs =
+        source === 'personal_video_vault'
+            ? Date.parse(
+                  String(record?.addedAt || record?.createdAt || record?.created_at || '')
+              ) || 0
+            : 0;
+
+    return { reel, source, priority, sortTs };
+}
+
+/** @returns {ReturnType<typeof normalizeHeroRecoveryCandidate>[]} */
+function gatherHeroRecoveryCandidates() {
+    /** @type {ReturnType<typeof normalizeHeroRecoveryCandidate>[]} */
+    const candidates = [];
+    const seenIds = new Set();
+
+    const canonical = loadHeroReel();
+    if (canonical) {
+        const normalized = normalizeHeroRecoveryCandidate(canonical, 'reelforge_hero_reel');
+        if (normalized && !seenIds.has(normalized.reel.id)) {
+            seenIds.add(normalized.reel.id);
+            candidates.push(normalized);
+        }
+    }
+
+    for (const entry of readLocalJsonArray(VIDEO_VAULT_STORAGE_KEY)) {
+        if (!entry || typeof entry !== 'object') continue;
+        const normalized = normalizeHeroRecoveryCandidate(entry, 'personal_video_vault');
+        if (normalized && !seenIds.has(normalized.reel.id)) {
+            seenIds.add(normalized.reel.id);
+            candidates.push(normalized);
+        }
+    }
+
+    for (const entry of collectFeedVideoReelRecords()) {
+        if (!entry || typeof entry !== 'object') continue;
+        const normalized = normalizeHeroRecoveryCandidate(entry, 'reelforge_feed');
+        if (normalized && !seenIds.has(normalized.reel.id)) {
+            seenIds.add(normalized.reel.id);
+            candidates.push(normalized);
+        }
+    }
+
+    candidates.sort((a, b) => a.priority - b.priority || b.sortTs - a.sortTs);
+    return candidates;
+}
+
+/**
+ * Recover hero identity from local reel sources when manager config lacks heroAssetId.
+ * @param {HeroManagerConfig | null | undefined} [baseConfig]
+ * @returns {HeroManagerConfig | null}
+ */
+function attemptHeroIdentityRecovery(baseConfig = null) {
+    if (heroIdentityRecoveryInFlight || typeof window === 'undefined') return null;
+
+    heroIdentityRecoveryInFlight = true;
+    try {
+        const candidates = gatherHeroRecoveryCandidates();
+        const selected = candidates[0] || null;
+
+        console.info('[HERO_IDENTITY_RECOVERY]', {
+            source: selected?.source || 'none',
+            candidateCount: candidates.length,
+            selectedId: selected?.reel?.id || '',
+            recovered: Boolean(selected)
+        });
+
+        if (!selected) return null;
+
+        saveHeroReel(selected.reel);
+        const saved = saveHeroManagerConfig({
+            heroAssetId: selected.reel.id,
+            backgroundSource: 'custom_video',
+            backgroundStyle: 'video'
+        });
+
+        if (baseConfig) {
+            return {
+                ...baseConfig,
+                ...saved,
+                heroAssetId: selected.reel.id,
+                backgroundSource: 'custom_video',
+                backgroundStyle: 'video'
+            };
+        }
+        return saved;
+    } finally {
+        heroIdentityRecoveryInFlight = false;
+    }
+}
+
+/**
+ * @param {HeroManagerConfig} config
+ * @param {Partial<HeroManagerConfig>} [baseConfig]
+ * @returns {HeroManagerConfig}
+ */
+function finalizeHeroManagerConfigLoad(config, baseConfig = null) {
+    const heroAssetId = String(config?.heroAssetId || '').trim();
+    if (heroAssetId || heroIdentityRecoveryInFlight) return config;
+
+    const recovered = attemptHeroIdentityRecovery(baseConfig || config);
+    return recovered || config;
+}
+
+function captureHeroConfigBootCaller(skipFrames = 2) {
+    try {
+        return (new Error().stack || '').split('\n')[skipFrames]?.trim() || 'unknown';
+    } catch {
+        return 'unknown';
+    }
+}
+
+/**
+ * Temporary boot diagnostics for hero manager config provenance.
+ * @param {Record<string, unknown>} payload
+ */
+export function logHeroConfigBootTrace(payload = {}) {
+    console.info('[HERO_CONFIG_BOOT_TRACE]', {
+        ts: new Date().toISOString(),
+        ...payload
+    });
+}
 export const HERO_CAROUSEL_TRANSITIONS = /** @type {const} */ ([
     'fade',
     'cinematic_blur',
@@ -332,10 +529,39 @@ export function getDefaultHeroManagerConfig() {
 
 /** @returns {HeroManagerConfig} */
 export function loadHeroManagerConfig() {
-    if (typeof window === 'undefined') return getDefaultHeroManagerConfig();
+    const caller = captureHeroConfigBootCaller(2);
+    if (typeof window === 'undefined') {
+        const config = getDefaultHeroManagerConfig();
+        logHeroConfigBootTrace({
+            site: 'loadHeroManagerConfig',
+            caller,
+            storageRawBeforeParse: null,
+            heroAssetId: config.heroAssetId,
+            backgroundSource: config.backgroundSource,
+            configSource: 'getDefaultHeroManagerConfig',
+            reason: 'ssr_no_window'
+        });
+        return config;
+    }
     try {
         const raw = localStorage.getItem(HERO_MANAGER_STORAGE_KEY);
-        if (!raw) return getDefaultHeroManagerConfig();
+        if (!raw) {
+            const defaultConfig = getDefaultHeroManagerConfig();
+            const config = finalizeHeroManagerConfigLoad(defaultConfig);
+            logHeroConfigBootTrace({
+                site: 'loadHeroManagerConfig',
+                caller,
+                storageRawBeforeParse: null,
+                heroAssetId: config.heroAssetId,
+                backgroundSource: config.backgroundSource,
+                configSource:
+                    config.heroAssetId && config.backgroundSource === 'custom_video'
+                        ? 'identity_recovery'
+                        : 'getDefaultHeroManagerConfig',
+                reason: config.heroAssetId ? 'identity_recovery' : 'no_storage_key'
+            });
+            return config;
+        }
         const parsed = JSON.parse(raw);
         const resolvedHeroAssetId = String(
             parsed.heroAssetId || parsed.backgroundAsset || ''
@@ -445,9 +671,35 @@ export function loadHeroManagerConfig() {
             heroAssetId: config.heroAssetId || '',
             ts: new Date().toISOString()
         });
+        logHeroConfigBootTrace({
+            site: 'loadHeroManagerConfig',
+            caller,
+            storageRawBeforeParse: raw,
+            parsedHeroAssetId: String(parsed.heroAssetId || parsed.backgroundAsset || '').trim(),
+            parsedBackgroundSource: String(parsed.backgroundSource || ''),
+            heroAssetId: config.heroAssetId,
+            backgroundSource: config.backgroundSource,
+            configSource: 'localStorage_merged_with_defaults',
+            reason: 'storage_hit'
+        });
+        return finalizeHeroManagerConfigLoad(config, config);
+    } catch (error) {
+        const defaultConfig = getDefaultHeroManagerConfig();
+        const config = finalizeHeroManagerConfigLoad(defaultConfig);
+        logHeroConfigBootTrace({
+            site: 'loadHeroManagerConfig',
+            caller,
+            storageRawBeforeParse: localStorage.getItem(HERO_MANAGER_STORAGE_KEY),
+            heroAssetId: config.heroAssetId,
+            backgroundSource: config.backgroundSource,
+            configSource:
+                config.heroAssetId && config.backgroundSource === 'custom_video'
+                    ? 'identity_recovery'
+                    : 'getDefaultHeroManagerConfig',
+            reason: config.heroAssetId ? 'identity_recovery' : 'parse_error',
+            error: error?.message || String(error)
+        });
         return config;
-    } catch {
-        return getDefaultHeroManagerConfig();
     }
 }
 

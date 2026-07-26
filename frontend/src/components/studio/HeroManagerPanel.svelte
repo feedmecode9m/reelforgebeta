@@ -155,7 +155,25 @@
     }
 
     function refreshHeroAssetRegistry() {
-        heroAssetRegistry.set(buildHeroAssetRegistry(loadHeroVaultItems()));
+        const vaultItems = loadHeroVaultItems();
+        const registry = buildHeroAssetRegistry(vaultItems);
+        const img0113 = registry.find(
+            (item) =>
+                String(item?.mediaUrl || '').includes('IMG_0113.JPEG') ||
+                String(item?.assetId || '').includes('IMG_0113.JPEG')
+        );
+        console.info('[HERO_REGISTRY_TRACE]', {
+            stage: 'HeroManagerPanel:refreshHeroAssetRegistry',
+            vaultItemsCount: vaultItems.length,
+            registryCount: registry.length,
+            firstFive: registry.slice(0, 5),
+            img0113Present: Boolean(img0113),
+            img0113AssetId: img0113?.assetId || '',
+            img0113HasAssetId: Boolean(String(img0113?.assetId || '').trim()),
+            configHeroAssetId: config.heroAssetId || '',
+            ts: new Date().toISOString()
+        });
+        heroAssetRegistry.set(registry);
     }
     $: {
         config.heroAssetId;
@@ -194,6 +212,17 @@
 
     function handleHeroAssetChange() {
         const selected = get(heroAssetRegistry).find((asset) => asset.assetId === config.heroAssetId);
+        console.info('[HERO_SELECTION_BOUNDARY]', {
+            stage: 'HeroManagerPanel:handleHeroAssetChange',
+            selectedItem: selected || null,
+            itemAssetId: selected?.assetId || '',
+            itemId: selected?.id || '',
+            itemMediaUrl: selected?.mediaUrl || '',
+            itemImageUrl: selected?.imageUrl || selected?.thumbnailUrl || '',
+            configHeroAssetId: config.heroAssetId || '',
+            registryCount: get(heroAssetRegistry).length,
+            ts: new Date().toISOString()
+        });
         if (selected) {
             config = {
                 ...config,
@@ -330,6 +359,16 @@
 
     function selectHeroVaultAsset(item) {
         const isVideo = isVideoHeroAssetType(item.assetType);
+        console.info('[HERO_SELECTION_BOUNDARY]', {
+            stage: 'HeroManagerPanel:selectHeroVaultAsset',
+            selectedItem: item || null,
+            itemAssetId: item?.assetId || '',
+            itemId: item?.id || '',
+            itemMediaUrl: item?.mediaUrl || '',
+            itemImageUrl: item?.imageUrl || item?.thumbnailUrl || '',
+            configHeroAssetId: config.heroAssetId || '',
+            ts: new Date().toISOString()
+        });
         config = {
             ...config,
             heroAssetId: item.assetId,
