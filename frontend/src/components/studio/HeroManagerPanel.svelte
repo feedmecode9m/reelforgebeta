@@ -224,7 +224,7 @@
             ...config,
             ...payload
         };
-        saveHeroManagerConfig(config);
+        saveHeroManagerConfig(payload);
         statusMessage =
             normalizedMode === 'scheduled'
                 ? `Hero story scheduled for ${payload.storyScheduledFor || 'unspecified time'}`
@@ -443,7 +443,7 @@
                 heroAssetId: '',
                 backgroundSource: 'selection'
             };
-            saveHeroManagerConfig(config);
+            saveHeroManagerConfig({ heroAssetId: '', backgroundSource: 'selection' });
         }
         refreshHeroAssetRegistry();
         const afterCount = get(heroAssetRegistry).length;
@@ -621,15 +621,16 @@
     }
 
     function toggleCampaign(campaignId) {
+        const seasonalCampaigns = config.seasonalCampaigns.map((campaign) =>
+            campaign.id === campaignId
+                ? { ...campaign, active: !campaign.active }
+                : { ...campaign, active: false }
+        );
         config = {
             ...config,
-            seasonalCampaigns: config.seasonalCampaigns.map((campaign) =>
-                campaign.id === campaignId
-                    ? { ...campaign, active: !campaign.active }
-                    : { ...campaign, active: false }
-            )
+            seasonalCampaigns
         };
-        saveHeroManagerConfig(config);
+        saveHeroManagerConfig({ seasonalCampaigns });
         logHeroIntelligenceDiag('HERO_CAMPAIGN', {
             trigger: 'toggle',
             campaignId,
@@ -638,15 +639,16 @@
     }
 
     function updateCampaignSchedule(campaignId, field, value) {
+        const seasonalCampaigns = config.seasonalCampaigns.map((campaign) =>
+            campaign.id === campaignId
+                ? { ...campaign, [field]: value }
+                : campaign
+        );
         config = {
             ...config,
-            seasonalCampaigns: config.seasonalCampaigns.map((campaign) =>
-                campaign.id === campaignId
-                    ? { ...campaign, [field]: value }
-                    : campaign
-            )
+            seasonalCampaigns
         };
-        saveHeroManagerConfig(config);
+        saveHeroManagerConfig({ seasonalCampaigns });
         logHeroIntelligenceDiag('HERO_CAMPAIGN', {
             trigger: 'schedule_update',
             campaignId,
