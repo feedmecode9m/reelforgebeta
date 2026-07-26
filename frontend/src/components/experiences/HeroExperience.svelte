@@ -12,8 +12,11 @@
   import {
     applyHeroManagerBackground,
     buildHeroCarouselSlides,
+    commitHeroVideoIdentity,
+    HERO_MANAGER_STORAGE_KEY,
     loadHeroManagerConfig,
     loadHeroVaultItems,
+    logHeroConfigBootTrace,
     logHeroImagePipeline,
     logHeroIntelligenceDiag,
     resolveHeroBackgroundPresentation,
@@ -22,10 +25,17 @@
   import { buildHeroAssetRegistry, isVideoHeroAssetType } from '../../lib/hero/heroAssetBridge.js';
   import {
     heroReelFromUploadResponse,
+    HERO_REEL_STORAGE_KEY,
     saveHeroReel
   } from '../../lib/hero/heroReelIdentity.js';
   import { validateVideoFile } from '../../lib/runtime-guards.js';
-  import { DEFAULT_AVATAR_PLACEHOLDER, DEFAULT_MEDIA_PLACEHOLDER } from '../../lib/config.js';
+  import { getAdminAuthHeaders } from '../../lib/api.js';
+  import { uploadMedia } from '../../lib/api/media.js';
+  import {
+    DEFAULT_AVATAR_PLACEHOLDER,
+    DEFAULT_MEDIA_PLACEHOLDER
+  } from '../../lib/config.js';
+  import * as ReelforgeConfig from '../../lib/config.js';
   import { pipelineCheckpoint } from '../../lib/diagnostics/pipelineDiag.js';
   import { reelResStoreMutation, reelResReelSnapshot } from '../../lib/diagnostics/reelResolutionTrace.js';
   import {
@@ -60,6 +70,17 @@
     videoUrl: '',
     imageUrl: ''
   };
+
+  logHeroConfigBootTrace({
+    site: 'HeroExperience:PENDING_HERO_BACKGROUND_PRESENTATION',
+    caller: 'HeroExperience.svelte:module-init',
+    storageRawBeforeParse:
+      typeof window !== 'undefined' ? localStorage.getItem('reelforge_hero_manager_config') : null,
+    heroAssetId: PENDING_HERO_BACKGROUND_PRESENTATION.heroAssetId,
+    backgroundSource: PENDING_HERO_BACKGROUND_PRESENTATION.backgroundSource,
+    configSource: 'PENDING_HERO_BACKGROUND_PRESENTATION_literal',
+    reason: 'pre_hydration_fallback_constant'
+  });
 
   /** @type {'stage' | 'replace' | 'both'} */
   export let section = 'stage';
@@ -96,6 +117,16 @@ export let sanitizeViewer = false;
   let detachHeroPersistence = null;
   let heroFileInput;
   let heroManagerConfig = loadHeroManagerConfig();
+  logHeroConfigBootTrace({
+    site: 'HeroExperience:script-init',
+    caller: 'HeroExperience.svelte:heroManagerConfig-init',
+    storageRawBeforeParse:
+      typeof window !== 'undefined' ? localStorage.getItem('reelforge_hero_manager_config') : null,
+    heroAssetId: heroManagerConfig?.heroAssetId || '',
+    backgroundSource: heroManagerConfig?.backgroundSource || '',
+    configSource: 'loadHeroManagerConfig',
+    reason: 'component_script_evaluation'
+  });
   let lastRenderSignature = '';
   let lastCertificationRenderSignature = '';
   let carouselSlides = [];
@@ -724,6 +755,74 @@ $: heroBadgeLabel = sanitizeViewer
     }
   }
 
+  /** @param {File | null | undefined} file @param {'video' | 'image'} kind */
+  function resolveHeroUploadApiTarget(file, kind = 'video') {
+    const apiBase = String(ReelforgeConfig.API_BASE_URL || '');
+    const fileSize = Number(file?.size || 0);
+    const signedUploadEnabled = Boolean(
+      kind === 'video' &&
+        ReelforgeConfig.USE_SIGNED_UPLOADS &&
+        file instanceof File &&
+        fileSize >= ReelforgeConfig.SIGNED_UPLOADS_MIN_BYTES
+    );
+    return {
+      apiBase,
+      endpoint:
+        kind === 'image' ? '/api/reels' : signedUploadEnabled ? '/api/uploads/sign' : '/api/reels',
+      signedUploadEnabled,
+      fileSize,
+      source: 'HeroExperience'
+    };
+  }
+
+  /** @param {File | null | undefined} file @param {'video' | 'image'} kind */
+  function logHeroUploadApiResolve(file, kind = 'video') {
+    const target = resolveHeroUploadApiTarget(file, kind);
+    console.info('[HERO_UPLOAD_API_RESOLVE]', target);
+    return target;
+  }
+
+  /** @param {string} stage @param {Record<string, unknown>} [detail] */
+  function logHeroUploadFlow(stage, detail = {}) {
+    console.info('[HERO_UPLOAD_FLOW]', {
+      stage,
+      ...detail,
+      ts: new Date().toISOString()
+    });
+  }
+
+  /** @param {import('../../lib/hero/heroReelIdentity.js').HeroReel} reel */
+  function verifyHeroVideoIdentityCommitted(reel) {
+    let storedReel = null;
+    let storedConfig = null;
+    try {
+      storedReel = JSON.parse(localStorage.getItem(HERO_REEL_STORAGE_KEY) || 'null');
+    } catch {
+      storedReel = null;
+    }
+    try {
+      storedConfig = JSON.parse(localStorage.getItem(HERO_MANAGER_STORAGE_KEY) || 'null');
+    } catch {
+      storedConfig = null;
+    }
+    const verified = Boolean(
+      storedReel?.id === reel.id &&
+        storedReel?.url &&
+        storedConfig?.heroAssetId === reel.id &&
+        storedConfig?.backgroundSource === 'custom_video' &&
+        storedConfig?.backgroundStyle === 'video'
+    );
+    logHeroUploadFlow('identity_committed', {
+      reelId: storedReel?.id || '',
+      reelUrl: storedReel?.url || '',
+      heroAssetId: storedConfig?.heroAssetId || '',
+      backgroundSource: storedConfig?.backgroundSource || '',
+      backgroundStyle: storedConfig?.backgroundStyle || '',
+      verified
+    });
+    return verified;
+  }
+
   function openStoryTarget(target) {
     const resolved = String(target || '').trim();
     if (!resolved || typeof window === 'undefined') return;
@@ -947,6 +1046,15 @@ $: heroBadgeLabel = sanitizeViewer
   }
 
   onMount(() => {
+    logHeroConfigBootTrace({
+      site: 'HeroExperience:onMount',
+      caller: 'HeroExperience.svelte:onMount',
+      storageRawBeforeParse: localStorage.getItem('reelforge_hero_manager_config'),
+      heroAssetId: heroManagerConfig?.heroAssetId || '',
+      backgroundSource: heroManagerConfig?.backgroundSource || '',
+      configSource: 'in_memory_heroManagerConfig',
+      reason: 'onMount_before_applyHeroManagerBackground'
+    });
     applyHeroManagerBackground(heroManagerConfig, getHeroBackgroundStores());
     const handleManagerUpdate = (event) => {
       heroManagerConfig = event.detail || loadHeroManagerConfig();
@@ -1213,16 +1321,21 @@ $: heroBadgeLabel = sanitizeViewer
       });
       heroPreviewUrl.set(preview);
       uploadStatus.set(`🎬 Uploading hero video (${file.name})...`);
-      console.info('[BG7G_UPLOAD]', {
-        ts: new Date().toISOString(),
-        component: 'handleHeroFileSelect',
-        file: 'HeroExperience.svelte',
-        fileName: file.name,
-        fileSize: file.size,
-        uploadUrl: '/api/reels',
-        state: 'auto_accept_start',
-        kind: 'video'
-      });
+      {
+        const dropUploadTarget = resolveHeroUploadApiTarget(file, 'video');
+        logHeroUploadApiResolve(file, 'video');
+        console.info('[BG7G_UPLOAD]', {
+          ts: new Date().toISOString(),
+          component: 'handleHeroFileSelect',
+          file: 'HeroExperience.svelte',
+          fileName: file.name,
+          fileSize: file.size,
+          uploadUrl: `${dropUploadTarget.apiBase}${dropUploadTarget.endpoint}`,
+          state: 'auto_accept_start',
+          kind: 'video',
+          signedUploadEnabled: dropUploadTarget.signedUploadEnabled
+        });
+      }
       beginHeroAutoAccept();
     } else if (file.type.startsWith('image/')) {
       const reader = new FileReader();
@@ -1236,16 +1349,21 @@ $: heroBadgeLabel = sanitizeViewer
         });
         heroPreviewUrl.set(loadEvent.target.result);
         uploadStatus.set(`🖼️ Uploading hero image (${file.name})...`);
-        console.info('[BG7G_UPLOAD]', {
-          ts: new Date().toISOString(),
-          component: 'handleHeroFileSelect',
-          file: 'HeroExperience.svelte',
-          fileName: file.name,
-          fileSize: file.size,
-          uploadUrl: '/api/reels',
-          state: 'auto_accept_start',
-          kind: 'image'
-        });
+        {
+          const dropUploadTarget = resolveHeroUploadApiTarget(file, 'image');
+          logHeroUploadApiResolve(file, 'image');
+          console.info('[BG7G_UPLOAD]', {
+            ts: new Date().toISOString(),
+            component: 'handleHeroFileSelect',
+            file: 'HeroExperience.svelte',
+            fileName: file.name,
+            fileSize: file.size,
+            uploadUrl: `${dropUploadTarget.apiBase}${dropUploadTarget.endpoint}`,
+            state: 'auto_accept_start',
+            kind: 'image',
+            signedUploadEnabled: dropUploadTarget.signedUploadEnabled
+          });
+        }
         beginHeroAutoAccept();
       };
       reader.readAsDataURL(file);
@@ -1339,11 +1457,13 @@ $: heroBadgeLabel = sanitizeViewer
       name: pending.name || '',
       ts: new Date().toISOString()
     });
+    const acceptUploadKind = pending.type === 'image' ? 'image' : 'video';
+    const acceptUploadTarget = resolveHeroUploadApiTarget(pending.file, acceptUploadKind);
     vaultForensic('VAULT_ACCEPT', {
       vaultType: 'hero',
       fileName: pending.name || pending.file?.name || null,
       storageLocation: 'reelforge_hero_manager_config',
-      backendEndpoint: `${API_BASE_URL || ''}/api/reels`,
+      backendEndpoint: `${acceptUploadTarget.apiBase}${acceptUploadTarget.endpoint}`,
       result: 'accept_start'
     });
     emitHeroDevLog('accept-start', {
@@ -1387,32 +1507,60 @@ $: heroBadgeLabel = sanitizeViewer
             })
           );
         }
-        const { uploadVideo } = await import('../../lib/api/media.js');
-        const { getAdminAuthHeaders, API_BASE_URL } = await import('../../lib/api.js');
+        logHeroUploadFlow('selected', {
+          fileName: file.name,
+          fileSize: file.size
+        });
+        const uploadTarget = logHeroUploadApiResolve(file, 'video');
+        if (uploadTarget.signedUploadEnabled) {
+          logHeroUploadFlow('sign_requested', {
+            endpoint: uploadTarget.endpoint,
+            fileSize: uploadTarget.fileSize
+          });
+        }
+        const heroVideoFormData = new FormData();
+        heroVideoFormData.append('video', file);
+        heroVideoFormData.append('title', derivedHeadline);
+        heroVideoFormData.append('description', 'Hero background upload');
+        heroVideoFormData.append('category', 'HERO');
+        const heroUploadTimeoutMs =
+          Number(file.size || 0) >= ReelforgeConfig.SIGNED_UPLOADS_MIN_BYTES
+            ? 20 * 60 * 1000
+            : 10 * 60 * 1000;
+        logHeroUploadFlow('signed_upload_started', {
+          signed: uploadTarget.signedUploadEnabled,
+          endpoint: uploadTarget.endpoint,
+          fileSize: uploadTarget.fileSize
+        });
         console.info('[BG7G_UPLOAD]', {
           ts: new Date().toISOString(),
           component: 'acceptHeroFile',
           file: 'HeroExperience.svelte',
           fileName: file.name,
           fileSize: file.size,
-          uploadUrl: `${API_BASE_URL}/api/reels`,
+          uploadUrl: `${uploadTarget.apiBase}${uploadTarget.endpoint}`,
           state: 'upload_start',
-          kind: 'video'
+          kind: 'video',
+          signedUploadEnabled: uploadTarget.signedUploadEnabled
         });
         const created = await withTimeout(
-          uploadVideo(file, getAdminAuthHeaders(), {
-            title: derivedHeadline,
-            description: 'Hero background upload',
-            category: 'HERO'
-          }),
-          10 * 60 * 1000,
+          uploadMedia(heroVideoFormData, getAdminAuthHeaders()),
+          heroUploadTimeoutMs,
           'Hero video upload'
         );
+        logHeroUploadFlow('signed_upload_complete', {
+          reelId: created?.id || '',
+          signed: uploadTarget.signedUploadEnabled
+        });
         reelResReelSnapshot('acceptHeroFile:created', created, { vault: 'hero' });
         const reel = heroReelFromUploadResponse(created, 'video');
         if (!reel?.id || !reel?.url) {
           throw new Error('Hero upload completed without canonical reel identity');
         }
+        logHeroUploadFlow('finalize_complete', {
+          reelId: reel.id,
+          url: reel.url
+        });
         if (typeof window !== 'undefined') {
           window.dispatchEvent(
             new CustomEvent('reelforge:hero-upload', {
@@ -1420,14 +1568,9 @@ $: heroBadgeLabel = sanitizeViewer
             })
           );
         }
-        saveHeroReel(reel);
-        // BG-7W: persist manager config as early as possible to avoid syncFromVault admission races.
-        saveHeroManagerConfig({
-          backgroundSource: 'custom_video',
-          heroAssetId: reel.id,
-          backgroundStyle: 'video',
-          ...viewerPatch
-        });
+        commitHeroVideoIdentity(reel);
+        saveHeroManagerConfig(viewerPatch);
+        verifyHeroVideoIdentityCommitted(reel);
         logHeroConfigSaveAudit(loadHeroManagerConfig(), heroManagerConfig);
         const heroVideoBefore = get(HERO_BACKGROUND_VIDEO);
         HERO_BACKGROUND_VIDEO.set(reel.url);
@@ -1472,7 +1615,7 @@ $: heroBadgeLabel = sanitizeViewer
           assetId: reel.id || null,
           fileName: reel.fileName || file.name,
           storageLocation: reel.url || null,
-          backendEndpoint: `${API_BASE_URL}/api/reels`,
+          backendEndpoint: `${uploadTarget.apiBase}${uploadTarget.endpoint}`,
           result: 'canonical_created'
         });
         console.info('[BG7G_RENDER]', {
@@ -1510,10 +1653,20 @@ $: heroBadgeLabel = sanitizeViewer
             })
           );
         }
-        const { uploadThumbnail } = await import('../../lib/api/media.js');
-        const { getAdminAuthHeaders } = await import('../../lib/api.js');
+        const { uploadThumbnail: uploadHeroThumbnail } = await import('../../lib/api/media.js');
+        const uploadTarget = logHeroUploadApiResolve(file, 'image');
+        console.info('[BG7G_UPLOAD]', {
+          ts: new Date().toISOString(),
+          component: 'acceptHeroFile',
+          file: 'HeroExperience.svelte',
+          fileName: file.name,
+          fileSize: file.size,
+          uploadUrl: `${uploadTarget.apiBase}${uploadTarget.endpoint}`,
+          state: 'upload_start',
+          kind: 'image'
+        });
         const created = await withTimeout(
-          uploadThumbnail(file, getAdminAuthHeaders(), {
+          uploadHeroThumbnail(file, getAdminAuthHeaders(), {
             title: derivedHeadline,
             description: 'Hero background upload',
             category: 'HERO'
@@ -1566,7 +1719,7 @@ $: heroBadgeLabel = sanitizeViewer
           assetId: reel.id || null,
           fileName: reel.fileName || file.name,
           storageLocation: reel.url || null,
-          backendEndpoint: `${API_BASE_URL}/api/reels`,
+          backendEndpoint: `${uploadTarget.apiBase}${uploadTarget.endpoint}`,
           result: 'canonical_created'
         });
         console.info('[BG7G_RENDER]', {
@@ -1592,13 +1745,15 @@ $: heroBadgeLabel = sanitizeViewer
       }
     } catch (error) {
       if (!isOperationActive() && operationTimedOut) return;
+      const failUploadKind = pending?.type === 'image' ? 'image' : 'video';
+      const failUploadTarget = resolveHeroUploadApiTarget(pending?.file, failUploadKind);
       console.info('[BG7G_UPLOAD]', {
         ts: new Date().toISOString(),
         component: 'acceptHeroFile',
         file: 'HeroExperience.svelte',
         fileName: pending?.name || pending?.file?.name || null,
         fileSize: pending?.file?.size ?? null,
-        uploadUrl: '/api/reels',
+        uploadUrl: `${failUploadTarget.apiBase}${failUploadTarget.endpoint}`,
         state: 'failure',
         reason: error?.message || String(error)
       });
@@ -1621,7 +1776,7 @@ $: heroBadgeLabel = sanitizeViewer
         vaultType: 'hero',
         fileName: pending?.name || pending?.file?.name || null,
         storageLocation: 'reelforge_hero_manager_config',
-        backendEndpoint: `${API_BASE_URL || ''}/api/reels`,
+        backendEndpoint: `${failUploadTarget.apiBase}${failUploadTarget.endpoint}`,
         result: error?.message || String(error)
       });
     } finally {
