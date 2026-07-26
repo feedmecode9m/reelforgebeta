@@ -732,7 +732,22 @@ export function buildHeroCarouselSlides(feed, options = {}) {
 
 /** @param {Partial<HeroManagerConfig>} patch */
 export function saveHeroManagerConfig(patch = {}) {
-    const merged = { ...loadHeroManagerConfig(), ...patch };
+    const existing = loadHeroManagerConfig();
+    const merged = { ...existing, ...patch };
+    const patchClearsHeroAsset =
+        Object.prototype.hasOwnProperty.call(patch, 'heroAssetId') &&
+        !String(patch.heroAssetId || '').trim() &&
+        Object.prototype.hasOwnProperty.call(patch, 'backgroundSource') &&
+        patch.backgroundSource === 'selection';
+    const persistedHeroAssetId = String(existing.heroAssetId || '').trim();
+    if (
+        Object.prototype.hasOwnProperty.call(patch, 'heroAssetId') &&
+        !String(patch.heroAssetId || '').trim() &&
+        persistedHeroAssetId &&
+        !patchClearsHeroAsset
+    ) {
+        merged.heroAssetId = persistedHeroAssetId;
+    }
     const registry = buildHeroAssetRegistry(loadHeroVaultItems());
     if (!merged.heroAssetId) {
         const legacyAssetId = String(merged.backgroundAsset || '').trim();
