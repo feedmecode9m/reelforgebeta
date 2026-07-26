@@ -161,10 +161,11 @@ async function processIngestAcceptedResponse(body, primaryFileName, httpStatus, 
  * Signed direct upload: sign → PUT bytes to Railway → JSON finalize via same-origin API.
  * @param {File} file
  * @param {Record<string, string>} headers
- * @param {{ title?: string; description?: string; category?: string }} [meta]
+ * @param {{ title?: string; description?: string; category?: string; episodeId?: string; seriesId?: string; seasonId?: string; identitySource?: string }} [meta]
  */
 async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = null) {
     const primaryFileName = file?.name || null;
+    const uploadIdentity = uploadIdentityFromMeta(meta);
     try {
     const uploadPolicy = enforceUploadPolicy({ operation: 'create_reel' });
     if (!uploadPolicy.allowed) {
@@ -202,7 +203,8 @@ async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = nu
             sizeBytes: file.size,
             title: meta.title,
             description: meta.description,
-            category: meta.category
+            category: meta.category,
+            ...(uploadIdentity.episodeId ? { episodeId: uploadIdentity.episodeId } : {})
         }),
         ...(uploadSignal ? { signal: uploadSignal } : {})
     });
@@ -221,6 +223,14 @@ async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = nu
         uploadUrlPresent: Boolean(uploadUrl),
         reelId: signBody.reelId || '',
         uploadId: signBody.uploadId || ''
+    });
+    logAssetIdentityBind({
+        uploadId: signBody.uploadId || '',
+        reelId: signBody.reelId || '',
+        episodeId: uploadIdentity.episodeId || '',
+        seriesId: uploadIdentity.seriesId || '',
+        source: uploadIdentity.source,
+        stage: 'signed:sign'
     });
     const uploadToken = String(signBody.uploadToken || '');
     const isR2PresignedPut = uploadUrl.includes('r2.cloudflarestorage.com');
@@ -322,7 +332,8 @@ async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = nu
             uploadId: signBody.uploadId,
             title: meta.title,
             description: meta.description,
-            category: meta.category
+            category: meta.category,
+            ...(uploadIdentity.episodeId ? { episodeId: uploadIdentity.episodeId } : {})
         }),
         ...(uploadSignal ? { signal: uploadSignal } : {})
     });
@@ -337,6 +348,14 @@ async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = nu
     logUploadStage(diagContext, 'FINALIZE_COMPLETE', {
         status: finalizeResponse.status,
         reelId: body?.id || ''
+    });
+    logAssetIdentityBind({
+        uploadId: signBody.uploadId || '',
+        reelId: body?.id || signBody.reelId || '',
+        episodeId: uploadIdentity.episodeId || body?.episodeId || body?.episode_id || '',
+        seriesId: uploadIdentity.seriesId || '',
+        source: uploadIdentity.source,
+        stage: 'signed:finalize'
     });
     pipelineCheckpoint('POST_COMPLETED', {
         status: finalizeResponse.status,
@@ -378,6 +397,12 @@ import {
     patchUploadDiagContext,
     resolveUploadAbortSignal
 } from '../diagnostics/uploadStageDiag.js';
+import {
+    appendUploadIdentityToFormData,
+    logAssetIdentityBind,
+    resolveUploadIdentity,
+    uploadIdentityFromMeta
+} from './uploadIdentity.js';
 
 /**
  * POST /api/reels — unified multipart create (video, thumbnail, title, description).
@@ -388,8 +413,25 @@ import {
 export async function createReel(formData, headers = {}, diagContext = null) {
     const fileInfo = {};
     let primaryFileName = null;
+    let uploadIdentity = { source: 'multipart' };
     try {
     if (formData instanceof FormData) {
+        uploadIdentity = resolveUploadIdentity({
+            episodeId: formData.get('episodeId') || formData.get('episode_id'),
+            seriesId: formData.get('seriesId') || formData.get('series_id'),
+            seasonId: formData.get('seasonId') || formData.get('season_id'),
+            source: 'multipart'
+        });
+        if (uploadIdentity.episodeId) {
+            logAssetIdentityBind({
+                uploadId: '',
+                reelId: '',
+                episodeId: uploadIdentity.episodeId,
+                seriesId: uploadIdentity.seriesId || '',
+                source: uploadIdentity.source,
+                stage: 'multipart:request'
+            });
+        }
         for (const [key, value] of formData.entries()) {
             if (value instanceof File) {
                 fileInfo[key] = {
@@ -526,6 +568,18 @@ export async function createReel(formData, headers = {}, diagContext = null) {
         status: response.status,
         returnedId: body?.id ?? null
     });
+    if (body?.id) {
+        logAssetIdentityBind({
+            uploadId: '',
+            reelId: String(body.id),
+            episodeId:
+                uploadIdentity.episodeId ||
+                String(body.episodeId || body.episode_id || ''),
+            seriesId: uploadIdentity.seriesId || '',
+            source: uploadIdentity.source,
+            stage: 'multipart:response'
+        });
+    }
 
     return processIngestAcceptedResponse(body, primaryFileName, response.status, diagContext);
     } catch (error) {
@@ -557,7 +611,7 @@ export async function uploadThumbnail(file, headers = {}, meta = {}) {
 /**
  * @param {File} file
  * @param {Record<string, string>} [headers]
- * @param {{ title?: string; description?: string; category?: string; thumbnail?: File }} [meta]
+ * @param {{ title?: string; description?: string; category?: string; thumbnail?: File; episodeId?: string; seriesId?: string; seasonId?: string; identitySource?: string }} [meta]
  * @returns {Promise<CreatedReelResponse>}
  * @deprecated Use createReel directly when building FormData; this wrapper delegates only.
  */
@@ -575,6 +629,10 @@ export async function uploadVideo(file, headers = {}, meta = {}) {
     if (meta.title) formData.append('title', meta.title);
     if (meta.description) formData.append('description', meta.description);
     if (meta.category) formData.append('category', meta.category);
+    appendUploadIdentityToFormData(formData, {
+        ...meta,
+        source: meta.identitySource || 'uploadVideo'
+    });
     return createReel(formData, headers);
 }
 
@@ -600,7 +658,17 @@ export async function uploadMedia(fileOrFormData, headersOrMime = {}, diagContex
                 {
                     title: String(fileOrFormData.get('title') || '').trim() || undefined,
                     description: String(fileOrFormData.get('description') || '').trim() || undefined,
-                    category: String(fileOrFormData.get('category') || '').trim() || undefined
+                    category: String(fileOrFormData.get('category') || '').trim() || undefined,
+                    episodeId:
+                        String(fileOrFormData.get('episodeId') || fileOrFormData.get('episode_id') || '').trim() ||
+                        undefined,
+                    seriesId:
+                        String(fileOrFormData.get('seriesId') || fileOrFormData.get('series_id') || '').trim() ||
+                        undefined,
+                    seasonId:
+                        String(fileOrFormData.get('seasonId') || fileOrFormData.get('season_id') || '').trim() ||
+                        undefined,
+                    identitySource: 'uploadMedia:formData'
                 },
                 diagContext
             );

@@ -1,0 +1,18 @@
+{
+  "mission": "BG-ASSET-EPISODE-BINDING-01",
+  "allPass": true,
+  "failures": [],
+  "scenarioA": {
+    "episodeId": "ep-neon-s01e02",
+    "formEpisodeId": "ep-neon-s01e02",
+    "signEpisodeId": "ep-neon-s01e02"
+  },
+  "scenarioB": {
+    "formEpisodeId": null,
+    "signHasEpisodeId": false
+  },
+  "live": {
+    "skipped": true,
+    "reason": "API unavailable"
+  }
+}

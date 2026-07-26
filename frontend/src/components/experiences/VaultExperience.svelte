@@ -67,6 +67,8 @@
     logUploadError,
     patchUploadDiagContext
   } from '../../lib/diagnostics/uploadStageDiag.js';
+  import { appendUploadIdentityToFormData } from '../../lib/api/uploadIdentity.js';
+  import { bindEpisodeToFeedReel } from '../../lib/series/seriesStore.js';
 
   export let showPersonalControls = true;
 
@@ -99,6 +101,10 @@
   export let storageSet = () => ({ ok: true });
   /** @type {() => string} */
   export let getFallbackImage = () => '';
+  /** Optional catalog episode binding for vault uploads (from studio attach flow). */
+  export let uploadEpisodeId = '';
+  /** Optional series context for upload diagnostics. */
+  export let uploadSeriesId = '';
   let vaultDeleteDragActive = false;
   /** Shelf category for vault uploads (video + thumbnail). */
   let vaultUploadCategory = 'Trending';
@@ -1171,6 +1177,11 @@
       const formData = new FormData();
       formData.append('video', file);
       formData.append('category', vaultUploadCategory || 'Trending');
+      appendUploadIdentityToFormData(formData, {
+        episodeId: uploadEpisodeId,
+        seriesId: uploadSeriesId,
+        source: uploadEpisodeId ? 'vault:studio_attach' : 'vault:drop'
+      });
       logUploadStage(uploadDiagCtx, 'UPLOAD_MEDIA_BEGIN');
       uploadAbortTimer = setTimeout(() => {
         uploadTimedOut = true;
@@ -1189,6 +1200,12 @@
       if (response?.id) {
         noteUploadLockReelId(uploadKey, String(response.id));
         patchUploadDiagContext(uploadDiagCtx, { reelId: String(response.id) });
+        const boundEpisodeId = String(uploadEpisodeId || '').trim();
+        if (boundEpisodeId) {
+          bindEpisodeToFeedReel(String(response.id), boundEpisodeId, {
+            source: 'vault_upload_finalize'
+          });
+        }
       }
       console.info('[BG7G_UPLOAD]', {
         ts: new Date().toISOString(),

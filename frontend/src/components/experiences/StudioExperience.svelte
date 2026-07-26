@@ -45,6 +45,8 @@
     consumeMediaUploadIntent,
     requestStudioContentTab
   } from '../../lib/dropAffordance.js';
+  import { SYNC_DOMAIN } from '../../lib/viewer/domainSync.js';
+  import { appendUploadIdentityToFormData } from '../../lib/api/uploadIdentity.js';
 
   export let studioWalkthrough = null;
 
@@ -112,6 +114,8 @@
   export let vaultUtils;
   /** @type {(preserveLocal?: boolean) => Promise<void>} */
   export let syncFromVault;
+  /** @type {(domains: string | string[], options?: Record<string, unknown>) => Promise<void>} */
+  export let syncDomain = async () => {};
   /** @type {(videos: unknown[]) => void} */
   export let persistPersonalVault;
   export let viewerHydrationReady;
@@ -655,6 +659,16 @@
     '[tabindex]:not([tabindex="-1"])'
   ].join(', ');
 
+  function studioUploadIdentity() {
+    const episodeId = String(get(studioAttachEpisodeId) || '').trim();
+    const seriesId = String(get(studioSelectedSeriesId) || '').trim();
+    return {
+      ...(episodeId ? { episodeId } : {}),
+      ...(seriesId ? { seriesId } : {}),
+      source: episodeId ? 'studio:attach_context' : 'studio:upload'
+    };
+  }
+
   /** @param {CustomEvent<{ reelId?: string }>} event */
   function handleMetadataSaved(event) {
     const reelId = event.detail?.reelId || '';
@@ -711,6 +725,7 @@
         formData.append('video', file);
         formData.append('title', title);
         formData.append('category', targetCategory);
+        appendUploadIdentityToFormData(formData, studioUploadIdentity());
         await uploadMedia(formData, getAdminAuthHeaders());
         uploadStatus.set(`✅ SUCCESS! Placed in ${targetCategory}`);
         newTitle.set('');
@@ -718,7 +733,7 @@
         selectedFile.set(null);
         newCategory.set('Auto-Detect');
         forceDisplayInStudio();
-        await syncFromVault(true);
+        await syncDomain([SYNC_DOMAIN.VIDEO, SYNC_DOMAIN.FEED], { preserveLocal: true, force: true });
         return;
       }
 
@@ -753,7 +768,7 @@
       selectedFile.set(null);
       newCategory.set('Auto-Detect');
       forceDisplayInStudio();
-      await syncFromVault(true);
+      await syncDomain([SYNC_DOMAIN.VIDEO, SYNC_DOMAIN.FEED], { preserveLocal: true, force: true });
     } catch (error) {
       console.error('Upload error:', error);
       uploadStatus.set('❌ UPLOAD FAILED');
@@ -1037,6 +1052,7 @@
       const file = new File([blob], filename, { type: blob.type || 'video/mp4' });
       const formData = new FormData();
       formData.append('video', file);
+      appendUploadIdentityToFormData(formData, studioUploadIdentity());
       const token = getAdminToken();
       if (!token) {
         uploadStatus.set('❌ Admin authentication required');
@@ -1045,7 +1061,7 @@
       const { uploadMedia } = await import('../../lib/api/media.js');
       await uploadMedia(formData, getAdminAuthHeaders());
       uploadStatus.set(`✅ Unveiled ${filename} to vault`);
-      await syncFromVault(true);
+      await syncDomain([SYNC_DOMAIN.VIDEO, SYNC_DOMAIN.FEED], { preserveLocal: true, force: true });
     } catch (error) {
       console.error('unveilToCloud failed:', error);
       uploadStatus.set(`❌ Unveil failed: ${error.message}`);
@@ -1486,9 +1502,12 @@
                 {UIAgent}
                 {vaultUtils}
                 {syncFromVault}
+                {syncDomain}
                 {persistPersonalVault}
                 {storageSet}
                 {getFallbackImage}
+                uploadEpisodeId={$studioAttachEpisodeId}
+                uploadSeriesId={$studioSelectedSeriesId}
               />
             </div>
             <ContentIntelligencePanel />
@@ -1539,6 +1558,7 @@
               {resourceManager}
               {CONFIG}
               {syncFromVault}
+              {syncDomain}
               {persistPersonalVault}
               {viewerHydrationReady}
             />
@@ -2073,6 +2093,7 @@
             {persistPersonalVault}
             {storageSet}
             {syncFromVault}
+            {syncDomain}
             {CONFIG}
           />
           <StudioAppearancePanel />
