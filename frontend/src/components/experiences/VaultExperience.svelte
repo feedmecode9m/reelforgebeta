@@ -24,7 +24,8 @@
     logVaultPlaceholderGate
   } from '../../lib/diagnostics/renderGateForensics.js';
   import { uploadMedia, uploadThumbnail, fetchReadyReels as apiFetchReadyReels, deleteReelById as apiDeleteReelById } from '../../lib/api/media.js';
-  import { logHeroImagePipeline } from '../../lib/hero/heroIntelligence.js';
+  import { commitHeroVideoIdentity, logHeroImagePipeline } from '../../lib/hero/heroIntelligence.js';
+  import { heroReelFromUploadResponse } from '../../lib/hero/heroReelIdentity.js';
   import { reelToVaultEntry } from '../../lib/api/reelContract.js';
   import { validateVideoFile } from '../../lib/runtime-guards.js';
   import { API_BASE_URL, toRelativeMediaPath, SIGNED_UPLOADS_MIN_BYTES } from '../../lib/config.js';
@@ -1341,6 +1342,10 @@
         ts: new Date().toISOString()
       });
       persistPersonalVault(get(personalVideos));
+      const heroReel = heroReelFromUploadResponse(normalizedResponse, 'video');
+      if (heroReel?.id && heroReel?.url) {
+        commitHeroVideoIdentity(heroReel);
+      }
       AI_CLEANUP_AGENT.distributeVideoToFeed(entry);
       pipelineDiag('VIEWER', 'handleVaultVideoDrop', 'VaultExperience.svelte', {
         assetId: entry.id,

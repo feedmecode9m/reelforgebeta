@@ -820,6 +820,28 @@ export function saveHeroManagerConfig(patch = {}) {
     return next;
 }
 
+/**
+ * Shared hero video identity commit — persists canonical reel + manager pointer.
+ * @param {import('./heroReelIdentity.js').HeroReel} reel
+ * @returns {HeroManagerConfig | null}
+ */
+export function commitHeroVideoIdentity(reel) {
+    if (!reel?.id || !reel?.url) return null;
+    const savedReel = saveHeroReel(reel);
+    if (!savedReel) return null;
+    console.info('[HERO_IDENTITY_COMMIT]', {
+        stage: 'commitHeroVideoIdentity',
+        reelId: reel.id,
+        url: reel.url,
+        ts: new Date().toISOString()
+    });
+    return saveHeroManagerConfig({
+        heroAssetId: reel.id,
+        backgroundSource: 'custom_video',
+        backgroundStyle: 'video'
+    });
+}
+
 /** @param {string | null | undefined} type */
 export function normalizeDiscoveryHeroType(type) {
     const upper = String(type || 'TRENDING').toUpperCase();
@@ -845,8 +867,45 @@ export function loadHeroVaultItems() {
         migrateLegacyHeroStorageIfNeeded();
         const manager = loadHeroManagerConfig();
         const reel = loadHeroReel();
-        if (!reel?.id || !reel?.url) return [];
-        if (String(manager?.heroAssetId || '').trim() !== reel.id) return [];
+        if (!reel?.id || !reel?.url) {
+            console.info('[HERO_REGISTRY_TRACE]', {
+                stage: 'loadHeroVaultItems:gate-fail',
+                reason: 'missing_reel',
+                managerHeroAssetId: String(manager?.heroAssetId || '').trim(),
+                canonicalReelId: reel?.id || '',
+                vaultItemsCount: 0,
+                ts: new Date().toISOString()
+            });
+            return [];
+        }
+        if (String(manager?.heroAssetId || '').trim() !== reel.id) {
+            console.info('[HERO_REGISTRY_TRACE]', {
+                stage: 'loadHeroVaultItems:gate-fail',
+                reason: 'heroAssetId_mismatch',
+                managerHeroAssetId: String(manager?.heroAssetId || '').trim(),
+                canonicalReelId: reel.id,
+                vaultItemsCount: 0,
+                ts: new Date().toISOString()
+            });
+            return [];
+        }
+        const items = [heroReelToVaultItem(reel)];
+        const registry = buildHeroAssetRegistry(items);
+        const img0113 = registry.find(
+            (item) =>
+                String(item?.mediaUrl || '').includes('IMG_0113.JPEG') ||
+                String(item?.assetId || '').includes('IMG_0113.JPEG')
+        );
+        console.info('[HERO_REGISTRY_TRACE]', {
+            stage: 'loadHeroVaultItems:success',
+            vaultItemsCount: items.length,
+            registryCount: registry.length,
+            firstFive: registry.slice(0, 5),
+            img0113Present: Boolean(img0113),
+            img0113AssetId: img0113?.assetId || '',
+            img0113HasAssetId: Boolean(String(img0113?.assetId || '').trim()),
+            ts: new Date().toISOString()
+        });
         console.info('[HERO_STORE_READ]', {
             stage: 'loadHeroVaultItems',
             key: HERO_REEL_STORAGE_KEY,
@@ -855,7 +914,7 @@ export function loadHeroVaultItems() {
             url: reel.url,
             ts: new Date().toISOString()
         });
-        return [heroReelToVaultItem(reel)];
+        return items;
     } catch {
         return [];
     }
