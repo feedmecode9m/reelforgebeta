@@ -34,9 +34,11 @@ import {
     stopHeroRotation,
     logHeroConfigBootTrace
 } from '../lib/hero/heroIntelligence.js';
-import { loadHeroReel } from '../lib/hero/heroReelIdentity.js';
+import { loadHeroReel, resolveActiveHeroVideoReel, heroReelToVaultItem } from '../lib/hero/heroReelIdentity.js';
 import { isHeroAsset, filterNonHeroAssets } from '../lib/hero/heroDomainGuard.js';
 import { shouldStreamDiagnostics } from '../lib/diagnostics/pipelineSnapshot.js';
+import { notifyInterruptedUploads } from '../lib/diagnostics/uploadRecovery.js';
+import { getActiveUploadLockCount } from '../lib/diagnostics/uploadLockDiag.js';
 import { initReleaseCenter } from '../lib/release/releaseCenter.js';
 import { initPredictiveRepairEngine } from '../lib/repair/predictiveRepairEngine.js';
 import { initCreatorKnowledgeGraph } from '../lib/graph/creatorKnowledgeGraph.js';
@@ -92,7 +94,8 @@ diagnoseStalePlaceholders,
 applyCanonicalDeleteClientEffects,
 filterOutDeletedMedia,
 filterDeletedFromFeedMap,
-isDeletedMediaId
+isDeletedMediaId,
+reconcileTombstonesAgainstCatalog
 } from '../lib/deletionSync.js';
 import { normalizeReel, normalizeReels, createLocalReel, isVideoReel, assertReelContract } from '../lib/api/reelContract.js';
 import { resolveTheaterPlayback, logTheaterHandshake } from '../lib/media/theaterPlayback.js';
@@ -148,6 +151,7 @@ import {
   logHeroBackgroundVideoChange,
   logPersonalVideosChange
 } from '../lib/diagnostics/renderGateForensics.js';
+import { traceVideoStoreBoundary } from '../lib/diagnostics/videoStoreTrace.js';
 import {
   filterStaleOrphanEntries,
   isThumbnailImageReel,
@@ -237,16 +241,27 @@ if (!confirm('Reset ALL local data? Auth tokens and settings will be cleared and
 resetLocalData();
 }
 function persistPersonalVault(videos) {
-let filtered = filterOutDeletedMedia(filterNonHeroAssets(videos));
+const inputVideos = Array.isArray(videos) ? videos : [];
+let filtered = filterOutDeletedMedia(filterNonHeroAssets(inputVideos));
+traceVideoStoreBoundary('persistPersonalVault:filterNonHeroAssets', inputVideos, filtered, {
+reasons: 'filterNonHeroAssets+filterOutDeletedMedia'
+});
 if (pendingHeroAssetIds.size) {
   const before = filtered.length;
+  /** @type {Array<{ id: string; reason: string }>} */
+  const pendingRemoved = [];
   filtered = filtered.filter((v) => {
     const id = String(v?.id || '').trim();
     const blocked = Boolean(id) && pendingHeroAssetIds.has(id);
     if (blocked) {
+      pendingRemoved.push({ id, reason: 'hero_pending' });
       console.info('[BG7W_HERO_VAULT_GATE]', { reelId: id, blocked: true, reason: 'hero_pending' });
     }
     return !blocked;
+  });
+  traceVideoStoreBoundary('persistPersonalVault:pendingHeroAssetIds', inputVideos, filtered, {
+    removed: pendingRemoved,
+    reasons: 'pendingHeroAssetIds'
   });
   if (before !== filtered.length) {
     console.info('[BG7W_HERO_VAULT_GATE]', {
@@ -345,6 +360,38 @@ const contentEmpty = writable(false);
 const adminMode = createPersistentStore('admin_mode', false);
 const controlCenterOpen = writable(false);
 const uploadStatus = createValidatedStore('Standby', (v) => typeof v === 'string');
+
+function isUploadFlowActive() {
+  if (getActiveUploadLockCount() > 0) return true;
+  const status = String(get(uploadStatus) || '');
+  return /Uploading|Processing|Finalizing|🎬/.test(status);
+}
+
+function setUploadStatusIfIdle(message) {
+  if (isUploadFlowActive()) return;
+  uploadStatus.set(message);
+}
+
+function applyUploadProgressDetail(detail = {}) {
+  const fileName = String(detail.fileName || '').trim();
+  const percent = detail.percent;
+  const phase = String(detail.phase || '');
+  const stage = String(detail.stage || '');
+  if (phase === 'finalize') {
+    uploadStatus.set(`🎬 Finalizing ${fileName || 'video'}…`);
+    return;
+  }
+  if (phase === 'ingest') {
+    uploadStatus.set(
+      `🎬 Processing ${fileName || 'video'} on server${stage ? ` (${stage})` : ''}…`
+    );
+    return;
+  }
+  if (fileName && percent != null && !Number.isNaN(Number(percent))) {
+    uploadStatus.set(`🎬 Uploading ${fileName} — ${percent}% (keep tab open)`);
+  }
+}
+
 const newTitle = writable('');
 const newCategory = writable('Auto-Detect');
 const selectedFile = writable(null);
@@ -876,6 +923,9 @@ ts: new Date().toISOString()
 });
 if (storedVideos.length > 0) {
 const filteredStoredVideos = filterOutDeletedMedia(filterNonHeroAssets(storedVideos));
+traceVideoStoreBoundary('reloadVaultStoresFromStorage:filterNonHeroAssets', storedVideos, filteredStoredVideos, {
+reasons: 'filterNonHeroAssets+filterOutDeletedMedia'
+});
 personalVideos.set(filteredStoredVideos.map((video) => ({
 ...video,
 url: video.url ? toRelativeMediaPath(video.url) : '',
@@ -1004,7 +1054,7 @@ try {
   /* ignore */
 }
 let backendReachable = false;
-uploadStatus.set('🔄 Syncing with backend...');
+setUploadStatusIfIdle('🔄 Syncing with backend...');
 const healthy = await checkBackendHealth();
 if (!healthy) {
 if (isStorageFull()) {
@@ -1034,7 +1084,13 @@ if (res.ok) {
 backendReachable = true;
 const contentType = res.headers.get('content-type') || '';
 if (!contentType.includes('application/json')) throw new Error(`Expected JSON but received ${contentType}`);
-rawData = filterOutDeletedMedia(normalizeReels(await res.json(), 'GET /api/reels'));
+const normalizedCatalog = normalizeReels(await res.json(), 'GET /api/reels');
+reconcileTombstonesAgainstCatalog(normalizedCatalog);
+rawData = filterOutDeletedMedia(normalizedCatalog);
+traceVideoStoreBoundary('syncFromVault:after_normalizeReels', [], rawData.filter((r) => isVideoReel(r)), {
+reasons: 'normalizeReels+reconcileTombstonesAgainstCatalog+filterOutDeletedMedia then isVideoReel subset',
+extra: { catalogCount: rawData.length }
+});
 console.info('[VAULT-DELETE-TRACE] syncFromVault:bootstrap_reload', {
   source: 'GET /api/reels',
   catalogCount: rawData.length,
@@ -1047,7 +1103,7 @@ rawData.map((r) => String(r?.id || '')).filter(Boolean),
 'syncFromVault:GET /api/reels'
 );
 logVaultFieldAuditList('GET /api/reels response (syncFromVault)', rawData);
-uploadStatus.set('✅ Synced with backend');
+setUploadStatusIfIdle('✅ Synced with backend');
 } else {
 backendReachable = false;
 console.warn(`⚠️ Backend returned ${res.status}, preserving local vault (offline reconcile skipped)`);
@@ -1155,11 +1211,19 @@ ts: new Date().toISOString()
 });
 } else if (backendReachable && rawData.length > 0) {
 const videoReelCount = rawData.filter((r) => isVideoReel(r)).length;
+const playableCatalog = rawData.filter((r) => isVideoReel(r));
+traceVideoStoreBoundary('syncFromVault:playable_catalog', rawData, playableCatalog, {
+reasons: 'isVideoReel',
+extra: { catalogCount: rawData.length, videoReelCount }
+});
 console.log(
 `[syncFromVault] Loaded ${rawData.length} reels from [backend] (${videoReelCount} playable video, thumbs → placeholders)`
 );
 contentEmpty.set(videoReelCount > 0 || get(personalThumbnailCollection).length > 0);
 const backendVaultVideosRaw = reelsToVideoVaultEntries(rawData);
+traceVideoStoreBoundary('syncFromVault:after_reelsToVideoVaultEntries', playableCatalog, backendVaultVideosRaw, {
+reasons: 'reelsToVideoVaultEntries'
+});
 const backendVaultVideos = backendVaultVideosRaw.filter((entry) => {
 const id = String(entry?.id || '').trim();
 const blocked = Boolean(id) && pendingHeroAssetIds.has(id);
@@ -1168,9 +1232,24 @@ console.info('[BG7W_HERO_VAULT_GATE]', { reelId: id, blocked: true, reason: 'her
 }
 return !blocked;
 });
+/** @type {Array<{ id: string; reason: string }>} */
+const pendingBackendRemoved = backendVaultVideosRaw
+.filter((entry) => {
+  const id = String(entry?.id || '').trim();
+  return Boolean(id) && pendingHeroAssetIds.has(id);
+})
+.map((entry) => ({ id: String(entry?.id || ''), reason: 'hero_pending' }));
+traceVideoStoreBoundary('syncFromVault:backendVaultVideos_pending_filter', backendVaultVideosRaw, backendVaultVideos, {
+removed: pendingBackendRemoved,
+reasons: 'pendingHeroAssetIds'
+});
 const existingVaultVideos = JSON.parse((typeof window !== 'undefined' ? localStorage.getItem(CONFIG.VIDEO_VAULT_KEY) : null) || '[]');
 const mergedVaultVideosRaw = mergeVideoVaultEntries(existingVaultVideos, backendVaultVideos, {
 backendReachable: true
+});
+traceVideoStoreBoundary('syncFromVault:mergeVideoVaultEntries', [...existingVaultVideos, ...backendVaultVideos], mergedVaultVideosRaw, {
+reasons: 'mergeVideoVaultEntries:backend-projection',
+extra: { existingCount: existingVaultVideos.length, incomingCount: backendVaultVideos.length }
 });
 const mergedVaultVideos = mergedVaultVideosRaw.filter((entry) => {
 const id = String(entry?.id || '').trim();
@@ -1179,6 +1258,17 @@ if (blocked) {
 console.info('[BG7W_HERO_VAULT_GATE]', { reelId: id, blocked: true, reason: 'hero_pending' });
 }
 return !blocked;
+});
+/** @type {Array<{ id: string; reason: string }>} */
+const pendingMergedRemoved = mergedVaultVideosRaw
+.filter((entry) => {
+  const id = String(entry?.id || '').trim();
+  return Boolean(id) && pendingHeroAssetIds.has(id);
+})
+.map((entry) => ({ id: String(entry?.id || ''), reason: 'hero_pending' }));
+traceVideoStoreBoundary('syncFromVault:mergedVaultVideos_pending_filter', mergedVaultVideosRaw, mergedVaultVideos, {
+removed: pendingMergedRemoved,
+reasons: 'pendingHeroAssetIds'
 });
 const heroConfigSnapshot = loadHeroManagerConfig();
 const heroAssetIdSnapshot = String(heroConfigSnapshot?.heroAssetId || '').trim();
@@ -1202,6 +1292,14 @@ ts: new Date().toISOString()
 });
 }
 const nonHeroMergedVaultVideos = filterNonHeroAssets(mergedVaultVideos);
+/** @type {Array<{ id: string; reason: string }>} */
+const heroFilteredRemoved = mergedVaultVideos
+.filter((entry) => isHeroAsset(entry))
+.map((entry) => ({ id: String(entry?.id || ''), reason: 'isHeroAsset:filterNonHeroAssets' }));
+traceVideoStoreBoundary('syncFromVault:filterNonHeroAssets', mergedVaultVideos, nonHeroMergedVaultVideos, {
+removed: heroFilteredRemoved,
+reasons: 'filterNonHeroAssets'
+});
 personalVideos.set(nonHeroMergedVaultVideos);
 console.info('[STORE_UPDATE]', {
 store: 'personalVideos',
@@ -1227,6 +1325,7 @@ console.log(
 `[syncFromVault] Video vault merged (local + backend): ${existingVaultVideos.length} + ${backendVaultVideos.length} => ${nonHeroMergedVaultVideos.length}`
 );
 if (!AI_CLEANUP_AGENT.syncThumbnailsToFeed()) return;
+AI_CLEANUP_AGENT.syncVideoVaultToFeed();
 diagnoseStalePlaceholders(get(feed));
 } else if (!backendReachable) {
 console.log('🌐 Backend unreachable, using localStorage data');
@@ -1286,6 +1385,7 @@ ids: (rawData || []).slice(0, 20).map((r) => r?.id).filter(Boolean)
 if (debugApi) console.info('[SYNC_DEBUG] syncFromVault:finish', { at: lastSyncFromVaultAt });
 loading.set(false);
 resourceManager.setTimeout(() => {
+if (isUploadFlowActive()) return;
 if (syncCompletedSuccessfully) {
 uploadStatus.set('Standby');
 return;
@@ -1656,7 +1756,13 @@ watchOnPlay,
 watchOnPause,
 findReelInFeed,
 watchSessionStart,
-getPersonalVideos: () => get(personalVideos),
+getPersonalVideos: () => {
+  const videos = get(personalVideos);
+  const hero = resolveActiveHeroVideoReel();
+  if (!hero) return videos;
+  if (videos.some((v) => String(v?.id || '') === hero.id)) return videos;
+  return [heroReelToVaultItem(hero), ...videos];
+},
 resolveTheaterPlayback,
 logTheaterHandshake,
 isVideoReel,
@@ -1836,8 +1942,15 @@ heroUploadInFlight = false;
 if (typeof window !== 'undefined') {
 window.addEventListener('reelforge:hero-upload', onHeroUpload);
 }
+const onUploadProgress = (event) => {
+  applyUploadProgressDetail(event?.detail || {});
+};
+if (typeof window !== 'undefined') {
+window.addEventListener('reelforge:upload-progress', onUploadProgress);
+}
 
 reloadVaultStoresFromStorage();
+notifyInterruptedUploads((message) => uploadStatus.set(message));
 const thumbCount = get(personalThumbnailCollection).length;
 if (thumbCount > 0) {
 console.log(`[onMount] Loaded ${thumbCount} thumbnails from [${hadLocalCache ? 'localStorage' : 'backend'}]`);
@@ -1935,6 +2048,7 @@ window.removeEventListener('reelforge:release-schedule-updated', onHeroIntelRefr
 window.removeEventListener('reelforge:hero-manager-updated', onHeroManagerUpdated);
 if (typeof window !== 'undefined') {
 window.removeEventListener('reelforge:hero-upload', onHeroUpload);
+window.removeEventListener('reelforge:upload-progress', onUploadProgress);
 }
 unsubscribeVault();
 unsubscribeHeroVideo();

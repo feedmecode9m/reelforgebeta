@@ -72,6 +72,54 @@ export function recordDeletedMediaIds(ids) {
 }
 
 /**
+ * Drop stale tombstones for reels the backend catalog still serves.
+ * @param {unknown[] | null | undefined} reels
+ * @returns {{ removedCount: number; removedIds: string[]; remainingCount: number }}
+ */
+export function reconcileTombstonesAgainstCatalog(reels) {
+    const existing = readDeletedMediaIds();
+    if (!existing.length) {
+        return { removedCount: 0, removedIds: [], remainingCount: 0 };
+    }
+
+    const liveIds = new Set(
+        (Array.isArray(reels) ? reels : [])
+            .map((reel) => String(reel?.id || '').trim())
+            .filter(Boolean)
+    );
+
+    if (!liveIds.size) {
+        return { removedCount: 0, removedIds: [], remainingCount: existing.length };
+    }
+
+    /** @type {string[]} */
+    const removedIds = [];
+    const remaining = existing.filter((id) => {
+        if (liveIds.has(id)) {
+            removedIds.push(id);
+            return false;
+        }
+        return true;
+    });
+
+    if (removedIds.length) {
+        writeDeletedMediaIds(remaining);
+        logDeletionPropagation('tombstone-reconcile', {
+            removed: removedIds,
+            remaining: remaining.length
+        });
+    }
+
+    const result = {
+        removedCount: removedIds.length,
+        removedIds,
+        remainingCount: remaining.length
+    };
+    console.info('[TOMBSTONE_RECONCILE]', result);
+    return result;
+}
+
+/**
  * Canonical post-DELETE client effects (shared by every UI delete caller):
  * recordDeletedMediaIds → purgeMediaFromClientState / runClientMediaPurge.
  * Call only after deleteReelById succeeds. Callers still own syncFromVault.
