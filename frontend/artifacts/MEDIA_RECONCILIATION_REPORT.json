@@ -1,0 +1,501 @@
+{
+  "generatedAt": "2026-07-27T16:56:26.034246+00:00",
+  "mode": "read_only",
+  "deletedAnything": false,
+  "uploadCodeChanged": false,
+  "sources": [
+    "GET /api/media/storage",
+    "GET /api/media/storage/diagnostics",
+    "GET /api/media/cleanup/orphans",
+    "GET /api/reels",
+    "HEAD /videos/{orphan}"
+  ],
+  "summary": {
+    "splitBrainDetected": true,
+    "dbReadyReels": 6,
+    "dbReadyVideos": 0,
+    "dbReadyImages": 6,
+    "filesystemMp4Orphans": 16,
+    "filesystemThumbs": 6,
+    "inventoryDbVideoCountMiscountsImages": 6,
+    "exact5MiBTruncationOnVolumeNow": 0,
+    "tinyStubMp4Orphans": 16
+  },
+  "orphanFiles": [
+    {
+      "file": "4aa235f5-912c-44fb-b8e3-d225b70576a8.mp4",
+      "bytes": 1715,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    },
+    {
+      "file": "5ffb37e5-2b17-40f5-9bcd-bc6f01229b28.mp4",
+      "bytes": 6500,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    },
+    {
+      "file": "73e916cb-457d-43af-a699-189ae79e54ab.mp4",
+      "bytes": 1642,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    },
+    {
+      "file": "845d081e-203f-4fda-abf1-9bc5cfdad348.mp4",
+      "bytes": 1716,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    },
+    {
+      "file": "857a0a4c-d503-439d-bd7c-27def64e0357.mp4",
+      "bytes": 1716,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    },
+    {
+      "file": "96406115-9bb2-4256-b863-ea5030464bd9.mp4",
+      "bytes": 4728,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    },
+    {
+      "file": "993d1c03-5c87-4f0a-8bca-7930e2c04ba2.mp4",
+      "bytes": 1716,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    },
+    {
+      "file": "a0d11f0e-6b3e-4b32-977c-1a4ee17bd2d2.mp4",
+      "bytes": 8252,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    },
+    {
+      "file": "a8a00d1f-181d-4c61-9a17-4a11c7b9f74c.mp4",
+      "bytes": 2276,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    },
+    {
+      "file": "ad61c6af-a825-4a8f-a883-3cad694c00a5.mp4",
+      "bytes": 2290,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    },
+    {
+      "file": "d8abd83a-dccc-4466-bb3b-518bd074a614.mp4",
+      "bytes": 4728,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    },
+    {
+      "file": "daf6998b-33ba-4998-8f36-06594ebb7f95.mp4",
+      "bytes": 1710,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    },
+    {
+      "file": "e1429aa5-123d-4212-ab60-46ba4e170a45.mp4",
+      "bytes": 2276,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    },
+    {
+      "file": "f1d391c5-4096-4f49-b008-b9ca361357a9.mp4",
+      "bytes": 2276,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    },
+    {
+      "file": "f6c4070d-3668-4e69-a9fe-dc7f4fde1345.mp4",
+      "bytes": 2303,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    },
+    {
+      "file": "fde4b314-0e77-4813-86a4-d421921c7fde.mp4",
+      "bytes": 1710,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    }
+  ],
+  "dbRecordsMissingVideoObjects": {
+    "readyVideoRowsMissingMp4": [],
+    "note": "Production currently has 0 ready type=video reels. All 6 ready rows are images. Inventory missing_videos lists those image basenames under /videos path check \u2014 classification noise, not missing MP4 objects.",
+    "imageBasenamesFalselyFlaggedMissingUnderVideosDir": [
+      "26c72e0f-3951-4f00-84d3-13a09ba893db.jpg",
+      "321d1d4d-0737-486b-abf3-4a7f4502be91.jpeg",
+      "6344cac3-f6a9-44c0-90ea-8595e63a36ea.jpeg",
+      "6a9602ba-9673-429a-9533-8ce37fdf7495.jpeg",
+      "b1e2c4cc-0b38-421c-9062-b3f8f33b95dd.jpeg",
+      "f95f1a42-88b6-4742-814c-35ed7ea582f2.jpeg"
+    ]
+  },
+  "rejectedOrTruncated": {
+    "invalidVideosApi": [],
+    "liveVolumeExact5MiB": [],
+    "tinyOrphanMp4sLikelyFailedIngestLeftovers": [
+      {
+        "file": "4aa235f5-912c-44fb-b8e3-d225b70576a8.mp4",
+        "bytes": 1715,
+        "classification": "tiny_corrupt_or_stub_mp4",
+        "inDbCatalog": false,
+        "inR2PublicProbe": "not_present_or_404_for_sampled",
+        "recommendedAction": "delete_after_signed_upload_verification"
+      },
+      {
+        "file": "5ffb37e5-2b17-40f5-9bcd-bc6f01229b28.mp4",
+        "bytes": 6500,
+        "classification": "tiny_corrupt_or_stub_mp4",
+        "inDbCatalog": false,
+        "inR2PublicProbe": "not_present_or_404_for_sampled",
+        "recommendedAction": "delete_after_signed_upload_verification"
+      },
+      {
+        "file": "73e916cb-457d-43af-a699-189ae79e54ab.mp4",
+        "bytes": 1642,
+        "classification": "tiny_corrupt_or_stub_mp4",
+        "inDbCatalog": false,
+        "inR2PublicProbe": "not_present_or_404_for_sampled",
+        "recommendedAction": "delete_after_signed_upload_verification"
+      },
+      {
+        "file": "845d081e-203f-4fda-abf1-9bc5cfdad348.mp4",
+        "bytes": 1716,
+        "classification": "tiny_corrupt_or_stub_mp4",
+        "inDbCatalog": false,
+        "inR2PublicProbe": "not_present_or_404_for_sampled",
+        "recommendedAction": "delete_after_signed_upload_verification"
+      },
+      {
+        "file": "857a0a4c-d503-439d-bd7c-27def64e0357.mp4",
+        "bytes": 1716,
+        "classification": "tiny_corrupt_or_stub_mp4",
+        "inDbCatalog": false,
+        "inR2PublicProbe": "not_present_or_404_for_sampled",
+        "recommendedAction": "delete_after_signed_upload_verification"
+      },
+      {
+        "file": "96406115-9bb2-4256-b863-ea5030464bd9.mp4",
+        "bytes": 4728,
+        "classification": "tiny_corrupt_or_stub_mp4",
+        "inDbCatalog": false,
+        "inR2PublicProbe": "not_present_or_404_for_sampled",
+        "recommendedAction": "delete_after_signed_upload_verification"
+      },
+      {
+        "file": "993d1c03-5c87-4f0a-8bca-7930e2c04ba2.mp4",
+        "bytes": 1716,
+        "classification": "tiny_corrupt_or_stub_mp4",
+        "inDbCatalog": false,
+        "inR2PublicProbe": "not_present_or_404_for_sampled",
+        "recommendedAction": "delete_after_signed_upload_verification"
+      },
+      {
+        "file": "a0d11f0e-6b3e-4b32-977c-1a4ee17bd2d2.mp4",
+        "bytes": 8252,
+        "classification": "tiny_corrupt_or_stub_mp4",
+        "inDbCatalog": false,
+        "inR2PublicProbe": "not_present_or_404_for_sampled",
+        "recommendedAction": "delete_after_signed_upload_verification"
+      },
+      {
+        "file": "a8a00d1f-181d-4c61-9a17-4a11c7b9f74c.mp4",
+        "bytes": 2276,
+        "classification": "tiny_corrupt_or_stub_mp4",
+        "inDbCatalog": false,
+        "inR2PublicProbe": "not_present_or_404_for_sampled",
+        "recommendedAction": "delete_after_signed_upload_verification"
+      },
+      {
+        "file": "ad61c6af-a825-4a8f-a883-3cad694c00a5.mp4",
+        "bytes": 2290,
+        "classification": "tiny_corrupt_or_stub_mp4",
+        "inDbCatalog": false,
+        "inR2PublicProbe": "not_present_or_404_for_sampled",
+        "recommendedAction": "delete_after_signed_upload_verification"
+      },
+      {
+        "file": "d8abd83a-dccc-4466-bb3b-518bd074a614.mp4",
+        "bytes": 4728,
+        "classification": "tiny_corrupt_or_stub_mp4",
+        "inDbCatalog": false,
+        "inR2PublicProbe": "not_present_or_404_for_sampled",
+        "recommendedAction": "delete_after_signed_upload_verification"
+      },
+      {
+        "file": "daf6998b-33ba-4998-8f36-06594ebb7f95.mp4",
+        "bytes": 1710,
+        "classification": "tiny_corrupt_or_stub_mp4",
+        "inDbCatalog": false,
+        "inR2PublicProbe": "not_present_or_404_for_sampled",
+        "recommendedAction": "delete_after_signed_upload_verification"
+      },
+      {
+        "file": "e1429aa5-123d-4212-ab60-46ba4e170a45.mp4",
+        "bytes": 2276,
+        "classification": "tiny_corrupt_or_stub_mp4",
+        "inDbCatalog": false,
+        "inR2PublicProbe": "not_present_or_404_for_sampled",
+        "recommendedAction": "delete_after_signed_upload_verification"
+      },
+      {
+        "file": "f1d391c5-4096-4f49-b008-b9ca361357a9.mp4",
+        "bytes": 2276,
+        "classification": "tiny_corrupt_or_stub_mp4",
+        "inDbCatalog": false,
+        "inR2PublicProbe": "not_present_or_404_for_sampled",
+        "recommendedAction": "delete_after_signed_upload_verification"
+      },
+      {
+        "file": "f6c4070d-3668-4e69-a9fe-dc7f4fde1345.mp4",
+        "bytes": 2303,
+        "classification": "tiny_corrupt_or_stub_mp4",
+        "inDbCatalog": false,
+        "inR2PublicProbe": "not_present_or_404_for_sampled",
+        "recommendedAction": "delete_after_signed_upload_verification"
+      },
+      {
+        "file": "fde4b314-0e77-4813-86a4-d421921c7fde.mp4",
+        "bytes": 1710,
+        "classification": "tiny_corrupt_or_stub_mp4",
+        "inDbCatalog": false,
+        "inR2PublicProbe": "not_present_or_404_for_sampled",
+        "recommendedAction": "delete_after_signed_upload_verification"
+      }
+    ],
+    "historicalEvidence": "Railway logs previously quarantined truncated_container at 5242880 bytes; that specific key is gone (R2 404)."
+  },
+  "safeCleanupPlan": [
+    {
+      "step": 1,
+      "do": "Deploy signed-upload patch (Netlify + Railway). Do not cleanup first."
+    },
+    {
+      "step": 2,
+      "do": "Upload one fresh ~362MB MP4; confirm UPLOAD_SIZE_TRACE + R2_VERIFY_TRACE size match + status ready."
+    },
+    {
+      "step": 3,
+      "do": "Re-run GET /api/media/cleanup/orphans (dry-run) and GET /api/media/storage."
+    },
+    {
+      "step": 4,
+      "do": "Delete only confirmed orphans (16 tiny unreferenced MP4s) via POST /api/media/cleanup/orphans?confirm=true \u2014 after step 2 passes."
+    },
+    {
+      "step": 5,
+      "do": "Do not delete image reel DB rows or /thumbs files; thumbs are healthy and referenced."
+    },
+    {
+      "step": 6,
+      "do": "Optional follow-up: fix inventory so image reels are not counted as db_video_count / missing_videos (reporting bug, not data loss)."
+    },
+    {
+      "step": 7,
+      "do": "After orphan delete, expect filesystem_video_count\u21920 (until real videos exist) and split_brain false for real MP4 domain."
+    }
+  ],
+  "doNotDeleteYet": [
+    {
+      "file": "4aa235f5-912c-44fb-b8e3-d225b70576a8.mp4",
+      "bytes": 1715,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    },
+    {
+      "file": "5ffb37e5-2b17-40f5-9bcd-bc6f01229b28.mp4",
+      "bytes": 6500,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    },
+    {
+      "file": "73e916cb-457d-43af-a699-189ae79e54ab.mp4",
+      "bytes": 1642,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    },
+    {
+      "file": "845d081e-203f-4fda-abf1-9bc5cfdad348.mp4",
+      "bytes": 1716,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    },
+    {
+      "file": "857a0a4c-d503-439d-bd7c-27def64e0357.mp4",
+      "bytes": 1716,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    },
+    {
+      "file": "96406115-9bb2-4256-b863-ea5030464bd9.mp4",
+      "bytes": 4728,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    },
+    {
+      "file": "993d1c03-5c87-4f0a-8bca-7930e2c04ba2.mp4",
+      "bytes": 1716,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    },
+    {
+      "file": "a0d11f0e-6b3e-4b32-977c-1a4ee17bd2d2.mp4",
+      "bytes": 8252,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    },
+    {
+      "file": "a8a00d1f-181d-4c61-9a17-4a11c7b9f74c.mp4",
+      "bytes": 2276,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    },
+    {
+      "file": "ad61c6af-a825-4a8f-a883-3cad694c00a5.mp4",
+      "bytes": 2290,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    },
+    {
+      "file": "d8abd83a-dccc-4466-bb3b-518bd074a614.mp4",
+      "bytes": 4728,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    },
+    {
+      "file": "daf6998b-33ba-4998-8f36-06594ebb7f95.mp4",
+      "bytes": 1710,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    },
+    {
+      "file": "e1429aa5-123d-4212-ab60-46ba4e170a45.mp4",
+      "bytes": 2276,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    },
+    {
+      "file": "f1d391c5-4096-4f49-b008-b9ca361357a9.mp4",
+      "bytes": 2276,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    },
+    {
+      "file": "f6c4070d-3668-4e69-a9fe-dc7f4fde1345.mp4",
+      "bytes": 2303,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    },
+    {
+      "file": "fde4b314-0e77-4813-86a4-d421921c7fde.mp4",
+      "bytes": 1710,
+      "classification": "tiny_corrupt_or_stub_mp4",
+      "inDbCatalog": false,
+      "inR2PublicProbe": "not_present_or_404_for_sampled",
+      "recommendedAction": "delete_after_signed_upload_verification"
+    }
+  ],
+  "diagnostics": {
+    "split_brain_detected": true,
+    "video_mismatches": 22,
+    "thumb_mismatches": 0,
+    "storage": {
+      "status": "ready",
+      "media_root": "/app/public",
+      "videos_path": "/app/public/videos",
+      "thumbs_path": "/app/public/thumbs",
+      "media_public_base": "https://strong-lolly-a9fcb4.netlify.app",
+      "volume_mounted": true,
+      "ephemeral_storage_risk": false,
+      "writable": true,
+      "filesystem_video_count": 16,
+      "filesystem_thumb_count": 6,
+      "directories": [
+        {
+          "label": "media_root",
+          "path": "/app/public",
+          "exists": true,
+          "readable": true,
+          "writable": true
+        },
+        {
+          "label": "videos",
+          "path": "/app/public/videos",
+          "exists": true,
+          "readable": true,
+          "writable": true
+        },
+        {
+          "label": "thumbs",
+          "path": "/app/public/thumbs",
+          "exists": true,
+          "readable": true,
+          "writable": true
+        }
+      ]
+    }
+  }
+}

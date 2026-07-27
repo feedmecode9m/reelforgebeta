@@ -269,7 +269,8 @@ pub async fn ingest_stored_video(
             if let Err(err) = media_validator::verify_upload_size_integrity(expected, file_size) {
                 let _ = media_validator::quarantine_video(&svc.config.videos_path, &video_path, &err);
                 return HttpResponse::Conflict().json(serde_json::json!({
-                    "error": "upload_incomplete",
+                    "error": "upload incomplete: object size mismatch",
+                    "code": "upload_incomplete",
                     "expected_size": expected,
                     "stored_size": file_size,
                     "detail": err.to_string(),
@@ -301,11 +302,20 @@ pub async fn ingest_stored_video(
                 "error": "Uploaded video object is empty"
             }));
         }
+        eprintln!(
+            "[R2_VERIFY_TRACE] key={} expectedSize={:?} r2ObjectSize={} contentLength={} finalizeAllowed={}",
+            r2.object_key(stored_name),
+            expected_size,
+            file_size,
+            file_size,
+            expected_size.map(|e| e == file_size).unwrap_or(true)
+        );
         if let Some(expected) = expected_size {
             if let Err(err) = media_validator::verify_upload_size_integrity(expected, file_size) {
                 let _ = r2.delete_object(stored_name).await;
                 return HttpResponse::Conflict().json(serde_json::json!({
-                    "error": "upload_incomplete",
+                    "error": "upload incomplete: object size mismatch",
+                    "code": "upload_incomplete",
                     "expected_size": expected,
                     "stored_size": file_size,
                     "detail": err.to_string(),
@@ -461,6 +471,40 @@ pub async fn ingest_from_reel_multipart(
             Some(filename.as_str()),
             "route_video_bytes",
         );
+
+        // Netlify same-origin proxy truncates multipart at exactly 5 MiB.
+        // Refuse oversized multipart bodies so truncated MP4s never reach quarantine.
+        const MULTIPART_VIDEO_MAX_BYTES: usize = 4_194_304;
+        let received = bytes.len();
+        eprintln!(
+            "[R2_VERIFY_TRACE] key=multipart:{} expectedSize={:?} r2ObjectSize={} contentLength={} finalizeAllowed={}",
+            filename,
+            form.size_bytes,
+            received,
+            received,
+            form.size_bytes
+                .map(|e| e == received as i64)
+                .unwrap_or(received <= MULTIPART_VIDEO_MAX_BYTES)
+        );
+        if received > MULTIPART_VIDEO_MAX_BYTES {
+            return HttpResponse::PayloadTooLarge().json(serde_json::json!({
+                "error": "Video exceeds multipart limit; use signed upload",
+                "code": "multipart_too_large",
+                "stored_size": received,
+                "max_multipart_bytes": MULTIPART_VIDEO_MAX_BYTES,
+            }));
+        }
+        if let Some(expected) = form.size_bytes {
+            if expected != received as i64 {
+                return HttpResponse::Conflict().json(serde_json::json!({
+                    "error": "upload incomplete: object size mismatch",
+                    "code": "upload_incomplete",
+                    "expected_size": expected,
+                    "stored_size": received,
+                }));
+            }
+        }
+
         return ingest_video_bytes(
             svc,
             bytes,

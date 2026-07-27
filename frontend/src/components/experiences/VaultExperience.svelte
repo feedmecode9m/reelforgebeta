@@ -222,6 +222,13 @@
     return getAdminAuthHeaders();
   }
 
+  function requireAdminSessionForDelete() {
+    if (getAdminToken()) return true;
+    uploadStatus.set('🔐 Studio login required — open Studio, sign in, then retry delete');
+    resourceManager.setTimeout(() => uploadStatus.set('Standby'), 5000);
+    return false;
+  }
+
   let adminSessionReady = false;
 
   function refreshAdminSessionReady() {
@@ -801,6 +808,7 @@
       timestamp: Date.now()
     });
     if (!confirm(`⚠️ Permanently delete ${selected.length} selected videos?`)) return;
+    if (!requireAdminSessionForDelete()) return;
     console.info('[DELETE_CONFIRMED]', {
       mechanism: 'batch',
       vault: 'video-vault',
@@ -827,9 +835,7 @@
       const imageReels = (await fetchReadyReels()).filter(isThumbnailImageReel);
       applyVideoDeleteTombstone(deletedIds);
       await purgeStaleOrphanThumbnails(deletedIds, imageReels);
-    }
-    await syncDomain([SYNC_DOMAIN.VIDEO, SYNC_DOMAIN.FEED], { preserveLocal: true, force: true });
-    if (removed > 0) {
+      await syncDomain([SYNC_DOMAIN.VIDEO, SYNC_DOMAIN.FEED], { preserveLocal: true, force: true });
       canonicalizeVideoSelectionAfterDelete(deletedIds, {
         beforeCount,
         selectedIds: selectedIdsBeforeDelete
@@ -872,6 +878,11 @@
     event.preventDefault();
     event.stopPropagation();
     vaultDeleteDragActive = false;
+    const osFiles = Array.from(event.dataTransfer?.files || []);
+    if (osFiles.length > 0 && !parseVaultPayload(event.dataTransfer)) {
+      await handleVaultVideoDrop(event);
+      return;
+    }
     const payload = parseVaultPayload(event.dataTransfer);
     if (!payload) {
       uploadStatus.set('⚠️ Nothing to delete from drop payload');
@@ -972,8 +983,16 @@
   }
 
   export function handleVaultVideoDragEnter(event) {
+    allowDrop(event);
     videoDragActive.set(true);
     logDrag('video-vault:dragenter');
+    const probe = event?.dataTransfer?.files?.[0];
+    console.info('[MP4_DROP_START]', {
+      fileName: probe?.name || null,
+      fileSize: probe?.size ?? null,
+      fileType: probe?.type || null,
+      eventType: 'dragenter'
+    });
     console.info('[BG7G_DROP]', {
       ts: new Date().toISOString(),
       component: 'handleVaultVideoDragEnter',
@@ -986,7 +1005,9 @@
     });
   }
 
-  export function handleVaultVideoDragLeave() {
+  export function handleVaultVideoDragLeave(event) {
+    const related = event?.relatedTarget;
+    if (related && event.currentTarget?.contains?.(related)) return;
     videoDragActive.set(false);
   }
 
@@ -998,6 +1019,15 @@
     event.preventDefault();
     event.stopPropagation();
     videoDragActive.set(false);
+    const dropFiles = Array.from(event.dataTransfer?.files || []);
+    const probe = dropFiles[0];
+    console.info('[MP4_DROP_START]', {
+      fileName: probe?.name || null,
+      fileSize: probe?.size ?? null,
+      fileType: probe?.type || null,
+      eventType: 'drop',
+      fileCount: dropFiles.length
+    });
     console.info('[BG7G_DROP]', {
       ts: new Date().toISOString(),
       component: 'handleVaultVideoDrop',
@@ -1031,18 +1061,25 @@
       result: 'drop_received'
     });
 
-    const file = Array.from(event.dataTransfer?.files || []).find((f) => {
+    const file = dropFiles.find((f) => {
       const type = (f.type || '').toLowerCase();
       const name = (f.name || '').toLowerCase();
       return (
         type.startsWith('video/') ||
+        (type === 'application/octet-stream' && /\.(mp4|mov|webm|m4v)$/.test(name)) ||
         name.endsWith('.mp4') ||
         name.endsWith('.mov') ||
-        name.endsWith('.webm')
+        name.endsWith('.webm') ||
+        name.endsWith('.m4v')
       );
     });
 
     if (!file) {
+      console.info('[MP4_DROP_REJECTED]', {
+        reason: 'no_valid_video_in_transfer',
+        fileCount: dropFiles.length,
+        types: dropFiles.map((f) => f.type || 'unknown')
+      });
       console.info('[BG7G_DROP]', {
         ts: new Date().toISOString(),
         component: 'handleVaultVideoDrop',
@@ -1057,6 +1094,10 @@
       uploadStatus.set('⚠️ Drop a valid video file');
       return;
     }
+    console.info('[MP4_DROP_ACCEPTED]', {
+      fileName: file.name,
+      uploadPath: 'handleVaultVideoDrop→uploadMedia'
+    });
     console.info('[BG7G_DROP]', {
       ts: new Date().toISOString(),
       component: 'handleVaultVideoDrop',
@@ -1174,6 +1215,10 @@
     if (!validation.valid) {
       trackUploadLockRemove(uploadKey, { reason: 'validation_failed' });
       setPendingUploads(getActiveUploadLockCount());
+      console.info('[MP4_UPLOAD_ERROR]', {
+        stage: 'validateVideoFile',
+        error: validation.reason || 'Invalid video file'
+      });
       console.info('[BG7G_DROP]', {
         ts: new Date().toISOString(),
         component: 'validateVideoFile',
@@ -1220,6 +1265,10 @@
     uploadStatus.set(
       `🎬 Uploading ${incomingName} (${Math.round(incomingSize / 1024 / 1024)}MB) — keep this tab open`
     );
+    console.info('[MP4_UPLOAD_BEGIN]', {
+      fileName: file.name,
+      size: file.size
+    });
     vaultForensic('VAULT_UPLOAD_START', {
       vaultType: 'video',
       fileName: file.name,
@@ -1461,6 +1510,10 @@
         : error;
       logUploadError(uploadDiagCtx, failedError);
       noteFailedUpload();
+      console.info('[MP4_UPLOAD_ERROR]', {
+        stage: uploadTimedOut ? 'upload_timeout' : 'uploadMedia',
+        error: failedError?.message || String(failedError)
+      });
       console.info('[BG7G_UPLOAD]', {
         ts: new Date().toISOString(),
         component: 'handleVaultVideoDrop',
@@ -1840,6 +1893,7 @@
     if (!confirm(`⚠️ Permanently delete ALL ${videos.length} videos from MP4 vault?`)) {
       return;
     }
+    if (!requireAdminSessionForDelete()) return;
     console.info('[DELETE_CONFIRMED]', {
       mechanism: 'batch',
       vault: 'video-vault',
@@ -1861,19 +1915,13 @@
       if (deletedIds.length > 0) {
         applyVideoDeleteTombstone(deletedIds);
         await applyVideoDeleteThumbnailCleanup(deletedIds);
-      }
-      await syncDomain([SYNC_DOMAIN.VIDEO, SYNC_DOMAIN.FEED], { preserveLocal: true, force: true });
-      applyVideoDeleteTombstone(deletedIds);
-      if (deletedIds.length > 0) {
-        await applyVideoDeleteThumbnailCleanup(deletedIds);
-      }
-      const afterCount = get(personalVideos).length;
-      if (removed > 0) {
+        await syncDomain([SYNC_DOMAIN.VIDEO, SYNC_DOMAIN.FEED], { preserveLocal: true, force: true });
         canonicalizeVideoSelectionAfterDelete(deletedIds, {
           beforeCount,
           selectedIds: selectedIdsBeforeDelete
         });
       }
+      const afterCount = get(personalVideos).length;
       console.info('[DELETE_STORE_UPDATE]', {
         vault: 'video-vault',
         mechanism: 'batch',
@@ -2096,7 +2144,12 @@
   </div>
 </div>
 
-<div class="personal-media-grid">
+<div class="personal-media-grid"
+  on:dragenter={handleVaultVideoDragEnter}
+  on:dragover={handleVaultVideoDragOver}
+  on:dragleave={handleVaultVideoDragLeave}
+  on:drop={handleVaultVideoDrop}
+>
   <h4>Video Vault ({vaultDisplayVideos.length})</h4>
   <div style="display: flex; justify-content: space-between; align-items: center;">
     <p class="thumbnail-hint">Drop MP4/MOV • Auto-categorizes into feed</p>

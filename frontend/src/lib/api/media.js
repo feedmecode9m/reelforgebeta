@@ -2,6 +2,7 @@ import { API_BASE_URL, fetchWithRetry } from '../api.js';
 import { maybeHandleInvalidAdminSession } from '../adminSession.js';
 import {
     DIRECT_UPLOAD_BASE_URL,
+    NETLIFY_PROXY_MAX_REQUEST_BYTES,
     SIGNED_UPLOADS_MIN_BYTES,
     USE_SIGNED_UPLOADS
 } from '../config.js';
@@ -48,6 +49,7 @@ function putFileWithProgress(uploadUrl, file, putHeaders, uploadSignal, meta = {
         const stallMs = meta.stallMs || (file?.size >= 100 * 1024 * 1024 ? 180_000 : 120_000);
         let lastProgressAt = Date.now();
         let settled = false;
+        let uploadBytesSent = 0;
 
         const finish = (fn) => (value) => {
             if (settled) return;
@@ -82,6 +84,9 @@ function putFileWithProgress(uploadUrl, file, putHeaders, uploadSignal, meta = {
 
         xhr.upload.onprogress = (event) => {
             lastProgressAt = Date.now();
+            if (typeof event.loaded === 'number') {
+                uploadBytesSent = event.loaded;
+            }
             if (!event.lengthComputable) return;
             const percent = Math.min(100, Math.round((event.loaded / event.total) * 100));
             emitUploadProgress({
@@ -93,9 +98,13 @@ function putFileWithProgress(uploadUrl, file, putHeaders, uploadSignal, meta = {
             });
         };
         xhr.onload = () => {
+            if (uploadBytesSent <= 0 && Number(file?.size || 0) > 0 && xhr.status >= 200 && xhr.status < 300) {
+                uploadBytesSent = Number(file.size);
+            }
             finish(resolve)({
                 ok: xhr.status >= 200 && xhr.status < 300,
                 status: xhr.status,
+                uploadBytesSent,
                 text: async () => xhr.responseText || ''
             });
         };
@@ -148,15 +157,49 @@ export const UPLOADS_SIGN_URL = '/api/uploads/sign';
 export const REELS_FINALIZE_URL = '/api/reels/finalize';
 
 /**
+ * Duck-type File/Blob — `instanceof File` fails across iframe/realm boundaries
+ * and silently falls back to Netlify multipart (truncated at 5 MiB).
+ * @param {unknown} value
+ * @returns {value is File}
+ */
+function isBrowserFile(value) {
+    return Boolean(
+        value &&
+            typeof value === 'object' &&
+            typeof value.size === 'number' &&
+            typeof value.name === 'string' &&
+            typeof value.slice === 'function'
+    );
+}
+
+/**
  * @param {File | null | undefined} file
  * @returns {boolean}
  */
 function shouldUseSignedVideoUpload(file) {
     return Boolean(
         USE_SIGNED_UPLOADS &&
-            file instanceof File &&
+            isBrowserFile(file) &&
             Number(file.size || 0) >= SIGNED_UPLOADS_MIN_BYTES
     );
+}
+
+/**
+ * Large videos must never POST through Netlify multipart (5 MiB hard truncate).
+ * @param {File | null | undefined} file
+ */
+function assertMultipartSafeVideoSize(file) {
+    const size = Number(file?.size || 0);
+    if (size >= SIGNED_UPLOADS_MIN_BYTES || size >= NETLIFY_PROXY_MAX_REQUEST_BYTES) {
+        throw new Error(
+            `Video is too large for multipart upload (${size} bytes). Signed direct upload is required.`
+        );
+    }
+}
+
+/** @param {Record<string, unknown>} detail */
+function logUploadSizeTrace(detail) {
+    console.info('[UPLOAD_SIZE_TRACE]', detail);
 }
 
 /**
@@ -399,6 +442,15 @@ async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = nu
     });
     logUploadStage(diagContext, 'PUT_BEGIN');
 
+    logUploadSizeTrace({
+        fileName: primaryFileName,
+        browserFileSize: file.size,
+        uploadBytesSent: 0,
+        uploadComplete: false,
+        uploadStatus: 'put_begin',
+        transport: isR2PresignedPut ? 'r2-presigned' : 'railway-direct'
+    });
+
     let putResponse;
     try {
         putResponse = await putFileWithProgress(
@@ -414,6 +466,13 @@ async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = nu
         );
     } catch (putError) {
         const err = putError instanceof Error ? putError : new Error(String(putError));
+        logUploadSizeTrace({
+            fileName: primaryFileName,
+            browserFileSize: file.size,
+            uploadBytesSent: 0,
+            uploadComplete: false,
+            uploadStatus: `put_error:${err.message}`
+        });
         logBg7xR2Put(diagContext, 'error', {
             filename: primaryFileName,
             sizeBytes: file.size,
@@ -431,6 +490,19 @@ async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = nu
     }
     const uploadEnd = new Date().toISOString();
     const putDurationMs = Math.round(performance.now() - putStartedAt);
+    const uploadBytesSent = Number(putResponse.uploadBytesSent || 0);
+    logUploadSizeTrace({
+        fileName: primaryFileName,
+        browserFileSize: file.size,
+        uploadBytesSent,
+        uploadComplete: Boolean(putResponse.ok),
+        uploadStatus: putResponse.ok ? putResponse.status : `http_${putResponse.status}`
+    });
+    if (putResponse.ok && uploadBytesSent > 0 && uploadBytesSent !== Number(file.size)) {
+        throw new Error(
+            `upload incomplete: object size mismatch (sent ${uploadBytesSent}, expected ${file.size})`
+        );
+    }
     logBg7xR2Put(diagContext, putResponse.ok ? 'complete' : 'error', {
         filename: primaryFileName,
         sizeBytes: file.size,
@@ -446,7 +518,8 @@ async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = nu
     });
     logUploadStage(diagContext, 'PUT_COMPLETE', {
         status: putResponse.status,
-        putElapsedMs: putDurationMs
+        putElapsedMs: putDurationMs,
+        uploadBytesSent
     });
     if (diagContext?.uploadKey) {
         saveUploadCheckpoint({
@@ -473,6 +546,8 @@ async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = nu
         stage: 'finalize:request',
         uploadId: signBody.uploadId,
         endpoint: REELS_FINALIZE_URL,
+        browserFileSize: file.size,
+        uploadBytesSent,
         ts: new Date().toISOString()
     });
     logUploadStage(diagContext, 'FINALIZE_BEGIN');
@@ -579,6 +654,43 @@ export async function createReel(formData, headers = {}, diagContext = null) {
     let uploadIdentity = { source: 'multipart' };
     try {
     if (formData instanceof FormData) {
+        const videoEntry = formData.get('video') || formData.get('file');
+        if (isBrowserFile(videoEntry) && shouldUseSignedVideoUpload(videoEntry)) {
+            logUploadStage(diagContext, 'SIGNED_UPLOAD_PATH');
+            logUploadSizeTrace({
+                fileName: videoEntry.name,
+                browserFileSize: videoEntry.size,
+                uploadBytesSent: 0,
+                uploadComplete: false,
+                uploadStatus: 'createReel:redirect_signed'
+            });
+            return await uploadVideoSigned(
+                videoEntry,
+                headers,
+                {
+                    title: String(formData.get('title') || '').trim() || undefined,
+                    description: String(formData.get('description') || '').trim() || undefined,
+                    category: String(formData.get('category') || '').trim() || undefined,
+                    episodeId:
+                        String(formData.get('episodeId') || formData.get('episode_id') || '').trim() ||
+                        undefined,
+                    seriesId:
+                        String(formData.get('seriesId') || formData.get('series_id') || '').trim() ||
+                        undefined,
+                    seasonId:
+                        String(formData.get('seasonId') || formData.get('season_id') || '').trim() ||
+                        undefined,
+                    identitySource: 'createReel:signed-redirect'
+                },
+                diagContext
+            );
+        }
+        if (isBrowserFile(videoEntry)) {
+            assertMultipartSafeVideoSize(videoEntry);
+            if (!formData.has('sizeBytes') && !formData.has('size_bytes')) {
+                formData.append('sizeBytes', String(videoEntry.size));
+            }
+        }
         uploadIdentity = resolveUploadIdentity({
             episodeId: formData.get('episodeId') || formData.get('episode_id'),
             seriesId: formData.get('seriesId') || formData.get('series_id'),
@@ -596,7 +708,7 @@ export async function createReel(formData, headers = {}, diagContext = null) {
             });
         }
         for (const [key, value] of formData.entries()) {
-            if (value instanceof File) {
+            if (isBrowserFile(value)) {
                 fileInfo[key] = {
                     name: value.name,
                     type: value.type || '',
@@ -786,8 +898,10 @@ export async function uploadVideo(file, headers = {}, meta = {}) {
     if (shouldUseSignedVideoUpload(file)) {
         return uploadVideoSigned(file, headers, meta);
     }
+    assertMultipartSafeVideoSize(file);
     const formData = new FormData();
     formData.append('video', file);
+    formData.append('sizeBytes', String(file.size));
     if (meta.thumbnail) formData.append('thumbnail', meta.thumbnail);
     if (meta.title) formData.append('title', meta.title);
     if (meta.description) formData.append('description', meta.description);
@@ -813,7 +927,7 @@ export async function uploadMedia(fileOrFormData, headersOrMime = {}, diagContex
         const headers =
             headersOrMime && typeof headersOrMime === 'object' ? headersOrMime : {};
         const videoEntry = fileOrFormData.get('video');
-        if (videoEntry instanceof File && shouldUseSignedVideoUpload(videoEntry)) {
+        if (isBrowserFile(videoEntry) && shouldUseSignedVideoUpload(videoEntry)) {
             logUploadStage(diagContext, 'SIGNED_UPLOAD_PATH');
             return await uploadVideoSigned(
                 videoEntry,
@@ -835,6 +949,12 @@ export async function uploadMedia(fileOrFormData, headersOrMime = {}, diagContex
                 },
                 diagContext
             );
+        }
+        if (isBrowserFile(videoEntry)) {
+            assertMultipartSafeVideoSize(videoEntry);
+            if (!fileOrFormData.has('sizeBytes') && !fileOrFormData.has('size_bytes')) {
+                fileOrFormData.append('sizeBytes', String(videoEntry.size));
+            }
         }
         logUploadStage(diagContext, 'MULTIPART_UPLOAD_PATH');
         console.info('[BG7G_UPLOAD]', {
@@ -978,6 +1098,7 @@ export async function deleteReelById(reelId, headers = {}) {
         ts: new Date().toISOString()
     });
     if (!response.ok) {
+        maybeHandleInvalidAdminSession(response, body, 'deleteReelById');
         throw new Error(body.error || `Delete reel failed (${response.status})`);
     }
     return body.success !== undefined ? body : { success: true, id, ...body };

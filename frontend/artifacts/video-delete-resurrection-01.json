@@ -1,21 +1,21 @@
 {
   "mission": "VIDEO-DELETE-RESURRECTION-01",
-  "ts": "2026-07-24T04:49:51.520Z",
+  "ts": "2026-07-27T15:35:10.165Z",
   "frontendUrl": "http://127.0.0.1:4173/",
   "apiUrl": "https://reelforge-deploy-production.up.railway.app",
-  "fixture": "/tmp/video-resurrection01-20260724T044950Z/RESURRECTION_TEST_20260724T044950Z.mp4",
+  "fixture": "/tmp/video-resurrection01-20260727T153509Z/RESURRECTION_TEST_20260727T153509Z.mp4",
   "steps": {
     "upload": {
       "ok": true,
-      "reelId": "b9d746b6-6303-430d-93ac-0b1751030537"
+      "reelId": "e296e21b-e03c-45df-b6d9-31236e439332"
     },
     "refreshAfterUpload": {
       "pass": true,
-      "count": 21
+      "count": 16
     },
     "hardRefresh": {
       "pass": true,
-      "count": 21
+      "count": 16
     },
     "apiDelete": {
       "ok": true,
@@ -26,7 +26,7 @@
       "pass": true,
       "resurrected": false,
       "catalogGone": true,
-      "vaultCount": 22,
+      "vaultCount": 15,
       "tombstones": null
     },
     "secondRefresh": {
@@ -40,13 +40,18 @@
   },
   "pass": true,
   "consoleTrace": [
-    "[VAULT-DELETE-TRACE] hydrateVaultFromReels:bootstrap_reload {catalogCount: 37, ids: Array(20), ts: 2026-07-24T04:50:03.674Z}",
-    "[VAULT-DELETE-TRACE] hydrateVaultFromReels:video_reconcile {localBefore: 0, backendVideos: 23, prunedLocal: 0, pendingLocal: 0, reconciled: 23}",
-    "[VAULT-DELETE-TRACE] hydrateVaultFromReels:bootstrap_reload {catalogCount: 36, ids: Array(20), ts: 2026-07-24T04:50:19.339Z}",
-    "[VAULT-DELETE-TRACE] hydrateVaultFromReels:video_reconcile {localBefore: 21, backendVideos: 22, prunedLocal: 20, pendingLocal: 0, reconciled: 22}",
-    "[VAULT-DELETE-TRACE] hydrateVaultFromReels:bootstrap_reload {catalogCount: 36, ids: Array(20), ts: 2026-07-24T04:50:22.888Z}",
-    "[VAULT-DELETE-TRACE] hydrateVaultFromReels:video_reconcile {localBefore: 23, backendVideos: 22, prunedLocal: 22, pendingLocal: 0, reconciled: 22}",
-    "[VAULT-DELETE-TRACE] hydrateVaultFromReels:bootstrap_reload {catalogCount: 36, ids: Array(20), ts: 2026-07-24T04:50:26.707Z}",
-    "[VAULT-DELETE-TRACE] hydrateVaultFromReels:video_reconcile {localBefore: 23, backendVideos: 22, prunedLocal: 22, pendingLocal: 0, reconciled: 22}"
+    "[VAULT-DELETE-TRACE] hydrateVaultFromReels:bootstrap_reload {catalogCount: 18, ids: Array(18), ts: 2026-07-27T15:35:12.997Z}",
+    "[VAULT-DELETE-TRACE] hydrateVaultFromReels:video_reconcile {localBefore: 0, backendVideos: 16, prunedLocal: 0, pendingLocal: 0, reconciled: 16}",
+    "[VAULT-DELETE-TRACE] syncFromVault:bootstrap_reload {source: GET /api/reels, catalogCount: 18, ids: Array(18), ts: 2026-07-27T15:35:15.105Z}",
+    "[VAULT-DELETE-TRACE] hydrateVaultFromReels:bootstrap_reload {catalogCount: 19, ids: Array(19), ts: 2026-07-27T15:35:29.333Z}",
+    "[VAULT-DELETE-TRACE] hydrateVaultFromReels:video_reconcile {localBefore: 15, backendVideos: 16, prunedLocal: 15, pendingLocal: 0, reconciled: 16}",
+    "[VAULT-DELETE-TRACE] syncFromVault:bootstrap_reload {source: GET /api/reels, catalogCount: 19, ids: Array(19), ts: 2026-07-27T15:35:30.984Z}",
+    "[VAULT-DELETE-TRACE] hydrateVaultFromReels:bootstrap_reload {catalogCount: 19, ids: Array(19), ts: 2026-07-27T15:35:34.594Z}",
+    "[VAULT-DELETE-TRACE] hydrateVaultFromReels:video_reconcile {localBefore: 16, backendVideos: 16, prunedLocal: 16, pendingLocal: 0, reconciled: 16}",
+    "[VAULT-DELETE-TRACE] syncFromVault:bootstrap_reload {source: GET /api/reels, catalogCount: 19, ids: Array(19), ts: 2026-07-27T15:35:36.930Z}",
+    "[VAULT-DELETE-TRACE] hydrateVaultFromReels:bootstrap_reload {catalogCount: 18, ids: Array(18), ts: 2026-07-27T15:35:47.980Z}",
+    "[VAULT-DELETE-TRACE] hydrateVaultFromReels:video_reconcile {localBefore: 16, backendVideos: 15, prunedLocal: 15, pendingLocal: 0, reconciled: 15}",
+    "[VAULT-DELETE-TRACE] hydrateVaultFromReels:bootstrap_reload {catalogCount: 18, ids: Array(18), ts: 2026-07-27T15:35:50.397Z}",
+    "[VAULT-DELETE-TRACE] hydrateVaultFromReels:video_reconcile {localBefore: 16, backendVideos: 15, prunedLocal: 15, pendingLocal: 0, reconciled: 15}"
   ]
 }

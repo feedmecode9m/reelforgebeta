@@ -6,7 +6,7 @@
 
 | Step | Result |
 |------|--------|
-| R2 upload | PASS (`b9d746b6-6303-430d-93ac-0b1751030537`) |
+| R2 upload | PASS (`e296e21b-e03c-45df-b6d9-31236e439332`) |
 | Refresh persists vault | PASS |
 | Hard refresh (informational) | PASS |
 | API DELETE + catalog gone | PASS |
@@ -22,7 +22,7 @@
 
 1. `deletionSync.js` — `pruneGhostVideoVaultEntries()` + `isPendingLocalVideoVaultEntry()` (keeps blob: in-flight uploads).
 2. `mediaBootstrap.js` — bootstrap video reconcile: backend catalog wins; prune local ghosts before persist.
-3. `viewerContext.js` — `filterOutDeletedMedia` on video reload + `persistPersonalVault`; `syncFromVault(true, true)` on boot (forces backend video projection).
+3. `viewerContext.js` — `filterOutDeletedMedia` on video reload + `persistPersonalVault`.
 
 **Not modified:** thumbnailVault, hero pipeline, signed upload, Railway routes, thumbnail hydration.
 
@@ -44,9 +44,9 @@ onMount reads LS  →  syncFromVault reinforces backend projection
 
 ## Production
 
-- **Production Netlify deploy:** pending (`NETLIFY_AUTH_TOKEN` not set in this environment). Build artifact: `dist/assets/index-CAYxiokM.js` (post-fix bundle).
-- **Local verification:** `FRONTEND_URL=http://127.0.0.1:4173/ node scripts/video-delete-resurrection-01.mjs` with Playwright same-origin `/api` proxy (simulates Netlify `_redirects`).
-- Frontend target: https://strong-lolly-a9fcb4.netlify.app/
+- Frontend: http://127.0.0.1:4173/
 - Backend: https://reelforge-deploy-production.up.railway.app
-- Validated: 2026-07-24T04:49:51.520Z
-- Evidence: `prunedLocal: 22 → reconciled: 22` after ghost inject + reload (`hydrateVaultFromReels:video_reconcile`); `resurrected=false` on post-delete refresh, second refresh, and browser restart.
+- Validated: 2026-07-27T15:35:10.165Z
+
+
+Raw JSON: `artifacts/video-delete-resurrection-01.json`

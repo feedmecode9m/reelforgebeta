@@ -81,7 +81,8 @@ impl SignedUploadStore {
 
 fn upload_incomplete_response(expected: i64, actual: i64) -> HttpResponse {
     HttpResponse::Conflict().json(serde_json::json!({
-        "error": "upload_incomplete",
+        "error": "upload incomplete: object size mismatch",
+        "code": "upload_incomplete",
         "expected_size": expected,
         "stored_size": actual,
     }))
@@ -476,12 +477,20 @@ pub async fn finalize_reel(
         };
         if let Err(resp) = verify_signed_byte_count(expected_size, stored_size) {
             eprintln!(
+                "[R2_VERIFY_TRACE] key={} expectedSize={} r2ObjectSize={} contentLength={} finalizeAllowed=false",
+                object_key, expected_size, stored_size, stored_size
+            );
+            eprintln!(
                 "[BG7X_FINALIZE] uploadId={} objectKey={} r2HeadOk=skipped sessionStatus=Uploaded storedSize={} signedSize={} ingestionStatus=upload_incomplete",
                 upload_id, object_key, stored_size, expected_size
             );
             let _ = tokio::fs::remove_file(&disk_path).await;
             return resp;
         }
+        eprintln!(
+            "[R2_VERIFY_TRACE] key={} expectedSize={} r2ObjectSize={} contentLength={} finalizeAllowed=true",
+            object_key, expected_size, stored_size, stored_size
+        );
         eprintln!(
             "[BG7X_FINALIZE] uploadId={} objectKey={} r2HeadOk=skipped sessionStatus=Uploaded storedSize={} signedSize={} ingestionStatus=disk_verified",
             upload_id, object_key, stored_size, expected_size
@@ -502,6 +511,10 @@ pub async fn finalize_reel(
         };
         if head.content_length <= 0 {
             eprintln!(
+                "[R2_VERIFY_TRACE] key={} expectedSize={} r2ObjectSize=0 contentLength=0 finalizeAllowed=false reason=empty",
+                object_key, expected_size
+            );
+            eprintln!(
                 "[BG7X_FINALIZE] uploadId={} objectKey={} r2HeadOk=true objectSize=0 contentType={} ingestionStatus=conflict_empty",
                 upload_id,
                 object_key,
@@ -511,6 +524,15 @@ pub async fn finalize_reel(
                 "error": "Upload bytes must be stored before finalize"
             }));
         }
+        eprintln!(
+            "[R2_VERIFY_TRACE] key={} expectedSize={} r2ObjectSize={} contentLength={} contentType={} finalizeAllowed={}",
+            object_key,
+            expected_size,
+            head.content_length,
+            head.content_length,
+            head.content_type.as_deref().unwrap_or(""),
+            expected_size == head.content_length
+        );
         if let Err(resp) = verify_signed_byte_count(expected_size, head.content_length) {
             eprintln!(
                 "[BG7X_FINALIZE] uploadId={} objectKey={} r2HeadOk=true objectSize={} contentType={} ingestionStatus=upload_incomplete signedSize={}",

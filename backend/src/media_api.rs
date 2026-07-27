@@ -305,6 +305,8 @@ pub struct ParsedReelForm {
     pub description: Option<String>,
     pub category: Option<String>,
     pub episode_id: Option<String>,
+    /// Client-declared browser file size (detects Netlify/proxy truncation).
+    pub size_bytes: Option<i64>,
     pub video: Option<(String, Vec<u8>)>,
     pub thumbnail: Option<(String, Vec<u8>)>,
 }
@@ -327,6 +329,7 @@ pub async fn parse_reel_multipart(
         description: None,
         category: None,
         episode_id: None,
+        size_bytes: None,
         video: None,
         thumbnail: None,
     };
@@ -472,6 +475,12 @@ pub async fn parse_reel_multipart(
             }
             "episodeId" | "episode_id" => {
                 form.episode_id = Some(String::from_utf8_lossy(&bytes).trim().to_string());
+            }
+            "sizeBytes" | "size_bytes" => {
+                let raw = String::from_utf8_lossy(&bytes).trim().to_string();
+                if let Ok(n) = raw.parse::<i64>() {
+                    form.size_bytes = Some(n);
+                }
             }
             _ => {}
         }
