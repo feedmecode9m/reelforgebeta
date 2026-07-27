@@ -147,7 +147,6 @@ async fn ingest_video_bytes(
         &stored_name,
         file_size,
         Some(mime),
-        episode_id.as_deref(),
     )
     .await
     {
@@ -253,6 +252,7 @@ pub async fn ingest_stored_video(
     description: Option<String>,
     category: Option<String>,
     episode_id: Option<String>,
+    expected_size: Option<i64>,
 ) -> HttpResponse {
     let video_path = svc.config.videos_path.join(stored_name);
     let (file_size, video_url) = if video_path.is_file() {
@@ -265,7 +265,21 @@ pub async fn ingest_stored_video(
                 "error": "Uploaded video file is empty"
             }));
         }
-        if let Err(err) = media_validator::validate_video_path(&video_path) {
+        if let Some(expected) = expected_size {
+            if let Err(err) = media_validator::verify_upload_size_integrity(expected, file_size) {
+                let _ = media_validator::quarantine_video(&svc.config.videos_path, &video_path, &err);
+                return HttpResponse::Conflict().json(serde_json::json!({
+                    "error": "upload_incomplete",
+                    "expected_size": expected,
+                    "stored_size": file_size,
+                    "detail": err.to_string(),
+                }));
+            }
+        }
+        if let Err(err) = media_validator::validate_video_path_with_expected_size(
+            &video_path,
+            expected_size,
+        ) {
             let _ = media_validator::quarantine_video(&svc.config.videos_path, &video_path, &err);
             return HttpResponse::BadRequest().json(serde_json::json!({
                 "error": err.to_string()
@@ -286,6 +300,17 @@ pub async fn ingest_stored_video(
             return HttpResponse::BadRequest().json(serde_json::json!({
                 "error": "Uploaded video object is empty"
             }));
+        }
+        if let Some(expected) = expected_size {
+            if let Err(err) = media_validator::verify_upload_size_integrity(expected, file_size) {
+                let _ = r2.delete_object(stored_name).await;
+                return HttpResponse::Conflict().json(serde_json::json!({
+                    "error": "upload_incomplete",
+                    "expected_size": expected,
+                    "stored_size": file_size,
+                    "detail": err.to_string(),
+                }));
+            }
         }
         eprintln!(
             "[STORE_WRITE] kind=video r2_key={} bytes={} signed_upload=true",
@@ -328,7 +353,6 @@ pub async fn ingest_stored_video(
         stored_name,
         file_size,
         Some(mime),
-        episode_id.as_deref(),
     )
     .await
     {
@@ -557,7 +581,6 @@ async fn ingest_image_only(
         &stored_name,
         bytes.len() as i64,
         Some(mime),
-        episode_id.as_deref(),
     )
     .await
     {

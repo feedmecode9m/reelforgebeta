@@ -12,6 +12,7 @@ use uuid::Uuid;
 
 use crate::events::EventBus;
 use crate::ingestion::{self, IngestionService};
+use crate::media_validator;
 use crate::video_stream::{ThumbsDir, VideosDir};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -76,6 +77,19 @@ impl SignedUploadStore {
         let mut guard = self.sessions.write().await;
         guard.retain(|_, s| s.expires_at > now && s.status != UploadStatus::Finalized);
     }
+}
+
+fn upload_incomplete_response(expected: i64, actual: i64) -> HttpResponse {
+    HttpResponse::Conflict().json(serde_json::json!({
+        "error": "upload_incomplete",
+        "expected_size": expected,
+        "stored_size": actual,
+    }))
+}
+
+fn verify_signed_byte_count(expected: i64, actual: i64) -> Result<(), HttpResponse> {
+    media_validator::verify_upload_size_integrity(expected, actual)
+        .map_err(|_| upload_incomplete_response(expected, actual))
 }
 
 pub fn direct_upload_public_base() -> String {
@@ -351,15 +365,9 @@ pub async fn direct_upload(
         }));
     }
 
-    let size_delta = (total as i64 - expected_size).abs();
-    if size_delta > (expected_size / 20).max(1024) {
+    if let Err(resp) = verify_signed_byte_count(expected_size, total as i64) {
         let _ = tokio::fs::remove_file(&tmp_path).await;
-        return HttpResponse::BadRequest().json(serde_json::json!({
-            "error": format!(
-                "Uploaded size {} differs from signed size {} beyond tolerance",
-                total, expected_size
-            )
-        }));
+        return resp;
     }
 
     if let Err(e) = tokio::fs::rename(&tmp_path, &dest_path).await {
@@ -456,70 +464,79 @@ pub async fn finalize_reel(
         .map(|r2| r2.object_key(&stored_name))
         .unwrap_or_else(|| stored_name.clone());
 
-    if status != UploadStatus::Uploaded {
-        if crate::storage::r2::R2Storage::enabled() {
-            let r2 = crate::storage::r2::R2Storage::global().expect("r2 enabled");
-            let head = match r2.head_object(&stored_name).await {
-                Ok(h) => h,
-                Err(e) => {
-                    eprintln!(
-                        "[BG7X_FINALIZE] uploadId={} objectKey={} r2HeadOk=false r2HeadError={} objectSize=-1 contentType= ingestionStatus=conflict",
-                        upload_id, object_key, e
-                    );
-                    return HttpResponse::Conflict().json(serde_json::json!({
-                        "error": format!("Upload not found in R2: {}", e)
-                    }));
-                }
-            };
-            if head.content_length <= 0 {
+    if status == UploadStatus::Uploaded {
+        let disk_path = videos_path.0.join(&stored_name);
+        let stored_size = match tokio::fs::metadata(&disk_path).await {
+            Ok(meta) => meta.len() as i64,
+            Err(e) => {
+                return HttpResponse::Conflict().json(serde_json::json!({
+                    "error": format!("Uploaded video file missing before finalize: {}", e)
+                }));
+            }
+        };
+        if let Err(resp) = verify_signed_byte_count(expected_size, stored_size) {
+            eprintln!(
+                "[BG7X_FINALIZE] uploadId={} objectKey={} r2HeadOk=skipped sessionStatus=Uploaded storedSize={} signedSize={} ingestionStatus=upload_incomplete",
+                upload_id, object_key, stored_size, expected_size
+            );
+            let _ = tokio::fs::remove_file(&disk_path).await;
+            return resp;
+        }
+        eprintln!(
+            "[BG7X_FINALIZE] uploadId={} objectKey={} r2HeadOk=skipped sessionStatus=Uploaded storedSize={} signedSize={} ingestionStatus=disk_verified",
+            upload_id, object_key, stored_size, expected_size
+        );
+    } else if crate::storage::r2::R2Storage::enabled() {
+        let r2 = crate::storage::r2::R2Storage::global().expect("r2 enabled");
+        let head = match r2.head_object(&stored_name).await {
+            Ok(h) => h,
+            Err(e) => {
                 eprintln!(
-                    "[BG7X_FINALIZE] uploadId={} objectKey={} r2HeadOk=true objectSize=0 contentType={} ingestionStatus=conflict_empty",
-                    upload_id,
-                    object_key,
-                    head.content_type.as_deref().unwrap_or("")
+                    "[BG7X_FINALIZE] uploadId={} objectKey={} r2HeadOk=false r2HeadError={} objectSize=-1 contentType= ingestionStatus=conflict",
+                    upload_id, object_key, e
                 );
                 return HttpResponse::Conflict().json(serde_json::json!({
-                    "error": "Upload bytes must be stored before finalize"
+                    "error": format!("Upload not found in R2: {}", e)
                 }));
             }
-            let size_delta = (head.content_length - expected_size).abs();
-            if size_delta > (expected_size / 20).max(1024) {
-                eprintln!(
-                    "[BG7X_FINALIZE] uploadId={} objectKey={} r2HeadOk=true objectSize={} contentType={} ingestionStatus=bad_request_size_mismatch signedSize={}",
-                    upload_id,
-                    object_key,
-                    head.content_length,
-                    head.content_type.as_deref().unwrap_or(""),
-                    expected_size
-                );
-                return HttpResponse::BadRequest().json(serde_json::json!({
-                    "error": format!(
-                        "R2 object size {} differs from signed size {} beyond tolerance",
-                        head.content_length, expected_size
-                    )
-                }));
-            }
+        };
+        if head.content_length <= 0 {
             eprintln!(
-                "[BG7X_FINALIZE] uploadId={} objectKey={} r2HeadOk=true objectSize={} contentType={} ingestionStatus=r2_verified",
+                "[BG7X_FINALIZE] uploadId={} objectKey={} r2HeadOk=true objectSize=0 contentType={} ingestionStatus=conflict_empty",
                 upload_id,
                 object_key,
-                head.content_length,
                 head.content_type.as_deref().unwrap_or("")
-            );
-        } else {
-            eprintln!(
-                "[BG7X_FINALIZE] uploadId={} objectKey={} r2HeadOk=false objectSize=-1 contentType= ingestionStatus=conflict_not_uploaded",
-                upload_id, object_key
             );
             return HttpResponse::Conflict().json(serde_json::json!({
                 "error": "Upload bytes must be stored before finalize"
             }));
         }
+        if let Err(resp) = verify_signed_byte_count(expected_size, head.content_length) {
+            eprintln!(
+                "[BG7X_FINALIZE] uploadId={} objectKey={} r2HeadOk=true objectSize={} contentType={} ingestionStatus=upload_incomplete signedSize={}",
+                upload_id,
+                object_key,
+                head.content_length,
+                head.content_type.as_deref().unwrap_or(""),
+                expected_size
+            );
+            return resp;
+        }
+        eprintln!(
+            "[BG7X_FINALIZE] uploadId={} objectKey={} r2HeadOk=true objectSize={} contentType={} ingestionStatus=r2_verified",
+            upload_id,
+            object_key,
+            head.content_length,
+            head.content_type.as_deref().unwrap_or("")
+        );
     } else {
         eprintln!(
-            "[BG7X_FINALIZE] uploadId={} objectKey={} r2HeadOk=skipped sessionStatus=Uploaded ingestionStatus=pending_ingest",
+            "[BG7X_FINALIZE] uploadId={} objectKey={} r2HeadOk=false objectSize=-1 contentType= ingestionStatus=conflict_not_uploaded",
             upload_id, object_key
         );
+        return HttpResponse::Conflict().json(serde_json::json!({
+            "error": "Upload bytes must be stored before finalize"
+        }));
     }
 
     {
@@ -577,6 +594,7 @@ pub async fn finalize_reel(
         description,
         category,
         episode_id,
+        Some(expected_size),
     )
     .await;
 

@@ -1,4 +1,4 @@
-use std::io::Read;
+use std::io::{Read, Seek, SeekFrom};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -27,6 +27,8 @@ pub enum ValidationError {
     EmptyCodec,
     EmptyFile,
     IoError(String),
+    SizeMismatch { expected: i64, actual: i64 },
+    TruncatedContainer(String),
 }
 
 impl ValidationError {
@@ -39,6 +41,8 @@ impl ValidationError {
             ValidationError::EmptyCodec => "empty_codec",
             ValidationError::EmptyFile => "empty_file",
             ValidationError::IoError(_) => "io_error",
+            ValidationError::SizeMismatch { .. } => "size_mismatch",
+            ValidationError::TruncatedContainer(_) => "truncated_container",
         }
     }
 
@@ -51,6 +55,10 @@ impl ValidationError {
             ValidationError::EmptyCodec => "video stream missing codec_name".to_string(),
             ValidationError::EmptyFile => "file is empty".to_string(),
             ValidationError::IoError(s) => s.clone(),
+            ValidationError::SizeMismatch { expected, actual } => {
+                format!("expected {} bytes, stored {} bytes", expected, actual)
+            }
+            ValidationError::TruncatedContainer(s) => s.clone(),
         }
     }
 }
@@ -78,6 +86,106 @@ struct FfprobeStream {
 #[derive(Debug, Deserialize)]
 struct FfprobeFormat {
     duration: Option<String>,
+    size: Option<String>,
+}
+
+/// Hard gate: declared upload size must equal bytes on disk/object store.
+pub fn verify_upload_size_integrity(expected: i64, actual: i64) -> Result<(), ValidationError> {
+    if expected <= 0 {
+        return Err(ValidationError::SizeMismatch { expected, actual });
+    }
+    if actual <= 0 {
+        return Err(ValidationError::SizeMismatch { expected, actual });
+    }
+    if expected != actual {
+        return Err(ValidationError::SizeMismatch { expected, actual });
+    }
+    Ok(())
+}
+
+fn atom_tag_label(tag: &[u8; 4]) -> String {
+    String::from_utf8_lossy(tag).trim().to_string()
+}
+
+/// Walk ISO-BMFF top-level atoms and reject containers whose boxes extend past EOF.
+pub fn verify_mp4_atom_bounds(path: &Path) -> Result<(), ValidationError> {
+    let file_size = std::fs::metadata(path)
+        .map_err(|e| ValidationError::IoError(format!("metadata {}: {}", path.display(), e)))?
+        .len();
+    if file_size < 8 {
+        return Err(ValidationError::EmptyFile);
+    }
+
+    let mut file = std::fs::File::open(path)
+        .map_err(|e| ValidationError::IoError(format!("open {}: {}", path.display(), e)))?;
+    let mut offset: u64 = 0;
+
+    while offset + 8 <= file_size {
+        file.seek(SeekFrom::Start(offset))
+            .map_err(|e| ValidationError::IoError(format!("seek {}: {}", path.display(), e)))?;
+        let mut hdr = [0u8; 8];
+        file.read_exact(&mut hdr)
+            .map_err(|e| ValidationError::IoError(format!("read {}: {}", path.display(), e)))?;
+
+        let size32 = u32::from_be_bytes(hdr[0..4].try_into().unwrap()) as u64;
+        let tag = [hdr[4], hdr[5], hdr[6], hdr[7]];
+
+        let (header_size, box_size) = if size32 == 0 {
+            (8u64, file_size - offset)
+        } else if size32 == 1 {
+            let mut ext = [0u8; 8];
+            file.read_exact(&mut ext)
+                .map_err(|e| ValidationError::IoError(format!("read ext {}: {}", path.display(), e)))?;
+            (16u64, u64::from_be_bytes(ext))
+        } else {
+            (8u64, size32)
+        };
+
+        if box_size < header_size {
+            return Err(ValidationError::TruncatedContainer(format!(
+                "atom {} at offset {} declares size {} < header {}",
+                atom_tag_label(&tag),
+                offset,
+                box_size,
+                header_size
+            )));
+        }
+
+        let end = offset.saturating_add(box_size);
+        if end > file_size {
+            return Err(ValidationError::TruncatedContainer(format!(
+                "atom {} at offset {} extends to {} but file is {} bytes",
+                atom_tag_label(&tag),
+                offset,
+                end,
+                file_size
+            )));
+        }
+
+        offset = end;
+    }
+
+    Ok(())
+}
+
+fn verify_ffprobe_size_matches(path: &Path, probe: &FfprobeOutput) -> Result<(), ValidationError> {
+    let actual = std::fs::metadata(path)
+        .map_err(|e| ValidationError::IoError(format!("metadata {}: {}", path.display(), e)))?
+        .len() as i64;
+    let Some(raw) = probe.format.as_ref().and_then(|f| f.size.as_ref()) else {
+        return Ok(());
+    };
+    let parsed = raw
+        .trim()
+        .parse::<i64>()
+        .map_err(|e| ValidationError::FfprobeFailed(format!("invalid format.size '{}': {}", raw, e)))?;
+    if parsed > 0 && parsed != actual {
+        return Err(ValidationError::TruncatedContainer(format!(
+            "ffprobe format.size={} but file is {} bytes",
+            parsed, actual
+        )));
+    }
+    Ok(())
 }
 
 /// Scan the first ~200 bytes for HTML/error payloads masquerading as video.
@@ -198,7 +306,7 @@ fn run_ffprobe(path: &Path) -> Result<FfprobeOutput, ValidationError> {
             "-show_entries",
             "stream=codec_type,codec_name,width,height",
             "-show_entries",
-            "format=duration",
+            "format=duration,size",
             "-of",
             "json",
         ])
@@ -302,7 +410,7 @@ pub fn quarantine_video(
 
 /// Full validation of an on-disk video file.
 pub fn validate_video_path(path: &Path) -> Result<VideoMeta, ValidationError> {
-    validate_mime_for_path(path)?;
+    let mime = validate_mime_for_path(path)?;
 
     let header = read_file_header(path, HTML_PROBE_LEN.max(512))?;
 
@@ -319,8 +427,27 @@ pub fn validate_video_path(path: &Path) -> Result<VideoMeta, ValidationError> {
         ));
     }
 
+    if mime == "video/mp4" || mime == "video/quicktime" {
+        verify_mp4_atom_bounds(path)?;
+    }
+
     let probe = run_ffprobe(path)?;
+    verify_ffprobe_size_matches(path, &probe)?;
     meta_from_ffprobe(probe)
+}
+
+/// Full validation with an optional declared upload size gate.
+pub fn validate_video_path_with_expected_size(
+    path: &Path,
+    expected_size: Option<i64>,
+) -> Result<VideoMeta, ValidationError> {
+    if let Some(expected) = expected_size {
+        let actual = std::fs::metadata(path)
+            .map_err(|e| ValidationError::IoError(format!("metadata {}: {}", path.display(), e)))?
+            .len() as i64;
+        verify_upload_size_integrity(expected, actual)?;
+    }
+    validate_video_path(path)
 }
 
 /// Validate in-memory bytes by writing a temp file and running ffprobe.
@@ -441,6 +568,48 @@ mod tests {
     #[test]
     fn rejects_html_disguised_payload() {
         assert!(!is_valid_video_container(b"<!doctype html><html>".as_slice()));
+    }
+
+    #[test]
+    fn rejects_truncated_mp4_atom_extends_past_eof() {
+        // ftyp (24 bytes) + mdat declaring 1_000_000 bytes but only 100 payload bytes written.
+        let mut bytes = atom_box(b"ftyp", 16);
+        bytes[8..12].copy_from_slice(b"isom");
+        let payload = 100usize;
+        let declared = 1_000_000u32; // atom claims 1MB total box size
+        let mut mdat = Vec::with_capacity(8 + payload);
+        mdat.extend_from_slice(&declared.to_be_bytes());
+        mdat.extend_from_slice(b"mdat");
+        mdat.extend_from_slice(&vec![0u8; payload]);
+        bytes.extend_from_slice(&mdat);
+
+        let temp = std::env::temp_dir().join(format!("rf_trunc_test_{}.mp4", uuid_placeholder()));
+        std::fs::write(&temp, &bytes).unwrap();
+        let err = verify_mp4_atom_bounds(&temp).unwrap_err();
+        let _ = std::fs::remove_file(&temp);
+        assert!(matches!(err, ValidationError::TruncatedContainer(_)));
+    }
+
+    fn uuid_placeholder() -> String {
+        format!(
+            "{:x}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        )
+    }
+
+    #[test]
+    fn rejects_upload_size_mismatch() {
+        let err = verify_upload_size_integrity(362_000_000, 5_242_880).unwrap_err();
+        assert!(matches!(err, ValidationError::SizeMismatch { .. }));
+        assert_eq!(err.reason_code(), "size_mismatch");
+    }
+
+    #[test]
+    fn accepts_matching_upload_size() {
+        assert!(verify_upload_size_integrity(5_242_880, 5_242_880).is_ok());
     }
 
     #[test]

@@ -85,6 +85,24 @@ async fn process_one(
         && (video_url.starts_with("http://") || video_url.starts_with("https://"));
 
     if !remote_source && !r2_source {
+        let disk_size = std::fs::metadata(&video_path)
+            .map(|m| m.len() as i64)
+            .unwrap_or(0);
+        if let Some(expected) = reel.file_size {
+            if let Err(err) =
+                media_validator::verify_upload_size_integrity(expected, disk_size)
+            {
+                let reason = err.to_string();
+                let _ = media_validator::quarantine_video(videos_path, &video_path, &err);
+                let _ = jobs::fail_job(pool, job.id, &reason, false).await;
+                let _ = reels::mark_failed(pool, reel.id, &reason).await;
+                eprintln!(
+                    "[ingest-worker] rejected size mismatch reel={} file={}: {}",
+                    reel.id, file_name, reason
+                );
+                return Ok(true);
+            }
+        }
         if let Err(err) = media_validator::validate_video_path(&video_path) {
             let reason = err.to_string();
             let _ = media_validator::quarantine_video(videos_path, &video_path, &err);
@@ -132,6 +150,37 @@ async fn process_one(
 
     match ffmpeg_result {
         Ok(()) => {
+            if !r2_source && !remote_source {
+                if let Some(expected) = reel.file_size {
+                    let disk_size = std::fs::metadata(&video_path)
+                        .map(|m| m.len() as i64)
+                        .unwrap_or(0);
+                    if let Err(err) =
+                        media_validator::verify_upload_size_integrity(expected, disk_size)
+                    {
+                        let reason = err.to_string();
+                        let _ = std::fs::remove_file(&thumb_path);
+                        let _ = jobs::fail_job(pool, job.id, &reason, false).await;
+                        let _ = reels::mark_failed(pool, reel.id, &reason).await;
+                        eprintln!(
+                            "[ingest-worker] blocked ready reel={} file={}: {}",
+                            reel.id, file_name, reason
+                        );
+                        return Ok(true);
+                    }
+                }
+                if let Err(err) = media_validator::validate_video_path(&video_path) {
+                    let reason = err.to_string();
+                    let _ = std::fs::remove_file(&thumb_path);
+                    let _ = jobs::fail_job(pool, job.id, &reason, false).await;
+                    let _ = reels::mark_failed(pool, reel.id, &reason).await;
+                    eprintln!(
+                        "[ingest-worker] blocked ready reel={} file={}: {}",
+                        reel.id, file_name, reason
+                    );
+                    return Ok(true);
+                }
+            }
             if let Err(e) = reels::mark_ready(pool, reel.id, &thumb_url).await {
                 let _ = std::fs::remove_file(&thumb_path);
                 let _ = jobs::fail_job(pool, job.id, &e.to_string(), false).await;
