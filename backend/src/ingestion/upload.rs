@@ -268,6 +268,15 @@ pub async fn ingest_stored_video(
         if let Some(expected) = expected_size {
             if let Err(err) = media_validator::verify_upload_size_integrity(expected, file_size) {
                 let _ = media_validator::quarantine_video(&svc.config.videos_path, &video_path, &err);
+                crate::video_pipeline_trace::trace(
+                    "ingest_stored_validate",
+                    original_filename,
+                    Some(expected),
+                    stored_name,
+                    "uploaded",
+                    "upload_incomplete",
+                    err.to_string(),
+                );
                 return HttpResponse::Conflict().json(serde_json::json!({
                     "error": "upload incomplete: object size mismatch",
                     "code": "upload_incomplete",
@@ -282,6 +291,15 @@ pub async fn ingest_stored_video(
             expected_size,
         ) {
             let _ = media_validator::quarantine_video(&svc.config.videos_path, &video_path, &err);
+            crate::video_pipeline_trace::trace(
+                "ffprobe",
+                original_filename,
+                expected_size,
+                stored_name,
+                "uploaded",
+                "rejected",
+                err.to_string(),
+            );
             return HttpResponse::BadRequest().json(serde_json::json!({
                 "error": err.to_string()
             }));
@@ -313,6 +331,15 @@ pub async fn ingest_stored_video(
         if let Some(expected) = expected_size {
             if let Err(err) = media_validator::verify_upload_size_integrity(expected, file_size) {
                 let _ = r2.delete_object(stored_name).await;
+                crate::video_pipeline_trace::trace(
+                    "ingest_stored_validate",
+                    original_filename,
+                    Some(expected),
+                    stored_name,
+                    "uploaded",
+                    "upload_incomplete",
+                    err.to_string(),
+                );
                 return HttpResponse::Conflict().json(serde_json::json!({
                     "error": "upload incomplete: object size mismatch",
                     "code": "upload_incomplete",
@@ -387,9 +414,27 @@ pub async fn ingest_stored_video(
         "[ingest] accepted reel={} file={} thumb_job=true signed_upload=true",
         asset_id, stored_name
     );
+    crate::video_pipeline_trace::trace(
+        "ingest_enqueue",
+        original_filename,
+        Some(file_size),
+        stored_name,
+        "validated",
+        "pending",
+        "",
+    );
 
     if let Err(e) = jobs::enqueue(&svc.pool, asset_id).await {
         let _ = reels::mark_failed(&svc.pool, asset_id, &e.to_string()).await;
+        crate::video_pipeline_trace::trace(
+            "ingest_enqueue",
+            original_filename,
+            Some(file_size),
+            stored_name,
+            "pending",
+            "failed",
+            e.to_string(),
+        );
         return HttpResponse::InternalServerError().json(serde_json::json!({
             "error": format!("Failed to enqueue ingestion job: {}", e)
         }));

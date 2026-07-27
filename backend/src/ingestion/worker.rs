@@ -63,6 +63,15 @@ async fn process_one(
         Ok(Some(r)) => r,
         Ok(None) => {
             let _ = jobs::fail_job(pool, job.id, "reel not found", false).await;
+            crate::video_pipeline_trace::trace(
+                "worker_pickup",
+                "",
+                None,
+                &job.reel_id.to_string(),
+                "pending",
+                "failed",
+                "reel not found",
+            );
             return Ok(true);
         }
         Err(e) => return Err(e.to_string()),
@@ -70,6 +79,15 @@ async fn process_one(
 
     let video_url = reel.video_url.clone().unwrap_or_default();
     let file_name = reel.file_name.clone();
+    crate::video_pipeline_trace::trace(
+        "worker_pickup",
+        &file_name,
+        reel.file_size,
+        &file_name,
+        &reel.status,
+        "claimed",
+        "",
+    );
     crate::pipeline_diag::pipeline_diag(
         "INGEST",
         "process_one",
@@ -96,6 +114,15 @@ async fn process_one(
                 let _ = media_validator::quarantine_video(videos_path, &video_path, &err);
                 let _ = jobs::fail_job(pool, job.id, &reason, false).await;
                 let _ = reels::mark_failed(pool, reel.id, &reason).await;
+                crate::video_pipeline_trace::trace(
+                    "ffprobe",
+                    &file_name,
+                    Some(expected),
+                    &file_name,
+                    "pending",
+                    "failed",
+                    &reason,
+                );
                 eprintln!(
                     "[ingest-worker] rejected size mismatch reel={} file={}: {}",
                     reel.id, file_name, reason
@@ -116,17 +143,44 @@ async fn process_one(
                 Some(&file_name),
                 "invalid_video_quarantined",
             );
+            crate::video_pipeline_trace::trace(
+                "ffprobe",
+                &file_name,
+                reel.file_size,
+                &file_name,
+                "pending",
+                "failed",
+                &reason,
+            );
             eprintln!(
                 "[ingest-worker] rejected invalid video reel={} file={}: {}",
                 reel.id, file_name, reason
             );
             return Ok(true);
         }
+        crate::video_pipeline_trace::trace(
+            "ffprobe",
+            &file_name,
+            reel.file_size,
+            &file_name,
+            "pending",
+            "ok",
+            "",
+        );
     }
 
     if let Err(e) = reels::set_status_processing(pool, reel.id).await {
         return Err(e.to_string());
     }
+    crate::video_pipeline_trace::trace(
+        "db_status",
+        &file_name,
+        reel.file_size,
+        &file_name,
+        "pending",
+        "processing",
+        "",
+    );
 
     let thumb_name = format!("{}.jpg", reel.id);
     let thumb_path = thumbs_path.join(&thumb_name);
@@ -137,14 +191,132 @@ async fn process_one(
         let tmp_path = videos_path.join(format!("{}.ingest.partial", reel.id));
         let download = r2.download_to_path(&file_name, &tmp_path).await;
         let result = match download {
-            Ok(_) => ffmpeg::extract_thumbnail_at_1s(&tmp_path, &thumb_path).await,
-            Err(e) => Err(e),
+            Ok(bytes) => {
+                crate::video_pipeline_trace::trace(
+                    "r2_download",
+                    &file_name,
+                    Some(bytes as i64),
+                    &file_name,
+                    "processing",
+                    "downloaded",
+                    "",
+                );
+                // R2 path previously skipped ffprobe — truncated/corrupt objects went
+                // straight to ffmpeg and never reached READY with a clear reason.
+                if let Some(expected) = reel.file_size {
+                    if let Err(err) =
+                        media_validator::verify_upload_size_integrity(expected, bytes as i64)
+                    {
+                        let reason = err.to_string();
+                        let _ = tokio::fs::remove_file(&tmp_path).await;
+                        crate::video_pipeline_trace::trace(
+                            "ffprobe",
+                            &file_name,
+                            Some(expected),
+                            &file_name,
+                            "downloaded",
+                            "failed",
+                            &reason,
+                        );
+                        Err(reason)
+                    } else if let Err(err) = media_validator::validate_video_path(&tmp_path) {
+                        let reason = err.to_string();
+                        let _ = media_validator::quarantine_video(videos_path, &tmp_path, &err);
+                        let _ = tokio::fs::remove_file(&tmp_path).await;
+                        crate::video_pipeline_trace::trace(
+                            "ffprobe",
+                            &file_name,
+                            reel.file_size,
+                            &file_name,
+                            "downloaded",
+                            "failed",
+                            &reason,
+                        );
+                        Err(reason)
+                    } else {
+                        crate::video_pipeline_trace::trace(
+                            "ffprobe",
+                            &file_name,
+                            reel.file_size,
+                            &file_name,
+                            "downloaded",
+                            "ok",
+                            "",
+                        );
+                        crate::video_pipeline_trace::trace(
+                            "ffmpeg_thumb",
+                            &file_name,
+                            reel.file_size,
+                            &file_name,
+                            "processing",
+                            "start",
+                            "",
+                        );
+                        ffmpeg::extract_thumbnail_at_1s(&tmp_path, &thumb_path).await
+                    }
+                } else if let Err(err) = media_validator::validate_video_path(&tmp_path) {
+                    let reason = err.to_string();
+                    let _ = media_validator::quarantine_video(videos_path, &tmp_path, &err);
+                    let _ = tokio::fs::remove_file(&tmp_path).await;
+                    crate::video_pipeline_trace::trace(
+                        "ffprobe",
+                        &file_name,
+                        None,
+                        &file_name,
+                        "downloaded",
+                        "failed",
+                        &reason,
+                    );
+                    Err(reason)
+                } else {
+                    crate::video_pipeline_trace::trace(
+                        "ffmpeg_thumb",
+                        &file_name,
+                        None,
+                        &file_name,
+                        "processing",
+                        "start",
+                        "",
+                    );
+                    ffmpeg::extract_thumbnail_at_1s(&tmp_path, &thumb_path).await
+                }
+            }
+            Err(e) => {
+                crate::video_pipeline_trace::trace(
+                    "r2_download",
+                    &file_name,
+                    reel.file_size,
+                    &file_name,
+                    "processing",
+                    "failed",
+                    &e,
+                );
+                Err(e)
+            }
         };
         let _ = tokio::fs::remove_file(&tmp_path).await;
         result
     } else if remote_source {
+        crate::video_pipeline_trace::trace(
+            "ffmpeg_thumb",
+            &file_name,
+            reel.file_size,
+            &video_url,
+            "processing",
+            "start",
+            "",
+        );
         ffmpeg::extract_thumbnail_from_url(&video_url, &thumb_path).await
     } else {
+        crate::video_pipeline_trace::trace(
+            "ffmpeg_thumb",
+            &file_name,
+            reel.file_size,
+            &file_name,
+            "processing",
+            "start",
+            "",
+        );
         ffmpeg::extract_thumbnail_at_1s(&video_path, &thumb_path).await
     };
 
@@ -162,6 +334,15 @@ async fn process_one(
                         let _ = std::fs::remove_file(&thumb_path);
                         let _ = jobs::fail_job(pool, job.id, &reason, false).await;
                         let _ = reels::mark_failed(pool, reel.id, &reason).await;
+                        crate::video_pipeline_trace::trace(
+                            "db_status",
+                            &file_name,
+                            Some(expected),
+                            &file_name,
+                            "processing",
+                            "failed",
+                            &reason,
+                        );
                         eprintln!(
                             "[ingest-worker] blocked ready reel={} file={}: {}",
                             reel.id, file_name, reason
@@ -174,6 +355,15 @@ async fn process_one(
                     let _ = std::fs::remove_file(&thumb_path);
                     let _ = jobs::fail_job(pool, job.id, &reason, false).await;
                     let _ = reels::mark_failed(pool, reel.id, &reason).await;
+                    crate::video_pipeline_trace::trace(
+                        "db_status",
+                        &file_name,
+                        reel.file_size,
+                        &file_name,
+                        "processing",
+                        "failed",
+                        &reason,
+                    );
                     eprintln!(
                         "[ingest-worker] blocked ready reel={} file={}: {}",
                         reel.id, file_name, reason
@@ -192,6 +382,15 @@ async fn process_one(
                     Some(&file_name),
                     "mark_ready_failed",
                 );
+                crate::video_pipeline_trace::trace(
+                    "db_status",
+                    &file_name,
+                    reel.file_size,
+                    &file_name,
+                    "processing",
+                    "failed",
+                    e.to_string(),
+                );
                 return Err(e.to_string());
             }
             crate::pipeline_diag::pipeline_diag(
@@ -201,6 +400,24 @@ async fn process_one(
                 Some(&reel.id.to_string()),
                 Some(&thumb_name),
                 "mark_ready_ok",
+            );
+            crate::video_pipeline_trace::trace(
+                "db_status",
+                &file_name,
+                reel.file_size,
+                &file_name,
+                "processing",
+                "ready",
+                "",
+            );
+            crate::video_pipeline_trace::trace(
+                "ffmpeg_thumb",
+                &file_name,
+                reel.file_size,
+                &file_name,
+                "processing",
+                "ok",
+                "",
             );
             eprintln!(
                 "[STORE_UPDATE] reel={} status=ready worker=true thumb={}",
@@ -237,8 +454,26 @@ async fn process_one(
                 Some(&file_name),
                 if retry { "retry" } else { "failed" },
             );
+            crate::video_pipeline_trace::trace(
+                "ffmpeg_thumb",
+                &file_name,
+                reel.file_size,
+                &file_name,
+                "processing",
+                if retry { "retry" } else { "failed" },
+                &err,
+            );
             if !retry {
                 let _ = reels::mark_failed(pool, reel.id, &err).await;
+                crate::video_pipeline_trace::trace(
+                    "db_status",
+                    &file_name,
+                    reel.file_size,
+                    &file_name,
+                    "processing",
+                    "failed",
+                    &err,
+                );
                 eprintln!("[ingest-worker] failed reel={}: {}", reel.id, err);
             } else {
                 eprintln!(

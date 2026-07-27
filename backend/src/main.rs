@@ -34,6 +34,7 @@ pub mod team_api;
 pub mod workflow_api;
 pub mod utils;
 pub mod video_stream;
+pub mod video_pipeline_trace;
 
 use crate::events::ReelEvent;
 use crate::no_compress::NoCompress;

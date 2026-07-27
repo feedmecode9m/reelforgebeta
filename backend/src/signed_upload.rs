@@ -251,6 +251,15 @@ pub async fn sign_upload(
         body.filename,
         crate::storage::r2::R2Storage::enabled()
     );
+    crate::video_pipeline_trace::trace(
+        "sign",
+        &body.filename,
+        Some(body.size_bytes),
+        &stored_name,
+        "none",
+        "signed",
+        "",
+    );
 
     HttpResponse::Ok().json(SignUploadResponse {
         upload_id: upload_id.to_string(),
@@ -484,12 +493,30 @@ pub async fn finalize_reel(
                 "[BG7X_FINALIZE] uploadId={} objectKey={} r2HeadOk=skipped sessionStatus=Uploaded storedSize={} signedSize={} ingestionStatus=upload_incomplete",
                 upload_id, object_key, stored_size, expected_size
             );
+            crate::video_pipeline_trace::trace(
+                "finalize_verify",
+                &original_filename,
+                Some(expected_size),
+                &object_key,
+                "uploaded",
+                "upload_incomplete",
+                format!("disk size mismatch expected={} actual={}", expected_size, stored_size),
+            );
             let _ = tokio::fs::remove_file(&disk_path).await;
             return resp;
         }
         eprintln!(
             "[R2_VERIFY_TRACE] key={} expectedSize={} r2ObjectSize={} contentLength={} finalizeAllowed=true",
             object_key, expected_size, stored_size, stored_size
+        );
+        crate::video_pipeline_trace::trace(
+            "finalize_verify",
+            &original_filename,
+            Some(expected_size),
+            &object_key,
+            "uploaded",
+            "size_ok",
+            "",
         );
         eprintln!(
             "[BG7X_FINALIZE] uploadId={} objectKey={} r2HeadOk=skipped sessionStatus=Uploaded storedSize={} signedSize={} ingestionStatus=disk_verified",
@@ -542,8 +569,29 @@ pub async fn finalize_reel(
                 head.content_type.as_deref().unwrap_or(""),
                 expected_size
             );
+            crate::video_pipeline_trace::trace(
+                "finalize_verify",
+                &original_filename,
+                Some(expected_size),
+                &object_key,
+                "uploaded",
+                "upload_incomplete",
+                format!(
+                    "R2 size mismatch expected={} actual={}",
+                    expected_size, head.content_length
+                ),
+            );
             return resp;
         }
+        crate::video_pipeline_trace::trace(
+            "finalize_verify",
+            &original_filename,
+            Some(expected_size),
+            &object_key,
+            "uploaded",
+            "size_ok",
+            "",
+        );
         eprintln!(
             "[BG7X_FINALIZE] uploadId={} objectKey={} r2HeadOk=true objectSize={} contentType={} ingestionStatus=r2_verified",
             upload_id,
@@ -605,6 +653,15 @@ pub async fn finalize_reel(
     eprintln!(
         "[signed-upload] finalize upload_id={} reel_id={} file={}",
         upload_id, reel_id, stored_name
+    );
+    crate::video_pipeline_trace::trace(
+        "finalize_ingest",
+        &original_filename,
+        Some(expected_size),
+        &stored_name,
+        "size_ok",
+        "pending_enqueue",
+        "",
     );
 
     let response = ingestion::upload::ingest_stored_video(
