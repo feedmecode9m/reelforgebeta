@@ -352,15 +352,33 @@ export let sanitizeViewer = false;
   $: heroStoryMediaPriorityEnabled = ['published', 'scheduled'].includes(
     String(heroManagerConfig?.storyStatus || '').toLowerCase()
   );
-  $: prioritizedHeroVideo = heroStoryMediaPriorityEnabled
-    ? String(heroRenderVideo || heroSlideVideo || '').trim()
-    : String(heroSlideVideo || heroRenderVideo || '').trim();
-  $: prioritizedHeroImage = heroStoryMediaPriorityEnabled
-    ? String(heroRenderImage || heroSlideImage || '').trim()
-    : String(heroSlideImage || heroRenderImage || '').trim();
+  /** Config wants a video stage even when identity recovery left backgroundSource=selection. */
+  $: heroStylePrefersVideo = (() => {
+    const style = String(
+      heroManagerConfig?.backgroundStyle || heroBackgroundPresentation?.style || ''
+    ).toLowerCase();
+    const priority = String(heroManagerConfig?.carouselPriority || '').toLowerCase();
+    return (
+      style === 'video' ||
+      style === 'ambient_motion' ||
+      priority === 'video' ||
+      priority === 'admin_video' ||
+      heroBackgroundPresentation.backgroundSource === 'custom_video'
+    );
+  })();
+  $: prioritizedHeroVideo = heroStylePrefersVideo
+    ? String(heroRenderVideo || $HERO_BACKGROUND_VIDEO || heroSlideVideo || '').trim()
+    : heroStoryMediaPriorityEnabled
+      ? String(heroRenderVideo || heroSlideVideo || '').trim()
+      : String(heroSlideVideo || heroRenderVideo || '').trim();
+  $: prioritizedHeroImage = heroStylePrefersVideo
+    ? String(heroRenderImage || $HERO_POSTER_IMAGE || '').trim()
+    : heroStoryMediaPriorityEnabled
+      ? String(heroRenderImage || heroSlideImage || '').trim()
+      : String(heroSlideImage || heroRenderImage || '').trim();
   $: heroVideoPoster =
-    heroBackgroundPresentation.backgroundSource === 'custom_video'
-      ? ''
+    heroBackgroundPresentation.backgroundSource === 'custom_video' || heroStylePrefersVideo
+      ? prioritizedHeroImage || ''
       : prioritizedHeroImage || '';
   $: heroSlideTitle =
     activeHeroSlide?.title || heroSelection?.title || 'NEON VENGEANCE';
@@ -426,24 +444,67 @@ $: heroBadgeLabel = sanitizeViewer
         heroVideoFailed.set(false);
       }
     }
-    const canUseVideo =
-      Boolean(prioritizedHeroVideo) &&
+    const backgroundStyle = String(
+      heroManagerConfig?.backgroundStyle || heroBackgroundPresentation?.style || ''
+    ).trim();
+    const heroRenderVideoPresent = Boolean(String(heroRenderVideo || '').trim());
+    const videoCandidatePresent = Boolean(String(prioritizedHeroVideo || '').trim());
+    const imageCandidatePresent = Boolean(String(prioritizedHeroImage || '').trim());
+    const blockedByCustomImage =
+      heroBackgroundPresentation.backgroundSource === 'custom_image';
+    const blockedByCustomVideo =
+      heroBackgroundPresentation.backgroundSource === 'custom_video';
+
+    // Priority: backgroundStyle=video + playable heroRenderVideo/HERO_BACKGROUND_VIDEO → video mode
+    // even when identity recovery left backgroundSource=selection and carousel shows images.
+    const forceVideoByStyle =
+      heroStylePrefersVideo &&
+      videoCandidatePresent &&
       !$heroVideoFailed &&
-      heroBackgroundPresentation.backgroundSource !== 'custom_image';
-    const retryCustomVideo =
-      heroBackgroundPresentation.backgroundSource === 'custom_video' &&
-      Boolean(prioritizedHeroVideo) &&
-      heroVideoFailureCount < 2;
+      !blockedByCustomImage;
+    const canUseVideo =
+      videoCandidatePresent &&
+      !$heroVideoFailed &&
+      !blockedByCustomImage;
     const canUseImage =
-      Boolean(prioritizedHeroImage) &&
-      heroBackgroundPresentation.backgroundSource !== 'custom_video';
-    if (canUseVideo || retryCustomVideo) {
-      activeHeroMediaMode = 'video';
+      imageCandidatePresent &&
+      !blockedByCustomVideo &&
+      !forceVideoByStyle;
+
+    /** @type {'video' | 'image' | 'fallback'} */
+    let selectedMode = 'fallback';
+    let reason = 'no_media_candidates';
+    if (forceVideoByStyle) {
+      selectedMode = 'video';
+      reason = 'backgroundStyle_video_and_heroRenderVideo';
+    } else if (canUseVideo) {
+      selectedMode = 'video';
+      reason = 'prioritized_video_available';
     } else if (canUseImage) {
-      activeHeroMediaMode = 'image';
+      selectedMode = 'image';
+      reason = $heroVideoFailed ? 'video_failed_image_fallback' : 'image_candidate';
     } else {
-      activeHeroMediaMode = 'fallback';
+      selectedMode = 'fallback';
+      reason = $heroVideoFailed ? 'video_failed_no_image' : 'no_playable_media';
     }
+    activeHeroMediaMode = selectedMode;
+
+    console.info('[HERO_MEDIA_MODE_RESOLUTION]', {
+      heroAssetId: String(heroManagerConfig?.heroAssetId || '').trim(),
+      backgroundStyle,
+      backgroundSource: heroBackgroundPresentation.backgroundSource,
+      heroStylePrefersVideo,
+      heroRenderVideoPresent,
+      imageCandidatePresent,
+      videoCandidatePresent,
+      heroVideoFailed: $heroVideoFailed,
+      pendingHero: Boolean($heroPendingFile),
+      heroUploadState,
+      selectedMode,
+      reason,
+      ts: new Date().toISOString()
+    });
+
     logHeroRenderGatePre({
       heroManagerConfig,
       heroManagerConfigPersisted: loadHeroManagerConfig(),
