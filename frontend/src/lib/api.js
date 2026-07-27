@@ -201,9 +201,11 @@ export async function fetchWithRetry(
                 : response.status >= 500 || response.status === 429;
 
             if (!shouldRetryStatus || attempt === retries) {
-                setBackendConnectionStatus('degraded', {
-                    lastError: `HTTP ${response.status}`
-                });
+                if (notifyReconnectOnFailure) {
+                    setBackendConnectionStatus('degraded', {
+                        lastError: `HTTP ${response.status}`
+                    });
+                }
                 return response;
             }
 

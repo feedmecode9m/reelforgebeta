@@ -216,6 +216,39 @@ export let sanitizeViewer = false;
   ];
 
   let lastHeroGateAction = null;
+
+  /** Persisted manager config wins for canonical hero identity fields. */
+  function resolveHeroPresentationConfig() {
+    const persisted = loadHeroManagerConfig();
+    const inMemory = heroManagerConfig || persisted;
+    const heroAssetId = String(persisted.heroAssetId || inMemory.heroAssetId || '').trim();
+    const persistedSource = String(persisted.backgroundSource || '').trim();
+    const inMemorySource = String(inMemory.backgroundSource || '').trim();
+    const backgroundSource =
+      heroAssetId &&
+      (persistedSource === 'custom_video' ||
+        persistedSource === 'custom_image' ||
+        inMemorySource === 'custom_video' ||
+        inMemorySource === 'custom_image')
+        ? persistedSource === 'custom_video' || persistedSource === 'custom_image'
+          ? persistedSource
+          : inMemorySource
+        : inMemorySource || persistedSource || 'selection';
+    return { ...inMemory, ...persisted, heroAssetId, backgroundSource };
+  }
+
+  /** Resolve presentation from storage even pre-hydration when a custom hero is configured. */
+  function resolveHeroBackgroundPresentationState(hydrationReady, selection) {
+    const config = resolveHeroPresentationConfig();
+    const hasCustomHero =
+      Boolean(config.heroAssetId) &&
+      (config.backgroundSource === 'custom_video' || config.backgroundSource === 'custom_image');
+    if (!hydrationReady && !hasCustomHero) {
+      return PENDING_HERO_BACKGROUND_PRESENTATION;
+    }
+    return resolveHeroBackgroundPresentation(config, null, selection);
+  }
+
   $: {
     const action = $viewerHydrationReady ? 'resolved' : 'waiting';
     if (action !== lastHeroGateAction) {
@@ -224,13 +257,10 @@ export let sanitizeViewer = false;
     }
   }
 
-  $: heroBackgroundPresentation = $viewerHydrationReady
-    ? resolveHeroBackgroundPresentation(
-        heroManagerConfig || loadHeroManagerConfig(),
-        null,
-        heroSelection
-      )
-    : PENDING_HERO_BACKGROUND_PRESENTATION;
+  $: heroBackgroundPresentation = resolveHeroBackgroundPresentationState(
+    $viewerHydrationReady,
+    heroSelection
+  );
   $: {
     const nextHeroUsesImageBackground =
       heroBackgroundPresentation.backgroundSource === 'custom_image' &&
@@ -1005,12 +1035,27 @@ $: heroBadgeLabel = sanitizeViewer
       target: heroRenderVideo ? 'video-node' : heroRenderImage ? 'image-node' : 'gradient-fallback',
       ts: new Date().toISOString()
     });
+    const storedHeroAssetId = loadHeroManagerConfig()?.heroAssetId || '';
+    const resolvedAssetId =
+      heroBackgroundPresentation.backgroundAsset || heroBackgroundPresentation.assetId || '';
     console.info('[HERO_ASSET_ID_TRACE]', {
       stage: 'HeroExperience:render',
-      assetId: heroBackgroundPresentation.backgroundAsset || heroBackgroundPresentation.assetId || '',
-      heroAssetId: heroBackgroundPresentation.heroAssetId || '',
+      assetId: resolvedAssetId,
+      heroAssetId: heroBackgroundPresentation.heroAssetId || storedHeroAssetId || '',
       source: 'HeroExperience',
       timestamp: Date.now()
+    });
+    console.info('[HERO_RESOLVE_REGRESSION]', {
+      storedHeroAssetId,
+      resolvedAssetId,
+      backgroundSource: heroBackgroundPresentation.backgroundSource,
+      useVideo: heroBackgroundPresentation.useVideo,
+      videoUrl: heroRenderVideo || heroBackgroundPresentation.videoUrl || '',
+      videoEnabled:
+        heroBackgroundPresentation.useVideo &&
+        Boolean(heroRenderVideo || heroBackgroundPresentation.videoUrl),
+      hydrationReady: $viewerHydrationReady,
+      ts: new Date().toISOString()
     });
     const certificationSignature = [
       heroBackgroundPresentation.backgroundSource,
@@ -1570,6 +1615,8 @@ $: heroBadgeLabel = sanitizeViewer
         }
         commitHeroVideoIdentity(reel);
         saveHeroManagerConfig(viewerPatch);
+        heroManagerConfig = loadHeroManagerConfig();
+        applyHeroManagerBackground(heroManagerConfig, getHeroBackgroundStores());
         verifyHeroVideoIdentityCommitted(reel);
         logHeroConfigSaveAudit(loadHeroManagerConfig(), heroManagerConfig);
         const heroVideoBefore = get(HERO_BACKGROUND_VIDEO);
@@ -1628,6 +1675,7 @@ $: heroBadgeLabel = sanitizeViewer
           state: 'hero_video_committed',
           backgroundSource: 'custom_video'
         });
+        queueHeroRenderDiagnostics();
         showHeroCommitBanner();
         pipelineCheckpoint('VIDEO_READY', {
           vault: 'hero',

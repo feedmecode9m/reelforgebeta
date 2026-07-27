@@ -1,4 +1,5 @@
 import { API_BASE_URL, fetchWithRetry } from '../api.js';
+import { getAdminAuthHeaders } from '../adminSession.js';
 
 const DEVICE_STORAGE_KEY = 'reelforge_sync_device_id';
 
@@ -21,6 +22,7 @@ async function syncFetch(path, options = {}) {
             headers: {
                 'Content-Type': 'application/json',
                 'X-Reelforge-Device-Id': getOrCreateSyncDeviceId(),
+                ...getAdminAuthHeaders(),
                 ...(options.headers || {})
             },
             signal: options.signal || AbortSignal.timeout(5000)

@@ -3,6 +3,8 @@
  * Observability only; no upload behavior changes.
  */
 
+import { touchUploadLockProgress } from './uploadLockDiag.js';
+
 /** @typedef {{
  *   uploadAttemptId: string;
  *   uploadKey: string;
@@ -70,6 +72,7 @@ export function logUploadStage(ctx, stage, extra = {}) {
     payload.reelId = reelId;
     payload.uploadId = uploadId;
     console.info('[UPLOAD_STAGE]', payload);
+    if (ctx?.uploadKey) touchUploadLockProgress(ctx.uploadKey);
 }
 
 /**

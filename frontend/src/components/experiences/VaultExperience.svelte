@@ -24,8 +24,9 @@
     logVaultPlaceholderGate
   } from '../../lib/diagnostics/renderGateForensics.js';
   import { uploadMedia, uploadThumbnail, fetchReadyReels as apiFetchReadyReels, deleteReelById as apiDeleteReelById } from '../../lib/api/media.js';
-  import { commitHeroVideoIdentity, logHeroImagePipeline } from '../../lib/hero/heroIntelligence.js';
-  import { heroReelFromUploadResponse } from '../../lib/hero/heroReelIdentity.js';
+  import { logHeroImagePipeline } from '../../lib/hero/heroIntelligence.js';
+  import { resolveActiveHeroVideoReel, heroReelToVaultItem } from '../../lib/hero/heroReelIdentity.js';
+  import { isHeroAsset } from '../../lib/hero/heroDomainGuard.js';
   import { reelToVaultEntry } from '../../lib/api/reelContract.js';
   import { validateVideoFile } from '../../lib/runtime-guards.js';
   import { API_BASE_URL, toRelativeMediaPath, SIGNED_UPLOADS_MIN_BYTES } from '../../lib/config.js';
@@ -60,7 +61,15 @@
     trackUploadLockRegister,
     trackUploadLockBlock,
     trackUploadLockRemove,
-    noteUploadLockReelId
+    noteUploadLockReelId,
+    hasActiveUploadLock,
+    isUploadLockStale,
+    supersedeStaleUploadLock,
+    getUploadLockAgeMs,
+    getUploadLockIdleMs,
+    getActiveUploadLockCount,
+    UPLOAD_LOCK_STALE_MS,
+    touchUploadLockProgress
   } from '../../lib/diagnostics/uploadLockDiag.js';
   import {
     createUploadAttemptContext,
@@ -70,6 +79,7 @@
   } from '../../lib/diagnostics/uploadStageDiag.js';
   import { appendUploadIdentityToFormData } from '../../lib/api/uploadIdentity.js';
   import { bindEpisodeToFeedReel } from '../../lib/series/seriesStore.js';
+  import { clearUploadCheckpoint } from '../../lib/diagnostics/uploadRecovery.js';
 
   export let showPersonalControls = true;
 
@@ -115,8 +125,7 @@
   let selectedVideoIds = [];
   let thumbnailCanonicalizationDone = false;
   let thumbnailCanonInFlight = false;
-  // BG-7X: prevent identical duplicate uploads while an upload is in-flight.
-  const pendingVideoUploadKeys = new Set();
+  // BG-7X: prevent identical duplicate uploads while an upload is in-flight (see uploadLockDiag.js).
   const VAULT_UPLOAD_TIMEOUT_MS_LARGE = 20 * 60 * 1000;
   const VAULT_UPLOAD_TIMEOUT_MS_DEFAULT = 5 * 60 * 1000;
 
@@ -165,9 +174,26 @@
       });
     });
   }
+  /** Hero background videos are excluded from persisted vault storage but shown in the grid. */
+  function mergeHeroVideoIntoVaultDisplay(videos) {
+    const list = (videos ?? []).filter(Boolean);
+    const hero = resolveActiveHeroVideoReel();
+    if (!hero?.id || !hero?.url) return list;
+    const alreadyListed = list.some((item) => {
+      const id = String(item?.id || '').trim();
+      const fileName = String(item?.fileName || item?.file_name || '').trim();
+      return (id && id === hero.id) || (fileName && fileName === hero.fileName);
+    });
+    if (alreadyListed) return list;
+    return [heroReelToVaultItem(hero), ...list];
+  }
+
+  $: vaultDisplayVideos = mergeHeroVideoIntoVaultDisplay($personalVideos);
+
   $: console.info('[VAULT_ITEM_COUNT]', {
     images: ($personalThumbnailCollection ?? []).filter(Boolean).length,
-    videos: ($personalVideos ?? []).filter(Boolean).length,
+    videos: vaultDisplayVideos.length,
+    persistedVideos: ($personalVideos ?? []).filter(Boolean).length,
     ts: new Date().toISOString()
   });
   $: demoDebugMode = isDemoDebugMode();
@@ -328,8 +354,15 @@
       }
     };
     window.addEventListener('storage', onStorage);
+    const onBeforeUnload = (event) => {
+      if (getActiveUploadLockCount() <= 0) return;
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
     await ensureThumbnailCanonicalization();
     return () => {
+      window.removeEventListener('beforeunload', onBeforeUnload);
       window.removeEventListener('reelforge:admin-session-changed', onSessionChange);
       window.removeEventListener('AUTH_SESSION_EXPIRED', onSessionChange);
       window.removeEventListener('storage', onStorage);
@@ -1047,45 +1080,57 @@
       return;
     }
 
-    const validation = await validateVideoFile(file);
-    if (!validation.valid) {
-      console.info('[BG7G_DROP]', {
-        ts: new Date().toISOString(),
-        component: 'validateVideoFile',
-        file: 'VaultExperience.svelte',
-        fileName: file.name,
-        fileSize: file.size,
-        uploadUrl: null,
-        state: 'failure',
-        reason: validation.reason || 'Invalid video file'
+    const incomingName = String(file?.name || '').trim();
+    const incomingSize = Number(file?.size || 0);
+    const uploadKey = `${incomingName.toLowerCase()}|${incomingSize}`;
+
+    if (!getAdminToken()) {
+      uploadStatus.set('🔐 Studio login required — open Studio, sign in, then retry upload');
+      resourceManager.setTimeout(() => uploadStatus.set('Standby'), 5000);
+      return;
+    }
+
+    if (isHeroAsset({ fileName: incomingName, name: incomingName })) {
+      console.info('[BG7W_HERO_VAULT_GATE]', {
+        reelId: String(resolveActiveHeroVideoReel()?.id || '').trim(),
+        blocked: false,
+        reason: 'hero_already_set_display_only',
+        fileName: incomingName
       });
-      uploadStatus.set(`⚠️ ${validation.reason || 'Invalid video file'}`);
-      resourceManager.setTimeout(() => uploadStatus.set('Standby'), 3000);
+      uploadStatus.set(`✅ Hero background — visible in vault below`);
+      resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2500);
       return;
     }
 
     // BG-7X: pre-upload dedupe gate (avoid creating duplicate backend assets).
-    // Identity (cheap): (fileName || name) + size.
-    // Read from persisted vault to cover cases where the store is briefly stale.
-    const incomingName = String(file?.name || '').trim();
-    const incomingSize = Number(file?.size || 0);
-    const uploadKey = `${incomingName.toLowerCase()}|${incomingSize}`;
     try {
-      if (pendingVideoUploadKeys.has(uploadKey)) {
-        trackUploadLockBlock(uploadKey, {
-          existingId: '',
-          reason: 'in_flight_name_and_size_match'
-        });
-        console.info('[BG7X_UPLOAD_DEDUPE]', {
-          blocked: true,
-          reason: 'in_flight_name_and_size_match',
-          existingId: '',
-          incomingName,
-          incomingSize
-        });
-        uploadStatus.set(`⏳ Upload already in progress: ${incomingName || 'video'}`);
-        resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
-        return;
+      if (hasActiveUploadLock(uploadKey)) {
+        if (isUploadLockStale(uploadKey)) {
+          supersedeStaleUploadLock(uploadKey, { incomingName, incomingSize });
+        } else {
+          const ageSec = Math.round(getUploadLockAgeMs(uploadKey) / 1000);
+          const idleSec = Math.round(getUploadLockIdleMs(uploadKey) / 1000);
+          const retrySec = Math.max(1, Math.ceil((UPLOAD_LOCK_STALE_MS - getUploadLockIdleMs(uploadKey)) / 1000));
+          trackUploadLockBlock(uploadKey, {
+            existingId: '',
+            reason: 'in_flight_name_and_size_match'
+          });
+          console.info('[BG7X_UPLOAD_DEDUPE]', {
+            blocked: true,
+            reason: 'in_flight_name_and_size_match',
+            existingId: '',
+            incomingName,
+            incomingSize,
+            ageSec,
+            idleSec,
+            retrySec
+          });
+          uploadStatus.set(
+            `⏳ Upload in progress (${ageSec}s). Retry in ~${retrySec}s if stuck.`
+          );
+          resourceManager.setTimeout(() => uploadStatus.set('Standby'), 4000);
+          return;
+        }
       }
       const persisted = JSON.parse(
         (typeof window !== 'undefined' ? localStorage.getItem(CONFIG.VIDEO_VAULT_KEY) : null) || '[]'
@@ -1122,6 +1167,28 @@
       });
     }
 
+    trackUploadLockRegister(uploadKey, { reason: 'upload_reserved' });
+    setPendingUploads(getActiveUploadLockCount());
+
+    const validation = await validateVideoFile(file);
+    if (!validation.valid) {
+      trackUploadLockRemove(uploadKey, { reason: 'validation_failed' });
+      setPendingUploads(getActiveUploadLockCount());
+      console.info('[BG7G_DROP]', {
+        ts: new Date().toISOString(),
+        component: 'validateVideoFile',
+        file: 'VaultExperience.svelte',
+        fileName: file.name,
+        fileSize: file.size,
+        uploadUrl: null,
+        state: 'failure',
+        reason: validation.reason || 'Invalid video file'
+      });
+      uploadStatus.set(`⚠️ ${validation.reason || 'Invalid video file'}`);
+      resourceManager.setTimeout(() => uploadStatus.set('Standby'), 3000);
+      return;
+    }
+
     const uploadDiagCtx = createUploadAttemptContext({
       uploadKey,
       fileName: incomingName,
@@ -1137,11 +1204,10 @@
     let uploadAbortTimer;
     try {
     logUploadStage(uploadDiagCtx, 'LOCK_ACQUIRED', {
-      pendingLockCountBeforeAdd: pendingVideoUploadKeys.size
+      pendingLockCountBeforeAdd: getActiveUploadLockCount()
     });
-    pendingVideoUploadKeys.add(uploadKey);
-    trackUploadLockRegister(uploadKey, { reason: 'upload_start' });
-    setPendingUploads(pendingVideoUploadKeys.size);
+    touchUploadLockProgress(uploadKey);
+    setPendingUploads(getActiveUploadLockCount());
     console.info('[BG7G_UPLOAD]', {
       ts: new Date().toISOString(),
       component: 'handleVaultVideoDrop',
@@ -1151,7 +1217,9 @@
       uploadUrl: `${API_BASE_URL}/api/reels`,
       state: 'upload_start'
     });
-    uploadStatus.set('🎬 Uploading to backend...');
+    uploadStatus.set(
+      `🎬 Uploading ${incomingName} (${Math.round(incomingSize / 1024 / 1024)}MB) — keep this tab open`
+    );
     vaultForensic('VAULT_UPLOAD_START', {
       vaultType: 'video',
       fileName: file.name,
@@ -1342,10 +1410,6 @@
         ts: new Date().toISOString()
       });
       persistPersonalVault(get(personalVideos));
-      const heroReel = heroReelFromUploadResponse(normalizedResponse, 'video');
-      if (heroReel?.id && heroReel?.url) {
-        commitHeroVideoIdentity(heroReel);
-      }
       AI_CLEANUP_AGENT.distributeVideoToFeed(entry);
       pipelineDiag('VIEWER', 'handleVaultVideoDrop', 'VaultExperience.svelte', {
         assetId: entry.id,
@@ -1372,6 +1436,7 @@
         ts: new Date().toISOString()
       });
       uploadStatus.set(`✅ Added to vault & feed: ${file.name}`);
+      clearUploadCheckpoint(uploadKey);
       vaultForensic('VAULT_UPLOAD_SUCCESS', {
         vaultType: 'video',
         assetId: entry.id || null,
@@ -1419,6 +1484,9 @@
         ts: new Date().toISOString()
       });
       uploadStatus.set(`❌ Failed: ${failedError.message}`);
+      if (isInvalidSessionError(failedError)) {
+        uploadStatus.set('🔐 Studio session expired — sign in via Studio and retry upload');
+      }
       vaultForensic('VAULT_UPLOAD_FAIL', {
         vaultType: 'video',
         fileName: file?.name || null,
@@ -1431,17 +1499,16 @@
         clearTimeout(uploadAbortTimer);
       }
       logUploadStage(uploadDiagCtx, 'FINALLY_ENTERED', {
-        pendingLockCountBeforeDelete: pendingVideoUploadKeys.size
+        pendingLockCountBeforeDelete: getActiveUploadLockCount()
       });
-      pendingVideoUploadKeys.delete(uploadKey);
       trackUploadLockRemove(uploadKey, {
         existingId: uploadDiagCtx?.reelId || '',
         reason: 'finally'
       });
       logUploadStage(uploadDiagCtx, 'LOCK_RELEASED', {
-        pendingLockCountAfterDelete: pendingVideoUploadKeys.size
+        pendingLockCountAfterDelete: getActiveUploadLockCount()
       });
-      setPendingUploads(pendingVideoUploadKeys.size);
+      setPendingUploads(getActiveUploadLockCount());
       resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
     }
   }
@@ -2030,7 +2097,7 @@
 </div>
 
 <div class="personal-media-grid">
-  <h4>Video Vault ({$personalVideos.length})</h4>
+  <h4>Video Vault ({vaultDisplayVideos.length})</h4>
   <div style="display: flex; justify-content: space-between; align-items: center;">
     <p class="thumbnail-hint">Drop MP4/MOV • Auto-categorizes into feed</p>
     <div style="display: flex; gap: 8px;">
@@ -2045,7 +2112,7 @@
       <button
         class="batch-delete-btn"
         on:click={batchDeleteVideos}
-        disabled={$personalVideos.length === 0}
+        disabled={vaultDisplayVideos.length === 0}
       >
         🗑️ BATCH DELETE ALL
       </button>
@@ -2083,9 +2150,9 @@
       <small>Supports dragged thumbnail/video cards</small>
     </div>
   </div>
-  {#if $personalVideos.length > 0}
+  {#if vaultDisplayVideos.length > 0}
     <div class="thumbnail-grid vault-grid vault-grid--videos video-vault-grid">
-      {#each $personalVideos.filter(Boolean) as video, vi (video?.id || video?.url || video?.fileName || `video-${vi}`)}
+      {#each vaultDisplayVideos.filter(Boolean) as video, vi (video?.id || video?.url || video?.fileName || `video-${vi}`)}
         {#if video}
           {@const reel = getVaultVideoReel(video)}
           {@const microDrama = isMicroDramaContent(video) || isMicroDramaContent(reel)}

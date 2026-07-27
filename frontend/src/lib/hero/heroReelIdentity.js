@@ -3,7 +3,7 @@
  * Single storage key; manager config heroAssetId is a pointer to reel.id only.
  */
 import { toRelativeMediaPath } from '../config.js';
-import { normalizeReel } from '../api/reelContract.js';
+import { normalizeReel, isVideoReel } from '../api/reelContract.js';
 import { reelResEntry, reelResExit, reelResReelSnapshot } from '../diagnostics/reelResolutionTrace.js';
 
 export const HERO_REEL_STORAGE_KEY = 'reelforge_hero_reel';
@@ -75,6 +75,62 @@ export function heroReelFromUploadResponse(raw, mediaKind = 'image') {
     return result;
 }
 
+/** @returns {{ heroAssetId: string; backgroundSource: string }} */
+function readHeroManagerPointer() {
+    if (typeof window === 'undefined') {
+        return { heroAssetId: '', backgroundSource: 'selection' };
+    }
+    try {
+        const parsed = JSON.parse(localStorage.getItem(HERO_MANAGER_STORAGE_KEY) || '{}');
+        return {
+            heroAssetId: String(parsed?.heroAssetId || '').trim(),
+            backgroundSource: String(parsed?.backgroundSource || 'selection').trim()
+        };
+    } catch {
+        return { heroAssetId: '', backgroundSource: 'selection' };
+    }
+}
+
+/**
+ * Resolve backgroundSource on stored reel using manager pointer + mime hints.
+ * @param {Record<string, unknown>} parsed
+ */
+function resolveStoredHeroBackgroundSource(parsed) {
+    if (parsed?.backgroundSource === 'custom_video') return 'custom_video';
+    if (parsed?.backgroundSource === 'custom_image') return 'custom_image';
+    const manager = readHeroManagerPointer();
+    const reelId = String(parsed?.id || '').trim();
+    if (
+        manager.backgroundSource === 'custom_video' &&
+        manager.heroAssetId &&
+        reelId &&
+        manager.heroAssetId === reelId
+    ) {
+        return 'custom_video';
+    }
+    if (String(parsed?.type || '').startsWith('video/')) return 'custom_video';
+    return 'custom_image';
+}
+
+/**
+ * Active custom-video hero reel — manager pointer + playable url required.
+ * @returns {HeroReel | null}
+ */
+export function resolveActiveHeroVideoReel() {
+    const reel = loadHeroReel();
+    if (!reel?.id || !reel?.url) return null;
+    const manager = readHeroManagerPointer();
+    const managerMatch =
+        manager.backgroundSource === 'custom_video' && manager.heroAssetId === reel.id;
+    const reelIsVideo =
+        reel.backgroundSource === 'custom_video' || isVideoReel({ ...reel, url: reel.url });
+    if (!managerMatch && !reelIsVideo) return null;
+    if (!isVideoReel({ ...reel, url: reel.url })) return null;
+    return reel.backgroundSource === 'custom_video'
+        ? reel
+        : { ...reel, backgroundSource: 'custom_video' };
+}
+
 /** @returns {HeroReel | null} */
 export function loadHeroReel() {
     if (typeof window === 'undefined') return null;
@@ -84,15 +140,15 @@ export function loadHeroReel() {
         if (!raw) return null;
         const parsed = JSON.parse(raw);
         if (!parsed?.id || !parsed?.url) return null;
+        const backgroundSource = resolveStoredHeroBackgroundSource(parsed);
         return {
             id: String(parsed.id),
             fileName: String(parsed.fileName || '').trim() || String(parsed.url).split('/').pop()?.split('?')[0] || '',
             name: String(parsed.name || 'Hero'),
             url: toRelativeMediaPath(String(parsed.url)),
             thumbnail: parsed.thumbnail ? toRelativeMediaPath(String(parsed.thumbnail)) : undefined,
-            type: String(parsed.type || 'image/jpeg'),
-            backgroundSource:
-                parsed.backgroundSource === 'custom_video' ? 'custom_video' : 'custom_image'
+            type: String(parsed.type || (backgroundSource === 'custom_video' ? 'video/mp4' : 'image/jpeg')),
+            backgroundSource
         };
     } catch {
         return null;
@@ -141,7 +197,6 @@ export function clearHeroReel() {
 
 /** @param {HeroReel} reel */
 export function heroReelToVaultItem(reel) {
-    const isVideo = reel.backgroundSource === 'custom_video';
     return {
         id: reel.id,
         fileName: reel.fileName,
@@ -149,8 +204,8 @@ export function heroReelToVaultItem(reel) {
         title: reel.name,
         url: reel.url,
         thumbnail: reel.thumbnail || '',
-        type: reel.type,
-        category: 'HERO'
+        type: reel.type || 'video/mp4',
+        isHeroBackground: true
     };
 }
 

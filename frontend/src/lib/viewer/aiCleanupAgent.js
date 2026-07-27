@@ -7,6 +7,7 @@ import { toRelativeMediaPath } from '../config.js';
 import { logDeletionPropagation, filterOutDeletedMedia, applyCanonicalDeleteClientEffects, recordDeletedMediaIds } from '../deletionSync.js';
 import { isStorageFull, wouldExceedQuota } from '../storage.js';
 import { isHeroAsset, filterNonHeroAssets } from '../hero/heroDomainGuard.js';
+import { resolveActiveHeroVideoReel } from '../hero/heroReelIdentity.js';
 import {
   deleteThumbnailVaultEntries,
   readThumbnailVault,
@@ -406,7 +407,8 @@ export function createAiCleanupAgent(deps) {
   const displayLabel = typeof thumb === 'string' ? thumb : String(thumb.title || thumb.name || fileKey);
   const detectedCategory = CATEGORY_DETECTOR.detectFromTitle(String(displayLabel).replace(/\.[^/.]+$/, ''));
   const primaryCategory = categoriesList.includes(detectedCategory) ? detectedCategory : 'Trending';
-  const placeholder = createLocalReel({ id: thumb.id ? `personal-thumb-${thumb.id}` : `personal-thumb-${fileKey}`, name: `Personal Content ${thumbIndex + 1} - ${primaryCategory}`, category: primaryCategory, type: 'image', url: thumbUrl, thumbnailUrl: thumbUrl, isPlaceholder: false, isPersonalThumbnail: true, personal_thumbnail: fileKey, likes: Math.floor(Math.random() * 100) + 50, views: Math.floor(Math.random() * 500) + 100, match: 'PERSONAL THUMBNAIL', ai_tags: ['personal-thumbnail', 'user-uploaded'], createdAt: thumbAddedAt || new Date().toISOString() });
+  const heroVideo = resolveActiveHeroVideoReel();
+  const placeholder = createLocalReel({ id: thumb.id ? `personal-thumb-${thumb.id}` : `personal-thumb-${fileKey}`, name: `Personal Content ${thumbIndex + 1} - ${primaryCategory}`, category: primaryCategory, type: 'image', url: thumbUrl, thumbnailUrl: thumbUrl, isPlaceholder: false, isPersonalThumbnail: true, personal_thumbnail: fileKey, ...(heroVideo ? { personal_video_id: heroVideo.id } : {}), likes: Math.floor(Math.random() * 100) + 50, views: Math.floor(Math.random() * 500) + 100, match: 'PERSONAL THUMBNAIL', ai_tags: ['personal-thumbnail', 'user-uploaded'], createdAt: thumbAddedAt || new Date().toISOString() });
   console.info('[PERSONAL_THUMBNAIL_INSERT]', {
   stage: 'AI_CLEANUP_AGENT.syncThumbnailsToFeed',
   placeholderId: placeholder.id,

@@ -22,6 +22,7 @@ import {
     isPendingLocalVideoVaultEntry,
     pruneGhostVideoVaultEntries
 } from './deletionSync.js';
+import { traceVideoStoreBoundary } from './diagnostics/videoStoreTrace.js';
 
 /**
  * Media catalog bootstrap — reads authoritative catalog from GET /api/reels (Postgres).
@@ -387,16 +388,44 @@ export { upgradeThumbnailVaultFromBackendReels as ingestThumbReelsToVault } from
 
 export function reelsToVideoVaultEntries(reels) {
     const entries = [];
+    /** @type {Array<{ id: string; reason: string }>} */
+    const skipped = [];
+    const playableInput = (reels || []).filter((reel) => isVideoReel(reel));
     for (const reel of reels || []) {
-        if (!isVideoReel(reel)) continue;
-        if (isHeroAsset(reel)) continue;
+        if (!isVideoReel(reel)) {
+            continue;
+        }
+        if (isHeroAsset(reel)) {
+            skipped.push({
+                id: String(reel?.id || '').trim(),
+                reason: 'isHeroAsset:reel'
+            });
+            continue;
+        }
         const entry = reelToVaultEntry(reel);
-        if (isHeroAsset(entry)) continue;
+        if (isHeroAsset(entry)) {
+            skipped.push({
+                id: String(entry?.id || reel?.id || '').trim(),
+                reason: 'isHeroAsset:vault_entry'
+            });
+            continue;
+        }
         entry.thumbnail =
             resolveUserPosterUrl(reel?.thumbnailUrl || reel?.thumbnail_url) || entry.thumbnail;
         entries.push(entry);
     }
-    return dedupeVideoEntries(entries);
+    const deduped = dedupeVideoEntries(entries);
+    traceVideoStoreBoundary(
+        'reelsToVideoVaultEntries',
+        playableInput,
+        deduped,
+        {
+            removed: skipped,
+            reasons: skipped.length ? 'hero_or_non_video_excluded' : 'none',
+            extra: { preDedupeCount: entries.length }
+        }
+    );
+    return deduped;
 }
 
 export function hasLocalMediaCache(thumbnailKey = THUMBNAIL_KEY, videoVaultKey = VIDEO_VAULT_KEY) {

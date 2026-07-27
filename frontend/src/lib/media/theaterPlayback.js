@@ -1,5 +1,6 @@
 import { toRelativeMediaPath } from '../config.js';
 import { isVideoReel, isImageReel } from '../api/reelContract.js';
+import { resolveActiveHeroVideoReel, heroReelToVaultItem } from '../hero/heroReelIdentity.js';
 
 /** Raw path for MediaRenderer — no pre-resolution. */
 function rawMediaPath(url) {
@@ -11,6 +12,68 @@ function rawMediaPath(url) {
 }
 
 /**
+ * @param {Record<string, unknown>[]} vaultVideos
+ * @returns {Record<string, unknown>[]}
+ */
+function mergeVaultVideosWithHero(vaultVideos) {
+    const list = [...(vaultVideos || [])].filter(Boolean);
+    const hero = resolveActiveHeroVideoReel();
+    if (hero && !list.some((v) => String(v?.id || '') === hero.id)) {
+        list.unshift(heroReelToVaultItem(hero));
+    }
+    return list;
+}
+
+/**
+ * @param {Record<string, unknown>} reel
+ * @param {Record<string, unknown> | null | undefined} video
+ * @param {string} source
+ */
+function playbackFromVideoSource(reel, video, source) {
+    const url = String(video?.url || video?.video_url || video?.src || '').trim();
+    if (!url || !isVideoReel({ ...video, url })) return null;
+    return {
+        mode: 'video',
+        url: rawMediaPath(url),
+        poster: resolvePlaceholderThumbUrl(reel) || null,
+        source,
+        linkedName: video.name || video.fileName || video.title
+    };
+}
+
+/**
+ * Link thumbnail / placeholder shelf cards to personal or hero video assets.
+ * @param {Record<string, unknown>} reel
+ * @param {Record<string, unknown>[]} vaultVideos
+ */
+function resolvePersonalShelfVideoLink(reel, vaultVideos) {
+    const merged = mergeVaultVideosWithHero(vaultVideos);
+    const personalVideoId = String(reel?.personal_video_id || '').trim();
+    if (personalVideoId) {
+        const byId = merged.find((v) => String(v?.id || '') === personalVideoId);
+        const byIdPlayback = playbackFromVideoSource(reel, byId, 'personal-video-id');
+        if (byIdPlayback) return byIdPlayback;
+    }
+
+    if (!reel?.isPersonalThumbnail && !reel?.isPlaceholder) return null;
+
+    const hero = resolveActiveHeroVideoReel();
+    if (hero) {
+        const heroPlayback = playbackFromVideoSource(reel, hero, 'hero-personal-thumb');
+        if (heroPlayback) return heroPlayback;
+    }
+
+    const playable = merged.filter((v) =>
+        isVideoReel({ ...v, url: String(v?.url || v?.video_url || v?.src || '') })
+    );
+    if (playable.length === 1) {
+        return playbackFromVideoSource(reel, playable[0], 'sole-personal-video');
+    }
+
+    return null;
+}
+
+/**
  * Resolve theater playback — must match shelf card video detection.
  * Returns raw media paths; MediaRenderer resolves at render.
  *
@@ -19,6 +82,8 @@ function rawMediaPath(url) {
  */
 export function resolveTheaterPlayback(reel, vaultVideos = []) {
     if (!reel) return { mode: 'none' };
+
+    const mergedVaultVideos = mergeVaultVideosWithHero(vaultVideos);
 
     const primaryUrl = String(reel.url || reel.video_url || '').trim();
 
@@ -49,7 +114,7 @@ export function resolveTheaterPlayback(reel, vaultVideos = []) {
         .find((stem) => stem && !stem.startsWith('personal content'));
 
     if (thumbStem) {
-        const linked = vaultVideos.find((v) => {
+        const linked = mergedVaultVideos.find((v) => {
             const vStem = String(v.fileName || v.name || v.title || v.url || '')
                 .split('/')
                 .pop()
@@ -58,17 +123,29 @@ export function resolveTheaterPlayback(reel, vaultVideos = []) {
             return vStem && (vStem === thumbStem || vStem.includes(thumbStem) || thumbStem.includes(vStem));
         });
 
-        const linkedUrl = linked?.url || linked?.video_url || linked?.src;
-        if (linkedUrl && isVideoReel({ ...linked, url: String(linkedUrl) })) {
-            return {
-                mode: 'video',
-                url: rawMediaPath(String(linkedUrl)),
-                poster: resolvePlaceholderThumbUrl(reel) || null,
-                source: 'vault-link',
-                linkedName: linked.name
-            };
+        const vaultLinkPlayback = playbackFromVideoSource(reel, linked, 'vault-link');
+        if (vaultLinkPlayback) return vaultLinkPlayback;
+
+        const heroReel = resolveActiveHeroVideoReel();
+        const heroUrl = String(heroReel?.url || '').trim();
+        if (heroUrl) {
+            const heroStem = String(heroReel.fileName || heroUrl)
+                .split('/')
+                .pop()
+                ?.replace(/\.[^.]+$/, '')
+                .toLowerCase();
+            if (
+                heroStem &&
+                (heroStem === thumbStem || heroStem.includes(thumbStem) || thumbStem.includes(heroStem))
+            ) {
+                const heroPlayback = playbackFromVideoSource(reel, heroReel, 'hero-link');
+                if (heroPlayback) return heroPlayback;
+            }
         }
     }
+
+    const personalLink = resolvePersonalShelfVideoLink(reel, vaultVideos);
+    if (personalLink) return personalLink;
 
     const imageUrl = resolvePlaceholderThumbUrl(reel);
     if (imageUrl && (reel.type === 'image' || reel.isPlaceholder || isImageReel(reel))) {

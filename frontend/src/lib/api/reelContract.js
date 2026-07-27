@@ -21,7 +21,77 @@ import { reelResEntry, reelResExit, reelResNormalizeBranch, reelResReelSnapshot 
 import { logBg7kCardNormalize } from '../diagnostics/bg7kCardRenderTrace.js';
 
 const REEL_TYPES = new Set(['video', 'image', 'thumbnail']);
+const VIDEO_FILE_EXT = /\.(mp4|mov|webm|m4v|avi|mkv)(\?|$)/i;
 const DEV = import.meta.env.DEV;
+
+/**
+ * Detect playable video from filename, URL, or MIME — independent of backend type label.
+ * @param {Record<string, unknown> | null | undefined} raw
+ */
+function isPlayableVideoSignal(raw) {
+    if (!raw || typeof raw !== 'object') return false;
+    const mime = String(
+        raw.mimeType || raw.mime_type || raw.contentType || raw.content_type || ''
+    ).toLowerCase();
+    const declaredType = String(raw.type || '').toLowerCase();
+    if (mime.startsWith('video/') || declaredType.startsWith('video/')) return true;
+
+    const fileName = String(raw.fileName || raw.file_name || '').trim();
+    if (fileName && VIDEO_FILE_EXT.test(fileName)) return true;
+
+    const url = String(
+        raw.url || raw.video_url || raw.videoUrl || raw.videoPath || raw.video_path || raw.src || ''
+    ).trim();
+    if (!url) return false;
+    if (VIDEO_FILE_EXT.test(url)) return true;
+    if (url.includes('/prod/') && VIDEO_FILE_EXT.test(url.split('?')[0])) return true;
+    return false;
+}
+
+/**
+ * @param {Record<string, unknown>} raw
+ */
+function resolveVideoRepairReason(raw) {
+    const fileName = String(raw.fileName || raw.file_name || '').trim();
+    if (fileName && VIDEO_FILE_EXT.test(fileName)) return 'video_filename_extension';
+    const url = String(raw.url || raw.video_url || raw.videoUrl || '').trim();
+    if (url.includes('/prod/') && VIDEO_FILE_EXT.test(url.split('?')[0])) return 'r2_prod_video_url';
+    if (url && VIDEO_FILE_EXT.test(url)) return 'video_url_extension';
+    const mime = String(raw.mimeType || raw.mime_type || raw.contentType || '').toLowerCase();
+    if (mime.startsWith('video/')) return 'video_mime';
+    if (String(raw.type || '').toLowerCase().startsWith('video/')) return 'video_type_mime';
+    return 'video_signal';
+}
+
+/**
+ * Override incorrect backend/catalog type labels for playable video assets.
+ * @param {Record<string, unknown>} raw
+ * @param {ReelType | string} inferredType
+ * @returns {ReelType}
+ */
+function repairPrimaryMediaType(raw, inferredType) {
+    if (inferredType === 'video' || !isPlayableVideoSignal(raw)) {
+        return /** @type {ReelType} */ (inferredType);
+    }
+    const afterType = /** @type {ReelType} */ ('video');
+    console.log('[MEDIA_TYPE_REPAIR]', {
+        id: String(raw.id || ''),
+        beforeType: inferredType,
+        afterType,
+        reason: resolveVideoRepairReason(raw)
+    });
+    return afterType;
+}
+
+/**
+ * Canonical primary media type for any reel-like object (feed cards, vault, API).
+ * @param {Record<string, unknown> | null | undefined} reel
+ * @returns {ReelType}
+ */
+export function ensurePrimaryMediaType(reel) {
+    if (!reel || typeof reel !== 'object') return 'thumbnail';
+    return repairPrimaryMediaType(reel, inferMediaType(reel));
+}
 
 /**
  * Resolve relative media paths to backend origin URLs (sole public resolver).
@@ -79,7 +149,11 @@ export function resolveMediaUrl(url, kind = 'media', context = kind) {
 export function inferMediaType(reelOrUrl) {
     if (typeof reelOrUrl === 'string') {
         const url = reelOrUrl;
-        if (/\.(mp4|mov|webm|m4v|avi|mkv)(\?|$)/i.test(url) || url.includes('/videos/')) {
+        if (
+            VIDEO_FILE_EXT.test(url) ||
+            url.includes('/videos/') ||
+            (url.includes('/prod/') && VIDEO_FILE_EXT.test(url.split('?')[0]))
+        ) {
             return 'video';
         }
         if (/\.(jpe?g|png|webp|gif)(\?|$)/i.test(url) || url.includes('/thumbs/')) {
@@ -88,6 +162,19 @@ export function inferMediaType(reelOrUrl) {
         return 'thumbnail';
     }
     const raw = reelOrUrl;
+    if (isPlayableVideoSignal(raw)) {
+        const declared =
+            raw?.type && REEL_TYPES.has(String(raw.type)) ? String(raw.type) : '';
+        if (declared && declared !== 'video') {
+            console.log('[MEDIA_TYPE_REPAIR]', {
+                id: String(raw.id || ''),
+                beforeType: declared,
+                afterType: 'video',
+                reason: resolveVideoRepairReason(raw)
+            });
+        }
+        return 'video';
+    }
     if (raw?.type && REEL_TYPES.has(String(raw.type))) return /** @type {ReelType} */ (raw.type);
     return inferMediaType(String(raw?.url || raw?.video_url || raw?.thumbnail_url || ''));
 }
@@ -120,10 +207,11 @@ function fileNameFromUrl(url) {
 /**
  * Map legacy backend payloads to the Reel contract (Option C safety net).
  * @param {Record<string, unknown>} raw
+ * @param {ReelType} [resolvedType]
  * @returns {ReelV1 & Record<string, unknown>}
  */
-function fromLegacy(raw) {
-    const type = inferMediaType(raw);
+function fromLegacy(raw, resolvedType) {
+    const type = resolvedType ?? repairPrimaryMediaType(raw, inferMediaType(raw));
     const thumbLegacy =
         raw.thumbnailUrl ??
         raw.thumbnail_url ??
@@ -187,7 +275,7 @@ export function normalizeReel(raw, endpoint = 'unknown') {
 
     const thumbRaw =
         raw.thumbnailUrl ?? raw.thumbnail_url ?? raw.thumbnailPath ?? raw.thumbnail_path;
-    const type = inferMediaType(raw);
+    const type = repairPrimaryMediaType(raw, inferMediaType(raw));
     const useDirectContract = Boolean(raw.url && (raw.name || raw.title));
     reelResNormalizeBranch(useDirectContract ? 'direct_contract_path' : 'fromLegacy_path', {
         endpoint,
@@ -217,7 +305,7 @@ export function normalizeReel(raw, endpoint = 'unknown') {
                   status: String(raw.status ?? 'ready'),
                   createdAt: String(raw.createdAt ?? raw.created_at ?? new Date().toISOString())
               }
-            : fromLegacy(raw);
+            : fromLegacy(raw, type);
 
     const status = contract.status;
 
@@ -227,7 +315,8 @@ export function normalizeReel(raw, endpoint = 'unknown') {
         title: contract.name,
         category: contract.category,
         created_at: contract.createdAt,
-        status
+        status,
+        type: ensurePrimaryMediaType({ ...raw, ...contract })
     };
 
     const isReadyCatalog =

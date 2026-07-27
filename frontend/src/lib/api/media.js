@@ -6,6 +6,122 @@ import {
     USE_SIGNED_UPLOADS
 } from '../config.js';
 import { enforceUploadPolicy } from '../security/securityPolicyEngine.js';
+import { saveUploadCheckpoint, clearUploadCheckpoint } from '../diagnostics/uploadRecovery.js';
+
+/** @param {number} fileSizeBytes */
+export function computeUploadPutTimeoutMs(fileSizeBytes = 0) {
+    const size = Number(fileSizeBytes || 0);
+    if (size >= 100 * 1024 * 1024) return 20 * 60 * 1000;
+    if (size >= SIGNED_UPLOADS_MIN_BYTES) return 15 * 60 * 1000;
+    return 5 * 60 * 1000;
+}
+
+/** @param {number} fileSizeBytes */
+export function computeIngestPollTimeoutMs(fileSizeBytes = 0) {
+    const size = Number(fileSizeBytes || 0);
+    const baseMs = 180_000;
+    const per100MbMs = 90_000;
+    const extra = Math.ceil(size / (100 * 1024 * 1024)) * per100MbMs;
+    return Math.min(20 * 60 * 1000, baseMs + extra);
+}
+
+/**
+ * @param {Record<string, unknown>} detail
+ */
+function emitUploadProgress(detail) {
+    if (typeof window === 'undefined') return;
+    window.dispatchEvent(new CustomEvent('reelforge:upload-progress', { detail }));
+}
+
+/**
+ * PUT file bytes with upload progress (XHR — fetch lacks reliable progress).
+ * @param {string} uploadUrl
+ * @param {File} file
+ * @param {Record<string, string>} putHeaders
+ * @param {AbortSignal | undefined} uploadSignal
+ * @param {{ fileName?: string; timeoutMs?: number; stallMs?: number }} [meta]
+ */
+function putFileWithProgress(uploadUrl, file, putHeaders, uploadSignal, meta = {}) {
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        const timeoutMs = meta.timeoutMs || computeUploadPutTimeoutMs(file?.size || 0);
+        const stallMs = meta.stallMs || (file?.size >= 100 * 1024 * 1024 ? 180_000 : 120_000);
+        let lastProgressAt = Date.now();
+        let settled = false;
+
+        const finish = (fn) => (value) => {
+            if (settled) return;
+            settled = true;
+            clearInterval(stallTimer);
+            fn(value);
+        };
+
+        xhr.open('PUT', uploadUrl);
+        xhr.timeout = timeoutMs;
+        Object.entries(putHeaders).forEach(([key, value]) => {
+            if (value != null) xhr.setRequestHeader(key, String(value));
+        });
+
+        emitUploadProgress({
+            fileName: meta.fileName || file?.name || '',
+            percent: 0,
+            phase: 'put',
+            stage: 'starting'
+        });
+
+        const stallTimer = setInterval(() => {
+            if (Date.now() - lastProgressAt > stallMs) {
+                xhr.abort();
+                finish(reject)(
+                    new Error(
+                        'Upload stalled (no progress for several minutes). Check your connection and retry.'
+                    )
+                );
+            }
+        }, 15_000);
+
+        xhr.upload.onprogress = (event) => {
+            lastProgressAt = Date.now();
+            if (!event.lengthComputable) return;
+            const percent = Math.min(100, Math.round((event.loaded / event.total) * 100));
+            emitUploadProgress({
+                fileName: meta.fileName || file?.name || '',
+                loaded: event.loaded,
+                total: event.total,
+                percent,
+                phase: 'put'
+            });
+        };
+        xhr.onload = () => {
+            finish(resolve)({
+                ok: xhr.status >= 200 && xhr.status < 300,
+                status: xhr.status,
+                text: async () => xhr.responseText || ''
+            });
+        };
+        xhr.onerror = () => finish(reject)(new Error('Network error during direct storage upload'));
+        xhr.onabort = () =>
+            finish(reject)(new DOMException('Upload aborted', 'AbortError'));
+        xhr.ontimeout = () =>
+            finish(reject)(
+                new Error(`Upload timed out after ${Math.round(timeoutMs / 60000)} minutes`)
+            );
+        if (uploadSignal) {
+            if (uploadSignal.aborted) {
+                xhr.abort();
+                return;
+            }
+            uploadSignal.addEventListener(
+                'abort',
+                () => {
+                    xhr.abort();
+                },
+                { once: true }
+            );
+        }
+        xhr.send(file);
+    });
+}
 
 /** @typedef {{ valid: boolean; kind: string; filename: string; error?: string; checks: Record<string, boolean> }} MediaValidationResult */
 /** @typedef {{ videos: string[]; thumbnails: string[]; invalid_videos: Array<{ name: string; reason: string }> }} MediaStorageInventory */
@@ -62,8 +178,19 @@ async function processIngestAcceptedResponse(body, primaryFileName, httpStatus, 
         });
         if (!reelId) throw new Error('Ingestion accepted but no reel id returned');
         logUploadStage(diagContext, 'POLL_BEGIN', { reelId });
+        emitUploadProgress({
+            fileName: primaryFileName || '',
+            phase: 'ingest',
+            stage: 'pending'
+        });
         const ready = await pollIngestionUntilReady(reelId, {
+            timeoutMs: computeIngestPollTimeoutMs(Number(diagContext?.fileSize || 0)),
             onProgress: (status) => {
+                emitUploadProgress({
+                    fileName: primaryFileName || '',
+                    phase: 'ingest',
+                    stage: status
+                });
                 if (import.meta.env.DEV) {
                     console.log(`[ingest-poll] ${reelId} → ${status}`);
                 }
@@ -211,6 +338,9 @@ async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = nu
     if (!signResponse.ok) {
         const err = await signResponse.json().catch(() => ({}));
         maybeHandleInvalidAdminSession(signResponse, err, 'uploadVideoSigned:sign');
+        if (signResponse.status === 401) {
+            throw new Error('Studio login required (session expired). Sign in via Studio and retry.');
+        }
         throw new Error(err.error || `Signed upload sign failed (${signResponse.status})`);
     }
     const signBody = await signResponse.json();
@@ -224,6 +354,16 @@ async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = nu
         reelId: signBody.reelId || '',
         uploadId: signBody.uploadId || ''
     });
+    if (diagContext?.uploadKey) {
+        saveUploadCheckpoint({
+            uploadKey: diagContext.uploadKey,
+            fileName: primaryFileName || '',
+            fileSize: file.size,
+            reelId: String(signBody.reelId || ''),
+            uploadId: String(signBody.uploadId || ''),
+            stage: 'signed'
+        });
+    }
     logAssetIdentityBind({
         uploadId: signBody.uploadId || '',
         reelId: signBody.reelId || '',
@@ -261,12 +401,17 @@ async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = nu
 
     let putResponse;
     try {
-        putResponse = await fetch(uploadUrl, {
-            method: 'PUT',
-            headers: putHeaders,
-            body: file,
-            ...(uploadSignal ? { signal: uploadSignal } : {})
-        });
+        putResponse = await putFileWithProgress(
+            uploadUrl,
+            file,
+            putHeaders,
+            uploadSignal,
+            {
+                fileName: primaryFileName || file.name,
+                timeoutMs: computeUploadPutTimeoutMs(file.size),
+                stallMs: file.size >= 100 * 1024 * 1024 ? 180_000 : 120_000
+            }
+        );
     } catch (putError) {
         const err = putError instanceof Error ? putError : new Error(String(putError));
         logBg7xR2Put(diagContext, 'error', {
@@ -303,6 +448,16 @@ async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = nu
         status: putResponse.status,
         putElapsedMs: putDurationMs
     });
+    if (diagContext?.uploadKey) {
+        saveUploadCheckpoint({
+            uploadKey: diagContext.uploadKey,
+            fileName: primaryFileName || '',
+            fileSize: file.size,
+            reelId: String(signBody.reelId || ''),
+            uploadId: String(signBody.uploadId || ''),
+            stage: 'put_complete'
+        });
+    }
     if (!putResponse.ok) {
         const errText = await putResponse.text().catch(() => '');
         let errMsg = errText;
@@ -321,6 +476,11 @@ async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = nu
         ts: new Date().toISOString()
     });
     logUploadStage(diagContext, 'FINALIZE_BEGIN');
+    emitUploadProgress({
+        fileName: primaryFileName || file?.name || '',
+        phase: 'finalize',
+        stage: 'request'
+    });
 
     const finalizeResponse = await fetch(`${API_BASE_URL}${REELS_FINALIZE_URL}`, {
         method: 'POST',
@@ -349,6 +509,9 @@ async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = nu
         status: finalizeResponse.status,
         reelId: body?.id || ''
     });
+    if (diagContext?.uploadKey) {
+        clearUploadCheckpoint(diagContext.uploadKey);
+    }
     logAssetIdentityBind({
         uploadId: signBody.uploadId || '',
         reelId: body?.id || signBody.reelId || '',

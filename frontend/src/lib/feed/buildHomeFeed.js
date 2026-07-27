@@ -2,7 +2,7 @@
  * Canonical homepage feed builder — single authority for feed eligibility and card assembly.
  * Feed eligibility ≠ playback eligibility (hero videos may appear as cards; playback routes separately).
  */
-import { isVideoReel, isImageReel } from '../api/reelContract.js';
+import { isVideoReel, isImageReel, ensurePrimaryMediaType } from '../api/reelContract.js';
 import { isHeroAsset } from '../hero/heroDomainGuard.js';
 import { toRelativeMediaPath } from '../config.js';
 import { buildDemoFeedReels } from '../demoPlaceholders.js';
@@ -153,8 +153,10 @@ function prepareFeedCard(reel, eligibility, options) {
     }
 
     copy.isPlaceholder = false;
+    copy.type = ensurePrimaryMediaType(copy);
 
     if (eligibility.cardType === 'video') {
+        copy.type = 'video';
         copy.isPersonalThumbnail = false;
         if (eligibility.isHeroFeedCard) {
             copy.isHeroFeedCard = true;
@@ -167,6 +169,17 @@ function prepareFeedCard(reel, eligibility, options) {
         copy.url = toRelativeMediaPath(String(copy.url || copy.video_url || '')) || copy.url;
         const thumb = resolveReelThumbnailFromVault(copy, thumbnailStorageKey);
         if (thumb) copy.thumbnailUrl = thumb;
+        if (eligibility.isHeroFeedCard) {
+            console.log('[MISSION_VIDEO_CARD]', {
+                id: copy.id,
+                name: copy.name,
+                fileName: copy.fileName,
+                url: copy.url,
+                thumbnailUrl: copy.thumbnailUrl,
+                type: copy.type,
+                isHeroFeedCard: true
+            });
+        }
     } else if (eligibility.cardType === 'image') {
         copy.isPersonalVideo = false;
         copy.isPersonalThumbnail = false;
