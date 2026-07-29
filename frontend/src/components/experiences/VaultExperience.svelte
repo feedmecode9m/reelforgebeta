@@ -130,6 +130,8 @@
   let vaultUploadCategory = 'Trending';
   /** Hidden file input for MP4 vault click-to-upload fallback. */
   let videoFileInputEl;
+  /** Local pending MP4 preview (Accept/Reject) — mirrors thumbnail vault. */
+  const pendingVaultVideo = writable(null);
   $: vaultShelfCategories = (CONFIG?.CATEGORIES ?? []).filter((c) => c !== 'Auto-Detect');
   let deleteAuditLogged = false;
   let selectedThumbnailIds = [];
@@ -1260,7 +1262,91 @@
       uploadStatus.set('⚠️ Drop a valid video file');
       return;
     }
-    return processVaultVideoFile(file, 'drop');
+    stagePendingVaultVideo(file, 'drop');
+  }
+
+  function clearPendingVaultVideo() {
+    const current = get(pendingVaultVideo);
+    if (current?.preview) {
+      try {
+        URL.revokeObjectURL(current.preview);
+      } catch {
+        /* ignore */
+      }
+      try {
+        resourceManager.revokeBlobUrl?.(current.preview);
+      } catch {
+        /* ignore */
+      }
+    }
+    pendingVaultVideo.set(null);
+  }
+
+  function stagePendingVaultVideo(file, source = 'drop') {
+    if (!file) return;
+    if (file.size > CONFIG.MAX_VIDEO_SIZE) {
+      uploadStatus.set(`⚠️ Video too large. Max ${CONFIG.MAX_VIDEO_SIZE / 1024 / 1024}MB`);
+      resourceManager.setTimeout(() => uploadStatus.set('Standby'), 3000);
+      return;
+    }
+    clearPendingVaultVideo();
+    const preview =
+      typeof resourceManager?.addBlobUrl === 'function'
+        ? resourceManager.addBlobUrl(URL.createObjectURL(file))
+        : URL.createObjectURL(file);
+    const pending = {
+      file,
+      preview,
+      name: file.name,
+      size: file.size,
+      type: file.type || 'video/mp4'
+    };
+    pendingVaultVideo.set(pending);
+    console.info('[MP4_PENDING_PREVIEW]', {
+      source,
+      fileName: pending.name,
+      fileSize: pending.size,
+      fileType: pending.type,
+      ts: new Date().toISOString()
+    });
+    pipelineDiag('DND', 'stagePendingVaultVideo', 'VaultExperience.svelte', {
+      fileName: pending.name,
+      result: 'preview_pending_accept'
+    });
+    uploadStatus.set(`🎬 Preview: ${file.name} — Accept or Reject`);
+  }
+
+  export async function acceptPendingVideo() {
+    const pending = get(pendingVaultVideo);
+    if (!pending?.file) {
+      uploadStatus.set('⚠️ No pending video to accept');
+      resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
+      return;
+    }
+    if (!getAdminToken()) {
+      uploadStatus.set('🔐 Studio login required — open Studio, sign in, then Accept');
+      resourceManager.setTimeout(() => uploadStatus.set('Standby'), 5000);
+      return;
+    }
+    console.info('[MP4_PENDING_ACCEPT]', {
+      fileName: pending.name,
+      fileSize: pending.size,
+      ts: new Date().toISOString()
+    });
+    const file = pending.file;
+    clearPendingVaultVideo();
+    await processVaultVideoFile(file, 'pending_accept');
+  }
+
+  export function rejectPendingVideo() {
+    const pending = get(pendingVaultVideo);
+    console.info('[MP4_PENDING_REJECT]', {
+      fileName: pending?.name || null,
+      ts: new Date().toISOString()
+    });
+    clearPendingVaultVideo();
+    uploadStatus.set('Rejected video');
+    resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
   }
 
   function isVaultVideoFileCandidate(f) {
@@ -1279,12 +1365,8 @@
 
   /** Click-to-upload fallback when OS / browser DnD never fires drop. */
   function openVaultVideoFilePicker() {
+    if (get(pendingVaultVideo)) return;
     console.info('[MP4_FILE_PICKER]', { action: 'open', ts: new Date().toISOString() });
-    if (!getAdminToken()) {
-      uploadStatus.set('🔐 Studio login required — open Studio, sign in, then retry upload');
-      resourceManager.setTimeout(() => uploadStatus.set('Standby'), 5000);
-      return;
-    }
     videoFileInputEl?.click?.();
   }
 
@@ -1308,7 +1390,7 @@
       resourceManager.setTimeout(() => uploadStatus.set('Standby'), 3000);
       return;
     }
-    await processVaultVideoFile(file, 'file_picker');
+    stagePendingVaultVideo(file, 'file_picker');
   }
 
   async function processVaultVideoFile(file, source = 'drop') {
@@ -2466,12 +2548,16 @@
   <div
     class="drop-zone video-vault-drop"
     class:active={$videoDragActive}
+    class:has-pending={Boolean($pendingVaultVideo)}
     on:dragenter={handleVaultVideoDragEnter}
     on:dragover={handleVaultVideoDragOver}
     on:dragleave={handleVaultVideoDragLeave}
     on:drop={handleVaultVideoDrop}
-    on:click={openVaultVideoFilePicker}
+    on:click={() => {
+      if (!$pendingVaultVideo) openVaultVideoFilePicker();
+    }}
     on:keydown={(event) => {
+      if ($pendingVaultVideo) return;
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
         openVaultVideoFilePicker();
@@ -2491,12 +2577,48 @@
       on:change={handleVaultVideoFileInput}
       on:click|stopPropagation
     />
-    <div class="drop-placeholder">
-      <span class="drop-icon">🎬</span>
-      <span>DROP VIDEO HERE (MP4/MOV)</span>
-      <small>Max {CONFIG.MAX_VIDEO_SIZE / 1024 / 1024}MB • Signed upload for large files</small>
-      <span class="vault-file-picker-hint">or click to choose a file</span>
-    </div>
+    {#if $pendingVaultVideo}
+      <div class="pending-preview pending-video-preview" on:click|stopPropagation role="group">
+        <video
+          class="pending-video"
+          src={$pendingVaultVideo.preview}
+          muted
+          playsinline
+          controls
+          preload="metadata"
+        ></video>
+        <div class="pending-actions">
+          <button
+            type="button"
+            class="accept-btn"
+            disabled={!adminSessionReady}
+            on:click|stopPropagation={acceptPendingVideo}
+          >
+            ✅ ACCEPT
+          </button>
+          <button
+            type="button"
+            class="reject-btn"
+            on:click|stopPropagation={rejectPendingVideo}
+          >
+            ❌ REJECT
+          </button>
+        </div>
+        {#if !adminSessionReady}
+          <p class="pending-login-hint">Studio login required to upload.</p>
+        {/if}
+        <p class="pending-info">
+          {$pendingVaultVideo.name} • {(($pendingVaultVideo.size || 0) / (1024 * 1024)).toFixed(1)} MB
+        </p>
+      </div>
+    {:else}
+      <div class="drop-placeholder">
+        <span class="drop-icon">🎬</span>
+        <span>DROP VIDEO HERE (MP4/MOV)</span>
+        <small>Max {CONFIG.MAX_VIDEO_SIZE / 1024 / 1024}MB • Signed upload for large files</small>
+        <span class="vault-file-picker-hint">or click to choose a file</span>
+      </div>
+    {/if}
   </div>
   <div
     class="drop-zone video-vault-drop"
