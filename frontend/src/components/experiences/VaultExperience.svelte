@@ -24,8 +24,12 @@
     logVaultPlaceholderGate
   } from '../../lib/diagnostics/renderGateForensics.js';
   import { uploadMedia, uploadThumbnail, fetchReadyReels as apiFetchReadyReels, deleteReelById as apiDeleteReelById } from '../../lib/api/media.js';
-  import { logHeroImagePipeline } from '../../lib/hero/heroIntelligence.js';
-  import { resolveActiveHeroVideoReel, heroReelToVaultItem } from '../../lib/hero/heroReelIdentity.js';
+  import { logHeroImagePipeline, saveHeroManagerConfig } from '../../lib/hero/heroIntelligence.js';
+  import {
+    resolveActiveHeroVideoReel,
+    heroReelToVaultItem,
+    clearHeroReel
+  } from '../../lib/hero/heroReelIdentity.js';
   import { isHeroAsset } from '../../lib/hero/heroDomainGuard.js';
   import { reelToVaultEntry } from '../../lib/api/reelContract.js';
   import { validateVideoFile } from '../../lib/runtime-guards.js';
@@ -55,7 +59,10 @@
     readThumbnailVault
   } from '../../lib/viewer/thumbnailVault.js';
   import { assertDeleteReducedCount } from '../../lib/viewer/thumbnailInvariants.js';
-  import { applyCanonicalDeleteClientEffects } from '../../lib/deletionSync.js';
+  import {
+    applyCanonicalDeleteClientEffects,
+    isGhostVideoVaultEntry
+  } from '../../lib/deletionSync.js';
   import { vaultForensic } from '../../lib/diagnostics/vaultForensics.js';
   import {
     trackUploadLockRegister,
@@ -64,11 +71,13 @@
     noteUploadLockReelId,
     hasActiveUploadLock,
     isUploadLockStale,
+    isUploadLockAbandoned,
     supersedeStaleUploadLock,
     getUploadLockAgeMs,
     getUploadLockIdleMs,
     getActiveUploadLockCount,
     UPLOAD_LOCK_STALE_MS,
+    uploadLockStaleMsForSize,
     touchUploadLockProgress
   } from '../../lib/diagnostics/uploadLockDiag.js';
   import {
@@ -119,6 +128,8 @@
   let vaultDeleteDragActive = false;
   /** Shelf category for vault uploads (video + thumbnail). */
   let vaultUploadCategory = 'Trending';
+  /** Hidden file input for MP4 vault click-to-upload fallback. */
+  let videoFileInputEl;
   $: vaultShelfCategories = (CONFIG?.CATEGORIES ?? []).filter((c) => c !== 'Auto-Detect');
   let deleteAuditLogged = false;
   let selectedThumbnailIds = [];
@@ -474,10 +485,18 @@
       );
     }
     const before = get(personalThumbnailCollection).length;
+    const stored = getStoredThumbnailEntries();
+    const deletedFileKeys = [...deletedIds, ...failedIds]
+      .map((id) => {
+        const entry = stored.find((t) => t && typeof t === 'object' && String(t.id || '').trim() === String(id || '').trim());
+        return String(entry?.fileName || entry?.file_name || '').trim() || basenameFromMediaRef(entry?.url || '');
+      })
+      .filter(Boolean);
     const result = deleteThumbnailVaultEntries(deletedIds, imageReels, {
       backendReachable: true,
       storageKey: CONFIG.THUMBNAIL_STORAGE_KEY,
-      failedIds
+      failedIds,
+      deletedFileKeys
     });
     syncCollectionStore(personalThumbnailCollection, CONFIG.THUMBNAIL_STORAGE_KEY);
     const after = get(personalThumbnailCollection).length;
@@ -485,6 +504,7 @@
       action: 'applyThumbnailDeleteTombstone',
       deletedIds: [...deletedIds],
       failedIds: [...failedIds],
+      deletedFileKeys,
       before,
       after,
       purged: result.purged?.length || 0,
@@ -622,16 +642,162 @@
     return remainingSelectedIds;
   }
 
-  async function handleVideoDelete(videoId) {
+  function formatVaultVideoSizeLabel(video) {
+    const n = Number(video?.size);
+    if (!Number.isFinite(n) || n <= 0) return '—';
+    return `${(n / (1024 * 1024)).toFixed(1)}MB`;
+  }
+
+  function isHeroInjectedVaultCard(videoRef) {
+    if (!videoRef || typeof videoRef !== 'object') return false;
+    if (videoRef.isHeroBackground === true) return true;
+    const hero = resolveActiveHeroVideoReel();
+    if (!hero?.id) return false;
+    const id = String(videoRef.id || '').trim();
+    const fileName = String(videoRef.fileName || videoRef.file_name || videoRef.name || '').trim();
+    return (
+      (id && id === hero.id) ||
+      (fileName && fileName === String(hero.fileName || hero.name || '').trim())
+    );
+  }
+
+  /**
+   * Outline / hero-injected stubs are often absent from personalVideos (hero filter)
+   * or stuck behind window.confirm on mobile. Purge local + hero pointer with no confirm.
+   */
+  function purgeLocalVaultVideoStub(videoRef, reason = 'ghost_purge') {
+    const id = String(videoRef?.id || '').trim();
+    const ghostName = String(
+      videoRef?.fileName || videoRef?.file_name || videoRef?.name || videoRef?.title || ''
+    ).trim();
+    const ghostSize = Number(videoRef?.size || 0);
+    const clearHero = isHeroInjectedVaultCard(videoRef);
+
+    console.info('[MP4_GHOST_PURGE]', {
+      reason,
+      id: id || null,
+      name: ghostName || null,
+      clearHero,
+      ts: new Date().toISOString()
+    });
+
+    if (id) {
+      applyVideoDeleteTombstone([id]);
+    }
+
+    personalVideos.update((vault) => {
+      const next = (Array.isArray(vault) ? vault : []).filter((item) => {
+        if (!item || typeof item !== 'object') return false;
+        const itemId = String(item.id || '').trim();
+        if (id && itemId === id) return false;
+        const n = String(item.fileName || item.file_name || item.name || item.title || '').trim();
+        if (ghostName && n === ghostName) {
+          if (isGhostVideoVaultEntry(item) || !Number.isFinite(Number(item.size))) return false;
+        }
+        return true;
+      });
+      try {
+        persistPersonalVault(next);
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+
+    if (typeof window !== 'undefined') {
+      try {
+        const key = CONFIG.VIDEO_VAULT_KEY;
+        const raw = JSON.parse(localStorage.getItem(key) || '[]');
+        const cleaned = (Array.isArray(raw) ? raw : []).filter((item) => {
+          const itemId = String(item?.id || '').trim();
+          if (id && itemId === id) return false;
+          const n = String(item?.fileName || item?.file_name || item?.name || item?.title || '').trim();
+          if (ghostName && n === ghostName && isGhostVideoVaultEntry(item)) return false;
+          return true;
+        });
+        localStorage.setItem(key, JSON.stringify(cleaned));
+      } catch {
+        /* ignore */
+      }
+    }
+
+    if (clearHero) {
+      clearHeroReel();
+      try {
+        saveHeroManagerConfig({ heroAssetId: '', backgroundSource: 'selection' });
+      } catch {
+        /* ignore */
+      }
+    }
+
+    if (ghostName && Number.isFinite(ghostSize) && ghostSize > 0) {
+      trackUploadLockRemove(`${ghostName.toLowerCase()}|${ghostSize}`, { reason });
+    }
+
+    uploadStatus.set('✅ Removed leftover vault stub');
+    resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
+    return true;
+  }
+
+  async function handleVideoDelete(videoId, videoRef = null) {
+    console.info('[MP4_DELETE_TAP]', {
+      videoId: String(videoId || '').trim() || null,
+      name: String(videoRef?.name || videoRef?.fileName || ''),
+      ghost: videoRef ? isGhostVideoVaultEntry(videoRef) : null,
+      heroCard: videoRef ? isHeroInjectedVaultCard(videoRef) : null,
+      hasUrl: Boolean(String(videoRef?.url || videoRef?.src || '').trim()),
+      size: videoRef?.size ?? null,
+      ts: new Date().toISOString()
+    });
+    uploadStatus.set('🗑️ Removing vault item…');
+
     const beforeCount = get(personalVideos).length;
     const selectedIds = [...selectedVideoIds];
-    await AI_CLEANUP_AGENT.deleteVaultVideo(videoId);
+    const id = String(videoId || videoRef?.id || '').trim();
+    const ref =
+      videoRef ||
+      (id ? (get(personalVideos) || []).find((item) => String(item?.id || '').trim() === id) : null);
+
+    // Ghost outline / hero-injected chrome: never block on confirm or personalVideos find.
+    if (ref && (isGhostVideoVaultEntry(ref) || isHeroInjectedVaultCard(ref))) {
+      purgeLocalVaultVideoStub(ref, 'tap_ghost_or_hero_stub');
+      canonicalizeVideoSelectionAfterDelete([id].filter(Boolean), {
+        beforeCount,
+        selectedIds
+      });
+      return;
+    }
+
+    if (!id) {
+      if (ref) {
+        purgeLocalVaultVideoStub(ref, 'tap_no_id');
+        return;
+      }
+      uploadStatus.set('❌ Video not found');
+      resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
+      return;
+    }
+
+    const inVault = (get(personalVideos) || []).some((item) => String(item?.id || '').trim() === id);
+    if (!inVault) {
+      // Display-only card (hero merge) — purge hero pointer so the card cannot resurrect.
+      purgeLocalVaultVideoStub(ref || { id, name: 'video', isHeroBackground: true }, 'tap_display_only');
+      canonicalizeVideoSelectionAfterDelete([id], { beforeCount, selectedIds });
+      return;
+    }
+
+    await AI_CLEANUP_AGENT.deleteVaultVideo(id);
     if (get(personalVideos).length < beforeCount) {
-      canonicalizeVideoSelectionAfterDelete([String(videoId || '').trim()], {
+      canonicalizeVideoSelectionAfterDelete([id], {
         beforeCount,
         selectedIds
       });
     }
+  }
+
+  /** Stop card drag from stealing taps on ✕ / Select (touch + desktop). */
+  function stopVaultCardDragGesture(event) {
+    event?.stopPropagation?.();
   }
 
   $: {
@@ -1094,6 +1260,65 @@
       uploadStatus.set('⚠️ Drop a valid video file');
       return;
     }
+    return processVaultVideoFile(file, 'drop');
+  }
+
+  function isVaultVideoFileCandidate(f) {
+    if (!f) return false;
+    const type = (f.type || '').toLowerCase();
+    const name = (f.name || '').toLowerCase();
+    return (
+      type.startsWith('video/') ||
+      (type === 'application/octet-stream' && /\.(mp4|mov|webm|m4v)$/.test(name)) ||
+      name.endsWith('.mp4') ||
+      name.endsWith('.mov') ||
+      name.endsWith('.webm') ||
+      name.endsWith('.m4v')
+    );
+  }
+
+  /** Click-to-upload fallback when OS / browser DnD never fires drop. */
+  function openVaultVideoFilePicker() {
+    console.info('[MP4_FILE_PICKER]', { action: 'open', ts: new Date().toISOString() });
+    if (!getAdminToken()) {
+      uploadStatus.set('🔐 Studio login required — open Studio, sign in, then retry upload');
+      resourceManager.setTimeout(() => uploadStatus.set('Standby'), 5000);
+      return;
+    }
+    videoFileInputEl?.click?.();
+  }
+
+  async function handleVaultVideoFileInput(event) {
+    const files = Array.from(event?.currentTarget?.files || []);
+    const file = files.find((f) => isVaultVideoFileCandidate(f));
+    try {
+      if (event?.currentTarget) event.currentTarget.value = '';
+    } catch {
+      /* ignore */
+    }
+    console.info('[MP4_FILE_PICKER]', {
+      action: 'selected',
+      fileName: file?.name || null,
+      fileSize: file?.size ?? null,
+      fileCount: files.length,
+      ts: new Date().toISOString()
+    });
+    if (!file) {
+      uploadStatus.set('⚠️ Choose a valid MP4/MOV file');
+      resourceManager.setTimeout(() => uploadStatus.set('Standby'), 3000);
+      return;
+    }
+    await processVaultVideoFile(file, 'file_picker');
+  }
+
+  async function processVaultVideoFile(file, source = 'drop') {
+    console.info('[MP4_UPLOAD_SOURCE]', {
+      source,
+      fileName: file?.name || null,
+      fileSize: file?.size ?? null,
+      fileType: file?.type || null,
+      ts: new Date().toISOString()
+    });
     console.info('[MP4_DROP_ACCEPTED]', {
       fileName: file.name,
       uploadPath: 'handleVaultVideoDrop→uploadMedia'
@@ -1131,11 +1356,22 @@
       return;
     }
 
-    if (isHeroAsset({ fileName: incomingName, name: incomingName })) {
+    // Only short-circuit when this drop is the *already-active* hero file (same name+size).
+    // Matching bare fileName via isHeroAsset() blocked normal Video Vault / re-drops.
+    const activeHero = resolveActiveHeroVideoReel();
+    const heroFileName = String(activeHero?.fileName || activeHero?.name || '').trim();
+    const heroSize = Number(activeHero?.size || 0);
+    if (
+      activeHero?.url &&
+      incomingName &&
+      heroFileName &&
+      incomingName === heroFileName &&
+      (!heroSize || !incomingSize || heroSize === incomingSize)
+    ) {
       console.info('[BG7W_HERO_VAULT_GATE]', {
-        reelId: String(resolveActiveHeroVideoReel()?.id || '').trim(),
+        reelId: String(activeHero?.id || '').trim(),
         blocked: false,
-        reason: 'hero_already_set_display_only',
+        reason: 'active_hero_file_already_displayed',
         fileName: incomingName
       });
       uploadStatus.set(`✅ Hero background — visible in vault below`);
@@ -1146,12 +1382,17 @@
     // BG-7X: pre-upload dedupe gate (avoid creating duplicate backend assets).
     try {
       if (hasActiveUploadLock(uploadKey)) {
-        if (isUploadLockStale(uploadKey)) {
-          supersedeStaleUploadLock(uploadKey, { incomingName, incomingSize });
+        if (isUploadLockStale(uploadKey) || isUploadLockAbandoned(uploadKey)) {
+          supersedeStaleUploadLock(uploadKey, {
+            incomingName,
+            incomingSize,
+            abandoned: isUploadLockAbandoned(uploadKey)
+          });
         } else {
           const ageSec = Math.round(getUploadLockAgeMs(uploadKey) / 1000);
           const idleSec = Math.round(getUploadLockIdleMs(uploadKey) / 1000);
-          const retrySec = Math.max(1, Math.ceil((UPLOAD_LOCK_STALE_MS - getUploadLockIdleMs(uploadKey)) / 1000));
+          const staleMs = uploadLockStaleMsForSize(incomingSize);
+          const retrySec = Math.max(1, Math.ceil((staleMs - getUploadLockIdleMs(uploadKey)) / 1000));
           trackUploadLockBlock(uploadKey, {
             existingId: '',
             reason: 'in_flight_name_and_size_match'
@@ -1164,7 +1405,8 @@
             incomingSize,
             ageSec,
             idleSec,
-            retrySec
+            retrySec,
+            staleMs
           });
           uploadStatus.set(
             `⏳ Upload in progress (${ageSec}s). Retry in ~${retrySec}s if stuck.`
@@ -1189,16 +1431,53 @@
         );
       });
       if (match) {
-        console.info('[BG7X_UPLOAD_DEDUPE]', {
-          blocked: true,
-          reason: 'name_or_fileName_and_size_match',
-          existingId: String(match?.id || '').trim(),
-          incomingName,
-          incomingSize
-        });
-        uploadStatus.set(`✅ Already in vault: ${incomingName || 'video'}`);
-        resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
-        return match;
+        // Outline-only leftover (no playable URL) must not block re-upload of the same file.
+        if (isGhostVideoVaultEntry(match)) {
+          const ghostId = String(match?.id || '').trim();
+          console.info('[BG7X_UPLOAD_DEDUPE]', {
+            blocked: false,
+            reason: 'ghost_outline_purged_for_reupload',
+            existingId: ghostId,
+            incomingName,
+            incomingSize
+          });
+          if (ghostId) {
+            applyVideoDeleteTombstone([ghostId]);
+          } else {
+            personalVideos.update((vault) => {
+              const next = (Array.isArray(vault) ? vault : []).filter((item) => {
+                if (!item || typeof item !== 'object') return false;
+                const existingSize = Number(item?.size || 0);
+                if (!incomingSize || existingSize !== incomingSize) return true;
+                const existingFileName = String(item?.fileName || item?.file_name || '').trim();
+                const existingName = String(item?.name || item?.title || '').trim();
+                const sameName =
+                  (existingFileName && existingFileName === incomingName) ||
+                  (existingName && existingName === incomingName);
+                return !sameName;
+              });
+              try {
+                persistPersonalVault(next);
+              } catch {
+                /* ignore */
+              }
+              return next;
+            });
+          }
+          trackUploadLockRemove(uploadKey, { reason: 'ghost_outline_purged_for_reupload' });
+          // fall through to start a fresh upload
+        } else {
+          console.info('[BG7X_UPLOAD_DEDUPE]', {
+            blocked: true,
+            reason: 'name_or_fileName_and_size_match',
+            existingId: String(match?.id || '').trim(),
+            incomingName,
+            incomingSize
+          });
+          uploadStatus.set(`✅ Already in vault: ${incomingName || 'video'}`);
+          resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
+          return match;
+        }
       }
     } catch (e) {
       console.warn('[BG7X_UPLOAD_DEDUPE]', {
@@ -1567,7 +1846,16 @@
   }
 
   export function handleVaultVideoDragStart(event, video) {
+    const target = /** @type {HTMLElement | null} */ (event?.target);
+    if (target?.closest?.('.thumb-delete-btn, .batch-select-label, .batch-select-checkbox')) {
+      event.preventDefault();
+      return;
+    }
     if (!video || !event.dataTransfer) return;
+    if (isGhostVideoVaultEntry(video)) {
+      event.preventDefault();
+      return;
+    }
     const src = video.url || video.src || video.thumbnail || '';
     const payload = {
       id: video.id,
@@ -2017,10 +2305,11 @@
     </label>
   </div>
   <h4>Your Thumbnails ({$personalThumbnailCollection.length})</h4>
-  <div style="display: flex; justify-content: space-between; align-items: center;">
+  <div class="vault-batch-toolbar">
     <p class="thumbnail-hint">Click thumbnail to remove • Drag & drop to add</p>
-    <div style="display: flex; gap: 8px;">
+    <div class="vault-batch-actions">
       <button
+        type="button"
         class="batch-delete-btn"
         data-vault="thumbnail"
         on:click={() => {
@@ -2029,10 +2318,11 @@
         }}
         disabled={selectedThumbnailIds.length === 0}
       >
-        🗑️ DELETE SELECTED THUMBS ({selectedThumbnailIds.length})
+        🗑️ DELETE SELECTED ({selectedThumbnailIds.length})
       </button>
       <button
-        class="batch-delete-btn"
+        type="button"
+        class="batch-delete-btn batch-delete-btn--all"
         on:click={() => {
           console.info('[DELETE_CLICK]', { button: 'BATCH_DELETE_ALL_DOM' });
           batchDeleteThumbnails();
@@ -2095,7 +2385,7 @@
         on:dragstart={(event) => handleThumbnailVaultDragStart(event, img, i)}
         role="listitem"
       >
-        {#if isImage(reel) && reel.url}
+        {#if isImage(reel) && reel.url && !reel.orphaned && !reel.missing}
           <MediaThumbnail
             url={reel.url}
             alt={reel.name}
@@ -2151,21 +2441,23 @@
   on:drop={handleVaultVideoDrop}
 >
   <h4>Video Vault ({vaultDisplayVideos.length})</h4>
-  <div style="display: flex; justify-content: space-between; align-items: center;">
+  <div class="vault-batch-toolbar">
     <p class="thumbnail-hint">Drop MP4/MOV • Auto-categorizes into feed</p>
-    <div style="display: flex; gap: 8px;">
+    <div class="vault-batch-actions">
       <button
+        type="button"
         class="batch-delete-btn"
         data-vault="video"
         on:click={batchDeleteSelectedVideos}
         disabled={selectedVideoIds.length === 0}
       >
-        🗑️ DELETE SELECTED VIDEOS ({selectedVideoIds.length})
+        🗑️ DELETE SELECTED ({selectedVideoIds.length})
       </button>
       <button
-        class="batch-delete-btn"
+        type="button"
+        class="batch-delete-btn batch-delete-btn--all"
+        data-vault="video"
         on:click={batchDeleteVideos}
-        disabled={vaultDisplayVideos.length === 0}
       >
         🗑️ BATCH DELETE ALL
       </button>
@@ -2178,13 +2470,32 @@
     on:dragover={handleVaultVideoDragOver}
     on:dragleave={handleVaultVideoDragLeave}
     on:drop={handleVaultVideoDrop}
-    role="group"
-    aria-label="Video drop zone"
+    on:click={openVaultVideoFilePicker}
+    on:keydown={(event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        openVaultVideoFilePicker();
+      }
+    }}
+    role="button"
+    tabindex="0"
+    aria-label="Video drop zone — drop or click to choose MP4/MOV"
   >
+    <input
+      bind:this={videoFileInputEl}
+      type="file"
+      accept="video/mp4,video/quicktime,video/webm,video/x-m4v,.mp4,.mov,.webm,.m4v"
+      class="vault-file-input"
+      aria-hidden="true"
+      tabindex="-1"
+      on:change={handleVaultVideoFileInput}
+      on:click|stopPropagation
+    />
     <div class="drop-placeholder">
       <span class="drop-icon">🎬</span>
       <span>DROP VIDEO HERE (MP4/MOV)</span>
-      <small>Max 50MB • Appears instantly</small>
+      <small>Max {CONFIG.MAX_VIDEO_SIZE / 1024 / 1024}MB • Signed upload for large files</small>
+      <span class="vault-file-picker-hint">or click to choose a file</span>
     </div>
   </div>
   <div
@@ -2209,13 +2520,14 @@
         {#if video}
           {@const reel = getVaultVideoReel(video)}
           {@const microDrama = isMicroDramaContent(video) || isMicroDramaContent(reel)}
+          {@const isGhostCard = isGhostVideoVaultEntry(video) || isHeroInjectedVaultCard(video)}
           {@const _vaultRenderGateBranch = logVaultRenderGate(video, reel, vi, { isVideo, isVideoReel })}
           <div
-            class="vault-card thumbnail-item video-vault-item"
-            class:video={isVideo(reel)}
+            class="vault-card thumbnail-item video-vault-item video"
             class:micro-drama={microDrama}
+            class:ghost-outline={isGhostCard}
             use:vaultCardDiagnostics={`video-${vi}`}
-            draggable="true"
+            draggable={!isGhostCard}
             on:dragstart={(event) => handleVaultVideoDragStart(event, video)}
             role="listitem"
           >
@@ -2256,7 +2568,7 @@
             {/if}
             <div class="vault-grid-chrome">
               <span class="thumbnail-label">🎬 {reel.name?.substring(0, 12)}...</span>
-              <span class="video-size-badge">{(video?.size / 1024 / 1024).toFixed(1)}MB</span>
+              <span class="video-size-badge">{formatVaultVideoSizeLabel(video)}</span>
               {#if video.urlExpired}
                 <span
                   class="expired-badge"
@@ -2268,16 +2580,32 @@
               <button
                 type="button"
                 class="thumb-delete-btn"
-                on:click|stopPropagation={() => handleVideoDelete(video.id)}
-                aria-label="Delete video {video.name}"
+                on:pointerdown={stopVaultCardDragGesture}
+                on:mousedown={stopVaultCardDragGesture}
+                on:touchstart={stopVaultCardDragGesture}
+                on:click|stopPropagation|preventDefault={() => handleVideoDelete(video.id, video)}
+                aria-label="Delete video {video.name || 'leftover stub'}"
               >
                 ✕
               </button>
+              {#if isGhostCard}
+                <button
+                  type="button"
+                  class="ghost-purge-btn"
+                  on:pointerdown={stopVaultCardDragGesture}
+                  on:mousedown={stopVaultCardDragGesture}
+                  on:touchstart={stopVaultCardDragGesture}
+                  on:click|stopPropagation|preventDefault={() => handleVideoDelete(video.id, video)}
+                >
+                  Remove stub
+                </button>
+              {/if}
               <label class="batch-select-label">
                 <input
                   type="checkbox"
                   class="batch-select-checkbox"
                   checked={selectedVideoIds.includes(String(video?.id || '').trim())}
+                  on:pointerdown={stopVaultCardDragGesture}
                   on:change|stopPropagation={() => toggleVideoSelection(String(video?.id || '').trim())}
                 />
                 Select
