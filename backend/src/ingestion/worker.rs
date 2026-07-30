@@ -188,7 +188,15 @@ async fn process_one(
 
     let ffmpeg_result = if r2_source {
         let r2 = crate::storage::r2::R2Storage::global().expect("r2 enabled");
-        let tmp_path = videos_path.join(format!("{}.ingest.partial", reel.id));
+        // Keep a real video extension on the temp path. validate_video_path() keys MIME
+        // off Path::extension — `{uuid}.ingest.partial` was rejected as mime_mismatch.
+        let ingest_ext = std::path::Path::new(&file_name)
+            .extension()
+            .and_then(|e| e.to_str())
+            .map(|e| e.to_lowercase())
+            .filter(|e| matches!(e.as_str(), "mp4" | "mov" | "m4v" | "mkv" | "webm"))
+            .unwrap_or_else(|| "mp4".to_string());
+        let tmp_path = videos_path.join(format!("{}.ingest.{}", reel.id, ingest_ext));
         let download = r2.download_to_path(&file_name, &tmp_path).await;
         let result = match download {
             Ok(bytes) => {

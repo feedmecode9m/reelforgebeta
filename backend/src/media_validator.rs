@@ -250,16 +250,32 @@ fn is_quicktime_atom(tag: &[u8]) -> bool {
 }
 
 pub fn mime_for_video_path(path: &Path) -> Option<&'static str> {
-    match path
+    let ext = path
         .extension()
         .and_then(|ext| ext.to_str())
-        .map(|ext| ext.to_lowercase())
-        .as_deref()
-    {
-        Some("mp4") | Some("m4v") => Some("video/mp4"),
-        Some("mov") => Some("video/quicktime"),
-        Some("mkv") => Some("video/x-matroska"),
-        Some("webm") => Some("video/webm"),
+        .map(|ext| ext.to_lowercase())?;
+    match ext.as_str() {
+        "mp4" | "m4v" => Some("video/mp4"),
+        "mov" => Some("video/quicktime"),
+        "mkv" => Some("video/x-matroska"),
+        "webm" => Some("video/webm"),
+        // Legacy ingest temp names used `.ingest.partial` (no video ext) — recover from
+        // the preceding stem segment when possible (e.g. `uuid.ingest.mp4` already ok).
+        "partial" => {
+            let stem = path.file_stem().and_then(|s| s.to_str()).unwrap_or("");
+            if stem.ends_with(".mp4") || stem.ends_with(".m4v") {
+                Some("video/mp4")
+            } else if stem.ends_with(".mov") {
+                Some("video/quicktime")
+            } else if stem.ends_with(".mkv") {
+                Some("video/x-matroska")
+            } else if stem.ends_with(".webm") {
+                Some("video/webm")
+            } else {
+                // Unknown temp — assume MP4/MOV container (header + ffprobe still gate).
+                Some("video/mp4")
+            }
+        }
         _ => None,
     }
 }
@@ -270,8 +286,13 @@ pub fn allowed_video_mime(mime: &str) -> bool {
 
 fn validate_mime_for_path(path: &Path) -> Result<&'static str, ValidationError> {
     let mime = mime_for_video_path(path).ok_or_else(|| {
+        let ext = path
+            .extension()
+            .and_then(|e| e.to_str())
+            .unwrap_or("(none)");
         ValidationError::MimeMismatch(format!(
-            "unsupported extension for video file: {}",
+            "unsupported extension '{}' for video file: {}",
+            ext,
             path.display()
         ))
     })?;
@@ -616,5 +637,23 @@ mod tests {
     fn mime_for_mov_is_quicktime() {
         assert_eq!(mime_for_video_path(std::path::Path::new("MICROS.MOV")), Some("video/quicktime"));
         assert_eq!(mime_for_video_path(std::path::Path::new("clip.mp4")), Some("video/mp4"));
+    }
+
+    #[test]
+    fn mime_for_ingest_temp_paths() {
+        // Fixed worker naming: `{uuid}.ingest.mp4`
+        assert_eq!(
+            mime_for_video_path(std::path::Path::new("/videos/abc.ingest.mp4")),
+            Some("video/mp4")
+        );
+        assert_eq!(
+            mime_for_video_path(std::path::Path::new("/videos/abc.ingest.mov")),
+            Some("video/quicktime")
+        );
+        // Legacy `{uuid}.ingest.partial` must not hard-fail mime lookup
+        assert_eq!(
+            mime_for_video_path(std::path::Path::new("/videos/abc.ingest.partial")),
+            Some("video/mp4")
+        );
     }
 }
