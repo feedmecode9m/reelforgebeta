@@ -100,5 +100,8 @@ temp/
 coverage/
 .nyc_output/
 
+# Hero persistence characterization report (temp by default; ignore if written under artifacts)
+frontend/artifacts/hero-persistence-characterization.json
+
 # --- Docker (local overrides only) ---
 docker-compose.override.yml
