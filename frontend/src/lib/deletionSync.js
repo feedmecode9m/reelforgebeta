@@ -317,12 +317,48 @@ export function purgeMediaFromClientState(ctx, match) {
  * @param {Record<string, unknown> | null | undefined} entry
  */
 export function isPendingLocalVideoVaultEntry(entry) {
-    const url = String(entry?.url || entry?.video_url || '').trim();
-    return url.startsWith('blob:');
+    const state = String(entry?.uploadState || '');
+    if (
+        entry?.isOptimisticLocal ||
+        state === 'pending_accept' ||
+        state === 'uploading' ||
+        state === 'interrupted' ||
+        state === 'failed'
+    ) {
+        return true;
+    }
+    const url = String(entry?.url || entry?.video_url || entry?.src || '').trim();
+    return url.startsWith('blob:') && !entry?.urlExpired;
+}
+
+/**
+ * Outline-only / undeletable vault chrome: no playable URL (or expired blob).
+ * These block same name+size re-uploads via BG7X dedupe if left in localStorage.
+ * In-flight optimistic uploads may intentionally lack a persisted URL (blob is memory-only).
+ * @param {Record<string, unknown> | null | undefined} entry
+ */
+export function isGhostVideoVaultEntry(entry) {
+    if (!entry || typeof entry !== 'object') return true;
+    const state = String(entry.uploadState || '');
+    if (
+        entry.isOptimisticLocal ||
+        state === 'pending_accept' ||
+        state === 'uploading' ||
+        state === 'interrupted' ||
+        state === 'failed'
+    ) {
+        return false;
+    }
+    if (entry.urlExpired === true) return true;
+    const url = String(entry.url || entry.video_url || entry.src || '').trim();
+    if (!url) return true;
+    if (url.startsWith('blob:') && entry.urlExpired === true) return true;
+    return false;
 }
 
 /**
  * Remove local video vault rows whose reel id is absent from the backend catalog.
+ * Also drops outline-only ghosts (empty/expired URL) that are not in-flight blobs.
  * @param {unknown[] | null | undefined} localEntries
  * @param {unknown[] | null | undefined} backendVaultEntries
  */
@@ -336,6 +372,7 @@ export function pruneGhostVideoVaultEntries(localEntries, backendVaultEntries) {
     return localEntries.filter((entry) => {
         if (!entry || typeof entry !== 'object') return false;
         if (isPendingLocalVideoVaultEntry(entry)) return true;
+        if (isGhostVideoVaultEntry(entry)) return false;
         const id = String(entry.id || '').trim();
         if (!id) return false;
         return backendIds.has(id);

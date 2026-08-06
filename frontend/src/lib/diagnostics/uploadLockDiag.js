@@ -15,6 +15,30 @@ const inFlightLocks = new Map();
 export const UPLOAD_LOCK_STALE_MS = 45_000;
 
 /**
+ * Large PUTs can transfer for many minutes with sparse stage logs.
+ * Stale = no progress heartbeat — not total upload wall time.
+ * @param {number} [fileSizeBytes]
+ */
+export function uploadLockStaleMsForSize(fileSizeBytes = 0) {
+    const size = Number(fileSizeBytes || 0);
+    if (size >= 100 * 1024 * 1024) return 3 * 60 * 1000;
+    if (size >= 6_000_000) return 90_000;
+    return UPLOAD_LOCK_STALE_MS;
+}
+
+/**
+ * @param {string} key
+ * @returns {number}
+ */
+export function fileSizeFromUploadLockKey(key) {
+    const raw = String(key || '');
+    const idx = raw.lastIndexOf('|');
+    if (idx < 0) return 0;
+    const n = Number.parseInt(raw.slice(idx + 1), 10);
+    return Number.isFinite(n) ? n : 0;
+}
+
+/**
  * @param {Record<string, unknown>} payload
  */
 export function logUploadLock(payload) {
@@ -69,6 +93,20 @@ export function touchUploadLockProgress(key) {
 export function isUploadLockStale(key) {
     const entry = inFlightLocks.get(key);
     if (!entry) return false;
+    const staleMs = uploadLockStaleMsForSize(fileSizeFromUploadLockKey(key));
+    return Date.now() - entry.lastStageAt >= staleMs;
+}
+
+/**
+ * Locks that never received a reel id and show no progress are abandonable
+ * (hung sign/PUT before finalize) — do not wait the full large-file stale window.
+ * @param {string} key
+ * @returns {boolean}
+ */
+export function isUploadLockAbandoned(key) {
+    const entry = inFlightLocks.get(key);
+    if (!entry) return false;
+    if (String(entry.existingId || '').trim()) return false;
     return Date.now() - entry.lastStageAt >= UPLOAD_LOCK_STALE_MS;
 }
 
@@ -183,6 +221,7 @@ export function snapshotUploadLocks() {
         existingId: entry.existingId,
         ageMs: Date.now() - entry.startedAt,
         idleMs: Date.now() - entry.lastStageAt,
-        stale: Date.now() - entry.lastStageAt >= UPLOAD_LOCK_STALE_MS
+        stale: isUploadLockStale(key),
+        abandoned: isUploadLockAbandoned(key)
     }));
 }

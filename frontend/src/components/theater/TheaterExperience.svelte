@@ -571,7 +571,13 @@
                     <div class="placeholder-content">
                         <div class="placeholder-icon">{$theaterPlaybackError ? '⚠️' : '🎬'}</div>
                         <h3>{$theaterPlaybackError ? 'Video Unavailable' : 'No Video Available'}</h3>
-                        <p>{$theaterPlaybackError ? 'This file could not be decoded. It may be corrupt, HTML disguised as video, or not a valid MP4/MOV.' : 'This is a placeholder reel or AI-generated content'}</p>
+                        <p>
+                          {$theaterPlaybackError
+                            ? 'This file could not be decoded. It may be corrupt, HTML disguised as video, or not a valid MP4/MOV.'
+                            : $activeReel?.isPersonalVideo
+                              ? 'This vault upload never finished (failed or interrupted). Remove the stub in Video Vault and re-upload the MP4.'
+                              : 'This is a placeholder reel or AI-generated content'}
+                        </p>
                         {#if $activeReel.thumbnailUrl}
                             <MediaThumbnail
                                 url={$activeReel.thumbnailUrl}

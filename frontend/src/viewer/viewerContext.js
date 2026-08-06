@@ -95,7 +95,8 @@ applyCanonicalDeleteClientEffects,
 filterOutDeletedMedia,
 filterDeletedFromFeedMap,
 isDeletedMediaId,
-reconcileTombstonesAgainstCatalog
+reconcileTombstonesAgainstCatalog,
+isPendingLocalVideoVaultEntry
 } from '../lib/deletionSync.js';
 import { normalizeReel, normalizeReels, createLocalReel, isVideoReel, assertReelContract } from '../lib/api/reelContract.js';
 import { resolveTheaterPlayback, logTheaterHandshake } from '../lib/media/theaterPlayback.js';
@@ -285,8 +286,22 @@ count: filtered.length,
 storageKey: CONFIG.VIDEO_VAULT_KEY
 });
 safeLocalStorageSet(CONFIG.VIDEO_VAULT_KEY, filtered, {
-thumbnailKey: CONFIG.THUMBNAIL_STORAGE_KEY,
-minimalFields: ['id', 'name', 'fileName', 'type', 'size', 'addedAt', 'thumbnail']
+// Do not pass thumbnailKey here — that trips THUMB_OWNER_VIOLATION on every video persist.
+quotaEvictThumbnailKey: CONFIG.THUMBNAIL_STORAGE_KEY,
+// Keep uploadState so dedupe can ignore in-flight optimistic cards after reload.
+// blob:/data: urls are stripped inside safeLocalStorageSet (memory-only preview).
+minimalFields: [
+  'id',
+  'name',
+  'fileName',
+  'type',
+  'size',
+  'addedAt',
+  'thumbnail',
+  'uploadState',
+  'isOptimisticLocal',
+  'uploadError'
+]
 });
 }
 // ==========================================
@@ -377,6 +392,8 @@ function applyUploadProgressDetail(detail = {}) {
   const percent = detail.percent;
   const phase = String(detail.phase || '');
   const stage = String(detail.stage || '');
+  const loaded = Number(detail.loaded);
+  const total = Number(detail.total);
   if (phase === 'finalize') {
     uploadStatus.set(`🎬 Finalizing ${fileName || 'video'}…`);
     return;
@@ -388,7 +405,23 @@ function applyUploadProgressDetail(detail = {}) {
     return;
   }
   if (fileName && percent != null && !Number.isNaN(Number(percent))) {
-    uploadStatus.set(`🎬 Uploading ${fileName} — ${percent}% (keep tab open)`);
+    let etaHint = '';
+    if (
+      Number.isFinite(loaded) &&
+      Number.isFinite(total) &&
+      loaded > 0 &&
+      total > loaded
+    ) {
+      // Rough ETA from instantaneous cumulative rate since progress events started
+      // is unknown here — show remaining MB instead.
+      const remainMb = ((total - loaded) / (1024 * 1024)).toFixed(0);
+      etaHint = ` · ~${remainMb} MB left`;
+    }
+    const transport =
+      String(detail.transport || '') === 'r2-multipart' ? ' (parallel chunks)' : '';
+    uploadStatus.set(
+      `🎬 Uploading ${fileName} — ${percent}%${etaHint}${transport} (keep tab open)`
+    );
   }
 }
 
@@ -970,9 +1003,106 @@ const rejectTombstonedVaultEntries = (entries, mergeMode) => {
   }
   return kept;
 };
+/**
+ * Prefer in-memory vault rows (optimistic / pending_accept still have blob urls)
+ * over stale localStorage snapshots that strip blobs.
+ */
+function coalesceExistingVaultEntries(existing) {
+  const fromArg = Array.isArray(existing) ? existing : [];
+  let fromMemory = [];
+  try {
+    fromMemory = Array.isArray(get(personalVideos)) ? get(personalVideos) : [];
+  } catch {
+    fromMemory = [];
+  }
+  const seen = new Set();
+  const out = [];
+  for (const entry of [...fromMemory, ...fromArg]) {
+    if (!entry || typeof entry !== 'object') continue;
+    const id = String(entry.id || '').trim();
+    const rawUrl = String(entry.url || '').trim();
+    const key =
+      id ||
+      (rawUrl && !rawUrl.startsWith('blob:') ? toRelativeMediaPath(rawUrl) : '') ||
+      String(entry.fileName || entry.name || '').trim();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    out.push(entry);
+  }
+  return out;
+}
 if (backendReachable) {
-  // Online: backend catalog projection wins, but reelforge_deleted_media_ids is authoritative.
-  return rejectTombstonedVaultEntries(incoming, 'backend-projection');
+  // Online: backend catalog is source of truth for finalized videos, but in-flight /
+  // interrupted local vault rows must survive hard refresh (PUT dies with the tab).
+  const incomingClean = rejectTombstonedVaultEntries(incoming, 'backend-projection');
+  const existing = coalesceExistingVaultEntries(existingEntries);
+  const pendingLocal = rejectTombstonedVaultEntries(
+    existing
+      .filter((entry) => isPendingLocalVideoVaultEntry(entry))
+      .map((entry) => {
+        const state = String(entry?.uploadState || '');
+        if (state === 'pending_accept') return entry;
+        if (state === 'uploading') {
+          const url = String(entry?.url || '').trim();
+          // Same-session blob preview still valid — keep uploading.
+          if (url.startsWith('blob:')) return entry;
+          // After hard refresh blob was stripped from storage — mark interrupted.
+          return {
+            ...entry,
+            uploadState: 'interrupted',
+            uploadError: 'refresh_interrupted',
+            url: '',
+            isOptimisticLocal: true
+          };
+        }
+        if (state === 'interrupted' || state === 'failed') {
+          return entry;
+        }
+        if (entry?.isOptimisticLocal) {
+          const url = String(entry?.url || '').trim();
+          if (url.startsWith('blob:') && state === 'uploading') return entry;
+          return {
+            ...entry,
+            uploadState: state === 'uploading' ? 'interrupted' : state || 'interrupted',
+            uploadError: entry.uploadError || 'refresh_interrupted',
+            url: url.startsWith('blob:') ? '' : url,
+            isOptimisticLocal: true
+          };
+        }
+        return entry;
+      }),
+    'backend-projection-pending-local'
+  );
+  const seen = new Set();
+  const merged = [];
+  for (const entry of [...incomingClean, ...pendingLocal]) {
+    if (!entry || typeof entry !== 'object') continue;
+    const rawUrl = String(entry.url || '').trim();
+    const canonicalUrl =
+      rawUrl && !rawUrl.startsWith('blob:') && !rawUrl.startsWith('data:')
+        ? toRelativeMediaPath(rawUrl)
+        : '';
+    const key =
+      canonicalUrl ||
+      String(entry.fileName || entry.name || entry.id || '').trim();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    merged.push(entry);
+  }
+  console.info('[VIDEO-SYNC-01] mergeVideoVaultEntries:preserve-pending', {
+    backendCount: incomingClean.length,
+    pendingLocalCount: pendingLocal.length,
+    mergedCount: merged.length,
+    memoryCount: (() => {
+      try {
+        return get(personalVideos)?.length ?? 0;
+      } catch {
+        return 0;
+      }
+    })(),
+    ts: new Date().toISOString()
+  });
+  return merged;
 }
 const merged = [];
 const seen = new Set();
@@ -1190,8 +1320,22 @@ ts: new Date().toISOString()
 });
 writeThumbnailVault([], CONFIG.THUMBNAIL_STORAGE_KEY);
 syncCollectionStore(personalThumbnailCollection, CONFIG.THUMBNAIL_STORAGE_KEY);
-personalVideos.set([]);
-storageSet(CONFIG.VIDEO_VAULT_KEY, []);
+// Do not hard-wipe in-flight / interrupted MP4 vault rows — empty catalog ≠ abandon upload stubs.
+const existingVaultVideos = JSON.parse(
+  (typeof window !== 'undefined' ? localStorage.getItem(CONFIG.VIDEO_VAULT_KEY) : null) || '[]'
+);
+const pendingOnly = mergeVideoVaultEntries(
+  Array.isArray(existingVaultVideos) ? existingVaultVideos : [],
+  [],
+  { backendReachable: true }
+);
+personalVideos.set(pendingOnly);
+persistPersonalVault(pendingOnly);
+console.info('[SYNC_RECONCILE_EMPTY_BACKEND]', {
+stage: 'preserve-pending-video-vault',
+pendingCount: pendingOnly.length,
+ts: new Date().toISOString()
+});
 const { feed: demoFeed, placeholdersInjected: emptyCatalogPlaceholders } = applyPlaceholderFallbackIfEmpty(
 emptyFeedMap(),
 ALLOW_UI_PLACEHOLDERS
@@ -1199,7 +1343,7 @@ ALLOW_UI_PLACEHOLDERS
 feed.set(demoFeed);
 logBg7nStage('feed.set:emptyBackend', demoFeed);
 categories.set(Object.keys(demoFeed));
-contentEmpty.set(!ALLOW_UI_PLACEHOLDERS);
+contentEmpty.set(!ALLOW_UI_PLACEHOLDERS || pendingOnly.length > 0);
 storageSet(CONFIG.FEED_STORAGE_KEY, demoFeed);
 console.info('[SYNC_RECONCILE_EMPTY_BACKEND]', {
 stage: 'authoritative-empty-catalog:demo-feed',
@@ -1493,7 +1637,9 @@ function applyManagerBackgroundFromConfig(config = loadHeroManagerConfig()) {
 
 function handleHeroManagerUpdated(event) {
   const config = event?.detail || loadHeroManagerConfig();
-  if (config.backgroundSource === 'custom_video' || config.backgroundSource === 'custom_image') {
+  if (config.backgroundSource === 'none') {
+    applyManagerBackgroundFromConfig(config);
+  } else if (config.backgroundSource === 'custom_video' || config.backgroundSource === 'custom_image') {
     applyManagerBackgroundFromConfig(config);
   } else if (!hasUserHeroOverride(CONFIG)) {
     applyHeroBackgroundFromIntelligence();
@@ -1529,6 +1675,11 @@ function handleHeroManagerUpdated(event) {
 function applyHeroBackgroundFromIntelligence() {
   const managerConfig = loadHeroManagerConfig();
   const stores = getHeroBackgroundStores();
+
+  if (managerConfig.backgroundSource === 'none') {
+    applyManagerBackgroundFromConfig(managerConfig);
+    return;
+  }
 
   if (hasUserHeroOverride(CONFIG)) {
     if (managerConfig.backgroundSource === 'custom_video' || managerConfig.backgroundSource === 'custom_image') {

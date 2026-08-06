@@ -1,4 +1,5 @@
 <script>
+  import { onDestroy, onMount } from 'svelte';
   import {
     createEmptyCommunityMetadata,
     createEmptyDiscoveryMetadata,
@@ -8,6 +9,14 @@
     createEmptySeriesMetadata,
     validateContentIntelligencePayload
   } from '../../lib/content/contentIntelligenceModels.js';
+  import {
+    loadHeroManagerConfig,
+    loadHeroVaultItems
+  } from '../../lib/hero/heroIntelligence.js';
+  import {
+    resolveHeroAssetTruth,
+    seedContentIntelligenceFromHeroTruth
+  } from '../../lib/hero/heroViewerTruth.js';
 
   const STORAGE_KEY = 'reelforge_content_intelligence_draft';
 
@@ -19,6 +28,8 @@
   let discovery = createEmptyDiscoveryMetadata();
   let validation = validateContentIntelligencePayload({ series, episode, community, educational, rights, discovery });
   let statusMessage = 'Fill metadata fields, then validate.';
+  let heroTruthHint = '';
+  let lastHeroSyncKey = '';
 
   function parseCsv(value) {
     return String(value || '')
@@ -69,6 +80,82 @@
     }
   }
 
+  function refreshHeroTruthHint() {
+    try {
+      const config = loadHeroManagerConfig();
+      const assetId = String(config.heroAssetId || '').trim();
+      if (!assetId) {
+        heroTruthHint = 'No live Vault Hero background — pick one in Hero Manager.';
+        return null;
+      }
+      const truth = resolveHeroAssetTruth(assetId, loadHeroVaultItems());
+      const title = String(config.heroTitle || truth?.title || assetId).trim();
+      heroTruthHint = truth
+        ? `Live hero background: “${title}” (${truth.isVideo ? 'video' : 'image'} · ${assetId})`
+        : `Live hero asset id: ${assetId}`;
+      return { config, truth, title };
+    } catch {
+      heroTruthHint = '';
+      return null;
+    }
+  }
+
+  /**
+   * Reuse live hero background + viewer copy into Content Intelligence (smart fill).
+   * @param {{ force?: boolean }} [options]
+   */
+  function syncFromHeroBackground(options = {}) {
+    const live = refreshHeroTruthHint();
+    if (!live?.truth) {
+      statusMessage = 'No live hero background to import.';
+      return;
+    }
+    const seeded = seedContentIntelligenceFromHeroTruth(
+      { series, episode, discovery, rights },
+      live.truth,
+      {
+        heroTitle: live.config.heroTitle || live.title,
+        heroSubtitle: live.config.heroSubtitle,
+        heroDescription: live.config.heroDescription,
+        intelligence: options.intelligence || live.config.heroTitleIntelligence || null,
+        contentIdentity: live.config.contentIdentity || null,
+        force: Boolean(options.force)
+      }
+    );
+    series = { ...series, ...seeded.series };
+    episode = { ...episode, ...seeded.episode };
+    discovery = { ...discovery, ...seeded.discovery };
+    rights = { ...rights, ...seeded.rights };
+    validation = validateContentIntelligencePayload({ series, episode, community, educational, rights, discovery });
+    persistDraft();
+    statusMessage = options.force
+      ? `Overwrote intelligence fields from hero “${seeded.heroTitle}”.`
+      : `Filled empty intelligence fields from hero “${seeded.heroTitle}”.`;
+  }
+
+  function handleHeroManagerUpdated(event) {
+    refreshHeroTruthHint();
+    const cfg = event?.detail || loadHeroManagerConfig();
+    const key = `${String(cfg.heroAssetId || '')}|${String(cfg.heroTitle || '')}`;
+    // Only soft-resuse when the live background identity changes — not every text autosave.
+    if (key === lastHeroSyncKey) return;
+    lastHeroSyncKey = key;
+    syncFromHeroBackground({ force: false });
+  }
+
+  function handleVaultTitleUpdated(event) {
+    const reelId = String(event?.detail?.reelId || '').trim();
+    const config = loadHeroManagerConfig();
+    if (reelId && reelId === String(config.heroAssetId || '').trim()) {
+      lastHeroSyncKey = '';
+      refreshHeroTruthHint();
+      syncFromHeroBackground({
+        force: true,
+        intelligence: event?.detail?.intelligence || null
+      });
+    }
+  }
+
   function validateNow() {
     validation = validateContentIntelligencePayload({ series, episode, community, educational, rights, discovery });
     statusMessage = validation.valid
@@ -98,6 +185,26 @@
     persistDraft();
   }
 
+  onMount(() => {
+    loadDraft();
+    refreshHeroTruthHint();
+    // Initial soft seed if draft empty
+    if (!String(episode.episodeTitle || series.seriesTitle || '').trim()) {
+      syncFromHeroBackground({ force: false });
+    }
+    if (typeof window !== 'undefined') {
+      window.addEventListener('reelforge:hero-manager-updated', handleHeroManagerUpdated);
+      window.addEventListener('reelforge:vault-title-updated', handleVaultTitleUpdated);
+    }
+  });
+
+  onDestroy(() => {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('reelforge:hero-manager-updated', handleHeroManagerUpdated);
+      window.removeEventListener('reelforge:vault-title-updated', handleVaultTitleUpdated);
+    }
+  });
+
   $: persistDraft();
   $: validation = validateContentIntelligencePayload({ series, episode, community, educational, rights, discovery });
 </script>
@@ -108,8 +215,13 @@
       <div class="content-intelligence-panel__badge">CONTENT INTELLIGENCE</div>
       <h3>Content Intelligence</h3>
       <p>Admin metadata foundation for catalog intelligence, episode semantics, and rights validation.</p>
+      {#if heroTruthHint}
+        <p class="content-intelligence-panel__hero-hint" data-content-intelligence-hero-source>{heroTruthHint}</p>
+      {/if}
     </div>
     <div class="content-intelligence-panel__actions">
+      <button type="button" on:click={() => syncFromHeroBackground({ force: false })}>Sync from Hero</button>
+      <button type="button" on:click={() => syncFromHeroBackground({ force: true })}>Overwrite from Hero</button>
       <button type="button" on:click={loadDraft}>Load Draft</button>
       <button type="button" on:click={validateNow}>Validate</button>
       <button type="button" on:click={resetPanel}>Reset</button>
@@ -254,6 +366,11 @@
     margin: 0;
     font-size: 0.68rem;
     color: rgba(255, 255, 255, 0.7);
+  }
+  .content-intelligence-panel__hero-hint {
+    margin-top: 0.35rem !important;
+    color: #d7c0ff !important;
+    font-size: 0.62rem !important;
   }
   .content-intelligence-panel__actions {
     display: flex;

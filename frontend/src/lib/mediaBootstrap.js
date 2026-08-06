@@ -342,7 +342,34 @@ export async function hydrateVaultFromReels(thumbnailKey, videoVaultKey, options
         if (!thumbsOnly) {
             const localVideos = readVaultJson(videoVaultKey);
             const prunedLocal = pruneGhostVideoVaultEntries(localVideos, videoEntries);
-            const pendingLocal = prunedLocal.filter((entry) => isPendingLocalVideoVaultEntry(entry));
+            const pendingLocal = prunedLocal
+                .filter((entry) => isPendingLocalVideoVaultEntry(entry))
+                .map((entry) => {
+                    const state = String(entry?.uploadState || '');
+                    if (state === 'pending_accept') {
+                        // Staged preview cannot survive reload without the File handle.
+                        const url = String(entry?.url || '').trim();
+                        return {
+                            ...entry,
+                            uploadState: 'interrupted',
+                            uploadError: 'refresh_interrupted',
+                            url: url.startsWith('blob:') ? '' : url,
+                            isOptimisticLocal: true
+                        };
+                    }
+                    if (state === 'uploading' || entry?.isOptimisticLocal) {
+                        const url = String(entry?.url || '').trim();
+                        if (url.startsWith('blob:')) return entry;
+                        return {
+                            ...entry,
+                            uploadState: 'interrupted',
+                            uploadError: 'refresh_interrupted',
+                            url: '',
+                            isOptimisticLocal: true
+                        };
+                    }
+                    return entry;
+                });
             const merged = dedupeVideoEntries([...videoEntries, ...pendingLocal]);
             const reconciled = filterOutDeletedMedia(merged);
             safeStorageSet(videoVaultKey, reconciled);

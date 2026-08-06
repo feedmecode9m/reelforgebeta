@@ -8,6 +8,12 @@ import {
 } from '../config.js';
 import { enforceUploadPolicy } from '../security/securityPolicyEngine.js';
 import { saveUploadCheckpoint, clearUploadCheckpoint } from '../diagnostics/uploadRecovery.js';
+import { touchUploadLockProgress } from '../diagnostics/uploadLockDiag.js';
+import {
+    tryCreateMultipartSession,
+    uploadFileMultipartParallel,
+    shouldAttemptMultipart
+} from './r2MultipartUpload.js';
 
 /** @param {number} fileSizeBytes */
 export function computeUploadPutTimeoutMs(fileSizeBytes = 0) {
@@ -40,7 +46,7 @@ function emitUploadProgress(detail) {
  * @param {File} file
  * @param {Record<string, string>} putHeaders
  * @param {AbortSignal | undefined} uploadSignal
- * @param {{ fileName?: string; timeoutMs?: number; stallMs?: number }} [meta]
+ * @param {{ fileName?: string; timeoutMs?: number; stallMs?: number; uploadKey?: string }} [meta]
  */
 function putFileWithProgress(uploadUrl, file, putHeaders, uploadSignal, meta = {}) {
     return new Promise((resolve, reject) => {
@@ -50,6 +56,7 @@ function putFileWithProgress(uploadUrl, file, putHeaders, uploadSignal, meta = {
         let lastProgressAt = Date.now();
         let settled = false;
         let uploadBytesSent = 0;
+        let lastLockTouchAt = 0;
 
         const finish = (fn) => (value) => {
             if (settled) return;
@@ -87,6 +94,10 @@ function putFileWithProgress(uploadUrl, file, putHeaders, uploadSignal, meta = {
             if (typeof event.loaded === 'number') {
                 uploadBytesSent = event.loaded;
             }
+            if (meta.uploadKey && Date.now() - lastLockTouchAt > 5_000) {
+                lastLockTouchAt = Date.now();
+                touchUploadLockProgress(meta.uploadKey);
+            }
             if (!event.lengthComputable) return;
             const percent = Math.min(100, Math.round((event.loaded / event.total) * 100));
             emitUploadProgress({
@@ -108,7 +119,23 @@ function putFileWithProgress(uploadUrl, file, putHeaders, uploadSignal, meta = {
                 text: async () => xhr.responseText || ''
             });
         };
-        xhr.onerror = () => finish(reject)(new Error('Network error during direct storage upload'));
+        xhr.onerror = () => {
+            console.error('[SIGNED_PUT_XHR_ERROR]', {
+                status: xhr.status,
+                readyState: xhr.readyState,
+                uploadUrlHost: (() => {
+                    try {
+                        return new URL(uploadUrl).host;
+                    } catch {
+                        return '';
+                    }
+                })(),
+                fileName: meta.fileName || file?.name || '',
+                fileSize: file?.size ?? null,
+                ts: new Date().toISOString()
+            });
+            finish(reject)(new Error('Network error during direct storage upload'));
+        };
         xhr.onabort = () =>
             finish(reject)(new DOMException('Upload aborted', 'AbortError'));
         xhr.ontimeout = () =>
@@ -130,6 +157,52 @@ function putFileWithProgress(uploadUrl, file, putHeaders, uploadSignal, meta = {
         }
         xhr.send(file);
     });
+}
+
+/**
+ * Retry transient R2/network PUT failures (CORS blips, radio sleep, brief disconnects).
+ * Does not retry AbortError (user/nav abort).
+ */
+async function putFileWithProgressRetry(uploadUrl, file, putHeaders, uploadSignal, meta = {}) {
+    const maxAttempts = 3;
+    let lastError = null;
+    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+        if (uploadSignal?.aborted) {
+            throw new DOMException('Upload aborted', 'AbortError');
+        }
+        try {
+            if (attempt > 1) {
+                console.warn('[SIGNED_PUT_RETRY]', {
+                    attempt,
+                    maxAttempts,
+                    fileName: meta.fileName || file?.name || '',
+                    fileSize: file?.size ?? null,
+                    ts: new Date().toISOString()
+                });
+                emitUploadProgress({
+                    fileName: meta.fileName || file?.name || '',
+                    percent: 0,
+                    phase: 'put',
+                    stage: `retry_${attempt}`
+                });
+            }
+            return await putFileWithProgress(uploadUrl, file, putHeaders, uploadSignal, meta);
+        } catch (err) {
+            lastError = err instanceof Error ? err : new Error(String(err));
+            const retryable =
+                lastError.name !== 'AbortError' &&
+                /Network error|timed out|stall/i.test(lastError.message || '');
+            console.warn('[SIGNED_PUT_RETRY_FAIL]', {
+                attempt,
+                retryable,
+                message: lastError.message,
+                ts: new Date().toISOString()
+            });
+            if (!retryable || attempt >= maxAttempts) throw lastError;
+            await new Promise((r) => setTimeout(r, 1500 * attempt));
+        }
+    }
+    throw lastError || new Error('Direct storage upload failed');
 }
 
 /** @typedef {{ valid: boolean; kind: string; filename: string; error?: string; checks: Record<string, boolean> }} MediaValidationResult */
@@ -361,6 +434,85 @@ async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = nu
     logUploadStage(diagContext, 'SIGN_BEGIN');
 
     const uploadSignal = resolveUploadAbortSignal(diagContext);
+
+    /** @type {Record<string, unknown> | null} */
+    let signBody = null;
+    /** @type {{ ok: boolean; status: number; uploadBytesSent: number; text: () => Promise<string> } | null} */
+    let putResponse = null;
+    let uploadStart = new Date().toISOString();
+    let putStartedAt = performance.now();
+    let usedMultipart = false;
+
+    // Scaffold: tries multipart when VITE_R2_MULTIPART_UPLOADS=true and API exists.
+    // Today this almost always returns null and falls through to single PUT.
+    if (shouldAttemptMultipart(file)) {
+        const multipartSession = await tryCreateMultipartSession(
+            file,
+            headers,
+            { ...meta, episodeId: uploadIdentity.episodeId },
+            uploadSignal
+        );
+        if (multipartSession?.uploadId) {
+            try {
+                console.info('[BG7G_SIGNED_UPLOAD]', {
+                    stage: 'multipart:selected',
+                    uploadId: multipartSession.uploadId,
+                    reelId: multipartSession.reelId,
+                    ts: new Date().toISOString()
+                });
+                patchUploadDiagContext(diagContext, {
+                    reelId: multipartSession.reelId,
+                    uploadId: multipartSession.uploadId
+                });
+                logUploadStage(diagContext, 'SIGN_COMPLETE', {
+                    transport: 'r2-multipart',
+                    uploadId: multipartSession.uploadId,
+                    reelId: multipartSession.reelId || ''
+                });
+                logUploadStage(diagContext, 'PUT_BEGIN', { transport: 'r2-multipart' });
+                uploadStart = new Date().toISOString();
+                putStartedAt = performance.now();
+                await uploadFileMultipartParallel(multipartSession, file, headers, {
+                    signal: uploadSignal,
+                    onProgress: (detail) => {
+                        emitUploadProgress({
+                            fileName: primaryFileName || file.name || '',
+                            ...detail
+                        });
+                    }
+                });
+                signBody = {
+                    uploadId: multipartSession.uploadId,
+                    reelId: multipartSession.reelId,
+                    uploadUrl: '',
+                    uploadToken: ''
+                };
+                putResponse = {
+                    ok: true,
+                    status: 200,
+                    uploadBytesSent: file.size,
+                    text: async () => ''
+                };
+                usedMultipart = true;
+                console.info('[BG7G_SIGNED_UPLOAD]', {
+                    stage: 'multipart:put_complete',
+                    uploadId: multipartSession.uploadId,
+                    ts: new Date().toISOString()
+                });
+            } catch (multiErr) {
+                console.warn('[R2_MULTIPART]', {
+                    stage: 'fallback_to_single_put',
+                    message: multiErr?.message || String(multiErr),
+                    ts: new Date().toISOString()
+                });
+                signBody = null;
+                putResponse = null;
+                usedMultipart = false;
+            }
+        }
+    }
+
+    if (!usedMultipart) {
     const signResponse = await fetch(`${API_BASE_URL}${UPLOADS_SIGN_URL}`, {
         method: 'POST',
         headers: {
@@ -386,7 +538,7 @@ async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = nu
         }
         throw new Error(err.error || `Signed upload sign failed (${signResponse.status})`);
     }
-    const signBody = await signResponse.json();
+    signBody = await signResponse.json();
     const uploadUrl = String(signBody.uploadUrl || `${DIRECT_UPLOAD_BASE_URL}/api/uploads/direct/${signBody.uploadId}`);
     patchUploadDiagContext(diagContext, {
         reelId: signBody.reelId,
@@ -429,8 +581,8 @@ async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = nu
         uploadUrl,
         ts: new Date().toISOString()
     });
-    const putStartedAt = performance.now();
-    const uploadStart = new Date().toISOString();
+    putStartedAt = performance.now();
+    uploadStart = new Date().toISOString();
     const r2PutAbortState = uploadSignal
         ? { aborted: uploadSignal.aborted, reason: uploadSignal.reason?.message || null }
         : null;
@@ -451,9 +603,8 @@ async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = nu
         transport: isR2PresignedPut ? 'r2-presigned' : 'railway-direct'
     });
 
-    let putResponse;
     try {
-        putResponse = await putFileWithProgress(
+        putResponse = await putFileWithProgressRetry(
             uploadUrl,
             file,
             putHeaders,
@@ -461,7 +612,8 @@ async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = nu
             {
                 fileName: primaryFileName || file.name,
                 timeoutMs: computeUploadPutTimeoutMs(file.size),
-                stallMs: file.size >= 100 * 1024 * 1024 ? 180_000 : 120_000
+                stallMs: file.size >= 100 * 1024 * 1024 ? 180_000 : 120_000,
+                uploadKey: diagContext?.uploadKey || ''
             }
         );
     } catch (putError) {
@@ -488,6 +640,12 @@ async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = nu
         });
         throw putError;
     }
+    } // end !usedMultipart single-PUT path
+
+    if (!signBody || !putResponse) {
+        throw new Error('Signed upload failed to obtain storage session');
+    }
+
     const uploadEnd = new Date().toISOString();
     const putDurationMs = Math.round(performance.now() - putStartedAt);
     const uploadBytesSent = Number(putResponse.uploadBytesSent || 0);

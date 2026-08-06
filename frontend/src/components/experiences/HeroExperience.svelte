@@ -24,6 +24,14 @@
   } from '../../lib/hero/heroIntelligence.js';
   import { buildHeroAssetRegistry, isVideoHeroAssetType } from '../../lib/hero/heroAssetBridge.js';
   import {
+    isStockHeroViewerCopy,
+    resolveTruthLabel
+  } from '../../lib/hero/heroViewerTruth.js';
+  import {
+    isUnsafeHeroFilenameTitle,
+    resolveCanonicalHeroTitle
+  } from '../../lib/hero/heroTitleIntelligence.js';
+  import {
     heroReelFromUploadResponse,
     HERO_REEL_STORAGE_KEY,
     saveHeroReel
@@ -60,7 +68,7 @@
     ambientMotion: false,
     cinematicBlur: false,
     gradientOverlay: true,
-    backgroundSource: 'selection',
+    backgroundSource: 'none',
     backgroundAsset: '',
     heroAssetId: '',
     assetId: '',
@@ -224,6 +232,9 @@ export let sanitizeViewer = false;
     const heroAssetId = String(persisted.heroAssetId || inMemory.heroAssetId || '').trim();
     const persistedSource = String(persisted.backgroundSource || '').trim();
     const inMemorySource = String(inMemory.backgroundSource || '').trim();
+    if (persistedSource === 'none' || inMemorySource === 'none') {
+      return { ...inMemory, ...persisted, heroAssetId: '', backgroundSource: 'none' };
+    }
     const backgroundSource =
       heroAssetId &&
       (persistedSource === 'custom_video' ||
@@ -240,6 +251,9 @@ export let sanitizeViewer = false;
   /** Resolve presentation from storage even pre-hydration when a custom hero is configured. */
   function resolveHeroBackgroundPresentationState(hydrationReady, selection) {
     const config = resolveHeroPresentationConfig();
+    if (config.backgroundSource === 'none') {
+      return resolveHeroBackgroundPresentation(config, null, selection);
+    }
     const hasCustomHero =
       Boolean(config.heroAssetId) &&
       (config.backgroundSource === 'custom_video' || config.backgroundSource === 'custom_image');
@@ -265,9 +279,11 @@ export let sanitizeViewer = false;
     const nextHeroUsesImageBackground =
       heroBackgroundPresentation.backgroundSource === 'custom_image' &&
       Boolean(heroBackgroundPresentation.imageUrl);
-    const nextHeroRenderVideo =
-      heroBackgroundPresentation.backgroundSource === 'custom_video' &&
-      heroBackgroundPresentation.videoUrl
+    const blankHeroBackdrop = heroBackgroundPresentation.backgroundSource === 'none';
+    const nextHeroRenderVideo = blankHeroBackdrop
+      ? ''
+      : heroBackgroundPresentation.backgroundSource === 'custom_video' &&
+          heroBackgroundPresentation.videoUrl
         ? heroBackgroundPresentation.videoUrl
         : nextHeroUsesImageBackground
           ? ''
@@ -290,16 +306,19 @@ export let sanitizeViewer = false;
   $: heroUsesImageBackground =
     heroBackgroundPresentation.backgroundSource === 'custom_image' &&
     Boolean(heroBackgroundPresentation.imageUrl);
-  $: heroRenderVideo =
-    heroBackgroundPresentation.backgroundSource === 'custom_video' &&
-    heroBackgroundPresentation.videoUrl
+  $: heroBlankBackdrop = heroBackgroundPresentation.backgroundSource === 'none';
+  $: heroRenderVideo = heroBlankBackdrop
+    ? ''
+    : heroBackgroundPresentation.backgroundSource === 'custom_video' &&
+        heroBackgroundPresentation.videoUrl
       ? heroBackgroundPresentation.videoUrl
       : heroUsesImageBackground
         ? ''
         : $HERO_BACKGROUND_VIDEO;
-  $: heroRenderImage =
-    heroBackgroundPresentation.backgroundSource === 'custom_image' &&
-    heroBackgroundPresentation.imageUrl
+  $: heroRenderImage = heroBlankBackdrop
+    ? ''
+    : heroBackgroundPresentation.backgroundSource === 'custom_image' &&
+        heroBackgroundPresentation.imageUrl
       ? heroBackgroundPresentation.imageUrl
       : $HERO_POSTER_IMAGE;
   $: carouselSlides = buildHeroCarouselSlides(feedReels, {
@@ -313,20 +332,39 @@ export let sanitizeViewer = false;
     heroRenderImage;
     heroRegistryAssets = buildHeroAssetRegistry(loadHeroVaultItems(), { storageSource: 'hero_registry' });
   }
-  $: heroVisualSlides =
-    heroRegistryAssets.length > 0
-      ? heroRegistryAssets.map((asset) => ({
-          id: asset.assetId,
-          assetId: asset.assetId,
-          type: isVideoHeroAssetType(asset.assetType) ? 'video' : 'image',
-          title: asset.title || 'Hero Asset',
-          subtitle: 'A cinematic spotlight from ReelForge.',
-          detail: '',
-          videoUrl: isVideoHeroAssetType(asset.assetType) ? asset.mediaUrl : '',
-          imageUrl: isVideoHeroAssetType(asset.assetType) ? asset.thumbnailUrl || '' : asset.mediaUrl,
-          durationMs: Math.max(2500, Number(heroManagerConfig.carouselDurationMs || 8000)),
-          priority: 0
-        }))
+  $: heroVisualSlides = heroBlankBackdrop
+    ? []
+    : heroRegistryAssets.length > 0
+      ? heroRegistryAssets.map((asset) => {
+          const safeTitle = resolveCanonicalHeroTitle({
+            editedTitle:
+              String(heroManagerConfig?.heroAssetId || '') === String(asset.assetId || '')
+                ? heroManagerConfig?.heroTitle || heroManagerConfig?.heroAssetTitle
+                : '',
+            assetTitle: asset.title
+          });
+          const boundSubtitle =
+            String(heroManagerConfig?.heroAssetId || '') === String(asset.assetId || '')
+              ? String(heroManagerConfig?.heroSubtitle || '').trim()
+              : '';
+          return {
+            id: asset.assetId,
+            assetId: asset.assetId,
+            type: isVideoHeroAssetType(asset.assetType) ? 'video' : 'image',
+            title: safeTitle,
+            subtitle:
+              boundSubtitle &&
+              !isStockHeroViewerCopy(boundSubtitle, 'subtitle') &&
+              !isUnsafeHeroFilenameTitle(boundSubtitle)
+                ? boundSubtitle
+                : '',
+            detail: '',
+            videoUrl: isVideoHeroAssetType(asset.assetType) ? asset.mediaUrl : '',
+            imageUrl: isVideoHeroAssetType(asset.assetType) ? asset.thumbnailUrl || '' : asset.mediaUrl,
+            durationMs: Math.max(2500, Number(heroManagerConfig.carouselDurationMs || 8000)),
+            priority: 0
+          };
+        })
       : carouselSlides;
   $: if (activeSlideIndex >= heroVisualSlides.length) {
     activeSlideIndex = 0;
@@ -366,25 +404,79 @@ export let sanitizeViewer = false;
       heroBackgroundPresentation.backgroundSource === 'custom_video'
     );
   })();
-  $: prioritizedHeroVideo = heroStylePrefersVideo
-    ? String(heroRenderVideo || $HERO_BACKGROUND_VIDEO || heroSlideVideo || '').trim()
-    : heroStoryMediaPriorityEnabled
-      ? String(heroRenderVideo || heroSlideVideo || '').trim()
-      : String(heroSlideVideo || heroRenderVideo || '').trim();
-  $: prioritizedHeroImage = heroStylePrefersVideo
-    ? String(heroRenderImage || $HERO_POSTER_IMAGE || '').trim()
-    : heroStoryMediaPriorityEnabled
-      ? String(heroRenderImage || heroSlideImage || '').trim()
-      : String(heroSlideImage || heroRenderImage || '').trim();
+  $: prioritizedHeroVideo = heroBlankBackdrop
+    ? ''
+    : heroStylePrefersVideo
+      ? String(heroRenderVideo || $HERO_BACKGROUND_VIDEO || heroSlideVideo || '').trim()
+      : heroStoryMediaPriorityEnabled
+        ? String(heroRenderVideo || heroSlideVideo || '').trim()
+        : String(heroSlideVideo || heroRenderVideo || '').trim();
+  $: prioritizedHeroImage = heroBlankBackdrop
+    ? ''
+    : heroStylePrefersVideo
+      ? String(heroRenderImage || $HERO_POSTER_IMAGE || '').trim()
+      : heroStoryMediaPriorityEnabled
+        ? String(heroRenderImage || heroSlideImage || '').trim()
+        : String(heroSlideImage || heroRenderImage || '').trim();
   $: heroVideoPoster =
-    heroBackgroundPresentation.backgroundSource === 'custom_video' || heroStylePrefersVideo
-      ? prioritizedHeroImage || ''
-      : prioritizedHeroImage || '';
-  $: heroSlideTitle =
-    activeHeroSlide?.title || heroSelection?.title || 'NEON VENGEANCE';
-  $: heroSlideSubtitle =
-    activeHeroSlide?.subtitle || heroSelection?.subtitle || 'The code was his legacy. The betrayal was his rebirth.';
-  $: heroSlideDetail = activeHeroSlide?.detail || heroSelection?.insight || '';
+    heroBlankBackdrop
+      ? ''
+      : heroBackgroundPresentation.backgroundSource === 'custom_video' || heroStylePrefersVideo
+        ? prioritizedHeroImage || ''
+        : prioritizedHeroImage || '';
+  function looksLikeRawMediaFilename(value) {
+    const text = String(value || '').trim();
+    if (!text) return false;
+    return (
+      /\.(mov|mp4|webm|m4v|avi|mkv|jpe?g|png|gif|webp)(\b|$)/i.test(text) ||
+      /^img[_\s-]?\d+/i.test(text) ||
+      /^micros[_-\s]?stirred/i.test(text)
+    );
+  }
+
+  function resolveCleanHeroTitle(preferred, fallback) {
+    const preferredText = String(preferred || '').trim();
+    if (preferredText && !looksLikeRawMediaFilename(preferredText)) return preferredText;
+    const fallbackText = String(fallback || '').trim();
+    if (fallbackText && !looksLikeRawMediaFilename(fallbackText)) return fallbackText;
+    return 'ReelForge';
+  }
+
+  function resolveCleanHeroSubtitle(preferred, fallback) {
+    const preferredText = String(preferred || '').trim();
+    if (preferredText && !looksLikeRawMediaFilename(preferredText)) return preferredText;
+    const fallbackText = String(fallback || '').trim();
+    if (fallbackText && !looksLikeRawMediaFilename(fallbackText)) return fallbackText;
+    return '';
+  }
+
+  $: heroSlideTitle = (() => {
+    const assetTitle = String(activeHeroSlide?.title || '').trim();
+    const configured = String(heroStoryTitle || heroManagerConfig?.heroTitle || '').trim();
+    if (heroBlankBackdrop) {
+      return resolveTruthLabel(configured, '', 'Featured on ReelForge') || 'Featured on ReelForge';
+    }
+    // Prefer vault/edited MP4 title when manager still has stock demo copy.
+    const primary = resolveTruthLabel(configured, assetTitle, heroSelection?.title || '');
+    return resolveCleanHeroTitle(primary, assetTitle || 'Featured on ReelForge');
+  })();
+  $: heroSlideSubtitle = (() => {
+    const configured = String(heroStorySubtitle || heroManagerConfig?.heroSubtitle || '').trim();
+    const slideSub = String(activeHeroSlide?.subtitle || '').trim();
+    if (heroBlankBackdrop) {
+      return resolveCleanHeroSubtitle(
+        isStockHeroViewerCopy(configured, 'subtitle') ? '' : configured,
+        ''
+      );
+    }
+    const preferred = !isStockHeroViewerCopy(configured, 'subtitle') ? configured : '';
+    return resolveCleanHeroSubtitle(preferred || slideSub, '');
+  })();
+  $: heroSlideDetail = heroBlankBackdrop
+    ? ''
+    : looksLikeRawMediaFilename(activeHeroSlide?.detail || heroSelection?.insight)
+      ? ''
+      : activeHeroSlide?.detail || heroSelection?.insight || '';
 $: heroBadgeLabel = sanitizeViewer
   ? heroStoryLabel || 'Look@Zakanda Presents'
   : heroStoryPublished
@@ -403,31 +495,26 @@ $: heroBadgeLabel = sanitizeViewer
     heroStoryLabel = String(heroManagerConfig?.heroLabel || '').trim();
     heroStoryTitle = String(heroManagerConfig?.heroTitle || '').trim();
     heroStorySubtitle = String(heroManagerConfig?.heroSubtitle || '').trim();
-    heroStoryDescription = String(heroManagerConfig?.heroDescription || '').trim();
+    heroStoryDescription = isStockHeroViewerCopy(heroManagerConfig?.heroDescription, 'description')
+      ? ''
+      : String(heroManagerConfig?.heroDescription || '').trim();
     heroStoryPrimaryLabel = String(heroManagerConfig?.ctaPrimaryLabel || '').trim();
     heroStoryPrimaryTarget = String(heroManagerConfig?.ctaPrimaryTarget || '').trim();
     heroStorySecondaryLabel = String(heroManagerConfig?.ctaSecondaryLabel || '').trim();
     heroStorySecondaryTarget = String(heroManagerConfig?.ctaSecondaryTarget || '').trim();
   }
-  $: if (heroStoryPublished) {
-    heroSlideTitle = resolveViewerStoryText(heroStoryTitle, 'Featured Story');
-    heroSlideSubtitle = resolveViewerStoryText(heroStorySubtitle, 'Discover the featured story.');
+  $: if (heroStoryPublished || sanitizeViewer) {
+    // Published/viewer modes still use manager fields, but never reinject stock demo mismatch.
+    const assetTitle = String(activeHeroSlide?.title || '').trim();
+    const truthTitle = resolveTruthLabel(heroStoryTitle, assetTitle, assetTitle || 'Featured Story');
+    const truthSubtitle = isStockHeroViewerCopy(heroStorySubtitle, 'subtitle')
+      ? ''
+      : String(heroStorySubtitle || '').trim();
+    heroSlideTitle = resolveCleanHeroTitle(truthTitle, assetTitle || 'Featured Story');
+    heroSlideSubtitle = resolveCleanHeroSubtitle(truthSubtitle, '');
     heroSlideDetail = '';
   }
-  $: if (sanitizeViewer) {
-    heroSlideTitle = resolveViewerStoryText(
-      heroStoryTitle,
-      'Black Warrior: Land, Legacy & Liberation'
-    );
-    heroSlideSubtitle = resolveViewerStoryText(
-      heroStorySubtitle,
-      'Discover the families preserving generations of Black land ownership in Alabama.'
-    );
-    heroSlideDetail = '';
-  }
-  $: heroViewerDescription = sanitizeViewer
-    ? String(heroStoryDescription || 'Discover the families preserving generations of Black land ownership in Alabama.').trim()
-    : String(heroStoryDescription || '').trim();
+  $: heroViewerDescription = String(heroStoryDescription || '').trim();
   $: if (!mediaPlaceholderFixLogged && heroSlideVideo && !$heroVideoFailed) {
     mediaPlaceholderFixLogged = true;
     console.info('[MEDIA_PLACEHOLDER_LOGIC_FIXED]', {
@@ -450,6 +537,7 @@ $: heroBadgeLabel = sanitizeViewer
     const heroRenderVideoPresent = Boolean(String(heroRenderVideo || '').trim());
     const videoCandidatePresent = Boolean(String(prioritizedHeroVideo || '').trim());
     const imageCandidatePresent = Boolean(String(prioritizedHeroImage || '').trim());
+    const blankHeroBackdrop = heroBackgroundPresentation.backgroundSource === 'none';
     const blockedByCustomImage =
       heroBackgroundPresentation.backgroundSource === 'custom_image';
     const blockedByCustomVideo =
@@ -458,15 +546,18 @@ $: heroBadgeLabel = sanitizeViewer
     // Priority: backgroundStyle=video + playable heroRenderVideo/HERO_BACKGROUND_VIDEO → video mode
     // even when identity recovery left backgroundSource=selection and carousel shows images.
     const forceVideoByStyle =
+      !blankHeroBackdrop &&
       heroStylePrefersVideo &&
       videoCandidatePresent &&
       !$heroVideoFailed &&
       !blockedByCustomImage;
     const canUseVideo =
+      !blankHeroBackdrop &&
       videoCandidatePresent &&
       !$heroVideoFailed &&
       !blockedByCustomImage;
     const canUseImage =
+      !blankHeroBackdrop &&
       imageCandidatePresent &&
       !blockedByCustomVideo &&
       !forceVideoByStyle;
@@ -474,7 +565,10 @@ $: heroBadgeLabel = sanitizeViewer
     /** @type {'video' | 'image' | 'fallback'} */
     let selectedMode = 'fallback';
     let reason = 'no_media_candidates';
-    if (forceVideoByStyle) {
+    if (blankHeroBackdrop) {
+      selectedMode = 'fallback';
+      reason = 'background_source_none';
+    } else if (forceVideoByStyle) {
       selectedMode = 'video';
       reason = 'backgroundStyle_video_and_heroRenderVideo';
     } else if (canUseVideo) {
@@ -2027,6 +2121,8 @@ $: heroBadgeLabel = sanitizeViewer
         {/key}
       {:else if activeHeroMediaMode === 'image'}
         <MediaPoster url={prioritizedHeroImage} allowDataUrl className="hero-fallback-image hero-media active" />
+      {:else if heroBlankBackdrop}
+        <div class="hero-fallback-image hero-media active hero-gradient-fallback" aria-hidden="true"></div>
       {:else}
         <MediaPoster
           url={prioritizedHeroImage || DEFAULT_MEDIA_PLACEHOLDER}
@@ -2041,7 +2137,7 @@ $: heroBadgeLabel = sanitizeViewer
       {#if activeHeroMediaMode === 'fallback'}
         <div
           class="hero-video-overlay hero-overlay"
-          class:hero-bg-gradient-overlay={heroBackgroundPresentation.gradientOverlay}
+          class:hero-bg-gradient-overlay={heroBackgroundPresentation.gradientOverlay || heroBlankBackdrop}
           class:hero-bg-cinematic-overlay={heroBackgroundPresentation.cinematicBlur}
         ></div>
         <div class="hero-motion-gradient" aria-hidden="true"></div>

@@ -82,9 +82,10 @@ function readHeroManagerPointer() {
     }
     try {
         const parsed = JSON.parse(localStorage.getItem(HERO_MANAGER_STORAGE_KEY) || '{}');
+        const backgroundSource = String(parsed?.backgroundSource || 'selection').trim();
         return {
-            heroAssetId: String(parsed?.heroAssetId || '').trim(),
-            backgroundSource: String(parsed?.backgroundSource || 'selection').trim()
+            heroAssetId: backgroundSource === 'none' ? '' : String(parsed?.heroAssetId || '').trim(),
+            backgroundSource: backgroundSource || 'selection'
         };
     } catch {
         return { heroAssetId: '', backgroundSource: 'selection' };
@@ -117,9 +118,10 @@ function resolveStoredHeroBackgroundSource(parsed) {
  * @returns {HeroReel | null}
  */
 export function resolveActiveHeroVideoReel() {
+    const manager = readHeroManagerPointer();
+    if (manager.backgroundSource === 'none') return null;
     const reel = loadHeroReel();
     if (!reel?.id || !reel?.url) return null;
-    const manager = readHeroManagerPointer();
     const managerMatch =
         manager.backgroundSource === 'custom_video' && manager.heroAssetId === reel.id;
     const reelIsVideo =

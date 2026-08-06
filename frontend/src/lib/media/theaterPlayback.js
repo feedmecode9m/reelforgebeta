@@ -30,7 +30,18 @@ function mergeVaultVideosWithHero(vaultVideos) {
  * @param {string} source
  */
 function playbackFromVideoSource(reel, video, source) {
+    const state = String(video?.uploadState || '');
+    if (
+        state === 'failed' ||
+        state === 'interrupted' ||
+        state === 'pending_accept' ||
+        state === 'uploading' ||
+        video?.isOptimisticLocal
+    ) {
+        return null;
+    }
     const url = String(video?.url || video?.video_url || video?.src || '').trim();
+    if (!url || url.startsWith('blob:') || url.startsWith('data:')) return null;
     if (!url || !isVideoReel({ ...video, url })) return null;
     return {
         mode: 'video',

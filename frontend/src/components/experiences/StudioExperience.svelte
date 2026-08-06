@@ -2095,6 +2095,8 @@
             {syncFromVault}
             {syncDomain}
             {CONFIG}
+            {persistentTitles}
+            {updateReelTitle}
           />
           <StudioAppearancePanel />
 <PlatformPublishingProfiles />

@@ -28,9 +28,10 @@ function readHeroManagerSnapshot() {
   }
   try {
     const parsed = JSON.parse(localStorage.getItem(HERO_MANAGER_STORAGE_KEY) || '{}');
+    const backgroundSource = normalize(parsed?.backgroundSource || 'selection');
     return {
-      heroAssetId: normalize(parsed?.heroAssetId),
-      backgroundSource: normalize(parsed?.backgroundSource || 'selection')
+      heroAssetId: backgroundSource === 'none' ? '' : normalize(parsed?.heroAssetId),
+      backgroundSource: backgroundSource || 'selection'
     };
   } catch {
     return { heroAssetId: '', backgroundSource: 'selection' };

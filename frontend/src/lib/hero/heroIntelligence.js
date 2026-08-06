@@ -27,8 +27,17 @@ import {
     resolveHeroAssetById
 } from './heroAssetBridge.js';
 import {
+    buildViewerCopyPatchFromTruth,
+    resolveHeroAssetTruth
+} from './heroViewerTruth.js';
+import {
+    analyzeHeroTitle,
+    buildHeroManagerPatchFromTitleIntel
+} from './heroTitleIntelligence.js';
+import {
     loadHeroReel,
     saveHeroReel,
+    clearHeroReel,
     heroReelFromUploadResponse,
     heroReelToVaultItem,
     applyHeroReelToStores,
@@ -89,10 +98,13 @@ export const DISCOVERY_TYPE_SOURCES = {
 
 export const HERO_MANAGER_STORAGE_KEY = 'reelforge_hero_manager_config';
 const VIDEO_VAULT_STORAGE_KEY = 'personal_video_vault';
+const THUMB_VAULT_STORAGE_KEY = 'personal_thumbnails';
 const FEED_STORAGE_KEY = 'reelforge_feed';
 
 /** Prevents loadHeroManagerConfig ↔ saveHeroManagerConfig recovery recursion. */
 let heroIdentityRecoveryInFlight = false;
+/** Prevents unwanted-dump demotion from re-entering load/save. */
+let heroUnwantedDumpDemotionInFlight = false;
 
 function readLocalJsonArray(storageKey) {
     if (typeof window === 'undefined') return [];
@@ -102,6 +114,43 @@ function readLocalJsonArray(storageKey) {
     } catch {
         return [];
     }
+}
+
+/**
+ * Ready vault picks for the Hero Manager dropdown / cards.
+ * Excludes local stubs, failed uploads, and non-playable blob previews.
+ * @param {Record<string, unknown> | null | undefined} entry
+ */
+function isEligibleHeroVaultPick(entry) {
+    if (!entry || typeof entry !== 'object') return false;
+    if (entry.isPlaceholder === true) return false;
+    if (entry.isHeroInjected === true && !entry.url) return false;
+
+    const id = String(entry.id || entry.assetId || entry.personal_video_id || '').trim();
+    if (!id) return false;
+    if (/^local-(pending|upload|interrupted)/i.test(id)) return false;
+
+    const status = String(entry.status || entry.uploadStatus || 'ready').toLowerCase();
+    if (status && status !== 'ready' && status !== 'complete' && status !== 'completed') {
+        if (/fail|error|pending|upload|interrupt|process/.test(status)) return false;
+    }
+    if (entry.uploadError || entry.failed === true) return false;
+
+    const url = String(
+        entry.url ||
+            entry.videoUrl ||
+            entry.video_url ||
+            entry.mediaUrl ||
+            entry.thumbnail ||
+            entry.thumbnailUrl ||
+            entry.thumbnail_url ||
+            ''
+    ).trim();
+    if (!url) return false;
+    // Keep durable media only — not temporary browser object URLs.
+    if (url.startsWith('blob:')) return false;
+
+    return true;
 }
 
 /** @returns {Record<string, unknown>[]} */
@@ -132,6 +181,19 @@ function isPlayableHeroVideoCandidate(record) {
 
     const defaultHeroUrl = toRelativeMediaPath(DEFAULT_HERO_BACKGROUND_VIDEO);
     if (url === defaultHeroUrl) return false;
+
+    const nameBlob = [
+        id,
+        record?.name,
+        record?.title,
+        record?.fileName,
+        record?.file_name,
+        url
+    ]
+        .map((part) => String(part || ''))
+        .join(' ');
+    // Never promote personal dump uploads into the discovery hero stage.
+    if (/micros[_-\s]?stirred/i.test(nameBlob)) return false;
 
     const mime = String(record?.type || record?.mime || record?.mimeType || '').toLowerCase();
     if (mime.startsWith('image/')) return false;
@@ -210,23 +272,39 @@ function gatherHeroRecoveryCandidates() {
 }
 
 /**
- * Recover hero identity from local reel sources when manager config lacks heroAssetId.
+ * Recover hero identity only for custom media modes missing a pointer.
+ * Selection/none must never pull personal vault dumps (e.g. MICROS_STIRRED) into the menu hero.
  * @param {HeroManagerConfig | null | undefined} [baseConfig]
  * @returns {HeroManagerConfig | null}
  */
 function attemptHeroIdentityRecovery(baseConfig = null) {
     if (heroIdentityRecoveryInFlight || typeof window === 'undefined') return null;
 
+    const source = String(baseConfig?.backgroundSource || '').trim();
+    if (source !== 'custom_image' && source !== 'custom_video') {
+        console.info('[HERO_IDENTITY_RECOVERY]', {
+            source: 'skipped',
+            candidateCount: 0,
+            selectedId: '',
+            recovered: false,
+            reason: `backgroundSource_${source || 'empty'}_not_custom`
+        });
+        return null;
+    }
+
     heroIdentityRecoveryInFlight = true;
     try {
         const candidates = gatherHeroRecoveryCandidates();
-        const selected = candidates[0] || null;
+        // Prefer canonical hero reel only — do not promote personal_video_vault dumps to hero.
+        const preferred = candidates.find((item) => item?.source === 'reelforge_hero_reel') || null;
+        const selected = preferred;
 
         console.info('[HERO_IDENTITY_RECOVERY]', {
             source: selected?.source || 'none',
             candidateCount: candidates.length,
             selectedId: selected?.reel?.id || '',
-            recovered: Boolean(selected)
+            recovered: Boolean(selected),
+            reason: preferred ? 'canonical_hero_reel' : 'no_canonical_hero_reel'
         });
 
         if (!selected) return null;
@@ -234,8 +312,8 @@ function attemptHeroIdentityRecovery(baseConfig = null) {
         saveHeroReel(selected.reel);
         const saved = saveHeroManagerConfig({
             heroAssetId: selected.reel.id,
-            backgroundSource: 'custom_video',
-            backgroundStyle: 'video'
+            backgroundSource: selected.reel.backgroundSource === 'custom_image' ? 'custom_image' : 'custom_video',
+            backgroundStyle: selected.reel.backgroundSource === 'custom_image' ? 'image' : 'video'
         });
 
         if (baseConfig) {
@@ -243,8 +321,8 @@ function attemptHeroIdentityRecovery(baseConfig = null) {
                 ...baseConfig,
                 ...saved,
                 heroAssetId: selected.reel.id,
-                backgroundSource: 'custom_video',
-                backgroundStyle: 'video'
+                backgroundSource: saved.backgroundSource,
+                backgroundStyle: saved.backgroundStyle
             };
         }
         return saved;
@@ -259,8 +337,57 @@ function attemptHeroIdentityRecovery(baseConfig = null) {
  * @returns {HeroManagerConfig}
  */
 function finalizeHeroManagerConfigLoad(config, baseConfig = null) {
+    const source = String(config?.backgroundSource || '').trim();
+    // Demote auto-promoted dump reels (e.g. MICROS_STIRRED) off the menu hero landscape.
+    if (
+        !heroUnwantedDumpDemotionInFlight &&
+        !heroIdentityRecoveryInFlight &&
+        (source === 'custom_video' || source === 'custom_image' || source === 'selection')
+    ) {
+        const reel = loadHeroReel();
+        const blob = [
+            config?.heroAssetId,
+            reel?.id,
+            reel?.name,
+            reel?.fileName,
+            reel?.url
+        ]
+            .map((part) => String(part || ''))
+            .join(' ');
+        if (/micros[_-\s]?stirred/i.test(blob)) {
+            console.info('[HERO_IDENTITY_RECOVERY]', {
+                source: 'demote_unwanted_dump',
+                candidateCount: 0,
+                selectedId: String(config?.heroAssetId || ''),
+                recovered: false,
+                reason: 'micros_stirred_not_allowed_as_menu_hero'
+            });
+            heroUnwantedDumpDemotionInFlight = true;
+            try {
+                clearHeroReel();
+                return (
+                    saveHeroManagerConfig({
+                        heroAssetId: '',
+                        backgroundSource: 'none',
+                        backgroundStyle: 'gradient_overlay'
+                    }) || {
+                        ...config,
+                        heroAssetId: '',
+                        backgroundSource: 'none',
+                        backgroundStyle: 'gradient_overlay'
+                    }
+                );
+            } finally {
+                heroUnwantedDumpDemotionInFlight = false;
+            }
+        }
+    }
+
     const heroAssetId = String(config?.heroAssetId || '').trim();
     if (heroAssetId || heroIdentityRecoveryInFlight) return config;
+    // Blank menu or selection intelligence: never auto-inject vault videos as hero background.
+    if (source === 'none' || source === 'selection' || !source) return config;
+    if (source !== 'custom_image' && source !== 'custom_video') return config;
 
     const recovered = attemptHeroIdentityRecovery(baseConfig || config);
     return recovered || config;
@@ -372,7 +499,7 @@ export const HERO_BACKGROUND_STYLES = /** @type {const} */ ([
 /**
  * @typedef {Object} HeroManagerConfig
  * @property {typeof HERO_DISCOVERY_TYPES[number] | typeof HERO_MODES[number]} heroType
- * @property {'selection' | 'custom_image' | 'custom_video'} backgroundSource
+ * @property {'selection' | 'custom_image' | 'custom_video' | 'none'} backgroundSource
  * @property {string} heroAssetId
  * @property {HeroBackgroundStyle} backgroundStyle
  * @property {boolean} autoRotate
@@ -389,6 +516,7 @@ export const HERO_BACKGROUND_STYLES = /** @type {const} */ ([
  * @property {string} heroTitle
  * @property {string} heroSubtitle
  * @property {string} heroDescription
+ * @property {string} [heroCopySourceAssetId]
  * @property {string} ctaPrimaryLabel
  * @property {string} ctaPrimaryTarget
  * @property {string} ctaSecondaryLabel
@@ -410,7 +538,7 @@ export const HERO_BACKGROUND_STYLES = /** @type {const} */ ([
  * @property {boolean} ambientMotion
  * @property {boolean} cinematicBlur
  * @property {boolean} gradientOverlay
- * @property {'selection' | 'custom_image' | 'custom_video'} backgroundSource
+ * @property {'selection' | 'custom_image' | 'custom_video' | 'none'} backgroundSource
  * @property {string} backgroundAsset
  * @property {string} assetId
  * @property {boolean} vaultMatch
@@ -481,9 +609,10 @@ function getDefaultCarouselSlideOverrides() {
 export function getDefaultHeroManagerConfig() {
     return {
         heroType: 'TRENDING',
-        backgroundSource: 'selection',
+        // Blank menu by default — never auto-surface vault dumps as hero landscape.
+        backgroundSource: 'none',
         heroAssetId: '',
-        backgroundStyle: 'video',
+        backgroundStyle: 'gradient_overlay',
         autoRotate: false,
         rotateIntervalMs: 30_000,
         spotlightPriority: [...HERO_DISCOVERY_TYPES],
@@ -511,11 +640,18 @@ export function getDefaultHeroManagerConfig() {
         heroTypography: 'cinematic',
         autoplayEnabled: true,
         carouselSlideOverrides: getDefaultCarouselSlideOverrides(),
-        heroLabel: 'LOOK@ZAKANDA PRESENTS',
-        heroTitle: 'Black Warrior: Land, Legacy & Liberation',
-        heroSubtitle: 'A cinematic spotlight on generational Black land stewardship.',
-        heroDescription: 'Discover the families preserving generations of Black land ownership in Alabama.',
-        ctaPrimaryLabel: 'Watch Now',
+            heroLabel: 'LOOK@ZAKANDA PRESENTS',
+            // Leave empty so live vault title can become truth — avoids demo mismatch on personal heroes.
+            heroTitle: '',
+            heroSubtitle: '',
+            heroDescription: '',
+            heroCopySourceAssetId: '',
+            heroAssetTitle: '',
+            heroStoryContext: null,
+            heroTitleIntelligence: null,
+            contentIdentity: null,
+            heroIntelligenceProposals: null,
+            ctaPrimaryLabel: 'Watch Now',
         ctaPrimaryTarget: '/watch',
         ctaSecondaryLabel: 'Learn More',
         ctaSecondaryTarget: '/series/neon-vengeance',
@@ -563,12 +699,15 @@ export function loadHeroManagerConfig() {
             return config;
         }
         const parsed = JSON.parse(raw);
-        const resolvedHeroAssetId = String(
-            parsed.heroAssetId || parsed.backgroundAsset || ''
-        ).trim();
+        const parsedBackgroundSource = String(parsed.backgroundSource || 'selection').trim();
+        const resolvedHeroAssetId =
+            parsedBackgroundSource === 'none'
+                ? ''
+                : String(parsed.heroAssetId || parsed.backgroundAsset || '').trim();
         const config = {
             ...getDefaultHeroManagerConfig(),
             ...parsed,
+            backgroundSource: parsedBackgroundSource || 'selection',
             heroAssetId: resolvedHeroAssetId,
             spotlightPriority: Array.isArray(parsed.spotlightPriority)
                 ? parsed.spotlightPriority.filter((type) =>
@@ -616,6 +755,28 @@ export function loadHeroManagerConfig() {
                 typeof parsed.heroDescription === 'string'
                     ? parsed.heroDescription
                     : getDefaultHeroManagerConfig().heroDescription,
+            heroCopySourceAssetId:
+                typeof parsed.heroCopySourceAssetId === 'string'
+                    ? String(parsed.heroCopySourceAssetId).trim()
+                    : String(resolvedHeroAssetId || ''),
+            heroAssetTitle:
+                typeof parsed.heroAssetTitle === 'string' ? parsed.heroAssetTitle : '',
+            heroStoryContext:
+                parsed.heroStoryContext && typeof parsed.heroStoryContext === 'object'
+                    ? parsed.heroStoryContext
+                    : null,
+            heroTitleIntelligence:
+                parsed.heroTitleIntelligence && typeof parsed.heroTitleIntelligence === 'object'
+                    ? parsed.heroTitleIntelligence
+                    : null,
+            contentIdentity:
+                parsed.contentIdentity && typeof parsed.contentIdentity === 'object'
+                    ? parsed.contentIdentity
+                    : null,
+            heroIntelligenceProposals:
+                parsed.heroIntelligenceProposals && typeof parsed.heroIntelligenceProposals === 'object'
+                    ? parsed.heroIntelligenceProposals
+                    : null,
             ctaPrimaryLabel:
                 typeof parsed.ctaPrimaryLabel === 'string'
                     ? parsed.ctaPrimaryLabel
@@ -986,11 +1147,16 @@ export function buildHeroCarouselSlides(feed, options = {}) {
 export function saveHeroManagerConfig(patch = {}) {
     const existing = loadHeroManagerConfig();
     const merged = { ...existing, ...patch };
+    if (String(merged.backgroundSource || '').trim() === 'none') {
+        merged.heroAssetId = '';
+        clearHeroReel();
+    }
+    const patchBackgroundSource = String(patch.backgroundSource || '').trim();
     const patchClearsHeroAsset =
         Object.prototype.hasOwnProperty.call(patch, 'heroAssetId') &&
         !String(patch.heroAssetId || '').trim() &&
         Object.prototype.hasOwnProperty.call(patch, 'backgroundSource') &&
-        patch.backgroundSource === 'selection';
+        (patchBackgroundSource === 'selection' || patchBackgroundSource === 'none');
     const persistedHeroAssetId = String(existing.heroAssetId || '').trim();
     if (
         Object.prototype.hasOwnProperty.call(patch, 'heroAssetId') &&
@@ -1001,7 +1167,8 @@ export function saveHeroManagerConfig(patch = {}) {
         merged.heroAssetId = persistedHeroAssetId;
     }
     const registry = buildHeroAssetRegistry(loadHeroVaultItems());
-    if (!merged.heroAssetId) {
+    // Never rehydrate a vault asset when the user chose a blank menu backdrop.
+    if (!merged.heroAssetId && String(merged.backgroundSource || '').trim() !== 'none') {
         const legacyAssetId = String(merged.backgroundAsset || '').trim();
         const legacyMediaUrl = String(merged.backgroundVideo || merged.backgroundImage || '').trim();
         const resolvedFromLegacyId = legacyAssetId
@@ -1094,6 +1261,167 @@ export function commitHeroVideoIdentity(reel) {
     });
 }
 
+/**
+ * Keep Hero Viewer Content aligned with the active Vault Hero file title (Edit Title truth).
+ * @param {string} assetId
+ * @param {{
+ *   extraItems?: Record<string, unknown>[] | null;
+ *   force?: boolean;
+ *   previousTitle?: string;
+ *   overrideTitle?: string;
+ * }} [options]
+ * @returns {HeroManagerConfig | null}
+ */
+export function syncHeroViewerCopyFromAsset(assetId, options = {}) {
+    const id = String(assetId || '').trim();
+    if (!id) return null;
+    const vaultItems = loadHeroVaultItems(options.extraItems || null);
+    let truth = resolveHeroAssetTruth(id, vaultItems);
+    if (!truth && options.overrideTitle) {
+        truth = {
+            assetId: id,
+            title: String(options.overrideTitle).trim(),
+            mediaUrl: '',
+            thumbnailUrl: '',
+            assetType: 'video',
+            isVideo: true,
+            mimeType: ''
+        };
+    }
+    if (options.overrideTitle && truth) {
+        truth = { ...truth, title: String(options.overrideTitle).trim() || truth.title };
+    }
+    if (!truth?.title) return null;
+
+    const existing = loadHeroManagerConfig();
+    const intelBundle = buildHeroManagerPatchFromTitleIntel(id, truth.title, {
+        isVideo: truth.isVideo,
+        force: Boolean(options.force),
+        previous: {
+            heroTitle: existing.heroTitle,
+            heroSubtitle: existing.heroSubtitle,
+            heroDescription: existing.heroDescription
+        }
+    });
+    // When force or previous title was the old asset name, always bind.
+    let patch = intelBundle.patch;
+    if (!options.force) {
+        patch = buildViewerCopyPatchFromTruth(truth, {
+            heroTitle: existing.heroTitle,
+            heroSubtitle: existing.heroSubtitle,
+            heroDescription: existing.heroDescription,
+            heroCopySourceAssetId: existing.heroCopySourceAssetId,
+            force: false,
+            _previousAssetTitle: options.previousTitle
+        });
+    }
+    if (!Object.keys(patch).length) return existing;
+
+    console.info('[HERO_VIEWER_TRUTH_SYNC]', {
+        assetId: truth.assetId,
+        title: truth.title,
+        intelligence: intelBundle.intelligence,
+        patchKeys: Object.keys(patch),
+        force: Boolean(options.force),
+        ts: new Date().toISOString()
+    });
+    return saveHeroManagerConfig(patch);
+}
+
+/**
+ * Promote any ready Video Vault / Thumbnail Vault entry to the live menu hero background.
+ * @param {string | null | undefined} assetId
+ * @param {Record<string, unknown>[] | null} [extraItems]
+ * @returns {HeroManagerConfig | null}
+ */
+export function commitHeroAssetSelection(assetId, extraItems = null) {
+    const id = String(assetId || '').trim();
+    if (!id) {
+        clearHeroReel();
+        return saveHeroManagerConfig({
+            heroAssetId: '',
+            backgroundSource: 'none',
+            backgroundStyle: 'gradient_overlay',
+            heroCopySourceAssetId: ''
+        });
+    }
+
+    const vaultItems = loadHeroVaultItems(extraItems);
+    let asset = resolveHeroAssetById(id, vaultItems);
+    if (!asset) {
+        const raw = vaultItems.find(
+            (entry) =>
+                String(entry?.id || entry?.assetId || '').trim() === id ||
+                String(entry?.fileName || entry?.file_name || '').trim() === id
+        );
+        asset = raw ? normalizeHeroAssetRecord(raw, { storageSource: 'vault_pick' }) : null;
+    }
+    if (!asset?.assetId || !asset?.mediaUrl) {
+        console.warn('[HERO_ASSET_SELECT_MISS]', { assetId: id, vaultCount: vaultItems.length });
+        return null;
+    }
+
+    const isVideo = isVideoHeroAssetType(asset.assetType);
+    const reel = {
+        id: asset.assetId,
+        fileName: String(asset.title || asset.assetId),
+        name: String(asset.title || 'Hero'),
+        url: asset.mediaUrl,
+        thumbnail: asset.thumbnailUrl || undefined,
+        type: String(asset.mimeType || (isVideo ? 'video/mp4' : 'image/jpeg')),
+        backgroundSource: /** @type {'custom_video' | 'custom_image'} */ (
+            isVideo ? 'custom_video' : 'custom_image'
+        )
+    };
+    saveHeroReel(reel);
+    console.info('[HERO_VAULT_SELECT]', {
+        stage: 'commitHeroAssetSelection',
+        assetId: reel.id,
+        backgroundSource: reel.backgroundSource,
+        mediaUrl: reel.url,
+        title: reel.name,
+        ts: new Date().toISOString()
+    });
+
+    const existing = loadHeroManagerConfig();
+    const truth = resolveHeroAssetTruth(
+        { ...asset, title: asset.title },
+        vaultItems
+    ) || {
+        assetId: reel.id,
+        title: String(asset.title || 'Hero'),
+        mediaUrl: asset.mediaUrl,
+        thumbnailUrl: asset.thumbnailUrl || '',
+        assetType: asset.assetType,
+        isVideo,
+        mimeType: String(asset.mimeType || '')
+    };
+    // Prefer durable persistent title over raw asset registry dump when available.
+    try {
+        const map = JSON.parse(localStorage.getItem('reel_titles_persistent') || '{}');
+        const persisted = String(map?.[reel.id]?.title || map?.[reel.id]?.title_original || '').trim();
+        if (persisted) truth.title = persisted;
+    } catch {
+        /* ignore */
+    }
+    const intelBundle = buildHeroManagerPatchFromTitleIntel(reel.id, truth.title, {
+        isVideo,
+        force: true,
+        previous: {
+            heroTitle: existing.heroTitle,
+            heroSubtitle: existing.heroSubtitle,
+            heroDescription: existing.heroDescription
+        }
+    });
+
+    return saveHeroManagerConfig({
+        heroAssetId: reel.id,
+        backgroundSource: reel.backgroundSource,
+        backgroundStyle: isVideo ? 'video' : 'image',
+        ...intelBundle.patch
+    });
+}
+
 /** @param {string | null | undefined} type */
 export function normalizeDiscoveryHeroType(type) {
     const upper = String(type || 'TRENDING').toUpperCase();
@@ -1112,63 +1440,82 @@ export function normalizeDiscoveryHeroType(type) {
     return 'TRENDING';
 }
 
-/** @returns {Record<string, unknown>[]} */
-export function loadHeroVaultItems() {
-    if (typeof window === 'undefined') return [];
+/**
+ * Catalog of pickable hero media: Video Vault + Thumbnail Vault + feed + active hero.
+ * Used by the Vault Hero Asset dropdown so admins can choose any ready vault video/image.
+ * @param {Record<string, unknown>[] | null} [extraItems] optional live store rows (e.g. personalVideos)
+ * @returns {Record<string, unknown>[]}
+ */
+export function loadHeroVaultItems(extraItems = null) {
+    if (typeof window === 'undefined') return Array.isArray(extraItems) ? extraItems : [];
     try {
         migrateLegacyHeroStorageIfNeeded();
-        const manager = loadHeroManagerConfig();
+        /** @type {Record<string, unknown>[]} */
+        const collected = [];
+        const seen = new Set();
+
+        /**
+         * @param {Record<string, unknown>} entry
+         * @param {string} source
+         */
+        const push = (entry, source) => {
+            if (!isEligibleHeroVaultPick(entry)) return;
+            const entryId = String(entry.id || entry.assetId || entry.personal_video_id || '').trim();
+            if (!entryId || seen.has(entryId)) return;
+            seen.add(entryId);
+            collected.push({
+                ...entry,
+                id: entryId,
+                _heroPickSource: source
+            });
+        };
+
+        for (const entry of readLocalJsonArray(VIDEO_VAULT_STORAGE_KEY)) {
+            if (entry && typeof entry === 'object') push(/** @type {Record<string, unknown>} */ (entry), 'video_vault');
+        }
+        for (const entry of readLocalJsonArray(THUMB_VAULT_STORAGE_KEY)) {
+            if (entry && typeof entry === 'object') push(/** @type {Record<string, unknown>} */ (entry), 'thumbnail_vault');
+        }
+        for (const entry of collectFeedVideoReelRecords()) {
+            if (entry && typeof entry === 'object') push(/** @type {Record<string, unknown>} */ (entry), 'feed');
+        }
+        if (Array.isArray(extraItems)) {
+            for (const entry of extraItems) {
+                if (entry && typeof entry === 'object') {
+                    push(/** @type {Record<string, unknown>} */ (entry), 'live_store');
+                }
+            }
+        }
+
         const reel = loadHeroReel();
-        if (!reel?.id || !reel?.url) {
-            console.info('[HERO_REGISTRY_TRACE]', {
-                stage: 'loadHeroVaultItems:gate-fail',
-                reason: 'missing_reel',
-                managerHeroAssetId: String(manager?.heroAssetId || '').trim(),
-                canonicalReelId: reel?.id || '',
-                vaultItemsCount: 0,
-                ts: new Date().toISOString()
-            });
-            return [];
+        if (reel?.id && reel?.url) {
+            push(/** @type {Record<string, unknown>} */ (heroReelToVaultItem(reel)), 'active_hero');
         }
-        if (String(manager?.heroAssetId || '').trim() !== reel.id) {
-            console.info('[HERO_REGISTRY_TRACE]', {
-                stage: 'loadHeroVaultItems:gate-fail',
-                reason: 'heroAssetId_mismatch',
-                managerHeroAssetId: String(manager?.heroAssetId || '').trim(),
-                canonicalReelId: reel.id,
-                vaultItemsCount: 0,
-                ts: new Date().toISOString()
-            });
-            return [];
-        }
-        const items = [heroReelToVaultItem(reel)];
-        const registry = buildHeroAssetRegistry(items);
-        const img0113 = registry.find(
-            (item) =>
-                String(item?.mediaUrl || '').includes('IMG_0113.JPEG') ||
-                String(item?.assetId || '').includes('IMG_0113.JPEG')
-        );
+
+        // Videos first (natural hero backgrounds), then images.
+        collected.sort((a, b) => {
+            const aUrl = String(a.url || a.mediaUrl || a.videoUrl || '');
+            const bUrl = String(b.url || b.mediaUrl || b.videoUrl || '');
+            const aVideo = HERO_VIDEO_EXTENSIONS.test(aUrl) || String(a.type || '').startsWith('video/');
+            const bVideo = HERO_VIDEO_EXTENSIONS.test(bUrl) || String(b.type || '').startsWith('video/');
+            if (aVideo !== bVideo) return aVideo ? -1 : 1;
+            const aName = String(a.title || a.name || a.fileName || a.id || '');
+            const bName = String(b.title || b.name || b.fileName || b.id || '');
+            return aName.localeCompare(bName);
+        });
+
         console.info('[HERO_REGISTRY_TRACE]', {
-            stage: 'loadHeroVaultItems:success',
-            vaultItemsCount: items.length,
-            registryCount: registry.length,
-            firstFive: registry.slice(0, 5),
-            img0113Present: Boolean(img0113),
-            img0113AssetId: img0113?.assetId || '',
-            img0113HasAssetId: Boolean(String(img0113?.assetId || '').trim()),
+            stage: 'loadHeroVaultItems:expanded',
+            vaultItemsCount: collected.length,
+            videoVault: readLocalJsonArray(VIDEO_VAULT_STORAGE_KEY).length,
+            thumbVault: readLocalJsonArray(THUMB_VAULT_STORAGE_KEY).length,
+            feed: collectFeedVideoReelRecords().length,
+            extra: Array.isArray(extraItems) ? extraItems.length : 0,
             ts: new Date().toISOString()
         });
-        console.info('[HERO_STORE_READ]', {
-            stage: 'loadHeroVaultItems',
-            key: HERO_REEL_STORAGE_KEY,
-            id: reel.id,
-            fileName: reel.fileName,
-            url: reel.url,
-            ts: new Date().toISOString()
-        });
-        return items;
+        return collected;
     } catch {
-        return [];
+        return Array.isArray(extraItems) ? extraItems : [];
     }
 }
 
@@ -1290,6 +1637,13 @@ export function resolveHeroBackgroundAsset(config = loadHeroManagerConfig(), vau
 export function applyHeroManagerBackground(config = loadHeroManagerConfig(), stores = {}, options = {}) {
     if (options.respectSelection !== false && config.backgroundSource === 'selection') {
         return false;
+    }
+
+    if (config.backgroundSource === 'none') {
+        stores.setVideo?.('');
+        stores.setPoster?.('');
+        stores.setFailed?.(false);
+        return true;
     }
 
     const resolved = resolveHeroBackgroundAsset(config, options.vaultItems ?? null, { log: true });
@@ -1424,6 +1778,39 @@ export function resolveHeroBackgroundPresentation(
     const style = HERO_BACKGROUND_STYLES.includes(config.backgroundStyle)
         ? config.backgroundStyle
         : 'gradient_overlay';
+
+    if (config.backgroundSource === 'none') {
+        console.info('[HERO_ROUTE]', {
+            stage: 'resolveHeroBackgroundPresentation:none',
+            heroAssetId: '',
+            resolvedAssetId: '',
+            assetType: 'none',
+            mediaUrl: '',
+            videoUrl: '',
+            imageUrl: '',
+            vaultMatch: false,
+            ts: new Date().toISOString()
+        });
+        return {
+            style: 'gradient_overlay',
+            containerClasses: [],
+            overlayClasses: ['hero-bg-gradient-overlay'],
+            useVideo: false,
+            useImage: false,
+            ambientMotion: false,
+            cinematicBlur: false,
+            gradientOverlay: true,
+            backgroundSource: 'none',
+            backgroundAsset: '',
+            heroAssetId: '',
+            assetId: '',
+            vaultMatch: false,
+            mediaUrl: '',
+            assetType: 'none',
+            videoUrl: '',
+            imageUrl: ''
+        };
+    }
 
     if (config.backgroundSource === 'selection') {
         return resolveSelectionHeroBackgroundPresentation(config, selection, style);
@@ -2383,15 +2770,13 @@ export function selectHeroContent(mode = 'TRENDING', feed, options = {}) {
  */
 export function hasUserHeroOverride(config = {}) {
     if (typeof window === 'undefined') return false;
+    const managerConfig = loadHeroManagerConfig();
+    // Intentional blank menu backdrop counts as an explicit override.
+    if (managerConfig.backgroundSource === 'none') return true;
+
     const canonical = loadHeroReel();
     if (canonical?.id && canonical?.url) return true;
 
-    const defaultPaths = new Set([
-        DEFAULT_HERO_BACKGROUND_VIDEO,
-        ...(config.HERO_VIDEO_PATHS || [])
-    ]);
-
-    const managerConfig = loadHeroManagerConfig();
     if (managerConfig.backgroundSource === 'custom_video' || managerConfig.backgroundSource === 'custom_image') {
         if (String(managerConfig.heroAssetId || '').trim()) return true;
     }
@@ -2410,6 +2795,18 @@ export function hydrateHeroBackgroundStoresSync(stores = {}, appConfig = {}) {
 
     migrateLegacyHeroStorageIfNeeded();
     const managerConfig = loadHeroManagerConfig();
+    if (managerConfig.backgroundSource === 'none') {
+        stores.setVideo?.('');
+        stores.setPoster?.('');
+        stores.setFailed?.(false);
+        console.info('[HERO_LOAD]', {
+            stage: 'hydrateHeroBackgroundStoresSync:none',
+            backgroundSource: 'none',
+            heroAssetId: '',
+            ts: new Date().toISOString()
+        });
+        return 'unchanged';
+    }
     const canonicalReel = loadHeroReel();
     if (
         canonicalReel?.url &&
@@ -2884,6 +3281,10 @@ export function initHeroIntelligence() {
         hydrateHeroBackgroundStores,
         DEFAULT_HERO_BACKGROUND_VIDEO,
         loadHeroVaultItems,
+        commitHeroVideoIdentity,
+        commitHeroAssetSelection,
+        syncHeroViewerCopyFromAsset,
+        analyzeHeroTitle,
         inferHeroAssetType,
         rankHeroPriorities,
         rotateHeroSelection,

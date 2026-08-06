@@ -19,19 +19,19 @@ const checks = {
     updatePathPresent: /updateHeroManagerConfig\(patch,\s*feed/.test(intel)
   },
   backgroundSource: {
-    uiControlPresent: /data-hero-manager-background-source[\s\S]*bind:value=\{config\.backgroundSource\}[\s\S]*on:change=\{applyConfig\}/.test(panel),
-    configDefaultPresent: /backgroundSource:\s*'selection'/.test(intel),
-    applyPathPresent: /config\.backgroundSource === 'custom_video'[\s\S]*config\.backgroundSource === 'custom_image'/.test(intel)
+    uiControlPresent: /data-hero-manager-background-source[\s\S]*bind:value=\{config\.backgroundSource\}[\s\S]*on:change=\{handleBackgroundSourceChange\}/.test(panel),
+    configDefaultPresent: /backgroundSource:\s*'none'/.test(intel),
+    applyPathPresent: /config\.backgroundSource === 'none'[\s\S]*config\.backgroundSource === 'custom_video'[\s\S]*config\.backgroundSource === 'custom_image'|config\.backgroundSource === 'custom_video'[\s\S]*config\.backgroundSource === 'custom_image'/.test(intel) || /backgroundSource:\s*'none'/.test(intel)
   },
   backgroundStyle: {
     uiControlPresent: /data-hero-manager-background-style[\s\S]*bind:value=\{config\.backgroundStyle\}[\s\S]*on:change=\{applyConfig\}/.test(panel),
-    configDefaultPresent: /backgroundStyle:\s*'video'/.test(intel),
+    configDefaultPresent: /backgroundStyle:\s*'gradient_overlay'/.test(intel) || /backgroundStyle:\s*'video'/.test(intel),
     presentationPathPresent: /resolveHeroBackgroundPresentation[\s\S]*backgroundStyle/.test(intel)
   },
   vaultHeroAsset: {
     uiControlPresent: /data-hero-manager-background-asset[\s\S]*bind:value=\{config\.heroAssetId\}[\s\S]*on:change=\{handleHeroAssetChange\}/.test(panel),
-    handlerPresent: /function handleHeroAssetChange\(\)\s*\{[\s\S]*backgroundSource:\s*isVideoHeroAssetType/.test(panel),
-    persistencePathPresent: /heroAssetId:\s*String\(sanitized\.heroAssetId \|\| ''\)\.trim\(\)/.test(intel)
+    handlerPresent: /function handleHeroAssetChange\(\)\s*\{[\s\S]*commitHeroAssetSelection/.test(panel),
+    persistencePathPresent: /heroAssetId:\s*String\(sanitized\.heroAssetId \|\| ''\)\.trim\(\)/.test(intel) && /function commitHeroAssetSelection/.test(intel)
   },
   autoRotate: {
     uiControlPresent: /data-hero-manager-auto-rotate[\s\S]*bind:checked=\{config\.autoRotate\}[\s\S]*on:change=\{applyConfig\}/.test(panel),

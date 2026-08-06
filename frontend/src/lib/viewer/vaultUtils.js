@@ -240,11 +240,55 @@ export function createVaultUtils(deps) {
   }
   };
   }
-  /** Vault grid card: image reel — always use backend /thumbs/ path, never base64. */
+  /** Vault grid card: image reel — only from stored vault entry (never invent /thumbs/ ghosts). */
   function getVaultImageReel(item, index = 0) {
   const stored = getStoredThumbnailEntries();
   const lookupKey = typeof item === 'string' ? item : String(item?.fileName || item?.file_name || item?.id || '').trim();
   let entry = findStoredThumbnailEntry(stored, lookupKey || item, index);
+  // Collection keys without a matching metadata entry must render as empty placeholders —
+  // synthesizing /thumbs/{key} after delete made "placeholder" cards keep showing images.
+  // Exception: in-memory collection objects still carrying url/fileName (e.g. after a
+  // quota wipe of personal_thumbnails) should keep rendering until sync restores metadata.
+  if (!entry && item && typeof item === 'object') {
+    const directUrl = String(item.url || item.thumbnailUrl || item.thumbnail_url || '').trim();
+    const fileName = String(item.fileName || item.file_name || '').trim();
+    if (directUrl || fileName) {
+      entry = {
+        id: item.id,
+        title: item.title || item.name,
+        name: item.name || item.title,
+        fileName: fileName || filenameFromMediaRef(directUrl),
+        url: directUrl,
+        orphaned: item.orphaned === true
+      };
+    }
+  }
+  if (!entry && typeof item === 'string') {
+    const base = filenameFromMediaRef(item) || String(item).trim();
+    // Collection still lists this key — rebuild path even if metadata was quota-wiped.
+    // Delete flows remove the key from the collection, so this does not resurrect deletes.
+    if (base && /\.(jpe?g|png|gif|webp)$/i.test(base)) {
+      entry = { fileName: base, url: thumbPathFromFileKey(base), name: base };
+    }
+  }
+  if (!entry) {
+    return {
+      name: `Image ${index + 1}`,
+      type: 'image',
+      url: '',
+      thumbnailUrl: null,
+      missing: true
+    };
+  }
+  if (entry && typeof entry === 'object' && (entry.orphaned || entry.vaultState === 'ORPHANED')) {
+    return {
+      name: entry.title || entry.name || `Image ${index + 1}`,
+      type: 'image',
+      url: '',
+      thumbnailUrl: null,
+      orphaned: true
+    };
+  }
   let path = entry?.url || (typeof item === 'object' ? item?.url : null) || '';
   if (path.startsWith('data:') || path.startsWith('blob:')) {
     const displayName = entry?.title || entry?.name || `Image ${index + 1}`;
@@ -265,7 +309,7 @@ export function createVaultUtils(deps) {
   path = diskKey ? `/thumbs/${diskKey.replace(/^\/+/, '').replace(/^thumbs\//, '')}` : '';
   }
   }
-  const url = path || thumbPathFromFileKey(lookupKey) || thumbPathFromFileKey(item) || '';
+  const url = path || '';
   const displayName = entry?.title || entry?.name || `Image ${index + 1}`;
   if (url) logFinalMediaUrl('vault-thumbnail', resolveDisplayUrl(url, 'thumbnail', 'getVaultImageReel'));
   return {

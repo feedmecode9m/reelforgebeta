@@ -626,6 +626,71 @@ export function getEpisodeByReelId(reelId) {
 }
 
 /**
+ * Update the catalog + studio metadata episode title for a bound reel.
+ * Keeps Episodes labeling / title-match ordering in sync after vault renames.
+ * @param {string} reelId
+ * @param {string} nextTitle
+ * @returns {{ episodeId: string; title: string } | null}
+ */
+export function updateEpisodeTitleForReel(reelId, nextTitle) {
+    const id = String(reelId || '').trim();
+    const title = String(nextTitle || '').trim();
+    if (!id || !title) return null;
+
+    const byReel = getEpisodeByReelId(id);
+    const stored = getReelSeriesMetadata(id);
+    const episodeId = String(byReel?.episode?.episodeId || stored?.episodeId || '').trim();
+
+    if (!episodeId && !stored) {
+        // Soft metadata stub so later attach/title-match can pick this title up.
+        const saved = saveReelSeriesMetadata(id, {
+            reelId: id,
+            episodeTitle: title
+        });
+        return saved
+            ? { episodeId: String(saved.episodeId || ''), title }
+            : null;
+    }
+
+    const saved = saveReelSeriesMetadata(id, {
+        ...(stored || {}),
+        reelId: id,
+        episodeId: episodeId || stored?.episodeId,
+        episodeTitle: title
+    });
+
+    // Force catalog episode.title even if bind skipped.
+    if (episodeId) {
+        seriesCatalog.update((catalogItems) => {
+            let changed = false;
+            const next = catalogItems.map((series) => ({
+                ...series,
+                seasons: series.seasons.map((season) => ({
+                    ...season,
+                    episodes: season.episodes.map((episode) => {
+                        if (episode.episodeId !== episodeId && episode.reelId !== id) {
+                            return episode;
+                        }
+                        changed = true;
+                        return { ...episode, title };
+                    })
+                }))
+            }));
+            return changed ? next : catalogItems;
+        });
+    }
+
+    console.info('[EPISODE_TITLE_UPDATE]', {
+        reelId: id,
+        episodeId: episodeId || null,
+        title,
+        ts: new Date().toISOString()
+    });
+
+    return { episodeId: episodeId || String(saved?.episodeId || ''), title };
+}
+
+/**
  * @param {string} episodeId
  * @returns {{ series: Series; season: Season; episode: Episode } | undefined}
  */

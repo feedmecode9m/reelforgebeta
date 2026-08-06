@@ -427,26 +427,40 @@ export function deleteThumbnailVaultEntries(deletedIds = [], imageReels = [], op
     backendReachable = true,
     pendingFileKeys = new Set(),
     storageKey = THUMBNAIL_KEY,
-    failedIds = []
+    failedIds = [],
+    deletedFileKeys = []
   } = options;
 
   const deletedSet = new Set([...deletedIds, ...failedIds].map((id) => String(id || '').trim()).filter(Boolean));
+  const deletedFiles = new Set(
+    [...deletedFileKeys]
+      .map((k) => String(k || '').trim())
+      .filter(Boolean)
+      .map((k) => k.split('/').pop() || k)
+  );
   vaultForensic('VAULT_DELETE_START', {
     vaultType: 'thumbnail',
     assetId: [...deletedSet].join(',') || null,
-    fileName: null,
+    fileName: [...deletedFiles].join(',') || null,
     storageLocation: storageKey,
     backendEndpoint: null,
     result: 'delete_start',
-    count: deletedSet.size
+    count: deletedSet.size + deletedFiles.size
   });
   const before = readThumbnailVault(storageKey);
 
   const afterTombstone = before.filter((entry) => {
     if (!entry) return false;
-    if (typeof entry === 'string') return true;
+    if (typeof entry === 'string') {
+      const key = String(entry).trim();
+      const base = key.split('/').pop() || key;
+      return !deletedFiles.has(key) && !deletedFiles.has(base);
+    }
     const id = String(entry?.id || '').trim();
-    return !id || !deletedSet.has(id);
+    if (id && deletedSet.has(id)) return false;
+    const fileKey = thumbnailEntryFileKey(entry);
+    if (fileKey && (deletedFiles.has(fileKey) || deletedSet.has(fileKey))) return false;
+    return true;
   });
 
   writeThumbnailVault(afterTombstone, storageKey);
@@ -456,13 +470,14 @@ export function deleteThumbnailVaultEntries(deletedIds = [], imageReels = [], op
     backendReachable,
     pendingFileKeys,
     storageKey,
-    purgeGhostCanonical: backendReachable
+    purgeGhostCanonical: backendReachable,
+    purgeMarkedOrphans: true
   });
 
   vaultForensic('VAULT_DELETE_SUCCESS', {
     vaultType: 'thumbnail',
     assetId: [...deletedSet].join(',') || null,
-    fileName: null,
+    fileName: [...deletedFiles].join(',') || null,
     storageLocation: storageKey,
     backendEndpoint: null,
     result: 'delete_local_reconcile',
@@ -474,7 +489,8 @@ export function deleteThumbnailVaultEntries(deletedIds = [], imageReels = [], op
     afterTombstone: afterTombstone.length,
     after: reconcile.entries.length,
     purged: reconcile.purged,
-    deletedIds: [...deletedSet]
+    deletedIds: [...deletedSet],
+    deletedFileKeys: [...deletedFiles]
   };
 }
 

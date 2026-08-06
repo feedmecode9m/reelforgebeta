@@ -233,13 +233,17 @@ export function clearThumbnailRelatedData() {
     console.warn('[storage] cleared thumbnail/feed related keys, preserved auth/settings');
 }
 
-export function clearNonPreservedStorageBySize() {
+/**
+ * @param {{ excludeKeys?: string[] }} [options]
+ */
+export function clearNonPreservedStorageBySize(options = {}) {
     if (typeof window === 'undefined') return;
 
+    const exclude = new Set(options.excludeKeys || []);
     const entries = [];
     for (let i = 0; i < localStorage.length; i += 1) {
         const key = localStorage.key(i) || '';
-        if (!key || PRESERVED_KEYS.has(key)) continue;
+        if (!key || PRESERVED_KEYS.has(key) || exclude.has(key)) continue;
         const value = localStorage.getItem(key) || '';
         entries.push({ key, size: (key.length + value.length) * 2 });
     }
@@ -362,10 +366,22 @@ export function safeStorageSet(key, value, options = {}) {
         }
 
         console.error('[storage:set] quota exceeded for', key);
+        // Video-vault writes must not nuke thumbnail metadata — that turns vault images
+        // into outline-only cards while an MP4 upload is buffering.
+        const isVideoVaultKey = key === 'personal_video_vault' || key === 'video_vault_index';
         if (!PRESERVED_KEYS.has(key)) {
-            clearThumbnailRelatedData();
-            if (options.thumbnailKey) {
-                clearOldestThumbnailData(options.thumbnailKey, 5);
+            if (isVideoVaultKey) {
+                const thumbKey =
+                    options.quotaEvictThumbnailKey || options.thumbnailKey || 'personal_thumbnails';
+                clearNonPreservedStorageBySize({
+                    excludeKeys: [thumbKey, 'personal_thumbnails', 'personal_thumbnail_index', key]
+                });
+                console.warn('[storage:set] video vault quota — sized eviction only (thumbs preserved)');
+            } else {
+                clearThumbnailRelatedData();
+                if (options.thumbnailKey) {
+                    clearOldestThumbnailData(options.thumbnailKey, 5);
+                }
             }
         }
 
@@ -390,10 +406,16 @@ export function safeLocalStorageSet(key, data, options = {}) {
         minimalFields.forEach((field) => {
             if (item?.[field] !== undefined) kept[field] = item[field];
         });
-        if (item?.thumbnail && !String(item.thumbnail).startsWith('video') && !String(item.thumbnail).startsWith('blob:')) {
+        if (item?.thumbnail && !String(item.thumbnail).startsWith('video') && !String(item.thumbnail).startsWith('blob:') && !String(item.thumbnail).startsWith('data:')) {
             kept.thumbnail = item.thumbnail;
         }
-        if (typeof item?.url === 'string' && !item.url.startsWith('data:')) {
+        // Never persist blob:/data: — they expire, bloat quota recovery, and mid-upload
+        // blob previews must stay memory-only so we do not wipe personal_thumbnails.
+        if (
+            typeof item?.url === 'string' &&
+            !item.url.startsWith('data:') &&
+            !item.url.startsWith('blob:')
+        ) {
             kept.url = item.url;
         }
         return kept;

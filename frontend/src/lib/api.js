@@ -105,21 +105,23 @@ export function notifyBackendReconnecting(message = 'Backend reconnecting...') {
 }
 
 export async function checkBackendHealth() {
-    const paths = ['/api/health', '/health', '/'];
+    // Netlify → Railway proxy often needs >5s under load (large R2 PUTs saturate the
+    // browser connection). AbortSignal.timeout(5000) produced false "Connection degraded
+    // — retrying (The operation timed out.)" banners while the backend was healthy.
+    const HEALTH_TIMEOUT_MS = 15_000;
+    const paths = ['/api/health', '/health'];
     const bases = [];
 
-    if (import.meta.env.DEV) {
-        bases.push('');
+    // Prefer same-origin first (Netlify proxy / Vite proxy).
+    bases.push(API_BASE_URL || '');
+    if (BACKEND_URL && BACKEND_URL !== API_BASE_URL && !bases.includes(BACKEND_URL)) {
+        // Direct Railway only as secondary probe (skipped when same-origin is configured).
+        if (!(API_BASE_URL === '' && import.meta.env.PROD)) {
+            bases.push(BACKEND_URL);
+        }
     }
-    if (API_BASE_URL && !bases.includes(API_BASE_URL)) {
-        bases.push(API_BASE_URL);
-    }
-    if (BACKEND_URL && !bases.includes(BACKEND_URL)) {
-        bases.push(BACKEND_URL);
-    }
-    if (bases.length === 0) {
-        bases.push('');
-    }
+
+    let lastErrorMessage = '';
 
     for (const base of bases) {
         for (const path of paths) {
@@ -127,7 +129,8 @@ export async function checkBackendHealth() {
                 logApiDebug('healthcheck:request', `${base}${path}`);
                 const response = await fetch(`${base}${path}`, {
                     method: 'GET',
-                    signal: AbortSignal.timeout(5000)
+                    cache: 'no-store',
+                    signal: AbortSignal.timeout(HEALTH_TIMEOUT_MS)
                 });
 
                 if (response.ok) {
@@ -142,11 +145,10 @@ export async function checkBackendHealth() {
                     logApiDebug('healthcheck:ok', `${base}${path}`, response.status);
                     return true;
                 }
+                lastErrorMessage = `HTTP ${response.status}`;
             } catch (error) {
+                lastErrorMessage = error?.message || 'healthcheck failed';
                 pipelineDiagCors('checkBackendHealth', 'api.js', error, { url: `${base}${path}` });
-                setBackendConnectionStatus('degraded', {
-                    lastError: error?.message || 'healthcheck failed'
-                });
                 if (shouldStreamDiagnostics()) {
                     console.warn(`Backend health check failed for ${base}${path}:`, error);
                 }
@@ -154,6 +156,9 @@ export async function checkBackendHealth() {
         }
     }
 
+    setBackendConnectionStatus('degraded', {
+        lastError: lastErrorMessage || 'healthcheck failed'
+    });
     pipelineDiag('API', 'checkBackendHealth', 'api.js', { result: 'unhealthy' });
     return false;
 }

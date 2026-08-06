@@ -137,6 +137,8 @@
   let selectedThumbnailIds = [];
   let selectedVideoIds = [];
   let thumbnailCanonicalizationDone = false;
+  /** @type {Record<string, number>} fileName → put percent */
+  let vaultUploadPercents = {};
   let thumbnailCanonInFlight = false;
   // BG-7X: prevent identical duplicate uploads while an upload is in-flight (see uploadLockDiag.js).
   const VAULT_UPLOAD_TIMEOUT_MS_LARGE = 20 * 60 * 1000;
@@ -365,6 +367,87 @@
 
   onMount(async () => {
     refreshAdminSessionReady();
+    // Repair failed/interrupted stubs that still hold dead blob URLs (blocks ⚠ placeholder).
+    personalVideos.update((videos) => {
+      let changed = false;
+      const next = (Array.isArray(videos) ? videos : []).map((item) => {
+        const state = String(item?.uploadState || '');
+        if (state !== 'failed' && state !== 'interrupted') return item;
+        const url = String(item?.url || '').trim();
+        if (!url) return item;
+        changed = true;
+        if (url.startsWith('blob:')) {
+          try {
+            URL.revokeObjectURL(url);
+          } catch {
+            /* ignore */
+          }
+          try {
+            resourceManager.revokeBlobUrl?.(url);
+          } catch {
+            /* ignore */
+          }
+        }
+        return { ...item, url: '' };
+      });
+      if (changed) {
+        try {
+          persistPersonalVault(next);
+        } catch {
+          /* ignore */
+        }
+        console.info('[MP4_FAILED_REPAIR]', {
+          clearedDeadUrls: true,
+          ts: new Date().toISOString()
+        });
+      }
+      return changed ? next : videos;
+    });
+    // Drop feed cards that point at unfinished vault stubs (causes Theater "No Video Available").
+    try {
+      const vault = get(personalVideos) || [];
+      const badIds = new Set(
+        vault
+          .filter((v) => {
+            const state = String(v?.uploadState || '');
+            return (
+              v?.isOptimisticLocal ||
+              state === 'failed' ||
+              state === 'interrupted' ||
+              state === 'pending_accept' ||
+              state === 'uploading' ||
+              String(v?.id || '').startsWith('local-upload-') ||
+              String(v?.id || '').startsWith('local-pending-')
+            );
+          })
+          .map((v) => String(v?.id || '').trim())
+          .filter(Boolean)
+      );
+      if (badIds.size && feed?.update) {
+        feed.update((currentFeed) => {
+          const next = { ...currentFeed };
+          let removed = 0;
+          for (const cat of Object.keys(next)) {
+            const before = next[cat]?.length || 0;
+            next[cat] = (next[cat] || []).filter((r) => {
+              const pid = String(r?.personal_video_id || r?.id || '').trim();
+              return !(r?.isPersonalVideo && pid && badIds.has(pid));
+            });
+            removed += before - (next[cat]?.length || 0);
+          }
+          if (removed) {
+            console.info('[FEED_SCRUB_FAILED_VAULT]', {
+              removed,
+              badIds: [...badIds],
+              ts: new Date().toISOString()
+            });
+          }
+          return next;
+        });
+      }
+    } catch {
+      /* ignore */
+    }
     const onSessionChange = () => refreshAdminSessionReady();
     window.addEventListener('reelforge:admin-session-changed', onSessionChange);
     window.addEventListener('AUTH_SESSION_EXPIRED', onSessionChange);
@@ -380,12 +463,22 @@
       event.returnValue = '';
     };
     window.addEventListener('beforeunload', onBeforeUnload);
+    const onVaultUploadProgress = (event) => {
+      const detail = event?.detail || {};
+      const fileName = String(detail.fileName || '').trim();
+      const percent = Number(detail.percent);
+      if (!fileName || Number.isNaN(percent)) return;
+      if (String(detail.phase || '') !== 'put') return;
+      vaultUploadPercents = { ...vaultUploadPercents, [fileName]: Math.max(0, Math.min(100, percent)) };
+    };
+    window.addEventListener('reelforge:upload-progress', onVaultUploadProgress);
     await ensureThumbnailCanonicalization();
     return () => {
       window.removeEventListener('beforeunload', onBeforeUnload);
       window.removeEventListener('reelforge:admin-session-changed', onSessionChange);
       window.removeEventListener('AUTH_SESSION_EXPIRED', onSessionChange);
       window.removeEventListener('storage', onStorage);
+      window.removeEventListener('reelforge:upload-progress', onVaultUploadProgress);
     };
   });
 
@@ -1265,6 +1358,9 @@
     stagePendingVaultVideo(file, 'drop');
   }
 
+  /** Blob <video> previews freeze the tab on large MP4s (e.g. condo ~346MB). */
+  const VAULT_BLOB_PREVIEW_MAX_BYTES = 24 * 1024 * 1024;
+
   function clearPendingVaultVideo() {
     const current = get(pendingVaultVideo);
     if (current?.preview) {
@@ -1279,6 +1375,17 @@
         /* ignore */
       }
     }
+    const pendingId = String(current?.id || '').trim();
+    if (pendingId || current) {
+      personalVideos.update((videos) =>
+        (Array.isArray(videos) ? videos : []).filter((item) => {
+          if (!item) return false;
+          if (pendingId && String(item.id || '').trim() === pendingId) return false;
+          if (String(item.uploadState || '') === 'pending_accept') return false;
+          return true;
+        })
+      );
+    }
     pendingVaultVideo.set(null);
   }
 
@@ -1290,33 +1397,89 @@
       return;
     }
     clearPendingVaultVideo();
-    const preview =
-      typeof resourceManager?.addBlobUrl === 'function'
-        ? resourceManager.addBlobUrl(URL.createObjectURL(file))
-        : URL.createObjectURL(file);
+    const skipBlobPreview = Number(file.size || 0) > VAULT_BLOB_PREVIEW_MAX_BYTES;
+    let preview = '';
+    if (!skipBlobPreview) {
+      preview =
+        typeof resourceManager?.addBlobUrl === 'function'
+          ? resourceManager.addBlobUrl(URL.createObjectURL(file))
+          : URL.createObjectURL(file);
+    }
+    const pendingId = `local-pending-${Date.now()}`;
     const pending = {
+      id: pendingId,
       file,
       preview,
+      skipBlobPreview,
       name: file.name,
       size: file.size,
       type: file.type || 'video/mp4'
     };
+    // Insert grid card immediately — never attach 362MB blob as card media.
+    const stagedCard = {
+      id: pendingId,
+      name: file.name,
+      fileName: file.name,
+      title: file.name,
+      url: '',
+      type: file.type || 'video/mp4',
+      size: file.size,
+      addedAt: new Date().toISOString(),
+      uploadState: 'pending_accept',
+      isOptimisticLocal: true
+    };
+    personalVideos.update((videos) => {
+      const next = [
+        stagedCard,
+        ...(Array.isArray(videos) ? videos : []).filter(
+          (item) =>
+            item &&
+            String(item.uploadState || '') !== 'pending_accept' &&
+            !String(item.id || '').startsWith('local-pending-')
+        )
+      ];
+      try {
+        persistPersonalVault(next);
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
     pendingVaultVideo.set(pending);
     console.info('[MP4_PENDING_PREVIEW]', {
       source,
       fileName: pending.name,
       fileSize: pending.size,
       fileType: pending.type,
+      pendingId,
+      skipBlobPreview,
+      ts: new Date().toISOString()
+    });
+    console.info('[VIDEO_VAULT_INSERT]', {
+      source: 'stagePendingVaultVideo',
+      id: pendingId,
+      uploadState: 'pending_accept',
+      url: preview ? String(preview).slice(0, 80) : '',
+      skipBlobPreview,
       ts: new Date().toISOString()
     });
     pipelineDiag('DND', 'stagePendingVaultVideo', 'VaultExperience.svelte', {
       fileName: pending.name,
-      result: 'preview_pending_accept'
+      result: skipBlobPreview ? 'pending_accept_no_blob_preview' : 'preview_pending_accept'
     });
-    uploadStatus.set(`🎬 Preview: ${file.name} — Accept or Reject`);
+    uploadStatus.set(
+      skipBlobPreview
+        ? `🎬 ${file.name} ready — preview skipped (large file). Click ACCEPT to upload.`
+        : `🎬 Preview: ${file.name} — Accept or Reject`
+    );
   }
 
   export async function acceptPendingVideo() {
+    console.info('[MP4_PENDING_ACCEPT_CLICK]', {
+      hasPending: Boolean(get(pendingVaultVideo)?.file),
+      adminSessionReady,
+      ts: new Date().toISOString()
+    });
     const pending = get(pendingVaultVideo);
     if (!pending?.file) {
       uploadStatus.set('⚠️ No pending video to accept');
@@ -1325,17 +1488,73 @@
     }
     if (!getAdminToken()) {
       uploadStatus.set('🔐 Studio login required — open Studio, sign in, then Accept');
+      refreshAdminSessionReady();
       resourceManager.setTimeout(() => uploadStatus.set('Standby'), 5000);
       return;
     }
     console.info('[MP4_PENDING_ACCEPT]', {
       fileName: pending.name,
       fileSize: pending.size,
+      skipBlobPreview: Boolean(pending.skipBlobPreview),
       ts: new Date().toISOString()
     });
     const file = pending.file;
-    clearPendingVaultVideo();
-    await processVaultVideoFile(file, 'pending_accept');
+    const previewUrl = String(pending.preview || '').trim();
+    const pendingId = String(pending.id || '').trim();
+    const optimisticId = pendingId.startsWith('local-pending-')
+      ? `local-upload-${Date.now()}`
+      : pendingId || `local-upload-${Date.now()}`;
+    // Clear pending UI without revoking blob until processVaultVideoFile finishes replace.
+    pendingVaultVideo.set(null);
+    const optimisticEntry = {
+      id: optimisticId,
+      name: file.name,
+      fileName: file.name,
+      title: file.name,
+      url: '',
+      type: file.type || 'video/mp4',
+      size: file.size,
+      addedAt: new Date().toISOString(),
+      uploadState: 'uploading',
+      isOptimisticLocal: true
+    };
+    personalVideos.update((videos) => {
+      const filtered = (Array.isArray(videos) ? videos : []).filter((item) => {
+        if (!item) return false;
+        if (pendingId && String(item.id || '').trim() === pendingId) return false;
+        if (String(item.uploadState || '') === 'pending_accept') return false;
+        return true;
+      });
+      const next = [optimisticEntry, ...filtered];
+      try {
+        persistPersonalVault(next);
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+    console.info('[VIDEO_VAULT_INSERT]', {
+      source: 'acceptPendingVideo:optimistic',
+      id: optimisticId,
+      url: '',
+      size: file.size,
+      uploadState: 'uploading',
+      ts: new Date().toISOString()
+    });
+    uploadStatus.set(`🎬 Uploading ${file.name} (${(file.size / (1024 * 1024)).toFixed(0)} MB) — keep this tab open`);
+    try {
+      await processVaultVideoFile(file, 'pending_accept', {
+        optimisticId,
+        previewUrl
+      });
+    } catch (err) {
+      console.error('[MP4_PENDING_ACCEPT_ERROR]', {
+        message: err?.message || String(err),
+        ts: new Date().toISOString()
+      });
+      markOptimisticVaultUploadFailed(optimisticId, err?.message || 'accept_threw');
+      uploadStatus.set(`❌ Upload failed: ${err?.message || 'unknown error'}`);
+    }
   }
 
   export function rejectPendingVideo() {
@@ -1347,6 +1566,131 @@
     clearPendingVaultVideo();
     uploadStatus.set('Rejected video');
     resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
+  }
+
+  function markOptimisticVaultUploadFailed(optimisticId, detail = '') {
+    const id = String(optimisticId || '').trim();
+    if (!id) return;
+    personalVideos.update((videos) => {
+      const next = (Array.isArray(videos) ? videos : []).map((item) => {
+        if (String(item?.id || '').trim() !== id) return item;
+        const deadUrl = String(item?.url || '').trim();
+        if (deadUrl.startsWith('blob:')) {
+          try {
+            URL.revokeObjectURL(deadUrl);
+          } catch {
+            /* ignore */
+          }
+          try {
+            resourceManager.revokeBlobUrl?.(deadUrl);
+          } catch {
+            /* ignore */
+          }
+        }
+        return {
+          ...item,
+          // Clear dead preview so the ⚠ placeholder branch always wins over MediaRenderer.
+          url: '',
+          uploadState: 'failed',
+          uploadError: String(detail || 'upload_failed')
+        };
+      });
+      try {
+        persistPersonalVault(next);
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+    // Remove any feed cards that pointed at this unfinished upload.
+    try {
+      feed.update((currentFeed) => {
+        const next = { ...currentFeed };
+        for (const cat of Object.keys(next)) {
+          next[cat] = (next[cat] || []).filter(
+            (r) => !(r?.isPersonalVideo && String(r?.personal_video_id || r?.id || '') === id)
+          );
+        }
+        return next;
+      });
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function purgeFailedVaultVideo(video) {
+    const id = String(video?.id || '').trim();
+    if (!id) return;
+    console.info('[MP4_FAILED_PURGE]', {
+      id,
+      fileName: video?.fileName || video?.name || null,
+      uploadError: video?.uploadError || null,
+      ts: new Date().toISOString()
+    });
+    handleVideoDelete(id, video);
+  }
+
+  function retryFailedVaultVideo(video) {
+    const id = String(video?.id || '').trim();
+    const err = String(video?.uploadError || '');
+    console.info('[MP4_FAILED_RETRY]', {
+      id,
+      fileName: video?.fileName || video?.name || null,
+      uploadError: err || null,
+      ts: new Date().toISOString()
+    });
+    refreshAdminSessionReady();
+    if (isInvalidSessionError(err) || /invalid_session/i.test(err)) {
+      if (!getAdminToken()) {
+        uploadStatus.set('🔐 Sign in via Studio first, then tap Retry upload again');
+        resourceManager.setTimeout(() => uploadStatus.set('Standby'), 6000);
+        return;
+      }
+    }
+    if (id) {
+      personalVideos.update((videos) => {
+        const next = (Array.isArray(videos) ? videos : []).filter(
+          (item) => String(item?.id || '').trim() !== id
+        );
+        try {
+          persistPersonalVault(next);
+        } catch {
+          /* ignore */
+        }
+        return next;
+      });
+      try {
+        feed.update((currentFeed) => {
+          const next = { ...currentFeed };
+          for (const cat of Object.keys(next)) {
+            next[cat] = (next[cat] || []).filter(
+              (r) => !(r?.isPersonalVideo && String(r?.personal_video_id || r?.id || '') === id)
+            );
+          }
+          return next;
+        });
+      } catch {
+        /* ignore */
+      }
+    }
+    uploadStatus.set('🔁 Choose the MP4 again to retry upload');
+    openVaultVideoFilePicker();
+  }
+
+  function removeOptimisticVaultEntry(optimisticId) {
+    const id = String(optimisticId || '').trim();
+    if (!id) return;
+    personalVideos.update((videos) => {
+      const next = (Array.isArray(videos) ? videos : []).filter(
+        (item) => String(item?.id || '').trim() !== id
+      );
+      try {
+        persistPersonalVault(next);
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
   }
 
   function isVaultVideoFileCandidate(f) {
@@ -1393,17 +1737,20 @@
     stagePendingVaultVideo(file, 'file_picker');
   }
 
-  async function processVaultVideoFile(file, source = 'drop') {
+  async function processVaultVideoFile(file, source = 'drop', options = {}) {
+    const optimisticId = String(options?.optimisticId || '').trim();
+    const previewUrl = String(options?.previewUrl || '').trim();
     console.info('[MP4_UPLOAD_SOURCE]', {
       source,
       fileName: file?.name || null,
       fileSize: file?.size ?? null,
       fileType: file?.type || null,
+      optimisticId: optimisticId || null,
       ts: new Date().toISOString()
     });
     console.info('[MP4_DROP_ACCEPTED]', {
       fileName: file.name,
-      uploadPath: 'handleVaultVideoDrop→uploadMedia'
+      uploadPath: 'processVaultVideoFile→uploadMedia'
     });
     console.info('[BG7G_DROP]', {
       ts: new Date().toISOString(),
@@ -1425,6 +1772,7 @@
 
     if (file.size > CONFIG.MAX_VIDEO_SIZE) {
       uploadStatus.set(`⚠️ Video too large. Max ${CONFIG.MAX_VIDEO_SIZE / 1024 / 1024}MB`);
+      markOptimisticVaultUploadFailed(optimisticId, 'too_large');
       return;
     }
 
@@ -1435,6 +1783,7 @@
     if (!getAdminToken()) {
       uploadStatus.set('🔐 Studio login required — open Studio, sign in, then retry upload');
       resourceManager.setTimeout(() => uploadStatus.set('Standby'), 5000);
+      markOptimisticVaultUploadFailed(optimisticId, 'missing_auth');
       return;
     }
 
@@ -1458,6 +1807,7 @@
       });
       uploadStatus.set(`✅ Hero background — visible in vault below`);
       resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2500);
+      removeOptimisticVaultEntry(optimisticId);
       return;
     }
 
@@ -1494,6 +1844,7 @@
             `⏳ Upload in progress (${ageSec}s). Retry in ~${retrySec}s if stuck.`
           );
           resourceManager.setTimeout(() => uploadStatus.set('Standby'), 4000);
+          markOptimisticVaultUploadFailed(optimisticId, 'in_flight_lock');
           return;
         }
       }
@@ -1503,6 +1854,9 @@
       const existing = Array.isArray(persisted) ? persisted : [];
       const match = existing.find((item) => {
         if (!item || typeof item !== 'object') return false;
+        // Ignore the optimistic card we just inserted for this Accept.
+        if (item.isOptimisticLocal || String(item.uploadState || '') === 'uploading') return false;
+        if (optimisticId && String(item.id || '').trim() === optimisticId) return false;
         const existingSize = Number(item?.size || 0);
         if (!incomingSize || !existingSize || existingSize !== incomingSize) return false;
         const existingFileName = String(item?.fileName || item?.file_name || '').trim();
@@ -1558,6 +1912,7 @@
           });
           uploadStatus.set(`✅ Already in vault: ${incomingName || 'video'}`);
           resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
+          removeOptimisticVaultEntry(optimisticId);
           return match;
         }
       }
@@ -1592,6 +1947,7 @@
       });
       uploadStatus.set(`⚠️ ${validation.reason || 'Invalid video file'}`);
       resourceManager.setTimeout(() => uploadStatus.set('Standby'), 3000);
+      markOptimisticVaultUploadFailed(optimisticId, validation.reason || 'validation_failed');
       return;
     }
 
@@ -1737,30 +2093,21 @@
         addedAt: response.createdAt || response.created_at || new Date().toISOString()
       };
       if (isHeroAsset(entry)) {
-        console.info('[BG7W_HERO_VAULT_GATE]', {
+        // Still show in MP4 vault — hero domain should not hide a successful content upload.
+        console.warn('[BG7W_HERO_VAULT_GATE]', {
           reelId: String(entry?.id || '').trim(),
-          blocked: true,
-          reason: 'hero_identity_match'
+          blocked: false,
+          reason: 'hero_identity_match_allowed_in_content_vault',
+          fileName: entry.fileName || file.name
         });
-        console.info('[BG7G_STORE]', {
-          ts: new Date().toISOString(),
-          component: 'handleVaultVideoDrop',
-          file: 'VaultExperience.svelte',
-          fileName: file.name,
-          fileSize: file.size,
-          uploadUrl: entry.url || null,
-          state: 'failure',
-          reason: 'hero_asset_blocked_from_vault'
-        });
-        uploadStatus.set('⚠️ Hero media blocked from content vault');
-        return;
       }
       console.info('[VIDEO_VAULT_INSERT]', {
-        source: 'VaultExperience.handleVaultVideoDrop',
+        source: 'VaultExperience.processVaultVideoFile',
         id: entry.id || '',
         mime: entry.type || '',
         url: entry.url || '',
         thumbnail: entry.thumbnail || '',
+        optimisticId: optimisticId || null,
         ts: new Date().toISOString()
       });
 
@@ -1769,13 +2116,18 @@
         const identityKey = (item) => {
           const rawUrl = String(item?.url || item?.video_url || '').trim();
           const canonicalUrl = rawUrl ? toRelativeMediaPath(rawUrl) : '';
-          if (canonicalUrl) return canonicalUrl;
+          if (canonicalUrl && !canonicalUrl.startsWith('blob:')) return canonicalUrl;
           const fileName = String(item?.fileName || item?.file_name || '').trim();
-          if (fileName) return fileName;
+          if (fileName) return `name:${fileName}`;
           return String(item?.id || '').trim();
         };
         const incomingKey = identityKey(entry);
         const filtered = videos.filter((item) => {
+          const itemId = String(item?.id || '').trim();
+          if (optimisticId && itemId === optimisticId) return false;
+          if (item?.isOptimisticLocal && String(item?.fileName || item?.name || '') === String(file.name)) {
+            return false;
+          }
           const existingKey = identityKey(item);
           const match = Boolean(incomingKey) && Boolean(existingKey) && incomingKey === existingKey;
           if (match) {
@@ -1787,7 +2139,7 @@
           }
           return !match;
         });
-        const next = [entry, ...filtered];
+        const next = [{ ...entry, uploadState: 'ready' }, ...filtered];
         if (next.length > CONFIG.MAX_VAULT_ITEMS) next.pop();
         console.info('[BG7G_STORE]', {
           ts: new Date().toISOString(),
@@ -1802,12 +2154,24 @@
           entryId: entry.id || null
         });
         reelResStoreMutation('personalVideos', before, next, {
-          trigger: 'handleVaultVideoDrop',
+          trigger: 'processVaultVideoFile',
           entryId: entry.id,
           entryUrl: entry.url
         });
         return next;
       });
+      if (previewUrl && previewUrl.startsWith('blob:')) {
+        try {
+          URL.revokeObjectURL(previewUrl);
+        } catch {
+          /* ignore */
+        }
+        try {
+          resourceManager.revokeBlobUrl?.(previewUrl);
+        } catch {
+          /* ignore */
+        }
+      }
       console.info('[STORE_UPDATE]', {
         store: 'personalVideos',
         count: get(personalVideos).length,
@@ -1899,7 +2263,11 @@
       });
       uploadStatus.set(`❌ Failed: ${failedError.message}`);
       if (isInvalidSessionError(failedError)) {
-        uploadStatus.set('🔐 Studio session expired — sign in via Studio and retry upload');
+        uploadStatus.set('🔐 Studio session expired — sign in via Studio, then tap Retry upload');
+        refreshAdminSessionReady();
+        markOptimisticVaultUploadFailed(optimisticId, 'invalid_session — sign in via Studio, then Retry');
+      } else {
+        markOptimisticVaultUploadFailed(optimisticId, failedError?.message || 'upload_failed');
       }
       vaultForensic('VAULT_UPLOAD_FAIL', {
         vaultType: 'video',
@@ -2470,6 +2838,7 @@
         {#if isImage(reel) && reel.url && !reel.orphaned && !reel.missing}
           <MediaThumbnail
             url={reel.url}
+            raw={String(reel.url || '').startsWith('blob:') || String(reel.url || '').startsWith('data:')}
             alt={reel.name}
             loading="lazy"
             className="vault-grid-visual {i === ($personalThumbnailIndex % $personalThumbnailCollection.length) ? 'active' : ''}"
@@ -2579,19 +2948,30 @@
     />
     {#if $pendingVaultVideo}
       <div class="pending-preview pending-video-preview" on:click|stopPropagation role="group">
-        <video
-          class="pending-video"
-          src={$pendingVaultVideo.preview}
-          muted
-          playsinline
-          controls
-          preload="metadata"
-        ></video>
+        {#if $pendingVaultVideo.skipBlobPreview || !$pendingVaultVideo.preview}
+          <div class="pending-large-static" aria-hidden="true">
+            <span class="pending-large-icon">🎬</span>
+            <strong>{$pendingVaultVideo.name}</strong>
+            <small>
+              {(($pendingVaultVideo.size || 0) / (1024 * 1024)).toFixed(1)} MB — preview skipped for large
+              files so upload can start
+            </small>
+          </div>
+        {:else}
+          <video
+            class="pending-video"
+            src={$pendingVaultVideo.preview}
+            muted
+            playsinline
+            controls
+            preload="metadata"
+          ></video>
+        {/if}
         <div class="pending-actions">
           <button
             type="button"
             class="accept-btn"
-            disabled={!adminSessionReady}
+            class:is-disabled={!adminSessionReady}
             on:click|stopPropagation={acceptPendingVideo}
           >
             ✅ ACCEPT
@@ -2642,25 +3022,68 @@
         {#if video}
           {@const reel = getVaultVideoReel(video)}
           {@const microDrama = isMicroDramaContent(video) || isMicroDramaContent(reel)}
-          {@const isGhostCard = isGhostVideoVaultEntry(video) || isHeroInjectedVaultCard(video)}
+          {@const isUploadingCard =
+            video.uploadState === 'uploading' || String(video?.id || '').startsWith('local-upload-')}
+          {@const isFailedCard =
+            video.uploadState === 'failed' || video.uploadState === 'interrupted'}
+          {@const isPendingCard =
+            video.uploadState === 'pending_accept' || String(video?.id || '').startsWith('local-pending-')}
+          {@const uploadPct =
+            vaultUploadPercents[String(video?.fileName || video?.name || '').trim()] ??
+            vaultUploadPercents[String(video?.name || '').trim()] ??
+            null}
+          {@const isGhostCard =
+            isGhostVideoVaultEntry(video) ||
+            isHeroInjectedVaultCard(video) ||
+            isFailedCard ||
+            isPendingCard}
           {@const _vaultRenderGateBranch = logVaultRenderGate(video, reel, vi, { isVideo, isVideoReel })}
           <div
             class="vault-card thumbnail-item video-vault-item video"
             class:micro-drama={microDrama}
-            class:ghost-outline={isGhostCard}
+            class:ghost-outline={isGhostCard && !isFailedCard && !isPendingCard && !isUploadingCard}
+            class:vault-card--uploading={isUploadingCard}
+            class:vault-card--failed={isFailedCard}
+            class:vault-card--pending={isPendingCard}
             use:vaultCardDiagnostics={`video-${vi}`}
-            draggable={!isGhostCard}
+            draggable={!isGhostCard && !isUploadingCard}
             on:dragstart={(event) => handleVaultVideoDragStart(event, video)}
             role="listitem"
           >
             {#if $reelshortActive && microDrama}
               <VaultEngagementBadge itemId={video.id || reel.name} />
             {/if}
-            {#if isVideo(reel) && reel.url}
+            {#if isPendingCard}
+              <div class="placeholder vault-uploading-preview vault-pending-face" aria-hidden="true">
+                <span>🎬</span>
+                <small>Pending Accept</small>
+              </div>
+            {:else if isUploadingCard}
+              <div class="placeholder vault-uploading-preview vault-pending-face" aria-hidden="true">
+                <span>⬆</span>
+                <small>
+                  {uploadPct != null
+                    ? `Uploading ${uploadPct}%`
+                    : `Uploading ${(Number(video.size || 0) / (1024 * 1024)).toFixed(0)} MB`}
+                </small>
+                <div class="vault-upload-track" aria-hidden="true">
+                  <div
+                    class="vault-upload-bar"
+                    style="width: {uploadPct != null ? uploadPct : 8}%"
+                  ></div>
+                </div>
+              </div>
+            {:else if isFailedCard}
+              <div class="placeholder vault-interrupted-preview vault-pending-face" aria-hidden="true">
+                <span>⚠</span>
+                <small>{video.uploadState === 'interrupted' ? 'Interrupted' : 'Upload failed'}</small>
+              </div>
+            {:else if isVideo(reel) && reel.url}
               <MediaRenderer
                 type="video"
                 url={reel.url}
                 poster={reel.thumbnailUrl || undefined}
+                raw={String(reel.url || '').startsWith('blob:') || String(reel.url || '').startsWith('data:')}
                 useSourceElement={true}
                 muted
                 playsinline
@@ -2691,6 +3114,22 @@
             <div class="vault-grid-chrome">
               <span class="thumbnail-label">🎬 {reel.name?.substring(0, 12)}...</span>
               <span class="video-size-badge">{formatVaultVideoSizeLabel(video)}</span>
+              {#if video.uploadState === 'pending_accept'}
+                <span class="upload-state-badge" title="Waiting for Accept">🎬 Pending Accept</span>
+              {:else if video.uploadState === 'uploading'}
+                <span class="upload-state-badge" title="Upload in progress">⬆ Uploading</span>
+              {:else if video.uploadState === 'interrupted'}
+                <span
+                  class="upload-state-badge upload-state-badge--interrupted"
+                  title="Upload interrupted by refresh — drop the file again to finish"
+                >
+                  ⚠ Interrupted — re-drop file
+                </span>
+              {:else if video.uploadState === 'failed'}
+                <span class="upload-state-badge upload-state-badge--failed" title={video.uploadError || 'Upload failed'}>
+                  ⚠ Failed{video.uploadError ? `: ${String(video.uploadError).slice(0, 40)}` : ''}
+                </span>
+              {/if}
               {#if video.urlExpired}
                 <span
                   class="expired-badge"
@@ -2705,19 +3144,41 @@
                 on:pointerdown={stopVaultCardDragGesture}
                 on:mousedown={stopVaultCardDragGesture}
                 on:touchstart={stopVaultCardDragGesture}
-                on:click|stopPropagation|preventDefault={() => handleVideoDelete(video.id, video)}
+                on:click|stopPropagation|preventDefault={() => purgeFailedVaultVideo(video)}
                 aria-label="Delete video {video.name || 'leftover stub'}"
               >
                 ✕
               </button>
-              {#if isGhostCard}
+              {#if video.uploadState === 'failed' || video.uploadState === 'interrupted'}
+                <button
+                  type="button"
+                  class="ghost-purge-btn ghost-retry-btn"
+                  on:pointerdown={stopVaultCardDragGesture}
+                  on:mousedown={stopVaultCardDragGesture}
+                  on:touchstart={stopVaultCardDragGesture}
+                  on:click|stopPropagation|preventDefault={() => retryFailedVaultVideo(video)}
+                >
+                  Retry upload
+                </button>
+                <button
+                  type="button"
+                  class="ghost-purge-btn"
+                  style="top: calc(50% + 2.2rem);"
+                  on:pointerdown={stopVaultCardDragGesture}
+                  on:mousedown={stopVaultCardDragGesture}
+                  on:touchstart={stopVaultCardDragGesture}
+                  on:click|stopPropagation|preventDefault={() => purgeFailedVaultVideo(video)}
+                >
+                  Remove stub
+                </button>
+              {:else if isGhostCard}
                 <button
                   type="button"
                   class="ghost-purge-btn"
                   on:pointerdown={stopVaultCardDragGesture}
                   on:mousedown={stopVaultCardDragGesture}
                   on:touchstart={stopVaultCardDragGesture}
-                  on:click|stopPropagation|preventDefault={() => handleVideoDelete(video.id, video)}
+                  on:click|stopPropagation|preventDefault={() => purgeFailedVaultVideo(video)}
                 >
                   Remove stub
                 </button>

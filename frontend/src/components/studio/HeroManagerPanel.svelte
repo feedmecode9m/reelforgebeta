@@ -11,13 +11,43 @@
         logHeroIntelligenceDiag,
         saveHeroManagerConfig,
         updateHeroManagerConfig,
-        rotateHeroSelection
+        rotateHeroSelection,
+        commitHeroAssetSelection,
+        syncHeroViewerCopyFromAsset
     } from '../../lib/hero/heroIntelligence.js';
+    import {
+        isStockHeroViewerCopy,
+        resolveHeroAssetTruth
+    } from '../../lib/hero/heroViewerTruth.js';
+    import {
+        analyzeHeroTitle,
+        dispatchVaultTitleUpdated,
+        isUnsafeHeroFilenameTitle,
+        queuePendingTitlePatch,
+        reconcilePendingTitlePatches,
+        resolveCanonicalHeroTitle,
+        buildHeroManagerPatchFromTitleIntel,
+        UNTITLED_CREATOR_EXPERIENCE
+    } from '../../lib/hero/heroTitleIntelligence.js';
+    import {
+        approveIdentityProposal,
+        getPendingStoryProposal,
+        ignoreIdentityProposal
+    } from '../../lib/intelligence/contentIdentityGuard.js';
     import { buildHeroAssetRegistry, isVideoHeroAssetType } from '../../lib/hero/heroAssetBridge.js';
     import { deleteReelById, fetchReadyReels } from '../../lib/api/media.js';
     import { getAdminAuthHeaders } from '../../lib/api.js';
     import { applyCanonicalDeleteClientEffects } from '../../lib/deletionSync.js';
     import { vaultForensic } from '../../lib/diagnostics/vaultForensics.js';
+    import {
+        loadHeroReel,
+        saveHeroReel
+    } from '../../lib/hero/heroReelIdentity.js';
+    import {
+        getEpisodeByReelId,
+        updateEpisodeTitleForReel
+    } from '../../lib/series/seriesStore.js';
+    import { bridgeFeedReelsToCatalog } from '../../lib/series/episodeBridge.js';
 
     /** @type {Record<string, unknown>[]} */
     export let feedReels = [];
@@ -31,8 +61,12 @@
     export let storageSet = () => ({ ok: true });
     /** @type {(preserveLocal?: boolean) => Promise<void>} */
     export let syncFromVault = async () => {};
-    /** @type {{ FEED_STORAGE_KEY?: string } | null} */
+    /** @type {{ FEED_STORAGE_KEY?: string; TITLES_STORAGE_KEY?: string; VIDEO_VAULT_KEY?: string; THUMBNAIL_STORAGE_KEY?: string; API_BASE_URL?: string } | null} */
     export let CONFIG = null;
+    /** @type {{ saveTitle?: (reelId: string, titleData: { title?: string, title_original?: string }) => void; getTitle?: (reelId: string) => { title?: string } | null } | null} */
+    export let persistentTitles = null;
+    /** Optional Studio-level title updater (feed + backend PATCH). */
+    export let updateReelTitle = null;
 
     let config = loadHeroManagerConfig();
     let statusMessage = '';
@@ -42,6 +76,13 @@
     let storyScheduledFor = String(config.storyScheduledFor || '');
     let heroVaultVideoCssFixLogged = false;
     let heroVaultVideoDomFixLogged = false;
+    /** Suppress re-applying our own save events mid interaction. */
+    let suppressExternalManagerSync = false;
+    let persistBusy = false;
+    /** Debounced autosave for Viewer Description keystrokes → live hero landscape. */
+    let descriptionAutosaveTimer = null;
+    /** `custom` | `blank` — blank is an intentional menu choice, not missing copy. */
+    let descriptionMode = String(config.heroDescription || '').trim() ? 'custom' : 'blank';
     /** @type {Record<string, boolean>} */
     let vaultVideoLoadedByAsset = {};
     /** @type {Record<string, boolean>} */
@@ -49,11 +90,79 @@
 
     const HERO_IMAGE_STORAGE_KEY = 'reelforge_hero_image';
     const HERO_VIDEO_STORAGE_KEY = 'reelforge_hero_video';
+    const TITLES_KEY = () => CONFIG?.TITLES_STORAGE_KEY || 'reel_titles_persistent';
+    const VIDEO_VAULT_KEY = () => CONFIG?.VIDEO_VAULT_KEY || 'personal_video_vault';
+    const THUMB_VAULT_KEY = () => CONFIG?.THUMBNAIL_STORAGE_KEY || 'personal_thumbnails';
+
+    function readPersistentTitleMap() {
+        try {
+            const raw = JSON.parse(localStorage.getItem(TITLES_KEY()) || '{}');
+            return raw && typeof raw === 'object' ? raw : {};
+        } catch {
+            return {};
+        }
+    }
+
+    function writePersistentTitle(reelId, title) {
+        if (!reelId || !title) return;
+        if (persistentTitles?.saveTitle) {
+            persistentTitles.saveTitle(reelId, { title, title_original: title });
+            return;
+        }
+        const map = readPersistentTitleMap();
+        map[reelId] = {
+            title,
+            title_original: title,
+            savedAt: new Date().toISOString()
+        };
+        try {
+            localStorage.setItem(TITLES_KEY(), JSON.stringify(map));
+        } catch {
+            /* ignore */
+        }
+        storageSet(TITLES_KEY(), map);
+    }
+
+    function lookupPersistentTitle(reelId) {
+        if (!reelId) return '';
+        const fromStore = persistentTitles?.getTitle?.(reelId);
+        if (fromStore?.title) return String(fromStore.title).trim();
+        const map = readPersistentTitleMap();
+        return String(map[reelId]?.title || map[reelId]?.title_original || '').trim();
+    }
+
+    function patchJsonArrayStorage(key, patcher) {
+        try {
+            const list = JSON.parse(localStorage.getItem(key) || '[]');
+            if (!Array.isArray(list)) return false;
+            const next = list.map((entry) => patcher(entry)).filter(Boolean);
+            localStorage.setItem(key, JSON.stringify(next));
+            storageSet(key, next);
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    function applyTitleToRecord(entry, assetId, title) {
+        if (!entry || typeof entry !== 'object') return entry;
+        const id = String(entry.id || entry.assetId || entry.personal_video_id || '').trim();
+        if (id !== assetId) return entry;
+        return {
+            ...entry,
+            title,
+            name: title,
+            title_original: title,
+            _localModified: true
+        };
+    }
+
     const STORY_STATUS_LABELS = {
         draft: 'Draft',
         published: 'Published',
         scheduled: 'Scheduled'
     };
+
     const STORY_TEMPLATES = {
         documentary_spotlight: {
             name: 'Documentary Spotlight',
@@ -154,87 +263,170 @@
         return String(byPath?.id || '');
     }
 
+    function getLiveVaultExtras() {
+        /** @type {Record<string, unknown>[]} */
+        const extras = [];
+        try {
+            if (personalVideos && typeof personalVideos.subscribe === 'function') {
+                const live = get(personalVideos);
+                if (Array.isArray(live)) extras.push(...live);
+            }
+        } catch {
+            /* ignore */
+        }
+        if (Array.isArray(feedReels)) {
+            extras.push(...feedReels);
+        }
+        return extras;
+    }
+
     function refreshHeroAssetRegistry() {
-        const vaultItems = loadHeroVaultItems();
-        const registry = buildHeroAssetRegistry(vaultItems);
-        const img0113 = registry.find(
-            (item) =>
-                String(item?.mediaUrl || '').includes('IMG_0113.JPEG') ||
-                String(item?.assetId || '').includes('IMG_0113.JPEG')
-        );
-        console.info('[HERO_REGISTRY_TRACE]', {
-            stage: 'HeroManagerPanel:refreshHeroAssetRegistry',
-            vaultItemsCount: vaultItems.length,
-            registryCount: registry.length,
-            firstFive: registry.slice(0, 5),
-            img0113Present: Boolean(img0113),
-            img0113AssetId: img0113?.assetId || '',
-            img0113HasAssetId: Boolean(String(img0113?.assetId || '').trim()),
-            configHeroAssetId: config.heroAssetId || '',
-            ts: new Date().toISOString()
-        });
+        const vaultItems = loadHeroVaultItems(getLiveVaultExtras());
+        const registry = buildHeroAssetRegistry(vaultItems, { storageSource: 'vault_pick' });
         heroAssetRegistry.set(registry);
     }
+
+    /** Snapshot of all control fields for a complete save (settings + story + campaigns). */
+    function buildConfigSnapshot(overrides = {}) {
+        const snapshot = {
+            ...config,
+            storyScheduledFor:
+                overrides.storyScheduledFor !== undefined
+                    ? overrides.storyScheduledFor
+                    : String(storyScheduledFor || config.storyScheduledFor || '').trim(),
+            ...overrides
+        };
+        if (String(snapshot.backgroundSource || '').trim() === 'none') {
+            snapshot.heroAssetId = '';
+            if (!overrides.backgroundStyle) {
+                snapshot.backgroundStyle = snapshot.backgroundStyle || 'gradient_overlay';
+            }
+        }
+        return snapshot;
+    }
+
+    /**
+     * Full admin follow-through: persist every field and notify the hero stage.
+     * @param {string} reason
+     * @param {Record<string, unknown>} [overrides]
+     * @returns {ReturnType<typeof updateHeroManagerConfig> | null}
+     */
+    function persistHeroSettings(reason = 'apply', overrides = {}) {
+        if (persistBusy) {
+            console.info('[HERO_MANAGER_PERSIST]', { reason, skipped: true, cause: 'busy' });
+            return null;
+        }
+        persistBusy = true;
+        suppressExternalManagerSync = true;
+        try {
+            const snapshot = buildConfigSnapshot(overrides);
+            config = snapshot;
+            const result = updateHeroManagerConfig(snapshot, feedReels || []);
+            config = result?.config || loadHeroManagerConfig();
+            storyScheduledFor = String(config.storyScheduledFor || storyScheduledFor || '');
+            refreshHeroAssetRegistry();
+            console.info('[HERO_MANAGER_PERSIST]', {
+                reason,
+                storyStatus: config.storyStatus || 'draft',
+                backgroundSource: config.backgroundSource || '',
+                heroAssetId: config.heroAssetId || '',
+                heroTitle: String(config.heroTitle || '').slice(0, 80),
+                heroDescriptionBlank: !String(config.heroDescription || '').trim(),
+                ts: new Date().toISOString()
+            });
+            syncDescriptionModeFromConfig();
+            return result;
+        } catch (error) {
+            console.error('[HERO_MANAGER_PERSIST_FAILED]', { reason, error });
+            statusMessage = `❌ Save failed: ${error?.message || error}`;
+            return null;
+        } finally {
+            persistBusy = false;
+            if (typeof queueMicrotask === 'function') {
+                queueMicrotask(() => {
+                    suppressExternalManagerSync = false;
+                });
+            } else {
+                setTimeout(() => {
+                    suppressExternalManagerSync = false;
+                }, 0);
+            }
+        }
+    }
+
+    // Keep registry current when config or live vault store changes.
     $: {
         config.heroAssetId;
         config.backgroundSource;
-        statusMessage;
+        if (personalVideos && typeof personalVideos.subscribe === 'function') {
+            void $personalVideos;
+        }
         refreshHeroAssetRegistry();
-    }
-    $: console.info('[HERO_VAULT_RENDER]', {
-        registryCount: $heroAssetRegistry.length,
-        renderedCount: $heroAssetRegistry.length,
-        assetIds: $heroAssetRegistry.map((item) => item.assetId),
-        timestamp: Date.now()
-    });
-    $: console.info('[HERO_REGISTRY_COMPARE]', {
-        dropdownCount: $heroAssetRegistry.length,
-        vaultCount: $heroAssetRegistry.length,
-        registryCount: $heroAssetRegistry.length,
-        timestamp: Date.now()
-    });
-    $: if ($heroAssetRegistry.length > 0) {
-        console.info('[HERO_ASSET_ID_TRACE]', {
-            stage: 'HeroManagerPanel:registry-read',
-            assetId: $heroAssetRegistry[0]?.assetId || '',
-            heroAssetId: config.heroAssetId || '',
-            source: 'heroAssetRegistry',
-            timestamp: Date.now()
-        });
-    }
-    $: for (const item of $heroAssetRegistry) {
-        console.info('[HERO_VAULT_CARD_RENDER]', {
-            assetId: item.assetId,
-            type: item.assetType,
-            active: String(item.assetId) === String(config.heroAssetId || '')
-        });
     }
 
     function handleHeroAssetChange() {
-        const selected = get(heroAssetRegistry).find((asset) => asset.assetId === config.heroAssetId);
+        const selectedId = String(config.heroAssetId || '').trim();
         console.info('[HERO_SELECTION_BOUNDARY]', {
             stage: 'HeroManagerPanel:handleHeroAssetChange',
-            selectedItem: selected || null,
-            itemAssetId: selected?.assetId || '',
-            itemId: selected?.id || '',
-            itemMediaUrl: selected?.mediaUrl || '',
-            itemImageUrl: selected?.imageUrl || selected?.thumbnailUrl || '',
-            configHeroAssetId: config.heroAssetId || '',
+            configHeroAssetId: selectedId,
             registryCount: get(heroAssetRegistry).length,
             ts: new Date().toISOString()
         });
-        if (selected) {
-            config = {
-                ...config,
-                backgroundSource: isVideoHeroAssetType(selected.assetType) ? 'custom_video' : 'custom_image'
-            };
+        if (!selectedId) {
+            const saved = commitHeroAssetSelection('');
+            config = saved || loadHeroManagerConfig();
+            refreshHeroAssetRegistry();
+            statusMessage = 'Hero background cleared (blank menu)';
+            return;
+        }
+        suppressExternalManagerSync = true;
+        try {
+            const saved = commitHeroAssetSelection(selectedId, getLiveVaultExtras());
+            if (!saved) {
+                statusMessage = 'Could not set that vault asset — try Apply Hero Settings after a Content vault refresh.';
+                config = loadHeroManagerConfig();
+                refreshHeroAssetRegistry();
+                return;
+            }
+            config = saved;
+            storyScheduledFor = String(config.storyScheduledFor || storyScheduledFor || '');
+            refreshHeroAssetRegistry();
+            const picked = get(heroAssetRegistry).find((a) => a.assetId === selectedId);
+            const truthTitle = String(config.heroTitle || getDisplayTitle(picked || { assetId: selectedId })).trim();
+            statusMessage = `Hero background set · viewer title “${truthTitle}” (matches live landscape)`;
+        } finally {
+            if (typeof queueMicrotask === 'function') {
+                queueMicrotask(() => {
+                    suppressExternalManagerSync = false;
+                });
+            } else {
+                setTimeout(() => {
+                    suppressExternalManagerSync = false;
+                }, 0);
+            }
+        }
+    }
+
+    function handleBackgroundSourceChange() {
+        if (config.backgroundSource === 'none') {
+            commitHeroAssetSelection('');
+            config = loadHeroManagerConfig();
+            refreshHeroAssetRegistry();
+            statusMessage = 'Hero background cleared (blank menu)';
+            return;
         }
         applyConfig();
     }
 
     function applyStoryStoryState(mode = 'draft') {
         const normalizedMode = mode === 'published' || mode === 'scheduled' ? mode : 'draft';
-        const payload = {
+        if (normalizedMode === 'scheduled' && !String(storyScheduledFor || '').trim()) {
+            statusMessage = 'Set a schedule time before scheduling.';
+            return;
+        }
+        const result = persistHeroSettings(`story_${normalizedMode}`, {
+            storyStatus: normalizedMode,
+            storyScheduledFor: normalizedMode === 'scheduled' ? String(storyScheduledFor || '').trim() : '',
             heroLabel: String(config.heroLabel || '').trim(),
             heroTitle: String(config.heroTitle || '').trim(),
             heroSubtitle: String(config.heroSubtitle || '').trim(),
@@ -245,19 +437,13 @@
             ctaSecondaryTarget: String(config.ctaSecondaryTarget || '').trim(),
             campaignType: String(config.campaignType || '').trim(),
             featuredCollection: String(config.featuredCollection || '').trim(),
-            featuredSeries: String(config.featuredSeries || '').trim(),
-            storyStatus: normalizedMode,
-            storyScheduledFor: normalizedMode === 'scheduled' ? String(storyScheduledFor || '').trim() : ''
-        };
-        config = {
-            ...config,
-            ...payload
-        };
-        saveHeroManagerConfig(payload);
+            featuredSeries: String(config.featuredSeries || '').trim()
+        });
+        if (!result) return;
         statusMessage =
             normalizedMode === 'scheduled'
-                ? `Hero story scheduled for ${payload.storyScheduledFor || 'unspecified time'}`
-                : `Hero story ${STORY_STATUS_LABELS[normalizedMode].toLowerCase()}`;
+                ? `Hero story scheduled for ${storyScheduledFor || 'unspecified time'}`
+                : `Hero story ${STORY_STATUS_LABELS[normalizedMode].toLowerCase()} · all fields saved`;
     }
 
     function saveStoryDraft() {
@@ -269,10 +455,6 @@
     }
 
     function scheduleStory() {
-        if (!String(storyScheduledFor || '').trim()) {
-            statusMessage = 'Set a schedule time before scheduling.';
-            return;
-        }
         applyStoryStoryState('scheduled');
     }
 
@@ -283,22 +465,97 @@
     function previewTemplate() {
         const template = selectedTemplate();
         if (!template) return;
-        statusMessage = `Previewing template: ${template.name}`;
+        statusMessage = `Previewing template: ${template.name} (not saved yet — click Apply Template)`;
     }
 
     function applyTemplate() {
         const template = selectedTemplate();
         if (!template) return;
-        config = {
-            ...config,
+        const result = persistHeroSettings('apply_template', {
             heroLabel: template.defaultLabel,
             heroTitle: template.defaultTitleStructure,
             heroSubtitle: template.defaultSubtitleStructure,
             heroDescription: template.defaultDescriptionStructure,
             ctaPrimaryLabel: template.recommendedCTA1,
             ctaSecondaryLabel: template.recommendedCTA2
-        };
-        statusMessage = `Applied template: ${template.name}`;
+        });
+        if (result) {
+            statusMessage = `Applied & saved template: ${template.name}`;
+        }
+    }
+
+    /** Persist editor fields when leaving a text control (full follow-through). */
+    function handleFieldCommit() {
+        if (persistBusy) return;
+        const result = persistHeroSettings('field_commit');
+        if (result) {
+            statusMessage = `Saved · ${STORY_STATUS_LABELS[config.storyStatus || 'draft'] || 'Draft'}`;
+        }
+    }
+
+    function syncDescriptionModeFromConfig() {
+        descriptionMode = String(config.heroDescription || '').trim() ? 'custom' : 'blank';
+    }
+
+    /**
+     * Autosave Viewer Description on each edit (debounced) so the hero landscape
+     * updates in real time via reelforge:hero-manager-updated.
+     * Empty string is a valid intentional blank (do not rehydrate defaults).
+     */
+    function scheduleDescriptionAutosave() {
+        if (typeof window === 'undefined') return;
+        if (descriptionAutosaveTimer) {
+            window.clearTimeout(descriptionAutosaveTimer);
+            descriptionAutosaveTimer = null;
+        }
+        descriptionAutosaveTimer = window.setTimeout(() => {
+            descriptionAutosaveTimer = null;
+            if (persistBusy) {
+                scheduleDescriptionAutosave();
+                return;
+            }
+            // Preserve intentional blank — never fall back to template defaults on empty.
+            const result = persistHeroSettings('viewer_description_autosave', {
+                heroDescription: String(config.heroDescription || '')
+            });
+            if (result) {
+                const blank = !String(config.heroDescription || '').trim();
+                descriptionMode = blank ? 'blank' : 'custom';
+                statusMessage = blank
+                    ? 'Autosaved · description blank on hero landscape'
+                    : 'Autosaved · description live on hero landscape';
+            }
+        }, 280);
+    }
+
+    function handleDescriptionInput() {
+        descriptionMode = String(config.heroDescription || '').trim() ? 'custom' : 'blank';
+        scheduleDescriptionAutosave();
+    }
+
+    /** Menu choice: blank description (no body copy on hero landscape). */
+    function setDescriptionBlank() {
+        if (typeof window !== 'undefined' && descriptionAutosaveTimer) {
+            window.clearTimeout(descriptionAutosaveTimer);
+            descriptionAutosaveTimer = null;
+        }
+        config = { ...config, heroDescription: '' };
+        descriptionMode = 'blank';
+        const result = persistHeroSettings('viewer_description_blank', {
+            heroDescription: ''
+        });
+        if (result) {
+            statusMessage = 'Viewer description left blank · cleared on hero landscape';
+        }
+    }
+
+    function handleDescriptionModeChange() {
+        if (descriptionMode === 'blank') {
+            setDescriptionBlank();
+            return;
+        }
+        // custom: keep current text (or leave empty textarea for user to type)
+        scheduleDescriptionAutosave();
     }
 
     /**
@@ -354,31 +611,380 @@
     }
 
     function getDisplayTitle(item) {
-        return String(renamedTitles[item.assetId] || item.title || item.assetId || 'Hero Asset');
+        const assetId = String(item?.assetId || item?.id || '').trim();
+        const episodeCtx = assetId ? getEpisodeByReelId(assetId) : null;
+        return resolveCanonicalHeroTitle({
+            editedTitle: renamedTitles[assetId],
+            persistentTitle: lookupPersistentTitle(assetId),
+            episodeTitle: episodeCtx?.episode?.title,
+            assetTitle: item?.title || item?.name,
+            fileName: item?.fileName || item?.file_name
+        });
+    }
+
+    function getStoryPreviewIntel(itemOrTitle) {
+        if (itemOrTitle && typeof itemOrTitle === 'object') {
+            return analyzeHeroTitle(getDisplayTitle(itemOrTitle), {
+                isVideo: isVideoHeroAssetType(itemOrTitle.assetType)
+            });
+        }
+        return analyzeHeroTitle(String(itemOrTitle || ''), { isVideo: true });
+    }
+
+    function pendingStory() {
+        return (
+            getPendingStoryProposal(config.contentIdentity) ||
+            getPendingStoryProposal({
+                proposals: config.heroIntelligenceProposals || config.heroTitleIntelligence?.proposals,
+                assistantHint:
+                    config.contentIdentity?.assistantHint || config.heroTitleIntelligence?.assistantHint
+            })
+        );
+    }
+
+    /**
+     * Creator approves NLP story framing → becomes presentation identity.
+     * @param {'accept'|'edit'|'ignore'} action
+     */
+    function handleStoryProposal(action) {
+        let identity = config.contentIdentity;
+        if (!identity?.proposals && config.heroIntelligenceProposals) {
+            identity = {
+                reelId: config.heroAssetId || '',
+                fields: {
+                    title: {
+                        value: config.heroTitle || config.heroAssetTitle,
+                        source: 'creator',
+                        confidence: 1,
+                        approved: true
+                    }
+                },
+                proposals: config.heroIntelligenceProposals,
+                accepted: {},
+                assistantHint: config.heroTitleIntelligence?.assistantHint || ''
+            };
+        }
+        if (!identity?.proposals || !Object.keys(identity.proposals).length) {
+            statusMessage = 'No AI story proposal pending.';
+            return;
+        }
+
+        const descKey = identity.proposals.suggestedDescription
+            ? 'suggestedDescription'
+            : identity.proposals.heroDescription
+              ? 'heroDescription'
+              : null;
+        const subKey = identity.proposals.suggestedSubtitle
+            ? 'suggestedSubtitle'
+            : identity.proposals.heroSubtitle
+              ? 'heroSubtitle'
+              : null;
+
+        if (action === 'ignore') {
+            let nextIdentity = identity;
+            if (descKey) nextIdentity = ignoreIdentityProposal(nextIdentity, descKey);
+            if (subKey) nextIdentity = ignoreIdentityProposal(nextIdentity, subKey);
+            const result = persistHeroSettings('identity_ignore_story', {
+                contentIdentity: nextIdentity,
+                heroIntelligenceProposals: nextIdentity.proposals
+            });
+            if (result) {
+                config = result.config || loadHeroManagerConfig();
+                statusMessage = 'Ignored AI story suggestion — creator title unchanged.';
+            }
+            return;
+        }
+
+        let editedValue;
+        if (action === 'edit') {
+            const current = String(
+                identity.proposals?.[descKey]?.value || identity.proposals?.[subKey]?.value || ''
+            ).trim();
+            const raw = window.prompt('Edit AI story suggestion (then approve)', current);
+            if (raw === null) return;
+            editedValue = String(raw).trim();
+            if (!editedValue) {
+                statusMessage = 'Story cannot be empty when accepting.';
+                return;
+            }
+        }
+
+        let graph = identity;
+        /** @type {Record<string, unknown>} */
+        let presentationPatch = {};
+        if (descKey) {
+            const out = approveIdentityProposal(graph, descKey, {
+                editedValue: action === 'edit' ? editedValue : undefined
+            });
+            graph = out.identity;
+            presentationPatch = { ...presentationPatch, ...out.presentationPatch };
+        }
+        if (subKey) {
+            const out = approveIdentityProposal(graph, subKey);
+            graph = out.identity;
+            presentationPatch = { ...presentationPatch, ...out.presentationPatch };
+        }
+
+        const result = persistHeroSettings('identity_accept_story', {
+            contentIdentity: graph,
+            heroIntelligenceProposals: graph.proposals,
+            heroStoryContext: {
+                ...(config.heroStoryContext || {}),
+                description: presentationPatch.heroDescription || config.heroDescription,
+                supportingStory: presentationPatch.heroSubtitle || config.heroSubtitle,
+                approved: true,
+                pendingApproval: false
+            },
+            ...presentationPatch
+        });
+        if (result) {
+            config = result.config || loadHeroManagerConfig();
+            syncDescriptionModeFromConfig();
+            statusMessage =
+                action === 'edit'
+                    ? 'Edited & accepted AI story — presentation updated (title locked to creator).'
+                    : 'Accepted AI story framing — title remains creator-owned.';
+        }
+    }
+
+    /**
+     * Edit title for a vault pick used as hero (and globally for feed / episodes).
+     * Persists so labeling + title-match episode ordering + landscape stay correct in real time.
+     */
+    async function editHeroVaultTitle(item) {
+        if (typeof window === 'undefined' || !item?.assetId) return;
+        const assetId = String(item.assetId).trim();
+        const current = getDisplayTitle(item);
+        const nextRaw = window.prompt(
+            'Edit title (canonical identity for Hero, Vault, Feed, Episodes, Landscape)',
+            current === UNTITLED_CREATOR_EXPERIENCE ? '' : current
+        );
+        if (nextRaw === null) return;
+        const title = resolveCanonicalHeroTitle({ editedTitle: nextRaw });
+        if (!nextRaw.trim()) {
+            statusMessage = 'Title cannot be empty.';
+            return;
+        }
+        if (isUnsafeHeroFilenameTitle(nextRaw.trim()) && title === UNTITLED_CREATOR_EXPERIENCE) {
+            statusMessage = 'That looks like a filename — use a human-readable title.';
+            return;
+        }
+        if (title === current) {
+            statusMessage = 'Title unchanged.';
+            return;
+        }
+
+        const intelligence = analyzeHeroTitle(title, {
+            isVideo: isVideoHeroAssetType(item.assetType)
+        });
+        const durableTitle = intelligence.normalizedTitle;
+
+        renamedTitles = { ...renamedTitles, [assetId]: durableTitle };
+        writePersistentTitle(assetId, durableTitle);
+
+        if (personalVideos && typeof personalVideos.update === 'function') {
+            personalVideos.update((videos) => {
+                const list = Array.isArray(videos) ? videos : [];
+                const next = list.map((entry) => applyTitleToRecord(entry, assetId, durableTitle));
+                try {
+                    persistPersonalVault(next);
+                } catch {
+                    /* ignore */
+                }
+                return next;
+            });
+        } else {
+            patchJsonArrayStorage(VIDEO_VAULT_KEY(), (entry) => applyTitleToRecord(entry, assetId, durableTitle));
+        }
+        patchJsonArrayStorage(THUMB_VAULT_KEY(), (entry) => applyTitleToRecord(entry, assetId, durableTitle));
+
+        if (feed && typeof feed.update === 'function') {
+            feed.update((currentFeed) => {
+                if (!currentFeed || typeof currentFeed !== 'object') return currentFeed;
+                const next = { ...currentFeed };
+                for (const cat of Object.keys(next)) {
+                    if (!Array.isArray(next[cat])) continue;
+                    next[cat] = next[cat].map((entry) => applyTitleToRecord(entry, assetId, durableTitle));
+                }
+                try {
+                    storageSet(CONFIG?.FEED_STORAGE_KEY || 'reelforge_feed', next);
+                } catch {
+                    /* ignore */
+                }
+                return next;
+            });
+        }
+
+        try {
+            const reel = loadHeroReel();
+            if (reel && String(reel.id) === assetId) {
+                saveHeroReel({
+                    ...reel,
+                    name: durableTitle,
+                    fileName: reel.fileName || durableTitle
+                });
+            }
+        } catch {
+            /* ignore */
+        }
+
+        const activeHeroId = String(config.heroAssetId || loadHeroManagerConfig()?.heroAssetId || '').trim();
+        const heroBound = activeHeroId === assetId;
+        if (heroBound) {
+            const synced = syncHeroViewerCopyFromAsset(assetId, {
+                extraItems: getLiveVaultExtras(),
+                force: true,
+                previousTitle: current,
+                overrideTitle: durableTitle
+            });
+            if (synced) {
+                config = synced;
+                storyScheduledFor = String(config.storyScheduledFor || storyScheduledFor || '');
+            } else {
+                const localPatch = buildHeroManagerPatchFromTitleIntel(assetId, durableTitle, {
+                    isVideo: isVideoHeroAssetType(item.assetType),
+                    force: true,
+                    previous: config
+                });
+                const result = persistHeroSettings('title_intel_bind', localPatch.patch);
+                if (result?.config) config = result.config;
+            }
+        }
+
+        const episodeUpdate = updateEpisodeTitleForReel(assetId, durableTitle);
+        const episodeCtx = getEpisodeByReelId(assetId);
+
+        let backendSynced = false;
+        if (typeof updateReelTitle === 'function') {
+            try {
+                await updateReelTitle(
+                    {
+                        id: assetId,
+                        title: current,
+                        title_original: current,
+                        url: item.mediaUrl
+                    },
+                    durableTitle
+                );
+                backendSynced = true;
+            } catch (error) {
+                console.warn('[HERO_EDIT_TITLE_STUDIO_FALLBACK]', error?.message || error);
+            }
+        } else {
+            try {
+                const res = await fetch(`/api/reels/${encodeURIComponent(assetId)}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...authHeaders()
+                    },
+                    body: JSON.stringify({ title: durableTitle })
+                });
+                backendSynced = res.ok;
+            } catch {
+                backendSynced = false;
+            }
+        }
+        if (!backendSynced) {
+            queuePendingTitlePatch(assetId, durableTitle);
+        }
+
+        try {
+            const reelsForBridge = Array.isArray(feedReels) ? feedReels : [];
+            const withTitles = reelsForBridge.map((reel) =>
+                String(reel?.id || '') === assetId
+                    ? { ...reel, title: durableTitle, name: durableTitle, title_original: durableTitle }
+                    : reel
+            );
+            bridgeFeedReelsToCatalog(
+                withTitles.length
+                    ? withTitles
+                    : [{ id: assetId, title: durableTitle, name: durableTitle }]
+            );
+        } catch {
+            /* ignore */
+        }
+
+        dispatchVaultTitleUpdated({
+            reelId: assetId,
+            oldTitle: current,
+            newTitle: durableTitle,
+            heroBound,
+            episodeId: episodeUpdate?.episodeId || episodeCtx?.episode?.episodeId || null,
+            intelligence,
+            source: 'hero-manager-edit-title'
+        });
+
+        refreshHeroAssetRegistry();
+        const episodeLabel = episodeCtx
+            ? ` · Ep S${episodeCtx.season.seasonNumber}E${episodeCtx.episode.episodeNumber}`
+            : episodeUpdate?.episodeId
+              ? ' · episode metadata updated'
+              : '';
+        statusMessage = `Title intelligence saved: “${durableTitle}”${
+            heroBound ? ' · landscape story bound' : ''
+        }${episodeLabel}${backendSynced ? '' : ' · queued for backend'}`;
+        console.info('[HERO_EDIT_TITLE]', {
+            assetId,
+            title: durableTitle,
+            intelligence,
+            heroBound,
+            episodeId: episodeUpdate?.episodeId || null,
+            ts: new Date().toISOString()
+        });
+    }
+
+    /** Alias for existing call sites */
+    function renameHeroVaultAsset(item) {
+        return editHeroVaultTitle(item);
     }
 
     function selectHeroVaultAsset(item) {
-        const isVideo = isVideoHeroAssetType(item.assetType);
+        const assetId = String(item?.assetId || '').trim();
         console.info('[HERO_SELECTION_BOUNDARY]', {
             stage: 'HeroManagerPanel:selectHeroVaultAsset',
             selectedItem: item || null,
-            itemAssetId: item?.assetId || '',
-            itemId: item?.id || '',
+            itemAssetId: assetId,
             itemMediaUrl: item?.mediaUrl || '',
-            itemImageUrl: item?.imageUrl || item?.thumbnailUrl || '',
             configHeroAssetId: config.heroAssetId || '',
             ts: new Date().toISOString()
         });
-        config = {
-            ...config,
-            heroAssetId: item.assetId,
-            backgroundSource: isVideo ? 'custom_video' : 'custom_image',
-            backgroundStyle: isVideo ? 'video' : 'image'
-        };
-        applyConfig();
-        console.info('[HERO_VAULT_SELECT]', {
-            assetId: item.assetId
-        });
+        if (!assetId) return;
+        suppressExternalManagerSync = true;
+        try {
+            const saved = commitHeroAssetSelection(assetId, getLiveVaultExtras());
+            if (!saved) {
+                statusMessage = 'Could not use that vault item as hero background.';
+                return;
+            }
+            config = saved;
+            refreshHeroAssetRegistry();
+            syncDescriptionModeFromConfig();
+            const intel = getStoryPreviewIntel({
+                ...item,
+                title: saved.heroTitle || getDisplayTitle(item)
+            });
+            const liveTitle = String(saved.heroTitle || intel.normalizedTitle).trim();
+            statusMessage = `Hero background · “${liveTitle}” · ${intel.category}/${intel.mood} story bound`;
+            dispatchVaultTitleUpdated({
+                reelId: assetId,
+                oldTitle: '',
+                newTitle: liveTitle,
+                heroBound: true,
+                intelligence: intel,
+                source: 'hero-manager-select-asset'
+            });
+        } finally {
+            if (typeof queueMicrotask === 'function') {
+                queueMicrotask(() => {
+                    suppressExternalManagerSync = false;
+                });
+            } else {
+                setTimeout(() => {
+                    suppressExternalManagerSync = false;
+                }, 0);
+            }
+        }
     }
 
     function previewHeroVaultAsset(item) {
@@ -386,19 +992,6 @@
         const target = String(item.mediaUrl || item.thumbnailUrl || '').trim();
         if (!target) return;
         window.open(target, '_blank', 'noopener,noreferrer');
-    }
-
-    function renameHeroVaultAsset(item) {
-        if (typeof window === 'undefined') return;
-        const next = window.prompt('Rename hero asset', getDisplayTitle(item));
-        if (next === null) return;
-        const value = String(next).trim();
-        if (!value) return;
-        renamedTitles = {
-            ...renamedTitles,
-            [item.assetId]: value
-        };
-        statusMessage = `Renamed ${item.assetId}`;
     }
 
     async function deleteHeroVaultAsset(item) {
@@ -526,141 +1119,70 @@
     }
 
     function refresh() {
-        console.info('[HERO_REFRESH_AUDIT]', {
-            stage: 'refresh:invoked',
-            source: 'HeroManagerPanel.refresh',
-            timestamp: Date.now()
-        });
         config = loadHeroManagerConfig();
         storyScheduledFor = String(config.storyScheduledFor || '');
+        // One-shot repair: if live vault hero still has stock Alabama / Black Warrior copy, realign to file.
+        if (
+            config.heroAssetId &&
+            (isStockHeroViewerCopy(config.heroTitle, 'title') ||
+                isStockHeroViewerCopy(config.heroSubtitle, 'subtitle') ||
+                isStockHeroViewerCopy(config.heroDescription, 'description') ||
+                !String(config.heroTitle || '').trim())
+        ) {
+            const repaired = syncHeroViewerCopyFromAsset(config.heroAssetId, {
+                extraItems: getLiveVaultExtras(),
+                force: false
+            });
+            if (repaired) config = repaired;
+        }
+        syncDescriptionModeFromConfig();
         refreshHeroAssetRegistry();
-    }
-
-    function logHeroUiRender() {
-        if (typeof window === 'undefined') return;
-        const selectOptions = heroAssetSelect ? Array.from(heroAssetSelect.querySelectorAll('option')) : [];
-        const renderedOptions = selectOptions.filter((option) => String(option.value || '').trim() !== '');
-        const visibleOptions = renderedOptions.filter((option) => option.offsetParent !== null);
-        const heroCards = Array.from(document.querySelectorAll('[data-hero-vault-card]'));
-        const visibleCards = heroCards.filter((card) => {
-            const style = window.getComputedStyle(card);
-            return (
-                card.offsetWidth > 0 &&
-                card.offsetHeight > 0 &&
-                style.display !== 'none' &&
-                style.visibility !== 'hidden' &&
-                Number(style.opacity || '1') > 0
-            );
-        });
-        const registryItems = get(heroAssetRegistry);
-        const assetIds = registryItems.map((item) => item.assetId);
-        console.info('[HERO_UI_RENDER]', {
-            registryCount: registryItems.length,
-            renderedCount: heroCards.length,
-            visibleCards: visibleCards.length,
-            assetIds,
-            timestamp: Date.now()
-        });
-        for (const card of heroCards) {
-            const style = window.getComputedStyle(card);
-            console.info('[HERO_CARD_VISIBILITY]', {
-                assetId: card.getAttribute('data-asset-id') || '',
-                offsetWidth: card.offsetWidth,
-                offsetHeight: card.offsetHeight,
-                display: style.display,
-                visibility: style.visibility,
-                opacity: style.opacity,
-                timestamp: Date.now()
-            });
-            const mediaNode = card.querySelector('img,video,source');
-            const src =
-                mediaNode?.getAttribute?.('src') ||
-                mediaNode?.getAttribute?.('poster') ||
-                mediaNode?.currentSrc ||
-                '';
-            const type = mediaNode?.tagName?.toLowerCase?.() || '';
-            console.info('[HERO_CARD_MEDIA]', {
-                assetId: card.getAttribute('data-asset-id') || '',
-                type,
-                src,
-                timestamp: Date.now()
-            });
-        }
-        if (heroCards.length === 0) {
-            console.info('[HERO_CARD_VISIBILITY]', {
-                assetId: '',
-                offsetWidth: 0,
-                offsetHeight: 0,
-                display: 'none',
-                visibility: 'hidden',
-                opacity: '0',
-                timestamp: Date.now(),
-                reason: 'no-hero-vault-card-elements'
-            });
-            console.info('[HERO_CARD_MEDIA]', {
-                assetId: '',
-                type: '',
-                src: '',
-                timestamp: Date.now(),
-                reason: 'no-hero-vault-card-elements'
-            });
-        }
     }
 
     function handleManagerUpdate(event) {
+        if (suppressExternalManagerSync) return;
         config = event.detail || loadHeroManagerConfig();
         storyScheduledFor = String(config.storyScheduledFor || '');
+        syncDescriptionModeFromConfig();
         refreshHeroAssetRegistry();
-        console.info('[HERO_REFRESH_AUDIT]', {
-            stage: 'hero-manager-updated:event',
-            source: 'reelforge:hero-manager-updated',
-            heroAssetId: config.heroAssetId || '',
-            timestamp: Date.now()
-        });
-        if (typeof window !== 'undefined') {
-            if (refreshAuditTimer) {
-                window.clearInterval(refreshAuditTimer);
-                refreshAuditTimer = null;
-            }
-            const startedAt = Date.now();
-            refreshAuditTimer = window.setInterval(() => {
-                const elapsedMs = Date.now() - startedAt;
-                const items = loadHeroVaultItems();
-                console.info('[HERO_REFRESH_AUDIT]', {
-                    stage: 'post-accept-watch',
-                    elapsedMs,
-                    heroAssetId: loadHeroManagerConfig()?.heroAssetId || '',
-                    registryCount: buildHeroAssetRegistry(items).length,
-                    loadHeroVaultItemsCount: items.length,
-                    timestamp: Date.now()
-                });
-                if (elapsedMs >= 10000) {
-                    window.clearInterval(refreshAuditTimer);
-                    refreshAuditTimer = null;
-                    console.info('[HERO_REFRESH_AUDIT]', {
-                        stage: 'post-accept-watch:complete',
-                        elapsedMs,
-                        timestamp: Date.now()
-                    });
-                }
-            }, 1000);
-        }
     }
 
     function applyConfig() {
-        const result = updateHeroManagerConfig(config, feedReels);
-        refreshHeroAssetRegistry();
-        statusMessage = `Hero updated · ${result.selection.title}`;
+        const result = persistHeroSettings('apply_settings');
+        if (!result) return;
+        statusMessage =
+            config.backgroundSource === 'none'
+                ? 'Hero updated · blank menu backdrop (no vault media)'
+                : `Hero updated · ${result.selection?.title || config.heroType || 'settings saved'}`;
     }
 
     function handleRotateNow() {
-        rotateHeroSelection(feedReels);
-        refresh();
-        statusMessage = `Rotated to ${config.heroType.replace(/_/g, ' ')}`;
+        try {
+            rotateHeroSelection(feedReels || []);
+            const result = persistHeroSettings('rotate_now');
+            if (result) {
+                statusMessage = `Rotated to ${String(config.heroType || '').replace(/_/g, ' ')}`;
+            }
+        } catch (error) {
+            console.error('[HERO_MANAGER_ROTATE_FAILED]', error);
+            statusMessage = `❌ Rotate failed: ${error?.message || error}`;
+        }
+    }
+
+    function moveSpotlight(index, direction) {
+        const current = Array.isArray(config.spotlightPriority) ? [...config.spotlightPriority] : [];
+        const target = direction === 'up' ? index - 1 : index + 1;
+        if (target < 0 || target >= current.length) return;
+        [current[index], current[target]] = [current[target], current[index]];
+        config = { ...config, spotlightPriority: current };
+        const result = persistHeroSettings('spotlight_priority');
+        if (result) {
+            statusMessage = 'Spotlight priority updated';
+        }
     }
 
     function toggleCampaign(campaignId) {
-        const seasonalCampaigns = config.seasonalCampaigns.map((campaign) =>
+        const seasonalCampaigns = (config.seasonalCampaigns || []).map((campaign) =>
             campaign.id === campaignId
                 ? { ...campaign, active: !campaign.active }
                 : { ...campaign, active: false }
@@ -669,16 +1191,19 @@
             ...config,
             seasonalCampaigns
         };
-        saveHeroManagerConfig({ seasonalCampaigns });
-        logHeroIntelligenceDiag('HERO_CAMPAIGN', {
-            trigger: 'toggle',
-            campaignId,
-            active: config.seasonalCampaigns.find((item) => item.id === campaignId)?.active || false
-        });
+        const result = persistHeroSettings('campaign_toggle', { seasonalCampaigns });
+        if (result) {
+            logHeroIntelligenceDiag('HERO_CAMPAIGN', {
+                trigger: 'toggle',
+                campaignId,
+                active: seasonalCampaigns.find((item) => item.id === campaignId)?.active || false
+            });
+            statusMessage = `Campaign updated · ${campaignId}`;
+        }
     }
 
     function updateCampaignSchedule(campaignId, field, value) {
-        const seasonalCampaigns = config.seasonalCampaigns.map((campaign) =>
+        const seasonalCampaigns = (config.seasonalCampaigns || []).map((campaign) =>
             campaign.id === campaignId
                 ? { ...campaign, [field]: value }
                 : campaign
@@ -687,13 +1212,16 @@
             ...config,
             seasonalCampaigns
         };
-        saveHeroManagerConfig({ seasonalCampaigns });
-        logHeroIntelligenceDiag('HERO_CAMPAIGN', {
-            trigger: 'schedule_update',
-            campaignId,
-            field,
-            value
-        });
+        const result = persistHeroSettings('campaign_schedule', { seasonalCampaigns });
+        if (result) {
+            logHeroIntelligenceDiag('HERO_CAMPAIGN', {
+                trigger: 'schedule_update',
+                campaignId,
+                field,
+                value
+            });
+            statusMessage = `Campaign schedule saved · ${campaignId}`;
+        }
     }
 
     function moveSlide(type, direction) {
@@ -735,6 +1263,7 @@
     onMount(() => {
         refresh();
         window.addEventListener('reelforge:hero-manager-updated', handleManagerUpdate);
+        reconcilePendingTitlePatches(authHeaders).catch(() => {});
         if (!heroVaultVideoCssFixLogged) {
             heroVaultVideoCssFixLogged = true;
             console.info('[HERO_VAULT_VIDEO_CSS_FIX_APPLIED]', {
@@ -760,14 +1289,24 @@
             window.clearInterval(refreshAuditTimer);
             refreshAuditTimer = null;
         }
+        if (typeof window !== 'undefined' && descriptionAutosaveTimer) {
+            window.clearTimeout(descriptionAutosaveTimer);
+            descriptionAutosaveTimer = null;
+            // Flush last keystroke so hero landscape stays in sync.
+            try {
+                if (!persistBusy) {
+                    persistHeroSettings('viewer_description_flush', {
+                        heroDescription: String(config.heroDescription || '')
+                    });
+                }
+            } catch {
+                /* ignore */
+            }
+        }
         if (typeof window !== 'undefined') {
             window.removeEventListener('reelforge:hero-manager-updated', handleManagerUpdate);
         }
     });
-
-    $: if ($heroAssetRegistry.length >= 0 && config.heroAssetId !== undefined) {
-        logHeroUiRender();
-    }
 </script>
 
 <section class="hero-manager" data-hero-manager-panel aria-label="Hero manager settings">
@@ -790,7 +1329,8 @@
 
         <label class="hero-manager__field" data-hero-manager-background-source>
             <span>Background Source</span>
-            <select bind:value={config.backgroundSource} on:change={applyConfig}>
+            <select bind:value={config.backgroundSource} on:change={handleBackgroundSourceChange}>
+                <option value="none">None (blank menu backdrop)</option>
                 <option value="selection">Selection media</option>
                 <option value="custom_image">Custom image</option>
                 <option value="custom_video">Custom video</option>
@@ -809,13 +1349,14 @@
         <label class="hero-manager__field" data-hero-manager-background-asset>
             <span>Vault Hero Asset</span>
             <select bind:this={heroAssetSelect} bind:value={config.heroAssetId} on:change={handleHeroAssetChange}>
-                <option value="">Select vault asset…</option>
+                <option value="">None (no hero asset)</option>
                 {#each $heroAssetRegistry as item (item.assetId)}
                     <option value={item.assetId}>
-                        {getDisplayTitle(item)} ({item.assetType})
+                        {isVideoHeroAssetType(item.assetType) ? 'Video' : 'Image'} · {getDisplayTitle(item)}
                     </option>
                 {/each}
             </select>
+            <span class="hero-manager__field-hint">Choose any ready video/image from Video Vault or Thumbnail Vault as the menu hero background.</span>
         </label>
 
         <label class="hero-manager__checkbox" data-hero-manager-auto-rotate>
@@ -888,32 +1429,128 @@
     <section class="hero-viewer-content" data-hero-viewer-content>
         <div class="hero-viewer-content__header">
             <span class="hero-manager__label">Hero Viewer Content</span>
-            <p>Editorial content that viewers see when the story is published.</p>
+            <p>
+                Canonical titles flow from Hero Vault Edit Title → landscape story + Content Intelligence.
+                Filenames (.mp4/.mov) never appear as headlines.
+                {#if config.heroAssetId}
+                    {@const truth = resolveHeroAssetTruth(config.heroAssetId, getLiveVaultExtras())}
+                    {#if truth?.title}
+                        <strong data-hero-truth-source> Live source: {truth.title}</strong>
+                    {/if}
+                {/if}
+            </p>
         </div>
+        {#if config.contentIdentity || config.heroTitleIntelligence || config.heroStoryContext}
+            {@const intel = config.heroTitleIntelligence || analyzeHeroTitle(config.heroTitle || config.heroAssetTitle || '')}
+            {@const story = pendingStory()}
+            {@const titleField = config.contentIdentity?.fields?.title}
+            <div class="hero-title-intel-preview" data-hero-title-intelligence-preview data-content-identity-guard>
+                <span class="hero-manager__label">Content Identity Guard</span>
+                <p>
+                    <strong>Title (creator-owned):</strong>
+                    {titleField?.value || config.heroTitle || intel.normalizedTitle}
+                    <em class="hero-identity-meta">
+                        source={titleField?.source || 'creator'} · confidence={titleField?.confidence ?? 1}
+                    </em>
+                </p>
+                <p class="hero-manager__field-hint">
+                    {config.contentIdentity?.assistantHint || intel.assistantHint || 'AI may suggest tags and story framing — never rewrite your title.'}
+                </p>
+                {#if story}
+                    <div class="hero-ai-proposal" data-hero-ai-story-proposal>
+                        <span class="hero-manager__label">AI Story Suggestion (pending)</span>
+                        <p class="hero-title-intel-preview__story">{story.description || story.subtitle}</p>
+                        {#if story.subtitle && story.description}
+                            <p class="hero-manager__field-hint">Subtitle: {story.subtitle}</p>
+                        {/if}
+                        <p class="hero-identity-meta">
+                            source={story.source} · confidence={story.confidence} · approved=false
+                        </p>
+                        <div class="hero-ai-proposal__actions">
+                            <button type="button" class="hero-manager__btn" on:click|stopPropagation={() => handleStoryProposal('accept')}>
+                                Accept Story
+                            </button>
+                            <button type="button" class="hero-manager__btn hero-manager__btn--ghost" on:click|stopPropagation={() => handleStoryProposal('edit')}>
+                                Edit
+                            </button>
+                            <button type="button" class="hero-manager__btn hero-manager__btn--ghost" on:click|stopPropagation={() => handleStoryProposal('ignore')}>
+                                Ignore
+                            </button>
+                        </div>
+                    </div>
+                {:else if config.heroStoryContext?.approved || config.heroDescription}
+                    <p class="hero-title-intel-preview__story">{config.heroDescription || config.heroStoryContext?.description}</p>
+                    <p class="hero-manager__field-hint">Story framing creator-approved · tags stay discoverable</p>
+                {/if}
+                <p class="hero-manager__field-hint">
+                    NLP signals (proposal): {(intel.storyKeywords || []).slice(0, 8).join(', ') || '—'}
+                    · {(intel.category || '—')} / {(intel.mood || '—')}
+                </p>
+            </div>
+        {/if}
+        {#if config.heroAssetId && isStockHeroViewerCopy(config.heroTitle, 'title')}
+            <p class="hero-manager__field-hint" data-hero-truth-warn>
+                Viewer headline still looks like stock copy — use the Vault Hero Asset or Edit Title so the landscape matches the file.
+            </p>
+        {/if}
         <div class="hero-viewer-content__grid">
             <label class="hero-manager__field">
                 <span>Viewer Label</span>
-                <input type="text" bind:value={config.heroLabel} placeholder="LOOK@ZAKANDA PRESENTS" />
+                <input type="text" bind:value={config.heroLabel} placeholder="LOOK@ZAKANDA PRESENTS" on:change={handleFieldCommit} on:blur={handleFieldCommit} />
             </label>
             <label class="hero-manager__field">
                 <span>Viewer Headline</span>
-                <input type="text" bind:value={config.heroTitle} placeholder="Black Warrior: Land, Legacy & Liberation" />
+                <input type="text" bind:value={config.heroTitle} placeholder="Synced from hero vault title" on:change={handleFieldCommit} on:blur={handleFieldCommit} />
             </label>
             <label class="hero-manager__field hero-viewer-content__field--wide">
                 <span>Viewer Subtitle</span>
-                <input type="text" bind:value={config.heroSubtitle} placeholder="Story-first subtitle" />
+                <input type="text" bind:value={config.heroSubtitle} placeholder="Synced soft line from hero media type" on:change={handleFieldCommit} on:blur={handleFieldCommit} />
             </label>
-            <label class="hero-manager__field hero-viewer-content__field--wide">
+            <label class="hero-manager__field hero-viewer-content__field--wide" data-hero-viewer-description>
                 <span>Viewer Description</span>
-                <textarea rows="3" bind:value={config.heroDescription} placeholder="Describe the story viewers should feel."></textarea>
+                <div class="hero-viewer-description__controls">
+                    <select
+                        data-hero-viewer-description-mode
+                        bind:value={descriptionMode}
+                        on:change={handleDescriptionModeChange}
+                        aria-label="Viewer description mode"
+                    >
+                        <option value="custom">Custom text</option>
+                        <option value="blank">Leave blank</option>
+                    </select>
+                    {#if descriptionMode !== 'blank'}
+                        <button
+                            type="button"
+                            class="hero-manager__btn hero-manager__btn--ghost hero-viewer-description__clear"
+                            on:click|stopPropagation={setDescriptionBlank}
+                        >
+                            Clear to blank
+                        </button>
+                    {/if}
+                </div>
+                {#if descriptionMode === 'blank'}
+                    <p class="hero-manager__field-hint" data-hero-viewer-description-blank>
+                        Blank — no description on the hero landscape (autosaved live).
+                    </p>
+                {:else}
+                    <textarea
+                        rows="3"
+                        bind:value={config.heroDescription}
+                        placeholder="Describe the story viewers should feel. Leave empty or choose Leave blank."
+                        on:input={handleDescriptionInput}
+                        on:change={handleDescriptionInput}
+                        on:blur={handleFieldCommit}
+                    ></textarea>
+                    <span class="hero-manager__field-hint">Autosaves on each edit · live on hero landscape</span>
+                {/if}
             </label>
             <label class="hero-manager__field">
                 <span>Primary CTA Label</span>
-                <input type="text" bind:value={config.ctaPrimaryLabel} placeholder="Watch Now" />
+                <input type="text" bind:value={config.ctaPrimaryLabel} placeholder="Watch Now" on:change={handleFieldCommit} on:blur={handleFieldCommit} />
             </label>
             <label class="hero-manager__field">
                 <span>Secondary CTA Label</span>
-                <input type="text" bind:value={config.ctaSecondaryLabel} placeholder="Learn More" />
+                <input type="text" bind:value={config.ctaSecondaryLabel} placeholder="Learn More" on:change={handleFieldCommit} on:blur={handleFieldCommit} />
             </label>
         </div>
     </section>
@@ -933,10 +1570,10 @@
                 </select>
             </label>
             <div class="hero-story-composer__template-actions">
-                <button type="button" class="hero-manager__btn hero-manager__btn--ghost" on:click={previewTemplate}>
+                <button type="button" class="hero-manager__btn hero-manager__btn--ghost" on:click|stopPropagation={previewTemplate}>
                     Preview Template
                 </button>
-                <button type="button" class="hero-manager__btn hero-manager__btn--ghost" on:click={applyTemplate}>
+                <button type="button" class="hero-manager__btn hero-manager__btn--ghost" on:click|stopPropagation={applyTemplate} disabled={persistBusy}>
                     Apply Template
                 </button>
             </div>
@@ -944,33 +1581,39 @@
         <div class="hero-story-composer__grid">
             <label class="hero-manager__field">
                 <span>Primary CTA Target</span>
-                <input type="text" bind:value={config.ctaPrimaryTarget} placeholder="/watch" />
+                <input type="text" bind:value={config.ctaPrimaryTarget} placeholder="/watch" on:change={handleFieldCommit} on:blur={handleFieldCommit} />
             </label>
             <label class="hero-manager__field">
                 <span>Secondary CTA Target</span>
-                <input type="text" bind:value={config.ctaSecondaryTarget} placeholder="/series/neon-vengeance" />
+                <input type="text" bind:value={config.ctaSecondaryTarget} placeholder="/series/neon-vengeance" on:change={handleFieldCommit} on:blur={handleFieldCommit} />
             </label>
             <label class="hero-manager__field">
                 <span>Campaign Type</span>
-                <input type="text" bind:value={config.campaignType} placeholder="editorial_story" />
+                <input type="text" bind:value={config.campaignType} placeholder="editorial_story" on:change={handleFieldCommit} on:blur={handleFieldCommit} />
             </label>
             <label class="hero-manager__field">
                 <span>Featured Collection</span>
-                <input type="text" bind:value={config.featuredCollection} placeholder="Black Legacy Stories" />
+                <input type="text" bind:value={config.featuredCollection} placeholder="Black Legacy Stories" on:change={handleFieldCommit} on:blur={handleFieldCommit} />
             </label>
             <label class="hero-manager__field">
                 <span>Featured Series</span>
-                <input type="text" bind:value={config.featuredSeries} placeholder="Neon Vengeance" />
+                <input type="text" bind:value={config.featuredSeries} placeholder="Neon Vengeance" on:change={handleFieldCommit} on:blur={handleFieldCommit} />
             </label>
             <label class="hero-manager__field">
                 <span>Schedule Story</span>
-                <input type="datetime-local" bind:value={storyScheduledFor} />
+                <input type="datetime-local" bind:value={storyScheduledFor} on:change={handleFieldCommit} />
             </label>
         </div>
         <div class="hero-story-composer__actions">
-            <button type="button" class="hero-manager__btn hero-manager__btn--ghost" on:click={saveStoryDraft}>Save Draft</button>
-            <button type="button" class="hero-manager__btn" on:click={publishStory}>Publish Story</button>
-            <button type="button" class="hero-manager__btn hero-manager__btn--ghost" on:click={scheduleStory}>Schedule Story</button>
+            <button type="button" class="hero-manager__btn hero-manager__btn--ghost" on:click|stopPropagation={saveStoryDraft} disabled={persistBusy}>
+                Save Draft
+            </button>
+            <button type="button" class="hero-manager__btn" on:click|stopPropagation={publishStory} disabled={persistBusy}>
+                Publish Story
+            </button>
+            <button type="button" class="hero-manager__btn hero-manager__btn--ghost" on:click|stopPropagation={scheduleStory} disabled={persistBusy}>
+                Schedule Story
+            </button>
         </div>
         <div class="hero-story-composer__template-preview" data-hero-story-template-preview>
             <span class="hero-manager__label">Template Preview</span>
@@ -984,10 +1627,16 @@
             <span>{config.heroLabel || 'Story Label'}</span>
             <h5>{config.heroTitle || 'Story Title'}</h5>
             <p>{config.heroSubtitle || 'Story subtitle appears here.'}</p>
-            <p>{config.heroDescription || 'Story description appears here.'}</p>
+            <p data-hero-story-preview-description>
+                {#if String(config.heroDescription || '').trim()}
+                    {config.heroDescription}
+                {:else}
+                    <em class="hero-story-composer__blank">Description blank</em>
+                {/if}
+            </p>
             <div class="hero-story-composer__preview-ctas">
-                <button type="button">{config.ctaPrimaryLabel || 'Watch Now'}</button>
-                <button type="button">{config.ctaSecondaryLabel || 'Learn More'}</button>
+                <span class="hero-story-composer__preview-cta">{config.ctaPrimaryLabel || 'Watch Now'}</span>
+                <span class="hero-story-composer__preview-cta">{config.ctaSecondaryLabel || 'Learn More'}</span>
             </div>
         </div>
     </section>
@@ -995,15 +1644,21 @@
     <section class="hero-vault" data-hero-vault>
         <div class="hero-vault__header">
             <span class="hero-manager__label">Hero Vault</span>
-            <span class="hero-vault__count">{$heroAssetRegistry.length} assets</span>
+            <span class="hero-vault__count">{$heroAssetRegistry.length} pickable assets</span>
         </div>
         {#if $heroAssetRegistry.length === 0}
-            <p class="hero-vault__empty">No hero assets yet. Accept an image or video in Hero Replace.</p>
+            <p class="hero-vault__empty">
+                No ready vault videos or images yet. Upload media in Content / Video Vault first, then pick it here as the hero background.
+            </p>
         {:else}
+            <p class="hero-vault__help">
+                Select any ready vault video (or image) below, or use the Vault Hero Asset menu above.
+            </p>
             <div class="hero-vault__grid">
                 {#each $heroAssetRegistry as item (item.assetId)}
                     {@const isActive = String(item.assetId) === String(config.heroAssetId || '')}
                     {@const displayTitle = getDisplayTitle(item)}
+                    {@const storyIntel = getStoryPreviewIntel(item)}
                     {@const videoLoaded = Boolean(vaultVideoLoadedByAsset[item.assetId])}
                     {@const videoErrored = Boolean(vaultVideoErrorByAsset[item.assetId])}
                     <article
@@ -1045,19 +1700,30 @@
                             {/if}
                             <span class="hero-vault__badge">{item.assetType}</span>
                             {#if isActive}
-                                <span class="hero-vault__active">ACTIVE</span>
+                                <span class="hero-vault__active">ACTIVE HERO</span>
                             {/if}
                         </div>
                         <div class="hero-vault__meta">
                             <strong>{displayTitle}</strong>
+                            <span>{isVideoHeroAssetType(item.assetType) ? 'Video vault pick' : 'Image vault pick'}</span>
+                            <span class="hero-vault__story-preview" data-hero-story-preview>
+                                Suggested: {storyIntel.heroDescription}
+                            </span>
                             <span>ID: {item.assetId}</span>
-                            <span>Date added: {assetDateAdded(item.assetId)}</span>
                         </div>
                         <div class="hero-vault__actions">
-                            <button type="button" on:click={() => selectHeroVaultAsset(item)}>Use as Hero</button>
-                            <button type="button" on:click={() => previewHeroVaultAsset(item)}>Preview</button>
-                            <button type="button" on:click={() => renameHeroVaultAsset(item)}>Rename</button>
-                            <button type="button" on:click={() => deleteHeroVaultAsset(item)}>Delete</button>
+                            <button type="button" on:click|stopPropagation={() => selectHeroVaultAsset(item)}>
+                                {isActive ? 'Active Hero' : 'Use as Hero Background'}
+                            </button>
+                            <button type="button" on:click|stopPropagation={() => previewHeroVaultAsset(item)}>Preview</button>
+                            <button
+                                type="button"
+                                data-hero-edit-title
+                                on:click|stopPropagation={() => editHeroVaultTitle(item)}
+                            >
+                                Edit Title
+                            </button>
+                            <button type="button" on:click|stopPropagation={() => deleteHeroVaultAsset(item)}>Delete</button>
                         </div>
                     </article>
                 {/each}
@@ -1070,7 +1736,23 @@
         <ol>
             {#each config.spotlightPriority as heroType, index (heroType)}
                 <li data-hero-priority-item={heroType}>
-                    {index + 1}. {heroType.replace(/_/g, ' ')}
+                    <span>{index + 1}. {heroType.replace(/_/g, ' ')}</span>
+                    <div class="hero-manager__priority-controls">
+                        <button
+                            type="button"
+                            on:click|stopPropagation={() => moveSpotlight(index, 'up')}
+                            disabled={index === 0 || persistBusy}
+                        >
+                            Up
+                        </button>
+                        <button
+                            type="button"
+                            on:click|stopPropagation={() => moveSpotlight(index, 'down')}
+                            disabled={index === config.spotlightPriority.length - 1 || persistBusy}
+                        >
+                            Down
+                        </button>
+                    </div>
                 </li>
             {/each}
         </ol>
@@ -1156,26 +1838,37 @@
     </div>
 
     <footer class="hero-manager__actions">
-        <button type="button" class="hero-manager__btn" data-hero-manager-apply on:click={applyConfig}>
+        <button type="button" class="hero-manager__btn" data-hero-manager-apply on:click|stopPropagation={applyConfig} disabled={persistBusy}>
             Apply Hero Settings
         </button>
-        <button type="button" class="hero-manager__btn hero-manager__btn--ghost" data-hero-manager-rotate on:click={handleRotateNow}>
+        <button type="button" class="hero-manager__btn hero-manager__btn--ghost" data-hero-manager-rotate on:click|stopPropagation={handleRotateNow} disabled={persistBusy}>
             Rotate Now
         </button>
     </footer>
 
     <p class="hero-manager__status" data-hero-manager-status role="status" aria-live="polite">
-        {statusMessage || 'No pending hero updates.'}
+        {statusMessage || 'Edit any field, then Save Draft / Publish / Apply. Status updates appear here.'}
     </p>
 </section>
 
 <style>
     .hero-manager {
+        position: relative;
+        z-index: 2;
         margin-top: 0.85rem;
         padding: 0.85rem;
         border-radius: var(--studio-radius, 10px);
         border: 1px solid var(--studio-border-strong, rgba(236, 72, 153, 0.28));
         background: var(--studio-surface, rgba(0, 0, 0, 0.28));
+        pointer-events: auto;
+    }
+    .hero-manager :global(button),
+    .hero-manager :global(select),
+    .hero-manager :global(input),
+    .hero-manager :global(textarea) {
+        pointer-events: auto;
+        position: relative;
+        z-index: 1;
     }
     .hero-manager__header h4 {
         margin: 0 0 0.2rem;
@@ -1206,6 +1899,18 @@
         letter-spacing: 0.06em;
         text-transform: uppercase;
         color: var(--studio-text-subtle, rgba(255, 255, 255, 0.45));
+    }
+    .hero-manager__field-hint {
+        font-size: 0.55rem !important;
+        letter-spacing: 0.02em !important;
+        text-transform: none !important;
+        color: var(--studio-text-muted, rgba(255, 255, 255, 0.5)) !important;
+        line-height: 1.35;
+    }
+    .hero-vault__help {
+        margin: 0 0 0.45rem;
+        font-size: 0.58rem;
+        color: var(--studio-text-muted, rgba(255, 255, 255, 0.55));
     }
     .hero-manager__field select,
     .hero-manager__field input[type='text'],
@@ -1253,6 +1958,63 @@
     }
     .hero-viewer-content__field--wide {
         grid-column: 1 / -1;
+    }
+    .hero-title-intel-preview {
+        margin-bottom: 0.55rem;
+        padding: 0.5rem 0.55rem;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.04);
+    }
+    .hero-title-intel-preview p {
+        margin: 0.15rem 0;
+        font-size: 0.6rem;
+        color: var(--studio-text-muted, rgba(255, 255, 255, 0.7));
+        text-transform: none;
+        letter-spacing: 0;
+    }
+    .hero-title-intel-preview__story {
+        color: var(--studio-text, #fff) !important;
+        font-size: 0.64rem !important;
+    }
+    .hero-identity-meta {
+        display: inline-block;
+        margin-left: 0.35rem;
+        font-size: 0.52rem;
+        opacity: 0.7;
+        font-style: italic;
+    }
+    .hero-ai-proposal {
+        margin-top: 0.45rem;
+        padding: 0.45rem 0.5rem;
+        border-radius: 8px;
+        border: 1px dashed rgba(201, 166, 255, 0.45);
+        background: rgba(201, 166, 255, 0.08);
+    }
+    .hero-ai-proposal__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        margin-top: 0.4rem;
+    }
+    .hero-vault__story-preview {
+        display: block;
+        margin-top: 0.2rem;
+        font-size: 0.55rem;
+        line-height: 1.35;
+        color: var(--studio-text-muted, rgba(255, 255, 255, 0.55));
+        font-style: italic;
+    }
+    .hero-viewer-description__controls select {
+        max-width: 12rem;
+    }
+    .hero-viewer-description__clear {
+        padding: 0.35rem 0.55rem;
+        font-size: 0.58rem;
+    }
+    .hero-story-composer__blank {
+        opacity: 0.55;
+        font-style: italic;
     }
     .hero-story-composer__header {
         display: flex;
@@ -1334,13 +2096,14 @@
         display: flex;
         gap: 0.35rem;
     }
-    .hero-story-composer__preview-ctas button {
+    .hero-story-composer__preview-cta {
         padding: 0.32rem 0.5rem;
         border-radius: 999px;
         border: 1px solid rgba(255, 255, 255, 0.2);
         background: rgba(255, 255, 255, 0.06);
         color: #fff;
         font-size: 0.56rem;
+        pointer-events: none;
     }
     .hero-manager__checkbox {
         align-content: end;
@@ -1504,6 +2267,39 @@
         color: var(--studio-text-muted, rgba(255, 255, 255, 0.55));
         font-size: 0.62rem;
     }
+    .hero-manager__priority ol {
+        list-style: none;
+        padding-left: 0;
+        display: grid;
+        gap: 0.3rem;
+    }
+    .hero-manager__priority li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.45rem;
+        padding: 0.35rem 0.45rem;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.03);
+    }
+    .hero-manager__priority-controls {
+        display: flex;
+        gap: 0.25rem;
+    }
+    .hero-manager__priority-controls button {
+        padding: 0.28rem 0.4rem;
+        border-radius: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: rgba(255, 255, 255, 0.06);
+        color: #fff;
+        font-size: 0.55rem;
+        cursor: pointer;
+    }
+    .hero-manager__priority-controls button:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
     .hero-manager__campaigns ul {
         list-style: none;
         padding-left: 0;
@@ -1595,6 +2391,11 @@
         color: #fff;
         font-size: 0.62rem;
         cursor: pointer;
+        pointer-events: auto;
+    }
+    .hero-manager__btn:disabled {
+        opacity: 0.5;
+        cursor: wait;
     }
     .hero-manager__btn--ghost {
         border-color: rgba(255, 255, 255, 0.12);
