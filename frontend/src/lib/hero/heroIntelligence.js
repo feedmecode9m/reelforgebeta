@@ -37,13 +37,20 @@ import {
 import {
     loadHeroReel,
     saveHeroReel,
-    clearHeroReel,
     heroReelFromUploadResponse,
     heroReelToVaultItem,
     applyHeroReelToStores,
     migrateLegacyHeroStorageIfNeeded,
+    refreshHeroReelLegacyMirror,
     HERO_REEL_STORAGE_KEY
 } from './heroReelIdentity.js';
+import {
+    selectHeroAsset,
+    setHeroMode,
+    projectHeroRecordToManagerPointer,
+    projectHeroRecordToReel,
+    inspectHeroRecordStorage
+} from './heroRecord.js';
 
 export const HERO_MODES = /** @type {const} */ ([
     'TRENDING',
@@ -312,7 +319,8 @@ function attemptHeroIdentityRecovery(baseConfig = null) {
         saveHeroReel(selected.reel);
         const saved = saveHeroManagerConfig({
             heroAssetId: selected.reel.id,
-            backgroundSource: selected.reel.backgroundSource === 'custom_image' ? 'custom_image' : 'custom_video',
+            backgroundSource:
+                selected.reel.backgroundSource === 'custom_image' ? 'custom_image' : 'custom_video',
             backgroundStyle: selected.reel.backgroundSource === 'custom_image' ? 'image' : 'video'
         });
 
@@ -332,6 +340,36 @@ function attemptHeroIdentityRecovery(baseConfig = null) {
 }
 
 /**
+ * HeroReel peek without migrating/default-writing HeroRecord (safe during load paths).
+ * @returns {import('./heroReelIdentity.js').HeroReel | null}
+ */
+function peekHeroReelWithoutMigrate() {
+    if (typeof window === 'undefined') return null;
+    try {
+        const inspection = inspectHeroRecordStorage();
+        if (inspection.state === 'valid' && inspection.record) {
+            return projectHeroRecordToReel(inspection.record);
+        }
+        const raw = localStorage.getItem(HERO_REEL_STORAGE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed?.id || !parsed?.url) return null;
+        return {
+            id: String(parsed.id),
+            fileName: String(parsed.fileName || ''),
+            name: String(parsed.name || 'Hero'),
+            url: String(parsed.url),
+            thumbnail: parsed.thumbnail ? String(parsed.thumbnail) : undefined,
+            type: String(parsed.type || 'video/mp4'),
+            backgroundSource:
+                parsed.backgroundSource === 'custom_image' ? 'custom_image' : 'custom_video'
+        };
+    } catch {
+        return null;
+    }
+}
+
+/**
  * @param {HeroManagerConfig} config
  * @param {Partial<HeroManagerConfig>} [baseConfig]
  * @returns {HeroManagerConfig}
@@ -344,7 +382,8 @@ function finalizeHeroManagerConfigLoad(config, baseConfig = null) {
         !heroIdentityRecoveryInFlight &&
         (source === 'custom_video' || source === 'custom_image' || source === 'selection')
     ) {
-        const reel = loadHeroReel();
+        // Avoid loadHeroReel() here — migrate/default-write would steal the single identity write.
+        const reel = peekHeroReelWithoutMigrate();
         const blob = [
             config?.heroAssetId,
             reel?.id,
@@ -364,7 +403,9 @@ function finalizeHeroManagerConfigLoad(config, baseConfig = null) {
             });
             heroUnwantedDumpDemotionInFlight = true;
             try {
-                clearHeroReel();
+                // Explicit identity clear (not via saveHeroManagerConfig side-effects).
+                setHeroMode('none', { source: 'demote_unwanted_dump' });
+                refreshHeroReelLegacyMirror();
                 return (
                     saveHeroManagerConfig({
                         heroAssetId: '',
@@ -1149,7 +1190,7 @@ export function saveHeroManagerConfig(patch = {}) {
     const merged = { ...existing, ...patch };
     if (String(merged.backgroundSource || '').trim() === 'none') {
         merged.heroAssetId = '';
-        clearHeroReel();
+        // Does not write HeroRecord — identity commits use selectHeroAsset / setHeroMode.
     }
     const patchBackgroundSource = String(patch.backgroundSource || '').trim();
     const patchClearsHeroAsset =
@@ -1240,20 +1281,40 @@ export function saveHeroManagerConfig(patch = {}) {
 }
 
 /**
- * Shared hero video identity commit — persists canonical reel + manager pointer.
+ * Shared hero video identity commit — ONE HeroRecord write, then manager pointer fields.
  * @param {import('./heroReelIdentity.js').HeroReel} reel
  * @returns {HeroManagerConfig | null}
  */
 export function commitHeroVideoIdentity(reel) {
     if (!reel?.id || !reel?.url) return null;
-    const savedReel = saveHeroReel(reel);
-    if (!savedReel) return null;
+
+    const mediaUrl = toRelativeMediaPath(String(reel.url)) || String(reel.url).trim();
+    const posterUrl = reel.thumbnail
+        ? toRelativeMediaPath(String(reel.thumbnail)) || String(reel.thumbnail).trim()
+        : '';
+
+    const record = selectHeroAsset({
+        assetId: String(reel.id).trim(),
+        mediaUrl,
+        videoUrl: mediaUrl,
+        posterUrl,
+        mediaKind: 'video',
+        fileName: String(reel.fileName || '').trim(),
+        title: String(reel.name || 'Hero').trim(),
+        source: 'commit_hero_video_identity'
+    });
+    if (!record) return null;
+
+    refreshHeroReelLegacyMirror();
+
     console.info('[HERO_IDENTITY_COMMIT]', {
         stage: 'commitHeroVideoIdentity',
         reelId: reel.id,
-        url: reel.url,
+        url: mediaUrl,
+        revision: record.revision,
         ts: new Date().toISOString()
     });
+
     return saveHeroManagerConfig({
         heroAssetId: reel.id,
         backgroundSource: 'custom_video',
@@ -1330,6 +1391,7 @@ export function syncHeroViewerCopyFromAsset(assetId, options = {}) {
 
 /**
  * Promote any ready Video Vault / Thumbnail Vault entry to the live menu hero background.
+ * ONE HeroRecord write for identity; manager keeps compatibility fields only.
  * @param {string | null | undefined} assetId
  * @param {Record<string, unknown>[] | null} [extraItems]
  * @returns {HeroManagerConfig | null}
@@ -1337,7 +1399,9 @@ export function syncHeroViewerCopyFromAsset(assetId, options = {}) {
 export function commitHeroAssetSelection(assetId, extraItems = null) {
     const id = String(assetId || '').trim();
     if (!id) {
-        clearHeroReel();
+        const blank = setHeroMode('none', { source: 'commit_hero_asset_clear' });
+        if (!blank) return null;
+        refreshHeroReelLegacyMirror();
         return saveHeroManagerConfig({
             heroAssetId: '',
             backgroundSource: 'none',
@@ -1362,33 +1426,18 @@ export function commitHeroAssetSelection(assetId, extraItems = null) {
     }
 
     const isVideo = isVideoHeroAssetType(asset.assetType);
-    const reel = {
-        id: asset.assetId,
-        fileName: String(asset.title || asset.assetId),
-        name: String(asset.title || 'Hero'),
-        url: asset.mediaUrl,
-        thumbnail: asset.thumbnailUrl || undefined,
-        type: String(asset.mimeType || (isVideo ? 'video/mp4' : 'image/jpeg')),
-        backgroundSource: /** @type {'custom_video' | 'custom_image'} */ (
-            isVideo ? 'custom_video' : 'custom_image'
-        )
-    };
-    saveHeroReel(reel);
-    console.info('[HERO_VAULT_SELECT]', {
-        stage: 'commitHeroAssetSelection',
-        assetId: reel.id,
-        backgroundSource: reel.backgroundSource,
-        mediaUrl: reel.url,
-        title: reel.name,
-        ts: new Date().toISOString()
-    });
+    const mediaKind = /** @type {'image' | 'video'} */ (isVideo ? 'video' : 'image');
+    const mediaUrl = String(asset.mediaUrl || '').trim();
+    const posterUrl = isVideo
+        ? String(asset.thumbnailUrl || '').trim()
+        : mediaUrl;
 
     const existing = loadHeroManagerConfig();
     const truth = resolveHeroAssetTruth(
         { ...asset, title: asset.title },
         vaultItems
     ) || {
-        assetId: reel.id,
+        assetId: asset.assetId,
         title: String(asset.title || 'Hero'),
         mediaUrl: asset.mediaUrl,
         thumbnailUrl: asset.thumbnailUrl || '',
@@ -1396,15 +1445,14 @@ export function commitHeroAssetSelection(assetId, extraItems = null) {
         isVideo,
         mimeType: String(asset.mimeType || '')
     };
-    // Prefer durable persistent title over raw asset registry dump when available.
     try {
         const map = JSON.parse(localStorage.getItem('reel_titles_persistent') || '{}');
-        const persisted = String(map?.[reel.id]?.title || map?.[reel.id]?.title_original || '').trim();
+        const persisted = String(map?.[asset.assetId]?.title || map?.[asset.assetId]?.title_original || '').trim();
         if (persisted) truth.title = persisted;
     } catch {
         /* ignore */
     }
-    const intelBundle = buildHeroManagerPatchFromTitleIntel(reel.id, truth.title, {
+    const intelBundle = buildHeroManagerPatchFromTitleIntel(asset.assetId, truth.title, {
         isVideo,
         force: true,
         previous: {
@@ -1414,10 +1462,41 @@ export function commitHeroAssetSelection(assetId, extraItems = null) {
         }
     });
 
+    const beforeRevision = Number(inspectHeroRecordStorage()?.record?.revision) || 0;
+
+    const record = selectHeroAsset({
+        assetId: asset.assetId,
+        mediaUrl,
+        videoUrl: isVideo ? mediaUrl : '',
+        posterUrl,
+        mediaKind,
+        fileName: String(asset.title || asset.assetId),
+        title: String(truth.title || asset.title || 'Hero'),
+        heroTitle: intelBundle.patch?.heroTitle,
+        heroSubtitle: intelBundle.patch?.heroSubtitle,
+        heroDescription: intelBundle.patch?.heroDescription,
+        source: 'commit_hero_asset_selection'
+    });
+    if (!record) return null;
+
+    refreshHeroReelLegacyMirror();
+
+    console.info('[HERO_VAULT_SELECT]', {
+        stage: 'commitHeroAssetSelection',
+        assetId: record.assetId,
+        backgroundSource: isVideo ? 'custom_video' : 'custom_image',
+        mediaUrl: record.mediaUrl,
+        title: record.title,
+        revision: record.revision,
+        revisionDelta: record.revision - beforeRevision,
+        ts: new Date().toISOString()
+    });
+
+    const pointer = projectHeroRecordToManagerPointer(record);
     return saveHeroManagerConfig({
-        heroAssetId: reel.id,
-        backgroundSource: reel.backgroundSource,
-        backgroundStyle: isVideo ? 'video' : 'image',
+        heroAssetId: pointer.heroAssetId,
+        backgroundSource: /** @type {any} */ (pointer.backgroundSource),
+        backgroundStyle: pointer.backgroundStyle || (isVideo ? 'video' : 'image'),
         ...intelBundle.patch
     });
 }
@@ -1449,7 +1528,8 @@ export function normalizeDiscoveryHeroType(type) {
 export function loadHeroVaultItems(extraItems = null) {
     if (typeof window === 'undefined') return Array.isArray(extraItems) ? extraItems : [];
     try {
-        migrateLegacyHeroStorageIfNeeded();
+        // Do not migrateLegacyHeroStorageIfNeeded here — listing vault picks must not
+        // invent a default HeroRecord (identity writes stay owned by select*/set*/commit*).
         /** @type {Record<string, unknown>[]} */
         const collected = [];
         const seen = new Set();
@@ -1487,7 +1567,7 @@ export function loadHeroVaultItems(extraItems = null) {
             }
         }
 
-        const reel = loadHeroReel();
+        const reel = peekHeroReelWithoutMigrate();
         if (reel?.id && reel?.url) {
             push(/** @type {Record<string, unknown>} */ (heroReelToVaultItem(reel)), 'active_hero');
         }

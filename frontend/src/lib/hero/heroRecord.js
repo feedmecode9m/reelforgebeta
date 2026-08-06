@@ -1035,3 +1035,139 @@ export function buildHeroRecordPatchFromReel(reel) {
         source: 'hero_reel_adapter'
     };
 }
+
+// ── Explicit HeroRecord commands (Commit 4 identity writes) ─────────────────
+
+/**
+ * Select a durable hero asset — ONE HeroRecord write.
+ * @param {{
+ *   assetId: string;
+ *   mediaUrl: string;
+ *   mediaKind: 'image' | 'video';
+ *   videoUrl?: string;
+ *   posterUrl?: string;
+ *   fileName?: string;
+ *   title?: string;
+ *   heroTitle?: string;
+ *   heroSubtitle?: string;
+ *   heroDescription?: string;
+ *   source?: string;
+ * }} input
+ * @returns {HeroRecord | null}
+ */
+export function selectHeroAsset(input) {
+    const assetId = String(input?.assetId || '').trim();
+    const mediaUrl = String(input?.mediaUrl || '').trim();
+    const mediaKind = input?.mediaKind === 'image' || input?.mediaKind === 'video' ? input.mediaKind : '';
+    if (!assetId || !mediaUrl || !mediaKind) return null;
+
+    /** @type {Partial<HeroRecord>} */
+    const patch = {
+        mode: 'asset',
+        status: 'ready',
+        assetId,
+        mediaUrl,
+        mediaKind,
+        videoUrl: mediaKind === 'video' ? String(input.videoUrl || mediaUrl).trim() : '',
+        posterUrl: String(input.posterUrl || (mediaKind === 'image' ? mediaUrl : '')).trim(),
+        fileName: String(input.fileName || '').trim(),
+        title: String(input.title || input.fileName || assetId).trim(),
+        source: String(input.source || 'select_hero_asset').trim()
+    };
+    if (typeof input.heroTitle === 'string') patch.heroTitle = input.heroTitle;
+    if (typeof input.heroSubtitle === 'string') patch.heroSubtitle = input.heroSubtitle;
+    if (typeof input.heroDescription === 'string') patch.heroDescription = input.heroDescription;
+
+    return saveHeroRecord(patch);
+}
+
+/**
+ * Set non-asset hero mode (selection | none) — ONE HeroRecord write.
+ * Does not invent asset identity.
+ * @param {'selection' | 'none'} mode
+ * @param {{
+ *   status?: HeroRecordStatus;
+ *   heroTitle?: string;
+ *   heroSubtitle?: string;
+ *   heroDescription?: string;
+ *   source?: string;
+ * }} [options]
+ * @returns {HeroRecord | null}
+ */
+export function setHeroMode(mode, options = {}) {
+    const normalized = mode === 'none' || mode === 'selection' ? mode : null;
+    if (!normalized) return null;
+
+    /** @type {Partial<HeroRecord>} */
+    const patch = {
+        mode: normalized,
+        status:
+            normalized === 'none'
+                ? 'ready'
+                : options.status === 'needs_reselection' || options.status === 'unresolved_legacy'
+                  ? options.status
+                  : 'ready',
+        source: String(options.source || 'set_hero_mode').trim()
+    };
+    if (typeof options.heroTitle === 'string') patch.heroTitle = options.heroTitle;
+    if (typeof options.heroSubtitle === 'string') patch.heroSubtitle = options.heroSubtitle;
+    if (typeof options.heroDescription === 'string') patch.heroDescription = options.heroDescription;
+
+    return saveHeroRecord(patch);
+}
+
+/**
+ * Update presentation/copy fields without changing mode or asset identity — ONE write.
+ * @param {{
+ *   heroTitle?: string;
+ *   heroSubtitle?: string;
+ *   heroDescription?: string;
+ *   title?: string;
+ *   source?: string;
+ * }} patch
+ * @returns {HeroRecord | null}
+ */
+export function updateHeroPresentation(patch = {}) {
+    /** @type {Partial<HeroRecord>} */
+    const next = {
+        source: String(patch.source || 'update_hero_presentation').trim()
+    };
+    if (typeof patch.heroTitle === 'string') next.heroTitle = patch.heroTitle;
+    if (typeof patch.heroSubtitle === 'string') next.heroSubtitle = patch.heroSubtitle;
+    if (typeof patch.heroDescription === 'string') next.heroDescription = patch.heroDescription;
+    if (typeof patch.title === 'string') next.title = patch.title;
+
+    const keys = Object.keys(next).filter((k) => k !== 'source');
+    if (!keys.length) {
+        return readStoredHeroRecord() || loadHeroRecord();
+    }
+    return saveHeroRecord(next);
+}
+
+/**
+ * Map HeroRecord identity → manager config compatibility fields.
+ * @param {HeroRecord | null | undefined} record
+ * @returns {{ backgroundSource: string; heroAssetId: string; backgroundStyle?: string }}
+ */
+export function projectHeroRecordToManagerPointer(record) {
+    const validated = validateHeroRecord(record);
+    if (!validated.ok) {
+        return { backgroundSource: 'selection', heroAssetId: '' };
+    }
+    const active = validated.record;
+    if (active.mode === 'none') {
+        return { backgroundSource: 'none', heroAssetId: '', backgroundStyle: 'gradient_overlay' };
+    }
+    if (active.mode === 'selection') {
+        return { backgroundSource: 'selection', heroAssetId: '' };
+    }
+    // asset
+    const backgroundSource =
+        active.mediaKind === 'image' ? 'custom_image' : 'custom_video';
+    const backgroundStyle = active.mediaKind === 'image' ? 'image' : 'video';
+    return {
+        backgroundSource,
+        heroAssetId: active.assetId,
+        backgroundStyle
+    };
+}

@@ -319,7 +319,27 @@ export function applyHeroReelToStores(reel, stores = {}) {
 export function migrateLegacyHeroStorageIfNeeded() {
     if (typeof window === 'undefined') return;
     migrateLegacyHeroRecordIfNeeded();
-    // Keep legacy reel key in sync with the projected record (when asset), or clear.
-    const projected = projectHeroRecordToReel(loadHeroRecord());
-    mirrorLegacyHeroReelKey(projected);
+    refreshHeroReelLegacyMirror();
+}
+
+/**
+ * Refresh transitional reelforge_hero_reel mirror from the current HeroRecord.
+ * Does not write HeroRecord.
+ */
+export function refreshHeroReelLegacyMirror() {
+    if (typeof window === 'undefined') return;
+    try {
+        const projected = projectHeroRecordToReel(loadHeroRecord());
+        mirrorLegacyHeroReelKey(projected);
+        if (projected) {
+            try {
+                localStorage.removeItem(HERO_IMAGE_STORAGE_KEY);
+                localStorage.removeItem(HERO_VIDEO_STORAGE_KEY);
+            } catch {
+                /* ignore */
+            }
+        }
+    } catch {
+        /* ignore */
+    }
 }
