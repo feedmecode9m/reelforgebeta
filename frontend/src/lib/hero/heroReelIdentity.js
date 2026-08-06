@@ -1,15 +1,32 @@
 /**
- * MISSION 5.6 — Canonical hero reel identity (id, fileName, url).
- * Single storage key; manager config heroAssetId is a pointer to reel.id only.
+ * MISSION 5.6 / Commit 3 — HeroReel compatibility adapter over HeroRecord.
+ *
+ * Public API (load/save/clear/resolve/migrate) is preserved for existing callers.
+ * HeroRecord is the single persistence owner; this module projects the HeroReel shape.
+ *
+ * Legacy localStorage keys (reelforge_hero_reel, reelforge_hero_video/image) may still
+ * be mirrored for transition, but they are not authoritative after migrate.
  */
 import { toRelativeMediaPath } from '../config.js';
 import { normalizeReel, isVideoReel } from '../api/reelContract.js';
 import { reelResEntry, reelResExit, reelResReelSnapshot } from '../diagnostics/reelResolutionTrace.js';
+import {
+    LEGACY_HERO_IMAGE_KEY,
+    LEGACY_HERO_MANAGER_KEY,
+    LEGACY_HERO_REEL_KEY,
+    LEGACY_HERO_VIDEO_KEY,
+    loadHeroRecord,
+    saveHeroRecord,
+    migrateLegacyHeroRecordIfNeeded,
+    projectHeroRecordToReel,
+    buildHeroRecordPatchFromReel
+} from './heroRecord.js';
 
-export const HERO_REEL_STORAGE_KEY = 'reelforge_hero_reel';
-const HERO_VIDEO_STORAGE_KEY = 'reelforge_hero_video';
-const HERO_IMAGE_STORAGE_KEY = 'reelforge_hero_image';
-const HERO_MANAGER_STORAGE_KEY = 'reelforge_hero_manager_config';
+/** @deprecated Prefer HeroRecord — kept for compatibility readers. */
+export const HERO_REEL_STORAGE_KEY = LEGACY_HERO_REEL_KEY;
+const HERO_VIDEO_STORAGE_KEY = LEGACY_HERO_VIDEO_KEY;
+const HERO_IMAGE_STORAGE_KEY = LEGACY_HERO_IMAGE_KEY;
+const HERO_MANAGER_STORAGE_KEY = LEGACY_HERO_MANAGER_KEY;
 
 /**
  * @typedef {Object} HeroReel
@@ -64,7 +81,9 @@ export function heroReelFromUploadResponse(raw, mediaKind = 'image') {
         url,
         thumbnail: thumbnail || undefined,
         type: String(normalized.type || (mediaKind === 'video' ? 'video/mp4' : 'image/jpeg')),
-        backgroundSource: mediaKind === 'video' ? 'custom_video' : 'custom_image'
+        backgroundSource: /** @type {'custom_image' | 'custom_video'} */ (
+            mediaKind === 'video' ? 'custom_video' : 'custom_image'
+        )
     };
     reelResReelSnapshot('heroReelFromUploadResponse:result', result, { mediaKind });
     reelResExit('heroReelFromUploadResponse', t0, {
@@ -93,107 +112,175 @@ function readHeroManagerPointer() {
 }
 
 /**
- * Resolve backgroundSource on stored reel using manager pointer + mime hints.
- * @param {Record<string, unknown>} parsed
+ * Mirror projected reel to legacy storage for transitional readers only.
+ * @param {HeroReel | null} reel
  */
-function resolveStoredHeroBackgroundSource(parsed) {
-    if (parsed?.backgroundSource === 'custom_video') return 'custom_video';
-    if (parsed?.backgroundSource === 'custom_image') return 'custom_image';
-    const manager = readHeroManagerPointer();
-    const reelId = String(parsed?.id || '').trim();
-    if (
-        manager.backgroundSource === 'custom_video' &&
-        manager.heroAssetId &&
-        reelId &&
-        manager.heroAssetId === reelId
-    ) {
-        return 'custom_video';
+function mirrorLegacyHeroReelKey(reel) {
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') return;
+    try {
+        if (!reel?.id || !reel?.url) {
+            localStorage.removeItem(HERO_REEL_STORAGE_KEY);
+            return;
+        }
+        localStorage.setItem(
+            HERO_REEL_STORAGE_KEY,
+            JSON.stringify({
+                id: reel.id,
+                fileName: reel.fileName,
+                name: reel.name,
+                url: reel.url,
+                thumbnail: reel.thumbnail,
+                type: reel.type,
+                backgroundSource: reel.backgroundSource
+            })
+        );
+    } catch {
+        /* ignore mirror failures */
     }
-    if (String(parsed?.type || '').startsWith('video/')) return 'custom_video';
-    return 'custom_image';
+}
+
+function clearLegacyMediaKeys() {
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') return;
+    try {
+        localStorage.removeItem(HERO_IMAGE_STORAGE_KEY);
+        localStorage.removeItem(HERO_VIDEO_STORAGE_KEY);
+        localStorage.removeItem(HERO_REEL_STORAGE_KEY);
+    } catch {
+        /* ignore */
+    }
 }
 
 /**
- * Active custom-video hero reel — manager pointer + playable url required.
+ * Active custom-video hero reel — derived from HeroRecord asset mode.
+ * Manager `none` still suppresses for dual-write compatibility.
  * @returns {HeroReel | null}
  */
 export function resolveActiveHeroVideoReel() {
     const manager = readHeroManagerPointer();
     if (manager.backgroundSource === 'none') return null;
-    const reel = loadHeroReel();
+
+    const record = loadHeroRecord();
+    if (record.mode === 'none' || record.mode === 'selection') return null;
+
+    const reel = projectHeroRecordToReel(record);
     if (!reel?.id || !reel?.url) return null;
-    const managerMatch =
-        manager.backgroundSource === 'custom_video' && manager.heroAssetId === reel.id;
+
     const reelIsVideo =
         reel.backgroundSource === 'custom_video' || isVideoReel({ ...reel, url: reel.url });
-    if (!managerMatch && !reelIsVideo) return null;
+    if (!reelIsVideo) return null;
     if (!isVideoReel({ ...reel, url: reel.url })) return null;
+
     return reel.backgroundSource === 'custom_video'
         ? reel
         : { ...reel, backgroundSource: 'custom_video' };
 }
 
-/** @returns {HeroReel | null} */
+/**
+ * Derive HeroReel from HeroRecord (no independent persistence read).
+ * selection / none → null (never invents a fake asset reel).
+ * @returns {HeroReel | null}
+ */
 export function loadHeroReel() {
     if (typeof window === 'undefined') return null;
     try {
         migrateLegacyHeroStorageIfNeeded();
-        const raw = localStorage.getItem(HERO_REEL_STORAGE_KEY);
-        if (!raw) return null;
-        const parsed = JSON.parse(raw);
-        if (!parsed?.id || !parsed?.url) return null;
-        const backgroundSource = resolveStoredHeroBackgroundSource(parsed);
-        return {
-            id: String(parsed.id),
-            fileName: String(parsed.fileName || '').trim() || String(parsed.url).split('/').pop()?.split('?')[0] || '',
-            name: String(parsed.name || 'Hero'),
-            url: toRelativeMediaPath(String(parsed.url)),
-            thumbnail: parsed.thumbnail ? toRelativeMediaPath(String(parsed.thumbnail)) : undefined,
-            type: String(parsed.type || (backgroundSource === 'custom_video' ? 'video/mp4' : 'image/jpeg')),
-            backgroundSource
-        };
+        const record = loadHeroRecord();
+        return projectHeroRecordToReel(record);
     } catch {
         return null;
     }
 }
 
-/** @param {HeroReel | null | undefined} reel */
+/**
+ * Write-through to HeroRecord. Returns the public HeroReel projection.
+ * @param {HeroReel | null | undefined} reel
+ * @returns {HeroReel | null}
+ */
 export function saveHeroReel(reel) {
     if (typeof window === 'undefined' || !reel?.id || !reel?.url) return null;
-    const next = {
-        id: reel.id,
-        fileName: reel.fileName,
-        name: reel.name,
-        url: toRelativeMediaPath(reel.url),
-        thumbnail: reel.thumbnail ? toRelativeMediaPath(reel.thumbnail) : undefined,
-        type: reel.type,
-        backgroundSource: reel.backgroundSource
+
+    const url = toRelativeMediaPath(reel.url) || String(reel.url || '').trim();
+    const thumbnail = reel.thumbnail
+        ? toRelativeMediaPath(reel.thumbnail) || String(reel.thumbnail).trim()
+        : undefined;
+
+    const normalizedReel = {
+        id: String(reel.id).trim(),
+        fileName: String(reel.fileName || '').trim(),
+        name: String(reel.name || 'Hero').trim(),
+        url,
+        thumbnail,
+        type: String(
+            reel.type ||
+                (reel.backgroundSource === 'custom_video' ? 'video/mp4' : 'image/jpeg')
+        ),
+        backgroundSource:
+            reel.backgroundSource === 'custom_video' || reel.backgroundSource === 'custom_image'
+                ? reel.backgroundSource
+                : isVideoReel({ ...reel, url })
+                  ? /** @type {const} */ ('custom_video')
+                  : /** @type {const} */ ('custom_image')
     };
-    localStorage.setItem(HERO_REEL_STORAGE_KEY, JSON.stringify(next));
+
+    const patch = buildHeroRecordPatchFromReel(normalizedReel);
+    if (!patch) {
+        console.warn('[HERO_REEL_SAVE_REJECTED]', {
+            id: normalizedReel.id,
+            reason: 'invalid_identity_or_media',
+            ts: new Date().toISOString()
+        });
+        return null;
+    }
+
+    const saved = saveHeroRecord(patch);
+    if (!saved) return null;
+
+    const projected = projectHeroRecordToReel(saved);
+    if (!projected) return null;
+
+    mirrorLegacyHeroReelKey(projected);
     try {
         localStorage.removeItem(HERO_IMAGE_STORAGE_KEY);
         localStorage.removeItem(HERO_VIDEO_STORAGE_KEY);
     } catch {
         /* ignore */
     }
+
     console.info('[HERO_REEL_SAVE]', {
-        id: next.id,
-        fileName: next.fileName,
-        url: next.url,
-        backgroundSource: next.backgroundSource,
+        id: projected.id,
+        fileName: projected.fileName,
+        url: projected.url,
+        backgroundSource: projected.backgroundSource,
+        via: 'hero_record',
         ts: new Date().toISOString()
     });
-    return next;
+    return projected;
 }
 
+/**
+ * Clears derived reel asset via HeroRecord.
+ * none stays none; otherwise drops to selection (no fake asset).
+ */
 export function clearHeroReel() {
     if (typeof window === 'undefined') return;
     try {
-        localStorage.removeItem(HERO_REEL_STORAGE_KEY);
-        localStorage.removeItem(HERO_IMAGE_STORAGE_KEY);
-        localStorage.removeItem(HERO_VIDEO_STORAGE_KEY);
+        const current = loadHeroRecord();
+        if (current.mode === 'none') {
+            clearLegacyMediaKeys();
+            return;
+        }
+        saveHeroRecord({
+            mode: 'selection',
+            status: 'ready',
+            source: 'clear_hero_reel'
+        });
+        clearLegacyMediaKeys();
     } catch {
-        /* ignore */
+        try {
+            clearLegacyMediaKeys();
+        } catch {
+            /* ignore */
+        }
     }
 }
 
@@ -225,43 +312,14 @@ export function applyHeroReelToStores(reel, stores = {}) {
     }
 }
 
-let legacyMigrated = false;
-
+/**
+ * Compatibility entry: one-way seed into HeroRecord (legacy multi-key importer).
+ * Afterward HeroRecord is authoritative; mirror is refreshed for transitional readers.
+ */
 export function migrateLegacyHeroStorageIfNeeded() {
-    if (typeof window === 'undefined' || legacyMigrated) return;
-    legacyMigrated = true;
-    if (localStorage.getItem(HERO_REEL_STORAGE_KEY)) return;
-
-    const managerRaw = localStorage.getItem(HERO_MANAGER_STORAGE_KEY);
-    const manager = managerRaw ? JSON.parse(managerRaw) : {};
-    const heroAssetId = String(manager?.heroAssetId || manager?.backgroundAsset || '').trim();
-    const backgroundSource = String(manager?.backgroundSource || '');
-    const heroImage = String(localStorage.getItem(HERO_IMAGE_STORAGE_KEY) || '').trim();
-    const heroVideo = String(localStorage.getItem(HERO_VIDEO_STORAGE_KEY) || '').trim();
-
-    if (backgroundSource === 'custom_video' && heroVideo && !heroVideo.startsWith('data:') && !heroVideo.startsWith('blob:')) {
-        const url = toRelativeMediaPath(heroVideo);
-        saveHeroReel({
-            id: heroAssetId || url,
-            fileName: url.split('/').pop()?.split('?')[0] || '',
-            name: 'Hero Video',
-            url,
-            thumbnail: heroImage && !heroImage.startsWith('data:') ? toRelativeMediaPath(heroImage) : undefined,
-            type: 'video/mp4',
-            backgroundSource: 'custom_video'
-        });
-        return;
-    }
-
-    if (backgroundSource === 'custom_image' && heroImage && !heroImage.startsWith('data:') && !heroImage.startsWith('blob:')) {
-        const url = toRelativeMediaPath(heroImage);
-        saveHeroReel({
-            id: heroAssetId || url,
-            fileName: url.split('/').pop()?.split('?')[0] || '',
-            name: 'Hero Image',
-            url,
-            type: 'image/jpeg',
-            backgroundSource: 'custom_image'
-        });
-    }
+    if (typeof window === 'undefined') return;
+    migrateLegacyHeroRecordIfNeeded();
+    // Keep legacy reel key in sync with the projected record (when asset), or clear.
+    const projected = projectHeroRecordToReel(loadHeroRecord());
+    mirrorLegacyHeroReelKey(projected);
 }

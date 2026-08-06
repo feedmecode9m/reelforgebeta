@@ -1,8 +1,8 @@
 /**
  * HeroRecord — versioned single source of truth for Smart Production Studio Hero state.
  *
- * Commit 2: persistence layer + legacy importer only.
- * Not wired into Viewer / Studio / heroIntelligence / heroReelIdentity yet.
+ * Commit 2: persistence layer + legacy importer.
+ * Commit 3: HeroReel compatibility projections (heroReelIdentity is a facade over this).
  *
  * Storage key: reelforge_hero_record
  *
@@ -939,4 +939,99 @@ export function migrateLegacyHeroRecordIfNeeded() {
         ts: new Date().toISOString()
     });
     return validated.record;
+}
+
+// ── HeroReel compatibility projections (Commit 3 adapter) ───────────────────
+
+/**
+ * @typedef {Object} HeroReelProjection
+ * @property {string} id
+ * @property {string} fileName
+ * @property {string} name
+ * @property {string} url
+ * @property {string} [thumbnail]
+ * @property {string} type
+ * @property {'custom_image' | 'custom_video'} backgroundSource
+ */
+
+/**
+ * Project a HeroRecord into the public HeroReel shape.
+ * Only asset mode produces a reel; selection/none yield null (no fake assets).
+ * @param {HeroRecord | null | undefined} record
+ * @returns {HeroReelProjection | null}
+ */
+export function projectHeroRecordToReel(record) {
+    const validated = validateHeroRecord(record);
+    if (!validated.ok) return null;
+    const active = validated.record;
+    if (active.mode !== 'asset') return null;
+    if (!active.assetId || !active.mediaUrl) return null;
+
+    const isVideo = active.mediaKind === 'video';
+    const url = isVideo ? active.videoUrl || active.mediaUrl : active.posterUrl || active.mediaUrl;
+    if (!url || !isDurableHeroMediaUrl(url)) return null;
+
+    /** @type {HeroReelProjection} */
+    const reel = {
+        id: active.assetId,
+        fileName:
+            active.fileName ||
+            url.split('/').pop()?.split('?')[0] ||
+            '',
+        name: active.title || active.fileName || active.assetId || 'Hero',
+        url,
+        type: isVideo ? 'video/mp4' : 'image/jpeg',
+        backgroundSource: isVideo ? 'custom_video' : 'custom_image'
+    };
+    if (isVideo && active.posterUrl && isDurableHeroMediaUrl(active.posterUrl)) {
+        reel.thumbnail = active.posterUrl;
+    }
+    return reel;
+}
+
+/**
+ * Build a HeroRecord asset patch from a public HeroReel object.
+ * @param {{
+ *   id?: string;
+ *   fileName?: string;
+ *   name?: string;
+ *   url?: string;
+ *   thumbnail?: string;
+ *   type?: string;
+ *   backgroundSource?: string;
+ * } | null | undefined} reel
+ * @returns {Partial<HeroRecord> | null}
+ */
+export function buildHeroRecordPatchFromReel(reel) {
+    if (!reel?.id || !reel?.url) return null;
+    const assetId = String(reel.id || '').trim();
+    const mediaUrl = String(reel.url || '').trim();
+    if (!assetId || looksLikeUrlAsIdentity(assetId) || !isDurableHeroMediaUrl(mediaUrl)) {
+        return null;
+    }
+    const isVideo =
+        reel.backgroundSource === 'custom_video' ||
+        String(reel.type || '').startsWith('video/') ||
+        inferMediaKind(mediaUrl, String(reel.type || '')) === 'video';
+    const mediaKind = /** @type {HeroRecordMediaKind} */ (isVideo ? 'video' : 'image');
+    const posterRaw = String(reel.thumbnail || '').trim();
+    const posterUrl =
+        isVideo && isDurableHeroMediaUrl(posterRaw)
+            ? posterRaw
+            : !isVideo
+              ? mediaUrl
+              : '';
+
+    return {
+        mode: 'asset',
+        status: 'ready',
+        assetId,
+        mediaUrl,
+        videoUrl: isVideo ? mediaUrl : '',
+        posterUrl,
+        mediaKind,
+        fileName: String(reel.fileName || '').trim(),
+        title: String(reel.name || reel.fileName || assetId).trim(),
+        source: 'hero_reel_adapter'
+    };
 }
