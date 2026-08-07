@@ -246,7 +246,7 @@
     import MediaThumbnail from '../media/MediaThumbnail.svelte';
     import ReelshortExperience from '../vertical/ReelshortExperience.svelte';
     import { theaterSwipe } from '../../lib/vertical/theaterSwipe.js';
-    import { resolveDisplayUrl, resolveMediaForRender } from '../media/resolveDisplayUrl.js';
+    import { resolveDisplayUrl } from '../media/resolveDisplayUrl.js';
     import {
         theaterFraming,
         setTheaterFraming,
@@ -273,7 +273,8 @@
     let theaterVideoSrc = null;
     let theaterVideoMime = null;
     let theaterVideoKey = '';
-    let theaterBgVideo = null;
+    /** Set when the Smart-framing poster image fails to load. */
+    let theaterBgPosterFailed = false;
     let seriesDrawerOpen = false;
     let selectedSeriesEpisodeId = '';
     let episodeNavNotice = '';
@@ -298,6 +299,7 @@
         seriesDrawerOpen = false;
         selectedSeriesEpisodeId = '';
         episodeNavNotice = '';
+        theaterBgPosterFailed = false;
     }
 
     /** @param {CustomEvent<{ episodeId: string }>} event */
@@ -318,24 +320,6 @@
         episodeNavNotice = '';
     }
 
-    /** @param {HTMLVideoElement | null | undefined} fg */
-    function syncTheaterBgVideo(fg) {
-        const bg = theaterBgVideo;
-        if (!bg || !fg || $theaterFraming !== 'smart') return;
-        try {
-            if (fg.paused) {
-                if (!bg.paused) bg.pause();
-            } else if (bg.paused) {
-                bg.play().catch(() => {});
-            }
-            if (Math.abs(bg.currentTime - fg.currentTime) > 0.25) {
-                bg.currentTime = fg.currentTime;
-            }
-        } catch (_) {
-            /* sync best-effort */
-        }
-    }
-
     $: theaterPlayback =
         $activeReel && ($activeReel.isPlaceholder || $activeReel.isBlackStoriesPlaceholder)
             ? resolveTheaterPlayback($activeReel, $personalVideos)
@@ -347,9 +331,13 @@
               ? theaterPlayback.url
               : null;
     $: theaterVideoMime = theaterVideoSrc ? videoMimeForPath(theaterVideoSrc) : null;
-    $: theaterBgSrc = theaterVideoSrc
-        ? resolveMediaForRender(theaterVideoSrc, 'video', 'TheaterExperience:bg')
-        : '';
+    /** Existing thumbnail/poster path used by the foreground player — never the MP4 itself. */
+    $: theaterBgPosterSrc = $activeReel?.thumbnailUrl || theaterPlayback?.poster || '';
+    $: theaterBgPosterKey = `${$activeReel?.id || ''}|${theaterBgPosterSrc}`;
+    $: if (theaterBgPosterKey) {
+        // Reset failed state only when reel/poster identity changes (not on every tick).
+        theaterBgPosterFailed = false;
+    }
     $: theaterVideoKey = theaterVideoSrc
         ? `${theaterVideoSrc}|${$activeReel?.id || ''}|${$theaterRetryNonce}`
         : '';
@@ -357,11 +345,10 @@
     $: if (theaterVideoSrc) {
         logFinalMediaUrl('theater-video', resolveDisplayUrl(theaterVideoSrc, 'video', 'theater-video'));
     }
-    $: if ($activeReel?.thumbnailUrl || theaterPlayback?.poster) {
-        const theaterPoster = $activeReel?.thumbnailUrl || theaterPlayback?.poster;
+    $: if (theaterBgPosterSrc) {
         logFinalMediaUrl(
             'theater-poster',
-            theaterPoster ? resolveDisplayUrl(theaterPoster, 'poster', 'theater-poster') : ''
+            resolveDisplayUrl(theaterBgPosterSrc, 'poster', 'theater-poster')
         );
     }
     $: if ($activeReel) {
@@ -476,24 +463,29 @@
                     class:framing-smart={$theaterFraming === 'smart'}
                 >
                     {#key theaterVideoKey}
-                        {#if $theaterFraming === 'smart' && theaterBgSrc}
-                            <video
+                        {#if $theaterFraming === 'smart'}
+                            <div
                                 class="theater-video-bg"
-                                bind:this={theaterBgVideo}
-                                muted
-                                playsinline
-                                autoplay
-                                preload="auto"
+                                class:theater-video-bg-fallback={!theaterBgPosterSrc || theaterBgPosterFailed}
                                 aria-hidden="true"
-                                tabindex="-1"
                             >
-                                <source src={theaterBgSrc} type={theaterVideoMime} />
-                            </video>
+                                {#if theaterBgPosterSrc && !theaterBgPosterFailed}
+                                    <MediaThumbnail
+                                        url={theaterBgPosterSrc}
+                                        alt=""
+                                        className="theater-video-bg-image"
+                                        lazyLoad={false}
+                                        on:error={() => {
+                                            theaterBgPosterFailed = true;
+                                        }}
+                                    />
+                                {/if}
+                            </div>
                         {/if}
                         <MediaRenderer
                             type="video"
                             url={theaterVideoSrc}
-                            poster={$activeReel.thumbnailUrl || theaterPlayback?.poster}
+                            poster={theaterBgPosterSrc}
                             className="theater-video theater-video-fg"
                             dataTheaterVideo={true}
                             action={theaterVideoMount}
@@ -505,10 +497,7 @@
                             controls
                             playsinline
                             on:ended={handleTheaterEnded}
-                            on:timeupdate={(e) => {
-                                handleTheaterTimeupdate(e);
-                                syncTheaterBgVideo(e.currentTarget);
-                            }}
+                            on:timeupdate={handleTheaterTimeupdate}
                             on:play={(e) => {
                                 logTheaterMedia({
                                     phase: 'play',
@@ -518,18 +507,14 @@
                                 });
                                 logTheater('▶️ Theater video play');
                                 theaterWatchOnPlay(e.currentTarget);
-                                syncTheaterBgVideo(e.currentTarget);
                             }}
                             on:pause={(e) => {
                                 theaterWatchOnPause(e.currentTarget);
-                                syncTheaterBgVideo(e.currentTarget);
                             }}
-                            on:seeked={(e) => syncTheaterBgVideo(e.currentTarget)}
                             on:error={handleTheaterVideoError}
                             on:loadedmetadata={(e) => {
                                 theaterPlaybackError.set(false);
                                 resetTheaterTimeline();
-                                syncTheaterBgVideo(e.currentTarget);
                                 logTheaterMedia({
                                     phase: 'loadedmetadata',
                                     reelId: get(activeReel)?.id ?? null,
@@ -830,16 +815,28 @@
         align-items: center;
         min-height: 200px;
     }
+    /* Smart framing: static poster ambient (no second MP4 decode/sync). */
     .theater-video-bg {
         position: absolute;
         inset: -8%;
         width: 116%;
         height: 116%;
+        z-index: 0;
+        pointer-events: none;
+        overflow: hidden;
+        background: radial-gradient(ellipse at center, #1c1c24 0%, #050508 68%);
+    }
+    .theater-video-bg.theater-video-bg-fallback {
+        background:
+            radial-gradient(ellipse at 50% 40%, rgba(0, 242, 255, 0.12) 0%, transparent 55%),
+            radial-gradient(ellipse at center, #1c1c24 0%, #050508 68%);
+    }
+    .theater-video-bg :global(.theater-video-bg-image) {
+        width: 100%;
+        height: 100%;
         object-fit: cover;
         transform: scale(1.12);
         filter: blur(28px) brightness(0.55);
-        z-index: 0;
-        pointer-events: none;
     }
     .theater-video-wrapper :global(.theater-video-fg) {
         position: relative;
