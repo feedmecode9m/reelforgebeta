@@ -34,6 +34,8 @@
     class:selected
     class:draft={status === 'draft'}
     class:unplayable={!isPlayable}
+    data-episode-id={episodeId || undefined}
+    data-testid={episodeId ? `episode-chip-${episodeId}` : undefined}
     aria-pressed={selected}
     aria-disabled={!isPlayable}
     disabled={!isPlayable}

@@ -252,9 +252,16 @@ export function isReelAlreadySeriesBound(reelId) {
     if (!id) return true;
     if (getEpisodeByReelId(id)) return true;
     const meta = getReelSeriesMetadata(id);
+    // Only treat metadata as authoritative when the referenced episode exists in catalog
     if (meta?.episodeId && getEpisodeById(String(meta.episodeId))) return true;
-    // Explicit studio structured metadata — do not override
-    if (meta?.seriesId && meta?.episodeNumber && String(meta.seriesName || '').trim()) {
+    // Explicit studio structured metadata — do not override when episode is catalog-backed
+    if (
+        meta?.seriesId &&
+        meta?.episodeNumber &&
+        String(meta.seriesName || '').trim() &&
+        meta?.episodeId &&
+        getEpisodeById(String(meta.episodeId))
+    ) {
         if (getSeriesById(String(meta.seriesId))) return true;
     }
     return false;
