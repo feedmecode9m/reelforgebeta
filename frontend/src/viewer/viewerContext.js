@@ -20,20 +20,25 @@ import { initNotificationCenter } from '../lib/notifications/notificationCenter.
 import { initEpisodePipeline } from '../lib/pipeline/episodePipeline.js';
 import { initCommandCenter } from '../lib/command/commandCenter.js';
 import {
-    applyHeroManagerBackground,
-    applyHeroSelection,
-    buildHeroCommandBrief,
-    hasUserHeroOverride,
-    hydrateHeroBackgroundStores,
-    hydrateHeroBackgroundStoresSync,
-    initHeroIntelligence,
-    loadHeroManagerConfig,
-    mapPlatformHeroMode,
-    selectHeroContent,
-    startHeroRotation,
-    stopHeroRotation,
-    logHeroConfigBootTrace
-} from '../lib/hero/heroIntelligence.js';
+        applyHeroManagerBackground,
+        applyHeroSelection,
+        buildHeroCommandBrief,
+        hasUserHeroOverride,
+        hydrateHeroBackgroundStores,
+        hydrateHeroBackgroundStoresSync,
+        initHeroIntelligence,
+        loadHeroManagerConfig,
+        mapPlatformHeroMode,
+        selectHeroContent,
+        startHeroRotation,
+        stopHeroRotation,
+        logHeroConfigBootTrace
+    } from '../lib/hero/heroIntelligence.js';
+import {
+    loadHeroRecord,
+    applyHeroRecordBackground,
+    mergeHeroRecordIntoManagerConfig
+} from '../lib/hero/heroRecord.js';
 import { loadHeroReel, resolveActiveHeroVideoReel, heroReelToVaultItem } from '../lib/hero/heroReelIdentity.js';
 import { isHeroAsset, filterNonHeroAssets } from '../lib/hero/heroDomainGuard.js';
 import { shouldStreamDiagnostics } from '../lib/diagnostics/pipelineSnapshot.js';
@@ -1606,24 +1611,26 @@ if (typeof window !== 'undefined') {
     ...CONFIG,
     resolveVideoUrl: normalizeVideoUrl
   });
-  const heroCfg = loadHeroManagerConfig();
+  const heroRecord = loadHeroRecord();
+  const heroCfg = /** @type {any} */ (
+    mergeHeroRecordIntoManagerConfig(loadHeroManagerConfig(), heroRecord)
+  );
   logHeroConfigBootTrace({
     site: 'viewerContext:module-init',
     caller: 'viewerContext.js:module-init',
     storageRawBeforeParse: localStorage.getItem('reelforge_hero_manager_config'),
     heroAssetId: heroCfg?.heroAssetId || '',
     backgroundSource: heroCfg?.backgroundSource || '',
-    configSource: 'loadHeroManagerConfig',
+    configSource: 'HeroRecord+loadHeroManagerConfig',
     reason: 'post_hydrateHeroBackgroundStoresSync'
   });
-  const canonical = loadHeroReel();
   pipelineDiag('HERO_HYDRATE', 'hydrateHeroBackgroundStoresSync', 'viewerContext.js', {
     result: String(syncHydrateResult || ''),
     detail: {
-      assetId: String(heroCfg?.heroAssetId || '').trim(),
+      recordMode: String(heroRecord?.mode || ''),
+      assetId: String(heroRecord?.assetId || heroCfg?.heroAssetId || '').trim(),
       source: String(heroCfg?.backgroundSource || '').trim(),
-      canonicalUrl: String(canonical?.url || ''),
-      canonicalThumbnail: String(canonical?.thumbnail || ''),
+      mediaUrl: String(heroRecord?.mediaUrl || ''),
       storeVideo: String(get(HERO_BACKGROUND_VIDEO) || ''),
       storePoster: String(get(HERO_POSTER_IMAGE) || '')
     }
@@ -1631,19 +1638,75 @@ if (typeof window !== 'undefined') {
   logHeroHydration('after', { result: syncHydrateResult, stage: 'module-init' });
 }
 
+/**
+ * Apply HeroRecord identity to Viewer media stores.
+ * @param {import('../lib/hero/heroRecord.js').HeroRecord | null | undefined} [record]
+ * @returns {'unchanged' | 'image' | 'video' | 'pending_default'}
+ */
+function applyHeroRecordBackgroundToViewer(record = null) {
+  const active = record || loadHeroRecord();
+  return applyHeroRecordBackground(active, getHeroBackgroundStores());
+}
+
+/**
+ * Live HeroRecord update while Viewer is mounted.
+ * @param {CustomEvent} [event]
+ */
+function handleHeroRecordUpdated(event) {
+  const detail = event?.detail;
+  const record =
+    detail && typeof detail === 'object' && detail.mode
+      ? /** @type {import('../lib/hero/heroRecord.js').HeroRecord} */ (detail)
+      : loadHeroRecord();
+
+  console.info('[HERO_RECORD_VIEWER]', {
+    stage: 'handleHeroRecordUpdated',
+    mode: record.mode,
+    assetId: record.assetId || '',
+    revision: record.revision,
+    ts: new Date().toISOString()
+  });
+
+  if (record.mode === 'none' || record.mode === 'asset') {
+    applyHeroRecordBackgroundToViewer(record);
+    return;
+  }
+
+  // selection — allow intelligence to resolve background.
+  if (!hasUserHeroOverride(CONFIG)) {
+    applyHeroBackgroundFromIntelligence();
+  }
+}
+
 function applyManagerBackgroundFromConfig(config = loadHeroManagerConfig()) {
+  // Prefer HeroRecord; manager patch remains for compatibility projection merge.
+  const record = loadHeroRecord();
+  if (record.mode === 'none' || record.mode === 'asset') {
+    return applyHeroRecordBackgroundToViewer(record) !== 'pending_default';
+  }
+  if (record.mode === 'selection') {
+    return false;
+  }
   return applyHeroManagerBackground(config, getHeroBackgroundStores());
 }
 
 function handleHeroManagerUpdated(event) {
   const config = event?.detail || loadHeroManagerConfig();
-  if (config.backgroundSource === 'none') {
+  const record = loadHeroRecord();
+
+  // Identity is owned by HeroRecord — never let manager-only patches ressurect stale media.
+  if (record.mode === 'none' || record.mode === 'asset') {
+    applyHeroRecordBackgroundToViewer(record);
+  } else if (record.mode === 'selection') {
+    applyHeroBackgroundFromIntelligence();
+  } else if (config.backgroundSource === 'none') {
     applyManagerBackgroundFromConfig(config);
   } else if (config.backgroundSource === 'custom_video' || config.backgroundSource === 'custom_image') {
     applyManagerBackgroundFromConfig(config);
   } else if (!hasUserHeroOverride(CONFIG)) {
     applyHeroBackgroundFromIntelligence();
   }
+
   const feedSnapshot = get(feed);
   heroSelection.set(
     selectHeroContent(config.heroType, feedSnapshot, {
@@ -1654,17 +1717,19 @@ function handleHeroManagerUpdated(event) {
   if (config.autoRotate) {
     startHeroRotation(feedSnapshot, (selection) => {
       heroSelection.set(selection);
+      const activeRecord = loadHeroRecord();
+      if (activeRecord.mode === 'asset' || activeRecord.mode === 'none') {
+        applyHeroRecordBackgroundToViewer(activeRecord);
+        return;
+      }
       if (hasUserHeroOverride(CONFIG)) return;
-      const managerConfig = loadHeroManagerConfig();
-      if (managerConfig.backgroundSource === 'selection') {
+      if (activeRecord.mode === 'selection') {
         applyHeroSelection(selection, getHeroBackgroundStores(), {
           respectUserOverride: true,
           config: CONFIG,
           applyBackground: true,
           clearVideoForPosterOnly: false
         });
-      } else {
-        applyManagerBackgroundFromConfig(managerConfig);
       }
     });
   } else {
@@ -1673,36 +1738,36 @@ function handleHeroManagerUpdated(event) {
 }
 
 function applyHeroBackgroundFromIntelligence() {
-  const managerConfig = loadHeroManagerConfig();
+  const record = loadHeroRecord();
   const stores = getHeroBackgroundStores();
 
-  if (managerConfig.backgroundSource === 'none') {
-    applyManagerBackgroundFromConfig(managerConfig);
+  if (record.mode === 'none') {
+    applyHeroRecordBackgroundToViewer(record);
     return;
   }
 
-  if (hasUserHeroOverride(CONFIG)) {
-    if (managerConfig.backgroundSource === 'custom_video' || managerConfig.backgroundSource === 'custom_image') {
-      applyManagerBackgroundFromConfig(managerConfig);
-    }
+  if (record.mode === 'asset') {
+    // Never overwrite a chosen vault/asset identity with selection intelligence.
+    applyHeroRecordBackgroundToViewer(record);
     return;
   }
 
-  if (managerConfig.backgroundSource === 'selection') {
-    applyHeroSelection(get(heroSelection), stores, {
-      respectUserOverride: true,
-      config: CONFIG,
-      applyBackground: true,
-      clearVideoForPosterOnly: false
-    });
-  } else {
-    applyManagerBackgroundFromConfig(managerConfig);
-  }
+  // selection mode
+  if (hasUserHeroOverride(CONFIG)) return;
+
+  applyHeroSelection(get(heroSelection), stores, {
+    respectUserOverride: true,
+    config: CONFIG,
+    applyBackground: true,
+    clearVideoForPosterOnly: false
+  });
 }
 
 function applyHeroIntelligence(force = false) {
   if (typeof window === 'undefined') return;
-  if (!force && hasUserHeroOverride(CONFIG)) return;
+  const record = loadHeroRecord();
+  // Asset / blank always re-apply identity; selection may early-return unless forced.
+  if (!force && record.mode === 'selection' && hasUserHeroOverride(CONFIG)) return;
 
   const managerConfig = loadHeroManagerConfig();
   const mode =
@@ -1728,18 +1793,18 @@ function applyHeroIntelligence(force = false) {
 
   startHeroRotation(feedSnapshot, (selection) => {
     heroSelection.set(selection);
-    if (hasUserHeroOverride(CONFIG)) return;
-    const activeManagerConfig = loadHeroManagerConfig();
-    if (activeManagerConfig.backgroundSource === 'selection') {
-      applyHeroSelection(selection, getHeroBackgroundStores(), {
-        respectUserOverride: true,
-        config: CONFIG,
-        applyBackground: true,
-        clearVideoForPosterOnly: false
-      });
-    } else {
-      applyManagerBackgroundFromConfig(activeManagerConfig);
+    const activeRecord = loadHeroRecord();
+    if (activeRecord.mode === 'asset' || activeRecord.mode === 'none') {
+      applyHeroRecordBackgroundToViewer(activeRecord);
+      return;
     }
+    if (hasUserHeroOverride(CONFIG)) return;
+    applyHeroSelection(selection, getHeroBackgroundStores(), {
+      respectUserOverride: true,
+      config: CONFIG,
+      applyBackground: true,
+      clearVideoForPosterOnly: false
+    });
   });
   heroIntelligenceApplied = true;
 }
@@ -1971,12 +2036,14 @@ console.log(`[onMount] bootstrap result: ${bootstrap.source} (${bootstrap.thumbn
 const savedHeroVideoRaw = localStorage.getItem(CONFIG.HERO_VIDEO_STORAGE_KEY);
 let savedHeroVideo = savedHeroVideoRaw;
 const savedHeroImage = localStorage.getItem(CONFIG.HERO_IMAGE_STORAGE_KEY);
+// Compatibility diagnostics only — mount hydration authority is HeroRecord (hydrateHeroBackgroundStores).
 console.info('[HERO_LOAD]', {
 stage: 'viewer:onMount:hero-storage-keys',
 videoKey: CONFIG.HERO_VIDEO_STORAGE_KEY,
 imageKey: CONFIG.HERO_IMAGE_STORAGE_KEY,
 hasVideo: Boolean(savedHeroVideoRaw),
 hasImage: Boolean(savedHeroImage),
+recordMode: loadHeroRecord()?.mode || '',
 ts: new Date().toISOString()
 });
 if (savedHeroVideo?.startsWith('blob:')) {
@@ -1984,14 +2051,15 @@ clearHeroVideoStorage();
 savedHeroVideo = null;
 heroDebugLog('Viewer.svelte:onMount:hydrate', 'dropped expired blob hero video from storage', {}, 'B');
 }
-heroDebugLog('Viewer.svelte:onMount:hydrate', 'loaded hero keys from localStorage', {
+heroDebugLog('Viewer.svelte:onMount:hydrate', 'legacy hero keys present (non-authoritative)', {
 savedHeroVideoPreview: savedHeroVideo ? savedHeroVideo.slice(0, 120) : null,
 savedHeroVideoLen: savedHeroVideo?.length || 0,
 savedHeroImagePreview: savedHeroImage ? savedHeroImage.slice(0, 80) : null,
 savedHeroImageLen: savedHeroImage?.length || 0,
 storeVideoBefore: get(HERO_BACKGROUND_VIDEO)?.slice(0, 120) || '',
 storeImageBefore: get(HERO_POSTER_IMAGE)?.slice(0, 80) || '',
-imageHeroMode: isPersistedImageHero(savedHeroImage)
+imageHeroMode: isPersistedImageHero(savedHeroImage),
+recordMode: loadHeroRecord()?.mode || ''
 }, 'B');
 
 console.info('[HERO_HYDRATION]', {
@@ -2118,17 +2186,20 @@ viewerHydrationReady.set(true);
 logBg7jHydrationReady(true, hydratedPersonalVideosCount);
 pipelineCheckpoint('VIEWER_BOOTSTRAP', { phase: 'post-syncFromVault' });
 if (hasUserHeroOverride(CONFIG)) {
-applyManagerBackgroundFromConfig(loadHeroManagerConfig());
+applyHeroRecordBackgroundToViewer(loadHeroRecord());
 }
 {
-const postSyncHeroCfg = loadHeroManagerConfig();
+const postSyncRecord = loadHeroRecord();
+const postSyncHeroCfg = /** @type {any} */ (
+  mergeHeroRecordIntoManagerConfig(loadHeroManagerConfig(), postSyncRecord)
+);
 logHeroConfigBootTrace({
   site: 'viewerContext:onMount-post-sync',
   caller: 'viewerContext.js:onMount',
   storageRawBeforeParse: localStorage.getItem('reelforge_hero_manager_config'),
   heroAssetId: postSyncHeroCfg?.heroAssetId || '',
   backgroundSource: postSyncHeroCfg?.backgroundSource || '',
-  configSource: 'loadHeroManagerConfig',
+  configSource: 'HeroRecord+loadHeroManagerConfig',
   reason: 'post_syncFromVault_before_applyHeroIntelligence'
 });
 }
@@ -2136,9 +2207,11 @@ runEpisodeBridgeSync('post-sync');
 applyHeroIntelligence(true);
 const onHeroIntelRefresh = () => applyHeroIntelligence(false);
 const onHeroManagerUpdated = (event) => handleHeroManagerUpdated(event);
+const onHeroRecordUpdated = (event) => handleHeroRecordUpdated(event);
 window.addEventListener('reelforge:metrics-updated', onHeroIntelRefresh);
 window.addEventListener('reelforge:release-schedule-updated', onHeroIntelRefresh);
 window.addEventListener('reelforge:hero-manager-updated', onHeroManagerUpdated);
+window.addEventListener('reelforge:hero-record-updated', onHeroRecordUpdated);
 AI_CLEANUP_AGENT.init();
 if (!isStorageFull()) {
 resourceManager.setTimeout(() => AI_CLEANUP_AGENT.syncVideoVaultToFeed(), 200);
@@ -2197,6 +2270,7 @@ closeWs();
 window.removeEventListener('reelforge:metrics-updated', onHeroIntelRefresh);
 window.removeEventListener('reelforge:release-schedule-updated', onHeroIntelRefresh);
 window.removeEventListener('reelforge:hero-manager-updated', onHeroManagerUpdated);
+window.removeEventListener('reelforge:hero-record-updated', onHeroRecordUpdated);
 if (typeof window !== 'undefined') {
 window.removeEventListener('reelforge:hero-upload', onHeroUpload);
 window.removeEventListener('reelforge:upload-progress', onUploadProgress);

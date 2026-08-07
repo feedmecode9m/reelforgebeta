@@ -45,11 +45,16 @@ import {
     HERO_REEL_STORAGE_KEY
 } from './heroReelIdentity.js';
 import {
+    loadHeroRecord,
+    applyHeroRecordToStores,
+    applyHeroRecordBackground,
     selectHeroAsset,
     setHeroMode,
     projectHeroRecordToManagerPointer,
     projectHeroRecordToReel,
-    inspectHeroRecordStorage
+    inspectHeroRecordStorage,
+    mergeHeroRecordIntoManagerConfig,
+    migrateLegacyHeroRecordIfNeeded
 } from './heroRecord.js';
 
 export const HERO_MODES = /** @type {const} */ ([
@@ -1715,10 +1720,23 @@ export function resolveHeroBackgroundAsset(config = loadHeroManagerConfig(), vau
  * @param {{ vaultItems?: Record<string, unknown>[] | null; respectSelection?: boolean }} [options]
  */
 export function applyHeroManagerBackground(config = loadHeroManagerConfig(), stores = {}, options = {}) {
-    if (options.respectSelection !== false && config.backgroundSource === 'selection') {
+    // HeroRecord is authoritative for identity / blank / selected custom assets.
+    const record = loadHeroRecord();
+
+    if (record.mode === 'none') {
+        return applyHeroRecordToStores(record, stores);
+    }
+
+    if (record.mode === 'asset') {
+        return applyHeroRecordToStores(record, stores);
+    }
+
+    // selection — intelligence / selection resolver owns media (unless respectSelection false).
+    if (options.respectSelection !== false && (record.mode === 'selection' || config.backgroundSource === 'selection')) {
         return false;
     }
 
+    // Compatibility fallback when record is selection but caller forces manager custom paths.
     if (config.backgroundSource === 'none') {
         stores.setVideo?.('');
         stores.setPoster?.('');
@@ -2846,154 +2864,99 @@ export function selectHeroContent(mode = 'TRENDING', feed, options = {}) {
 }
 
 /**
- * @param {{ HERO_VIDEO_STORAGE_KEY?: string; HERO_IMAGE_STORAGE_KEY?: string; HERO_VIDEO_PATHS?: string[] }} config
+ * True when the viewer has an explicit HeroRecord override (asset or intentional blank).
+ * Selection mode is NOT an override — intelligence may choose the background.
+ * @param {{ HERO_VIDEO_STORAGE_KEY?: string; HERO_IMAGE_STORAGE_KEY?: string; HERO_VIDEO_PATHS?: string[] }} [config]
  */
 export function hasUserHeroOverride(config = {}) {
     if (typeof window === 'undefined') return false;
-    const managerConfig = loadHeroManagerConfig();
-    // Intentional blank menu backdrop counts as an explicit override.
-    if (managerConfig.backgroundSource === 'none') return true;
-
-    const canonical = loadHeroReel();
-    if (canonical?.id && canonical?.url) return true;
-
-    if (managerConfig.backgroundSource === 'custom_video' || managerConfig.backgroundSource === 'custom_image') {
-        if (String(managerConfig.heroAssetId || '').trim()) return true;
+    void config;
+    const record = loadHeroRecord();
+    if (record.mode === 'none') return true;
+    if (record.mode === 'asset' && String(record.assetId || '').trim() && String(record.mediaUrl || '').trim()) {
+        return true;
     }
     return false;
 }
 
 /**
- * Synchronously restore hero background from persisted localStorage and manager config.
- * Does not probe server defaults (that requires async HEAD fetch).
+ * Synchronously restore hero background from HeroRecord (source of truth).
+ * One-way legacy migration may seed HeroRecord first; legacy reel/video/image keys
+ * never override a valid HeroRecord during hydration.
+ *
  * @param {{ setVideo?: (url: string) => void; setPoster?: (url: string) => void; setFailed?: (failed: boolean) => void }} stores
  * @param {{ HERO_VIDEO_STORAGE_KEY?: string; HERO_IMAGE_STORAGE_KEY?: string }} [appConfig]
  * @returns {'unchanged' | 'image' | 'video' | 'pending_default'}
  */
 export function hydrateHeroBackgroundStoresSync(stores = {}, appConfig = {}) {
     if (typeof window === 'undefined') return 'unchanged';
+    void appConfig;
 
-    migrateLegacyHeroStorageIfNeeded();
-    const managerConfig = loadHeroManagerConfig();
-    if (managerConfig.backgroundSource === 'none') {
+    // Populate HeroRecord from legacy keys when missing (does not authorize those keys after).
+    migrateLegacyHeroRecordIfNeeded();
+    let record = loadHeroRecord();
+    const manager = loadHeroManagerConfig();
+
+    // Product default: manager none + soft default selection → intentional blank menu.
+    if (
+        (record.mode === 'selection' &&
+            (record.source === 'migrate_default_selection' ||
+                record.source === 'default' ||
+                !record.updatedAt)) &&
+        String(manager.backgroundSource || '').trim() === 'none'
+    ) {
         stores.setVideo?.('');
         stores.setPoster?.('');
         stores.setFailed?.(false);
         console.info('[HERO_LOAD]', {
-            stage: 'hydrateHeroBackgroundStoresSync:none',
+            stage: 'hydrateHeroBackgroundStoresSync:default_blank',
             backgroundSource: 'none',
-            heroAssetId: '',
+            recordMode: record.mode,
             ts: new Date().toISOString()
         });
         return 'unchanged';
     }
-    const canonicalReel = loadHeroReel();
-    if (
-        canonicalReel?.url &&
-        String(managerConfig?.heroAssetId || '').trim() === canonicalReel.id &&
-        (managerConfig.backgroundSource === 'custom_image' ||
-            managerConfig.backgroundSource === 'custom_video')
-    ) {
-        applyHeroReelToStores(canonicalReel, stores);
+
+    // Explicit manager none aligned into record via migrate — clear without resurrecting legacy media.
+    if (record.mode === 'none') {
+        applyHeroRecordToStores(record, stores);
         console.info('[HERO_LOAD]', {
-            stage: 'hydrateHeroBackgroundStoresSync:hero_reel',
-            id: canonicalReel.id,
-            url: canonicalReel.url,
-            backgroundSource: canonicalReel.backgroundSource,
+            stage: 'hydrateHeroBackgroundStoresSync:none',
+            backgroundSource: 'none',
+            heroAssetId: '',
+            revision: record.revision,
             ts: new Date().toISOString()
         });
-        return canonicalReel.backgroundSource === 'custom_image' ? 'image' : 'video';
+        return 'unchanged';
     }
 
-    const videoKey = appConfig.HERO_VIDEO_STORAGE_KEY || 'reelforge_hero_video';
-    const imageKey = appConfig.HERO_IMAGE_STORAGE_KEY || 'reelforge_hero_image';
-
-    let savedVideo = localStorage.getItem(videoKey);
-    const savedImage = localStorage.getItem(imageKey);
-    if (savedVideo?.startsWith('blob:')) {
-        try {
-            localStorage.removeItem(videoKey);
-        } catch {
-            /* ignore */
-        }
-        savedVideo = null;
-    }
-
-    if (
-        (managerConfig.backgroundSource === 'custom_image' ||
-            managerConfig.backgroundSource === 'custom_video') &&
-        applyHeroManagerBackground(managerConfig, stores)
-    ) {
+    if (record.mode === 'asset') {
+        const kind = applyHeroRecordBackground(record, stores);
         console.info('[HERO_LOAD]', {
-            stage: 'hydrateHeroBackgroundStoresSync:manager',
-            backgroundSource: managerConfig.backgroundSource,
-            heroAssetId: managerConfig.heroAssetId || '',
+            stage: 'hydrateHeroBackgroundStoresSync:record_asset',
+            assetId: record.assetId || '',
+            mediaKind: record.mediaKind || '',
+            mediaUrl: record.mediaUrl || '',
+            revision: record.revision,
+            result: kind,
             ts: new Date().toISOString()
         });
-        logHeroIntelligenceDiag('HERO_BACKGROUND_SAVE', {
-            phase: 'hydrate',
-            source: 'manager',
-            backgroundSource: managerConfig.backgroundSource
-        });
-        return managerConfig.backgroundSource === 'custom_image' ? 'image' : 'video';
+        return kind === 'pending_default' ? 'pending_default' : kind;
     }
 
-    if (savedImage?.startsWith('data:')) {
-        stores.setPoster?.(savedImage);
-        stores.setVideo?.('');
-        stores.setFailed?.(false);
-        if (savedVideo) {
-            try {
-                localStorage.removeItem(videoKey);
-            } catch {
-                /* ignore */
-            }
-        }
-        logHeroIntelligenceDiag('HERO_BACKGROUND_SAVE', {
-            phase: 'hydrate',
-            source: 'customizer_image',
-            imageLen: savedImage.length
-        });
-        return 'image';
-    }
-
-    const persistedPoster = resolveUserPosterUrl(savedImage);
-    if (persistedPoster) {
-        stores.setPoster?.(persistedPoster);
-        stores.setVideo?.('');
-        stores.setFailed?.(false);
-        if (savedVideo) {
-            try {
-                localStorage.removeItem(videoKey);
-            } catch {
-                /* ignore */
-            }
-        }
-        logHeroIntelligenceDiag('HERO_BACKGROUND_SAVE', {
-            phase: 'hydrate',
-            source: 'persisted_thumb',
-            image: persistedPoster
-        });
-        return 'image';
-    }
-
-    if (savedVideo) {
-        stores.setVideo?.(savedVideo);
-        if (savedImage) stores.setPoster?.(savedImage);
-        stores.setFailed?.(false);
-        logHeroIntelligenceDiag('HERO_BACKGROUND_SAVE', {
-            phase: 'hydrate',
-            source: 'customizer_video',
-            video: savedVideo
-        });
-        return 'video';
-    }
-
+    // selection — intelligence resolves background later; do not read legacy media keys.
+    stores.setFailed?.(false);
+    console.info('[HERO_LOAD]', {
+        stage: 'hydrateHeroBackgroundStoresSync:selection',
+        heroAssetId: '',
+        revision: record.revision,
+        ts: new Date().toISOString()
+    });
     return 'pending_default';
 }
 
 /**
- * Restore hero background from localStorage, manager config, then server default asset.
+ * Restore hero background from HeroRecord, then optional server default when selection is pending.
  * @param {{ setVideo?: (url: string) => void; setPoster?: (url: string) => void; setFailed?: (failed: boolean) => void }} stores
  * @param {{ HERO_VIDEO_STORAGE_KEY?: string; HERO_IMAGE_STORAGE_KEY?: string; HERO_VIDEO_PATHS?: string[]; resolveVideoUrl?: (path: string) => string }} [appConfig]
  */
@@ -3003,6 +2966,12 @@ export async function hydrateHeroBackgroundStores(stores = {}, appConfig = {}) {
     const syncResult = hydrateHeroBackgroundStoresSync(stores, appConfig);
     if (syncResult !== 'pending_default') {
         return syncResult;
+    }
+
+    // Only selection/pending may accept server defaults. Never resurrect over none/asset.
+    const record = loadHeroRecord();
+    if (record.mode === 'none' || record.mode === 'asset') {
+        return applyHeroRecordBackground(record, stores);
     }
 
     const defaultPaths = appConfig.HERO_VIDEO_PATHS?.length

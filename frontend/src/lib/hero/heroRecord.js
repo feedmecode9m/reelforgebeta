@@ -592,6 +592,41 @@ export function applyHeroRecordToStores(record, stores = {}) {
 }
 
 /**
+ * Viewer hydration entry — apply HeroRecord background identity to stores.
+ * Does not read HeroReel / legacy media keys.
+ *
+ * @param {HeroRecord | null | undefined} [record]
+ * @param {{ setVideo?: (url: string) => void; setPoster?: (url: string) => void; setFailed?: (failed: boolean) => void }} [stores]
+ * @returns {'unchanged' | 'image' | 'video' | 'pending_default'}
+ */
+export function applyHeroRecordBackground(record = null, stores = {}) {
+    let next = null;
+    if (record != null) {
+        const validated = validateHeroRecord(record);
+        if (validated.ok) next = validated.record;
+    }
+    if (!next) {
+        const loaded = loadHeroRecord();
+        const validated = validateHeroRecord(loaded);
+        if (!validated.ok) return 'pending_default';
+        next = validated.record;
+    }
+
+    if (next.mode === 'none') {
+        applyHeroRecordToStores(next, stores);
+        return 'unchanged';
+    }
+    if (next.mode === 'selection') {
+        stores.setFailed?.(false);
+        return 'pending_default';
+    }
+    if (applyHeroRecordToStores(next, stores)) {
+        return next.mediaKind === 'image' ? 'image' : 'video';
+    }
+    return 'pending_default';
+}
+
+/**
  * @param {string} key
  * @returns {unknown}
  */
