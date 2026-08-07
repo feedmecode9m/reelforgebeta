@@ -41,8 +41,17 @@
     import { vaultForensic } from '../../lib/diagnostics/vaultForensics.js';
     import {
         loadHeroReel,
-        saveHeroReel
+        saveHeroReel,
+        refreshHeroReelLegacyMirror
     } from '../../lib/hero/heroReelIdentity.js';
+    import {
+        loadHeroRecord,
+        setHeroMode,
+        updateHeroPresentation,
+        projectHeroRecordToManagerPointer,
+        mergeHeroRecordIntoManagerConfig,
+        projectManagerConfigFromHeroRecord
+    } from '../../lib/hero/heroRecord.js';
     import {
         getEpisodeByReelId,
         updateEpisodeTitleForReel
@@ -68,7 +77,12 @@
     /** Optional Studio-level title updater (feed + backend PATCH). */
     export let updateReelTitle = null;
 
-    let config = loadHeroManagerConfig();
+    let config =
+        typeof window !== 'undefined'
+            ? /** @type {any} */ (
+                  mergeHeroRecordIntoManagerConfig(loadHeroManagerConfig(), loadHeroRecord())
+              )
+            : loadHeroManagerConfig();
     let statusMessage = '';
     let heroAssetSelect = null;
     let refreshAuditTimer = null;
@@ -93,6 +107,67 @@
     const TITLES_KEY = () => CONFIG?.TITLES_STORAGE_KEY || 'reel_titles_persistent';
     const VIDEO_VAULT_KEY = () => CONFIG?.VIDEO_VAULT_KEY || 'personal_video_vault';
     const THUMB_VAULT_KEY = () => CONFIG?.THUMBNAIL_STORAGE_KEY || 'personal_thumbnails';
+
+    /**
+     * UI view: manager-only settings + HeroRecord identity/copy authority.
+     * @param {Record<string, unknown> | null | undefined} [managerDetail]
+     */
+    function applyLocalConfigFromSources(managerDetail = null) {
+        const manager =
+            managerDetail && typeof managerDetail === 'object'
+                ? managerDetail
+                : loadHeroManagerConfig();
+        config = /** @type {any} */ (mergeHeroRecordIntoManagerConfig(manager, loadHeroRecord()));
+        storyScheduledFor = String(config.storyScheduledFor || storyScheduledFor || '');
+        syncDescriptionModeFromConfig();
+    }
+
+    /**
+     * Push identity/mode + display copy from a manager snapshot into HeroRecord.
+     * Manager-only fields are not written here.
+     * @param {Record<string, unknown>} snapshot
+     * @param {string} reason
+     */
+    function syncHeroRecordFromManagerSnapshot(snapshot, reason = 'persist') {
+        const bg = String(snapshot?.backgroundSource || '').trim();
+        let current = loadHeroRecord();
+        const sourceTag = `manager_${reason}`;
+
+        if (bg === 'none') {
+            if (current.mode !== 'none') {
+                setHeroMode('none', { source: sourceTag });
+                refreshHeroReelLegacyMirror();
+            }
+        } else if (bg === 'selection') {
+            if (current.mode !== 'selection' || String(current.assetId || '').trim()) {
+                setHeroMode('selection', { source: sourceTag });
+                refreshHeroReelLegacyMirror();
+            }
+        } else if (bg === 'custom_video' || bg === 'custom_image') {
+            const id = String(snapshot?.heroAssetId || '').trim();
+            if (id && (current.mode !== 'asset' || String(current.assetId || '') !== id)) {
+                commitHeroAssetSelection(id, getLiveVaultExtras());
+            }
+        }
+
+        current = loadHeroRecord();
+        const nextTitle = String(snapshot?.heroTitle ?? '');
+        const nextSub = String(snapshot?.heroSubtitle ?? '');
+        const nextDesc = String(snapshot?.heroDescription ?? '');
+        if (
+            nextTitle !== String(current.heroTitle || '') ||
+            nextSub !== String(current.heroSubtitle || '') ||
+            nextDesc !== String(current.heroDescription || '')
+        ) {
+            updateHeroPresentation({
+                heroTitle: nextTitle,
+                heroSubtitle: nextSub,
+                heroDescription: nextDesc,
+                source: sourceTag
+            });
+        }
+        return loadHeroRecord();
+    }
 
     function readPersistentTitleMap() {
         try {
@@ -321,10 +396,13 @@
         try {
             const snapshot = buildConfigSnapshot(overrides);
             config = snapshot;
-            const result = updateHeroManagerConfig(snapshot, feedReels || []);
-            config = result?.config || loadHeroManagerConfig();
-            storyScheduledFor = String(config.storyScheduledFor || storyScheduledFor || '');
-            refreshHeroAssetRegistry();
+
+            // HeroRecord owns identity + display copy; manager keeps carousel/campaign/etc.
+            const record = syncHeroRecordFromManagerSnapshot(snapshot, reason);
+            const managerPatch = projectManagerConfigFromHeroRecord(snapshot, record);
+            const result = updateHeroManagerConfig(/** @type {any} */ (managerPatch), feedReels || []);
+            applyLocalConfigFromSources(result?.config || loadHeroManagerConfig());
+
             console.info('[HERO_MANAGER_PERSIST]', {
                 reason,
                 storyStatus: config.storyStatus || 'draft',
@@ -332,10 +410,11 @@
                 heroAssetId: config.heroAssetId || '',
                 heroTitle: String(config.heroTitle || '').slice(0, 80),
                 heroDescriptionBlank: !String(config.heroDescription || '').trim(),
+                recordMode: record?.mode || '',
+                recordRevision: record?.revision,
                 ts: new Date().toISOString()
             });
-            syncDescriptionModeFromConfig();
-            return result;
+            return result ? { ...result, config } : null;
         } catch (error) {
             console.error('[HERO_MANAGER_PERSIST_FAILED]', { reason, error });
             statusMessage = `❌ Save failed: ${error?.message || error}`;
@@ -374,7 +453,7 @@
         });
         if (!selectedId) {
             const saved = commitHeroAssetSelection('');
-            config = saved || loadHeroManagerConfig();
+            applyLocalConfigFromSources(saved || loadHeroManagerConfig());
             refreshHeroAssetRegistry();
             statusMessage = 'Hero background cleared (blank menu)';
             return;
@@ -384,12 +463,11 @@
             const saved = commitHeroAssetSelection(selectedId, getLiveVaultExtras());
             if (!saved) {
                 statusMessage = 'Could not set that vault asset — try Apply Hero Settings after a Content vault refresh.';
-                config = loadHeroManagerConfig();
+                applyLocalConfigFromSources();
                 refreshHeroAssetRegistry();
                 return;
             }
-            config = saved;
-            storyScheduledFor = String(config.storyScheduledFor || storyScheduledFor || '');
+            applyLocalConfigFromSources(saved);
             refreshHeroAssetRegistry();
             const picked = get(heroAssetRegistry).find((a) => a.assetId === selectedId);
             const truthTitle = String(config.heroTitle || getDisplayTitle(picked || { assetId: selectedId })).trim();
@@ -409,10 +487,26 @@
 
     function handleBackgroundSourceChange() {
         if (config.backgroundSource === 'none') {
-            commitHeroAssetSelection('');
-            config = loadHeroManagerConfig();
+            const saved = commitHeroAssetSelection('');
+            applyLocalConfigFromSources(saved || loadHeroManagerConfig());
             refreshHeroAssetRegistry();
             statusMessage = 'Hero background cleared (blank menu)';
+            return;
+        }
+        if (config.backgroundSource === 'selection') {
+            setHeroMode('selection', { source: 'manager_background_source' });
+            refreshHeroReelLegacyMirror();
+            const pointer = projectHeroRecordToManagerPointer(loadHeroRecord());
+            const saved = saveHeroManagerConfig({
+                ...buildConfigSnapshot({
+                    backgroundSource: 'selection',
+                    heroAssetId: ''
+                }),
+                ...pointer
+            });
+            applyLocalConfigFromSources(saved);
+            refreshHeroAssetRegistry();
+            statusMessage = 'Hero uses selection/discovery content';
             return;
         }
         applyConfig();
@@ -838,8 +932,13 @@
                 overrideTitle: durableTitle
             });
             if (synced) {
-                config = synced;
-                storyScheduledFor = String(config.storyScheduledFor || storyScheduledFor || '');
+                updateHeroPresentation({
+                    heroTitle: String(synced.heroTitle || durableTitle),
+                    heroSubtitle: String(synced.heroSubtitle || ''),
+                    heroDescription: String(synced.heroDescription || ''),
+                    source: 'manager_title_bind'
+                });
+                applyLocalConfigFromSources(synced);
             } else {
                 const localPatch = buildHeroManagerPatchFromTitleIntel(assetId, durableTitle, {
                     isVideo: isVideoHeroAssetType(item.assetType),
@@ -957,14 +1056,13 @@
                 statusMessage = 'Could not use that vault item as hero background.';
                 return;
             }
-            config = saved;
+            applyLocalConfigFromSources(saved);
             refreshHeroAssetRegistry();
-            syncDescriptionModeFromConfig();
             const intel = getStoryPreviewIntel({
                 ...item,
-                title: saved.heroTitle || getDisplayTitle(item)
+                title: config.heroTitle || getDisplayTitle(item)
             });
-            const liveTitle = String(saved.heroTitle || intel.normalizedTitle).trim();
+            const liveTitle = String(config.heroTitle || intel.normalizedTitle).trim();
             statusMessage = `Hero background · “${liveTitle}” · ${intel.category}/${intel.mood} story bound`;
             dispatchVaultTitleUpdated({
                 reelId: assetId,
@@ -1119,8 +1217,7 @@
     }
 
     function refresh() {
-        config = loadHeroManagerConfig();
-        storyScheduledFor = String(config.storyScheduledFor || '');
+        applyLocalConfigFromSources();
         // One-shot repair: if live vault hero still has stock Alabama / Black Warrior copy, realign to file.
         if (
             config.heroAssetId &&
@@ -1133,17 +1230,22 @@
                 extraItems: getLiveVaultExtras(),
                 force: false
             });
-            if (repaired) config = repaired;
+            if (repaired) {
+                updateHeroPresentation({
+                    heroTitle: String(repaired.heroTitle || ''),
+                    heroSubtitle: String(repaired.heroSubtitle || ''),
+                    heroDescription: String(repaired.heroDescription || ''),
+                    source: 'manager_refresh_repair'
+                });
+                applyLocalConfigFromSources(repaired);
+            }
         }
-        syncDescriptionModeFromConfig();
         refreshHeroAssetRegistry();
     }
 
     function handleManagerUpdate(event) {
         if (suppressExternalManagerSync) return;
-        config = event.detail || loadHeroManagerConfig();
-        storyScheduledFor = String(config.storyScheduledFor || '');
-        syncDescriptionModeFromConfig();
+        applyLocalConfigFromSources(event.detail || null);
         refreshHeroAssetRegistry();
     }
 

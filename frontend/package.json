@@ -62,6 +62,7 @@
     "test:hero-record": "node scripts/mission-hero-record.mjs",
     "test:hero-reel-adapter": "node scripts/mission-hero-reel-adapter.mjs",
     "test:hero-identity-commits": "node scripts/mission-hero-identity-commits.mjs",
+    "test:hero-manager-record": "node scripts/mission-hero-manager-record.mjs",
     "test:hero-playwright": "playwright test tests/hero-confirmation.e2e.spec.js",
     "test:episode-attachment": "playwright test tests/episode-reel-attachment.e2e.spec.js",
     "test:episode-attachment:mission": "node scripts/mission-product-03-episode-attach.mjs"

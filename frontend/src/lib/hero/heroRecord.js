@@ -1171,3 +1171,56 @@ export function projectHeroRecordToManagerPointer(record) {
         backgroundStyle
     };
 }
+
+/**
+ * Overlay HeroRecord identity + display copy onto a Manager config snapshot.
+ * Manager-only settings (carousel, campaign, rotation, typography, scheduling)
+ * are preserved from the manager object; identity/copy come from HeroRecord.
+ *
+ * @param {Record<string, unknown> | null | undefined} managerConfig
+ * @param {HeroRecord | null | undefined} record
+ * @returns {Record<string, unknown>}
+ */
+export function mergeHeroRecordIntoManagerConfig(managerConfig, record) {
+    const base =
+        managerConfig && typeof managerConfig === 'object'
+            ? { ...managerConfig }
+            : /** @type {Record<string, unknown>} */ ({});
+    const validated = validateHeroRecord(record);
+    if (!validated.ok) return base;
+
+    const active = validated.record;
+    const pointer = projectHeroRecordToManagerPointer(active);
+    /** @type {Record<string, unknown>} */
+    const next = {
+        ...base,
+        backgroundSource: pointer.backgroundSource,
+        heroAssetId: pointer.heroAssetId,
+        heroTitle: typeof active.heroTitle === 'string' ? active.heroTitle : String(base.heroTitle || ''),
+        heroSubtitle:
+            typeof active.heroSubtitle === 'string' ? active.heroSubtitle : String(base.heroSubtitle || ''),
+        heroDescription:
+            typeof active.heroDescription === 'string'
+                ? active.heroDescription
+                : String(base.heroDescription || '')
+    };
+    if (pointer.backgroundStyle) {
+        next.backgroundStyle = pointer.backgroundStyle;
+    }
+    return next;
+}
+
+/**
+ * Build a manager-config patch that writes compatibility identity/copy fields from HeroRecord
+ * while keeping the rest of the snapshot (manager-only settings).
+ *
+ * @param {Record<string, unknown>} snapshot
+ * @param {HeroRecord | null | undefined} record
+ * @returns {Record<string, unknown>}
+ */
+export function projectManagerConfigFromHeroRecord(snapshot, record) {
+    const base = snapshot && typeof snapshot === 'object' ? { ...snapshot } : {};
+    const validated = validateHeroRecord(record);
+    if (!validated.ok) return base;
+    return mergeHeroRecordIntoManagerConfig(base, validated.record);
+}
