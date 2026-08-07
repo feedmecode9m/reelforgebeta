@@ -142,11 +142,97 @@ try {
         drawerSeriesId({ id: 'bbbbbbbb-cccc-4ddd-8eee-ffffffffffff' }, null) === ''
     );
 
+    console.log('\n[runtime] normalizeVaultTitle + prod naming');
+    const norm = infer.normalizeVaultTitle('MICROS STIRRED V1');
+    assert('normalize seriesTitle STIRRED', norm?.seriesTitle === 'STIRRED');
+    assert('normalize season 1', Number(norm?.seasonNumber) === 1);
+    assert('normalize episode 1', Number(norm?.episodeNumber) === 1);
+    assert(
+        'normalize confidence',
+        norm?.confidence === 'normalized-prefix-version'
+    );
+    assert('normalize rawTitle preserved', norm?.rawTitle === 'MICROS STIRRED V1');
+    assert('normalize normalizedTitle', norm?.normalizedTitle === 'STIRRED');
+    assert('accept MICROS STIRRED V2', infer.normalizeVaultTitle('MICROS STIRRED V2')?.episodeNumber === 2);
+    assert('reject MICROS STIRRED (no version)', infer.normalizeVaultTitle('MICROS STIRRED') == null);
+    assert(
+        'reject STIRRED DOCUMENTARY',
+        infer.normalizeVaultTitle('STIRRED DOCUMENTARY') == null
+    );
+    assert(
+        'reject STIRRED V1 (no production prefix)',
+        infer.normalizeVaultTitle('STIRRED V1') == null
+    );
+    // Explicit patterns still win before normalize
+    const parenPath = infer.parseHighConfidenceEpisodeTitle('MICROS Motherland V1(1)');
+    assert(
+        'parens path stays version-paren-ep (not normalize)',
+        parenPath?.confidence === 'version-paren-ep'
+    );
+
+    console.log('\n[runtime] MICROS STIRRED V1 vault UUID bind');
+    bag.clear();
+    // Fresh module path isn’t practical; clear map via save + re-infer after
+    // stripping prior catalog reel binds by rebinding from empty metadata bag.
+    for (const k of [...bag.keys()]) bag.delete(k);
+    const prodReel = {
+        id: STIRRED_1_ID,
+        name: 'MICROS STIRRED V1',
+        title: 'MICROS STIRRED V1',
+        url: `https://pub.example/prod/${STIRRED_1_ID}.mp4`,
+        thumbnailUrl: `/thumbs/${STIRRED_1_ID}.jpg`
+    };
+    // Prior STIRRED 1 bind already holds this reelId — detach is N/A; re-save is skipped
+    // if already bound. Force re-bind only when unbound: clear catalog reelId if present.
+    const prior = seriesStore.getEpisodeByReelId(STIRRED_1_ID);
+    if (prior?.episode?.episodeId) {
+        // Detach by overwriting episode reel via attach null path: overwrite metadata map
+        // and catalog entry so isReelAlreadySeriesBound allows re-infer
+        seriesStore.saveReelSeriesMetadata(STIRRED_1_ID, {
+            reelId: STIRRED_1_ID,
+            seriesId: '',
+            seriesName: '',
+            seasonNumber: 0,
+            episodeNumber: 0,
+            episodeTitle: '',
+            episodeId: '',
+            episodeStatus: ''
+        });
+        seriesStore.seriesCatalog.update((items) =>
+            items.map((s) => ({
+                ...s,
+                seasons: (s.seasons || []).map((se) => ({
+                    ...se,
+                    episodes: (se.episodes || []).map((ep) =>
+                        ep.reelId === STIRRED_1_ID ? { ...ep, reelId: null } : ep
+                    )
+                }))
+            }))
+        );
+    }
+    const prodResult = infer.inferAndBindVaultSeries([prodReel], {
+        source: 'runtime-validate-prod-title'
+    });
+    assert('prod title bound ≥ 1', prodResult.bound >= 1);
+    const prodMeta =
+        loadReelSeriesMetadataMap()[STIRRED_1_ID] ||
+        get(seriesStore.reelSeriesMetadata)[STIRRED_1_ID];
+    assert('prod meta series-stirred', prodMeta?.seriesId === 'series-stirred');
+    assert('prod meta ep-stirred-s01e01', prodMeta?.episodeId === 'ep-stirred-s01e01');
+    assert('prod meta reelId UUID', prodMeta?.reelId === STIRRED_1_ID);
+    const prodByReel = seriesStore.getEpisodeByReelId(STIRRED_1_ID);
+    assert('prod byReel series-stirred', prodByReel?.series?.id === 'series-stirred');
+    assert(
+        'prod byReel ep-stirred-s01e01',
+        prodByReel?.episode?.episodeId === 'ep-stirred-s01e01'
+    );
+    assert('prod byReel.reelId UUID', prodByReel?.episode?.reelId === STIRRED_1_ID);
+
     console.log('\nSummary', {
-        seriesId: ctx?.series?.id,
-        episodeId: ctx?.episode?.episodeId,
+        seriesId: prodByReel?.series?.id || ctx?.series?.id,
+        episodeId: prodByReel?.episode?.episodeId || ctx?.episode?.episodeId,
         mediaId: STIRRED_1_ID,
-        metadata: meta
+        metadata: prodMeta || meta
     });
 } finally {
     await vite.close();

@@ -65,7 +65,72 @@ function cleanSeriesBase(raw) {
 }
 
 /**
+ * Known removable production / house prefixes that never form the series base alone.
+ * Kept allowlist-tight — does not strip arbitrary leading words.
+ */
+const PRODUCTION_TITLE_PREFIXES = ['MICROS', 'MICRO', 'RFPROD', 'RF'];
+
+/**
+ * Normalize creator vault naming into a canonical series/episode seed.
+ *
+ * Strict gate: requires a removable production prefix AND a version marker (V1/V2…).
+ * Examples accept: "MICROS STIRRED V1", "MICROS STIRRED V2"
+ * Examples reject: "MICROS STIRRED", "STIRRED DOCUMENTARY", "STIRRED V1"
+ *
+ * @param {string | null | undefined} rawTitle
+ * @returns {{
+ *   seriesTitle: string;
+ *   seasonNumber: number;
+ *   episodeNumber: number;
+ *   confidence: 'normalized-prefix-version';
+ *   rawTitle: string;
+ *   normalizedTitle: string;
+ * } | null}
+ */
+export function normalizeVaultTitle(rawTitle) {
+    const raw = stripMediaExtension(rawTitle);
+    if (!raw || raw.length < 5) return null;
+    if (UUID_RE.test(raw)) return null;
+
+    // Episode suffix: version marker V1 / V2 (standalone token at end)
+    const versionMatch = raw.match(/^(?=.*[A-Za-z])(.+?)[\s\-_.]+[Vv](\d{1,3})\s*$/);
+    if (!versionMatch) return null;
+
+    const head = cleanSeriesBase(versionMatch[1]);
+    const episodeNumber = Math.max(1, Math.min(999, Number(versionMatch[2]) || 1));
+    if (!head || head.length < 2) return null;
+
+    // Reject bare "prefix Vn" / require prefix + series name
+    const prefixAlt = PRODUCTION_TITLE_PREFIXES.map((p) =>
+        p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    ).join('|');
+    const prefixMatch = head.match(
+        new RegExp(`^(?:${prefixAlt})[\\s\\-_.]+(.+)$`, 'i')
+    );
+    if (!prefixMatch) return null;
+
+    const seriesTitle = cleanSeriesBase(prefixMatch[1]);
+    if (
+        seriesTitle.length < 2 ||
+        /^\d+$/.test(seriesTitle) ||
+        PRODUCTION_TITLE_PREFIXES.some((p) => p.toLowerCase() === seriesTitle.toLowerCase())
+    ) {
+        return null;
+    }
+
+    return {
+        seriesTitle,
+        seasonNumber: 1,
+        episodeNumber,
+        confidence: 'normalized-prefix-version',
+        rawTitle: raw,
+        normalizedTitle: seriesTitle
+    };
+}
+
+/**
  * Parse only high-confidence episode titles (explicit season/ep or trailing number).
+ * Priority: (A) explicit patterns → (B) normalized creator naming → (C) null.
  *
  * @param {string | null | undefined} rawTitle
  * @returns {{
@@ -73,6 +138,8 @@ function cleanSeriesBase(raw) {
  *   seasonNumber: number;
  *   episodeNumber: number;
  *   confidence: string;
+ *   rawTitle?: string;
+ *   normalizedTitle?: string;
  * } | null}
  */
 export function parseHighConfidenceEpisodeTitle(rawTitle) {
@@ -82,6 +149,8 @@ export function parseHighConfidenceEpisodeTitle(rawTitle) {
     if (/^img[_\s-]?\d+/i.test(text)) return null;
     if (/^hero[-_\s]?background/i.test(text)) return null;
     if (/^untitled/i.test(text)) return null;
+
+    // --- A. Existing explicit patterns ---
 
     // NAME V1(2) / NAME V1 (2) — version + episode in parens
     let m = text.match(/^(.*?)[\s\-_.]*[Vv]\d+\s*[\(\[]\s*(\d{1,3})\s*[\)\]]\s*$/);
@@ -145,6 +214,11 @@ export function parseHighConfidenceEpisodeTitle(rawTitle) {
         }
     }
 
+    // --- B. Normalized creator naming (prefix + version) ---
+    const normalized = normalizeVaultTitle(text);
+    if (normalized) return normalized;
+
+    // --- C. Fail closed ---
     return null;
 }
 
@@ -498,7 +572,13 @@ export function inferAndBindVaultSeries(reels = [], options = {}) {
                 mediaId: reelId,
                 seriesTitle: series.title,
                 episodeTitle,
-                confidence: member.parsed.confidence
+                confidence: member.parsed.confidence,
+                rawTitle: member.parsed.rawTitle || reelDisplayTitle(member.reel) || episodeTitle,
+                normalizedTitle:
+                    member.parsed.normalizedTitle ||
+                    (member.parsed.confidence === 'normalized-prefix-version'
+                        ? member.parsed.seriesTitle
+                        : undefined)
             });
         }
     }
