@@ -80,6 +80,14 @@ export function navigateToEpisode(source, targetEpisodeId) {
         episodeNumber: targetCtx?.episode?.episodeNumber ?? reel.episodeNumber ?? null
     });
 
+    console.info('[THEATER_EPISODE_LOAD]', {
+        seriesId: reel.seriesId || reel.series_id || null,
+        episodeId,
+        mediaId: reel.id,
+        source,
+        ts: new Date().toISOString()
+    });
+
     if (source === 'card' || source === 'keyboard' || source === 'controller' || source === 'countdown' || source === 'swipe') {
         logNextEpisodeDiag('NEXT_EPISODE_NAVIGATE', {
             source,

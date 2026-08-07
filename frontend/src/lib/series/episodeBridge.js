@@ -6,12 +6,14 @@ import { get } from 'svelte/store';
 import {
     bindEpisodeToFeedReel,
     getEpisodeById,
+    getEpisodeByReelId,
     getReelSeriesMetadata,
     reelSeriesMetadata,
     seriesCatalog
 } from './seriesStore.js';
 import { loadReelSeriesMetadataMap } from './seriesMetadataStorage.js';
 import { logEpisodeBridgeDiag } from './episodeBridgeDiagnostics.js';
+import { inferAndBindVaultSeries } from './vaultSeriesInference.js';
 
 /**
  * @param {Record<string, unknown>} reel
@@ -142,10 +144,33 @@ export function bridgeFeedReelsToCatalog(feedReels = []) {
         });
     }
 
+    // High-confidence vault title groups → canonical catalog bindings (no mock edits).
+    const inference = inferAndBindVaultSeries(feedReels, { source: 'bridgeFeedReelsToCatalog' });
+
+    // Recount after inference wrote reelId + metadata via seriesStore APIs.
+    bound = 0;
+    unresolved.length = 0;
+    for (const reel of feedReels) {
+        if (!reel?.id) continue;
+        const reelId = String(reel.id);
+        const meta = map[reelId] || get(reelSeriesMetadata)[reelId] || getReelSeriesMetadata(reelId);
+        if (getEpisodeByReelId(reelId) || meta?.episodeId || reel.episodeId || reel.episode_id) {
+            bound += 1;
+        } else {
+            unresolved.push(reelId);
+        }
+    }
+
     const total = feedReels.filter((r) => r?.id).length;
     const coveragePercent = total ? Math.round((bound / total) * 100) : 0;
 
-    return { bound, unresolved, coveragePercent };
+    return {
+        bound,
+        unresolved,
+        coveragePercent,
+        inferred: inference.bound,
+        inferredSeriesIds: inference.seriesIds
+    };
 }
 
 /**
@@ -272,12 +297,22 @@ export function resolveReelForEpisode(episodeId, findReelInFeed, getAllFeedReels
 
     const finish = (reel, matchedSource) => {
         const matched = applyEpisodeFieldsToReel(reel, ctx);
+        const mediaId = String(matched?.id || '');
+        const mediaUrl = resolveReelMediaUrl(matched);
+        console.info('[SERIES_MEDIA_MATCH]', {
+            seriesId: ctx.series?.id || null,
+            episodeId,
+            mediaId,
+            matchedSource,
+            source: 'resolveReelForEpisode',
+            ts: new Date().toISOString()
+        });
         logHeroIdentityResolution({
             episodeId,
             attemptedSources,
             matchedSource,
-            matchedReelId: String(matched?.id || ''),
-            matchedVideoUrl: resolveReelMediaUrl(matched)
+            matchedReelId: mediaId,
+            matchedVideoUrl: mediaUrl
         });
         return matched;
     };

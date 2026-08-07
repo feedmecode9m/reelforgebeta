@@ -10,6 +10,7 @@
     import { applyEpisodeFieldsToReel } from '../../lib/series/episodeBridge.js';
     import { navigateFromDrawer, navigateOnSwipeUp } from '../../lib/series/episodeNavigation.js';
     import { resolveSeriesContextForReel } from '../../lib/series/seriesStore.js';
+    import { isRealVaultUuid } from '../../lib/series/vaultSeriesInference.js';
     import {
         activePublishingProfile,
         episodeNavigationFlags,
@@ -258,7 +259,7 @@
     import SeriesDrawer from '../series/SeriesDrawer.svelte';
     import TheaterSeriesPanel from '../series/TheaterSeriesPanel.svelte';
     import TheaterSeriesMetadata from '../publishing/TheaterSeriesMetadata.svelte';
-    import { reelSeriesMetadata, getSeriesById } from '../../lib/series/seriesStore.js';
+    import { reelSeriesMetadata, getSeriesById, getEpisodeByReelId } from '../../lib/series/seriesStore.js';
 
     /** @type {import('svelte/store').Readable<unknown[]>} */
     export let personalVideos;
@@ -279,18 +280,32 @@
     let selectedSeriesEpisodeId = '';
     let episodeNavNotice = '';
 
-    /** Featured catalog used when the active reel has no series bridge yet. */
+    /**
+     * Demo shelf fallback only — never forced for real vault UUID reels that are unbound.
+     * @deprecated kept for non-vault placeholders
+     */
     const DEFAULT_THEATER_SERIES_ID = 'series-neon-vengeance';
 
     $: seriesContext = ($reelSeriesMetadata, $activeReel ? resolveSeriesContextForReel($activeReel) : null);
     $: hasSeriesMetadata = Boolean(seriesContext);
     $: seriesId = seriesContext?.series.id ?? '';
-    $: drawerSeriesId =
-        seriesId && getSeriesById(seriesId)
-            ? seriesId
-            : getSeriesById(DEFAULT_THEATER_SERIES_ID)
-              ? DEFAULT_THEATER_SERIES_ID
-              : '';
+    $: drawerSeriesId = (() => {
+        // Canonical bind for open reel
+        if (seriesId && getSeriesById(seriesId)) return seriesId;
+        const reelId = $activeReel?.id == null ? '' : String($activeReel.id);
+        if (reelId) {
+            const byReel = getEpisodeByReelId(reelId);
+            if (byReel?.series?.id && getSeriesById(byReel.series.id)) {
+                return byReel.series.id;
+            }
+        }
+        // Unbound real vault media must never surface Neon Vengeance demo episodes
+        if (reelId && isRealVaultUuid(reelId)) return '';
+        // Soft demo fallback only for non-UUID / placeholder reels
+        if ($activeReel?.isPersonalVideo) return '';
+        if (getSeriesById(DEFAULT_THEATER_SERIES_ID)) return DEFAULT_THEATER_SERIES_ID;
+        return '';
+    })();
     $: hasSeriesDrawer = Boolean(drawerSeriesId);
     /** Episodes pop-out lives in the header next to framing controls — always on when catalog exists. */
     $: showSeriesDrawerControl = hasSeriesDrawer;
@@ -306,6 +321,14 @@
     function handleSeriesEpisodeSelect(event) {
         const episodeId = event.detail.episodeId;
         selectedSeriesEpisodeId = episodeId;
+        console.info('[THEATER_EPISODE_LOAD]', {
+            seriesId: drawerSeriesId || seriesId || null,
+            episodeId,
+            mediaId: null,
+            source: 'theater-drawer-select',
+            phase: 'request',
+            ts: new Date().toISOString()
+        });
         const navigated = navigateFromDrawer(episodeId);
         if (navigated) {
             seriesDrawerOpen = false;

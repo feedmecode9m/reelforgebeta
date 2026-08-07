@@ -548,11 +548,23 @@ return changed ? next : currentFeed;
 }
 
 function runEpisodeBridgeSync(source = 'init') {
-const report = bridgeFeedReelsToCatalog(getAllFeedReels());
+/** Merge feed shelves + personal vault so inference sees vault-only UUIDs. */
+const byId = new Map();
+for (const reel of getAllFeedReels()) {
+if (reel?.id) byId.set(String(reel.id), reel);
+}
+const vault = get(personalVideos);
+if (Array.isArray(vault)) {
+for (const video of vault) {
+if (video?.id) byId.set(String(video.id), video);
+}
+}
+const combined = [...byId.values()];
+const report = bridgeFeedReelsToCatalog(combined);
 patchFeedWithEpisodeBindings();
-const assetCoverage = auditEpisodeAssets(getAllFeedReels(), true);
+const assetCoverage = auditEpisodeAssets(combined, true);
 if (import.meta.env.DEV) {
-const coverage = auditEpisodeBridgeCoverage(getAllFeedReels());
+const coverage = auditEpisodeBridgeCoverage(combined);
 console.log(`[EPISODE_BRIDGE] ${JSON.stringify({ source, ...report, ...coverage })}`);
 }
 return { ...report, assetCoverage };
