@@ -105,3 +105,4 @@ frontend/artifacts/hero-persistence-characterization.json
 
 # --- Docker (local overrides only) ---
 docker-compose.override.yml
+.codex/
