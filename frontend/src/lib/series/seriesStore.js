@@ -261,15 +261,21 @@ async function persistReelMetadataToApi(reelId, saved) {
             return;
         }
 
-        const catalogItems = [...get(seriesCatalog)];
-        const target = applyReelPatchToCatalog(catalogItems, reelId, saved);
+        // Clone current catalog for API payload only. Never re-set the live store from this
+        // snapshot after `await` — a concurrent draft/status edit would be clobbered.
+        const live = get(seriesCatalog);
+        const catalogClone =
+            typeof structuredClone === 'function'
+                ? structuredClone(live)
+                : /** @type {Series[]} */ (JSON.parse(JSON.stringify(live)));
+        const target = applyReelPatchToCatalog(catalogClone, reelId, saved);
         if (!target) return;
 
         const payload = seriesToApiPayload(target);
         await updateSeries(target.id, payload);
-        seriesCatalog.set(catalogItems);
         seriesPersistenceMode.set('api');
-        cacheSeriesCatalogOffline(catalogItems, catalogToReelMetadataMap(catalogItems));
+        const current = get(seriesCatalog);
+        cacheSeriesCatalogOffline(current, catalogToReelMetadataMap(current));
         logSeriesApiWrite({ reelId, seriesId: target.id, source: 'api' });
     } catch (err) {
         logSeriesApiWrite({
