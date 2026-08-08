@@ -1242,6 +1242,18 @@ export function mergeHeroRecordIntoManagerConfig(managerConfig, record) {
     if (pointer.backgroundStyle) {
         next.backgroundStyle = pointer.backgroundStyle;
     }
+    // Keep media on manager so site-wide PUT does not depend on vault rehydrate.
+    if (active.mode === 'asset') {
+        const media = String(active.mediaUrl || active.videoUrl || base.mediaUrl || '').trim();
+        const poster = String(active.posterUrl || base.posterUrl || '').trim();
+        if (media) {
+            next.mediaUrl = media;
+            next.backgroundMediaUrl = media;
+        }
+        if (poster) {
+            next.posterUrl = poster;
+        }
+    }
     return next;
 }
 

@@ -868,6 +868,29 @@ export function loadHeroManagerConfig() {
                 typeof parsed.storyScheduledFor === 'string'
                     ? parsed.storyScheduledFor
                     : getDefaultHeroManagerConfig().storyScheduledFor,
+            // Site-wide publish cache — must survive load (PUT body depends on these).
+            mediaUrl:
+                typeof parsed.mediaUrl === 'string'
+                    ? parsed.mediaUrl
+                    : typeof parsed.backgroundMediaUrl === 'string'
+                      ? parsed.backgroundMediaUrl
+                      : typeof parsed.backgroundVideo === 'string'
+                        ? parsed.backgroundVideo
+                        : typeof parsed.backgroundImage === 'string'
+                          ? parsed.backgroundImage
+                          : '',
+            posterUrl:
+                typeof parsed.posterUrl === 'string'
+                    ? parsed.posterUrl
+                    : typeof parsed.backgroundPoster === 'string'
+                      ? parsed.backgroundPoster
+                      : '',
+            backgroundMediaUrl:
+                typeof parsed.backgroundMediaUrl === 'string'
+                    ? parsed.backgroundMediaUrl
+                    : typeof parsed.mediaUrl === 'string'
+                      ? parsed.mediaUrl
+                      : '',
             carouselSlideOverrides: Array.isArray(parsed.carouselSlideOverrides)
                 ? parsed.carouselSlideOverrides
                       .map((override) => ({
@@ -1329,10 +1352,46 @@ export function saveHeroManagerConfig(patch = {}, options = {}) {
  * @returns {Promise<{ ok: boolean; config: HeroManagerConfig; server: Record<string, unknown> | null; error?: string }>}
  */
 export async function persistHeroPresentationToServer(patch = {}) {
-    const config =
-        patch && Object.keys(patch).length
-            ? saveHeroManagerConfig(patch, { skipServer: true })
-            : loadHeroManagerConfig();
+    console.info('[HERO_MANAGER] apply', {
+        stage: 'persistHeroPresentationToServer:start',
+        patchKeys: patch && typeof patch === 'object' ? Object.keys(patch) : [],
+        ts: new Date().toISOString()
+    });
+
+    let config;
+    if (patch && typeof patch === 'object' && Object.keys(patch).length) {
+        // Write cache only; single PUT from push below (avoid double requests).
+        config = saveHeroManagerConfig(patch, { skipServer: true });
+    } else {
+        // CRITICAL: load must not drop mediaUrl — also re-merge live HeroRecord identity.
+        const stored = loadHeroManagerConfig();
+        const record = loadHeroRecord();
+        const merged = mergeHeroRecordIntoManagerConfig(stored, record);
+        config = enrichPresentationConfigFromLocalIdentity(merged);
+        // Durably re-write media cache so subsequent loads keep it.
+        if (
+            String(config.heroAssetId || '').trim() ||
+            String(config.mediaUrl || '').trim() ||
+            String(config.backgroundSource || '') === 'none'
+        ) {
+            config = saveHeroManagerConfig(
+                {
+                    heroAssetId: config.heroAssetId,
+                    backgroundSource: config.backgroundSource,
+                    backgroundStyle: config.backgroundStyle,
+                    mediaUrl: config.mediaUrl || '',
+                    posterUrl: config.posterUrl || '',
+                    backgroundMediaUrl: config.mediaUrl || config.backgroundMediaUrl || '',
+                    heroTitle: config.heroTitle,
+                    heroSubtitle: config.heroSubtitle,
+                    heroDescription: config.heroDescription,
+                    heroLabel: config.heroLabel
+                },
+                { skipServer: true }
+            );
+        }
+    }
+
     try {
         const server = await pushHeroPresentationToServer(config);
         if (!server) {

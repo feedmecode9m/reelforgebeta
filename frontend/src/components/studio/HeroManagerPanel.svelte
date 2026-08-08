@@ -420,9 +420,19 @@
      * Confirm site-wide presentation wrote to PUT /api/hero/presentation.
      * @param {string} reason
      */
-    async function confirmServerPresentation(reason = 'apply') {
+    async function confirmServerPresentation(reason = 'apply', publishPatch = null) {
+        console.info('[HERO_MANAGER] apply', {
+            reason,
+            heroAssetId: config?.heroAssetId || '',
+            backgroundSource: config?.backgroundSource || '',
+            hasMediaUrl: Boolean(config?.mediaUrl || config?.backgroundMediaUrl),
+            ts: new Date().toISOString()
+        });
         try {
-            const result = await persistHeroPresentationToServer();
+            // Prefer explicit patch from the save path so we never re-read a stripped load.
+            const result = await persistHeroPresentationToServer(
+                publishPatch && typeof publishPatch === 'object' ? publishPatch : {}
+            );
             if (result.ok) {
                 console.info('[HERO_MANAGER_SERVER_SYNC]', {
                     reason,
@@ -468,6 +478,16 @@
             // HeroRecord owns identity + display copy; manager keeps carousel/campaign/etc.
             const record = syncHeroRecordFromManagerSnapshot(snapshot, reason);
             const managerPatch = projectManagerConfigFromHeroRecord(snapshot, record);
+            // Guarantee mediaUrl is on the manager patch for site-wide PUT.
+            if (record && record.mode === 'asset') {
+                const media = String(record.mediaUrl || record.videoUrl || '').trim();
+                const poster = String(record.posterUrl || '').trim();
+                if (media) {
+                    managerPatch.mediaUrl = media;
+                    managerPatch.backgroundMediaUrl = media;
+                }
+                if (poster) managerPatch.posterUrl = poster;
+            }
             const result = updateHeroManagerConfig(/** @type {any} */ (managerPatch), feedReels || []);
             applyLocalConfigFromSources(result?.config || loadHeroManagerConfig());
 
@@ -479,14 +499,15 @@
                 storyStatus: config.storyStatus || 'draft',
                 backgroundSource: config.backgroundSource || '',
                 heroAssetId: config.heroAssetId || '',
+                mediaUrl: String(config.mediaUrl || managerPatch.mediaUrl || '').slice(0, 80),
                 heroTitle: String(config.heroTitle || '').slice(0, 80),
                 heroDescriptionBlank: !String(config.heroDescription || '').trim(),
                 recordMode: record?.mode || '',
                 recordRevision: record?.revision,
                 ts: new Date().toISOString()
             });
-            // Ensure published path even if fire-and-forget save races.
-            confirmServerPresentation(reason);
+            // Publish the same patch we just saved (avoid load strip race).
+            confirmServerPresentation(reason, result?.config || managerPatch);
             return result ? { ...result, config } : null;
         } catch (error) {
             console.error('[HERO_MANAGER_PERSIST_FAILED]', { reason, error });
@@ -546,8 +567,8 @@
             const picked = get(heroAssetRegistry).find((a) => a.assetId === selectedId);
             const truthTitle = String(config.heroTitle || getDisplayTitle(picked || { assetId: selectedId })).trim();
             statusMessage = `Hero background set · viewer title “${truthTitle}” (matches live landscape)`;
-            // Awaitable site-wide publish (source of truth for other browsers / mobile).
-            confirmServerPresentation('asset_select').then((ok) => {
+            // Awaitable site-wide publish with the saved manager config (keeps mediaUrl).
+            confirmServerPresentation('asset_select', saved).then((ok) => {
                 if (ok) {
                     statusMessage = `Hero published site-wide · “${truthTitle}” (visible on all devices after refresh)`;
                 }

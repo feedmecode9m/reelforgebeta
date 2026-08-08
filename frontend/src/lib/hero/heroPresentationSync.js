@@ -235,13 +235,33 @@ export async function pushHeroPresentationToServer(config) {
     const isExplicitBlank = bg === 'none';
     const isCustom = bg === 'custom_video' || bg === 'custom_image';
 
-    // Always push custom heroes and explicit clears. Skip no-op discovery defaults with no content.
+    console.info('[HERO_PRESENTATION] payload', {
+        heroAssetId: payload.heroAssetId || null,
+        backgroundSource: payload.backgroundSource,
+        backgroundStyle: payload.backgroundStyle,
+        mediaUrl: payload.mediaUrl ? String(payload.mediaUrl).slice(0, 120) : null,
+        posterUrl: payload.posterUrl ? String(payload.posterUrl).slice(0, 120) : null,
+        heroTitle: payload.heroTitle || null,
+        hasAsset,
+        hasMedia,
+        hasTitle,
+        isCustom,
+        isExplicitBlank
+    });
+
+    // Always push custom heroes, asset/media, clear, or titled presentation.
+    // Only skip empty discovery defaults (selection + no asset/media/title).
     if (!hasAsset && !hasMedia && !hasTitle && !isExplicitBlank && !isCustom) {
         console.info('[HERO_PRESENTATION] PUT skipped — nothing to publish', { backgroundSource: bg });
         return null;
     }
 
-    if (!getAdminToken()) {
+    const token = getAdminToken();
+    console.info('[HERO_PRESENTATION] auth', {
+        hasToken: Boolean(token),
+        tokenPrefix: token ? String(token).slice(0, 6) : null
+    });
+    if (!token) {
         console.warn(
             '[HERO_PRESENTATION] PUT skipped — no admin session. Open Studio, log in, then re-apply the hero background.'
         );
@@ -257,6 +277,13 @@ export async function pushHeroPresentationToServer(config) {
     });
 
     const saved = await putHeroPresentation(payload);
+    console.info('[HERO_PRESENTATION] PUT response', {
+        ok: Boolean(saved),
+        heroAssetId: saved?.heroAssetId ?? null,
+        mediaUrl: saved?.mediaUrl ? String(saved.mediaUrl).slice(0, 96) : null,
+        backgroundSource: saved?.backgroundSource ?? null,
+        updatedAt: saved?.updatedAt ?? null
+    });
     if (saved) {
         console.info('[HERO_PRESENTATION] PUT ok', {
             heroAssetId: saved.heroAssetId || payload.heroAssetId,
