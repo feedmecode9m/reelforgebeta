@@ -110,7 +110,9 @@ watchSessionStart,
 watchOnPlay,
 watchOnPause,
 watchOnComplete,
-watchOnExit
+watchOnExit,
+watchOnProgress,
+watchApplyResume
 } from '../lib/watch/watchTracker.js';
 import { safeFirstFile, logUploadError, safeFn, isValidVideoType, validateVideoFile, sanitizeGoogleDriveUrl, isValidVideoUrl } from '../lib/runtime-guards.js';
 import {
@@ -377,7 +379,8 @@ storageSet(CONFIG.FEED_STORAGE_KEY, value);
 const categories = writable([]);
 const loading = writable(true);
 const contentEmpty = writable(false);
-const adminMode = createPersistentStore('admin_mode', false);
+// Phase 0: adminMode is ephemeral UI state only (never sticky authority from localStorage).
+const adminMode = writable(false);
 const controlCenterOpen = writable(false);
 const uploadStatus = createValidatedStore('Standby', (v) => typeof v === 'string');
 
@@ -1825,20 +1828,52 @@ function handleGhostHoverEnter() { ghostHoverActive.set(true); }
 function handleGhostHoverLeave() { ghostHoverActive.set(false); }
 
 function toggleControlCenter() {
-  controlCenterOpen.update(v => !v);
-  if (get(controlCenterOpen)) {
-    recordStudioUsage({ source: 'control-center' });
-    if (get(adminMode)) {
+  // AUTH-1 / Phase 0: Studio entry only after verified admin role (not sticky admin_mode).
+  import('../lib/auth/index.js').then((auth) => {
+    if (!auth.canAccessStudio()) {
+      adminMode.set(false);
+      controlCenterOpen.set(false);
+      return;
+    }
+    adminMode.set(true);
+    controlCenterOpen.update((v) => !v);
+    if (get(controlCenterOpen)) {
+      recordStudioUsage({ source: 'control-center' });
       studioRefs.experience?.loadStudioHierarchy();
       studioRefs.experience?.loadWatchContinue();
+    } else {
+      unlockBodyScroll();
     }
-  }
-  if (!get(controlCenterOpen)) unlockBodyScroll();
+  });
+}
+
+/** AUTH-UI-2: open production chrome from account menu only when authorized. */
+function openStudioFromAccountMenu(source = 'account_menu') {
+  import('../lib/auth/index.js').then((auth) => {
+    if (!auth.canAccessStudio()) {
+      adminMode.set(false);
+      controlCenterOpen.set(false);
+      return;
+    }
+    adminMode.set(true);
+    controlCenterOpen.set(true);
+    recordStudioUsage({ source: String(source || 'account_menu') });
+    studioRefs.experience?.loadStudioHierarchy();
+    studioRefs.experience?.loadWatchContinue();
+  });
 }
 function logout() {
   adminMode.set(false); controlCenterOpen.set(false);
   clearAdminSession();
-  uploadStatus.set('🔐 Admin logged out');
+  if (typeof window !== 'undefined') {
+    try {
+      window.localStorage.removeItem('admin_mode');
+    } catch {
+      /* ignore */
+    }
+  }
+  import('../lib/auth/index.js').then((auth) => auth.logout()).catch(() => {});
+  uploadStatus.set('Signed out');
   resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
 }
 
@@ -1904,10 +1939,29 @@ if (typeof window !== 'undefined') {
   const onAuthSessionExpired = () => {
     adminMode.set(false);
     controlCenterOpen.set(false);
-    uploadStatus.set('Studio session expired. Please sign in again.');
+    uploadStatus.set('Signed out');
     resourceManager.setTimeout(() => uploadStatus.set('Standby'), 4000);
   };
   resourceManager.addEventListener(window, 'AUTH_SESSION_EXPIRED', onAuthSessionExpired);
+  // Phase 0: clear sticky admin_mode and re-derive purely from verified role.
+  try {
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.removeItem('admin_mode');
+      } catch {
+        /* ignore */
+      }
+    }
+    const { canAccessStudio, refreshSession } = await import('../lib/auth/index.js');
+    await refreshSession();
+    if (!canAccessStudio()) {
+      adminMode.set(false);
+      controlCenterOpen.set(false);
+    }
+  } catch {
+    adminMode.set(false);
+    controlCenterOpen.set(false);
+  }
 }
 initSeriesMetadata();
 initStudioSync();
@@ -1982,6 +2036,8 @@ watchOnExit,
 watchOnComplete,
 watchOnPlay,
 watchOnPause,
+watchOnProgress,
+watchApplyResume,
 findReelInFeed,
 watchSessionStart,
 getPersonalVideos: () => {
@@ -1996,7 +2052,17 @@ logTheaterHandshake,
 isVideoReel,
 reupload: {
 deleteProduction: (id) => UIAgent.deleteProduction(id),
-openControlCenter: () => controlCenterOpen.set(true),
+openControlCenter: () => {
+  import('../lib/auth/index.js').then((auth) => {
+    if (auth.canAccessStudio()) {
+      adminMode.set(true);
+      controlCenterOpen.set(true);
+    } else {
+      adminMode.set(false);
+      controlCenterOpen.set(false);
+    }
+  });
+},
 setUploadStatus: (msg) => uploadStatus.set(msg),
 scheduleStandby: () => resourceManager.setTimeout(() => uploadStatus.set('Standby'), 4000)
 }
@@ -2026,13 +2092,26 @@ openTheater(reel);
 const onSearchNavigate = (event) => {
 const detail = event?.detail || {};
 if (detail?.workspaceTab || detail?.dashboardSection || detail?.targetType) {
-controlCenterOpen.set(true);
+import('../lib/auth/index.js').then((auth) => {
+  if (auth.canAccessStudio()) {
+    controlCenterOpen.set(true);
+    adminMode.set(true);
+  } else {
+    adminMode.set(false);
+    controlCenterOpen.set(false);
+  }
+});
 }
+};
+const onOpenStudio = (event) => {
+  const source = event?.detail?.source || 'account_menu';
+  openStudioFromAccountMenu(source);
 };
 resourceManager.addEventListener(window, 'reelforge:backend-reconnecting', onBackendReconnecting);
 resourceManager.addEventListener(window, 'reelforge:workflow-navigate', handleWorkflowNavigate);
 resourceManager.addEventListener(window, 'reelforge:search-open-reel', onSearchOpenReel);
 resourceManager.addEventListener(window, 'reelforge:search-navigate', onSearchNavigate);
+resourceManager.addEventListener(window, 'reelforge:open-studio', onOpenStudio);
 resourceManager.addEventListener(window, 'keydown', handleKeyDown);
 
 const hadLocalCache = hasLocalMediaCache(CONFIG.THUMBNAIL_STORAGE_KEY, CONFIG.VIDEO_VAULT_KEY);

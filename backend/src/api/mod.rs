@@ -1,4 +1,5 @@
 pub mod analytics_api;
+pub mod auth;
 pub mod team_api;
 pub mod experience;
 pub mod migrate;
@@ -13,5 +14,6 @@ pub mod series_api;
 pub mod studio;
 pub mod sync_api;
 pub mod watch;
+pub mod viewer_account;
 pub mod security_api;
 pub mod workflow_api;

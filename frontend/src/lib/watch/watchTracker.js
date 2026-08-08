@@ -4,6 +4,9 @@ import {
     recordEpisodeCompletion,
     recordWatchDuration
 } from '../observability/platformMetrics.js';
+import { fetchViewerHistoryForReel, postViewerHistory } from '../api/viewerAccount.js';
+import { isAuthenticatedSync } from '../auth/index.js';
+import { applyPendingResume, setPendingResume, clearPendingResume } from '../viewer/resumePosition.js';
 
 let enabled = false;
 let statusChecked = false;
@@ -11,6 +14,7 @@ let sessionId = null;
 let wasPaused = false;
 let currentReelId = null;
 let currentEpisodeId = null;
+let lastHistoryPostAt = 0;
 
 async function ensureEnabled() {
     if (statusChecked) return enabled;
@@ -41,6 +45,31 @@ function persistLocalWatchProgress(videoEl) {
     if (!snap.duration_seconds || snap.duration_seconds <= 0) return;
     const percent = (snap.position_seconds / snap.duration_seconds) * 100;
     updateWatchProgress(currentEpisodeId, currentReelId, percent);
+}
+
+/**
+ * VIEWER-1: save account-scoped playback history when signed in.
+ * @param {HTMLVideoElement | null | undefined} videoEl
+ * @param {{ completed?: boolean; force?: boolean }} [opts]
+ */
+async function persistAccountHistory(videoEl, opts = {}) {
+    if (!isAuthenticatedSync() || !currentReelId) return;
+    const now = Date.now();
+    if (!opts.force && !opts.completed && now - lastHistoryPostAt < 8000) {
+        return;
+    }
+    const snap = snapshot(videoEl);
+    lastHistoryPostAt = now;
+    try {
+        await postViewerHistory({
+            reelId: currentReelId,
+            positionSeconds: snap.position_seconds,
+            durationSeconds: snap.duration_seconds,
+            completed: opts.completed === true
+        });
+    } catch {
+        /* non-blocking */
+    }
 }
 
 async function emit(eventType, videoEl, extra = {}) {
@@ -77,12 +106,36 @@ export async function watchSessionStart({ reelId, episodeId = null, seriesId = n
     wasPaused = false;
     currentReelId = reelId ? String(reelId) : null;
     currentEpisodeId = episodeId ? String(episodeId) : null;
+    lastHistoryPostAt = 0;
+    clearPendingResume();
     getOrCreateViewerId();
+
     await resolveWatchProgress(currentEpisodeId, currentReelId, {
         preferApi: true,
         syncToLocal: true,
         restoreContext: 'session_start'
     });
+
+    // VIEWER-1: account resume foundation
+    if (isAuthenticatedSync() && currentReelId) {
+        try {
+            const row = await fetchViewerHistoryForReel(currentReelId);
+            if (row && !row.completed) {
+                setPendingResume(currentReelId, row.positionSeconds, {
+                    completed: row.completed,
+                    durationSeconds: row.durationSeconds
+                });
+                const duration = Number(row.durationSeconds);
+                if (Number.isFinite(duration) && duration > 0 && row.positionSeconds != null) {
+                    const percent = (Number(row.positionSeconds) / duration) * 100;
+                    updateWatchProgress(currentEpisodeId, currentReelId, percent);
+                }
+            }
+        } catch {
+            /* local/resolve still works */
+        }
+    }
+
     if (import.meta.env.DEV) {
         console.log('[watchTracker] session-start', {
             reelId: currentReelId,
@@ -94,6 +147,15 @@ export async function watchSessionStart({ reelId, episodeId = null, seriesId = n
     }
 }
 
+/**
+ * Call from theater loadedmetadata (minimal wire) to resume.
+ * @param {HTMLVideoElement} videoEl
+ * @param {string | null | undefined} reelId
+ */
+export function watchApplyResume(videoEl, reelId = currentReelId) {
+    return applyPendingResume(videoEl, reelId || currentReelId);
+}
+
 export async function watchOnPlay(videoEl) {
     const type = wasPaused ? 'RESUME' : 'PLAY';
     wasPaused = false;
@@ -103,6 +165,7 @@ export async function watchOnPlay(videoEl) {
 export async function watchOnPause(videoEl) {
     wasPaused = true;
     persistLocalWatchProgress(videoEl);
+    await persistAccountHistory(videoEl, { force: true });
     const snap = snapshot(videoEl);
     if (snap.duration_seconds && snap.duration_seconds > 0) {
         recordWatchDuration({
@@ -117,6 +180,7 @@ export async function watchOnPause(videoEl) {
 export async function watchOnComplete(videoEl) {
     persistLocalWatchProgress(videoEl);
     updateWatchProgress(currentEpisodeId, currentReelId, 100);
+    await persistAccountHistory(videoEl, { completed: true, force: true });
     const snap = snapshot(videoEl);
     recordEpisodeCompletion({
         episodeId: currentEpisodeId,
@@ -132,6 +196,7 @@ export async function watchOnComplete(videoEl) {
 
 export async function watchOnExit(videoEl) {
     persistLocalWatchProgress(videoEl);
+    await persistAccountHistory(videoEl, { force: true });
     const snap = snapshot(videoEl);
     if (snap.duration_seconds && snap.duration_seconds > 0) {
         recordWatchDuration({
@@ -147,6 +212,12 @@ export async function watchOnExit(videoEl) {
     wasPaused = false;
 }
 
+/** Throttled progress save during playback (timeupdate from theater). */
+export async function watchOnProgress(videoEl) {
+    persistLocalWatchProgress(videoEl);
+    await persistAccountHistory(videoEl, { force: false });
+}
+
 export function isWatchTrackingEnabled() {
     return enabled;
 }
@@ -158,6 +229,8 @@ export function resetWatchTrackerForTests() {
     wasPaused = false;
     currentReelId = null;
     currentEpisodeId = null;
+    lastHistoryPostAt = 0;
+    clearPendingResume();
 }
 
 if (typeof window !== 'undefined') {
@@ -167,6 +240,8 @@ if (typeof window !== 'undefined') {
         watchOnPause,
         watchOnComplete,
         watchOnExit,
+        watchOnProgress,
+        watchApplyResume,
         isWatchTrackingEnabled,
         resolveWatchProgress
     };

@@ -31,6 +31,7 @@
   import TheaterExperience from '../theater/TheaterExperience.svelte';
   import { isVideoReel } from '../../lib/api/reelContract.js';
   import { resolveTheaterPlayback } from '../../lib/media/theaterPlayback.js';
+  import ConsumerChrome from '../navigation/ConsumerChrome.svelte';
 
   /** URL slug segment (e.g. neon-vengeance) */
   export let slug = '';
@@ -222,11 +223,9 @@
   });
 </script>
 
-<div class="series-public" data-series-public data-series-slug={slug || undefined}>
-  <header class="series-public__top">
-    <a class="series-public__home" href="/">← REELFORGE</a>
-  </header>
-
+<div class="series-page" data-series-public data-series-slug={slug || undefined}>
+  <ConsumerChrome headerVariant="overlay" showFooter={true}>
+  <div class="series-public">
   {#if !series}
     <section class="series-public__missing" aria-live="polite">
       <h1>Series not found</h1>
@@ -324,6 +323,8 @@
       </ul>
     </section>
   {/if}
+  </div>
+  </ConsumerChrome>
 </div>
 
 {#if bootstrapped}
@@ -336,17 +337,20 @@
 {/if}
 
 <style>
-  .series-public {
+  .series-page {
     min-height: 100vh;
-    max-width: 920px;
-    margin: 0 auto;
-    padding: 1.25rem 1.25rem 3rem;
+    min-height: 100dvh;
     color: #f4f4f5;
     background:
       radial-gradient(ellipse 80% 50% at 20% 0%, rgba(0, 242, 255, 0.12), transparent 55%),
       radial-gradient(ellipse 60% 40% at 90% 10%, rgba(255, 40, 120, 0.08), transparent 50%),
       #05060a;
     font-family: 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
+  }
+  .series-public {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 0.5rem 1.25rem 2rem;
   }
 
   .series-public__top {

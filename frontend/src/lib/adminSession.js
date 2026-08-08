@@ -3,15 +3,25 @@
 /** Canonical admin session key — single source of truth for token storage. */
 export const ADMIN_SESSION_TOKEN_KEY = 'reelforge_admin_session_token';
 
+/** AUTH-1 user session token — also accepted for RBAC-protected production APIs. */
+export const AUTH_SESSION_TOKEN_KEY = 'reelforge_auth_token';
+
 let adminSessionExpiredHandled = false;
 
 function hasBrowserStorage() {
     return typeof globalThis !== 'undefined' && globalThis.window?.localStorage;
 }
 
-/** @returns {string | null} */
+/**
+ * Prefer unified AUTH-1 token when present; fall back to legacy studio session.
+ * Backend enforces admin-only content mutations (AUTH-1.1).
+ * @returns {string | null}
+ */
 export function getAdminToken() {
     if (!hasBrowserStorage()) return null;
+    const auth = globalThis.window.localStorage.getItem(AUTH_SESSION_TOKEN_KEY);
+    const authTrimmed = auth ? String(auth).trim() : '';
+    if (authTrimmed) return authTrimmed;
     const token = globalThis.window.localStorage.getItem(ADMIN_SESSION_TOKEN_KEY);
     const trimmed = token ? String(token).trim() : '';
     return trimmed || null;
@@ -34,6 +44,7 @@ export function setAdminSessionToken(token) {
 export function clearAdminSession(options = {}) {
     if (hasBrowserStorage()) {
         globalThis.window.localStorage.removeItem(ADMIN_SESSION_TOKEN_KEY);
+        // Do not wipe AUTH-1 user token here unless explicit full logout (authStore.logout).
         globalThis.window.dispatchEvent(
             new CustomEvent('reelforge:admin-session-changed', { detail: { present: false } })
         );

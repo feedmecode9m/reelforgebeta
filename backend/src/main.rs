@@ -217,6 +217,7 @@ async fn main() -> std::io::Result<()> {
     let event_bus = web::Data::new(EventBus::new(100));
     println!("📡 Real-time event system initialized");
     let admin_sessions = web::Data::new(crate::auth::AdminSessionStore::from_env());
+    let login_rate_limiter = web::Data::new(crate::auth::LoginRateLimiter::new());
     let signed_upload_store = web::Data::new(crate::signed_upload::SignedUploadStore::from_env());
 
     let r2_storage = match crate::storage::r2::R2Storage::from_env().await {
@@ -295,6 +296,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(db_available_data.clone())
             .app_data(event_bus.clone())
             .app_data(admin_sessions.clone())
+            .app_data(login_rate_limiter.clone())
             .app_data(signed_upload_store.clone())
             .app_data(videos_path_data.clone())
             .app_data(thumbs_path_data.clone())
@@ -311,6 +313,40 @@ async fn main() -> std::io::Result<()> {
             .service(
                 web::scope("/api")
                     .wrap(crate::auth::AdminAuth)
+                    // AUTH-1 identity endpoints (public; skipped by RBAC mutator gate).
+                    .route("/auth/register", web::post().to(api::auth::register))
+                    .route("/auth/login", web::post().to(api::auth::login))
+                    .route("/auth/logout", web::post().to(api::auth::logout))
+                    .route("/auth/me", web::get().to(api::auth::me))
+                    // VIEWER-1: consumer personalization (authenticated account session)
+                    .route(
+                        "/account/profile",
+                        web::get().to(api::viewer_account::get_profile),
+                    )
+                    .route(
+                        "/account/profile",
+                        web::put().to(api::viewer_account::put_profile),
+                    )
+                    .route(
+                        "/viewer/history",
+                        web::get().to(api::viewer_account::get_history),
+                    )
+                    .route(
+                        "/viewer/history",
+                        web::post().to(api::viewer_account::post_history),
+                    )
+                    .route(
+                        "/viewer/watchlist",
+                        web::get().to(api::viewer_account::get_watchlist),
+                    )
+                    .route(
+                        "/viewer/watchlist",
+                        web::post().to(api::viewer_account::post_watchlist),
+                    )
+                    .route(
+                        "/viewer/watchlist/{id}",
+                        web::delete().to(api::viewer_account::delete_watchlist),
+                    )
                     // Canonical site hero presentation (frontend: /api/hero/presentation).
                     // GET: public. PUT: admin session (AdminAuth on mutating methods).
                     // Registered as one Resource so GET+PUT share the path (avoid dual-.route shadowing).

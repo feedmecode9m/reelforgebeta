@@ -1,6 +1,7 @@
 <script>
   import { onDestroy, tick } from 'svelte';
   import StudioExperience from '../experiences/StudioExperience.svelte';
+  import { currentUser, isAdminRole } from '../../lib/auth/index.js';
 
   export let studioRefs;
   export let controlCenterOpen;
@@ -182,6 +183,20 @@
   }
 
   $: deleteItemDisplayName = getDeleteItemDisplayName($deleteConfirmReel);
+  // Phase 0: studio entry is role-only (never sticky admin_mode).
+  $: showStudioEntry = isAdminRole($currentUser?.role);
+
+  // Keep adminMode as UI state only — clear when role cannot access studio.
+  $: if (!showStudioEntry && $adminMode) {
+    adminMode.set(false);
+  }
+  $: if (!showStudioEntry && $controlCenterOpen) {
+    controlCenterOpen.set(false);
+  }
+  $: if (!showStudioEntry) {
+    studioExperience = null;
+    studioWalkthrough = null;
+  }
 
   $: if ($deleteConfirmReel && !deleteFocusTrapActive) {
     void activateDeleteFocusTrap();
@@ -200,6 +215,7 @@
 <svelte:window on:keydown={handleDeleteDialogKeydown} />
 
 <input type="file" id="file-input" accept="video/mp4,video/*" style="display: none" on:change={UIAgent.handleFileSelect} />
+{#if showStudioEntry}
 <button
   class="ghost-trigger"
   class:active={$ghostHoverActive}
@@ -207,12 +223,13 @@
   on:mouseleave={handleGhostHoverLeave}
   on:click={toggleControlCenter}
   on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleControlCenter(); } }}
-  aria-label="Toggle Control Center"
+  aria-label="Smart Production Studio"
 >
   <span class="trigger-symbol">⌘</span>
 </button>
+{/if}
 
-{#if $deleteConfirmReel}
+{#if showStudioEntry && $deleteConfirmReel}
 <div
   class="delete-modal-overlay"
   role="presentation"
@@ -233,6 +250,7 @@
 </div>
 {/if}
 
+{#if showStudioEntry}
 <StudioExperience
   bind:this={studioExperience}
   bind:studioWalkthrough
@@ -313,3 +331,4 @@
   {isDeleting}
   {deleteConfirmReel}
 />
+{/if}

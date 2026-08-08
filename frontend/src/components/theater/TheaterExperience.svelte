@@ -44,6 +44,8 @@
     let watchOnCompleteFn = () => {};
     let watchOnPlayFn = () => {};
     let watchOnPauseFn = () => {};
+    let watchOnProgressFn = () => {};
+    let watchApplyResumeFn = () => {};
     let findReelInFeedFn = () => null;
     let watchSessionStartFn = () => {};
     let getPersonalVideosFn = () => [];
@@ -64,6 +66,8 @@
         if (deps.watchOnComplete) watchOnCompleteFn = deps.watchOnComplete;
         if (deps.watchOnPlay) watchOnPlayFn = deps.watchOnPlay;
         if (deps.watchOnPause) watchOnPauseFn = deps.watchOnPause;
+        if (deps.watchOnProgress) watchOnProgressFn = deps.watchOnProgress;
+        if (deps.watchApplyResume) watchApplyResumeFn = deps.watchApplyResume;
         if (deps.findReelInFeed) findReelInFeedFn = deps.findReelInFeed;
         if (deps.watchSessionStart) watchSessionStartFn = deps.watchSessionStart;
         if (deps.getPersonalVideos) getPersonalVideosFn = deps.getPersonalVideos;
@@ -230,6 +234,16 @@
     /** @param {HTMLVideoElement} el */
     export function theaterWatchOnPause(el) {
         watchOnPauseFn(el);
+    }
+
+    /** @param {HTMLVideoElement} el */
+    export function theaterWatchOnProgress(el) {
+        watchOnProgressFn(el);
+    }
+
+    /** @param {HTMLVideoElement} el */
+    export function theaterApplyResume(el) {
+        watchApplyResumeFn(el, get(activeReel)?.id);
     }
 
     /** @param {unknown} reel */
@@ -726,7 +740,10 @@
                             controls
                             playsinline
                             on:ended={handleTheaterEnded}
-                            on:timeupdate={handleTheaterTimeupdate}
+                            on:timeupdate={(e) => {
+                                handleTheaterTimeupdate(e);
+                                theaterWatchOnProgress(e.currentTarget);
+                            }}
                             on:volumechange={handleTheaterVideoVolumeChange}
                             on:play={(e) => {
                                 logTheaterMedia({
@@ -747,6 +764,7 @@
                             on:loadedmetadata={(e) => {
                                 theaterPlaybackError.set(false);
                                 resetTheaterTimeline();
+                                theaterApplyResume(e.currentTarget);
                                 logTheaterMedia({
                                     phase: 'loadedmetadata',
                                     reelId: get(activeReel)?.id ?? null,

@@ -15,6 +15,7 @@ import StudioLauncher from './components/viewer/StudioLauncher.svelte';
 import GlobalOperationStatus from './components/viewer/GlobalOperationStatus.svelte';
 import BackendHealthBanner from './components/viewer/BackendHealthBanner.svelte';
 import FeaturedCollectionPanel from './components/discovery/FeaturedCollectionPanel.svelte';
+import ConsumerChrome from './components/navigation/ConsumerChrome.svelte';
 
 const ctx = createViewerContext();
 
@@ -167,9 +168,7 @@ $: studioSeriesMetadataReelLabel = (() => {
 <GlobalOperationStatus {uploadStatus} />
 
 <main class:blur={$activeReel || $controlCenterOpen}>
-  <header>
-    <h1>REELFORGE</h1>
-  </header>
+  <ConsumerChrome brand="LOOK@ZAKANDA PRESENTS" headerVariant="overlay" showFooter={true}>
   <HeroExperienceBridge
     {HERO_BACKGROUND_VIDEO}
     {HERO_POSTER_IMAGE}
@@ -212,7 +211,7 @@ $: studioSeriesMetadataReelLabel = (() => {
     {handleCardVideoError}
     logVaultImageError={vaultUtils?.logVaultImageError}
   />
-  <footer><p>© 2026 REELFORGE PRODUCTION CORP. // ALL RIGHTS ENFORCED</p></footer>
+  </ConsumerChrome>
 </main>
 
 <TheaterExperienceBridge
