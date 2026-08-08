@@ -19,6 +19,7 @@
     } from '../../lib/publishing/publishingProfileStore.js';
     import {
         logTheaterClose,
+        logTheaterControls,
         logTheaterMedia,
         logTheaterOpen,
         logTheaterState
@@ -243,6 +244,7 @@
 </script>
 
 <script>
+    import { onMount, onDestroy } from 'svelte';
     import MediaRenderer from '../media/MediaRenderer.svelte';
     import MediaThumbnail from '../media/MediaThumbnail.svelte';
     import ReelshortExperience from '../vertical/ReelshortExperience.svelte';
@@ -283,6 +285,164 @@
     let seriesDrawerOpen = false;
     let selectedSeriesEpisodeId = '';
     let episodeNavNotice = '';
+
+    /**
+     * Mobile theater presentation: touch/coarse-pointer devices do not reliably show
+     * native video volume chrome, and overflow:hidden can clip menu + control bars.
+     * Desktop path leaves controls as always-native (no mobile chrome).
+     */
+    let isMobileTheater = false;
+    /** Autoplay requires muted; after gesture, user mute state is tracked (never force-mute). */
+    let theaterMuted = true;
+    let theaterVolume = 1;
+    let controlsVisible = true;
+    let volumeVisible = true;
+    let menuVisible = true;
+    /** @type {ReturnType<typeof setTimeout> | null} */
+    let mobileControlsHideTimer = null;
+    /** @type {MediaQueryList | null} */
+    let mobileTheaterMql = null;
+
+    /** @param {string} reason */
+    function reportTheaterControls(reason) {
+        logTheaterControls({
+            deviceType: isMobileTheater ? 'mobile' : 'desktop',
+            isMobile: isMobileTheater,
+            controlsVisible,
+            volumeVisible,
+            menuVisible,
+            reason,
+            muted: theaterMuted,
+            volume: theaterVolume
+        });
+    }
+
+    function detectMobileTheater() {
+        if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+            return false;
+        }
+        // Coarse pointer / no-hover covers phones & tablets; narrow width covers landscape phones.
+        return (
+            window.matchMedia('(hover: none) and (pointer: coarse)').matches ||
+            window.matchMedia('(max-width: 640px)').matches
+        );
+    }
+
+    function syncMobileTheaterFlag(reason = 'detect') {
+        const next = detectMobileTheater();
+        const changed = next !== isMobileTheater;
+        isMobileTheater = next;
+        if (!isMobileTheater) {
+            // Desktop: native controls + header always available — never hide.
+            controlsVisible = true;
+            volumeVisible = true;
+            menuVisible = true;
+            if (mobileControlsHideTimer != null) {
+                clearTimeout(mobileControlsHideTimer);
+                mobileControlsHideTimer = null;
+            }
+        } else if (changed) {
+            // Fresh mobile open — chrome hidden until first playback/tap (native-like).
+            controlsVisible = false;
+            volumeVisible = false;
+            menuVisible = true; // framing / episodes / close stay reachable in header
+        }
+        reportTheaterControls(reason);
+    }
+
+    /** Reveal mobile volume chrome + keep menu raised; auto-hide only volume strip. */
+    function showMobileTheaterControls(reason = 'tap') {
+        if (!isMobileTheater) {
+            reportTheaterControls(reason);
+            return;
+        }
+        controlsVisible = true;
+        volumeVisible = true;
+        menuVisible = true;
+        reportTheaterControls(reason);
+        if (mobileControlsHideTimer != null) clearTimeout(mobileControlsHideTimer);
+        mobileControlsHideTimer = setTimeout(() => {
+            // Menu stays accessible; volume chrome can dim after idle.
+            volumeVisible = false;
+            controlsVisible = Boolean(theaterManager.videoElement && !theaterManager.videoElement.paused);
+            reportTheaterControls('auto_hide_idle');
+            mobileControlsHideTimer = null;
+        }, 4500);
+    }
+
+    function applyTheaterMuteState(nextMuted) {
+        theaterMuted = Boolean(nextMuted);
+        const el = theaterManager.videoElement;
+        if (el) {
+            el.muted = theaterMuted;
+            if (!theaterMuted && el.volume === 0) {
+                el.volume = theaterVolume > 0 ? theaterVolume : 1;
+            }
+        }
+        showMobileTheaterControls(theaterMuted ? 'mute' : 'unmute');
+    }
+
+    function toggleTheaterMute() {
+        applyTheaterMuteState(!theaterMuted);
+    }
+
+    /** @param {Event} e */
+    function handleTheaterVolumeInput(e) {
+        const input = /** @type {HTMLInputElement} */ (e.currentTarget);
+        const next = Math.min(1, Math.max(0, Number(input.value)));
+        theaterVolume = Number.isFinite(next) ? next : 1;
+        const el = theaterManager.videoElement;
+        if (el) {
+            el.volume = theaterVolume;
+            el.muted = theaterVolume === 0;
+            theaterMuted = el.muted;
+        } else if (theaterVolume === 0) {
+            theaterMuted = true;
+        } else {
+            theaterMuted = false;
+        }
+        showMobileTheaterControls('volume_slider');
+    }
+
+    /** @param {Event} e */
+    function handleTheaterVideoVolumeChange(e) {
+        const el = /** @type {HTMLVideoElement} */ (e.currentTarget);
+        if (!el) return;
+        theaterMuted = Boolean(el.muted || el.volume === 0);
+        if (!el.muted && el.volume > 0) theaterVolume = el.volume;
+    }
+
+    /** @param {Event} e */
+    function handleTheaterVideoInteraction(e) {
+        // Keep overlay-close from stealing video hits; still allow native control chrome.
+        e.stopPropagation();
+        if (isMobileTheater) {
+            showMobileTheaterControls(e.type === 'touchend' ? 'touch' : 'pointer');
+        }
+    }
+
+    onMount(() => {
+        syncMobileTheaterFlag('mount');
+        if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+        mobileTheaterMql = window.matchMedia('(hover: none) and (pointer: coarse), (max-width: 640px)');
+        const onChange = () => syncMobileTheaterFlag('viewport_change');
+        if (typeof mobileTheaterMql.addEventListener === 'function') {
+            mobileTheaterMql.addEventListener('change', onChange);
+        } else if (typeof mobileTheaterMql.addListener === 'function') {
+            mobileTheaterMql.addListener(onChange);
+        }
+        return () => {
+            if (!mobileTheaterMql) return;
+            if (typeof mobileTheaterMql.removeEventListener === 'function') {
+                mobileTheaterMql.removeEventListener('change', onChange);
+            } else if (typeof mobileTheaterMql.removeListener === 'function') {
+                mobileTheaterMql.removeListener(onChange);
+            }
+        };
+    });
+    onDestroy(() => {
+        if (mobileControlsHideTimer != null) clearTimeout(mobileControlsHideTimer);
+    });
 
     /**
      * Demo shelf fallback only — never forced for real vault UUID reels that are unbound.
@@ -337,6 +497,19 @@
         selectedSeriesEpisodeId = '';
         episodeNavNotice = '';
         theaterBgPosterFailed = false;
+    }
+
+    let lastTheaterVideoKey = '';
+    $: if (theaterVideoKey && theaterVideoKey !== lastTheaterVideoKey) {
+        lastTheaterVideoKey = theaterVideoKey;
+        // New stream → re-start muted for autoplay policy; mobile chrome waits for play/tap.
+        theaterMuted = true;
+        if (isMobileTheater) {
+            controlsVisible = false;
+            volumeVisible = false;
+            menuVisible = true;
+            reportTheaterControls('video_source_change');
+        }
     }
 
     /** @param {CustomEvent<{ episodeId: string }>} event */
@@ -455,6 +628,8 @@
             class:framing-fill={$theaterFraming === 'fill'}
             class:framing-fit={$theaterFraming === 'fit'}
             class:framing-smart={$theaterFraming === 'smart'}
+            class:theater-mobile={isMobileTheater}
+            class:theater-controls-visible={controlsVisible}
             data-theater-container
             style={DEBUG_THEATER ? 'outline: 2px dashed red; position: relative;' : ''}
             use:theaterSwipe={{ enabled: $episodeNavigationFlags.swipeUpNext, onSwipeUp: navigateOnSwipeUp }}
@@ -466,7 +641,10 @@
                 {theaterPlayback}
             />
             <div class="theater-glow-border"></div>
-            <div class="theater-header">
+            <div
+                class="theater-header"
+                class:theater-header--menu-raised={isMobileTheater && menuVisible}
+            >
                 <div class="theater-header-main">
                     {#if $metadataDisplayFlags.showReelTitle}
                         <h2 class="theater-title">{$activeReel.name || $activeReel.title}</h2>
@@ -475,7 +653,7 @@
                         <TheaterSeriesMetadata {seriesContext} />
                     {/if}
                 </div>
-                <div class="theater-header-actions">
+                <div class="theater-header-actions" class:theater-header-actions--visible={menuVisible}>
                     {#if showSeriesDrawerControl}
                         <button
                             type="button"
@@ -506,6 +684,12 @@
                     class:framing-fill={$theaterFraming === 'fill'}
                     class:framing-fit={$theaterFraming === 'fit'}
                     class:framing-smart={$theaterFraming === 'smart'}
+                    class:theater-video-wrapper--mobile={isMobileTheater}
+                    on:pointerup={(e) => {
+                        if (isMobileTheater && e.target === e.currentTarget) {
+                            showMobileTheaterControls('wrapper_pointer');
+                        }
+                    }}
                 >
                     {#key theaterVideoKey}
                         {#if $theaterFraming === 'smart'}
@@ -538,11 +722,12 @@
                             useSourceElement={true}
                             preload="auto"
                             autoplay
-                            muted
+                            muted={theaterMuted}
                             controls
                             playsinline
                             on:ended={handleTheaterEnded}
                             on:timeupdate={handleTheaterTimeupdate}
+                            on:volumechange={handleTheaterVideoVolumeChange}
                             on:play={(e) => {
                                 logTheaterMedia({
                                     phase: 'play',
@@ -552,9 +737,11 @@
                                 });
                                 logTheater('▶️ Theater video play');
                                 theaterWatchOnPlay(e.currentTarget);
+                                if (isMobileTheater) showMobileTheaterControls('playback_start');
                             }}
                             on:pause={(e) => {
                                 theaterWatchOnPause(e.currentTarget);
+                                if (isMobileTheater) showMobileTheaterControls('pause');
                             }}
                             on:error={handleTheaterVideoError}
                             on:loadedmetadata={(e) => {
@@ -579,9 +766,39 @@
                                 logTheaterMedia({ phase: 'loadeddata', reelId: get(activeReel)?.id ?? null, url: theaterVideoSrc });
                                 logTheater('✅ Theater video data loaded', { url: theaterVideoSrc });
                             }}
-                            on:click={(e) => e.stopPropagation()}
+                            on:click={handleTheaterVideoInteraction}
+                            on:pointerup={handleTheaterVideoInteraction}
+                            on:touchend={handleTheaterVideoInteraction}
                         />
                     {/key}
+                    {#if isMobileTheater}
+                        <div
+                            class="theater-mobile-controls"
+                            class:is-visible={volumeVisible}
+                            role="toolbar"
+                            aria-label="Theater volume controls"
+                            aria-hidden={!volumeVisible}
+                        >
+                            <button
+                                type="button"
+                                class="theater-mobile-mute"
+                                aria-pressed={!theaterMuted}
+                                aria-label={theaterMuted ? 'Unmute video' : 'Mute video'}
+                                on:click|stopPropagation={toggleTheaterMute}
+                            >{theaterMuted ? 'Unmute' : 'Mute'}</button>
+                            <input
+                                class="theater-mobile-volume"
+                                type="range"
+                                min="0"
+                                max="1"
+                                step="0.05"
+                                value={theaterMuted ? 0 : theaterVolume}
+                                aria-label="Volume"
+                                on:input|stopPropagation={handleTheaterVolumeInput}
+                                on:pointerdown|stopPropagation
+                            />
+                        </div>
+                    {/if}
                     <ReelshortExperience section="theater-chrome" />
                 </div>
                 {#if theaterPlayback?.source === 'vault-link'}
@@ -1078,5 +1295,115 @@
         border: 1px solid lime;
         cursor: pointer;
         font-size: 11px;
+    }
+
+    /* Mobile-only presentation fixes — desktop selectors above are unchanged. */
+    .theater-mobile-controls {
+        display: none;
+    }
+
+    @media (max-width: 640px), (hover: none) and (pointer: coarse) {
+        .theater-container.theater-mobile {
+            max-height: min(100dvh, 100vh);
+            /* Prevent clipping header menus + control chrome under immersive overflow. */
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        .theater-container.theater-mobile .theater-header,
+        .theater-container.theater-mobile .theater-header--menu-raised {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            flex-shrink: 0;
+            margin-bottom: 0.65rem;
+            padding: 0.35rem 0 0.55rem;
+            background: linear-gradient(
+                180deg,
+                rgba(12, 12, 16, 0.96) 0%,
+                rgba(12, 12, 16, 0.88) 70%,
+                rgba(12, 12, 16, 0) 100%
+            );
+            pointer-events: auto;
+        }
+
+        .theater-container.theater-mobile .theater-header-actions,
+        .theater-container.theater-mobile .theater-header-actions--visible {
+            position: relative;
+            z-index: 41;
+            pointer-events: auto;
+            max-width: min(100%, 22rem);
+        }
+
+        .theater-container.theater-mobile .theater-title {
+            max-width: 100%;
+            white-space: normal;
+            font-size: 1.15rem;
+        }
+
+        .theater-container.theater-mobile .theater-video-wrapper,
+        .theater-container.theater-mobile .theater-video-wrapper--mobile {
+            /* Native control bars are often clipped by overflow:hidden on iOS/Android. */
+            overflow: visible;
+            z-index: 2;
+        }
+
+        .theater-container.theater-mobile .theater-video-bg {
+            overflow: hidden;
+            border-radius: 8px;
+        }
+
+        .theater-container.theater-mobile .theater-video-wrapper :global(.theater-video-fg) {
+            position: relative;
+            z-index: 3;
+            /* Leave room so native + mobile volume chrome stay hit-testable */
+            max-height: min(62vh, 70dvh);
+        }
+
+        .theater-mobile-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            position: absolute;
+            left: 0.5rem;
+            right: 0.5rem;
+            bottom: 0.55rem;
+            z-index: 12;
+            padding: 0.45rem 0.65rem;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.72);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(6px);
+            transition: opacity 0.18s ease, transform 0.18s ease;
+        }
+
+        .theater-mobile-controls.is-visible {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+        .theater-mobile-mute {
+            flex-shrink: 0;
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            border-radius: 4px;
+            padding: 0.35rem 0.55rem;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            min-height: 2rem;
+        }
+
+        .theater-mobile-volume {
+            flex: 1;
+            min-width: 0;
+            accent-color: var(--neon-cyan, #00f2ff);
+            height: 1.5rem;
+        }
     }
 </style>

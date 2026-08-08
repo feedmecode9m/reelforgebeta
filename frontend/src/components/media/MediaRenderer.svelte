@@ -182,9 +182,12 @@
             on:play
             on:pause
             on:ended
+            on:volumechange
             on:mouseenter
             on:mouseleave
             on:click
+            on:pointerup
+            on:touchend
         >
             {#if useSourceElement}
                 <source src={resolvedSrc} type={videoMime} />
@@ -217,9 +220,12 @@
             on:play
             on:pause
             on:ended
+            on:volumechange
             on:mouseenter
             on:mouseleave
             on:click
+            on:pointerup
+            on:touchend
         >
             {#if useSourceElement}
                 <source src={resolvedSrc} type={videoMime} />

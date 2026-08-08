@@ -824,6 +824,39 @@
     @media (orientation: portrait) and (max-width: 640px) {
         :global(.reelshort-theater) {
             max-height: 100vh;
+            /* Keep framing/menu + volume chrome from being clipped on mobile. */
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+    }
+
+    @media (max-width: 640px), (hover: none) and (pointer: coarse) {
+        :global(.reelshort-theater .theater-header) {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            pointer-events: auto;
+        }
+        :global(.reelshort-theater .theater-header-actions) {
+            pointer-events: auto;
+            z-index: 41;
+        }
+        :global(.reelshort-video-wrap) {
+            overflow: visible;
+        }
+        /* Progress ring stays non-interactive and above video without blocking volume bar. */
+        .theater-progress-ring {
+            z-index: 5;
+            pointer-events: none;
+        }
+        .vertical-timeline {
+            position: relative;
+            z-index: 6;
+            pointer-events: none;
+        }
+        .next-episode-countdown {
+            bottom: 5.5rem;
+            pointer-events: none;
         }
     }
 </style>

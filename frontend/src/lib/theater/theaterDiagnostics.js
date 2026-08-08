@@ -77,3 +77,27 @@ export function logTheaterProfile(extra = {}) {
 export function logTheaterMedia(extra = {}) {
     logTheaterDiag('[THEATER MEDIA]', extra);
 }
+
+/**
+ * Mobile/desktop theater chrome visibility diagnostics.
+ * @param {{
+ *   deviceType?: string;
+ *   isMobile?: boolean;
+ *   controlsVisible?: boolean;
+ *   volumeVisible?: boolean;
+ *   menuVisible?: boolean;
+ *   reason?: string;
+ * } & Record<string, unknown>} detail
+ */
+export function logTheaterControls(detail = {}) {
+    console.info('[THEATER_CONTROLS]', {
+        deviceType: detail.deviceType ?? null,
+        isMobile: detail.isMobile === true,
+        controlsVisible: detail.controlsVisible === true,
+        volumeVisible: detail.volumeVisible === true,
+        menuVisible: detail.menuVisible === true,
+        reason: detail.reason || 'unspecified',
+        timestamp: Date.now(),
+        ...detail
+    });
+}
