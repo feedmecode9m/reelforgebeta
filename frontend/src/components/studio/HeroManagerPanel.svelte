@@ -13,7 +13,8 @@
         updateHeroManagerConfig,
         rotateHeroSelection,
         commitHeroAssetSelection,
-        syncHeroViewerCopyFromAsset
+        syncHeroViewerCopyFromAsset,
+        persistHeroPresentationToServer
     } from '../../lib/hero/heroIntelligence.js';
     import {
         isStockHeroViewerCopy,
@@ -416,6 +417,38 @@
     }
 
     /**
+     * Confirm site-wide presentation wrote to PUT /api/hero/presentation.
+     * @param {string} reason
+     */
+    async function confirmServerPresentation(reason = 'apply') {
+        try {
+            const result = await persistHeroPresentationToServer();
+            if (result.ok) {
+                console.info('[HERO_MANAGER_SERVER_SYNC]', {
+                    reason,
+                    ok: true,
+                    heroAssetId: result.server?.heroAssetId || result.config?.heroAssetId || '',
+                    mediaUrl: result.server?.mediaUrl || result.config?.mediaUrl || '',
+                    ts: new Date().toISOString()
+                });
+                return true;
+            }
+            console.warn('[HERO_MANAGER_SERVER_SYNC]', {
+                reason,
+                ok: false,
+                error: result.error,
+                ts: new Date().toISOString()
+            });
+            statusMessage = `⚠️ Local hero saved, but site publish failed: ${result.error || 'unknown'}. Re-login to Studio and Apply again.`;
+            return false;
+        } catch (error) {
+            console.warn('[HERO_MANAGER_SERVER_SYNC]', { reason, error: error?.message || error });
+            statusMessage = `⚠️ Local hero saved, server publish error: ${error?.message || error}`;
+            return false;
+        }
+    }
+
+    /**
      * Full admin follow-through: persist every field and notify the hero stage.
      * @param {string} reason
      * @param {Record<string, unknown>} [overrides]
@@ -452,6 +485,8 @@
                 recordRevision: record?.revision,
                 ts: new Date().toISOString()
             });
+            // Ensure published path even if fire-and-forget save races.
+            confirmServerPresentation(reason);
             return result ? { ...result, config } : null;
         } catch (error) {
             console.error('[HERO_MANAGER_PERSIST_FAILED]', { reason, error });
@@ -494,6 +529,7 @@
             applyLocalConfigFromSources(saved || loadHeroManagerConfig());
             refreshHeroAssetRegistry();
             statusMessage = 'Hero background cleared (blank menu)';
+            confirmServerPresentation('clear_background');
             return;
         }
         suppressExternalManagerSync = true;
@@ -510,6 +546,12 @@
             const picked = get(heroAssetRegistry).find((a) => a.assetId === selectedId);
             const truthTitle = String(config.heroTitle || getDisplayTitle(picked || { assetId: selectedId })).trim();
             statusMessage = `Hero background set · viewer title “${truthTitle}” (matches live landscape)`;
+            // Awaitable site-wide publish (source of truth for other browsers / mobile).
+            confirmServerPresentation('asset_select').then((ok) => {
+                if (ok) {
+                    statusMessage = `Hero published site-wide · “${truthTitle}” (visible on all devices after refresh)`;
+                }
+            });
         } finally {
             if (typeof queueMicrotask === 'function') {
                 queueMicrotask(() => {
@@ -529,6 +571,7 @@
             applyLocalConfigFromSources(saved || loadHeroManagerConfig());
             refreshHeroAssetRegistry();
             statusMessage = 'Hero background cleared (blank menu)';
+            confirmServerPresentation('background_none');
             return;
         }
         if (config.backgroundSource === 'selection') {
@@ -545,6 +588,7 @@
             applyLocalConfigFromSources(saved);
             refreshHeroAssetRegistry();
             statusMessage = 'Hero uses selection/discovery content';
+            confirmServerPresentation('background_selection');
             return;
         }
         applyConfig();

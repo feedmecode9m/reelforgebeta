@@ -62,7 +62,8 @@ import {
     logHeroSource,
     pushHeroPresentationToServer,
     sanitizeHeroConfigLocationIntelligence,
-    setLastHeroConfigSource
+    setLastHeroConfigSource,
+    enrichPresentationConfigFromLocalIdentity
 } from './heroPresentationSync.js';
 
 export const HERO_MODES = /** @type {const} */ ([
@@ -1251,9 +1252,11 @@ export function saveHeroManagerConfig(patch = {}, options = {}) {
     } = merged;
     // Fix NLP location persistence (e.g. "La" → "Los Angeles") without rewriting titles.
     const locationSafe = sanitizeHeroConfigLocationIntelligence(sanitized);
+    // Ensure mediaUrl/posterUrl cache fields travel with heroAssetId for server push.
+    const withMedia = enrichPresentationConfigFromLocalIdentity(locationSafe);
     const next = {
-        ...locationSafe,
-        heroAssetId: String(locationSafe.heroAssetId || '').trim(),
+        ...withMedia,
+        heroAssetId: String(withMedia.heroAssetId || '').trim(),
         updatedAt: Date.now()
     };
     if (typeof window !== 'undefined') {
@@ -1271,6 +1274,7 @@ export function saveHeroManagerConfig(patch = {}, options = {}) {
             key: HERO_MANAGER_STORAGE_KEY,
             heroAssetId: next.heroAssetId || '',
             backgroundSource: next.backgroundSource || '',
+            mediaUrl: next.mediaUrl ? String(next.mediaUrl).slice(0, 80) : '',
             ts: new Date().toISOString()
         });
         console.info('[HERO_STORE_WRITE]', {
@@ -1301,13 +1305,53 @@ export function saveHeroManagerConfig(patch = {}, options = {}) {
         }
         // Cache write only unless skipServer — never treat localStorage as SoT.
         if (options.skipServer !== true) {
-            pushHeroPresentationToServer(next).catch((err) => {
-                console.warn('[HERO_PRESENTATION] background push failed', err?.message || err);
-            });
+            const pushPromise = pushHeroPresentationToServer(next);
+            // Optional await path: saveHeroManagerConfig(..., { waitForServer: true })
+            if (options.waitForServer === true) {
+                // Synchronous callers ignore return; awaiters use persistHeroPresentationAwait.
+                // Stored on next for debugging.
+                next.__serverPush = pushPromise;
+            } else {
+                pushPromise.catch((err) => {
+                    console.warn('[HERO_PRESENTATION] background push failed', err?.message || err);
+                });
+            }
         }
         window.dispatchEvent(new CustomEvent('reelforge:hero-manager-updated', { detail: next }));
     }
     return next;
+}
+
+/**
+ * Explicit awaitable publish of current manager config (or patch) to PUT /api/hero/presentation.
+ * Use from Hero Manager after user selects a background.
+ * @param {Partial<HeroManagerConfig>} [patch]
+ * @returns {Promise<{ ok: boolean; config: HeroManagerConfig; server: Record<string, unknown> | null; error?: string }>}
+ */
+export async function persistHeroPresentationToServer(patch = {}) {
+    const config =
+        patch && Object.keys(patch).length
+            ? saveHeroManagerConfig(patch, { skipServer: true })
+            : loadHeroManagerConfig();
+    try {
+        const server = await pushHeroPresentationToServer(config);
+        if (!server) {
+            return {
+                ok: false,
+                config,
+                server: null,
+                error: 'Server write failed or skipped (login required / empty payload)'
+            };
+        }
+        return { ok: true, config, server };
+    } catch (error) {
+        return {
+            ok: false,
+            config,
+            server: null,
+            error: error?.message || String(error)
+        };
+    }
 }
 
 /**
@@ -1540,6 +1584,10 @@ export function commitHeroAssetSelection(assetId, extraItems = null) {
         heroAssetId: pointer.heroAssetId,
         backgroundSource: /** @type {any} */ (pointer.backgroundSource),
         backgroundStyle: pointer.backgroundStyle || (isVideo ? 'video' : 'image'),
+        // Durable media URLs for PUT /api/hero/presentation (not only asset id).
+        mediaUrl,
+        posterUrl,
+        backgroundMediaUrl: mediaUrl,
         ...intelBundle.patch
     });
 }
@@ -1692,12 +1740,35 @@ export function resolveHeroBackgroundAsset(config = loadHeroManagerConfig(), vau
     if (!bridgeAsset) {
         bridgeAsset = resolveHeroAssetById(heroAssetId, items);
     }
+    // Server presentation cache: mediaUrl/poster on manager when vault not hydrated yet.
+    if (!bridgeAsset) {
+        const cachedMedia = String(
+            config.mediaUrl || config.backgroundMediaUrl || config.backgroundVideo || config.backgroundImage || ''
+        ).trim();
+        if (cachedMedia && heroAssetId) {
+            const isVideo =
+                isVideoHeroAssetType(inferHeroAssetType(cachedMedia)) ||
+                String(config.backgroundSource || '').includes('video');
+            bridgeAsset = normalizeHeroAssetRecord(
+                {
+                    id: heroAssetId,
+                    assetId: heroAssetId,
+                    url: cachedMedia,
+                    mediaUrl: cachedMedia,
+                    thumbnail: String(config.posterUrl || '').trim() || undefined,
+                    type: isVideo ? 'video/mp4' : 'image/jpeg',
+                    name: String(config.heroTitle || config.heroAssetTitle || 'Hero')
+                },
+                { storageSource: 'server_presentation_cache' }
+            );
+        }
+    }
     const resolvedAsset = bridgeAsset;
     const mediaUrl = resolvedAsset?.mediaUrl || '';
     const resolvedAssetType = resolvedAsset?.assetType || 'unknown';
     const videoUrl = isVideoHeroAssetType(resolvedAssetType) ? mediaUrl : '';
     const imageUrl = isVideoHeroAssetType(resolvedAssetType)
-        ? resolvedAsset?.thumbnailUrl || ''
+        ? resolvedAsset?.thumbnailUrl || String(config.posterUrl || '').trim() || ''
         : mediaUrl;
 
     const resolved = {

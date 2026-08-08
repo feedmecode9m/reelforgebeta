@@ -106,10 +106,19 @@ export function sanitizeHeroConfigLocationIntelligence(config) {
 export function buildServerPresentationPayload(config) {
     const c = sanitizeHeroConfigLocationIntelligence({ ...config });
     const heroAssetId = String(c.heroAssetId || '').trim();
+    // Manager config historically only stored asset id; media lives on HeroRecord / vault.
+    // Accept any of the cache keys so PUT never drops background URLs.
     const mediaUrl = String(
-        c.backgroundMediaUrl || c.mediaUrl || c.backgroundVideo || c.backgroundImage || ''
+        c.mediaUrl ||
+            c.backgroundMediaUrl ||
+            c.backgroundVideo ||
+            c.backgroundImage ||
+            c.videoUrl ||
+            ''
     ).trim();
-    const posterUrl = String(c.posterUrl || c.backgroundPoster || '').trim();
+    const posterUrl = String(
+        c.posterUrl || c.backgroundPoster || c.thumbnailUrl || c.thumbnail || ''
+    ).trim();
 
     const presentation = {
         heroType: c.heroType,
@@ -138,7 +147,12 @@ export function buildServerPresentationPayload(config) {
         featuredSeries: c.featuredSeries,
         storyStatus: c.storyStatus,
         storyScheduledFor: c.storyScheduledFor,
-        backgroundMediaUrl: mediaUrl || undefined
+        backgroundMediaUrl: mediaUrl || undefined,
+        mediaUrl: mediaUrl || undefined,
+        posterUrl: posterUrl || undefined,
+        heroAssetId: heroAssetId || undefined,
+        backgroundSource: c.backgroundSource,
+        backgroundStyle: c.backgroundStyle
     };
 
     return {
@@ -185,6 +199,12 @@ export function mapServerPresentationToManagerPatch(remote) {
         backgroundStyle: String(
             remote.backgroundStyle || presentation.backgroundStyle || 'video'
         ).trim(),
+        // Publish media into manager cache so Device B can paint before vault hydrate.
+        mediaUrl: String(remote.mediaUrl || presentation.mediaUrl || presentation.backgroundMediaUrl || '').trim(),
+        posterUrl: String(remote.posterUrl || presentation.posterUrl || '').trim(),
+        backgroundMediaUrl: String(
+            remote.mediaUrl || presentation.backgroundMediaUrl || presentation.mediaUrl || ''
+        ).trim(),
         heroLabel:
             remote.heroLabel != null
                 ? String(remote.heroLabel)
@@ -212,7 +232,14 @@ export function mapServerPresentationToManagerPatch(remote) {
     };
 
     for (const key of Object.keys(patch)) {
-        if (patch[key] === undefined) delete patch[key];
+        if (patch[key] === undefined || patch[key] === '') {
+            // Keep empty strings only for optional media; drop pure empties that dilute defaults.
+            if (key === 'mediaUrl' || key === 'posterUrl' || key === 'backgroundMediaUrl') {
+                if (!patch[key]) delete patch[key];
+            } else if (patch[key] === undefined) {
+                delete patch[key];
+            }
+        }
     }
 
     return sanitizeHeroConfigLocationIntelligence(patch);

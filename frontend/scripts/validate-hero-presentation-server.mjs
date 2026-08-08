@@ -68,13 +68,19 @@ assert(
 );
 
 console.log('\n[server payload build includes asset + NLP]');
+const mediaFixture = 'https://cdn.example/prod/3894107e-ae44-43c5-af72-b3f5d5e0ad90.mp4';
 const payload = buildServerPresentationPayload({
     ...fixed,
     backgroundSource: 'custom_video',
     heroLabel: 'LOOK@ZAKANDA PRESENTS',
-    heroSubtitle: 'An intimate documentary spotlight.'
+    heroSubtitle: 'An intimate documentary spotlight.',
+    mediaUrl: mediaFixture,
+    posterUrl: 'https://cdn.example/poster.jpg'
 });
 assertEq('payload heroAssetId', payload.heroAssetId, EXPECTED_HERO_ASSET_ID);
+assertEq('payload mediaUrl', payload.mediaUrl, mediaFixture);
+assertEq('payload posterUrl', payload.posterUrl, 'https://cdn.example/poster.jpg');
+assertEq('payload backgroundSource', payload.backgroundSource, 'custom_video');
 assertEq(
     'payload presentation location',
     payload.presentation?.heroTitleIntelligence?.location,
@@ -87,7 +93,8 @@ const serverBody = {
     heroAssetId: EXPECTED_HERO_ASSET_ID,
     backgroundSource: 'custom_video',
     backgroundStyle: 'video',
-    mediaUrl: 'https://cdn.example/prod/3894107e-ae44-43c5-af72-b3f5d5e0ad90.mp4',
+    mediaUrl: mediaFixture,
+    posterUrl: 'https://cdn.example/poster.jpg',
     heroLabel: 'LOOK@ZAKANDA PRESENTS',
     heroTitle: 'Vic G LA Story',
     heroSubtitle: 'An intimate documentary spotlight.',
@@ -101,6 +108,7 @@ assert(Boolean(patch), 'map returns patch');
 assertEq('resolved heroAssetId', String(patch.heroAssetId), EXPECTED_HERO_ASSET_ID);
 assertEq('resolved title', String(patch.heroTitle), 'Vic G LA Story');
 assertEq('resolved location', patch.heroTitleIntelligence?.location, 'Los Angeles');
+assertEq('resolved mediaUrl from server', String(patch.mediaUrl || ''), mediaFixture);
 
 // Fresh browser simulation: empty cache, backend hydrates
 /** @type {Record<string, unknown> | null} */

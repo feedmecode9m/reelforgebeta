@@ -60,11 +60,21 @@ export async function putHeroPresentation(body) {
             console.warn(
                 '[HERO_PRESENTATION] PUT failed',
                 res.status,
-                errBody?.error || errBody?.message || ''
+                errBody?.error || errBody?.message || '',
+                {
+                    heroAssetId: body?.heroAssetId || null,
+                    backgroundSource: body?.backgroundSource || null
+                }
             );
             return null;
         }
-        return /** @type {Record<string, unknown>} */ (await res.json());
+        const json = /** @type {Record<string, unknown>} */ (await res.json());
+        console.info('[HERO_PRESENTATION] PUT response', {
+            heroAssetId: json.heroAssetId || null,
+            mediaUrl: json.mediaUrl ? String(json.mediaUrl).slice(0, 96) : null,
+            updatedAt: json.updatedAt || null
+        });
+        return json;
     } catch (err) {
         console.warn('[HERO_PRESENTATION] PUT error', err?.message || err);
         return null;
