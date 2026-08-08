@@ -135,6 +135,81 @@ assertEq('fresh context still has hero id', String(hydrated.heroAssetId), EXPECT
 assertEq('HERO_SOURCE backend', log.source, 'backend');
 assertEq('HERO_SOURCE asset', log.heroAssetId, EXPECTED_HERO_ASSET_ID);
 
+console.log('\n[fresh device: no vault — server mediaUrl is enough to resolve]');
+const R2 = 'https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/3894107e-ae44-43c5-af72-b3f5d5e0ad90.mp4';
+const STALE = 'https://reelforge-deploy-production.up.railway.app/videos/3894107e-ae44-43c5-af72-b3f5d5e0ad90.mp4';
+
+/** inline pure pick (mirrors heroIntelligence.pickHeroBackgroundMediaUrl contract) */
+function isStaleLocalVideosMediaUrl(url) {
+    const raw = String(url || '').trim();
+    if (!raw) return false;
+    if (raw.startsWith('/videos/')) return true;
+    try {
+        const u = new URL(raw);
+        if (!u.pathname.startsWith('/videos/')) return false;
+        const host = u.hostname.toLowerCase();
+        return (
+            host.includes('railway.app') ||
+            host.includes('localhost') ||
+            host.includes('127.0.0.1') ||
+            host.endsWith('.netlify.app')
+        );
+    } catch {
+        return false;
+    }
+}
+function pickHeroBackgroundMediaUrl(parts = {}) {
+    const server = String(parts.serverMediaUrl || '').trim();
+    const record = String(parts.recordMediaUrl || '').trim();
+    const catalog = String(parts.catalogMediaUrl || '').trim();
+    if (server && !isStaleLocalVideosMediaUrl(server)) {
+        return { mediaUrl: server, source: 'server_presentation' };
+    }
+    if (record && !isStaleLocalVideosMediaUrl(record)) {
+        return { mediaUrl: record, source: 'hero_record' };
+    }
+    if (catalog) {
+        return {
+            mediaUrl: catalog,
+            source: server || record ? 'catalog_heal' : 'vault_catalog'
+        };
+    }
+    if (server) return { mediaUrl: server, source: 'server_presentation_stale' };
+    if (record) return { mediaUrl: record, source: 'hero_record_stale' };
+    return { mediaUrl: '', source: 'unavailable' };
+}
+
+const pureServer = pickHeroBackgroundMediaUrl({ serverMediaUrl: R2 });
+assertEq('R2 server media wins without vault', pureServer.mediaUrl, R2);
+assertEq('source server_presentation', pureServer.source, 'server_presentation');
+
+const heal = pickHeroBackgroundMediaUrl({
+    serverMediaUrl: STALE,
+    catalogMediaUrl: R2
+});
+assertEq('stale railway /videos healed from catalog', heal.mediaUrl, R2);
+assertEq('source catalog_heal', heal.source, 'catalog_heal');
+
+const emptyDevice = pickHeroBackgroundMediaUrl({
+    serverMediaUrl: STALE,
+    recordMediaUrl: '',
+    catalogMediaUrl: ''
+});
+assertEq('stale still returned if no catalog', emptyDevice.mediaUrl, STALE);
+
+// mapServer patch still exposes media for empty cache devices
+const noVaultPatch = mapServerPresentationToManagerPatch({
+    heroAssetId: EXPECTED_HERO_ASSET_ID,
+    backgroundSource: 'custom_video',
+    backgroundStyle: 'video',
+    mediaUrl: R2,
+    heroLabel: 'LOOK@ZAKANDA PRESENTS',
+    heroTitle: 'Vic G LA Story',
+    heroDescription: 'An intimate documentary spotlight.'
+});
+assert(Boolean(noVaultPatch?.mediaUrl), 'patch preserves server mediaUrl without vault');
+assertEq('patch mediaUrl is R2', String(noVaultPatch.mediaUrl), R2);
+
 console.log(
     failed === 0
         ? '\n✓ hero presentation server regression passed\n'

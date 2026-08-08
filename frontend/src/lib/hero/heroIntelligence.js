@@ -1864,13 +1864,75 @@ export function loadHeroVaultItems(extraItems = null) {
 }
 
 /**
+ * True when a presentation media URL points at local Railway static /videos paths
+ * that often 404 when the real file lives on R2/CDN. Catalog URL should win for playback.
+ * @param {unknown} url
+ * @returns {boolean}
+ */
+export function isStaleLocalVideosMediaUrl(url) {
+    const raw = String(url || '').trim();
+    if (!raw) return false;
+    if (raw.startsWith('/videos/')) return true;
+    try {
+        const u = new URL(raw);
+        if (!u.pathname.startsWith('/videos/')) return false;
+        const host = u.hostname.toLowerCase();
+        return (
+            host.includes('railway.app') ||
+            host.includes('localhost') ||
+            host.includes('127.0.0.1') ||
+            host.endsWith('.netlify.app')
+        );
+    } catch {
+        return false;
+    }
+}
+
+/**
+ * Playback URL priority for hero backgrounds (no DOM):
+ * 1) server presentation mediaUrl (unless known-stale /videos host)
+ * 2) HeroRecord mediaUrl (unless stale)
+ * 3) vault / reel catalog URL
+ * 4) empty
+ *
+ * @param {{
+ *   serverMediaUrl?: string;
+ *   recordMediaUrl?: string;
+ *   catalogMediaUrl?: string;
+ * }} parts
+ * @returns {{ mediaUrl: string; source: string }}
+ */
+export function pickHeroBackgroundMediaUrl(parts = {}) {
+    const server = String(parts.serverMediaUrl || '').trim();
+    const record = String(parts.recordMediaUrl || '').trim();
+    const catalog = String(parts.catalogMediaUrl || '').trim();
+
+    if (server && !isStaleLocalVideosMediaUrl(server)) {
+        return { mediaUrl: server, source: 'server_presentation' };
+    }
+    if (record && !isStaleLocalVideosMediaUrl(record)) {
+        return { mediaUrl: record, source: 'hero_record' };
+    }
+    if (catalog) {
+        return {
+            mediaUrl: catalog,
+            source: server || record ? 'catalog_heal' : 'vault_catalog'
+        };
+    }
+    // Last resort: still surface server/record even if stale (honest 404 path).
+    if (server) return { mediaUrl: server, source: 'server_presentation_stale' };
+    if (record) return { mediaUrl: record, source: 'hero_record_stale' };
+    return { mediaUrl: '', source: 'unavailable' };
+}
+
+/**
  * @param {string | null | undefined} url
  * @param {string | null | undefined} [mimeHint]
  */
 export function inferHeroAssetType(url, mimeHint = '') {
     const lower = String(url || '').toLowerCase();
     const mime = String(mimeHint || '').toLowerCase();
-    if (mime.startsWith('video/') || HERO_VIDEO_EXTENSIONS.test(lower)) {
+    if (mime.startsWith('video/') || HERO_VIDEO_EXTENSIONS.test(lower) || lower.includes('/videos/') || lower.includes('/prod/')) {
         if (lower.endsWith('.mp4')) return 'mp4';
         if (lower.endsWith('.webm')) return 'webm';
         if (lower.endsWith('.mov')) return 'mov';
@@ -1894,81 +1956,154 @@ export function inferHeroAssetType(url, mimeHint = '') {
 export function resolveHeroBackgroundAsset(config = loadHeroManagerConfig(), vaultItems = null, options = {}) {
     const items = vaultItems || loadHeroVaultItems();
     const heroAssetId = String(config.heroAssetId || config.backgroundAsset || '').trim();
-    const canonicalReel = loadHeroReel();
-    console.info('[HERO_CLASSIFY]', {
-        stage: 'resolveHeroBackgroundAsset:start',
-        heroAssetId,
-        canonicalReelId: canonicalReel?.id || '',
-        backgroundSource: config.backgroundSource || '',
-        vaultItemsCount: Array.isArray(items) ? items.length : 0,
-        ts: new Date().toISOString()
-    });
+    const backgroundSource = String(config.backgroundSource || '').trim();
+    const serverMedia = String(
+        config.mediaUrl ||
+            config.backgroundMediaUrl ||
+            config.backgroundVideo ||
+            config.backgroundImage ||
+            ''
+    ).trim();
+    const posterHint = String(config.posterUrl || config.backgroundPoster || '').trim();
 
-    let bridgeAsset = null;
-    if (canonicalReel?.id && canonicalReel?.url && heroAssetId === canonicalReel.id) {
-        bridgeAsset = normalizeHeroAssetRecord(heroReelToVaultItem(canonicalReel), {
-            storageSource: 'hero_reel'
-        });
+    const record =
+        typeof window !== 'undefined'
+            ? /** @type {ReturnType<typeof loadHeroRecord> | null} */ (loadHeroRecord())
+            : null;
+    const recordMedia =
+        record && record.mode === 'asset'
+            ? String(record.mediaUrl || record.videoUrl || '').trim()
+            : '';
+    const recordPoster =
+        record && record.mode === 'asset' ? String(record.posterUrl || '').trim() : '';
+
+    // Catalog / reel / vault — never required for server-backed presentation, but used to heal.
+    let catalogMedia = '';
+    let catalogPoster = '';
+    let catalogAssetType = '';
+    let vaultMatch = false;
+
+    const canonicalReel = typeof window !== 'undefined' ? loadHeroReel() : null;
+    if (canonicalReel?.id && heroAssetId && String(canonicalReel.id) === heroAssetId && canonicalReel.url) {
+        catalogMedia = String(canonicalReel.url).trim();
+        catalogPoster = String(canonicalReel.thumbnail || '').trim();
+        vaultMatch = true;
+        catalogAssetType = isVideoHeroAssetType(
+            inferHeroAssetType(catalogMedia, String(canonicalReel.type || ''))
+        )
+            ? 'video'
+            : inferHeroAssetType(catalogMedia);
     }
-    if (!bridgeAsset) {
-        bridgeAsset = resolveHeroAssetById(heroAssetId, items);
-    }
-    // Server presentation cache: mediaUrl/poster on manager when vault not hydrated yet.
-    if (!bridgeAsset) {
-        const cachedMedia = String(
-            config.mediaUrl || config.backgroundMediaUrl || config.backgroundVideo || config.backgroundImage || ''
-        ).trim();
-        if (cachedMedia && heroAssetId) {
-            const isVideo =
-                isVideoHeroAssetType(inferHeroAssetType(cachedMedia)) ||
-                String(config.backgroundSource || '').includes('video');
-            bridgeAsset = normalizeHeroAssetRecord(
-                {
-                    id: heroAssetId,
-                    assetId: heroAssetId,
-                    url: cachedMedia,
-                    mediaUrl: cachedMedia,
-                    thumbnail: String(config.posterUrl || '').trim() || undefined,
-                    type: isVideo ? 'video/mp4' : 'image/jpeg',
-                    name: String(config.heroTitle || config.heroAssetTitle || 'Hero')
-                },
-                { storageSource: 'server_presentation_cache' }
-            );
+
+    if (!catalogMedia && heroAssetId) {
+        const vaultAsset = resolveHeroAssetById(heroAssetId, items);
+        if (vaultAsset?.mediaUrl) {
+            catalogMedia = String(vaultAsset.mediaUrl).trim();
+            catalogPoster = String(vaultAsset.thumbnailUrl || '').trim();
+            catalogAssetType = String(vaultAsset.assetType || '');
+            vaultMatch = true;
         }
     }
-    const resolvedAsset = bridgeAsset;
-    const mediaUrl = resolvedAsset?.mediaUrl || '';
-    const resolvedAssetType = resolvedAsset?.assetType || 'unknown';
-    const videoUrl = isVideoHeroAssetType(resolvedAssetType) ? mediaUrl : '';
-    const imageUrl = isVideoHeroAssetType(resolvedAssetType)
-        ? resolvedAsset?.thumbnailUrl || String(config.posterUrl || '').trim() || ''
-        : mediaUrl;
+
+    const picked = pickHeroBackgroundMediaUrl({
+        serverMediaUrl: serverMedia,
+        recordMediaUrl: recordMedia,
+        catalogMediaUrl: catalogMedia
+    });
+
+    const mediaUrl = picked.mediaUrl;
+    const sourceTag = picked.source;
+
+    // Prefer video classification for custom_video / style video even if type unknown.
+    let assetType = mediaUrl ? inferHeroAssetType(mediaUrl) : 'unknown';
+    if (
+        (backgroundSource === 'custom_video' || String(config.backgroundStyle || '') === 'video') &&
+        mediaUrl &&
+        assetType === 'unknown'
+    ) {
+        assetType = 'mp4';
+    }
+    if (
+        catalogAssetType &&
+        assetType === 'unknown' &&
+        (isVideoHeroAssetType(catalogAssetType) || catalogAssetType === 'video')
+    ) {
+        assetType = catalogAssetType;
+    }
+
+    const isVideo =
+        isVideoHeroAssetType(assetType) ||
+        backgroundSource === 'custom_video' ||
+        (mediaUrl && (/\.mp4(\?|$)/i.test(mediaUrl) || mediaUrl.includes('/prod/')));
+
+    const posterUrl =
+        posterHint ||
+        recordPoster ||
+        catalogPoster ||
+        (isVideo ? '' : mediaUrl);
+
+    const videoUrl = isVideo ? mediaUrl : '';
+    const imageUrl = isVideo ? posterUrl : mediaUrl || posterUrl;
 
     const resolved = {
-        assetId: canonicalReel?.id || heroAssetId || resolvedAsset?.assetId || '',
-        vaultMatch: Boolean(bridgeAsset),
+        assetId: heroAssetId || (record?.mode === 'asset' ? String(record.assetId || '') : ''),
+        vaultMatch,
         mediaUrl,
-        assetType: resolvedAssetType,
+        assetType: isVideo
+            ? assetType === 'unknown'
+                ? 'mp4'
+                : assetType
+            : assetType || 'unknown',
         videoUrl,
         imageUrl
     };
-    const signature = `${resolved.assetId}|${resolved.mediaUrl}|${resolved.assetType}|${config.backgroundSource}|${config.heroTitle || ''}`;
+
+    console.info('[HERO_BACKGROUND_RESOLVE]', {
+        heroAssetId: resolved.assetId || null,
+        backgroundSource: backgroundSource || null,
+        mediaUrl: serverMedia || null,
+        recordMediaUrl: recordMedia || null,
+        catalogMediaUrl: catalogMedia || null,
+        resolvedUrl: mediaUrl || null,
+        videoUrl: videoUrl || null,
+        imageUrl: imageUrl || null,
+        source: sourceTag,
+        vaultMatch,
+        ts: new Date().toISOString()
+    });
+
+    const signature = `${resolved.assetId}|${resolved.mediaUrl}|${resolved.assetType}|${backgroundSource}|${config.heroTitle || ''}|${sourceTag}`;
     if (options.log !== false && signature !== lastAssetResolveSignature) {
-        const sourceTag =
+        const configSource =
             getLastHeroConfigSource() ||
-            (heroAssetId ? 'localStorage' : 'default');
+            (sourceTag.startsWith('server') ? 'backend' : heroAssetId ? 'localStorage' : 'default');
         logHeroSource({
-            source: sourceTag,
+            source: /** @type {'localStorage' | 'backend' | 'default'} */ (
+                configSource === 'backend' || sourceTag.includes('server')
+                    ? 'backend'
+                    : configSource === 'localStorage'
+                      ? 'localStorage'
+                      : 'default'
+            ),
             heroAssetId: resolved.assetId || heroAssetId,
             title: String(config.heroTitle || config.heroAssetTitle || ''),
             backgroundUrl: resolved.mediaUrl || resolved.videoUrl || resolved.imageUrl || ''
         });
+        lastAssetResolveSignature = signature;
+        logHeroIntelligenceDiag('HERO_ASSET_RESOLVE', {
+            assetId: resolved.assetId,
+            vaultMatch: resolved.vaultMatch,
+            mediaUrl: resolved.mediaUrl,
+            assetType: resolved.assetType,
+            source: sourceTag
+        });
     }
+
     console.info('[HERO_ASSET_ID_TRACE]', {
         stage: 'resolveHeroBackgroundAsset:resolved',
         assetId: resolved.assetId || '',
         heroAssetId,
-        source: 'resolveHeroBackgroundAsset',
+        source: sourceTag,
         timestamp: Date.now()
     });
     console.info('[HERO_ROUTE]', {
@@ -1980,20 +2115,9 @@ export function resolveHeroBackgroundAsset(config = loadHeroManagerConfig(), vau
         videoUrl: resolved.videoUrl || '',
         imageUrl: resolved.imageUrl || '',
         vaultMatch: resolved.vaultMatch,
+        resolveSource: sourceTag,
         ts: new Date().toISOString()
     });
-
-    if (options.log !== false) {
-        if (signature !== lastAssetResolveSignature) {
-            lastAssetResolveSignature = signature;
-            logHeroIntelligenceDiag('HERO_ASSET_RESOLVE', {
-                assetId: resolved.assetId,
-                vaultMatch: resolved.vaultMatch,
-                mediaUrl: resolved.mediaUrl,
-                assetType: resolved.assetType
-            });
-        }
-    }
 
     if (config.backgroundSource === 'custom_image') {
         logHeroImagePipeline('asset-resolve', {
@@ -2209,7 +2333,17 @@ export function resolveHeroBackgroundPresentation(
 
     const resolved = resolveHeroBackgroundAsset(config, vaultItems, { log: true });
 
-    return {
+    /** Force custom_video → videoUrl even when type inference is soft. */
+    let videoUrl = resolved.videoUrl;
+    let imageUrl = resolved.imageUrl;
+    if (config.backgroundSource === 'custom_video' && resolved.mediaUrl && !videoUrl) {
+        videoUrl = resolved.mediaUrl;
+    }
+    if (config.backgroundSource === 'custom_image' && resolved.mediaUrl && !imageUrl) {
+        imageUrl = resolved.mediaUrl;
+    }
+
+    const presentation = {
         style,
         containerClasses: [
             style === 'ambient_motion' ? 'hero-bg-ambient-motion' : '',
@@ -2219,7 +2353,10 @@ export function resolveHeroBackgroundPresentation(
             style === 'gradient_overlay' ? 'hero-bg-gradient-overlay' : '',
             style === 'cinematic_blur' ? 'hero-bg-cinematic-overlay' : ''
         ].filter(Boolean),
-        useVideo: style === 'video' || config.backgroundSource === 'custom_video' || style === 'ambient_motion',
+        useVideo:
+            style === 'video' ||
+            config.backgroundSource === 'custom_video' ||
+            style === 'ambient_motion',
         useImage: style === 'image' || config.backgroundSource === 'custom_image',
         ambientMotion: style === 'ambient_motion',
         cinematicBlur: style === 'cinematic_blur',
@@ -2231,9 +2368,24 @@ export function resolveHeroBackgroundPresentation(
         vaultMatch: resolved.vaultMatch,
         mediaUrl: resolved.mediaUrl,
         assetType: resolved.assetType,
-        videoUrl: resolved.videoUrl,
-        imageUrl: resolved.imageUrl
+        videoUrl,
+        imageUrl
     };
+
+    console.info('[HERO_BACKGROUND_RESOLVE]', {
+        heroAssetId: presentation.heroAssetId || null,
+        backgroundSource: presentation.backgroundSource,
+        mediaUrl: String(config.mediaUrl || config.backgroundMediaUrl || '').trim() || null,
+        resolvedUrl: presentation.videoUrl || presentation.imageUrl || presentation.mediaUrl || null,
+        source:
+            getLastHeroConfigSource() === 'backend'
+                ? 'server_presentation'
+                : getLastHeroConfigSource() || 'resolve',
+        videoUrl: presentation.videoUrl || null,
+        imageUrl: presentation.imageUrl || null
+    });
+
+    return presentation;
 }
 
 /** @type {Record<typeof HERO_MODES[number], typeof HERO_SOURCES[number]>} */

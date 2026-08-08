@@ -13,7 +13,7 @@ import { toRelativeMediaPath } from './config.js';
 import { isHeroAsset } from './hero/heroDomainGuard.js';
 import { pipelineDiag, pipelineCheckpoint } from './diagnostics/pipelineDiag.js';
 import { logBg7kCatalogReceive } from './diagnostics/bg7kCardRenderTrace.js';
-import { loadHeroManagerConfig, logHeroConfigBootTrace, hydrateHeroManagerConfigFromServer } from './hero/heroIntelligence.js';
+import { loadHeroManagerConfig, logHeroConfigBootTrace, hydrateHeroManagerConfigFromServer, saveHeroManagerConfig } from './hero/heroIntelligence.js';
 import { heroReelFromUploadResponse, loadHeroReel, saveHeroReel } from './hero/heroReelIdentity.js';
 import { logBg7jHeroRestore } from './diagnostics/bg7jHydrationGate.js';
 import { logBg7vHeroRestoreReason } from './diagnostics/bg7vHeroRestoreReason.js';
@@ -90,18 +90,6 @@ function restoreHeroReelIdentityFromReels(reels) {
     }
 
     const existing = loadHeroReel();
-    if (existing?.id) {
-        logBg7vHeroRestoreReason({
-            heroAssetId,
-            matchedReelId: existing.id,
-            restoreAttempted: false,
-            restored: false,
-            reason: 'ALREADY_PRESENT'
-        });
-        logBg7jHeroRestore(heroAssetId, false, existing.id);
-        return;
-    }
-
     const matched = reels.find((reel) => String(reel?.id || '').trim() === heroAssetId);
     if (!matched) {
         logBg7vHeroRestoreReason({
@@ -134,6 +122,30 @@ function restoreHeroReelIdentityFromReels(reels) {
         return;
     }
 
+    // Heal stale presentation /videos/* or railway hosts when catalog has the durable R2 URL.
+    const existingUrl = String(existing?.url || '').trim();
+    const needsHeal =
+        !existing?.id ||
+        existing.id !== heroAssetId ||
+        !existingUrl ||
+        existingUrl !== mediaUrl ||
+        // Local /videos/ paths frequently 404 when assets live on R2.
+        existingUrl.startsWith('/videos/') ||
+        /railway\.app\/videos\//i.test(existingUrl) ||
+        /netlify\.app\/videos\//i.test(existingUrl);
+
+    if (existing?.id === heroAssetId && !needsHeal) {
+        logBg7vHeroRestoreReason({
+            heroAssetId,
+            matchedReelId: existing.id,
+            restoreAttempted: false,
+            restored: false,
+            reason: 'ALREADY_PRESENT'
+        });
+        logBg7jHeroRestore(heroAssetId, false, existing.id);
+        return;
+    }
+
     const mediaKind = manager.backgroundSource === 'custom_image' ? 'image' : 'video';
     const reel = heroReelFromUploadResponse(matched, mediaKind);
     if (!reel?.id) {
@@ -160,6 +172,8 @@ function restoreHeroReelIdentityFromReels(reels) {
         logBg7jHeroRestore(heroAssetId, false, matchedReelId);
         return;
     }
+    // Prefer catalog media (R2) over presentation placeholders that may 404.
+    reel.url = mediaUrl;
     if (!reel.url) {
         logBg7vHeroRestoreReason({
             heroAssetId,
@@ -200,14 +214,41 @@ function restoreHeroReelIdentityFromReels(reels) {
         return;
     }
 
+    // Keep manager presentation mediaUrl aligned with durable catalog playback URL (local cache only).
+    try {
+        saveHeroManagerConfig(
+            {
+                heroAssetId: saved.id,
+                backgroundSource:
+                    saved.backgroundSource === 'custom_image' ? 'custom_image' : 'custom_video',
+                backgroundStyle: saved.backgroundSource === 'custom_image' ? 'image' : 'video',
+                mediaUrl: mediaUrl,
+                backgroundMediaUrl: mediaUrl,
+                posterUrl: String(saved.thumbnail || '').trim()
+            },
+            { skipServer: true }
+        );
+    } catch {
+        /* ignore cache align failures */
+    }
+
     logBg7vHeroRestoreReason({
         heroAssetId,
         matchedReelId: saved.id,
         restoreAttempted: true,
         restored: true,
-        reason: 'RESTORE_SUCCESS'
+        reason: needsHeal ? 'RESTORE_HEAL_MEDIA_URL' : 'RESTORE_SUCCESS',
+        detail: { previousUrl: existingUrl.slice(0, 120), mediaUrl: mediaUrl.slice(0, 120) }
     });
     logBg7jHeroRestore(heroAssetId, true, saved.id);
+    console.info('[HERO_BACKGROUND_RESOLVE]', {
+        stage: 'restoreHeroReelIdentityFromReels',
+        heroAssetId,
+        mediaUrl: existingUrl || null,
+        resolvedUrl: mediaUrl,
+        source: 'catalog_heal',
+        ts: new Date().toISOString()
+    });
 }
 
 /**

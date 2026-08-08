@@ -230,13 +230,28 @@ export let sanitizeViewer = false;
     const persisted = loadHeroManagerConfig();
     const inMemory = heroManagerConfig || persisted;
     const heroAssetId = String(persisted.heroAssetId || inMemory.heroAssetId || '').trim();
+    const mediaUrl = String(
+      persisted.mediaUrl ||
+        persisted.backgroundMediaUrl ||
+        inMemory.mediaUrl ||
+        inMemory.backgroundMediaUrl ||
+        ''
+    ).trim();
+    const posterUrl = String(persisted.posterUrl || inMemory.posterUrl || '').trim();
     const persistedSource = String(persisted.backgroundSource || '').trim();
     const inMemorySource = String(inMemory.backgroundSource || '').trim();
     if (persistedSource === 'none' || inMemorySource === 'none') {
-      return { ...inMemory, ...persisted, heroAssetId: '', backgroundSource: 'none' };
+      return {
+        ...inMemory,
+        ...persisted,
+        heroAssetId: '',
+        mediaUrl: '',
+        posterUrl: '',
+        backgroundSource: 'none'
+      };
     }
     const backgroundSource =
-      heroAssetId &&
+      (heroAssetId || mediaUrl) &&
       (persistedSource === 'custom_video' ||
         persistedSource === 'custom_image' ||
         inMemorySource === 'custom_video' ||
@@ -245,7 +260,15 @@ export let sanitizeViewer = false;
           ? persistedSource
           : inMemorySource
         : inMemorySource || persistedSource || 'selection';
-    return { ...inMemory, ...persisted, heroAssetId, backgroundSource };
+    return {
+      ...inMemory,
+      ...persisted,
+      heroAssetId,
+      mediaUrl,
+      posterUrl,
+      backgroundMediaUrl: mediaUrl || persisted.backgroundMediaUrl || inMemory.backgroundMediaUrl || '',
+      backgroundSource
+    };
   }
 
   /** Resolve presentation from storage even pre-hydration when a custom hero is configured. */
@@ -255,7 +278,7 @@ export let sanitizeViewer = false;
       return resolveHeroBackgroundPresentation(config, null, selection);
     }
     const hasCustomHero =
-      Boolean(config.heroAssetId) &&
+      (Boolean(config.heroAssetId) || Boolean(config.mediaUrl)) &&
       (config.backgroundSource === 'custom_video' || config.backgroundSource === 'custom_image');
     if (!hydrationReady && !hasCustomHero) {
       return PENDING_HERO_BACKGROUND_PRESENTATION;

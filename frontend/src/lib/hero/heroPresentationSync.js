@@ -191,10 +191,12 @@ export function enrichPresentationConfigFromLocalIdentity(config) {
 /**
  * Materialize server presentation into HeroRecord so the landscape can render
  * without waiting for vault catalog match.
+ * Server mediaUrl is authoritative — never requires a local vault row.
  * @param {Record<string, unknown>} remote
+ * @returns {import('./heroRecord.js').HeroRecord | null}
  */
 export function applyServerPresentationToHeroRecord(remote) {
-    if (!remote || typeof remote !== 'object' || typeof window === 'undefined') return;
+    if (!remote || typeof remote !== 'object' || typeof window === 'undefined') return null;
 
     const id = String(remote.heroAssetId || '').trim();
     const mediaUrl = String(remote.mediaUrl || '').trim();
@@ -203,12 +205,13 @@ export function applyServerPresentationToHeroRecord(remote) {
     const title = String(remote.heroTitle || '').trim();
     const subtitle = String(remote.heroSubtitle || '').trim();
     const description = String(remote.heroDescription || '').trim();
+    const label = String(remote.heroLabel || '').trim();
 
-    if (bg === 'none' || (!id && !mediaUrl && bg !== 'selection')) {
+    if (bg === 'none' || (!id && !mediaUrl && bg !== 'selection' && bg !== 'custom_video' && bg !== 'custom_image')) {
         if (bg === 'none') {
             setHeroMode('none', { source: 'server_presentation' });
         }
-        return;
+        return null;
     }
     if ((bg === 'selection' || !bg) && !id && !mediaUrl) {
         setHeroMode('selection', { source: 'server_presentation' });
@@ -220,28 +223,61 @@ export function applyServerPresentationToHeroRecord(remote) {
                 source: 'server_presentation'
             });
         }
-        return;
+        return null;
     }
-    if (!id || !mediaUrl) return;
+
+    // Allow mediaUrl-only (rare) — synthesizes a stable id from the URL path for record validity.
+    const assetId =
+        id ||
+        (() => {
+            try {
+                const path = new URL(mediaUrl).pathname;
+                const base = path.split('/').filter(Boolean).pop() || '';
+                return base.replace(/\.[a-z0-9]+$/i, '') || 'server-hero';
+            } catch {
+                return mediaUrl ? 'server-hero' : '';
+            }
+        })();
+
+    if (!mediaUrl) {
+        console.warn('[HERO_PRESENTATION] applyServerPresentation skipped — no mediaUrl', {
+            heroAssetId: id,
+            backgroundSource: bg
+        });
+        return null;
+    }
 
     const isImage =
         bg === 'custom_image' ||
         /\.(jpe?g|png|gif|webp)(\?|$)/i.test(mediaUrl) ||
         String(remote.backgroundStyle || '').toLowerCase() === 'image';
 
-    selectHeroAsset({
-        assetId: id,
+    const record = selectHeroAsset({
+        assetId,
         mediaUrl,
         mediaKind: isImage ? 'image' : 'video',
         videoUrl: isImage ? '' : mediaUrl,
         posterUrl: posterUrl || (isImage ? mediaUrl : ''),
-        fileName: title || id,
-        title: title || id,
+        fileName: title || label || assetId,
+        title: title || label || assetId,
         heroTitle: title,
         heroSubtitle: subtitle,
         heroDescription: description,
         source: 'server_presentation'
     });
+
+    console.info('[HERO_BACKGROUND_RESOLVE]', {
+        stage: 'applyServerPresentationToHeroRecord',
+        heroAssetId: assetId,
+        backgroundSource: bg || (isImage ? 'custom_image' : 'custom_video'),
+        mediaUrl,
+        resolvedUrl: record?.mediaUrl || mediaUrl,
+        source: 'server_presentation',
+        recordMode: record?.mode || null,
+        ok: Boolean(record)
+    });
+
+    return record;
 }
 
 /**
