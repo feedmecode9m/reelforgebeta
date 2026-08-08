@@ -1,7 +1,26 @@
 @import './studioThemes.css';
-:root { --neon-red: #e50914; --neon-cyan: #00f2ff; --neon-pink: #ff00ff; --neon-gold: #ffd700; --bg-dark: #0a0a0a; --panel-bg: rgba(20,20,20,0.95); }
-*:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }
-body { margin: 0; background: var(--bg-dark); color: #fff; font-family: 'Inter', system-ui, sans-serif; overflow-x: hidden; overflow-y: auto; line-height: 1.5; }
+@import '../styles/consumer-theme.css';
+:root {
+  --neon-red: #e50914;
+  --neon-cyan: var(--lz-cyan, #00f2ff);
+  --neon-pink: #ff00ff;
+  --neon-gold: #ffd700;
+  --bg-dark: var(--lz-stage, #0a0a0a);
+  --panel-bg: rgba(20, 20, 20, 0.95);
+}
+*:focus-visible {
+  outline: 2px solid var(--lz-focus, #3b82f6);
+  outline-offset: 2px;
+}
+body {
+  margin: 0;
+  background: var(--bg-dark);
+  color: #fff;
+  font-family: 'Inter', var(--lz-font-body, system-ui, sans-serif);
+  overflow-x: hidden;
+  overflow-y: auto;
+  line-height: 1.5;
+}
 * { box-sizing: border-box; }
 .ghost-trigger { position: fixed; top: 72px; right: 16px; width: 52px; height: 52px; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: crosshair; z-index: 9999; transition: all 0.3s ease; backdrop-filter: blur(10px); }
 .ghost-trigger:hover, .ghost-trigger.active { background: rgba(0,242,255,0.2); border-color: var(--neon-cyan); box-shadow: 0 0 30px rgba(0,242,255,0.4); transform: scale(1.1); }

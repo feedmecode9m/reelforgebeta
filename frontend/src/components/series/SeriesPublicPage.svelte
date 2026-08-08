@@ -229,7 +229,7 @@
   {#if !series}
     <section class="series-public__missing" aria-live="polite">
       <h1>Series not found</h1>
-      <p>No catalog entry matches <code>/series/{slug}</code>.</p>
+      <p>We couldn't find a series for <code>/series/{slug}</code>.</p>
       <a class="series-public__cta series-public__cta--ghost" href="/">Back to home</a>
     </section>
   {:else}
@@ -295,8 +295,8 @@
       </div>
     </section>
 
-    <section class="series-public__status-board" aria-label="Episode status">
-      <h2 class="series-public__section-title">Catalog status</h2>
+    <section class="series-public__status-board" aria-label="Episode guide">
+      <h2 class="series-public__section-title">Episode guide</h2>
       <ul class="series-public__status-list">
         {#each allEpisodes as row (row.episode.episodeId)}
           <li
@@ -340,35 +340,15 @@
   .series-page {
     min-height: 100vh;
     min-height: 100dvh;
-    color: #f4f4f5;
-    background:
-      radial-gradient(ellipse 80% 50% at 20% 0%, rgba(0, 242, 255, 0.12), transparent 55%),
-      radial-gradient(ellipse 60% 40% at 90% 10%, rgba(255, 40, 120, 0.08), transparent 50%),
-      #05060a;
-    font-family: 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
+    color: var(--lz-ink, #f4f4f5);
+    background: var(--lz-atmosphere-soft, #05060a);
+    font-family: var(--lz-font-body, 'Segoe UI', ui-sans-serif, system-ui, sans-serif);
   }
   .series-public {
     max-width: 920px;
     margin: 0 auto;
-    padding: 0.5rem 1.25rem 2rem;
-  }
-
-  .series-public__top {
-    display: flex;
-    align-items: center;
-    margin-bottom: 1.5rem;
-  }
-
-  .series-public__home {
-    color: rgba(255, 255, 255, 0.7);
-    text-decoration: none;
-    font-size: 0.85rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  .series-public__home:hover {
-    color: var(--neon-cyan, #00f2ff);
+    padding: 0.5rem var(--lz-page-pad-x, 1.25rem) var(--lz-space-6, 2rem);
+    animation: lz-fade-rise var(--lz-duration-slow, 480ms) var(--lz-ease, ease) both;
   }
 
   .series-public__missing {
@@ -381,17 +361,17 @@
   }
 
   .series-public__missing p {
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--lz-ink-muted, rgba(255, 255, 255, 0.55));
   }
 
   .series-public__missing code {
-    color: #00f2ff;
+    color: var(--lz-cyan, #00f2ff);
   }
 
   .series-public__hero {
     display: grid;
-    gap: 1.25rem;
-    margin-bottom: 2rem;
+    gap: var(--lz-space-4, 1.25rem);
+    margin-bottom: var(--lz-space-6, 2rem);
   }
 
   @media (min-width: 720px) {
@@ -402,12 +382,13 @@
   }
 
   .series-public__poster-wrap {
-    border-radius: 12px;
+    border-radius: var(--lz-radius-lg, 12px);
     overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--lz-border, rgba(255, 255, 255, 0.1));
     background: rgba(255, 255, 255, 0.04);
     aspect-ratio: 2 / 3;
     max-width: 220px;
+    box-shadow: var(--lz-shadow-soft, 0 8px 28px rgba(0, 0, 0, 0.35));
   }
 
   .series-public__poster {
@@ -419,10 +400,10 @@
 
   .series-public__eyebrow {
     margin: 0 0 0.35rem;
-    font-size: 0.75rem;
-    letter-spacing: 0.14em;
+    font-size: var(--lz-size-caption, 0.75rem);
+    letter-spacing: var(--lz-tracking-brand, 0.14em);
     text-transform: uppercase;
-    color: var(--neon-cyan, #00f2ff);
+    color: var(--lz-cyan, var(--neon-cyan, #00f2ff));
   }
 
   .series-public__title {
@@ -435,15 +416,15 @@
 
   .series-public__desc {
     margin: 0 0 0.85rem;
-    color: rgba(255, 255, 255, 0.72);
-    line-height: 1.5;
+    color: var(--lz-ink-soft, rgba(255, 255, 255, 0.72));
+    line-height: var(--lz-leading, 1.5);
     max-width: 42rem;
   }
 
   .series-public__meta {
     margin: 0 0 1.1rem;
-    font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.5);
+    font-size: var(--lz-size-small, 0.85rem);
+    color: var(--lz-ink-dim, rgba(255, 255, 255, 0.5));
   }
 
   .series-public__actions {
@@ -461,14 +442,24 @@
     font-weight: 650;
     font-size: 0.95rem;
     padding: 0.7rem 1.25rem;
-    border-radius: 8px;
+    border-radius: var(--lz-radius-md, 10px);
     cursor: pointer;
     letter-spacing: 0.02em;
+    font-family: inherit;
+    transition:
+      border-color var(--lz-duration-fast, 160ms) var(--lz-ease, ease),
+      box-shadow var(--lz-duration-fast, 160ms) var(--lz-ease, ease),
+      opacity var(--lz-duration-fast, 160ms) var(--lz-ease, ease);
   }
 
   .series-public__cta:hover:not(:disabled) {
-    border-color: #00f2ff;
-    box-shadow: 0 0 20px rgba(0, 242, 255, 0.25);
+    border-color: var(--lz-cyan, #00f2ff);
+    box-shadow: 0 0 20px var(--lz-cyan-glow, rgba(0, 242, 255, 0.25));
+  }
+
+  .series-public__cta:focus-visible {
+    outline: 2px solid var(--lz-focus, rgba(0, 242, 255, 0.65));
+    outline-offset: 2px;
   }
 
   .series-public__cta:disabled {
@@ -491,16 +482,16 @@
   .series-public__section-title {
     margin: 0 0 0.85rem;
     font-size: 1.05rem;
-    letter-spacing: 0.04em;
+    letter-spacing: var(--lz-tracking-label, 0.04em);
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.75);
+    color: var(--lz-ink-soft, rgba(255, 255, 255, 0.75));
   }
 
   .series-public__season-list {
     display: flex;
     flex-direction: column;
-    gap: 0.65rem;
-    margin-bottom: 2rem;
+    gap: var(--lz-space-2, 0.65rem);
+    margin-bottom: var(--lz-space-6, 2rem);
   }
 
   .series-public__status-list {
@@ -518,10 +509,11 @@
     gap: 0.65rem;
     align-items: center;
     padding: 0.55rem 0.75rem;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--lz-radius-md, 10px);
+    border: 1px solid var(--lz-border, rgba(255, 255, 255, 0.08));
     background: rgba(255, 255, 255, 0.03);
     font-size: 0.88rem;
+    transition: border-color var(--lz-duration-fast, 160ms) var(--lz-ease, ease);
   }
 
   .series-public__status-row.playable {
@@ -532,7 +524,7 @@
     font-size: 0.72rem;
     font-weight: 700;
     letter-spacing: 0.06em;
-    color: var(--neon-cyan, #00f2ff);
+    color: var(--lz-cyan, var(--neon-cyan, #00f2ff));
   }
 
   .series-public__status-title {
@@ -546,26 +538,33 @@
     text-transform: uppercase;
     letter-spacing: 0.05em;
     padding: 0.15rem 0.4rem;
-    border-radius: 4px;
+    border-radius: var(--lz-radius-sm, 4px);
     background: rgba(255, 255, 255, 0.08);
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--lz-ink-muted, rgba(255, 255, 255, 0.55));
   }
 
   .series-public__row-play {
     appearance: none;
     border: 1px solid rgba(0, 242, 255, 0.35);
     background: transparent;
-    color: #00f2ff;
+    color: var(--lz-cyan, #00f2ff);
     font-size: 0.72rem;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     padding: 0.25rem 0.5rem;
-    border-radius: 4px;
+    border-radius: var(--lz-radius-sm, 4px);
     cursor: pointer;
+    font-family: inherit;
+    transition: background var(--lz-duration-fast, 160ms) var(--lz-ease, ease);
   }
 
   .series-public__row-play:hover {
     background: rgba(0, 242, 255, 0.1);
+  }
+
+  .series-public__row-play:focus-visible {
+    outline: 2px solid var(--lz-focus, rgba(0, 242, 255, 0.65));
+    outline-offset: 2px;
   }
 
   @media (max-width: 560px) {

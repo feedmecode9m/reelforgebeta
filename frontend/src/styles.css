@@ -1,4 +1,6 @@
 /* styles.css - Global styles */
+@import './styles/consumer-theme.css';
+
 :root {
   --color-primary: #9f7aea;
   --color-secondary: #646cff;
@@ -12,13 +14,13 @@
   --color-light: #f8fafc;
   --color-lighter: #ffffff;
   
-  --color-bg: var(--color-dark);
-  --color-text: var(--color-lighter);
-  --color-border: rgba(255,255,255,0.1);
+  --color-bg: var(--lz-void, var(--color-darker));
+  --color-text: var(--lz-ink, var(--color-lighter));
+  --color-border: var(--lz-border, rgba(255,255,255,0.1));
   
-  --radius-sm: 8px;
-  --radius-md: 16px;
-  --radius-lg: 24px;
+  --radius-sm: var(--lz-radius-sm, 8px);
+  --radius-md: var(--lz-radius-md, 16px);
+  --radius-lg: var(--lz-radius-lg, 24px);
   --radius-xl: 32px;
   
   --shadow-sm: 0 2px 8px rgba(0,0,0,0.1);
@@ -26,7 +28,7 @@
   --shadow-lg: 0 16px 64px rgba(0,0,0,0.3);
   --shadow-xl: 0 32px 128px rgba(0,0,0,0.4);
   
-  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: var(--lz-font-body, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
   --font-mono: 'SF Mono', Monaco, 'Cascadia Code', monospace;
 }
 

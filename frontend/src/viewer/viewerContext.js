@@ -636,6 +636,43 @@ visible: Boolean(get(activeReel)),
 resolvedFromFeed: Boolean(findReelInFeed(reel?.id))
 });
 }
+
+/**
+ * VIEWER-1 / Phase 3: open a title queued from Account (Continue Watching / My List).
+ * @param {{ reelId?: string; title?: string | null; thumbnailUrl?: string | null; positionSeconds?: number | null; durationSeconds?: number | null; completed?: boolean; resume?: boolean } | null | undefined} [req]
+ */
+function tryConsumeAccountPlay(req) {
+  import('../lib/viewer/pendingPlay.js').then(({ takeAccountPlay, resolveAccountPlayReel }) => {
+    const play = req && req.reelId ? req : takeAccountPlay();
+    if (!play?.reelId) return;
+
+    const fromFeed = findReelInFeed(play.reelId);
+    const fromVault = get(personalVideos).find((v) => String(v?.id || '') === String(play.reelId));
+    const reel =
+      fromFeed ||
+      (fromVault ? normalizeReel(fromVault, 'account-play') : null) ||
+      resolveAccountPlayReel(play, findReelInFeed);
+
+    if (!reel) return;
+
+    // Guard: without a playback URL, theater can only open catalog-known titles.
+    const playableUrl = reel.url || reel.videoUrl || reel.src || reel.playbackUrl;
+    if (!playableUrl && !fromFeed && !fromVault) {
+      if (import.meta.env.DEV) {
+        console.warn('[account-play] reel not in catalog', play.reelId);
+      }
+      uploadStatus.set('That title isn’t available to play right now.');
+      resourceManager.setTimeout(() => uploadStatus.set('Standby'), 3500);
+      return;
+    }
+
+    // Resume is already seeded by queueAccountPlay when requested.
+    openTheater(reel);
+  }).catch(() => {
+    /* ignore */
+  });
+}
+
 let savedScrollY = 0;
 let bodyScrollLocked = false;
 
@@ -2107,11 +2144,16 @@ const onOpenStudio = (event) => {
   const source = event?.detail?.source || 'account_menu';
   openStudioFromAccountMenu(source);
 };
+const onAccountPlay = (event) => {
+  const detail = event?.detail || null;
+  if (detail?.reelId) tryConsumeAccountPlay(detail);
+};
 resourceManager.addEventListener(window, 'reelforge:backend-reconnecting', onBackendReconnecting);
 resourceManager.addEventListener(window, 'reelforge:workflow-navigate', handleWorkflowNavigate);
 resourceManager.addEventListener(window, 'reelforge:search-open-reel', onSearchOpenReel);
 resourceManager.addEventListener(window, 'reelforge:search-navigate', onSearchNavigate);
 resourceManager.addEventListener(window, 'reelforge:open-studio', onOpenStudio);
+resourceManager.addEventListener(window, 'reelforge:account-play', onAccountPlay);
 resourceManager.addEventListener(window, 'keydown', handleKeyDown);
 
 const hadLocalCache = hasLocalMediaCache(CONFIG.THUMBNAIL_STORAGE_KEY, CONFIG.VIDEO_VAULT_KEY);
@@ -2275,6 +2317,8 @@ await syncFromVault(true, true);
 const hydratedPersonalVideosCount = get(personalVideos).length;
 viewerHydrationReady.set(true);
 logBg7jHydrationReady(true, hydratedPersonalVideosCount);
+// Consumer account Continue Watching / My List → theater open after catalog ready.
+tryConsumeAccountPlay();
 pipelineCheckpoint('VIEWER_BOOTSTRAP', { phase: 'post-syncFromVault' });
 if (hasUserHeroOverride(CONFIG)) {
 applyHeroRecordBackgroundToViewer(loadHeroRecord());

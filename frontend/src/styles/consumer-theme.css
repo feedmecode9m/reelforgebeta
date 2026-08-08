@@ -1,0 +1,207 @@
+/**
+ * LOOK@ZAKANDA PRESENTS — consumer design tokens
+ * Extends cinema identity shared with the viewer (cyan accent, deep black stage).
+ * Prefixed --lz-* so Studio / legacy tokens are not overwritten.
+ */
+
+:root {
+  /* ── Color ───────────────────────────────────────── */
+  --lz-void: #050508;
+  --lz-stage: #0a0a0c;
+  --lz-panel: rgba(16, 18, 28, 0.92);
+  --lz-panel-elevated: rgba(22, 24, 36, 0.96);
+  --lz-ink: #f4f4f5;
+  --lz-ink-soft: rgba(255, 255, 255, 0.72);
+  --lz-ink-muted: rgba(255, 255, 255, 0.55);
+  --lz-ink-dim: rgba(255, 255, 255, 0.4);
+  --lz-cyan: #00f2ff;
+  --lz-cyan-soft: rgba(0, 242, 255, 0.9);
+  --lz-cyan-glow: rgba(0, 242, 255, 0.28);
+  --lz-magenta: rgba(255, 0, 180, 0.22);
+  --lz-border: rgba(255, 255, 255, 0.12);
+  --lz-border-strong: rgba(255, 255, 255, 0.2);
+  --lz-danger: #fda4af;
+  --lz-danger-border: rgba(251, 113, 133, 0.65);
+  --lz-focus: rgba(0, 242, 255, 0.65);
+
+  /* Align viewer neon aliases when consumer sheets load first */
+  --neon-cyan: #00f2ff;
+  --neon-pink: #ff00ff;
+  --bg-dark: var(--lz-stage);
+
+  /* ── Typography ──────────────────────────────────── */
+  --lz-font-display: 'Segoe UI', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --lz-font-body: 'Segoe UI', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --lz-tracking-brand: 0.18em;
+  --lz-tracking-label: 0.08em;
+  --lz-leading: 1.5;
+  --lz-size-brand: clamp(0.72rem, 2.2vw, 0.85rem);
+  --lz-size-brand-hero: clamp(0.95rem, 3.2vw, 1.15rem);
+  --lz-size-title: clamp(1.4rem, 3.5vw, 1.65rem);
+  --lz-size-body: 0.95rem;
+  --lz-size-small: 0.85rem;
+  --lz-size-caption: 0.75rem;
+
+  /* ── Spacing ─────────────────────────────────────── */
+  --lz-space-1: 0.35rem;
+  --lz-space-2: 0.55rem;
+  --lz-space-3: 0.85rem;
+  --lz-space-4: 1.25rem;
+  --lz-space-5: 1.75rem;
+  --lz-space-6: 2.5rem;
+  --lz-page-pad-x: max(1.25rem, env(safe-area-inset-left, 0px));
+  --lz-page-pad-y: 1.5rem;
+
+  /* ── Shape & depth ───────────────────────────────── */
+  --lz-radius-sm: 6px;
+  --lz-radius-md: 10px;
+  --lz-radius-lg: 12px;
+  --lz-radius-pill: 999px;
+  --lz-shadow-card: 0 20px 60px rgba(0, 0, 0, 0.45);
+  --lz-shadow-soft: 0 8px 28px rgba(0, 0, 0, 0.35);
+
+  /* ── Motion ──────────────────────────────────────── */
+  --lz-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --lz-duration-fast: 160ms;
+  --lz-duration: 280ms;
+  --lz-duration-slow: 480ms;
+
+  /* ── Atmosphere (reusable stage washes) ──────────── */
+  --lz-atmosphere: radial-gradient(ellipse 70% 55% at 18% 0%, rgba(0, 242, 255, 0.12), transparent 58%),
+    radial-gradient(ellipse 55% 45% at 90% 100%, rgba(255, 0, 180, 0.1), transparent 52%), var(--lz-void);
+  --lz-atmosphere-soft: radial-gradient(ellipse 80% 50% at 20% 0%, rgba(0, 242, 255, 0.1), transparent 55%),
+    radial-gradient(ellipse 60% 40% at 90% 10%, rgba(255, 40, 120, 0.08), transparent 50%), var(--lz-void);
+}
+
+/* Shared micro-motion for consumer surfaces */
+@keyframes lz-fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes lz-brand-shimmer {
+  0%,
+  100% {
+    opacity: 0.88;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Utility classes used by auth / account / series shells */
+.lz-atmosphere {
+  background: var(--lz-atmosphere);
+  color: var(--lz-ink);
+  font-family: var(--lz-font-body);
+}
+
+.lz-brand-mark {
+  margin: 0;
+  font-family: var(--lz-font-display);
+  font-size: var(--lz-size-brand);
+  letter-spacing: var(--lz-tracking-brand);
+  text-transform: uppercase;
+  color: var(--lz-cyan-soft);
+  font-weight: 600;
+}
+
+.lz-brand-mark--hero {
+  font-size: var(--lz-size-brand-hero);
+  letter-spacing: 0.2em;
+  text-shadow: 0 0 28px var(--lz-cyan-glow);
+  animation: lz-brand-shimmer 5.5s var(--lz-ease) infinite;
+}
+
+.lz-panel {
+  background: var(--lz-panel);
+  border: 1px solid var(--lz-border);
+  border-radius: var(--lz-radius-lg);
+  box-shadow: var(--lz-shadow-card);
+}
+
+.lz-btn {
+  appearance: none;
+  border: 1px solid var(--lz-border-strong);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--lz-ink);
+  border-radius: var(--lz-radius-md);
+  padding: 0.65rem 1rem;
+  font-size: var(--lz-size-small);
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    border-color var(--lz-duration-fast) var(--lz-ease),
+    background var(--lz-duration-fast) var(--lz-ease),
+    box-shadow var(--lz-duration-fast) var(--lz-ease),
+    opacity var(--lz-duration-fast) var(--lz-ease),
+    transform var(--lz-duration-fast) var(--lz-ease);
+}
+
+.lz-btn:hover:not(:disabled) {
+  border-color: rgba(0, 242, 255, 0.45);
+  background: rgba(0, 242, 255, 0.1);
+}
+
+.lz-btn:focus-visible {
+  outline: 2px solid var(--lz-focus);
+  outline-offset: 2px;
+}
+
+.lz-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.lz-btn--primary {
+  border-color: rgba(0, 242, 255, 0.45);
+  background: linear-gradient(135deg, rgba(0, 242, 255, 0.28), rgba(255, 0, 180, 0.18));
+  font-weight: 600;
+}
+
+.lz-btn--primary:hover:not(:disabled) {
+  box-shadow: 0 0 22px var(--lz-cyan-glow);
+  border-color: var(--lz-cyan);
+}
+
+.lz-field input,
+.lz-field textarea,
+.lz-field select {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: var(--lz-radius-md);
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  padding: 0.7rem 0.8rem;
+  font-size: var(--lz-size-body);
+  font-family: inherit;
+  width: 100%;
+  box-sizing: border-box;
+  transition:
+    border-color var(--lz-duration-fast) var(--lz-ease),
+    box-shadow var(--lz-duration-fast) var(--lz-ease);
+}
+
+.lz-field input:focus,
+.lz-field textarea:focus,
+.lz-field select:focus {
+  outline: none;
+  border-color: rgba(0, 242, 255, 0.5);
+  box-shadow: 0 0 0 1px var(--lz-focus);
+}
+
+.lz-field input:focus-visible,
+.lz-field textarea:focus-visible,
+.lz-field select:focus-visible {
+  outline: 2px solid var(--lz-focus);
+  outline-offset: 1px;
+}
+
+.lz-field input[aria-invalid='true'] {
+  border-color: var(--lz-danger-border);
+}

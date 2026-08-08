@@ -123,33 +123,50 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
+    gap: var(--lz-space-3, 1rem);
     padding: max(0.65rem, env(safe-area-inset-top, 0px)) max(1.25rem, env(safe-area-inset-right, 0px)) 0.85rem
       max(1.25rem, env(safe-area-inset-left, 0px));
     position: sticky;
     top: 0;
     z-index: 30;
+    font-family: var(--lz-font-body, inherit);
   }
   .consumer-header--overlay {
-    background: linear-gradient(180deg, rgba(5, 5, 8, 0.92) 0%, rgba(5, 5, 8, 0.55) 70%, transparent 100%);
+    background: linear-gradient(
+      180deg,
+      rgba(5, 5, 8, 0.92) 0%,
+      rgba(5, 5, 8, 0.55) 70%,
+      transparent 100%
+    );
     backdrop-filter: blur(8px);
   }
   .consumer-header--solid {
     background: rgba(5, 5, 8, 0.98);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid var(--lz-border, rgba(255, 255, 255, 0.08));
     backdrop-filter: blur(10px);
   }
   .consumer-header__brand {
     text-decoration: none;
     color: inherit;
     min-width: 0;
+    transition: opacity var(--lz-duration-fast, 160ms) var(--lz-ease, ease);
+  }
+  .consumer-header__brand:hover {
+    opacity: 0.92;
+  }
+  .consumer-header__brand:focus-visible {
+    outline: 2px solid var(--lz-focus, rgba(0, 242, 255, 0.65));
+    outline-offset: 3px;
+    border-radius: 2px;
   }
   .consumer-header__brand-mark {
     display: block;
-    font-size: clamp(0.68rem, 2.4vw, 0.78rem);
-    letter-spacing: 0.16em;
+    font-family: var(--lz-font-display, inherit);
+    font-size: var(--lz-size-brand, clamp(0.68rem, 2.4vw, 0.78rem));
+    letter-spacing: var(--lz-tracking-brand, 0.16em);
     text-transform: uppercase;
-    color: rgba(0, 242, 255, 0.92);
+    color: var(--lz-cyan-soft, rgba(0, 242, 255, 0.92));
+    font-weight: 600;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -159,34 +176,45 @@
     flex-shrink: 0;
   }
   .consumer-header__sign-in {
-    border: 1px solid rgba(255, 255, 255, 0.28);
+    border: 1px solid var(--lz-border-strong, rgba(255, 255, 255, 0.28));
     background: rgba(255, 255, 255, 0.06);
-    color: #fff;
-    border-radius: 999px;
+    color: var(--lz-ink, #fff);
+    border-radius: var(--lz-radius-pill, 999px);
     padding: 0.45rem 0.95rem;
     font-size: 0.82rem;
-    letter-spacing: 0.04em;
+    letter-spacing: var(--lz-tracking-label, 0.04em);
     cursor: pointer;
+    font-family: inherit;
+    transition:
+      border-color var(--lz-duration-fast, 160ms) var(--lz-ease, ease),
+      background var(--lz-duration-fast, 160ms) var(--lz-ease, ease);
   }
-  .consumer-header__sign-in:hover,
-  .consumer-header__sign-in:focus-visible {
+  .consumer-header__sign-in:hover {
     border-color: rgba(0, 242, 255, 0.55);
     background: rgba(0, 242, 255, 0.12);
-    outline: none;
+  }
+  .consumer-header__sign-in:focus-visible {
+    outline: 2px solid var(--lz-focus, rgba(0, 242, 255, 0.65));
+    outline-offset: 2px;
   }
   .consumer-header__profile {
     display: inline-flex;
     align-items: center;
-    gap: 0.45rem;
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    gap: var(--lz-space-2, 0.45rem);
+    border: 1px solid var(--lz-border, rgba(255, 255, 255, 0.18));
     background: rgba(255, 255, 255, 0.05);
-    color: #fff;
-    border-radius: 999px;
+    color: var(--lz-ink, #fff);
+    border-radius: var(--lz-radius-pill, 999px);
     padding: 0.25rem 0.55rem 0.25rem 0.25rem;
     cursor: pointer;
+    font-family: inherit;
+    transition: border-color var(--lz-duration-fast, 160ms) var(--lz-ease, ease);
+  }
+  .consumer-header__profile:hover {
+    border-color: rgba(0, 242, 255, 0.4);
   }
   .consumer-header__profile:focus-visible {
-    outline: 1px solid rgba(0, 242, 255, 0.65);
+    outline: 2px solid var(--lz-focus, rgba(0, 242, 255, 0.65));
     outline-offset: 2px;
   }
   .consumer-header__avatar {
@@ -198,7 +226,7 @@
     font-size: 0.78rem;
     font-weight: 600;
     background: linear-gradient(135deg, rgba(0, 242, 255, 0.35), rgba(255, 0, 180, 0.28));
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid var(--lz-border-strong, rgba(255, 255, 255, 0.2));
   }
   .consumer-header__profile-label {
     font-size: 0.8rem;

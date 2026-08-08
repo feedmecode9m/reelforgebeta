@@ -35,11 +35,13 @@
     flex-direction: column;
     width: 100%;
     min-height: 0;
+    color: var(--lz-ink, #f4f4f5);
+    font-family: var(--lz-font-body, inherit);
   }
   .consumer-chrome--fill {
     min-height: 100vh;
     min-height: 100dvh;
-    background: #050508;
+    background: var(--lz-void, #050508);
   }
   .consumer-chrome__body {
     flex: 1 1 auto;

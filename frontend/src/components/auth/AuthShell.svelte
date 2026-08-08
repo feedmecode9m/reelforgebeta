@@ -135,110 +135,119 @@
 
 <ConsumerChrome brand={brand} headerVariant="solid" showFooter={true} fillViewport={true}>
   <section class="auth-shell" aria-label="Authentication">
-    <div class="auth-card">
-      {#if $isAuthenticated && $currentUser}
-        <h1 class="auth-title">Signed in</h1>
-        <p class="auth-copy">{$currentUser.email || 'Signed in'}</p>
-        <div class="auth-actions">
-          <button type="button" class="auth-btn auth-btn--primary" on:click={goAfterAuth}>
-            Continue
-          </button>
-          <button type="button" class="auth-btn" on:click={goHome}>Home</button>
-          <button type="button" class="auth-btn" on:click={handleLogout} disabled={busy}>Sign Out</button>
-        </div>
-      {:else}
-        <h1 class="auth-title">{title}</h1>
-        <p class="auth-copy">Sign in to continue watching</p>
-        <p class="auth-copy auth-copy--sub">Your personal cinema experience</p>
-        <form class="auth-form" on:submit|preventDefault={submit} novalidate>
-          <label class="auth-field">
-            <span>Email</span>
-            <input
-              type="email"
-              autocomplete="email"
-              inputmode="email"
-              bind:value={email}
-              disabled={submitting}
-              on:blur={() => (emailTouched = true)}
-              aria-invalid={Boolean(emailError)}
-              aria-describedby={emailError ? 'auth-email-hint' : undefined}
-            />
-            {#if emailError}
-              <span id="auth-email-hint" class="auth-field-hint">{emailError}</span>
-            {/if}
-          </label>
-          <label class="auth-field">
-            <span>Password</span>
-            <div class="auth-password-row">
-              {#if showPassword}
-                <input
-                  type="text"
-                  autocomplete={mode === 'register' ? 'new-password' : 'current-password'}
-                  bind:value={password}
-                  minlength="8"
-                  disabled={submitting}
-                  on:blur={() => (passwordTouched = true)}
-                  aria-invalid={Boolean(passwordError)}
-                  aria-describedby={passwordError ? 'auth-password-hint' : undefined}
-                />
-              {:else}
-                <input
-                  type="password"
-                  autocomplete={mode === 'register' ? 'new-password' : 'current-password'}
-                  bind:value={password}
-                  minlength="8"
-                  disabled={submitting}
-                  on:blur={() => (passwordTouched = true)}
-                  aria-invalid={Boolean(passwordError)}
-                  aria-describedby={passwordError ? 'auth-password-hint' : undefined}
-                />
-              {/if}
-              <button
-                type="button"
-                class="auth-password-toggle"
-                on:click={() => (showPassword = !showPassword)}
-                disabled={submitting}
-                aria-pressed={showPassword}
-              >
-                {showPassword ? 'Hide' : 'Show'}
-              </button>
-            </div>
-            {#if passwordError}
-              <span id="auth-password-hint" class="auth-field-hint">{passwordError}</span>
-            {/if}
-          </label>
-          {#if localError || ($authError && !localError)}
-            <p class="auth-error" role="alert">
-              {localError ||
-                mapAuthErrorMessage({ message: $authError, code: $authError }, mode)}
-            </p>
-          {/if}
-          <button
-            type="submit"
-            class="auth-btn auth-btn--primary"
-            disabled={submitting || formBlocked}
-          >
-            {#if submitting}
-              {mode === 'register' ? 'Creating account…' : 'Signing in…'}
-            {:else}
-              {mode === 'register' ? 'Create account' : 'Sign in'}
-            {/if}
-          </button>
-        </form>
-        <p class="auth-switch">
-          {#if mode === 'login'}
-            New here?
-            <button type="button" class="auth-link" on:click={() => switchMode('register')} disabled={submitting}>
-              Create an account
-            </button>
-          {:else}
-            Already have an account?
-            <button type="button" class="auth-link" on:click={() => switchMode('login')} disabled={submitting}>
-              Sign in
-            </button>
-          {/if}
-        </p>
+    <div class="auth-stage">
+      {#if !($isAuthenticated && $currentUser)}
+        <header class="auth-hero" aria-hidden="false">
+          <p class="auth-hero__brand">{brand}</p>
+          <p class="auth-hero__line"></p>
+        </header>
       {/if}
+
+      <div class="auth-card">
+        {#if $isAuthenticated && $currentUser}
+          <h1 class="auth-title">Signed in</h1>
+          <p class="auth-copy">{$currentUser.email || 'Signed in'}</p>
+          <div class="auth-actions">
+            <button type="button" class="auth-btn auth-btn--primary" on:click={goAfterAuth}>
+              Continue
+            </button>
+            <button type="button" class="auth-btn" on:click={goHome}>Home</button>
+            <button type="button" class="auth-btn" on:click={handleLogout} disabled={busy}>Sign Out</button>
+          </div>
+        {:else}
+          <h1 class="auth-title">{title}</h1>
+          <p class="auth-copy">Sign in to continue watching</p>
+          <p class="auth-copy auth-copy--sub">Your personal cinema experience</p>
+          <form class="auth-form" on:submit|preventDefault={submit} novalidate>
+            <label class="auth-field">
+              <span>Email</span>
+              <input
+                type="email"
+                autocomplete="email"
+                inputmode="email"
+                bind:value={email}
+                disabled={submitting}
+                on:blur={() => (emailTouched = true)}
+                aria-invalid={Boolean(emailError)}
+                aria-describedby={emailError ? 'auth-email-hint' : undefined}
+              />
+              {#if emailError}
+                <span id="auth-email-hint" class="auth-field-hint">{emailError}</span>
+              {/if}
+            </label>
+            <label class="auth-field">
+              <span>Password</span>
+              <div class="auth-password-row">
+                {#if showPassword}
+                  <input
+                    type="text"
+                    autocomplete={mode === 'register' ? 'new-password' : 'current-password'}
+                    bind:value={password}
+                    minlength="8"
+                    disabled={submitting}
+                    on:blur={() => (passwordTouched = true)}
+                    aria-invalid={Boolean(passwordError)}
+                    aria-describedby={passwordError ? 'auth-password-hint' : undefined}
+                  />
+                {:else}
+                  <input
+                    type="password"
+                    autocomplete={mode === 'register' ? 'new-password' : 'current-password'}
+                    bind:value={password}
+                    minlength="8"
+                    disabled={submitting}
+                    on:blur={() => (passwordTouched = true)}
+                    aria-invalid={Boolean(passwordError)}
+                    aria-describedby={passwordError ? 'auth-password-hint' : undefined}
+                  />
+                {/if}
+                <button
+                  type="button"
+                  class="auth-password-toggle"
+                  on:click={() => (showPassword = !showPassword)}
+                  disabled={submitting}
+                  aria-pressed={showPassword}
+                >
+                  {showPassword ? 'Hide' : 'Show'}
+                </button>
+              </div>
+              {#if passwordError}
+                <span id="auth-password-hint" class="auth-field-hint">{passwordError}</span>
+              {/if}
+            </label>
+            {#if localError || ($authError && !localError)}
+              <p class="auth-error" role="alert">
+                {localError ||
+                  mapAuthErrorMessage({ message: $authError, code: $authError }, mode)}
+              </p>
+            {/if}
+            <button
+              type="submit"
+              class="auth-btn auth-btn--primary"
+              disabled={submitting || formBlocked}
+            >
+              {#if submitting}
+                {mode === 'register' ? 'Creating account…' : 'Signing in…'}
+              {:else}
+                {mode === 'register' ? 'Create account' : 'Sign in'}
+              {/if}
+            </button>
+          </form>
+          <p class="auth-switch">
+            {#if mode === 'login'}
+              New here?
+              <button type="button" class="auth-link" on:click={() => switchMode('register')} disabled={submitting}>
+                Create an account
+              </button>
+            {:else}
+              Already have an account?
+              <button type="button" class="auth-link" on:click={() => switchMode('login')} disabled={submitting}>
+                Sign in
+              </button>
+            {/if}
+          </p>
+        {/if}
+      </div>
     </div>
   </section>
 </ConsumerChrome>
@@ -249,132 +258,241 @@
     min-height: calc(100dvh - 5rem);
     display: grid;
     place-items: center;
-    padding: 1.5rem 1rem 2rem;
-    background:
-      radial-gradient(ellipse at 20% 0%, rgba(0, 242, 255, 0.12), transparent 55%),
-      radial-gradient(ellipse at 80% 100%, rgba(255, 0, 180, 0.1), transparent 50%),
-      transparent;
-    color: #f4f4f5;
+    padding: var(--lz-page-pad-y, 1.5rem) var(--lz-page-pad-x, 1.25rem) 2rem;
+    background: var(--lz-atmosphere, transparent);
+    color: var(--lz-ink, #f4f4f5);
+    font-family: var(--lz-font-body, inherit);
   }
+
+  .auth-stage {
+    width: min(440px, 100%);
+    display: grid;
+    gap: var(--lz-space-5, 1.75rem);
+    justify-items: center;
+    animation: lz-fade-rise var(--lz-duration-slow, 480ms) var(--lz-ease, ease) both;
+  }
+
+  .auth-hero {
+    text-align: center;
+    width: 100%;
+  }
+
+  .auth-hero__brand {
+    margin: 0;
+    font-family: var(--lz-font-display, inherit);
+    font-size: var(--lz-size-brand-hero, clamp(0.95rem, 3.2vw, 1.15rem));
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--lz-cyan-soft, rgba(0, 242, 255, 0.9));
+    font-weight: 600;
+    text-shadow: 0 0 32px var(--lz-cyan-glow, rgba(0, 242, 255, 0.28));
+    animation: lz-brand-shimmer 5.5s var(--lz-ease, ease) infinite;
+  }
+
+  .auth-hero__line {
+    margin: 0.85rem auto 0;
+    width: min(12rem, 48%);
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--lz-cyan-glow, rgba(0, 242, 255, 0.45)),
+      transparent
+    );
+    border: 0;
+  }
+
   .auth-card {
-    width: min(420px, 100%);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 12px;
-    padding: 1.75rem 1.5rem;
-    background: rgba(16, 18, 28, 0.92);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+    width: 100%;
+    border: 1px solid var(--lz-border, rgba(255, 255, 255, 0.12));
+    border-radius: var(--lz-radius-lg, 12px);
+    padding: var(--lz-space-5, 1.75rem) var(--lz-space-4, 1.5rem);
+    background: var(--lz-panel, rgba(16, 18, 28, 0.92));
+    box-shadow: var(--lz-shadow-card, 0 20px 60px rgba(0, 0, 0, 0.45));
   }
+
   .auth-title {
-    margin: 0 0 0.4rem;
-    font-size: 1.55rem;
+    margin: 0 0 var(--lz-space-1, 0.4rem);
+    font-size: var(--lz-size-title, 1.55rem);
     font-weight: 650;
+    letter-spacing: -0.01em;
   }
+
   .auth-copy {
     margin: 0 0 0.35rem;
-    color: rgba(255, 255, 255, 0.62);
+    color: var(--lz-ink-muted, rgba(255, 255, 255, 0.55));
     font-size: 0.92rem;
-    line-height: 1.45;
+    line-height: var(--lz-leading, 1.5);
   }
+
   .auth-copy--sub {
-    margin: 0 0 1.25rem;
-    color: rgba(255, 255, 255, 0.48);
-    font-size: 0.85rem;
+    margin: 0 0 var(--lz-space-4, 1.25rem);
+    color: var(--lz-ink-dim, rgba(255, 255, 255, 0.4));
+    font-size: var(--lz-size-small, 0.85rem);
   }
+
   .auth-form {
     display: grid;
-    gap: 0.85rem;
+    gap: var(--lz-space-3, 0.85rem);
   }
+
   .auth-field {
     display: grid;
-    gap: 0.35rem;
+    gap: var(--lz-space-1, 0.35rem);
     font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--lz-ink-soft, rgba(255, 255, 255, 0.72));
   }
+
   .auth-field input {
     border: 1px solid rgba(255, 255, 255, 0.16);
-    border-radius: 8px;
+    border-radius: var(--lz-radius-md, 10px);
     background: rgba(0, 0, 0, 0.35);
     color: #fff;
     padding: 0.7rem 0.8rem;
-    font-size: 0.95rem;
+    font-size: var(--lz-size-body, 0.95rem);
     width: 100%;
     box-sizing: border-box;
+    font-family: inherit;
+    transition:
+      border-color var(--lz-duration-fast, 160ms) var(--lz-ease, ease),
+      box-shadow var(--lz-duration-fast, 160ms) var(--lz-ease, ease);
   }
+
   .auth-field input:focus {
-    outline: 1px solid rgba(0, 242, 255, 0.65);
-    border-color: rgba(0, 242, 255, 0.45);
+    outline: none;
+    border-color: rgba(0, 242, 255, 0.5);
+    box-shadow: 0 0 0 1px var(--lz-focus, rgba(0, 242, 255, 0.65));
   }
+
+  .auth-field input:focus-visible {
+    outline: 2px solid var(--lz-focus, rgba(0, 242, 255, 0.65));
+    outline-offset: 1px;
+  }
+
   .auth-field input[aria-invalid='true'] {
-    border-color: rgba(251, 113, 133, 0.65);
+    border-color: var(--lz-danger-border, rgba(251, 113, 133, 0.65));
   }
+
   .auth-password-row {
     display: flex;
-    gap: 0.45rem;
+    gap: var(--lz-space-2, 0.45rem);
     align-items: stretch;
   }
+
   .auth-password-row input {
     flex: 1;
     min-width: 0;
   }
+
   .auth-password-toggle {
     flex-shrink: 0;
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    border: 1px solid var(--lz-border-strong, rgba(255, 255, 255, 0.18));
     background: rgba(255, 255, 255, 0.06);
-    color: rgba(255, 255, 255, 0.85);
-    border-radius: 8px;
+    color: var(--lz-ink-soft, rgba(255, 255, 255, 0.85));
+    border-radius: var(--lz-radius-md, 10px);
     padding: 0 0.75rem;
     font-size: 0.78rem;
     cursor: pointer;
+    font-family: inherit;
+    transition: border-color var(--lz-duration-fast, 160ms) var(--lz-ease, ease);
   }
+
+  .auth-password-toggle:hover:not(:disabled) {
+    border-color: rgba(0, 242, 255, 0.4);
+  }
+
+  .auth-password-toggle:focus-visible {
+    outline: 2px solid var(--lz-focus, rgba(0, 242, 255, 0.65));
+    outline-offset: 2px;
+  }
+
   .auth-password-toggle:disabled {
     opacity: 0.55;
     cursor: not-allowed;
   }
+
   .auth-field-hint {
-    font-size: 0.75rem;
-    color: #fda4af;
+    font-size: var(--lz-size-caption, 0.75rem);
+    color: var(--lz-danger, #fda4af);
   }
+
   .auth-error {
     margin: 0;
-    color: #fda4af;
-    font-size: 0.85rem;
+    color: var(--lz-danger, #fda4af);
+    font-size: var(--lz-size-small, 0.85rem);
   }
+
   .auth-actions {
     display: flex;
-    gap: 0.65rem;
+    gap: var(--lz-space-2, 0.65rem);
     flex-wrap: wrap;
   }
+
   .auth-btn {
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid var(--lz-border-strong, rgba(255, 255, 255, 0.2));
     background: rgba(255, 255, 255, 0.06);
     color: #fff;
-    border-radius: 8px;
+    border-radius: var(--lz-radius-md, 10px);
     padding: 0.7rem 1rem;
     font-size: 0.9rem;
     cursor: pointer;
+    font-family: inherit;
+    transition:
+      border-color var(--lz-duration-fast, 160ms) var(--lz-ease, ease),
+      background var(--lz-duration-fast, 160ms) var(--lz-ease, ease),
+      box-shadow var(--lz-duration-fast, 160ms) var(--lz-ease, ease),
+      opacity var(--lz-duration-fast, 160ms) var(--lz-ease, ease);
   }
-  .auth-btn--primary {
-    background: linear-gradient(135deg, rgba(0, 242, 255, 0.25), rgba(255, 0, 180, 0.2));
+
+  .auth-btn:hover:not(:disabled) {
     border-color: rgba(0, 242, 255, 0.45);
+    background: rgba(0, 242, 255, 0.1);
   }
+
+  .auth-btn:focus-visible {
+    outline: 2px solid var(--lz-focus, rgba(0, 242, 255, 0.65));
+    outline-offset: 2px;
+  }
+
+  .auth-btn--primary {
+    background: linear-gradient(135deg, rgba(0, 242, 255, 0.28), rgba(255, 0, 180, 0.18));
+    border-color: rgba(0, 242, 255, 0.45);
+    font-weight: 600;
+  }
+
+  .auth-btn--primary:hover:not(:disabled) {
+    box-shadow: 0 0 22px var(--lz-cyan-glow, rgba(0, 242, 255, 0.28));
+    border-color: var(--lz-cyan, #00f2ff);
+  }
+
   .auth-btn:disabled {
     opacity: 0.55;
     cursor: not-allowed;
   }
+
   .auth-switch {
-    margin: 1.1rem 0 0;
-    font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.55);
+    margin: var(--lz-space-4, 1.1rem) 0 0;
+    font-size: var(--lz-size-small, 0.85rem);
+    color: var(--lz-ink-muted, rgba(255, 255, 255, 0.55));
   }
+
   .auth-link {
     border: 0;
     background: none;
-    color: #67e8f9;
+    color: var(--lz-cyan-soft, #67e8f9);
     cursor: pointer;
     padding: 0;
     font: inherit;
     text-decoration: underline;
+    text-underline-offset: 0.15em;
   }
+
+  .auth-link:focus-visible {
+    outline: 2px solid var(--lz-focus, rgba(0, 242, 255, 0.65));
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
   .auth-link:disabled {
     opacity: 0.55;
     cursor: not-allowed;

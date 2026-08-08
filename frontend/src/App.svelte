@@ -188,25 +188,25 @@
     display: grid;
     place-content: center;
     justify-items: center;
-    gap: 0.65rem;
-    padding: 2rem 1rem;
-    background:
-      radial-gradient(ellipse at 20% 0%, rgba(0, 242, 255, 0.1), transparent 55%),
-      radial-gradient(ellipse at 80% 100%, rgba(255, 0, 180, 0.08), transparent 50%),
-      #050508;
-    color: rgba(255, 255, 255, 0.65);
+    gap: var(--lz-space-2, 0.65rem);
+    padding: var(--lz-space-6, 2rem) var(--lz-page-pad-x, 1rem);
+    background: var(--lz-atmosphere, #050508);
+    color: var(--lz-ink-muted, rgba(255, 255, 255, 0.65));
     text-align: center;
+    font-family: var(--lz-font-body, inherit);
   }
   .auth-boot__brand {
     margin: 0;
-    font-size: 0.72rem;
-    letter-spacing: 0.16em;
+    font-family: var(--lz-font-display, inherit);
+    font-size: var(--lz-size-brand, 0.72rem);
+    letter-spacing: var(--lz-tracking-brand, 0.16em);
     text-transform: uppercase;
-    color: rgba(0, 242, 255, 0.9);
+    color: var(--lz-cyan-soft, rgba(0, 242, 255, 0.9));
+    font-weight: 600;
   }
   .auth-boot__msg {
     margin: 0;
-    font-size: 0.95rem;
-    color: rgba(255, 255, 255, 0.58);
+    font-size: var(--lz-size-body, 0.95rem);
+    color: var(--lz-ink-muted, rgba(255, 255, 255, 0.58));
   }
 </style>
