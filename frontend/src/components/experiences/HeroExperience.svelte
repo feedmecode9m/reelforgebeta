@@ -20,6 +20,7 @@
     logHeroImagePipeline,
     logHeroIntelligenceDiag,
     resolveHeroBackgroundPresentation,
+    resolveHeroPlaybackUrl,
     saveHeroManagerConfig
   } from '../../lib/hero/heroIntelligence.js';
   import { buildHeroAssetRegistry, isVideoHeroAssetType } from '../../lib/hero/heroAssetBridge.js';
@@ -230,14 +231,25 @@ export let sanitizeViewer = false;
     const persisted = loadHeroManagerConfig();
     const inMemory = heroManagerConfig || persisted;
     const heroAssetId = String(persisted.heroAssetId || inMemory.heroAssetId || '').trim();
-    const mediaUrl = String(
-      persisted.mediaUrl ||
-        persisted.backgroundMediaUrl ||
-        inMemory.mediaUrl ||
-        inMemory.backgroundMediaUrl ||
-        ''
+    // Absolute server media must never lose to a stripped local relative path.
+    const persistedMedia = String(
+      persisted.mediaUrl || persisted.backgroundMediaUrl || ''
     ).trim();
-    const posterUrl = String(persisted.posterUrl || inMemory.posterUrl || '').trim();
+    const memoryMedia = String(
+      inMemory.mediaUrl || inMemory.backgroundMediaUrl || ''
+    ).trim();
+    let mediaUrl = '';
+    if (/^https?:\/\//i.test(persistedMedia)) mediaUrl = persistedMedia;
+    else if (/^https?:\/\//i.test(memoryMedia)) mediaUrl = memoryMedia;
+    else mediaUrl = persistedMedia || memoryMedia;
+    mediaUrl = resolveHeroPlaybackUrl(mediaUrl, {
+      source: 'hero_presentation_config',
+      silent: true
+    });
+    const posterUrl = resolveHeroPlaybackUrl(
+      String(persisted.posterUrl || inMemory.posterUrl || '').trim(),
+      { source: 'hero_presentation_poster', silent: true }
+    );
     const persistedSource = String(persisted.backgroundSource || '').trim();
     const inMemorySource = String(inMemory.backgroundSource || '').trim();
     if (persistedSource === 'none' || inMemorySource === 'none') {
@@ -266,7 +278,7 @@ export let sanitizeViewer = false;
       heroAssetId,
       mediaUrl,
       posterUrl,
-      backgroundMediaUrl: mediaUrl || persisted.backgroundMediaUrl || inMemory.backgroundMediaUrl || '',
+      backgroundMediaUrl: mediaUrl,
       backgroundSource
     };
   }
@@ -326,24 +338,47 @@ export let sanitizeViewer = false;
       heroBackgroundPresentationVideoUrl: heroBackgroundPresentation.videoUrl || null
     });
   }
+  /** Prefer durable absolute media over origin-stripped relative /videos paths. */
+  function pickDurableMediaCandidate(...candidates) {
+    const list = candidates.map((c) => String(c || '').trim()).filter(Boolean);
+    const absolute = list.find((u) => /^https?:\/\//i.test(u) || u.startsWith('blob:') || u.startsWith('data:'));
+    return absolute || list[0] || '';
+  }
+
   $: heroUsesImageBackground =
     heroBackgroundPresentation.backgroundSource === 'custom_image' &&
     Boolean(heroBackgroundPresentation.imageUrl);
   $: heroBlankBackdrop = heroBackgroundPresentation.backgroundSource === 'none';
-  $: heroRenderVideo = heroBlankBackdrop
-    ? ''
-    : heroBackgroundPresentation.backgroundSource === 'custom_video' &&
-        heroBackgroundPresentation.videoUrl
-      ? heroBackgroundPresentation.videoUrl
-      : heroUsesImageBackground
-        ? ''
-        : $HERO_BACKGROUND_VIDEO;
-  $: heroRenderImage = heroBlankBackdrop
-    ? ''
-    : heroBackgroundPresentation.backgroundSource === 'custom_image' &&
-        heroBackgroundPresentation.imageUrl
-      ? heroBackgroundPresentation.imageUrl
-      : $HERO_POSTER_IMAGE;
+  $: heroRenderVideo = (() => {
+    if (heroBlankBackdrop) return '';
+    if (heroUsesImageBackground) return '';
+    const raw = pickDurableMediaCandidate(
+      heroBackgroundPresentation.backgroundSource === 'custom_video'
+        ? heroBackgroundPresentation.videoUrl
+        : '',
+      heroBackgroundPresentation.mediaUrl,
+      $HERO_BACKGROUND_VIDEO
+    );
+    return resolveHeroPlaybackUrl(raw, {
+      source: 'hero_render_video',
+      backendOrigin: String(ReelforgeConfig.BACKEND_URL || ReelforgeConfig.ASSET_BASE_URL || '').replace(/\/+$/, '')
+    });
+  })();
+  $: heroRenderImage = (() => {
+    if (heroBlankBackdrop) return '';
+    const raw = pickDurableMediaCandidate(
+      heroBackgroundPresentation.backgroundSource === 'custom_image'
+        ? heroBackgroundPresentation.imageUrl
+        : '',
+      heroBackgroundPresentation.imageUrl,
+      $HERO_POSTER_IMAGE
+    );
+    return resolveHeroPlaybackUrl(raw, {
+      source: 'hero_render_image',
+      silent: true,
+      backendOrigin: String(ReelforgeConfig.BACKEND_URL || ReelforgeConfig.ASSET_BASE_URL || '').replace(/\/+$/, '')
+    });
+  })();
   $: carouselSlides = buildHeroCarouselSlides(feedReels, {
     seriesId: heroSelection?.seriesId || 'series-neon-vengeance',
     limit: 7
@@ -429,18 +464,35 @@ export let sanitizeViewer = false;
   })();
   $: prioritizedHeroVideo = heroBlankBackdrop
     ? ''
-    : heroStylePrefersVideo
-      ? String(heroRenderVideo || $HERO_BACKGROUND_VIDEO || heroSlideVideo || '').trim()
-      : heroStoryMediaPriorityEnabled
-        ? String(heroRenderVideo || heroSlideVideo || '').trim()
-        : String(heroSlideVideo || heroRenderVideo || '').trim();
+    : resolveHeroPlaybackUrl(
+        pickDurableMediaCandidate(
+          ...(heroStylePrefersVideo
+            ? [heroRenderVideo, $HERO_BACKGROUND_VIDEO, heroSlideVideo]
+            : heroStoryMediaPriorityEnabled
+              ? [heroRenderVideo, heroSlideVideo]
+              : [heroSlideVideo, heroRenderVideo])
+        ),
+        {
+          source: 'prioritized_hero_video',
+          backendOrigin: String(ReelforgeConfig.BACKEND_URL || ReelforgeConfig.ASSET_BASE_URL || '').replace(/\/+$/, '')
+        }
+      );
   $: prioritizedHeroImage = heroBlankBackdrop
     ? ''
-    : heroStylePrefersVideo
-      ? String(heroRenderImage || $HERO_POSTER_IMAGE || '').trim()
-      : heroStoryMediaPriorityEnabled
-        ? String(heroRenderImage || heroSlideImage || '').trim()
-        : String(heroSlideImage || heroRenderImage || '').trim();
+    : resolveHeroPlaybackUrl(
+        pickDurableMediaCandidate(
+          ...(heroStylePrefersVideo
+            ? [heroRenderImage, $HERO_POSTER_IMAGE]
+            : heroStoryMediaPriorityEnabled
+              ? [heroRenderImage, heroSlideImage]
+              : [heroSlideImage, heroRenderImage])
+        ),
+        {
+          source: 'prioritized_hero_image',
+          silent: true,
+          backendOrigin: String(ReelforgeConfig.BACKEND_URL || ReelforgeConfig.ASSET_BASE_URL || '').replace(/\/+$/, '')
+        }
+      );
   $: heroVideoPoster =
     heroBlankBackdrop
       ? ''

@@ -12,6 +12,10 @@ import {
     sanitizeHeroConfigLocationIntelligence,
     logHeroSource
 } from '../src/lib/hero/heroPresentationCore.js';
+import {
+    pickHeroBackgroundMediaUrl,
+    resolveHeroPlaybackUrl
+} from '../src/lib/hero/heroPlaybackUrl.js';
 
 const EXPECTED_HERO_ASSET_ID = '3894107e-ae44-43c5-af72-b3f5d5e0ad90';
 
@@ -139,63 +143,52 @@ console.log('\n[fresh device: no vault — server mediaUrl is enough to resolve]
 const R2 = 'https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/3894107e-ae44-43c5-af72-b3f5d5e0ad90.mp4';
 const STALE = 'https://reelforge-deploy-production.up.railway.app/videos/3894107e-ae44-43c5-af72-b3f5d5e0ad90.mp4';
 
-/** inline pure pick (mirrors heroIntelligence.pickHeroBackgroundMediaUrl contract) */
-function isStaleLocalVideosMediaUrl(url) {
-    const raw = String(url || '').trim();
-    if (!raw) return false;
-    if (raw.startsWith('/videos/')) return true;
-    try {
-        const u = new URL(raw);
-        if (!u.pathname.startsWith('/videos/')) return false;
-        const host = u.hostname.toLowerCase();
-        return (
-            host.includes('railway.app') ||
-            host.includes('localhost') ||
-            host.includes('127.0.0.1') ||
-            host.endsWith('.netlify.app')
-        );
-    } catch {
-        return false;
-    }
-}
-function pickHeroBackgroundMediaUrl(parts = {}) {
-    const server = String(parts.serverMediaUrl || '').trim();
-    const record = String(parts.recordMediaUrl || '').trim();
-    const catalog = String(parts.catalogMediaUrl || '').trim();
-    if (server && !isStaleLocalVideosMediaUrl(server)) {
-        return { mediaUrl: server, source: 'server_presentation' };
-    }
-    if (record && !isStaleLocalVideosMediaUrl(record)) {
-        return { mediaUrl: record, source: 'hero_record' };
-    }
-    if (catalog) {
-        return {
-            mediaUrl: catalog,
-            source: server || record ? 'catalog_heal' : 'vault_catalog'
-        };
-    }
-    if (server) return { mediaUrl: server, source: 'server_presentation_stale' };
-    if (record) return { mediaUrl: record, source: 'hero_record_stale' };
-    return { mediaUrl: '', source: 'unavailable' };
-}
-
 const pureServer = pickHeroBackgroundMediaUrl({ serverMediaUrl: R2 });
 assertEq('R2 server media wins without vault', pureServer.mediaUrl, R2);
 assertEq('source server_presentation', pureServer.source, 'server_presentation');
 
-const heal = pickHeroBackgroundMediaUrl({
+// Absolute railway/presentation URL wins over relative catalog path.
+const absOverRel = pickHeroBackgroundMediaUrl({
     serverMediaUrl: STALE,
-    catalogMediaUrl: R2
+    catalogMediaUrl: '/videos/3894107e-ae44-43c5-af72-b3f5d5e0ad90.mp4'
 });
-assertEq('stale railway /videos healed from catalog', heal.mediaUrl, R2);
-assertEq('source catalog_heal', heal.source, 'catalog_heal');
+assertEq('absolute server beats relative catalog', absOverRel.mediaUrl, STALE);
 
 const emptyDevice = pickHeroBackgroundMediaUrl({
     serverMediaUrl: STALE,
     recordMediaUrl: '',
     catalogMediaUrl: ''
 });
-assertEq('stale still returned if no catalog', emptyDevice.mediaUrl, STALE);
+assertEq('absolute server alone still used', emptyDevice.mediaUrl, STALE);
+
+const lsCannotBeatServer = pickHeroBackgroundMediaUrl({
+    serverMediaUrl: R2,
+    localStorageMediaUrl: '/videos/legacy-local.mp4'
+});
+assertEq('localStorage never overrides server', lsCannotBeatServer.mediaUrl, R2);
+assertEq('pick source remains server', lsCannotBeatServer.source, 'server_presentation');
+
+console.log('\n[resolveHeroPlaybackUrl never strips absolute origin]');
+const absIn =
+    'https://reelforge-deploy-production.up.railway.app/videos/test.mp4';
+const absOut = resolveHeroPlaybackUrl(absIn, {
+    backendOrigin: 'https://reelforge-deploy-production.up.railway.app',
+    silent: true
+});
+assertEq('absolute railway unchanged', absOut, absIn);
+
+const relOut = resolveHeroPlaybackUrl('/videos/test.mp4', {
+    backendOrigin: 'https://reelforge-deploy-production.up.railway.app',
+    silent: true
+});
+assertEq(
+    'relative /videos joins backend origin',
+    relOut,
+    'https://reelforge-deploy-production.up.railway.app/videos/test.mp4'
+);
+
+const r2Out = resolveHeroPlaybackUrl(R2, { silent: true });
+assertEq('R2 URL unchanged', r2Out, R2);
 
 // mapServer patch still exposes media for empty cache devices
 const noVaultPatch = mapServerPresentationToManagerPatch({

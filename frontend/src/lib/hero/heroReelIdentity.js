@@ -40,6 +40,18 @@ const HERO_MANAGER_STORAGE_KEY = LEGACY_HERO_MANAGER_KEY;
  */
 
 /**
+ * Keep durable absolute media URLs for hero identity (do not strip origin).
+ * @param {string} value
+ * @returns {string}
+ */
+function durableHeroMediaUrl(value) {
+    const s = String(value || '').trim();
+    if (!s) return '';
+    if (s.startsWith('blob:') || s.startsWith('data:') || /^https?:\/\//i.test(s)) return s;
+    return toRelativeMediaPath(s) || s;
+}
+
+/**
  * @param {Record<string, unknown>} raw
  * @param {'image' | 'video'} mediaKind
  * @returns {HeroReel | null}
@@ -53,11 +65,11 @@ export function heroReelFromUploadResponse(raw, mediaKind = 'image') {
         return null;
     }
 
-    const url = toRelativeMediaPath(String(normalized.url || ''));
+    const url = durableHeroMediaUrl(String(normalized.url || ''));
     if (!url) {
         reelResExit('heroReelFromUploadResponse', t0, {
             result: null,
-            reason: 'empty_url_after_toRelativeMediaPath',
+            reason: 'empty_url_after_normalize',
             normalizedUrl: normalized.url
         });
         return null;
@@ -72,7 +84,7 @@ export function heroReelFromUploadResponse(raw, mediaKind = 'image') {
         normalized.thumbnailUrl || normalized.thumbnail_url || normalized.thumbnailPath || ''
     ).trim();
     const thumbnail =
-        mediaKind === 'video' && thumbnailRaw ? toRelativeMediaPath(thumbnailRaw) : '';
+        mediaKind === 'video' && thumbnailRaw ? durableHeroMediaUrl(thumbnailRaw) : '';
 
     const result = {
         id: String(normalized.id),
@@ -199,10 +211,8 @@ export function loadHeroReel() {
 export function saveHeroReel(reel) {
     if (typeof window === 'undefined' || !reel?.id || !reel?.url) return null;
 
-    const url = toRelativeMediaPath(reel.url) || String(reel.url || '').trim();
-    const thumbnail = reel.thumbnail
-        ? toRelativeMediaPath(reel.thumbnail) || String(reel.thumbnail).trim()
-        : undefined;
+    const url = durableHeroMediaUrl(reel.url);
+    const thumbnail = reel.thumbnail ? durableHeroMediaUrl(reel.thumbnail) : undefined;
 
     const normalizedReel = {
         id: String(reel.id).trim(),

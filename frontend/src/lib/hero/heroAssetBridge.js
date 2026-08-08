@@ -63,7 +63,19 @@ export function isVideoHeroAssetType(assetType) {
 export function normalizeHeroAssetRecord(item, options = {}) {
     if (!item || typeof item !== 'object') return null;
     const mediaCandidate = getMediaCandidate(item);
-    const mediaUrl = mediaCandidate ? toRelativeMediaPath(mediaCandidate) || mediaCandidate : '';
+    // Absolute hosts stay absolute — relative rewrite only for bare/local paths.
+    let mediaUrl = '';
+    if (mediaCandidate) {
+        if (
+            /^https?:\/\//i.test(mediaCandidate) ||
+            mediaCandidate.startsWith('blob:') ||
+            mediaCandidate.startsWith('data:')
+        ) {
+            mediaUrl = mediaCandidate;
+        } else {
+            mediaUrl = toRelativeMediaPath(mediaCandidate) || mediaCandidate;
+        }
+    }
     if (!mediaUrl) return null;
 
     const thumbnailUrl =

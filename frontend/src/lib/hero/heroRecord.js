@@ -573,9 +573,10 @@ export function applyHeroRecordToStores(record, stores = {}) {
 
     if (active.mediaKind === 'video') {
         const videoUrl = active.videoUrl || active.mediaUrl;
-        stores.setVideo?.(videoUrl);
+        // Preserve absolute playback URLs on store write (no relative rewrite).
+        stores.setVideo?.(String(videoUrl || '').trim());
         if (active.posterUrl) {
-            stores.setPoster?.(active.posterUrl);
+            stores.setPoster?.(String(active.posterUrl || '').trim());
         }
         stores.setFailed?.(false);
         return true;

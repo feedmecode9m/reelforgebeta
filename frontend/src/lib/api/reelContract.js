@@ -108,16 +108,10 @@ export function resolveMediaUrl(url, kind = 'media', context = kind) {
         return trimmed;
     }
 
+    // Absolute http(s) — never rewrite to relative /videos (breaks cross-host hero media).
     if (/^https?:\/\//i.test(trimmed)) {
-        try {
-            const u = new URL(trimmed);
-            if (!u.pathname.startsWith('/videos/') && !u.pathname.startsWith('/thumbs/')) {
-                logResolvedMediaUrl(kind, trimmed, trimmed, `${context}:external`);
-                return trimmed;
-            }
-        } catch {
-            /* fall through to relative resolution */
-        }
+        logResolvedMediaUrl(kind, trimmed, trimmed, `${context}:absolute_passthrough`);
+        return trimmed;
     }
 
     const relative = toRelativeMediaPath(trimmed);

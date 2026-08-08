@@ -17,7 +17,12 @@ import { getUnreadCount } from '../notifications/notificationCenter.js';
 import { computeProductionReadiness, computeSeriesHealth } from '../series/productionHealth.js';
 import { getWorkflowOperationsSnapshot, getWorkflowTasksForSeries } from '../workflow/workflowEngine.js';
 import { isWatchTrackingEnabled } from '../watch/watchTracker.js';
-import { toRelativeMediaPath } from '../config.js';
+import { toRelativeMediaPath, BACKEND_URL, ASSET_BASE_URL } from '../config.js';
+import {
+    pickHeroBackgroundMediaUrl,
+    resolveHeroPlaybackUrl,
+    isRelativeVideosPath
+} from './heroPlaybackUrl.js';
 import { resolveUserPosterUrl } from '../vaultMedia.js';
 import { searchMarketplaceListings } from '../marketplace/marketplaceEngine.js';
 import {
@@ -1863,66 +1868,15 @@ export function loadHeroVaultItems(extraItems = null) {
     }
 }
 
-/**
- * True when a presentation media URL points at local Railway static /videos paths
- * that often 404 when the real file lives on R2/CDN. Catalog URL should win for playback.
- * @param {unknown} url
- * @returns {boolean}
- */
+export {
+    pickHeroBackgroundMediaUrl,
+    resolveHeroPlaybackUrl,
+    isRelativeVideosPath
+} from './heroPlaybackUrl.js';
+
+/** @deprecated use isRelativeVideosPath — absolute hosts are durable. */
 export function isStaleLocalVideosMediaUrl(url) {
-    const raw = String(url || '').trim();
-    if (!raw) return false;
-    if (raw.startsWith('/videos/')) return true;
-    try {
-        const u = new URL(raw);
-        if (!u.pathname.startsWith('/videos/')) return false;
-        const host = u.hostname.toLowerCase();
-        return (
-            host.includes('railway.app') ||
-            host.includes('localhost') ||
-            host.includes('127.0.0.1') ||
-            host.endsWith('.netlify.app')
-        );
-    } catch {
-        return false;
-    }
-}
-
-/**
- * Playback URL priority for hero backgrounds (no DOM):
- * 1) server presentation mediaUrl (unless known-stale /videos host)
- * 2) HeroRecord mediaUrl (unless stale)
- * 3) vault / reel catalog URL
- * 4) empty
- *
- * @param {{
- *   serverMediaUrl?: string;
- *   recordMediaUrl?: string;
- *   catalogMediaUrl?: string;
- * }} parts
- * @returns {{ mediaUrl: string; source: string }}
- */
-export function pickHeroBackgroundMediaUrl(parts = {}) {
-    const server = String(parts.serverMediaUrl || '').trim();
-    const record = String(parts.recordMediaUrl || '').trim();
-    const catalog = String(parts.catalogMediaUrl || '').trim();
-
-    if (server && !isStaleLocalVideosMediaUrl(server)) {
-        return { mediaUrl: server, source: 'server_presentation' };
-    }
-    if (record && !isStaleLocalVideosMediaUrl(record)) {
-        return { mediaUrl: record, source: 'hero_record' };
-    }
-    if (catalog) {
-        return {
-            mediaUrl: catalog,
-            source: server || record ? 'catalog_heal' : 'vault_catalog'
-        };
-    }
-    // Last resort: still surface server/record even if stale (honest 404 path).
-    if (server) return { mediaUrl: server, source: 'server_presentation_stale' };
-    if (record) return { mediaUrl: record, source: 'hero_record_stale' };
-    return { mediaUrl: '', source: 'unavailable' };
+    return isRelativeVideosPath(url);
 }
 
 /**
@@ -1945,6 +1899,31 @@ export function inferHeroAssetType(url, mimeHint = '') {
         return 'jpg';
     }
     return 'unknown';
+}
+
+/**
+ * Backend origin for relative /videos paths on hero playback.
+ * @returns {string}
+ */
+function heroPlaybackBackendOrigin() {
+    const configured = String(BACKEND_URL || ASSET_BASE_URL || '').trim();
+    if (configured && /^https?:\/\//i.test(configured)) return configured.replace(/\/+$/, '');
+    if (typeof window !== 'undefined' && window.location?.origin) {
+        return String(window.location.origin).replace(/\/+$/, '');
+    }
+    return '';
+}
+
+/**
+ * @param {string} url
+ * @param {string} [source]
+ * @returns {string}
+ */
+function finalizeHeroPlaybackUrl(url, source = 'resolve') {
+    return resolveHeroPlaybackUrl(url, {
+        backendOrigin: heroPlaybackBackendOrigin(),
+        source
+    });
 }
 
 /**
@@ -2011,7 +1990,8 @@ export function resolveHeroBackgroundAsset(config = loadHeroManagerConfig(), vau
         catalogMediaUrl: catalogMedia
     });
 
-    const mediaUrl = picked.mediaUrl;
+    // Durably resolve for playback — never leave absolute hosts as relative /videos paths.
+    const mediaUrl = finalizeHeroPlaybackUrl(picked.mediaUrl, picked.source);
     const sourceTag = picked.source;
 
     // Prefer video classification for custom_video / style video even if type unknown.
@@ -2036,11 +2016,10 @@ export function resolveHeroBackgroundAsset(config = loadHeroManagerConfig(), vau
         backgroundSource === 'custom_video' ||
         (mediaUrl && (/\.mp4(\?|$)/i.test(mediaUrl) || mediaUrl.includes('/prod/')));
 
-    const posterUrl =
-        posterHint ||
-        recordPoster ||
-        catalogPoster ||
-        (isVideo ? '' : mediaUrl);
+    const posterUrl = finalizeHeroPlaybackUrl(
+        posterHint || recordPoster || catalogPoster || (isVideo ? '' : mediaUrl),
+        'poster'
+    );
 
     const videoUrl = isVideo ? mediaUrl : '';
     const imageUrl = isVideo ? posterUrl : mediaUrl || posterUrl;
@@ -2237,9 +2216,13 @@ function resolveSelectionHeroBackgroundPresentation(config, selection, style) {
     const reelId = String(selection?.reelId || '').trim();
     const videoUrlRaw = String(selection?.videoUrl || '').trim();
     const posterUrlRaw = String(selection?.posterUrl || '').trim();
-    const videoUrl = videoUrlRaw ? toRelativeMediaPath(videoUrlRaw) || videoUrlRaw : '';
+    // Never strip absolute media hosts to relative /videos for selection mode either.
+    const videoUrl = videoUrlRaw ? finalizeHeroPlaybackUrl(videoUrlRaw, 'selection_video') : '';
     const posterUrl = posterUrlRaw
-        ? resolveUserPosterUrl(posterUrlRaw) || toRelativeMediaPath(posterUrlRaw) || posterUrlRaw
+        ? finalizeHeroPlaybackUrl(
+              resolveUserPosterUrl(posterUrlRaw) || posterUrlRaw,
+              'selection_poster'
+          )
         : '';
     const mediaUrl = videoUrl || posterUrl;
     const assetType = mediaUrl ? inferHeroAssetType(mediaUrl) : 'unknown';
@@ -2334,13 +2317,17 @@ export function resolveHeroBackgroundPresentation(
     const resolved = resolveHeroBackgroundAsset(config, vaultItems, { log: true });
 
     /** Force custom_video → videoUrl even when type inference is soft. */
-    let videoUrl = resolved.videoUrl;
-    let imageUrl = resolved.imageUrl;
+    let videoUrl = resolved.videoUrl
+        ? finalizeHeroPlaybackUrl(resolved.videoUrl, 'presentation_video')
+        : '';
+    let imageUrl = resolved.imageUrl
+        ? finalizeHeroPlaybackUrl(resolved.imageUrl, 'presentation_image')
+        : '';
     if (config.backgroundSource === 'custom_video' && resolved.mediaUrl && !videoUrl) {
-        videoUrl = resolved.mediaUrl;
+        videoUrl = finalizeHeroPlaybackUrl(resolved.mediaUrl, 'presentation_video_fallback');
     }
     if (config.backgroundSource === 'custom_image' && resolved.mediaUrl && !imageUrl) {
-        imageUrl = resolved.mediaUrl;
+        imageUrl = finalizeHeroPlaybackUrl(resolved.mediaUrl, 'presentation_image_fallback');
     }
 
     const presentation = {

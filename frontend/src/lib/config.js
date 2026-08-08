@@ -206,11 +206,15 @@ export function toRelativeMediaPath(path) {
     if (/^https?:\/\//i.test(trimmed)) {
         try {
             const u = new URL(trimmed);
-            // Keep third-party URLs (e.g. via.placeholder.com demo thumbnails) intact.
+            // Preserve absolute media hosts for playback durability (Railway, R2, CDN).
+            // Relative rewrite remains available for callers that only need path keys —
+            // hero playback must use resolveHeroPlaybackUrl / resolveMediaUrl instead.
+            // Keep third-party non-media paths intact as before.
             if (!isMediaPath(u.pathname)) {
                 return trimmed;
             }
-            return u.pathname + u.search;
+            // Still return absolute full URL so hero/custom_video never loses origin.
+            return trimmed;
         } catch {
             return trimmed;
         }
@@ -238,19 +242,13 @@ export function toBackendMediaUrl(path) {
     if (!trimmed) return '';
     if (trimmed.startsWith('blob:') || trimmed.startsWith('data:')) return trimmed;
 
-    const relative = toRelativeMediaPath(trimmed);
-
-    if (/^https?:\/\//i.test(trimmed) && isMediaPath(relative)) {
-        if (shouldUseSameOriginMediaInDev()) {
-            logResolvedMediaUrl('media', relative, trimmed, 'toBackendMediaUrl:dev-same-origin-rewrite');
-            return relative;
-        }
-        if (BACKEND_URL) {
-            const resolved = `${BACKEND_URL}${relative}`;
-            logResolvedMediaUrl('media', resolved, trimmed, 'toBackendMediaUrl:absolute');
-            return resolved;
-        }
+    // Absolute http(s) — never strip host / rebuild from path only.
+    if (/^https?:\/\//i.test(trimmed)) {
+        logResolvedMediaUrl('media', trimmed, trimmed, 'toBackendMediaUrl:absolute_passthrough');
+        return trimmed;
     }
+
+    const relative = toRelativeMediaPath(trimmed);
 
     if (!relative.startsWith('/')) {
         logResolvedMediaUrl('media', trimmed, trimmed, 'toBackendMediaUrl:passthrough');
