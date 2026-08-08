@@ -13,6 +13,7 @@ import {
 import {
     clearAdminSession,
     getAdminToken,
+    hasStudioAdminSessionToken,
     setAdminSessionToken
 } from '../adminSession.js';
 
@@ -62,8 +63,11 @@ export const userRole = derived(currentUser, ($user) => normalizeRole($user?.rol
 /**
  * Reactive studio gate — subscribe via `$studioAccessAllowed` in components.
  * Imperative `canAccessStudio()` remains for non-Svelte callers.
+ * Password-only studio session is storage-backed (see hasStudioAdminSessionToken).
  */
-export const studioAccessAllowed = derived(currentUser, ($user) => isAdminRole($user?.role));
+export const studioAccessAllowed = derived(currentUser, ($user) =>
+    isAdminRole($user?.role) || hasStudioAdminSessionToken()
+);
 
 /**
  * AuthRole typedef placement fix for auth store exports.
@@ -74,8 +78,12 @@ export function hasRole(role) {
     return hasRoleHelper(user?.role, role);
 }
 
+/**
+ * Studio open / control center: admin RBAC role OR verified password session (POST /admin/auth).
+ * Not sticky admin_mode authority.
+ */
 export function canAccessStudio() {
-    return isAdminRole(get(currentUser)?.role);
+    return isAdminRole(get(currentUser)?.role) || hasStudioAdminSessionToken();
 }
 
 /** @deprecated AUTH-1.1: no public creator content workflows. */
@@ -86,16 +94,21 @@ export function canAccessCreatorTools() {
 /**
  * Sync production tool admin token when role is admin
  * so existing getAdminAuthHeaders keep working.
- * Non-admin sessions must never keep a stale admin bridge.
+ * Non-admin consumer login clears the studio password bridge.
+ * Guest (no consumer token) preserves standalone POST /admin/auth session.
  * @param {string | null} token
  * @param {string | null | undefined} role
  */
 function mirrorAdminBridge(token, role) {
     if (token && isAdminRole(role)) {
         setAdminSessionToken(token);
-    } else {
-        clearAdminSession({ source: 'auth_role_sync' });
+        return;
     }
+    if (token && !isAdminRole(role)) {
+        clearAdminSession({ source: 'auth_role_sync' });
+        return;
+    }
+    // No consumer session: leave password-only studio token intact.
 }
 
 /**

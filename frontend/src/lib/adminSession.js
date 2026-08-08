@@ -22,9 +22,24 @@ export function getAdminToken() {
     const auth = globalThis.window.localStorage.getItem(AUTH_SESSION_TOKEN_KEY);
     const authTrimmed = auth ? String(auth).trim() : '';
     if (authTrimmed) return authTrimmed;
+    return getStudioAdminSessionToken();
+}
+
+/**
+ * Password-gateway studio token only (POST /admin/auth).
+ * Does not read consumer AUTH token or sticky admin_mode.
+ * @returns {string | null}
+ */
+export function getStudioAdminSessionToken() {
+    if (!hasBrowserStorage()) return null;
     const token = globalThis.window.localStorage.getItem(ADMIN_SESSION_TOKEN_KEY);
     const trimmed = token ? String(token).trim() : '';
     return trimmed || null;
+}
+
+/** @returns {boolean} */
+export function hasStudioAdminSessionToken() {
+    return Boolean(getStudioAdminSessionToken());
 }
 
 /** @param {string} token */

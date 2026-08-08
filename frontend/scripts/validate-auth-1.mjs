@@ -102,8 +102,17 @@ assert(
     }).unavailable === true
 );
 assert(
-    'unauthenticated studio is unavailable (not login tease)',
-    evaluateRouteAccess({ pathname: '/studio', isAuthenticated: false }).unavailable === true
+    'guest studio reaches unlock surface (not AreaUnavailable)',
+    evaluateRouteAccess({ pathname: '/studio', isAuthenticated: false }).allowed === true &&
+        evaluateRouteAccess({ pathname: '/studio', isAuthenticated: false }).reason ===
+            'studio_unlock' &&
+        evaluateRouteAccess({ pathname: '/studio', isAuthenticated: false }).unavailable !== true
+);
+assert(
+    'guest admin path reaches unlock surface',
+    evaluateRouteAccess({ pathname: '/admin', isAuthenticated: false }).allowed === true &&
+        evaluateRouteAccess({ pathname: '/admin', isAuthenticated: false }).reason ===
+            'studio_unlock'
 );
 
 // ── AUTH-UI Phase 1: return path + consumer shell contracts ─────────────────
@@ -175,8 +184,14 @@ assert(
     !/production/i.test(authShellSrc) && !/elevated/i.test(authShellSrc)
 );
 assert(
-    'AuthShell omits admin concept in consumer copy',
-    !/\badmin\b/i.test(authShellSrc) && !/\bcreator\b/i.test(authShellSrc)
+    'AuthShell omits creator concept in consumer copy',
+    !/\bcreator\b/i.test(authShellSrc)
+);
+assert(
+    'AuthShell has separate Studio entry (not merged with consumer form)',
+    /Open Studio Login/i.test(authShellSrc) &&
+        /Admin \/ Studio Access/i.test(authShellSrc) &&
+        !/Unlock Studio/i.test(authShellSrc)
 );
 assert(
     'AuthShell has return-path navigation helpers',

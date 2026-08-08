@@ -246,6 +246,19 @@
               </button>
             {/if}
           </p>
+          {#if mode === 'login'}
+            <div class="auth-studio-entry">
+              <p class="auth-studio-entry__label">Admin / Studio Access</p>
+              <button
+                type="button"
+                class="auth-btn"
+                on:click={() => onNavigate('/studio')}
+                disabled={submitting}
+              >
+                Open Studio Login
+              </button>
+            </div>
+          {/if}
         {/if}
       </div>
     </div>
@@ -496,5 +509,19 @@
   .auth-link:disabled {
     opacity: 0.55;
     cursor: not-allowed;
+  }
+
+  .auth-studio-entry {
+    margin-top: var(--lz-space-5, 1.5rem);
+    padding-top: var(--lz-space-4, 1.1rem);
+    border-top: 1px solid var(--lz-border, rgba(255, 255, 255, 0.1));
+    display: grid;
+    gap: var(--lz-space-2, 0.65rem);
+  }
+
+  .auth-studio-entry__label {
+    margin: 0;
+    font-size: var(--lz-size-small, 0.85rem);
+    color: var(--lz-ink-muted, rgba(255, 255, 255, 0.55));
   }
 </style>

@@ -4,6 +4,7 @@
   import SeriesPublicPage from './components/series/SeriesPublicPage.svelte';
   import AuthShell from './components/auth/AuthShell.svelte';
   import AccountShell from './components/auth/AccountShell.svelte';
+  import AdminStudioUnlock from './components/auth/AdminStudioUnlock.svelte';
   import AreaUnavailable from './components/account/AreaUnavailable.svelte';
   import {
     evaluateRouteAccess,
@@ -16,6 +17,8 @@
     sanitizeReturnPath,
     setStoredReturnPath
   } from './lib/auth/index.js';
+  import { hasStudioAdminSessionToken } from './lib/adminSession.js';
+  import { requestOpenStudio } from './lib/auth/clientNavigate.js';
   import './styles.css';
 
   function readPathname() {
@@ -41,6 +44,8 @@
   let pathname = readPathname();
   let seriesSlug = readSeriesSlug(pathname);
   let authReady = false;
+  /** Reactive nudge when password-only studio session is set/cleared. */
+  let studioSessionTick = 0;
   let gate = evaluateRouteAccess({
     pathname,
     isAuthenticated: false,
@@ -104,18 +109,28 @@
     enforceGate();
   }
 
+  function onAdminSessionChanged() {
+    studioSessionTick += 1;
+    enforceGate();
+  }
+
   onMount(() => {
     refreshSession().finally(() => {
       authReady = true;
       enforceGate();
     });
     window.addEventListener('popstate', onPopState);
-    return () => window.removeEventListener('popstate', onPopState);
+    window.addEventListener('reelforge:admin-session-changed', onAdminSessionChanged);
+    return () => {
+      window.removeEventListener('popstate', onPopState);
+      window.removeEventListener('reelforge:admin-session-changed', onAdminSessionChanged);
+    };
   });
 
   $: if (authReady) {
     $userRole;
     $currentUser;
+    studioSessionTick;
     enforceGate();
   }
 
@@ -137,13 +152,31 @@
     return 'viewer';
   })();
 
-  // Phase 0: reactive role — after authReady only.
-  $: studioOk = authReady && isAdminRole($userRole || $currentUser?.role);
+  // Admin RBAC role or verified password session (re-read when session tick changes).
+  $: studioSessionTick;
+  $: studioUnlocked =
+    authReady &&
+    (isAdminRole($userRole || $currentUser?.role) || hasStudioAdminSessionToken());
 
+  // Viewer accounts without admin role stay blocked on /studio (gate.unavailable).
+  // Guests reach unlock; unlocked sessions enter Studio via Viewer.
   $: showUnavailable =
-    Boolean(gate?.unavailable) ||
-    (routeKind === 'studio' && !studioOk) ||
-    routeKind === 'unavailable';
+    Boolean(gate?.unavailable) || routeKind === 'unavailable';
+
+  // When already unlocked and hitting /studio|/admin, land on Viewer + open Studio once.
+  let studioAutoOpenDone = false;
+  $: if (authReady && routeKind === 'studio' && studioUnlocked && !studioAutoOpenDone) {
+    studioAutoOpenDone = true;
+    requestAnimationFrame(() => {
+      if (pathname === '/studio' || pathname === '/admin' || pathname.startsWith('/studio/') || pathname.startsWith('/admin/')) {
+        // Stay on path but mount Viewer below; still open control center.
+        requestOpenStudio('studio_route');
+      }
+    });
+  }
+  $: if (routeKind !== 'studio') {
+    studioAutoOpenDone = false;
+  }
 </script>
 
 {#if !authReady}
@@ -164,10 +197,12 @@
 {:else if routeKind === 'settings'}
   <AccountShell view="settings" onNavigate={navigate} />
 {:else if routeKind === 'studio'}
-  {#if studioOk}
-    <AccountShell view="studio" onNavigate={navigate} />
+  {#if studioUnlocked}
+    <main>
+      <Viewer />
+    </main>
   {:else}
-    <AreaUnavailable />
+    <AdminStudioUnlock onNavigate={navigate} />
   {/if}
 {:else}
   <main>

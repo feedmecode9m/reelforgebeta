@@ -2,6 +2,7 @@
   import { onDestroy, tick } from 'svelte';
   import StudioExperience from '../experiences/StudioExperience.svelte';
   import { currentUser, isAdminRole } from '../../lib/auth/index.js';
+  import { hasStudioAdminSessionToken } from '../../lib/adminSession.js';
 
   export let studioRefs;
   export let controlCenterOpen;
@@ -183,8 +184,22 @@
   }
 
   $: deleteItemDisplayName = getDeleteItemDisplayName($deleteConfirmReel);
-  // Phase 0: studio entry is role-only (never sticky admin_mode).
-  $: showStudioEntry = isAdminRole($currentUser?.role);
+  // Phase 0: studio entry is admin RBAC role or password session (not sticky admin_mode).
+  let studioSessionTick = 0;
+  function onAdminSessionChanged() {
+    studioSessionTick += 1;
+  }
+  if (typeof window !== 'undefined') {
+    window.addEventListener('reelforge:admin-session-changed', onAdminSessionChanged);
+  }
+  onDestroy(() => {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('reelforge:admin-session-changed', onAdminSessionChanged);
+    }
+  });
+  $: studioSessionTick;
+  $: showStudioEntry =
+    isAdminRole($currentUser?.role) || hasStudioAdminSessionToken();
 
   // Keep adminMode as UI state only — clear when role cannot access studio.
   $: if (!showStudioEntry && $adminMode) {

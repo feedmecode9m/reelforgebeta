@@ -130,14 +130,10 @@ export function evaluateRouteAccess(input) {
         };
     }
     if (!input.isAuthenticated) {
-        // Studio/admin paths: quietly home (no login funnel advertising Studio).
+        // Studio/admin paths: unlock surface is public (password-only POST /admin/auth).
+        // Not a consumer login funnel; no email account advertised.
         if (access === 'admin') {
-            return {
-                allowed: false,
-                reason: 'area_unavailable',
-                redirectTo: null,
-                unavailable: true
-            };
+            return { allowed: true, reason: 'studio_unlock', redirectTo: null };
         }
         return { allowed: false, reason: 'unauthenticated', redirectTo };
     }
@@ -145,6 +141,8 @@ export function evaluateRouteAccess(input) {
         return { allowed: true, reason: 'authenticated', redirectTo: null };
     }
     if (access === 'admin') {
+        // Consumer admin RBAC may enter; guest password session is handled by App UI.
+        // Authenticated viewers (non-admin) still cannot use Studio routes.
         if (isAdminRole(input.role)) {
             return { allowed: true, reason: 'studio_ok', redirectTo: null };
         }

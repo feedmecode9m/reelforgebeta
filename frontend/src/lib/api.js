@@ -16,11 +16,18 @@ const DEFAULT_CACHE_TTL_MS = 5 * 60 * 1000;
 const API_DEBUG = import.meta.env.VITE_DEBUG_API === 'true';
 
 /**
- * @typedef {'online' | 'degraded' | 'offline'} BackendConnectionState
+ * @typedef {'unknown' | 'online' | 'degraded' | 'offline'} BackendConnectionState
+ *
+ * `unknown` — boot / no probe yet (do not show the health banner)
+ * `online` — health or a successful fetch confirmed reachability
+ * `degraded` — health failed, or 5xx/429 after retries (connection issue, not 4xx app errors)
+ * `offline` — network-level failure during fetch
  */
 
 export const backendConnectionStatus = writable({
-    state: /** @type {BackendConnectionState} */ ('degraded'),
+    // Never start as degraded — that painted a persistent false-positive banner
+    // ("Connection degraded — retrying backend health check") before any probe ran.
+    state: /** @type {BackendConnectionState} */ ('unknown'),
     lastOkAt: 0,
     lastAttemptAt: 0,
     lastError: ''
@@ -104,54 +111,71 @@ export function notifyBackendReconnecting(message = 'Backend reconnecting...') {
     }
 }
 
-export async function checkBackendHealth() {
-    // Netlify → Railway proxy often needs >5s under load (large R2 PUTs saturate the
-    // browser connection). AbortSignal.timeout(5000) produced false "Connection degraded
-    // — retrying (The operation timed out.)" banners while the backend was healthy.
-    const HEALTH_TIMEOUT_MS = 15_000;
+/**
+ * Resolve URLs tried by checkBackendHealth (same-origin Vite/Netlify proxy first).
+ * @returns {string[]}
+ */
+export function resolveBackendHealthProbeUrls() {
     const paths = ['/api/health', '/health'];
     const bases = [];
 
-    // Prefer same-origin first (Netlify proxy / Vite proxy).
+    // Prefer same-origin first (Netlify proxy / Vite proxy). Empty string → relative.
     bases.push(API_BASE_URL || '');
     if (BACKEND_URL && BACKEND_URL !== API_BASE_URL && !bases.includes(BACKEND_URL)) {
-        // Direct Railway only as secondary probe (skipped when same-origin is configured).
+        // Secondary: configured/local loopback. In PROD same-origin builds, skip
+        // absolute origins so static hosts never call loopback/Railway from the browser
+        // when the proxy path already failed (would also violate CORS / mixed content).
         if (!(API_BASE_URL === '' && import.meta.env.PROD)) {
             bases.push(BACKEND_URL);
         }
     }
 
-    let lastErrorMessage = '';
-
+    /** @type {string[]} */
+    const urls = [];
     for (const base of bases) {
         for (const path of paths) {
-            try {
-                logApiDebug('healthcheck:request', `${base}${path}`);
-                const response = await fetch(`${base}${path}`, {
-                    method: 'GET',
-                    cache: 'no-store',
-                    signal: AbortSignal.timeout(HEALTH_TIMEOUT_MS)
-                });
+            urls.push(`${base}${path}`);
+        }
+    }
+    return urls;
+}
 
-                if (response.ok) {
-                    setBackendConnectionStatus('online', {
-                        lastOkAt: Date.now(),
-                        lastError: ''
-                    });
-                    pipelineDiag('API', 'checkBackendHealth', 'api.js', {
-                        result: 'healthy',
-                        detail: `${base}${path}`
-                    });
-                    logApiDebug('healthcheck:ok', `${base}${path}`, response.status);
-                    return true;
-                }
-                lastErrorMessage = `HTTP ${response.status}`;
-            } catch (error) {
-                lastErrorMessage = error?.message || 'healthcheck failed';
-                pipelineDiagCors('checkBackendHealth', 'api.js', error, { url: `${base}${path}` });
-                if (shouldStreamDiagnostics()) {
-                    console.warn(`Backend health check failed for ${base}${path}:`, error);
-                }
+export async function checkBackendHealth() {
+    // Netlify → Railway proxy often needs >5s under load (large R2 PUTs saturate the
+    // browser connection). AbortSignal.timeout(5000) produced false "Connection degraded
+    // — retrying (The operation timed out.)" banners while the backend was healthy.
+    const HEALTH_TIMEOUT_MS = 15_000;
+    const urls = resolveBackendHealthProbeUrls();
+
+    let lastErrorMessage = '';
+
+    for (const url of urls) {
+        try {
+            logApiDebug('healthcheck:request', url);
+            const response = await fetch(url, {
+                method: 'GET',
+                cache: 'no-store',
+                signal: AbortSignal.timeout(HEALTH_TIMEOUT_MS)
+            });
+
+            if (response.ok) {
+                setBackendConnectionStatus('online', {
+                    lastOkAt: Date.now(),
+                    lastError: ''
+                });
+                pipelineDiag('API', 'checkBackendHealth', 'api.js', {
+                    result: 'healthy',
+                    detail: url
+                });
+                logApiDebug('healthcheck:ok', url, response.status);
+                return true;
+            }
+            lastErrorMessage = `HTTP ${response.status}`;
+        } catch (error) {
+            lastErrorMessage = error?.message || 'healthcheck failed';
+            pipelineDiagCors('checkBackendHealth', 'api.js', error, { url });
+            if (shouldStreamDiagnostics()) {
+                console.warn(`Backend health check failed for ${url}:`, error);
             }
         }
     }
@@ -206,7 +230,11 @@ export async function fetchWithRetry(
                 : response.status >= 500 || response.status === 429;
 
             if (!shouldRetryStatus || attempt === retries) {
-                if (notifyReconnectOnFailure) {
+                // Only connectivity-class failures update the global banner.
+                // 4xx (auth, missing feature flags, validation) must not look like backend outage.
+                const connectionIssue =
+                    response.status >= 500 || response.status === 429;
+                if (notifyReconnectOnFailure && connectionIssue) {
                     setBackendConnectionStatus('degraded', {
                         lastError: `HTTP ${response.status}`
                     });

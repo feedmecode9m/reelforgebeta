@@ -11,8 +11,14 @@
  * @returns {BackendHealthPresentation | null}
  */
 export function deriveBackendHealthPresentation(connection, browserOnline, reconnectingActive) {
-  const state = connection?.state || 'degraded';
+  const state = connection?.state || 'unknown';
   const lastError = String(connection?.lastError || '').trim();
+  const lastAttemptAt = Number(connection?.lastAttemptAt) || 0;
+
+  // No probe yet — never show a false-positive degraded banner on first paint.
+  if ((!lastAttemptAt || state === 'unknown') && !reconnectingActive) {
+    return null;
+  }
 
   if (state === 'online' && browserOnline && !reconnectingActive) {
     return null;
