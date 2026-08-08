@@ -311,6 +311,20 @@ async fn main() -> std::io::Result<()> {
             .service(
                 web::scope("/api")
                     .wrap(crate::auth::AdminAuth)
+                    // Canonical site hero presentation (frontend: /api/hero/presentation).
+                    // GET: public. PUT: admin session (AdminAuth on mutating methods).
+                    // Registered as one Resource so GET+PUT share the path (avoid dual-.route shadowing).
+                    .service(
+                        web::resource("/hero/presentation")
+                            .route(web::get().to(api::hero_presentation::get_presentation))
+                            .route(web::put().to(api::hero_presentation::put_presentation)),
+                    )
+                    // Trailing-slash alias (actix is path-strict; clients/proxies sometimes append /).
+                    .service(
+                        web::resource("/hero/presentation/")
+                            .route(web::get().to(api::hero_presentation::get_presentation))
+                            .route(web::put().to(api::hero_presentation::put_presentation)),
+                    )
                     .route(
                         "/uploads/sign",
                         web::post().to(crate::signed_upload::sign_upload),
@@ -507,15 +521,6 @@ async fn main() -> std::io::Result<()> {
                     .route(
                         "/platform/hero",
                         web::put().to(api::platform_config::update_hero),
-                    )
-                    // Public site hero presentation (asset + copy). GET: all clients. PUT: admin only.
-                    .route(
-                        "/hero/presentation",
-                        web::get().to(api::hero_presentation::get_presentation),
-                    )
-                    .route(
-                        "/hero/presentation",
-                        web::put().to(api::hero_presentation::put_presentation),
                     )
                     .route(
                         "/platform/features",

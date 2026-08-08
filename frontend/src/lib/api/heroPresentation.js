@@ -1,9 +1,17 @@
 /**
  * Site-wide hero presentation API (server source of truth).
- * GET is public; PUT requires admin session.
+ *
+ * Canonical endpoint (backend: web::scope("/api") + resource "/hero/presentation"):
+ *   GET  /api/hero/presentation   — public
+ *   PUT  /api/hero/presentation   — admin session required
+ *
+ * Not the same as /api/platform/hero (feature-flagged platform mode/rotation only).
  */
 import { API_BASE_URL, fetchWithRetry } from '../api.js';
 import { getAdminAuthHeaders } from '../adminSession.js';
+
+/** Canonical path under API_BASE_URL (may be '' for same-origin / Netlify proxy). */
+export const HERO_PRESENTATION_PATH = '/api/hero/presentation';
 
 /**
  * @returns {Promise<Record<string, unknown> | null>}
@@ -11,7 +19,7 @@ import { getAdminAuthHeaders } from '../adminSession.js';
 export async function fetchHeroPresentation() {
     try {
         const res = await fetchWithRetry(
-            `${API_BASE_URL}/api/hero/presentation?t=${Date.now()}`,
+            `${API_BASE_URL}${HERO_PRESENTATION_PATH}?t=${Date.now()}`,
             { method: 'GET', headers: { Accept: 'application/json' } },
             { retries: 1, notifyReconnectOnFailure: false }
         );
@@ -35,7 +43,7 @@ export async function fetchHeroPresentation() {
 export async function putHeroPresentation(body) {
     try {
         const res = await fetchWithRetry(
-            `${API_BASE_URL}/api/hero/presentation`,
+            `${API_BASE_URL}${HERO_PRESENTATION_PATH}`,
             {
                 method: 'PUT',
                 headers: {

@@ -226,4 +226,22 @@ mod tests {
             "/api/reels/00000000-0000-4000-8000-000000000001/category"
         ));
     }
+
+    #[test]
+    fn hero_presentation_get_public_put_admin() {
+        // GET is non-mutating → public (no admin gate).
+        assert!(!mutating_route_requires_admin(
+            &Method::GET,
+            "/api/hero/presentation"
+        ));
+        // PUT is mutating → AdminAuth required.
+        assert!(mutating_route_requires_admin(
+            &Method::PUT,
+            "/api/hero/presentation"
+        ));
+        assert!(mutating_route_requires_admin(
+            &Method::PUT,
+            "/api/hero/presentation/"
+        ));
+    }
 }
