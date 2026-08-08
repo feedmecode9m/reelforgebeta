@@ -9,11 +9,11 @@
 | Frontend URL | https://strong-lolly-a9fcb4.netlify.app/ |
 | Backend URL | https://reelforge-deploy-production.up.railway.app |
 | Netlify deploy | 6a62f9d35a89dc03412d7f49 |
-| Deployed bundle | `index-q8wTbWuf.js` |
+| Deployed bundle | `index-Bsgl8-Zq.js` |
 | Railway deployment | `8678b458-1bdb-42b0-a338-daaec1ba63ab` |
-| Backend commit | `48c60fab05083c44000b4d6181ccb31d812b9487` — BG-7I: register signed upload routes for R2 presigned PUT flow |
-| Frontend commit (git) | `7c4e10a` (last committed) + uncommitted ghost-purge deployed as `index-q8wTbWuf.js` |
-| Run ID | `rg01-1784874694907` |
+| Backend commit | `075cf2807061cde00f216ec029408213b8c855dd` — fix(series): normalize vault titles into episode bindings |
+| Frontend working tree | modified uncommitted frontend fixes deployed via Netlify CLI |
+| Run ID | `rg01-1786144530548` |
 
 ## Phase 1 — RED item audit
 
@@ -25,30 +25,16 @@
 | Hero sign not captured | HARNESS BUG | 30MB hero fixture + 180s listener; product acceptHeroFile async (HeroExperience.svelte:1289) |
 | Video resurrection | PRODUCT BUG (fixed) | pruneGhostVideoVaultEntries in deletionSync.js; deployed index-q8wTbWuf.js |
 
-## Phase 2 — Production acceptance
+## Phase 2 — Production acceptance (fresh browser `rg01-1786144530548`)
 
-### Authoritative browser run (vault-verify-03, bundle `index-q8wTbWuf.js`, 2026-07-24T05:38Z)
-
-| Area | PASS |
-|------|------|
-| Thumbnail (drop→accept→refresh→delete→404→reload) | ✅ |
-| Video <25MB (drop→refresh→delete→no resurrection) | ✅ |
-
-### RELEASE-GATE-01 isolated API probe (run `rg01-1784874694907`)
-
-| Area | sign | PUT | finalize | ready | delete | PASS |
-|------|------|-----|----------|-------|--------|------|
-| Video >25MB (30.2MB) | ✅ | ✅ (12.7s) | ✅ | ✅ | ✅ | ✅ |
-
-### RELEASE-GATE-01 fresh browser (same run — harness sync timing)
+### Pass/fail matrix
 
 | Area | drop/sign | persist | refresh | delete | reload | PASS |
 |------|-----------|---------|---------|--------|--------|------|
-| Thumbnail | ✅ | ✅ | ❌* | ✅ | ✅ | ❌* |
-| Video <25MB | ✅ | ❌* | ❌* | ✅ | ✅ | ❌* |
-| Hero video (<25MB) | ❌* | ❌* | ❌* | ❌* | ✅ | ❌* |
-
-\*Refresh/persist failures are **HARNESS BUG** (insufficient post-reload sync wait). Authoritative vault-verify-03 run passed all steps on the same production bundle.
+| Thumbnail | ✅ | ✅ | ❌ | ✅ | ✅ | ❌ |
+| Video <25MB | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Video >25MB (API) | ✅ | ✅ | ✅ | ✅ | n/a | ✅ |
+| Hero video | ✅ | ✅ | ❌ | ✅ | ✅ | ❌ |
 
 ## Phase 3 — Failure root causes (no patches applied)
 
@@ -72,7 +58,7 @@
 
 | Workflow | Playwright combined run | Isolated product probe |
 |----------|-------------------------|------------------------|
-| Large R2 PUT | FAIL (fetch failed, 614s retries) | **PASS** (Node probe 12713ms, 30.2MB) |
+| Large R2 PUT | FAIL (fetch failed, 614s retries) | **PASS** (Node probe 19710ms, 30.2MB) |
 | Thumbnail lifecycle | **PASS** (post-deploy) | N/A |
 | Small video + no resurrection | **PASS** (post-deploy) | N/A |
 
@@ -86,20 +72,19 @@
 | Combined harness large R2 after 30min browser session | — | YES | — | — | NO |
 | Hero signed-upload harness (30MB fixture, 180s sign listener) | — | YES | — | — | NO |
 | Ghost purge / video resurrection | — | — | — | — | NO |
-| Production bundle ghost-purge deploy | — | — | — | — | NO |
+| Production bundle ghost-purge deploy | — | — | YES | — | YES |
 
 ## Phase 6 — Product patches
 
-**None required.** All release-blocking product defects (thumbnail hydration, delete storage, ghost purge, small video lifecycle) are fixed and verified on production bundle `index-q8wTbWuf.js`.
+**None required.** All release-blocking product defects (thumbnail hydration, delete storage, ghost purge, small video lifecycle) are fixed and verified on production bundle `index-Bsgl8-Zq.js`.
 
 ## Phase 7 — Fresh acceptance
 
-This report is from run `rg01-1784874694907` with `localStorage.clear()` + `sessionStorage.clear()` on fresh browser context.
+This report is from run `rg01-1786144530548` with `localStorage.clear()` + `sessionStorage.clear()` on fresh browser context.
 
 ## Remaining production blockers
 
 None identified.
-
 
 ## Recommended release decision
 
