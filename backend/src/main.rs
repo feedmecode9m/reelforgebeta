@@ -508,6 +508,15 @@ async fn main() -> std::io::Result<()> {
                         "/platform/hero",
                         web::put().to(api::platform_config::update_hero),
                     )
+                    // Public site hero presentation (asset + copy). GET: all clients. PUT: admin only.
+                    .route(
+                        "/hero/presentation",
+                        web::get().to(api::hero_presentation::get_presentation),
+                    )
+                    .route(
+                        "/hero/presentation",
+                        web::put().to(api::hero_presentation::put_presentation),
+                    )
                     .route(
                         "/platform/features",
                         web::get().to(api::platform_config::get_features),

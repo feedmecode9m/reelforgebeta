@@ -56,6 +56,14 @@ import {
     mergeHeroRecordIntoManagerConfig,
     migrateLegacyHeroRecordIfNeeded
 } from './heroRecord.js';
+import {
+    getLastHeroConfigSource,
+    hydrateHeroPresentationFromServer,
+    logHeroSource,
+    pushHeroPresentationToServer,
+    sanitizeHeroConfigLocationIntelligence,
+    setLastHeroConfigSource
+} from './heroPresentationSync.js';
 
 export const HERO_MODES = /** @type {const} */ ([
     'TRENDING',
@@ -872,10 +880,13 @@ export function loadHeroManagerConfig() {
                       .filter((override) => Boolean(override.type))
                 : getDefaultHeroManagerConfig().carouselSlideOverrides
         };
+        // Repair stale NLP location in cache (La → Los Angeles) without server push.
+        const locationSafe = sanitizeHeroConfigLocationIntelligence(config);
+        setLastHeroConfigSource(locationSafe.heroAssetId ? 'localStorage' : 'default');
         console.info('[HERO_LOAD]', {
             key: HERO_MANAGER_STORAGE_KEY,
-            backgroundSource: config.backgroundSource,
-            heroAssetId: config.heroAssetId || '',
+            backgroundSource: locationSafe.backgroundSource,
+            heroAssetId: locationSafe.heroAssetId || '',
             ts: new Date().toISOString()
         });
         logHeroConfigBootTrace({
@@ -884,12 +895,12 @@ export function loadHeroManagerConfig() {
             storageRawBeforeParse: raw,
             parsedHeroAssetId: String(parsed.heroAssetId || parsed.backgroundAsset || '').trim(),
             parsedBackgroundSource: String(parsed.backgroundSource || ''),
-            heroAssetId: config.heroAssetId,
-            backgroundSource: config.backgroundSource,
+            heroAssetId: locationSafe.heroAssetId,
+            backgroundSource: locationSafe.backgroundSource,
             configSource: 'localStorage_merged_with_defaults',
             reason: 'storage_hit'
         });
-        return finalizeHeroManagerConfigLoad(config, config);
+        return finalizeHeroManagerConfigLoad(locationSafe, locationSafe);
     } catch (error) {
         const defaultConfig = getDefaultHeroManagerConfig();
         const config = finalizeHeroManagerConfigLoad(defaultConfig);
@@ -1189,8 +1200,12 @@ export function buildHeroCarouselSlides(feed, options = {}) {
     return ranked;
 }
 
-/** @param {Partial<HeroManagerConfig>} patch */
-export function saveHeroManagerConfig(patch = {}) {
+/**
+ * @param {Partial<HeroManagerConfig>} patch
+ * @param {{ skipServer?: boolean; source?: 'localStorage' | 'backend' | 'default' }} [options]
+ * localStorage is cache only; unless skipServer, config is pushed to GET/PUT /api/hero/presentation.
+ */
+export function saveHeroManagerConfig(patch = {}, options = {}) {
     const existing = loadHeroManagerConfig();
     const merged = { ...existing, ...patch };
     if (String(merged.backgroundSource || '').trim() === 'none') {
@@ -1234,13 +1249,17 @@ export function saveHeroManagerConfig(patch = {}) {
         backgroundImage: _legacyImage,
         ...sanitized
     } = merged;
+    // Fix NLP location persistence (e.g. "La" → "Los Angeles") without rewriting titles.
+    const locationSafe = sanitizeHeroConfigLocationIntelligence(sanitized);
     const next = {
-        ...sanitized,
-        heroAssetId: String(sanitized.heroAssetId || '').trim(),
+        ...locationSafe,
+        heroAssetId: String(locationSafe.heroAssetId || '').trim(),
         updatedAt: Date.now()
     };
     if (typeof window !== 'undefined') {
         localStorage.setItem(HERO_MANAGER_STORAGE_KEY, JSON.stringify(next));
+        const cacheSource = options.source || 'localStorage';
+        setLastHeroConfigSource(cacheSource);
         console.info('[HERO_ASSET_ID_TRACE]', {
             stage: 'saveHeroManagerConfig:write',
             assetId: next.heroAssetId || '',
@@ -1280,10 +1299,29 @@ export function saveHeroManagerConfig(patch = {}) {
                 resolved: Boolean(previewResolved.imageUrl)
             });
         }
+        // Cache write only unless skipServer — never treat localStorage as SoT.
+        if (options.skipServer !== true) {
+            pushHeroPresentationToServer(next).catch((err) => {
+                console.warn('[HERO_PRESENTATION] background push failed', err?.message || err);
+            });
+        }
         window.dispatchEvent(new CustomEvent('reelforge:hero-manager-updated', { detail: next }));
     }
     return next;
 }
+
+/**
+ * Hydrate manager cache from server-side presentation (backend source of truth).
+ * @returns {Promise<{ hydrated: boolean; config: HeroManagerConfig | null; source: string }>}
+ */
+export async function hydrateHeroManagerConfigFromServer() {
+    return hydrateHeroPresentationFromServer(
+        (patch, opts) => saveHeroManagerConfig(patch, opts),
+        () => loadHeroManagerConfig()
+    );
+}
+
+export { logHeroSource, getLastHeroConfigSource };
 
 /**
  * Shared hero video identity commit — ONE HeroRecord write, then manager pointer fields.
@@ -1670,6 +1708,18 @@ export function resolveHeroBackgroundAsset(config = loadHeroManagerConfig(), vau
         videoUrl,
         imageUrl
     };
+    const signature = `${resolved.assetId}|${resolved.mediaUrl}|${resolved.assetType}|${config.backgroundSource}|${config.heroTitle || ''}`;
+    if (options.log !== false && signature !== lastAssetResolveSignature) {
+        const sourceTag =
+            getLastHeroConfigSource() ||
+            (heroAssetId ? 'localStorage' : 'default');
+        logHeroSource({
+            source: sourceTag,
+            heroAssetId: resolved.assetId || heroAssetId,
+            title: String(config.heroTitle || config.heroAssetTitle || ''),
+            backgroundUrl: resolved.mediaUrl || resolved.videoUrl || resolved.imageUrl || ''
+        });
+    }
     console.info('[HERO_ASSET_ID_TRACE]', {
         stage: 'resolveHeroBackgroundAsset:resolved',
         assetId: resolved.assetId || '',
@@ -1690,7 +1740,6 @@ export function resolveHeroBackgroundAsset(config = loadHeroManagerConfig(), vau
     });
 
     if (options.log !== false) {
-        const signature = `${resolved.assetId}|${resolved.mediaUrl}|${resolved.assetType}|${config.backgroundSource}`;
         if (signature !== lastAssetResolveSignature) {
             lastAssetResolveSignature = signature;
             logHeroIntelligenceDiag('HERO_ASSET_RESOLVE', {

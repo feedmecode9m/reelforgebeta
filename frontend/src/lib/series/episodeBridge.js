@@ -15,6 +15,18 @@ import { episodeIsPlayable } from './seriesTypes.js';
 import { loadReelSeriesMetadataMap } from './seriesMetadataStorage.js';
 import { logEpisodeBridgeDiag } from './episodeBridgeDiagnostics.js';
 import { inferAndBindVaultSeries } from './vaultSeriesInference.js';
+import { resolveContentIdentity } from '../content/contentIdentityResolver.js';
+
+/** Permanent bind weights — AI-only matches must never bind. */
+export const MATCH_WEIGHTS = Object.freeze({
+    exactTitle: 100,
+    reelId: 100,
+    creatorKeywords: 80,
+    aiTags: 40
+});
+
+/** Minimum score for permanent catalog bind (creator keywords and above). */
+export const MIN_PERMANENT_BIND_SCORE = 80;
 
 /**
  * @param {Record<string, unknown>} reel
@@ -54,26 +66,143 @@ function titlesMatch(a, b) {
 }
 
 /**
+ * @param {string} value
+ */
+function tokenizeIdentity(value) {
+    return String(value || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .split(/\s+/)
+        .map((t) => t.trim())
+        .filter((t) => t.length >= 2);
+}
+
+/**
+ * Weighted identity score between a reel/creator identity and an episode.
+ * exact title = 100 · reelId = 100 · creator keywords = 80 · AI tags = 40
+ *
  * @param {Record<string, unknown>} feedReel
- * @returns {{ series: import('./seriesTypes.js').Series; season: import('./seriesTypes.js').Season; episode: import('./seriesTypes.js').Episode } | undefined}
+ * @param {import('./seriesTypes.js').Episode} episode
+ * @returns {{ score: number; reason: string }}
+ */
+export function scoreEpisodeIdentityMatch(feedReel, episode) {
+    const reelId = feedReel?.id == null ? '' : String(feedReel.id);
+    if (reelId && episode?.reelId && String(episode.reelId) === reelId) {
+        return { score: MATCH_WEIGHTS.reelId, reason: 'reelId' };
+    }
+
+    const identity = reelId
+        ? resolveContentIdentity(reelId, { reel: feedReel })
+        : {
+              title: String(feedReel?.name || feedReel?.title || ''),
+              episodeTitle: String(feedReel?.name || feedReel?.title || ''),
+              keywords: [],
+              tags: []
+          };
+
+    const reelTitle = String(
+        identity.episodeTitle || identity.title || feedReel?.name || feedReel?.title || ''
+    ).trim();
+    const episodeTitle = String(episode?.title || '').trim();
+
+    if (reelTitle && episodeTitle) {
+        const norm = (s) =>
+            s
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, ' ')
+                .trim();
+        if (norm(reelTitle) === norm(episodeTitle)) {
+            return { score: MATCH_WEIGHTS.exactTitle, reason: 'exactTitle' };
+        }
+        if (titlesMatch(reelTitle, episodeTitle)) {
+            // Soft title overlap treated as creator-keyword strength (not permanent auto AI)
+            return { score: MATCH_WEIGHTS.creatorKeywords, reason: 'titleOverlap' };
+        }
+    }
+
+    const creatorTokens = new Set([
+        ...tokenizeIdentity(identity.title),
+        ...tokenizeIdentity(identity.episodeTitle),
+        ...((identity.keywords || []).filter(Boolean).map((k) => String(k).toLowerCase()))
+    ]);
+    // Keywords explicitly marked as AI enrichment only (lower weight)
+    const aiTokens = new Set(
+        (Array.isArray(feedReel?.aiTags) ? feedReel.aiTags : [])
+            .map((t) => String(t).toLowerCase())
+            .filter(Boolean)
+    );
+
+    const episodeTokens = new Set(tokenizeIdentity(episodeTitle));
+    if (!episodeTokens.size) return { score: 0, reason: 'none' };
+
+    let creatorHits = 0;
+    for (const token of episodeTokens) {
+        if (creatorTokens.has(token)) creatorHits += 1;
+    }
+    if (creatorHits >= 2 || (creatorHits === 1 && creatorTokens.size <= 3 && episodeTokens.size <= 4)) {
+        return { score: MATCH_WEIGHTS.creatorKeywords, reason: 'creatorKeywords' };
+    }
+
+    let aiHits = 0;
+    for (const token of episodeTokens) {
+        if (aiTokens.has(token)) aiHits += 1;
+    }
+    if (aiHits > 0) {
+        return { score: MATCH_WEIGHTS.aiTags, reason: 'aiTags' };
+    }
+
+    return { score: 0, reason: 'none' };
+}
+
+/**
+ * @param {Record<string, unknown>} feedReel
+ * @returns {{ series: import('./seriesTypes.js').Series; season: import('./seriesTypes.js').Season; episode: import('./seriesTypes.js').Episode; score: number; reason: string } | undefined}
  */
 function findEpisodeCandidateForFeedReel(feedReel) {
-    const reelName = String(feedReel.name || feedReel.title || '').trim();
     const reelId = feedReel.id == null ? '' : String(feedReel.id);
+
+    /** @type {{ series: import('./seriesTypes.js').Series; season: import('./seriesTypes.js').Season; episode: import('./seriesTypes.js').Episode; score: number; reason: string } | null} */
+    let best = null;
 
     for (const series of get(seriesCatalog)) {
         for (const season of series.seasons) {
             for (const episode of season.episodes) {
-                if (episode.reelId === reelId) {
-                    return { series, season, episode };
+                const { score, reason } = scoreEpisodeIdentityMatch(feedReel, episode);
+                if (score <= 0) continue;
+                if (!best || score > best.score) {
+                    best = { series, season, episode, score, reason };
                 }
-                if (titlesMatch(reelName, episode.title)) {
-                    return { series, season, episode };
+                // Perfect reelId / exact title — stop early
+                if (score >= MATCH_WEIGHTS.reelId) {
+                    return best;
                 }
             }
         }
     }
-    return undefined;
+
+    // Never permanently bind on AI-only weight (40)
+    if (!best || best.score < MIN_PERMANENT_BIND_SCORE) {
+        if (best && best.score > 0) {
+            logEpisodeBridgeDiag('EPISODE_BRIDGE', {
+                source: 'identity-match-skipped',
+                reelId,
+                episodeId: best.episode.episodeId,
+                score: best.score,
+                reason: best.reason,
+                note: 'AI-only or weak match — not permanently bound'
+            });
+        }
+        return undefined;
+    }
+
+    logEpisodeBridgeDiag('EPISODE_BRIDGE', {
+        source: 'identity-match',
+        reelId,
+        episodeId: best.episode.episodeId,
+        score: best.score,
+        reason: best.reason
+    });
+    return best;
 }
 
 /**
@@ -131,7 +260,16 @@ export function bridgeFeedReelsToCatalog(feedReels = []) {
         }
 
         const candidate = findEpisodeCandidateForFeedReel(reel);
-        if (candidate && bridgeReelToEpisode(reelId, candidate.episode.episodeId, 'title-match')) {
+        if (
+            candidate &&
+            bridgeReelToEpisode(
+                reelId,
+                candidate.episode.episodeId,
+                candidate.reason === 'creatorKeywords' || candidate.reason === 'titleOverlap'
+                    ? 'creator-identity-match'
+                    : 'title-match'
+            )
+        ) {
             bound += 1;
             continue;
         }
@@ -421,6 +559,24 @@ export function resolveReelForEpisode(episodeId, findReelInFeed, getAllFeedReels
         if (titlesMatch(String(reel.name || reel.title || ''), episodeTitle)) {
             return finish(reel, 'uploadRegistry.title');
         }
+    }
+
+    // Creator identity keyword match (score >= 80). Never bind permanently on AI-only (40).
+    attemptedSources.push('creator.identity:keywords');
+    /** @type {{ reel: Record<string, unknown>; score: number; reason: string } | null} */
+    let bestIdentity = null;
+    const considerIdentity = (reel) => {
+        if (!isPlayableReel(reel)) return;
+        const { score, reason } = scoreEpisodeIdentityMatch(reel, ctx.episode);
+        if (score < MIN_PERMANENT_BIND_SCORE) return;
+        if (!bestIdentity || score > bestIdentity.score) {
+            bestIdentity = { reel, score, reason };
+        }
+    };
+    for (const reel of feedReels) considerIdentity(reel);
+    for (const reel of uploadRegistry) considerIdentity(reel);
+    if (bestIdentity) {
+        return finish(bestIdentity.reel, `creator.identity:${bestIdentity.reason}`);
     }
 
     logHeroIdentityResolution({

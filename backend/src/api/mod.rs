@@ -6,6 +6,7 @@ pub mod monetization;
 pub mod notification_api;
 pub mod pipeline_api;
 pub mod platform_config;
+pub mod hero_presentation;
 pub mod revenue_api;
 pub mod reels;
 pub mod series_api;

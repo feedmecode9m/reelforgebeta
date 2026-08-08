@@ -13,6 +13,11 @@ import {
     mergeGovernedIdentity,
     resolvePresentationTitle
 } from '../intelligence/contentIdentityGuard.js';
+import {
+    extractLocationFromText,
+    locationDiscoveryTags,
+    normalizeLocationEntity
+} from '../intelligence/locationEntityNormalizer.js';
 
 /** Default when no safe human title exists. */
 export const UNTITLED_CREATOR_EXPERIENCE = 'Untitled Creator Experience';
@@ -93,35 +98,6 @@ const MOOD_LEXICON = {
     joyful: ['joy', 'celebration', 'festival', 'family', 'smile', 'pride'],
     mysterious: ['mystery', 'fog', 'noir', 'shadow', 'secret']
 };
-
-/** Common place phrases for lightweight location extraction. */
-const LOCATION_PHRASES = [
-    'miami beach',
-    'miami',
-    'atlanta',
-    'downtown atlanta',
-    'new york',
-    'los angeles',
-    'la',
-    'chicago',
-    'houston',
-    'dallas',
-    'brooklyn',
-    'harlem',
-    'alabama',
-    'georgia',
-    'florida',
-    'california',
-    'texas',
-    'paris',
-    'london',
-    'tokyo',
-    'lagos',
-    'accra',
-    'nairobi',
-    'jamaica',
-    'havana'
-];
 
 const PENDING_TITLE_PATCH_KEY = 'reelforge_pending_reel_title_patches';
 
@@ -268,6 +244,7 @@ function bestLexiconMatch(lower, lexicon) {
 export function analyzeHeroTitle(title, metadata = null) {
     const raw = String(title || '').trim();
     const filenameProtected = isUnsafeHeroFilenameTitle(raw);
+    // Creator-facing title only — never rewritten by location NLP.
     const normalizedTitle = resolveCanonicalHeroTitle({
         editedTitle: raw,
         nlpTitle: humanizeRawTitleCandidate(raw)
@@ -276,28 +253,33 @@ export function analyzeHeroTitle(title, metadata = null) {
     const lower = normalizedTitle.toLowerCase();
     const tokens = tokenize(normalizedTitle);
     const metaBits = String(metadata?.description || metadata?.categoryHint || '').toLowerCase();
-    const haystack = `${lower} ${metaBits}`;
+    // Prefer raw + normalized so compact forms (LosAngeles) still extract.
+    const haystack = `${raw} ${normalizedTitle} ${metaBits}`;
 
-    let location = '';
-    for (const phrase of LOCATION_PHRASES) {
-        if (haystack.includes(phrase)) {
-            location = phrase
-                .split(' ')
-                .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
-                .join(' ');
-            break;
+    // Semantic location normalization BEFORE story / tags / audience assembly.
+    const extracted =
+        extractLocationFromText(haystack, { log: true }) ||
+        extractLocationFromText(raw, { log: true });
+    let resolvedLocation = extracted?.canonical || '';
+    let resolvedAliases = extracted?.aliases || (resolvedLocation ? locationDiscoveryTags(resolvedLocation) : []);
+    if (!resolvedLocation && metadata?.location) {
+        const fromMeta = normalizeLocationEntity(String(metadata.location), { log: true });
+        if (fromMeta) {
+            resolvedLocation = fromMeta.canonical;
+            resolvedAliases = fromMeta.aliases;
         }
     }
 
     const category =
-        bestLexiconMatch(haystack, CATEGORY_LEXICON) ||
+        bestLexiconMatch(`${lower} ${metaBits}`, CATEGORY_LEXICON) ||
         (metadata?.isVideo === false ? 'creator' : 'creator');
-    const mood = bestLexiconMatch(haystack, MOOD_LEXICON) || 'cinematic';
+    const mood = bestLexiconMatch(`${lower} ${metaBits}`, MOOD_LEXICON) || 'cinematic';
 
     const storyKeywords = Array.from(
         new Set([
             ...tokens.slice(0, 10),
-            ...(location ? tokenize(location) : []),
+            // slug tokens from location, not title-cased "La"
+            ...resolvedAliases.filter((a) => a.length > 1),
             category,
             mood
         ])
@@ -314,10 +296,14 @@ export function analyzeHeroTitle(title, metadata = null) {
         sports: 'sports fans',
         creator: 'creator vault audiences'
     };
-    const audienceSignal = audienceByCategory[category] || 'creator vault audiences';
+    // Audience signal can reference normalized place without rewriting title.
+    const baseAudience = audienceByCategory[category] || 'creator vault audiences';
+    const audienceSignal = resolvedLocation
+        ? `${baseAudience} · ${resolvedLocation}`
+        : baseAudience;
 
     const isVideo = metadata?.isVideo !== false;
-    const placeClause = location ? ` in ${location}` : '';
+    const placeClause = resolvedLocation ? ` in ${resolvedLocation}` : '';
     const moodClause = mood === 'cinematic' ? 'cinematic' : mood;
 
     let heroDescription = '';
@@ -328,21 +314,25 @@ export function analyzeHeroTitle(title, metadata = null) {
     } else if (category === 'documentary') {
         heroDescription = `A grounded documentary spotlight: ${normalizedTitle}.`;
     } else if (isVideo) {
-        heroDescription = `Trending local experience captured from the creator vault.`;
+        heroDescription = resolvedLocation
+            ? `Trending local experience from ${resolvedLocation}, captured from the creator vault.`
+            : `Trending local experience captured from the creator vault.`;
     } else {
         heroDescription = `Featured still from the creator vault: ${normalizedTitle}.`;
     }
 
     const heroSubtitle =
-        location || category === 'travel'
-            ? `Trending ${category === 'travel' ? 'travel' : 'local'} experience captured from the creator vault.`
+        resolvedLocation || category === 'travel'
+            ? `Trending ${category === 'travel' ? 'travel' : 'local'} experience${
+                  resolvedLocation ? ` in ${resolvedLocation}` : ''
+              } captured from the creator vault.`
             : `Trending local experience captured from the creator vault.`;
 
     const discoveryTags = Array.from(
         new Set([
             category,
             mood,
-            ...(location ? [location.toLowerCase()] : []),
+            ...locationDiscoveryTags(resolvedLocation, resolvedAliases),
             'hero-background',
             isVideo ? 'vault-video' : 'vault-image',
             ...storyKeywords.slice(0, 6)
@@ -353,13 +343,14 @@ export function analyzeHeroTitle(title, metadata = null) {
         normalizedTitle,
         category,
         mood,
-        location,
+        location: resolvedLocation,
         storyKeywords,
         audienceSignal,
         heroDescription,
         discoveryTags,
         heroSubtitle,
-        isFilenameProtected: filenameProtected
+        isFilenameProtected: filenameProtected,
+        locationAliases: resolvedAliases
     };
 }
 

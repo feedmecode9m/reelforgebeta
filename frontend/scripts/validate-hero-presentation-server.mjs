@@ -1,0 +1,135 @@
+#!/usr/bin/env node
+/**
+ * Regression: site-wide hero presentation must not depend on localStorage alone.
+ *
+ * - mapServerPresentationToManagerPatch recovers heroAssetId from backend payload
+ * - sanitize fixes location "La" → "Los Angeles" for "Vic G LA Story"
+ * - simulated clear-localStorage still resolves the canonical hero asset from server
+ */
+import {
+    buildServerPresentationPayload,
+    mapServerPresentationToManagerPatch,
+    sanitizeHeroConfigLocationIntelligence,
+    logHeroSource
+} from '../src/lib/hero/heroPresentationCore.js';
+
+const EXPECTED_HERO_ASSET_ID = '3894107e-ae44-43c5-af72-b3f5d5e0ad90';
+
+let failed = 0;
+
+/** @param {string} label @param {unknown} actual @param {unknown} expected */
+function assertEq(label, actual, expected) {
+    if (actual === expected) {
+        console.log(`  ✓ ${label}`);
+        return;
+    }
+    failed += 1;
+    console.error(
+        `  ✗ ${label}\n    expected: ${JSON.stringify(expected)}\n    actual:   ${JSON.stringify(actual)}`
+    );
+}
+
+/** @param {string} label @param {boolean} cond */
+function assert(label, cond) {
+    if (cond) {
+        console.log(`  ✓ ${label}`);
+        return;
+    }
+    failed += 1;
+    console.error(`  ✗ ${label}`);
+}
+
+console.log('\n[sanitize location “La” → Los Angeles]');
+const badStore = {
+    heroAssetId: EXPECTED_HERO_ASSET_ID,
+    heroTitle: 'Vic G LA Story',
+    heroTitleIntelligence: {
+        normalizedTitle: 'Vic G LA Story',
+        location: 'La',
+        discoveryTags: ['creator']
+    },
+    heroStoryContext: {
+        location: 'La',
+        discoveryTags: ['creator'],
+        headline: 'Vic G LA Story'
+    }
+};
+const fixed = sanitizeHeroConfigLocationIntelligence(badStore);
+assertEq('location Los Angeles', fixed.heroTitleIntelligence.location, 'Los Angeles');
+assertEq('story location Los Angeles', fixed.heroStoryContext.location, 'Los Angeles');
+assertEq('title preserved', fixed.heroTitleIntelligence.normalizedTitle, 'Vic G LA Story');
+assert(
+    'discoveryTags has los-angeles',
+    fixed.heroTitleIntelligence.discoveryTags.includes('los-angeles')
+);
+assert(
+    'discoveryTags has la',
+    fixed.heroTitleIntelligence.discoveryTags.includes('la')
+);
+
+console.log('\n[server payload build includes asset + NLP]');
+const payload = buildServerPresentationPayload({
+    ...fixed,
+    backgroundSource: 'custom_video',
+    heroLabel: 'LOOK@ZAKANDA PRESENTS',
+    heroSubtitle: 'An intimate documentary spotlight.'
+});
+assertEq('payload heroAssetId', payload.heroAssetId, EXPECTED_HERO_ASSET_ID);
+assertEq(
+    'payload presentation location',
+    payload.presentation?.heroTitleIntelligence?.location,
+    'Los Angeles'
+);
+
+console.log('\n[backend → manager patch after clearing localStorage]');
+// Simulate empty local — only server body.
+const serverBody = {
+    heroAssetId: EXPECTED_HERO_ASSET_ID,
+    backgroundSource: 'custom_video',
+    backgroundStyle: 'video',
+    mediaUrl: 'https://cdn.example/prod/3894107e-ae44-43c5-af72-b3f5d5e0ad90.mp4',
+    heroLabel: 'LOOK@ZAKANDA PRESENTS',
+    heroTitle: 'Vic G LA Story',
+    heroSubtitle: 'An intimate documentary spotlight.',
+    presentation: {
+        heroStoryContext: payload.presentation.heroStoryContext,
+        heroTitleIntelligence: payload.presentation.heroTitleIntelligence
+    }
+};
+const patch = mapServerPresentationToManagerPatch(serverBody);
+assert(Boolean(patch), 'map returns patch');
+assertEq('resolved heroAssetId', String(patch.heroAssetId), EXPECTED_HERO_ASSET_ID);
+assertEq('resolved title', String(patch.heroTitle), 'Vic G LA Story');
+assertEq('resolved location', patch.heroTitleIntelligence?.location, 'Los Angeles');
+
+// Fresh browser simulation: empty cache, backend hydrates
+/** @type {Record<string, unknown> | null} */
+let cache = null;
+function loadFn() {
+    return cache || { heroAssetId: '', backgroundSource: 'none', heroTitle: '' };
+}
+function saveFn(p, opts = {}) {
+    cache = { ...loadFn(), ...p };
+    console.log('  [sim] write cache source=', opts.source || 'localStorage', 'id=', cache.heroAssetId);
+    return cache;
+}
+
+// Clear
+cache = null;
+const hydrated = saveFn(patch, { skipServer: true, source: 'backend' });
+const log = logHeroSource({
+    source: 'backend',
+    heroAssetId: hydrated.heroAssetId,
+    title: hydrated.heroTitle,
+    backgroundUrl: serverBody.mediaUrl
+});
+assertEq('fresh context still has hero id', String(hydrated.heroAssetId), EXPECTED_HERO_ASSET_ID);
+assertEq('HERO_SOURCE backend', log.source, 'backend');
+assertEq('HERO_SOURCE asset', log.heroAssetId, EXPECTED_HERO_ASSET_ID);
+
+console.log(
+    failed === 0
+        ? '\n✓ hero presentation server regression passed\n'
+        : `\n✗ ${failed} assertion(s) failed\n`
+);
+process.exit(failed === 0 ? 0 : 1);

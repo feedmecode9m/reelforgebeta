@@ -12,6 +12,8 @@
     "validate:platform-truth": "node scripts/validate-platform.mjs",
     "validate:platform-proof": "node scripts/validate-platform-proof.mjs",
     "validate:hero": "node scripts/validate-hero-intelligence.mjs",
+    "validate:nlp-location": "node scripts/validate-nlp-location-normalizer.mjs",
+    "validate:hero-presentation": "node scripts/validate-hero-presentation-server.mjs",
     "validate:hero-background": "node scripts/validate-hero-background-pipeline.mjs",
     "validate:hero-certification": "node scripts/validate-hero-intelligence-certification.mjs",
     "validate:pipeline": "node scripts/validate-pipeline.mjs",

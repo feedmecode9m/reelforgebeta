@@ -13,7 +13,7 @@ import { toRelativeMediaPath } from './config.js';
 import { isHeroAsset } from './hero/heroDomainGuard.js';
 import { pipelineDiag, pipelineCheckpoint } from './diagnostics/pipelineDiag.js';
 import { logBg7kCatalogReceive } from './diagnostics/bg7kCardRenderTrace.js';
-import { loadHeroManagerConfig, logHeroConfigBootTrace } from './hero/heroIntelligence.js';
+import { loadHeroManagerConfig, logHeroConfigBootTrace, hydrateHeroManagerConfigFromServer } from './hero/heroIntelligence.js';
 import { heroReelFromUploadResponse, loadHeroReel, saveHeroReel } from './hero/heroReelIdentity.js';
 import { logBg7jHeroRestore } from './diagnostics/bg7jHydrationGate.js';
 import { logBg7vHeroRestoreReason } from './diagnostics/bg7vHeroRestoreReason.js';
@@ -216,6 +216,12 @@ function restoreHeroReelIdentityFromReels(reels) {
  */
 export async function bootstrapMediaFromBackend(config = {}) {
     pipelineCheckpoint('VIEWER_BOOTSTRAP', { phase: 'bootstrapMediaFromBackend:start' });
+    // Server hero presentation is source of truth — hydrate cache before any identity restore.
+    try {
+        await hydrateHeroManagerConfigFromServer();
+    } catch (err) {
+        console.warn('[mediaBootstrap] hero presentation hydrate failed', err?.message || err);
+    }
     const bootHeroCfg = loadHeroManagerConfig();
     logHeroConfigBootTrace({
         site: 'mediaBootstrap:bootstrapMediaFromBackend:start',

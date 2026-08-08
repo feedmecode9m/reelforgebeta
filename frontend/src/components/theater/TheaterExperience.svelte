@@ -260,6 +260,10 @@
     import TheaterSeriesPanel from '../series/TheaterSeriesPanel.svelte';
     import TheaterSeriesMetadata from '../publishing/TheaterSeriesMetadata.svelte';
     import { reelSeriesMetadata, getSeriesById, getEpisodeByReelId } from '../../lib/series/seriesStore.js';
+    import {
+        resolveContentIdentity,
+        applyContentIdentityToSeriesContext
+    } from '../../lib/content/contentIdentityResolver.js';
 
     /** @type {import('svelte/store').Readable<unknown[]>} */
     export let personalVideos;
@@ -286,7 +290,25 @@
      */
     const DEFAULT_THEATER_SERIES_ID = 'series-neon-vengeance';
 
-    $: seriesContext = ($reelSeriesMetadata, $activeReel ? resolveSeriesContextForReel($activeReel) : null);
+    /** Creator identity for the active reel (Hero Vault source of truth). */
+    $: contentIdentity = (() => {
+        const reelId = $activeReel?.id == null ? '' : String($activeReel.id);
+        if (!reelId) return null;
+        // Depend on series metadata store so Hero saves re-render Theater menus.
+        void $reelSeriesMetadata;
+        return resolveContentIdentity(reelId, { reel: $activeReel });
+    })();
+
+    $: seriesContext = (() => {
+        if (!$activeReel) return null;
+        void $reelSeriesMetadata;
+        const base = resolveSeriesContextForReel($activeReel);
+        const identity =
+            contentIdentity ||
+            resolveContentIdentity(String($activeReel.id || ''), { reel: $activeReel });
+        if (!base) return null;
+        return applyContentIdentityToSeriesContext(base, identity);
+    })();
     $: hasSeriesMetadata = Boolean(seriesContext);
     $: seriesId = seriesContext?.series.id ?? '';
     $: drawerSeriesId = (() => {

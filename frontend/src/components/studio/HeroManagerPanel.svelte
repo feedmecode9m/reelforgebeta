@@ -57,6 +57,8 @@
         updateEpisodeTitleForReel
     } from '../../lib/series/seriesStore.js';
     import { bridgeFeedReelsToCatalog } from '../../lib/series/episodeBridge.js';
+    import { resolveContentIdentity } from '../../lib/content/contentIdentityResolver.js';
+    import { syncHeroIdentityToEpisodeMetadata } from '../../lib/series/heroEpisodeSync.js';
 
     /** @type {Record<string, unknown>[]} */
     export let feedReels = [];
@@ -381,6 +383,39 @@
     }
 
     /**
+     * After Hero Manager saves creator title/story/identity, mirror onto episode metadata.
+     * @param {Record<string, unknown>} snapshot
+     * @param {string} [source]
+     */
+    function pushHeroIdentityToEpisode(snapshot, source = 'hero-manager') {
+        const reelId = String(snapshot?.heroAssetId || '').trim();
+        if (!reelId) return null;
+        try {
+            const resolved = resolveContentIdentity(reelId, {
+                heroConfig: snapshot,
+                contentIdentity: snapshot?.contentIdentity || null
+            });
+            return syncHeroIdentityToEpisodeMetadata(reelId, {
+                title: resolved.title || String(snapshot.heroTitle || ''),
+                episodeTitle:
+                    resolved.episodeTitle ||
+                    String(snapshot.heroTitle || snapshot.heroAssetTitle || ''),
+                description:
+                    resolved.description ||
+                    String(snapshot.heroDescription || snapshot.heroStoryContext?.description || ''),
+                tags: resolved.tags,
+                keywords: resolved.keywords,
+                seriesName: resolved.seriesName,
+                genre: Array.isArray(resolved.keywords) ? resolved.keywords[0] : '',
+                source: resolved.source || source || 'creator'
+            });
+        } catch (error) {
+            console.warn('[HERO_EPISODE_SYNC_FAILED]', error?.message || error);
+            return null;
+        }
+    }
+
+    /**
      * Full admin follow-through: persist every field and notify the hero stage.
      * @param {string} reason
      * @param {Record<string, unknown>} [overrides]
@@ -402,6 +437,9 @@
             const managerPatch = projectManagerConfigFromHeroRecord(snapshot, record);
             const result = updateHeroManagerConfig(/** @type {any} */ (managerPatch), feedReels || []);
             applyLocalConfigFromSources(result?.config || loadHeroManagerConfig());
+
+            // Creator identity → Theater episode metadata (same reelId / heroAssetId).
+            pushHeroIdentityToEpisode(config, reason);
 
             console.info('[HERO_MANAGER_PERSIST]', {
                 reason,
@@ -952,6 +990,28 @@
 
         const episodeUpdate = updateEpisodeTitleForReel(assetId, durableTitle);
         const episodeCtx = getEpisodeByReelId(assetId);
+
+        // Always write creator title into reelforge_series_metadata for Theater menus.
+        try {
+            const resolved = resolveContentIdentity(assetId, {
+                heroConfig: heroBound ? { ...config, heroTitle: durableTitle, heroAssetId: assetId } : config,
+                contentIdentity: config?.contentIdentity || null,
+                reel: { id: assetId, title: durableTitle, name: durableTitle }
+            });
+            syncHeroIdentityToEpisodeMetadata(assetId, {
+                title: durableTitle,
+                episodeTitle: durableTitle,
+                description:
+                    resolved.description ||
+                    String(config.heroDescription || config.heroStoryContext?.description || ''),
+                tags: resolved.tags,
+                keywords: [...(resolved.keywords || []), ...(intelligence.storyKeywords || [])],
+                seriesName: resolved.seriesName,
+                source: 'creator'
+            });
+        } catch {
+            /* ignore */
+        }
 
         let backendSynced = false;
         if (typeof updateReelTitle === 'function') {
