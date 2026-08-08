@@ -63,7 +63,8 @@ import {
     pushHeroPresentationToServer,
     sanitizeHeroConfigLocationIntelligence,
     setLastHeroConfigSource,
-    enrichPresentationConfigFromLocalIdentity
+    enrichPresentationConfigFromLocalIdentity,
+    buildServerPresentationPayload
 } from './heroPresentationSync.js';
 
 export const HERO_MODES = /** @type {const} */ ([
@@ -707,15 +708,35 @@ export function getDefaultHeroManagerConfig() {
             contentIdentity: null,
             heroIntelligenceProposals: null,
             ctaPrimaryLabel: 'Watch Now',
-        ctaPrimaryTarget: '/watch',
-        ctaSecondaryLabel: 'Learn More',
-        ctaSecondaryTarget: '/series/neon-vengeance',
-        campaignType: 'editorial_story',
-        featuredCollection: 'Black Legacy Stories',
-        featuredSeries: 'Neon Vengeance',
-        storyStatus: 'draft',
-        storyScheduledFor: ''
+            // In-hero advance only unless Creator sets a real path explicitly.
+            ctaPrimaryTarget: '',
+            ctaSecondaryLabel: 'Learn More',
+            // Never default home users onto the demo series route.
+            // Visiting /series/neon-vengeance still works when the user navigates there.
+            ctaSecondaryTarget: '',
+            campaignType: 'editorial_story',
+            featuredCollection: 'Black Legacy Stories',
+            featuredSeries: 'Neon Vengeance',
+            storyStatus: 'draft',
+            storyScheduledFor: ''
     };
+}
+
+/**
+ * Strip legacy/default CTA paths that sent users into the demo SeriesPublic page.
+ * Explicit non-demo paths are preserved; empty means no navigation.
+ * @param {unknown} raw
+ * @returns {string}
+ */
+export function sanitizeHeroCtaTarget(raw) {
+    const resolved = String(raw || '').trim();
+    if (!resolved) return '';
+    const normalized = resolved.replace(/\/+$/, '') || '/';
+    // Known prior default that routed Learn More → SeriesPublic unexpectedly.
+    if (/^\/series\/neon-vengeance$/i.test(normalized)) {
+        return '';
+    }
+    return resolved;
 }
 
 /** @returns {HeroManagerConfig} */
@@ -836,18 +857,20 @@ export function loadHeroManagerConfig() {
                 typeof parsed.ctaPrimaryLabel === 'string'
                     ? parsed.ctaPrimaryLabel
                     : getDefaultHeroManagerConfig().ctaPrimaryLabel,
-            ctaPrimaryTarget:
+            ctaPrimaryTarget: sanitizeHeroCtaTarget(
                 typeof parsed.ctaPrimaryTarget === 'string'
                     ? parsed.ctaPrimaryTarget
-                    : getDefaultHeroManagerConfig().ctaPrimaryTarget,
+                    : getDefaultHeroManagerConfig().ctaPrimaryTarget
+            ),
             ctaSecondaryLabel:
                 typeof parsed.ctaSecondaryLabel === 'string'
                     ? parsed.ctaSecondaryLabel
                     : getDefaultHeroManagerConfig().ctaSecondaryLabel,
-            ctaSecondaryTarget:
+            ctaSecondaryTarget: sanitizeHeroCtaTarget(
                 typeof parsed.ctaSecondaryTarget === 'string'
                     ? parsed.ctaSecondaryTarget
-                    : getDefaultHeroManagerConfig().ctaSecondaryTarget,
+                    : getDefaultHeroManagerConfig().ctaSecondaryTarget
+            ),
             campaignType:
                 typeof parsed.campaignType === 'string'
                     ? parsed.campaignType
@@ -1328,11 +1351,17 @@ export function saveHeroManagerConfig(patch = {}, options = {}) {
         }
         // Cache write only unless skipServer — never treat localStorage as SoT.
         if (options.skipServer !== true) {
-            const pushPromise = pushHeroPresentationToServer(next);
+            const pushPromise = pushHeroPresentationToServer(next).then((result) => {
+                if (!result?.ok) {
+                    console.warn(
+                        '[HERO_PRESENTATION] background push failed',
+                        result?.error || result?.status
+                    );
+                }
+                return result;
+            });
             // Optional await path: saveHeroManagerConfig(..., { waitForServer: true })
             if (options.waitForServer === true) {
-                // Synchronous callers ignore return; awaiters use persistHeroPresentationAwait.
-                // Stored on next for debugging.
                 next.__serverPush = pushPromise;
             } else {
                 pushPromise.catch((err) => {
@@ -1349,19 +1378,47 @@ export function saveHeroManagerConfig(patch = {}, options = {}) {
  * Explicit awaitable publish of current manager config (or patch) to PUT /api/hero/presentation.
  * Use from Hero Manager after user selects a background.
  * @param {Partial<HeroManagerConfig>} [patch]
- * @returns {Promise<{ ok: boolean; config: HeroManagerConfig; server: Record<string, unknown> | null; error?: string }>}
+ * @returns {Promise<{ ok: boolean; config: HeroManagerConfig; server: Record<string, unknown> | null; error?: string; status?: number; payload?: Record<string, unknown> | null }>}
  */
 export async function persistHeroPresentationToServer(patch = {}) {
     console.info('[HERO_MANAGER] apply', {
         stage: 'persistHeroPresentationToServer:start',
         patchKeys: patch && typeof patch === 'object' ? Object.keys(patch) : [],
+        patchHeroAssetId: patch?.heroAssetId || null,
+        patchMediaUrl: patch?.mediaUrl
+            ? String(patch.mediaUrl).slice(0, 96)
+            : patch?.backgroundMediaUrl
+              ? String(patch.backgroundMediaUrl).slice(0, 96)
+              : null,
+        patchHeroTitle: patch?.heroTitle || null,
         ts: new Date().toISOString()
     });
 
     let config;
     if (patch && typeof patch === 'object' && Object.keys(patch).length) {
         // Write cache only; single PUT from push below (avoid double requests).
-        config = saveHeroManagerConfig(patch, { skipServer: true });
+        const record = loadHeroRecord();
+        const merged = mergeHeroRecordIntoManagerConfig(
+            { ...loadHeroManagerConfig(), ...patch },
+            record
+        );
+        // Prefer explicit patch fields (title/description from Apply) over record stale copy.
+        const withPatchPriority = {
+            ...merged,
+            ...patch,
+            mediaUrl: patch.mediaUrl || merged.mediaUrl || '',
+            posterUrl: patch.posterUrl || merged.posterUrl || '',
+            backgroundMediaUrl:
+                patch.mediaUrl ||
+                patch.backgroundMediaUrl ||
+                merged.mediaUrl ||
+                merged.backgroundMediaUrl ||
+                ''
+        };
+        config = saveHeroManagerConfig(
+            enrichPresentationConfigFromLocalIdentity(withPatchPriority),
+            { skipServer: true }
+        );
     } else {
         // CRITICAL: load must not drop mediaUrl — also re-merge live HeroRecord identity.
         const stored = loadHeroManagerConfig();
@@ -1392,23 +1449,70 @@ export async function persistHeroPresentationToServer(patch = {}) {
         }
     }
 
+    // Final projection for the wire (mirrors what PUT will send).
+    const publishable = enrichPresentationConfigFromLocalIdentity(config);
+    const previewPayload = buildServerPresentationPayload(publishable);
+    console.info('[HERO_MANAGER] apply payload', {
+        stage: 'persistHeroPresentationToServer:pre_push',
+        heroAssetId: previewPayload.heroAssetId || null,
+        mediaUrl: previewPayload.mediaUrl || null,
+        posterUrl: previewPayload.posterUrl || null,
+        heroLabel: previewPayload.heroLabel || null,
+        heroTitle: previewPayload.heroTitle || null,
+        heroSubtitle: previewPayload.heroSubtitle || null,
+        heroDescription: previewPayload.heroDescription || null,
+        backgroundSource: previewPayload.backgroundSource,
+        ts: new Date().toISOString()
+    });
+
     try {
-        const server = await pushHeroPresentationToServer(config);
-        if (!server) {
+        const pushResult = await pushHeroPresentationToServer(publishable);
+        if (!pushResult?.ok || !pushResult.data) {
             return {
                 ok: false,
-                config,
+                config: publishable,
                 server: null,
-                error: 'Server write failed or skipped (login required / empty payload)'
+                error:
+                    pushResult?.error ||
+                    'Server write failed or skipped (login required / empty payload)',
+                status: pushResult?.status,
+                payload: pushResult?.payload || previewPayload
             };
         }
-        return { ok: true, config, server };
+        // Mirror authoritative server row into local cache (no second PUT).
+        saveHeroManagerConfig(
+            {
+                heroAssetId: pushResult.data.heroAssetId || publishable.heroAssetId,
+                backgroundSource:
+                    pushResult.data.backgroundSource || publishable.backgroundSource,
+                backgroundStyle:
+                    pushResult.data.backgroundStyle || publishable.backgroundStyle,
+                mediaUrl: pushResult.data.mediaUrl || publishable.mediaUrl || '',
+                posterUrl: pushResult.data.posterUrl || publishable.posterUrl || '',
+                backgroundMediaUrl:
+                    pushResult.data.mediaUrl || publishable.mediaUrl || '',
+                heroLabel: pushResult.data.heroLabel ?? publishable.heroLabel,
+                heroTitle: pushResult.data.heroTitle ?? publishable.heroTitle,
+                heroSubtitle: pushResult.data.heroSubtitle ?? publishable.heroSubtitle,
+                heroDescription:
+                    pushResult.data.heroDescription ?? publishable.heroDescription
+            },
+            { skipServer: true, source: 'backend' }
+        );
+        return {
+            ok: true,
+            config: publishable,
+            server: pushResult.data,
+            status: pushResult.status,
+            payload: pushResult.payload || previewPayload
+        };
     } catch (error) {
         return {
             ok: false,
-            config,
+            config: publishable,
             server: null,
-            error: error?.message || String(error)
+            error: error?.message || String(error),
+            payload: previewPayload
         };
     }
 }
@@ -1548,12 +1652,18 @@ export function commitHeroAssetSelection(assetId, extraItems = null) {
         const blank = setHeroMode('none', { source: 'commit_hero_asset_clear' });
         if (!blank) return null;
         refreshHeroReelLegacyMirror();
-        return saveHeroManagerConfig({
-            heroAssetId: '',
-            backgroundSource: 'none',
-            backgroundStyle: 'gradient_overlay',
-            heroCopySourceAssetId: ''
-        });
+        return saveHeroManagerConfig(
+            {
+                heroAssetId: '',
+                backgroundSource: 'none',
+                backgroundStyle: 'gradient_overlay',
+                heroCopySourceAssetId: '',
+                mediaUrl: '',
+                posterUrl: '',
+                backgroundMediaUrl: ''
+            },
+            { skipServer: true }
+        );
     }
 
     const vaultItems = loadHeroVaultItems(extraItems);
@@ -1639,16 +1749,20 @@ export function commitHeroAssetSelection(assetId, extraItems = null) {
     });
 
     const pointer = projectHeroRecordToManagerPointer(record);
-    return saveHeroManagerConfig({
-        heroAssetId: pointer.heroAssetId,
-        backgroundSource: /** @type {any} */ (pointer.backgroundSource),
-        backgroundStyle: pointer.backgroundStyle || (isVideo ? 'video' : 'image'),
-        // Durable media URLs for PUT /api/hero/presentation (not only asset id).
-        mediaUrl,
-        posterUrl,
-        backgroundMediaUrl: mediaUrl,
-        ...intelBundle.patch
-    });
+    // Cache first; Hero Manager confirms site-wide PUT after select (skip fire-and-forget race).
+    return saveHeroManagerConfig(
+        {
+            heroAssetId: pointer.heroAssetId,
+            backgroundSource: /** @type {any} */ (pointer.backgroundSource),
+            backgroundStyle: pointer.backgroundStyle || (isVideo ? 'video' : 'image'),
+            // Durable media URLs for PUT /api/hero/presentation (not only asset id).
+            mediaUrl,
+            posterUrl,
+            backgroundMediaUrl: mediaUrl,
+            ...intelBundle.patch
+        },
+        { skipServer: true }
+    );
 }
 
 /** @param {string | null | undefined} type */

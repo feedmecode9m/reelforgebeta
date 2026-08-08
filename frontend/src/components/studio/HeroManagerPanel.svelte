@@ -14,7 +14,9 @@
         rotateHeroSelection,
         commitHeroAssetSelection,
         syncHeroViewerCopyFromAsset,
-        persistHeroPresentationToServer
+        persistHeroPresentationToServer,
+        sanitizeHeroCtaTarget,
+        selectHeroContent
     } from '../../lib/hero/heroIntelligence.js';
     import {
         isStockHeroViewerCopy,
@@ -53,6 +55,7 @@
         mergeHeroRecordIntoManagerConfig,
         projectManagerConfigFromHeroRecord
     } from '../../lib/hero/heroRecord.js';
+    import { enrichPresentationConfigFromLocalIdentity } from '../../lib/hero/heroPresentationSync.js';
     import {
         getEpisodeByReelId,
         updateEpisodeTitleForReel
@@ -419,26 +422,53 @@
     /**
      * Confirm site-wide presentation wrote to PUT /api/hero/presentation.
      * @param {string} reason
+     * @param {Record<string, unknown> | null} [publishPatch]
      */
     async function confirmServerPresentation(reason = 'apply', publishPatch = null) {
+        const patch =
+            publishPatch && typeof publishPatch === 'object'
+                ? publishPatch
+                : {};
         console.info('[HERO_MANAGER] apply', {
             reason,
-            heroAssetId: config?.heroAssetId || '',
-            backgroundSource: config?.backgroundSource || '',
-            hasMediaUrl: Boolean(config?.mediaUrl || config?.backgroundMediaUrl),
+            heroAssetId: patch.heroAssetId || config?.heroAssetId || '',
+            backgroundSource: patch.backgroundSource || config?.backgroundSource || '',
+            mediaUrl: String(patch.mediaUrl || config?.mediaUrl || config?.backgroundMediaUrl || '').slice(
+                0,
+                120
+            ),
+            heroTitle: String(patch.heroTitle || config?.heroTitle || '').slice(0, 80),
+            heroDescription: String(patch.heroDescription || config?.heroDescription || '').slice(
+                0,
+                80
+            ),
             ts: new Date().toISOString()
         });
         try {
             // Prefer explicit patch from the save path so we never re-read a stripped load.
-            const result = await persistHeroPresentationToServer(
-                publishPatch && typeof publishPatch === 'object' ? publishPatch : {}
-            );
+            const result = await persistHeroPresentationToServer(patch);
+            console.info('[HERO_MANAGER] apply payload', {
+                reason,
+                ok: result.ok,
+                status: result.status ?? null,
+                heroAssetId: result.payload?.heroAssetId || result.server?.heroAssetId || null,
+                mediaUrl: result.payload?.mediaUrl || result.server?.mediaUrl || null,
+                posterUrl: result.payload?.posterUrl || result.server?.posterUrl || null,
+                heroTitle: result.payload?.heroTitle || result.server?.heroTitle || null,
+                heroSubtitle: result.payload?.heroSubtitle || result.server?.heroSubtitle || null,
+                heroDescription:
+                    result.payload?.heroDescription || result.server?.heroDescription || null,
+                error: result.error || null,
+                ts: new Date().toISOString()
+            });
             if (result.ok) {
                 console.info('[HERO_MANAGER_SERVER_SYNC]', {
                     reason,
                     ok: true,
+                    status: result.status,
                     heroAssetId: result.server?.heroAssetId || result.config?.heroAssetId || '',
                     mediaUrl: result.server?.mediaUrl || result.config?.mediaUrl || '',
+                    heroTitle: result.server?.heroTitle || result.config?.heroTitle || '',
                     ts: new Date().toISOString()
                 });
                 return true;
@@ -446,6 +476,7 @@
             console.warn('[HERO_MANAGER_SERVER_SYNC]', {
                 reason,
                 ok: false,
+                status: result.status,
                 error: result.error,
                 ts: new Date().toISOString()
             });
@@ -488,27 +519,57 @@
                 }
                 if (poster) managerPatch.posterUrl = poster;
             }
-            const result = updateHeroManagerConfig(/** @type {any} */ (managerPatch), feedReels || []);
-            applyLocalConfigFromSources(result?.config || loadHeroManagerConfig());
+            // Cache only — single awaitable PUT via confirmServerPresentation.
+            const savedConfig = saveHeroManagerConfig(
+                /** @type {any} */ (managerPatch),
+                { skipServer: true }
+            );
+            const selection = selectHeroContent(savedConfig.heroType, feedReels || []);
+            applyLocalConfigFromSources(savedConfig || loadHeroManagerConfig());
 
             // Creator identity → Theater episode metadata (same reelId / heroAssetId).
             pushHeroIdentityToEpisode(config, reason);
 
+            const publishBody = enrichPresentationConfigFromLocalIdentity({
+                ...savedConfig,
+                heroAssetId: config.heroAssetId || savedConfig.heroAssetId,
+                mediaUrl: config.mediaUrl || managerPatch.mediaUrl || savedConfig.mediaUrl,
+                posterUrl: config.posterUrl || managerPatch.posterUrl || savedConfig.posterUrl,
+                heroTitle: config.heroTitle || savedConfig.heroTitle,
+                heroSubtitle: config.heroSubtitle || savedConfig.heroSubtitle,
+                heroDescription: config.heroDescription || savedConfig.heroDescription,
+                heroLabel: config.heroLabel || savedConfig.heroLabel,
+                backgroundSource: config.backgroundSource || savedConfig.backgroundSource,
+                backgroundStyle: config.backgroundStyle || savedConfig.backgroundStyle
+            });
+
             console.info('[HERO_MANAGER_PERSIST]', {
                 reason,
                 storyStatus: config.storyStatus || 'draft',
-                backgroundSource: config.backgroundSource || '',
-                heroAssetId: config.heroAssetId || '',
-                mediaUrl: String(config.mediaUrl || managerPatch.mediaUrl || '').slice(0, 80),
-                heroTitle: String(config.heroTitle || '').slice(0, 80),
-                heroDescriptionBlank: !String(config.heroDescription || '').trim(),
+                backgroundSource: publishBody.backgroundSource || '',
+                heroAssetId: publishBody.heroAssetId || '',
+                mediaUrl: String(publishBody.mediaUrl || '').slice(0, 80),
+                heroTitle: String(publishBody.heroTitle || '').slice(0, 80),
+                heroDescriptionBlank: !String(publishBody.heroDescription || '').trim(),
                 recordMode: record?.mode || '',
                 recordRevision: record?.revision,
                 ts: new Date().toISOString()
             });
-            // Publish the same patch we just saved (avoid load strip race).
-            confirmServerPresentation(reason, result?.config || managerPatch);
-            return result ? { ...result, config } : null;
+            console.info('[HERO_MANAGER] apply payload', {
+                stage: 'persistHeroSettings',
+                reason,
+                heroAssetId: publishBody.heroAssetId || null,
+                mediaUrl: publishBody.mediaUrl || null,
+                posterUrl: publishBody.posterUrl || null,
+                heroTitle: publishBody.heroTitle || null,
+                heroSubtitle: publishBody.heroSubtitle || null,
+                heroDescription: publishBody.heroDescription || null,
+                heroLabel: publishBody.heroLabel || null,
+                backgroundSource: publishBody.backgroundSource || null
+            });
+            // Publish the same body we just saved (avoid load strip race).
+            confirmServerPresentation(reason, publishBody);
+            return { config, selection };
         } catch (error) {
             console.error('[HERO_MANAGER_PERSIST_FAILED]', { reason, error });
             statusMessage = `❌ Save failed: ${error?.message || error}`;
@@ -629,9 +690,9 @@
             heroSubtitle: String(config.heroSubtitle || '').trim(),
             heroDescription: String(config.heroDescription || '').trim(),
             ctaPrimaryLabel: String(config.ctaPrimaryLabel || '').trim(),
-            ctaPrimaryTarget: String(config.ctaPrimaryTarget || '').trim(),
+            ctaPrimaryTarget: sanitizeHeroCtaTarget(config.ctaPrimaryTarget),
             ctaSecondaryLabel: String(config.ctaSecondaryLabel || '').trim(),
-            ctaSecondaryTarget: String(config.ctaSecondaryTarget || '').trim(),
+            ctaSecondaryTarget: sanitizeHeroCtaTarget(config.ctaSecondaryTarget),
             campaignType: String(config.campaignType || '').trim(),
             featuredCollection: String(config.featuredCollection || '').trim(),
             featuredSeries: String(config.featuredSeries || '').trim()
@@ -1189,6 +1250,11 @@
             });
             const liveTitle = String(config.heroTitle || intel.normalizedTitle).trim();
             statusMessage = `Hero background · “${liveTitle}” · ${intel.category}/${intel.mood} story bound`;
+            confirmServerPresentation('vault_card_select', saved).then((ok) => {
+                if (ok) {
+                    statusMessage = `Hero published site-wide · “${liveTitle}”`;
+                }
+            });
             dispatchVaultTitleUpdated({
                 reelId: assetId,
                 oldTitle: '',
@@ -1812,7 +1878,7 @@
             </label>
             <label class="hero-manager__field">
                 <span>Secondary CTA Target</span>
-                <input type="text" bind:value={config.ctaSecondaryTarget} placeholder="/series/neon-vengeance" on:change={handleFieldCommit} on:blur={handleFieldCommit} />
+                <input type="text" bind:value={config.ctaSecondaryTarget} placeholder="/series/your-series (optional)" on:change={handleFieldCommit} on:blur={handleFieldCommit} />
             </label>
             <label class="hero-manager__field">
                 <span>Campaign Type</span>

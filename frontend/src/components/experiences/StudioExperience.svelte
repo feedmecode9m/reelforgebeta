@@ -822,7 +822,12 @@
     try {
       const result = await authenticateAdmin(password);
       if (result.success) {
-        setAdminSessionToken(result.token || 'backend_token');
+        const token = String(result.token || '').trim();
+        if (!token || token === 'backend_token') {
+          adminLoginError = '❌ Login succeeded but no session token was returned. Check backend /admin/auth.';
+          return;
+        }
+        setAdminSessionToken(token);
         adminMode.set(true);
         controlCenterOpen.set(true);
         adminLoginError = '';
@@ -835,6 +840,15 @@
       adminLoginError = '❌ Authentication failed';
     } catch (error) {
       console.warn('⚠️ Backend unreachable, attempting secure local dev fallback:', error.message);
+      const host = typeof window !== 'undefined' ? String(window.location.hostname || '') : '';
+      const isLocalHost =
+        !host || host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
+      // Production Netlify must never store dev_local_session — PUT /api/* rejects it.
+      if (!isLocalHost) {
+        adminLoginError =
+          '❌ Cannot reach backend auth. Fix API connectivity, then log in again (offline session is disabled on production hosts).';
+        return;
+      }
       const localPasswords = ['Gaff1505!', 'SMART_PRODUCTION', CONFIG.ADMIN_PASSWORD || 'admin123'];
       if (localPasswords.includes(password)) {
         setAdminSessionToken('dev_local_session');
