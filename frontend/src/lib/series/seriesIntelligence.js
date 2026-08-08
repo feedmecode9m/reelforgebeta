@@ -1,5 +1,6 @@
 import { getNextEpisode, getReelSeriesMetadata, getSeriesById } from './seriesStore.js';
 import { getStoredWatchPercent, hasWatchProgressData } from './seriesWatchProgress.js';
+import { episodeIsPlayable } from './seriesTypes.js';
 
 /** @typedef {'New' | 'Released' | 'Upcoming'} DisplayEpisodeStatus */
 
@@ -70,7 +71,7 @@ export function getSeriesEpisodeCounts(seriesId) {
     return {
         totalEpisodes: episodes.length,
         publishedEpisodes: episodes.filter((e) => e.status === 'published' || e.status === 'ready').length,
-        playableEpisodes: episodes.filter((e) => e.reelId && e.status !== 'draft' && e.status !== 'archived').length
+        playableEpisodes: episodes.filter((e) => episodeIsPlayable(e)).length
     };
 }
 

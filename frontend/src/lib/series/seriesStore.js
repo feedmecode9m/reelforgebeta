@@ -1,6 +1,10 @@
 import { writable, derived, get } from 'svelte/store';
 import { MOCK_SERIES_CATALOG } from './mockSeriesData.js';
-import { episodeHasReel, episodeIsPlayable, isSeries } from './seriesTypes.js';
+import {
+    episodeIsPlayable,
+    isEpisodeStatus,
+    isSeries
+} from './seriesTypes.js';
 import {
     loadReelSeriesMetadataMap,
     persistReelSeriesMetadataMap,
@@ -691,6 +695,196 @@ export function updateEpisodeTitleForReel(reelId, nextTitle) {
 }
 
 /**
+ * Sync reel-level metadata map from current catalog episode (no media rebinding logic).
+ * Uses metadata persistence APIs; does not run vault title inference.
+ * @param {{ series: Series; season: Season; episode: Episode }} ctx
+ */
+function syncReelMetadataFromCatalogEpisode(ctx) {
+    const reelId = ctx?.episode?.reelId ? String(ctx.episode.reelId).trim() : '';
+    if (!reelId) return null;
+
+    const saved = upsertStoredReelSeriesMetadata(reelId, {
+        reelId,
+        episodeId: ctx.episode.episodeId,
+        seriesId: ctx.series.id,
+        seriesName: ctx.series.title,
+        seasonNumber: ctx.season.seasonNumber,
+        episodeNumber: ctx.episode.episodeNumber,
+        episodeTitle: ctx.episode.title,
+        description: ctx.episode.description,
+        episodeStatus: ctx.episode.status,
+        genre: ctx.episode.genre ?? ctx.series.genre,
+        tags: ctx.episode.tags ?? ctx.series.tags,
+        runtime: ctx.episode.runtime
+    });
+    if (!saved) return null;
+
+    reelSeriesMetadata.update((map) => ({ ...map, [reelId]: saved }));
+    void persistReelMetadataToApi(reelId, saved);
+    scheduleSyncPush('seriesMetadata');
+    return saved;
+}
+
+/**
+ * Episode-id primary catalog patch (Creator Catalog Control).
+ * Updates title / description / status only; preserves episodeId, reelId, season membership.
+ *
+ * @param {string} episodeId
+ * @param {{ title?: string; description?: string; status?: import('./seriesTypes.js').EpisodeStatus }} patch
+ * @returns {{ series: Series; season: Season; episode: Episode } | null}
+ */
+export function updateCatalogEpisode(episodeId, patch = {}) {
+    const id = String(episodeId || '').trim();
+    if (!id || !patch || typeof patch !== 'object') return null;
+
+    const existing = getEpisodeById(id);
+    if (!existing) return null;
+
+    /** @type {Partial<Episode>} */
+    const fields = {};
+    if ('title' in patch) {
+        const title = String(patch.title ?? '').trim();
+        if (!title) return null;
+        fields.title = title;
+    }
+    if ('description' in patch) {
+        fields.description = String(patch.description ?? '');
+    }
+    if ('status' in patch) {
+        if (!isEpisodeStatus(patch.status)) return null;
+        fields.status = /** @type {import('./seriesTypes.js').EpisodeStatus} */ (patch.status);
+    }
+    if (Object.keys(fields).length === 0) {
+        return existing;
+    }
+
+    let applied = false;
+    seriesCatalog.update((catalogItems) => {
+        const next = catalogItems.map((series) => ({
+            ...series,
+            seasons: series.seasons.map((season) => ({
+                ...season,
+                episodes: season.episodes.map((episode) => {
+                    if (episode.episodeId !== id) return episode;
+                    applied = true;
+                    return {
+                        ...episode,
+                        ...fields,
+                        // Hard preserve identity + media link
+                        episodeId: episode.episodeId,
+                        reelId: episode.reelId
+                    };
+                })
+            }))
+        }));
+        return applied ? next : catalogItems;
+    });
+
+    if (!applied) return null;
+
+    const updated = getEpisodeById(id);
+    if (!updated) return null;
+
+    if (updated.episode.reelId) {
+        syncReelMetadataFromCatalogEpisode(updated);
+    }
+
+    console.info('[CATALOG_EPISODE_UPDATE]', {
+        episodeId: id,
+        seriesId: updated.series.id,
+        seasonNumber: updated.season.seasonNumber,
+        reelId: updated.episode.reelId || null,
+        fields: Object.keys(fields),
+        ts: new Date().toISOString()
+    });
+
+    return updated;
+}
+
+/**
+ * @param {string} episodeId
+ * @param {import('./seriesTypes.js').EpisodeStatus} status
+ * @returns {{ series: Series; season: Season; episode: Episode } | null}
+ */
+export function setEpisodeStatus(episodeId, status) {
+    return updateCatalogEpisode(episodeId, { status });
+}
+
+/**
+ * Reorder episodes within a single season. Preserves episodeId and reelId; renumbers 1..n.
+ *
+ * @param {string} seriesId
+ * @param {number} seasonNumber
+ * @param {string[]} orderedEpisodeIds
+ * @returns {boolean}
+ */
+export function reorderEpisodesInSeason(seriesId, seasonNumber, orderedEpisodeIds) {
+    const sid = String(seriesId || '').trim();
+    const sn = Number(seasonNumber);
+    if (!sid || !Number.isFinite(sn) || sn < 1) return false;
+    if (!Array.isArray(orderedEpisodeIds) || orderedEpisodeIds.length === 0) return false;
+
+    const hit = getSeasonByNumber(sid, sn);
+    if (!hit) return false;
+
+    const { season } = hit;
+    const byId = new Map(season.episodes.map((ep) => [ep.episodeId, ep]));
+    const ordered = orderedEpisodeIds.map((id) => String(id || '').trim()).filter(Boolean);
+
+    if (ordered.length !== season.episodes.length) return false;
+    if (new Set(ordered).size !== ordered.length) return false;
+    for (const epId of ordered) {
+        if (!byId.has(epId)) return false;
+    }
+
+    /** @type {Episode[]} */
+    const renumbered = ordered.map((epId, index) => {
+        const prev = byId.get(epId);
+        return {
+            ...prev,
+            episodeId: prev.episodeId,
+            reelId: prev.reelId,
+            episodeNumber: index + 1
+        };
+    });
+
+    let applied = false;
+    seriesCatalog.update((catalogItems) => {
+        const next = catalogItems.map((series) => {
+            if (series.id !== sid) return series;
+            return {
+                ...series,
+                seasons: series.seasons.map((s) => {
+                    if (s.seasonNumber !== sn) return s;
+                    applied = true;
+                    return { ...s, episodes: renumbered };
+                })
+            };
+        });
+        return applied ? next : catalogItems;
+    });
+
+    if (!applied) return false;
+
+    for (const episode of renumbered) {
+        if (!episode.reelId) continue;
+        const ctx = getEpisodeById(episode.episodeId);
+        if (ctx) syncReelMetadataFromCatalogEpisode(ctx);
+    }
+
+    console.info('[CATALOG_EPISODE_REORDER]', {
+        seriesId: sid,
+        seasonNumber: sn,
+        orderedEpisodeIds: ordered,
+        ts: new Date().toISOString()
+    });
+
+    return true;
+}
+
+/**
+ * Next *playable* episode in series order (skips draft/archived / missing reel).
+ * Uses the same episodeIsPlayable predicate as resolveReelForEpisode.
  * @param {string} episodeId
  * @returns {{ series: Series; season: Season; episode: Episode } | undefined}
  */
@@ -699,18 +893,24 @@ export function getNextEpisode(episodeId) {
     if (!current) return undefined;
 
     const { series, season, episode } = current;
-    const seasonEpisodes = [...season.episodes].sort((a, b) => a.episodeNumber - b.episodeNumber);
-    const idx = seasonEpisodes.findIndex((e) => e.episodeId === episode.episodeId);
-    if (idx >= 0 && idx < seasonEpisodes.length - 1) {
-        return { series, season, episode: seasonEpisodes[idx + 1] };
-    }
-
     const seasons = [...series.seasons].sort((a, b) => a.seasonNumber - b.seasonNumber);
     const seasonIdx = seasons.findIndex((s) => s.seasonNumber === season.seasonNumber);
-    if (seasonIdx >= 0 && seasonIdx < seasons.length - 1) {
-        const nextSeason = seasons[seasonIdx + 1];
-        const first = [...nextSeason.episodes].sort((a, b) => a.episodeNumber - b.episodeNumber)[0];
-        if (first) return { series, season: nextSeason, episode: first };
+    if (seasonIdx < 0) return undefined;
+
+    for (let si = seasonIdx; si < seasons.length; si += 1) {
+        const s = seasons[si];
+        const sorted = [...s.episodes].sort((a, b) => a.episodeNumber - b.episodeNumber);
+        const startIdx =
+            si === seasonIdx
+                ? sorted.findIndex((e) => e.episodeId === episode.episodeId) + 1
+                : 0;
+        if (startIdx < 0) continue;
+        for (let ei = startIdx; ei < sorted.length; ei += 1) {
+            const candidate = sorted[ei];
+            if (episodeIsPlayable(candidate)) {
+                return { series, season: s, episode: candidate };
+            }
+        }
     }
 
     return undefined;
@@ -725,7 +925,7 @@ export function getPublishedEpisodesForSeries(seriesId) {
     if (!series) return [];
     return series.seasons
         .flatMap((season) => season.episodes)
-        .filter((episode) => episodeHasReel(episode) && episode.status !== 'draft' && episode.status !== 'archived')
+        .filter((episode) => episodeIsPlayable(episode))
         .sort((a, b) => a.episodeNumber - b.episodeNumber);
 }
 

@@ -11,6 +11,7 @@ import {
     reelSeriesMetadata,
     seriesCatalog
 } from './seriesStore.js';
+import { episodeIsPlayable } from './seriesTypes.js';
 import { loadReelSeriesMetadataMap } from './seriesMetadataStorage.js';
 import { logEpisodeBridgeDiag } from './episodeBridgeDiagnostics.js';
 import { inferAndBindVaultSeries } from './vaultSeriesInference.js';
@@ -282,6 +283,29 @@ function loadCanonicalUploadRegistry() {
 }
 
 /**
+ * Catalog playability gate — single authority for Theater media resolve.
+ * draft / archived (or missing reelId) must not return playable media.
+ * @param {import('./seriesTypes.js').Episode | null | undefined} episode
+ * @param {string} episodeId
+ * @param {string | null | undefined} [seriesId]
+ * @returns {boolean} true when resolve may proceed
+ */
+export function assertEpisodePlayableForResolve(episode, episodeId, seriesId = null) {
+    if (episodeIsPlayable(episode)) return true;
+    const status = episode?.status;
+    if (status === 'draft' || status === 'archived') {
+        console.info('[EPISODE_PLAYABILITY_BLOCKED]', {
+            episodeId,
+            seriesId: seriesId || null,
+            reason: status,
+            reelId: episode?.reelId || null,
+            ts: new Date().toISOString()
+        });
+    }
+    return false;
+}
+
+/**
  * @param {string} episodeId
  * @param {(reelId: string) => Record<string, unknown> | null | undefined} findReelInFeed
  * @param {() => Record<string, unknown>[]} [getAllFeedReels]
@@ -291,6 +315,11 @@ export function resolveReelForEpisode(episodeId, findReelInFeed, getAllFeedReels
     if (!episodeId) return null;
     const ctx = getEpisodeById(episodeId);
     if (!ctx) return null;
+
+    // Status + reelId gate (draft/archived never return media even if forced through nav)
+    if (!assertEpisodePlayableForResolve(ctx.episode, episodeId, ctx.series?.id)) {
+        return null;
+    }
 
     /** @type {string[]} */
     const attemptedSources = [];

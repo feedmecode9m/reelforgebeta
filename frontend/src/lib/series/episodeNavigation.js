@@ -46,6 +46,7 @@ export function navigateToEpisode(source, targetEpisodeId) {
     const nextCtx = getNextEpisode(currentEpisodeId || episodeId);
     const targetCtx = source === 'drawer' ? null : autoAdvanceSources.has(source) ? nextCtx : null;
 
+    // resolveReelForEpisode enforces episodeIsPlayable (draft/archived → null)
     const reel = resolveReelForEpisode(episodeId, findReelInFeedFn, getAllFeedReelsFn);
     if (!reel) {
         const tag =
@@ -58,7 +59,7 @@ export function navigateToEpisode(source, targetEpisodeId) {
             currentEpisode: currentEpisodeId,
             targetEpisode: episodeId,
             reelId: null,
-            reason: 'reel-not-found'
+            reason: 'reel-not-found-or-not-playable'
         });
         return false;
     }

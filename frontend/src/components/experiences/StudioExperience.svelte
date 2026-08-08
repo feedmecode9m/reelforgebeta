@@ -32,6 +32,7 @@
   import PlatformPublishingProfiles from '../studio/PlatformPublishingProfiles.svelte';
   import PublishingProfileSelector from '../publishing/PublishingProfileSelector.svelte';
   import SeriesMetadataEditor from '../series/SeriesMetadataEditor.svelte';
+  import CreatorCatalogPanel from '../series/CreatorCatalogPanel.svelte';
   import ContentIntelligencePanel from '../studio/ContentIntelligencePanel.svelte';
   import CollectionsManagerPanel from '../studio/CollectionsManagerPanel.svelte';
   import ProductionCommandCenter from '../studio/ProductionCommandCenter.svelte';
@@ -679,6 +680,25 @@
     });
     if (typeof handleEpisodeAssetChanged === 'function') {
       handleEpisodeAssetChanged();
+    }
+  }
+
+  /** @param {CustomEvent} event */
+  function handleCreatorCatalogChanged(event) {
+    emitCreatorProductionUpdated({
+      action: 'creator-catalog',
+      detail: event?.detail || {}
+    });
+    if (typeof handleEpisodeAssetChanged === 'function') {
+      handleEpisodeAssetChanged();
+    }
+  }
+
+  /** @param {CustomEvent} event */
+  function handleCreatorCatalogSeriesSelect(event) {
+    const seriesId = String(event?.detail?.seriesId || '').trim();
+    if (seriesId && studioSelectedSeriesId) {
+      studioSelectedSeriesId.set(seriesId);
     }
   }
 
@@ -1450,12 +1470,27 @@
           </div>
           </div>
           <div slot="content" class="studio-workspace-slot">
-<div class="series-metadata-studio-section">
+            <div class="creator-catalog-studio-section" data-content-panel="creator-catalog">
+              <div class="smart-header">
+                <div class="ai-badge">SERIES CATALOG</div>
+                <h3>Creator Catalog Control</h3>
+                <p class="smart-subtitle">
+                  Organize vault-bound series — edit titles, status, and episode order (catalog store of truth)
+                </p>
+              </div>
+              <CreatorCatalogPanel
+                feedReels={studioFeedReels}
+                preferredSeriesId={$studioSelectedSeriesId || ''}
+                on:changed={handleCreatorCatalogChanged}
+                on:seriesSelect={handleCreatorCatalogSeriesSelect}
+              />
+            </div>
+            <div class="series-metadata-studio-section">
               <div class="smart-header">
                 <div class="ai-badge">📺 SERIES METADATA</div>
-                <h3>Episode Catalog Editor</h3>
+                <h3>Reel Metadata (advanced)</h3>
                 <p class="smart-subtitle">
-                  Edit series fields — persisted to localStorage, read by Theater
+                  Optional reel-centric metadata editor — use Creator Catalog for series-first edits
                 </p>
               </div>
               <label class="input-label-wrapper">

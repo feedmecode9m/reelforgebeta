@@ -1,6 +1,7 @@
 <script>
     import { createEventDispatcher } from 'svelte';
     import EpisodeChip from './EpisodeChip.svelte';
+    import { episodeIsPlayable } from '../../lib/series/seriesTypes.js';
 
     const dispatch = createEventDispatcher();
 
@@ -55,7 +56,7 @@
                     title={episode.title}
                     episodeId={episode.episodeId}
                     status={episode.status}
-                    playable={Boolean(episode.reelId) && (episode.status === 'published' || episode.status === 'ready')}
+                    playable={episodeIsPlayable(episode)}
                     selected={selectedEpisodeId === episode.episodeId}
                     on:select={handleEpisodeSelect}
                 />
