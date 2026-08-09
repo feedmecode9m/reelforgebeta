@@ -9,19 +9,25 @@
   import SeriesBadge from './SeriesBadge.svelte';
   import {
     seriesCatalog,
-    getSeriesById,
     getEpisodeById,
     initSeriesMetadata,
     resolveSeriesContextForReel
   } from '../../lib/series/seriesStore.js';
   import { episodeIsPlayable } from '../../lib/series/seriesTypes.js';
   import { resolveReelForEpisode } from '../../lib/series/episodeBridge.js';
+  import { configureEpisodeNavigation } from '../../lib/series/episodeNavigation.js';
   import {
-    configureEpisodeNavigation,
-    navigateToEpisode,
-    navigateFromDrawer
-  } from '../../lib/series/episodeNavigation.js';
-  import { slugifySeriesKey } from '../../lib/series/vaultSeriesInference.js';
+    hydratePublicSeriesFromVault,
+    resolvePublicSeriesBySlug
+  } from '../../lib/series/publicSeriesHydration.js';
+  import {
+    theaterReelFromVaultResolve,
+    logEpisodeVaultResolve
+  } from '../../lib/series/episodeVaultResolver.js';
+  import {
+    resolveEpisodeMedia,
+    episodeChipPresentation
+  } from '../../lib/series/episodeVaultBindingResolver.js';
   import {
     openTheaterReel,
     configureTheaterExperience,
@@ -37,17 +43,14 @@
   export let slug = '';
 
   const personalVideos = writable(/** @type {Record<string, unknown>[]} */ ([]));
+  /** @type {Record<string, unknown>[]} */
+  let heroVaultAssets = [];
 
   let selectedEpisodeId = '';
   let playNotice = '';
   let bootstrapped = false;
-
-  /**
-   * @param {string} value
-   */
-  function slugify(value) {
-    return slugifySeriesKey(value);
-  }
+  /** True while vault inference + binding restore runs on cold load. */
+  let hydrating = true;
 
   /**
    * Resolve series from catalog by id convention, then title slug.
@@ -55,21 +58,7 @@
    * @param {import('../../lib/series/seriesTypes.js').Series[]} catalog
    */
   function resolveSeriesFromSlug(rawSlug, catalog) {
-    const key = String(rawSlug || '')
-      .trim()
-      .replace(/^series-/, '');
-    if (!key) return null;
-
-    const byId = getSeriesById(`series-${key}`);
-    if (byId) return byId;
-
-    const needle = slugify(key);
-    const list = Array.isArray(catalog) ? catalog : [];
-    return (
-      list.find((s) => slugify(s.id?.replace(/^series-/, '') || '') === needle) ||
-      list.find((s) => slugify(s.title) === needle) ||
-      null
-    );
+    return resolvePublicSeriesBySlug(rawSlug, catalog);
   }
 
   /** Flatten feed shelves + vault into a media registry for resolveReelForEpisode. */
@@ -126,8 +115,40 @@
       .sort((a, b) => a.episodeNumber - b.episodeNumber)
       .map((episode) => ({ season, episode }))
   );
-  $: firstPlayable = allEpisodes.find(({ episode }) => episodeIsPlayable(episode)) || null;
-  $: playableCount = allEpisodes.filter(({ episode }) => episodeIsPlayable(episode)).length;
+  $: firstPlayable =
+    allEpisodes.find(({ episode }) => {
+      const resolved = resolveEpisodeMedia({ episode, readyVaultAssets: heroVaultAssets });
+      return resolved.matched;
+    }) || null;
+  $: playableCount = allEpisodes.filter(({ episode }) => {
+    const resolved = resolveEpisodeMedia({ episode, readyVaultAssets: heroVaultAssets });
+    return resolved.matched;
+  }).length;
+
+  function refreshHeroVaultAssets() {
+    try {
+      const live = get(personalVideos);
+      const extra = Array.isArray(live) ? live : null;
+      const result = hydratePublicSeriesFromVault({
+        extraItems: extra,
+        initMetadata: false,
+        source: 'public-series-page-refresh'
+      });
+      heroVaultAssets = result.readyAssets;
+    } catch {
+      try {
+        const live = get(personalVideos);
+        const result = hydratePublicSeriesFromVault({
+          items: Array.isArray(live) ? live : [],
+          initMetadata: false,
+          source: 'public-series-page-refresh-fallback'
+        });
+        heroVaultAssets = result.readyAssets;
+      } catch {
+        heroVaultAssets = [];
+      }
+    }
+  }
 
   /** @param {string} reelId */
   function findReelInFeed(reelId) {
@@ -142,6 +163,8 @@
   }
 
   /**
+   * Open Theater for an episode without navigating away from /series/:slug.
+   * Prefers Hero Vault mediaAssetId; falls back to legacy reelId resolve.
    * @param {string} episodeId
    * @param {'drawer' | 'manual'} source
    */
@@ -150,12 +173,48 @@
     if (!episodeId) return;
 
     const ctx = getEpisodeById(episodeId);
-    if (!ctx || !episodeIsPlayable(ctx.episode)) {
-      playNotice = 'This episode is not playable yet.';
+    if (!ctx) {
+      playNotice = 'Episode not found.';
       return;
     }
 
-    // Exercise existing resolve path (SERIES_MEDIA_MATCH) before navigation open.
+    refreshHeroVaultAssets();
+    // Manual binding override → keyword resolve (unchanged algorithm) → unavailable.
+    const resolved = resolveEpisodeMedia({
+      episode: ctx.episode,
+      readyVaultAssets: heroVaultAssets
+    });
+    logEpisodeVaultResolve({
+      episodeId,
+      episodeTitle: ctx.episode.title,
+      matched: resolved.matched,
+      assetId: resolved.matched ? resolved.assetId : null,
+      matchTier: resolved.matched ? resolved.matchTier : null,
+      bindingMode: resolved.bindingMode,
+      source
+    });
+
+    if (resolved.matched) {
+      const reel = theaterReelFromVaultResolve(ctx.episode.title, resolved, {
+        episodeId,
+        seriesId: ctx.series.id,
+        seasonNumber: ctx.season.seasonNumber,
+        episodeNumber: ctx.episode.episodeNumber
+      });
+      if (reel) {
+        selectedEpisodeId = episodeId;
+        // Same series landscape — Theater overlay only (no route change).
+        openTheaterReel(reel);
+        return;
+      }
+    }
+
+    // Legacy catalog reelId path for mock episodes without vault media.
+    if (!episodeIsPlayable(ctx.episode)) {
+      playNotice = 'Asset unavailable — no ready Hero Vault media matches this episode.';
+      return;
+    }
+
     const preview = resolveReelForEpisode(episodeId, findReelInFeed, getAllFeedReels);
     if (!preview) {
       playNotice = 'No playable reel is linked to that episode yet.';
@@ -163,14 +222,8 @@
     }
 
     selectedEpisodeId = episodeId;
-    const navigated =
-      source === 'manual'
-        ? navigateToEpisode('manual', episodeId)
-        : navigateFromDrawer(episodeId);
-
-    if (!navigated) {
-      playNotice = 'No playable reel is linked to that episode yet.';
-    }
+    // Stay on series page — open Theater overlay with dynamic episode media only.
+    openTheaterReel(preview);
   }
 
   /** @param {CustomEvent<{ episodeId: string }>} event */
@@ -188,12 +241,28 @@
 
   onMount(() => {
     initSeriesMetadata();
+    hydrating = true;
     try {
       const vault = JSON.parse(localStorage.getItem('personal_video_vault') || '[]');
       personalVideos.set(Array.isArray(vault) ? vault : []);
     } catch {
       personalVideos.set([]);
     }
+
+    // Cold load: same Hero Vault ready source → inference → bindings (id refs only).
+    try {
+      const live = get(personalVideos);
+      const result = hydratePublicSeriesFromVault({
+        extraItems: Array.isArray(live) ? live : null,
+        initMetadata: false,
+        source: 'public-series-page-mount'
+      });
+      heroVaultAssets = result.readyAssets;
+    } catch (err) {
+      console.warn('[SeriesPublicPage] vault hydration failed', err);
+      refreshHeroVaultAssets();
+    }
+    hydrating = false;
 
     configureEpisodeNavigation({
       findReelInFeed,
@@ -226,7 +295,12 @@
 <div class="series-page" data-series-public data-series-slug={slug || undefined}>
   <ConsumerChrome headerVariant="overlay" showFooter={true}>
   <div class="series-public">
-  {#if !series}
+  {#if hydrating && !series}
+    <section class="series-public__missing" aria-live="polite" aria-busy="true">
+      <h1>Loading series…</h1>
+      <p>Resolving Hero Vault catalog for <code>/series/{slug}</code>.</p>
+    </section>
+  {:else if !series}
     <section class="series-public__missing" aria-live="polite">
       <h1>Series not found</h1>
       <p>We couldn't find a series for <code>/series/{slug}</code>.</p>
@@ -287,6 +361,7 @@
           <SeasonAccordion
             seriesId={series.id}
             {season}
+            heroVaultAssets={heroVaultAssets}
             defaultExpanded={season.seasonNumber === (sortedSeasons[0]?.seasonNumber ?? 1)}
             bind:selectedEpisodeId
             on:episodeSelect={handleEpisodeSelect}
@@ -299,23 +374,34 @@
       <h2 class="series-public__section-title">Episode guide</h2>
       <ul class="series-public__status-list">
         {#each allEpisodes as row (row.episode.episodeId)}
+          {@const resolved = resolveEpisodeMedia({
+            episode: row.episode,
+            readyVaultAssets: heroVaultAssets
+          })}
+          {@const chip = episodeChipPresentation(row.episode, resolved)}
           <li
             class="series-public__status-row"
-            class:playable={episodeIsPlayable(row.episode)}
+            class:playable={chip.playable}
+            class:unavailable={!chip.playable}
             data-episode-id={row.episode.episodeId}
+            data-media-asset-id={chip.mediaAssetId || undefined}
+            data-binding-mode={chip.bindingMode || undefined}
           >
             <span class="series-public__status-code"
               >S{row.season.seasonNumber}:E{row.episode.episodeNumber}</span
             >
             <span class="series-public__status-title">{row.episode.title}</span>
-            <span class="series-public__status-badge">{row.episode.status}</span>
-            {#if episodeIsPlayable(row.episode)}
+            {#if chip.thumbnailUrl}
+              <img class="series-public__status-thumb" src={chip.thumbnailUrl} alt="" />
+            {/if}
+            <span class="series-public__status-badge">{chip.bindingLabel}</span>
+            {#if chip.playable}
               <button
                 type="button"
                 class="series-public__row-play"
                 on:click={() => playEpisode(row.episode.episodeId, 'drawer')}
               >
-                Play
+                ▶ Enter Theater
               </button>
             {/if}
           </li>
@@ -329,7 +415,7 @@
 
 {#if bootstrapped}
   <TheaterExperience
-    personalVideos={$personalVideos}
+    {personalVideos}
     UIAgent={{}}
     AI_IMAGE_GENERATOR={{ getFallbackImage: () => '' }}
     logVaultImageError={() => {}}
@@ -505,7 +591,7 @@
 
   .series-public__status-row {
     display: grid;
-    grid-template-columns: 4.5rem 1fr auto auto;
+    grid-template-columns: 4.5rem minmax(0, 1fr) 4.5rem auto auto;
     gap: 0.65rem;
     align-items: center;
     padding: 0.55rem 0.75rem;
@@ -514,6 +600,19 @@
     background: rgba(255, 255, 255, 0.03);
     font-size: 0.88rem;
     transition: border-color var(--lz-duration-fast, 160ms) var(--lz-ease, ease);
+  }
+
+  .series-public__status-thumb {
+    width: 4.25rem;
+    height: 2.4rem;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.35);
+  }
+
+  .series-public__status-row.unavailable {
+    opacity: 0.7;
   }
 
   .series-public__status-row.playable {

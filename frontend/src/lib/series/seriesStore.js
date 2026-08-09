@@ -29,6 +29,14 @@ import {
 } from '../api/seriesApi.js';
 import { logEpisodeAssetDiag } from './episodeAssetDiagnostics.js';
 import { scheduleSyncPush } from '../sync/syncManager.js';
+import {
+    applyStoredBindingsToCatalog,
+    clearStoredEpisodeVaultBinding,
+    loadEpisodeVaultBindingMap,
+    upsertStoredEpisodeVaultBinding
+} from './episodeVaultBindingStorage.js';
+import { getReadyHeroVaultAssets } from './heroVaultAssetSource.js';
+import { inferAndBindVaultSeries } from './vaultSeriesInference.js';
 
 /** @typedef {import('./seriesTypes.js').Series} Series */
 /** @typedef {import('./seriesTypes.js').Season} Season */
@@ -87,7 +95,36 @@ function applyApiCatalogState(catalogItems, map) {
     seriesCatalog.set(catalogItems);
     reelSeriesMetadata.set(map);
     applyAllMetadataToCatalog(map);
+    // API replace is authoritative for studio rows, but must not erase vault-inferred
+    // series needed for public /series/:slug cold loads (Hero Vault is source of truth).
+    rebindVaultInferredSeries('after-api-catalog');
+    rehydrateEpisodeVaultBindings();
     seriesPersistenceMode.set('api');
+}
+
+/**
+ * Re-attach high-confidence vault series after a full catalog replace.
+ * Safe no-op when vault is empty; skips reels already catalog-bound.
+ * @param {string} source
+ */
+function rebindVaultInferredSeries(source) {
+    try {
+        const ready = getReadyHeroVaultAssets();
+        if (!ready.length) return;
+        inferAndBindVaultSeries(ready, { source: source || 'after-catalog-replace' });
+    } catch (err) {
+        console.warn('[seriesStore] vault rebind after catalog replace failed', err);
+    }
+}
+
+/**
+ * Overlay persisted Hero Vault episode bindings onto the live catalog.
+ * Safe to call after API hydrate or local init so reload keeps bindings.
+ */
+export function rehydrateEpisodeVaultBindings() {
+    const map = loadEpisodeVaultBindingMap();
+    if (!Object.keys(map).length) return;
+    seriesCatalog.update((items) => applyStoredBindingsToCatalog(items, map));
 }
 
 /**
@@ -210,6 +247,7 @@ export function initSeriesMetadata() {
     const map = hydrateStudioMetadataFromCatalog();
     reelSeriesMetadata.set(map);
     applyAllMetadataToCatalog(map);
+    rehydrateEpisodeVaultBindings();
 
     if (!apiHydrationStarted) {
         apiHydrationStarted = true;
@@ -219,9 +257,10 @@ export function initSeriesMetadata() {
     if (typeof window !== 'undefined') {
         window.addEventListener('reelforge:sync-applied', (event) => {
             const detail = /** @type {CustomEvent} */ (event).detail;
-            const map = detail?.seriesMetadata || loadReelSeriesMetadataMap();
-            reelSeriesMetadata.set(map);
-            applyAllMetadataToCatalog(map);
+            const syncMap = detail?.seriesMetadata || loadReelSeriesMetadataMap();
+            reelSeriesMetadata.set(syncMap);
+            applyAllMetadataToCatalog(syncMap);
+            rehydrateEpisodeVaultBindings();
         });
     }
 }
@@ -307,7 +346,25 @@ export function bindEpisodeToFeedReel(feedReelId, episodeId, metaPatch = {}) {
                 episodes: season.episodes.map((episode) => {
                     if (episode.episodeId !== episodeId) return episode;
                     changed = true;
-                    return { ...episode, reelId: feedReelId };
+                    const aliases = Array.isArray(metaPatch.aliases)
+                        ? metaPatch.aliases.map(String).filter(Boolean)
+                        : Array.isArray(episode.aliases)
+                          ? episode.aliases
+                          : [];
+                    return {
+                        ...episode,
+                        reelId: feedReelId,
+                        // Hero Vault media bind — same ready vault asset id (no re-upload).
+                        mediaAssetId:
+                            metaPatch.mediaAssetId != null
+                                ? metaPatch.mediaAssetId
+                                : feedReelId,
+                        thumbnailAssetId:
+                            metaPatch.thumbnailAssetId !== undefined
+                                ? metaPatch.thumbnailAssetId
+                                : episode.thumbnailAssetId ?? null,
+                        aliases
+                    };
                 })
             }))
         }));
@@ -817,6 +874,112 @@ export function setEpisodeStatus(episodeId, status) {
 }
 
 /**
+ * Manually bind an episode to a ready Hero Vault asset id (reference only — no upload).
+ * Persists heroVaultAssetId / mediaAssetId / heroVaultBindingMode for reload.
+ * @param {{ episodeId: string; assetId: string }} input
+ * @returns {{ series: Series; season: Season; episode: Episode } | null}
+ */
+export function setEpisodeVaultBinding({ episodeId, assetId } = {}) {
+    const id = String(episodeId || '').trim();
+    const vaultId = String(assetId || '').trim();
+    if (!id || !vaultId) return null;
+
+    const existing = getEpisodeById(id);
+    if (!existing) return null;
+
+    let applied = false;
+    seriesCatalog.update((catalogItems) => {
+        const next = catalogItems.map((series) => ({
+            ...series,
+            seasons: series.seasons.map((season) => ({
+                ...season,
+                episodes: season.episodes.map((episode) => {
+                    if (episode.episodeId !== id) return episode;
+                    applied = true;
+                    return {
+                        ...episode,
+                        heroVaultAssetId: vaultId,
+                        heroVaultBindingMode: /** @type {'manual'} */ ('manual'),
+                        mediaAssetId: vaultId,
+                        episodeId: episode.episodeId,
+                        reelId: episode.reelId
+                    };
+                })
+            }))
+        }));
+        return applied ? next : catalogItems;
+    });
+
+    if (!applied) return null;
+
+    upsertStoredEpisodeVaultBinding(id, {
+        heroVaultAssetId: vaultId,
+        mediaAssetId: vaultId,
+        heroVaultBindingMode: 'manual'
+    });
+
+    const updated = getEpisodeById(id);
+    console.info('[EPISODE_VAULT_BINDING_SET]', {
+        episodeId: id,
+        assetId: vaultId,
+        seriesId: updated?.series?.id || null,
+        persisted: true,
+        ts: new Date().toISOString()
+    });
+    return updated;
+}
+
+/**
+ * Clear manual Hero Vault binding; episode returns to automatic keyword resolve.
+ * Clears persisted mediaAssetId so presentation cannot keep a stale id.
+ * @param {{ episodeId: string }} input
+ * @returns {{ series: Series; season: Season; episode: Episode } | null}
+ */
+export function clearEpisodeVaultBinding({ episodeId } = {}) {
+    const id = String(episodeId || '').trim();
+    if (!id) return null;
+
+    const existing = getEpisodeById(id);
+    if (!existing) return null;
+
+    let applied = false;
+    seriesCatalog.update((catalogItems) => {
+        const next = catalogItems.map((series) => ({
+            ...series,
+            seasons: series.seasons.map((season) => ({
+                ...season,
+                episodes: season.episodes.map((episode) => {
+                    if (episode.episodeId !== id) return episode;
+                    applied = true;
+                    return {
+                        ...episode,
+                        heroVaultAssetId: null,
+                        mediaAssetId: null,
+                        heroVaultBindingMode: /** @type {'auto'} */ ('auto'),
+                        episodeId: episode.episodeId,
+                        reelId: episode.reelId
+                    };
+                })
+            }))
+        }));
+        return applied ? next : catalogItems;
+    });
+
+    if (!applied) return null;
+
+    clearStoredEpisodeVaultBinding(id);
+
+    const updated = getEpisodeById(id);
+    console.info('[EPISODE_VAULT_BINDING_CLEAR]', {
+        episodeId: id,
+        seriesId: updated?.series?.id || null,
+        persisted: true,
+        ts: new Date().toISOString()
+    });
+    return updated;
+}
+
+/**
  * Reorder episodes within a single season. Preserves episodeId and reelId; renumbers 1..n.
  *
  * @param {string} seriesId
@@ -997,6 +1160,7 @@ export function resetSeriesCatalogToMock() {
     seriesCatalog.set([...catalog]);
     reelSeriesMetadata.set({});
     persistReelSeriesMetadataMap({});
+    rehydrateEpisodeVaultBindings();
 }
 
 export { normalizeTags };
