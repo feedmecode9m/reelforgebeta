@@ -27,58 +27,10 @@ import {
 } from './episodeVaultBindingStorage.js';
 
 /**
- * Display title for Hero Vault pickable rows (does not change picker layout).
- * Priority: title → name → metadata.title → cleaned filename → Untitled Vault Asset
- *
- * @param {Record<string, unknown> | null | undefined} asset
- * @returns {string}
+ * Display title for Hero Vault pickable rows (canonical vault intelligence).
+ * @see ../vault/resolveVaultAssetTitle.js
  */
-export function resolveVaultAssetDisplayTitle(asset) {
-    if (!asset || typeof asset !== 'object') return 'Untitled Vault Asset';
-
-    const candidates = [
-        asset.title,
-        asset.name,
-        asset.metadata && typeof asset.metadata === 'object'
-            ? /** @type {Record<string, unknown>} */ (asset.metadata).title
-            : null,
-        asset.fileName,
-        asset.file_name,
-        asset.originalName,
-        asset.original_name
-    ];
-
-    for (const c of candidates) {
-        const t = String(c || '').trim();
-        if (!t) continue;
-        // Skip pure UUID looks
-        if (/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(t)) {
-            continue;
-        }
-        return t;
-    }
-
-    // Filename-like path fragments
-    for (const c of [asset.url, asset.videoUrl, asset.video_url, asset.mediaUrl]) {
-        const raw = String(c || '').trim();
-        if (!raw || raw.startsWith('blob:')) continue;
-        const base = raw.split('?')[0].split('#')[0].split('/').pop() || '';
-        const cleaned = base
-            .replace(/\.(mp4|mov|webm|m4v|avi|mkv|jpg|jpeg|png|webp)$/i, '')
-            .replace(/[_-]+/g, ' ')
-            .trim();
-        if (
-            cleaned &&
-            !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-                cleaned
-            )
-        ) {
-            return cleaned;
-        }
-    }
-
-    return 'Untitled Vault Asset';
-}
+export { resolveVaultAssetTitle as resolveVaultAssetDisplayTitle } from '../vault/resolveVaultAssetTitle.js';
 
 /**
  * Resolve a public series slug against the live catalog.

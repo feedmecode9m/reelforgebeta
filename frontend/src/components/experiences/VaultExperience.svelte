@@ -24,6 +24,8 @@
     logVaultPlaceholderGate
   } from '../../lib/diagnostics/renderGateForensics.js';
   import { uploadMedia, uploadThumbnail, fetchReadyReels as apiFetchReadyReels, deleteReelById as apiDeleteReelById } from '../../lib/api/media.js';
+  import { acceptVaultImageUploadResponse } from '../../lib/vault/normalizeVaultAsset.js';
+  import { resolveThumbnailUploadMediaUrl } from '../../lib/vault/resolveThumbnailUploadMediaUrl.js';
   import { logHeroImagePipeline, saveHeroManagerConfig } from '../../lib/hero/heroIntelligence.js';
   import {
     resolveActiveHeroVideoReel,
@@ -2387,25 +2389,33 @@
       });
       logVaultFieldAudit('POST /api/reels response', response);
 
-      const rawThumbPath =
-        response.thumbnailPath ||
-        response.thumbnail_path ||
-        response.thumbnailUrl ||
-        response.thumbnail_url ||
-        response.url;
-      const thumbPath = toRelativeMediaPath(rawThumbPath);
-      if (!thumbPath || !String(thumbPath).startsWith('/thumbs/')) {
+      // Canonical normalizer: accept image rows with id + url OR thumbnailUrl + ready status.
+      const normalized = acceptVaultImageUploadResponse(response, { fallbackName: name });
+      if (!normalized) {
         throw new Error(`Invalid upload response: ${JSON.stringify(response)}`);
       }
 
-      const entryName = String(thumbPath).split('/').pop() || name;
+      // Accept relative /thumbs/* and absolute https://…/thumbs/*; reject empty + blob:
+      const thumbPath = resolveThumbnailUploadMediaUrl({ normalized, response });
+      if (!thumbPath) {
+        throw new Error(`Invalid upload response: ${JSON.stringify(response)}`);
+      }
+
+      const entryName =
+        String(thumbPath).split('/').pop()?.split('?')[0] ||
+        normalized.displayTitle ||
+        name;
       const entry = {
-        id: String(response.id || ''),
+        id: String(normalized.id || response.id || ''),
         fileName: entryName,
-        name: name,
-        title: name,
+        name: name || normalized.title,
+        title: name || normalized.title,
+        displayTitle: normalized.displayTitle,
         type: response.type || response.media_type || 'image',
         url: thumbPath,
+        thumbnailUrl: thumbPath,
+        status: normalized.status || 'ready',
+        keywords: normalized.keywords || [],
         size: response.size ?? file.size,
         addedAt: new Date().toISOString()
       };

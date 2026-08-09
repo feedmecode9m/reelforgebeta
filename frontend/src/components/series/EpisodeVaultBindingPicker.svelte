@@ -1,19 +1,28 @@
 <script>
     /**
      * Creator picker: bind episode → ready Hero Vault asset (id reference only).
+     * Metadata: display title, media badge, ready badge, match confidence (resolver score only).
      */
     import { createEventDispatcher } from 'svelte';
     import {
         setEpisodeVaultBinding,
         clearEpisodeVaultBinding
     } from '../../lib/series/seriesStore.js';
-    import { assetIdOf } from '../../lib/series/episodeVaultResolver.js';
-    import { resolveVaultAssetDisplayTitle } from '../../lib/series/publicSeriesHydration.js';
+    import {
+        assetIdOf,
+        scoreEpisodeAgainstAsset
+    } from '../../lib/series/episodeVaultResolver.js';
+    import { normalizeVaultAsset } from '../../lib/vault/normalizeVaultAsset.js';
+    import { resolveVaultAssetTitle, resolveVaultKeywords } from '../../lib/vault/resolveVaultAssetTitle.js';
 
     const dispatch = createEventDispatcher();
 
     /** @type {string} */
     export let episodeId = '';
+
+    /** Episode title for match-confidence scoring (resolver only — no algo change) */
+    /** @type {string} */
+    export let episodeTitle = '';
 
     /** Currently saved manual asset id (if any) */
     /** @type {string | null} */
@@ -31,22 +40,51 @@
     /**
      * @param {Record<string, unknown>} asset
      */
-    function titleOf(asset) {
-        return resolveVaultAssetDisplayTitle(asset);
-    }
-
-    /**
-     * @param {Record<string, unknown>} asset
-     */
-    function thumbOf(asset) {
-        return String(
-            asset?.thumbnailUrl ||
+    function cardModel(asset) {
+        const normalized = normalizeVaultAsset(asset, { requireReady: false });
+        const id = normalized?.assetId || assetIdOf(asset);
+        const displayTitle = normalized?.displayTitle || resolveVaultAssetTitle(asset);
+        const type = normalized?.type || (String(asset?.type || '').startsWith('video') ? 'video' : 'image');
+        const status = normalized?.status || String(asset?.status || 'ready').toLowerCase() || 'ready';
+        const thumb = String(
+            normalized?.thumbnailUrl ||
+                asset?.thumbnailUrl ||
                 asset?.thumbnail_url ||
                 asset?.thumbnail ||
                 asset?.posterUrl ||
-                (String(asset?.type || '').startsWith('image/') ? asset?.url : '') ||
+                (type === 'image' ? asset?.url : '') ||
                 ''
         ).trim();
+        const keywords = normalized?.keywords?.length
+            ? normalized.keywords
+            : resolveVaultKeywords(asset);
+
+        let confidence = /** @type {{ score: number; tier: string | null; label: string }} */ ({
+            score: 0,
+            tier: null,
+            label: 'No match'
+        });
+        if (episodeTitle && id) {
+            // Use existing resolver scoring only — do not change match algorithm.
+            const scored = scoreEpisodeAgainstAsset(episodeTitle, asset);
+            const tier = scored.tier;
+            let label = 'No match';
+            if (tier === 'multiword') label = 'High match';
+            else if (tier === 'primary') label = 'Good match';
+            else if (tier === 'fuzzy') label = 'Weak match';
+            confidence = { score: scored.score || 0, tier, label };
+        }
+
+        const ready = status === 'ready' || status === 'complete' || status === 'completed' || !status;
+        return {
+            id,
+            displayTitle,
+            type,
+            thumb,
+            keywords,
+            ready,
+            confidence
+        };
     }
 
     /**
@@ -106,30 +144,50 @@
     {:else}
         <ul class="vault-bind-picker__list" role="listbox" aria-label="Ready vault assets">
             {#each readyVaultAssets as asset (assetIdOf(asset))}
-                {@const id = assetIdOf(asset)}
-                {@const thumb = thumbOf(asset)}
+                {@const card = cardModel(asset)}
                 <li>
                     <button
                         type="button"
                         class="vault-bind-picker__item"
-                        class:selected={selectedAssetId === id}
+                        class:selected={selectedAssetId === card.id}
                         role="option"
-                        aria-selected={selectedAssetId === id}
+                        aria-selected={selectedAssetId === card.id}
                         disabled={busy || !episodeId}
-                        on:click={() => selectAsset(id)}
+                        on:click={() => selectAsset(card.id)}
                     >
-                        {#if thumb}
-                            <img class="vault-bind-picker__thumb" src={thumb} alt="" loading="lazy" />
+                        {#if card.thumb}
+                            <img class="vault-bind-picker__thumb" src={card.thumb} alt="" loading="lazy" />
                         {:else}
                             <span class="vault-bind-picker__thumb vault-bind-picker__thumb--empty" aria-hidden="true"
                                 >No thumb</span
                             >
                         {/if}
                         <span class="vault-bind-picker__meta">
-                            <span class="vault-bind-picker__name">{titleOf(asset)}</span>
-                            <span class="vault-bind-picker__id">{id.slice(0, 10)}…</span>
+                            <span class="vault-bind-picker__name">{card.displayTitle}</span>
+                            <span class="vault-bind-picker__badges">
+                                <span class="vault-bind-picker__pill vault-bind-picker__pill--type">
+                                    {card.type === 'video' ? '🎬 Video' : '🖼 Image'}
+                                </span>
+                                {#if card.ready}
+                                    <span class="vault-bind-picker__pill vault-bind-picker__pill--ready">✓ Ready</span>
+                                {/if}
+                                {#if card.confidence.tier}
+                                    <span
+                                        class="vault-bind-picker__pill vault-bind-picker__pill--match"
+                                        class:match-high={card.confidence.tier === 'multiword'}
+                                        class:match-good={card.confidence.tier === 'primary'}
+                                        class:match-weak={card.confidence.tier === 'fuzzy'}
+                                        title={`score ${card.confidence.score}`}
+                                    >
+                                        {card.confidence.label}
+                                    </span>
+                                {/if}
+                            </span>
+                            {#if card.keywords.length}
+                                <span class="vault-bind-picker__keywords">{card.keywords.join(' · ')}</span>
+                            {/if}
                         </span>
-                        {#if selectedAssetId === id}
+                        {#if selectedAssetId === card.id}
                             <span class="vault-bind-picker__badge">Selected</span>
                         {/if}
                     </button>
@@ -190,7 +248,7 @@
         display: flex;
         flex-direction: column;
         gap: 0.4rem;
-        max-height: 14rem;
+        max-height: 16rem;
         overflow: auto;
     }
     .vault-bind-picker__item {
@@ -237,7 +295,7 @@
         min-width: 0;
         display: flex;
         flex-direction: column;
-        gap: 0.1rem;
+        gap: 0.2rem;
     }
     .vault-bind-picker__name {
         font-size: 0.8rem;
@@ -246,9 +304,46 @@
         text-overflow: ellipsis;
         white-space: nowrap;
     }
-    .vault-bind-picker__id {
-        font-size: 0.62rem;
-        color: rgba(255, 255, 255, 0.4);
+    .vault-bind-picker__badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+    .vault-bind-picker__pill {
+        font-size: 0.58rem;
+        letter-spacing: 0.02em;
+        padding: 0.1rem 0.35rem;
+        border-radius: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: rgba(255, 255, 255, 0.78);
+        background: rgba(0, 0, 0, 0.25);
+        white-space: nowrap;
+    }
+    .vault-bind-picker__pill--ready {
+        color: #6ee7b7;
+        border-color: rgba(110, 231, 183, 0.35);
+    }
+    .vault-bind-picker__pill--type {
+        color: rgba(186, 230, 253, 0.95);
+    }
+    .vault-bind-picker__pill--match.match-high {
+        color: #6ee7b7;
+        border-color: rgba(110, 231, 183, 0.4);
+    }
+    .vault-bind-picker__pill--match.match-good {
+        color: #93c5fd;
+        border-color: rgba(147, 197, 253, 0.4);
+    }
+    .vault-bind-picker__pill--match.match-weak {
+        color: #fcd34d;
+        border-color: rgba(252, 211, 77, 0.35);
+    }
+    .vault-bind-picker__keywords {
+        font-size: 0.6rem;
+        color: rgba(255, 255, 255, 0.38);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
     .vault-bind-picker__badge {
         font-size: 0.58rem;

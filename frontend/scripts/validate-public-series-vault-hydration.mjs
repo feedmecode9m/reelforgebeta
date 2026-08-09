@@ -183,7 +183,7 @@ try {
         hydration.resolveVaultAssetDisplayTitle({
             id: 'x',
             title: 'STIRRED DIRECTOR CUT.mp4'
-        }) === 'STIRRED DIRECTOR CUT.mp4'
+        }) === 'STIRRED DIRECTOR CUT'
     );
     assert(
         'display title does not fall back to uuid as primary when name exists',

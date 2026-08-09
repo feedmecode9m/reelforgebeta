@@ -485,6 +485,7 @@
 
                     <EpisodeVaultBindingPicker
                         episodeId={selectedEpisodeId}
+                        episodeTitle={selectedEpisode.title || ''}
                         selectedAssetId={selectedEpisode.heroVaultAssetId || null}
                         {readyVaultAssets}
                         on:bound={() => {
