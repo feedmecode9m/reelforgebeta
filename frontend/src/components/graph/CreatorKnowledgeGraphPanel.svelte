@@ -10,7 +10,7 @@
     export let feedReels = [];
 
     /** @type {string} */
-    export let seriesId = 'series-neon-vengeance';
+    export let seriesId = null;
 
     let refreshToken = 0;
     let selectedNodeId = '';

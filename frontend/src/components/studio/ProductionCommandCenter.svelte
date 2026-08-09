@@ -19,7 +19,7 @@ import GlobalSearchBar from '../discovery/GlobalSearchBar.svelte';
     export let feedReels = [];
 
     /** @type {string} */
-    export let selectedSeriesId = 'series-neon-vengeance';
+    export let selectedSeriesId = null;
 
     /** @type {ReturnType<typeof buildPlatformOperationsBrief> | null} */
     let brief = null;

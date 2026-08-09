@@ -1,5 +1,4 @@
 import { writable, derived, get } from 'svelte/store';
-import { MOCK_SERIES_CATALOG } from './mockSeriesData.js';
 import {
     episodeIsPlayable,
     isEpisodeStatus,
@@ -37,16 +36,63 @@ import {
 } from './episodeVaultBindingStorage.js';
 import { getReadyHeroVaultAssets } from './heroVaultAssetSource.js';
 import { inferAndBindVaultSeries } from './vaultSeriesInference.js';
+import {
+    isDemoSeriesId,
+    stripDemoSeriesFromCatalog
+} from './seriesCatalogTruth.js';
+import {
+    guardIntelligenceMetadataWrite,
+    PROVENANCE_SOURCE_TYPES
+} from '../architecture/intelligenceProvenance.js';
 
 /** @typedef {import('./seriesTypes.js').Series} Series */
 /** @typedef {import('./seriesTypes.js').Season} Season */
 /** @typedef {import('./seriesTypes.js').Episode} Episode */
 /** @typedef {import('./seriesMetadataStorage.js').ReelSeriesMetadata} ReelSeriesMetadata */
 
-const catalog = MOCK_SERIES_CATALOG.filter(isSeries);
+/**
+ * When true, commitCatalog may keep mockSeriesData fixtures (tests/dev opt-in ONLY).
+ * Never set by production hydration paths.
+ */
+let allowDemoCatalogSession = false;
 
-/** Catalog seeded from mock data; runtime overrides applied from localStorage. */
-export const seriesCatalog = writable(/** @type {Series[]} */ ([...catalog]));
+/**
+ * Commit catalog writes with hard demo boundary (unless test/demo session).
+ * @param {Series[]} items
+ * @returns {Series[]}
+ */
+function sanitizeCatalogWrite(items) {
+    if (allowDemoCatalogSession) {
+        return Array.isArray(items) ? items : [];
+    }
+    return stripDemoSeriesFromCatalog(items);
+}
+
+/**
+ * Live catalog starts empty (creator truth only).
+ * All set/update go through demo-strip unless allowDemoCatalogSession.
+ * mockSeriesData is NOT imported at module load — only by resetSeriesCatalogToMock().
+ */
+function createCreatorTruthCatalogStore() {
+    const { subscribe, set: rawSet, update: rawUpdate } = writable(/** @type {Series[]} */ ([]));
+    return {
+        subscribe,
+        /**
+         * @param {Series[]} value
+         */
+        set(value) {
+            rawSet(sanitizeCatalogWrite(value));
+        },
+        /**
+         * @param {(items: Series[]) => Series[]} fn
+         */
+        update(fn) {
+            rawUpdate((current) => sanitizeCatalogWrite(fn(current)));
+        }
+    };
+}
+
+export const seriesCatalog = createCreatorTruthCatalogStore();
 
 /** Reel-level metadata map (localStorage source of truth for edits). */
 export const reelSeriesMetadata = writable(/** @type {Record<string, ReelSeriesMetadata>} */ ({}));
@@ -92,14 +138,36 @@ async function isSeriesApiAvailable() {
  * @param {Record<string, ReelSeriesMetadata>} map
  */
 function applyApiCatalogState(catalogItems, map) {
-    seriesCatalog.set(catalogItems);
-    reelSeriesMetadata.set(map);
-    applyAllMetadataToCatalog(map);
+    // API rows may still contain previously migrated demo series — strip always.
+    const clean = stripDemoSeriesFromCatalog(catalogItems);
+    const cleanMap = stripDemoReelMetadata(map);
+    seriesCatalog.set(clean);
+    reelSeriesMetadata.set(cleanMap);
+    applyAllMetadataToCatalog(cleanMap);
     // API replace is authoritative for studio rows, but must not erase vault-inferred
     // series needed for public /series/:slug cold loads (Hero Vault is source of truth).
     rebindVaultInferredSeries('after-api-catalog');
     rehydrateEpisodeVaultBindings();
     seriesPersistenceMode.set('api');
+}
+
+/**
+ * Drop reel metadata that points at demo series fixtures.
+ * @param {Record<string, ReelSeriesMetadata>} map
+ * @returns {Record<string, ReelSeriesMetadata>}
+ */
+function stripDemoReelMetadata(map) {
+    /** @type {Record<string, ReelSeriesMetadata>} */
+    const next = {};
+    if (!map || typeof map !== 'object') return next;
+    for (const [reelId, meta] of Object.entries(map)) {
+        if (!meta) continue;
+        if (isDemoSeriesId(meta.seriesId)) continue;
+        if (/neon-vengeance/i.test(String(meta.seriesId || ''))) continue;
+        if (/^Neon Vengeance$/i.test(String(meta.seriesName || '').trim())) continue;
+        next[reelId] = meta;
+    }
+    return next;
 }
 
 /**
@@ -134,16 +202,23 @@ export function rehydrateEpisodeVaultBindings() {
  */
 async function migrateLocalCatalogToApi(catalogItems, map) {
     seriesPersistenceMode.set('migrating');
-    logSeriesApiSync({ phase: 'migrate-start', seriesCount: catalogItems.length, reelCount: Object.keys(map).length });
+    // Never push demo fixtures into the backend catalog.
+    const cleanCatalog = stripDemoSeriesFromCatalog(catalogItems);
+    const cleanMap = stripDemoReelMetadata(map);
+    logSeriesApiSync({
+        phase: 'migrate-start',
+        seriesCount: cleanCatalog.length,
+        reelCount: Object.keys(cleanMap).length
+    });
 
-    for (const series of catalogItems) {
+    for (const series of cleanCatalog) {
         const payload = seriesToApiPayload(series);
-        for (const [reelId, meta] of Object.entries(map)) {
+        for (const [reelId, meta] of Object.entries(cleanMap)) {
             if (meta.seriesId === series.id || meta.seriesName === series.title) {
-                applyReelPatchToCatalog(catalogItems, reelId, meta);
+                applyReelPatchToCatalog(cleanCatalog, reelId, meta);
             }
         }
-        const enriched = catalogItems.find((s) => s.id === series.id) || series;
+        const enriched = cleanCatalog.find((s) => s.id === series.id) || series;
         await createSeries(seriesToApiPayload(enriched));
     }
 
@@ -204,14 +279,23 @@ async function hydrateSeriesFromApi() {
 
 /** Seed studio metadata from catalog for reels without saved studio entries. */
 function hydrateStudioMetadataFromCatalog() {
-    const map = loadReelSeriesMetadataMap();
+    const map = stripDemoReelMetadata(loadReelSeriesMetadataMap());
     let changed = false;
 
     for (const series of get(seriesCatalog)) {
+        if (isDemoSeriesId(series.id)) continue;
         for (const season of series.seasons) {
-            for (const episode of season.episodes) {
+            for (const episode of season.episodes || []) {
                 const reelId = episode.reelId;
                 if (!reelId || map[reelId]) continue;
+                // Demo fixture reel ids (reel-neon-*) are not creator bindings.
+                if (
+                    String(reelId).startsWith('reel-neon-') ||
+                    String(reelId).startsWith('reel-vault-') ||
+                    String(reelId).startsWith('reel-trending-')
+                ) {
+                    continue;
+                }
 
                 map[reelId] = {
                     reelId,
@@ -244,7 +328,15 @@ function hydrateStudioMetadataFromCatalog() {
 export function initSeriesMetadata() {
     if (metadataInitialized) return;
     metadataInitialized = true;
-    const map = hydrateStudioMetadataFromCatalog();
+    allowDemoCatalogSession = false;
+    // Persist a cleaned metadata map so demo Neon entries do not rehydrate later.
+    const rawMap = loadReelSeriesMetadataMap();
+    const map = stripDemoReelMetadata(rawMap);
+    if (Object.keys(map).length !== Object.keys(rawMap).length) {
+        persistReelSeriesMetadataMap(map);
+    }
+    // Ensure catalog store has no leftover demos in memory.
+    seriesCatalog.update((items) => items);
     reelSeriesMetadata.set(map);
     applyAllMetadataToCatalog(map);
     rehydrateEpisodeVaultBindings();
@@ -257,7 +349,9 @@ export function initSeriesMetadata() {
     if (typeof window !== 'undefined') {
         window.addEventListener('reelforge:sync-applied', (event) => {
             const detail = /** @type {CustomEvent} */ (event).detail;
-            const syncMap = detail?.seriesMetadata || loadReelSeriesMetadataMap();
+            const syncMap = stripDemoReelMetadata(
+                detail?.seriesMetadata || loadReelSeriesMetadataMap()
+            );
             reelSeriesMetadata.set(syncMap);
             applyAllMetadataToCatalog(syncMap);
             rehydrateEpisodeVaultBindings();
@@ -275,11 +369,29 @@ export function getReelSeriesMetadata(reelId) {
 }
 
 /**
+ * Persist reel-level series metadata (Creator Truth write path).
+ * Prose fields (title, description, genre, runtime, …) are stripped when
+ * sourceType is AI/discovery/demo — use proposals instead of silent catalog writes.
+ *
  * @param {string} reelId
- * @param {Partial<ReelSeriesMetadata>} patch
+ * @param {Partial<ReelSeriesMetadata> & { provenanceSource?: string; sourceType?: string }} patch
+ * @param {{ sourceType?: string; context?: string }} [options]
  */
-export function saveReelSeriesMetadata(reelId, patch) {
-    const saved = upsertStoredReelSeriesMetadata(reelId, patch);
+export function saveReelSeriesMetadata(reelId, patch, options = {}) {
+    const sourceType =
+        options.sourceType ||
+        patch?.provenanceSource ||
+        patch?.sourceType ||
+        PROVENANCE_SOURCE_TYPES.CREATOR;
+    const { provenanceSource: _p, sourceType: _s, ...rest } = patch || {};
+    const guarded = guardIntelligenceMetadataWrite(rest, {
+        sourceType,
+        context: options.context || 'saveReelSeriesMetadata'
+    });
+    if (!Object.keys(guarded.patch).length && guarded.blockedFields.length) {
+        return getReelSeriesMetadata(reelId);
+    }
+    const saved = upsertStoredReelSeriesMetadata(reelId, guarded.patch);
     if (!saved) return null;
     reelSeriesMetadata.update((map) => ({ ...map, [reelId]: saved }));
     applyMetadataToCatalog(reelId, saved);
@@ -646,6 +758,9 @@ function resolveCatalogContextForReel(reel) {
  * @returns {Series | undefined}
  */
 export function getSeriesById(seriesId) {
+    if (!seriesId) return undefined;
+    // Demo fixtures are invisible unless an explicit demo catalog session is open.
+    if (isDemoSeriesId(seriesId) && !allowDemoCatalogSession) return undefined;
     return get(seriesCatalog).find((series) => series.id === seriesId);
 }
 
@@ -710,21 +825,29 @@ export function updateEpisodeTitleForReel(reelId, nextTitle) {
 
     if (!episodeId && !stored) {
         // Soft metadata stub so later attach/title-match can pick this title up.
-        const saved = saveReelSeriesMetadata(id, {
-            reelId: id,
-            episodeTitle: title
-        });
+        const saved = saveReelSeriesMetadata(
+            id,
+            {
+                reelId: id,
+                episodeTitle: title
+            },
+            { sourceType: 'vault', context: 'updateEpisodeTitleForReel' }
+        );
         return saved
             ? { episodeId: String(saved.episodeId || ''), title }
             : null;
     }
 
-    const saved = saveReelSeriesMetadata(id, {
-        ...(stored || {}),
-        reelId: id,
-        episodeId: episodeId || stored?.episodeId,
-        episodeTitle: title
-    });
+    const saved = saveReelSeriesMetadata(
+        id,
+        {
+            ...(stored || {}),
+            reelId: id,
+            episodeId: episodeId || stored?.episodeId,
+            episodeTitle: title
+        },
+        { sourceType: 'vault', context: 'updateEpisodeTitleForReel' }
+    );
 
     // Force catalog episode.title even if bind skipped.
     if (episodeId) {
@@ -1154,13 +1277,48 @@ export function buildMetadataDraftForReel(reelId) {
 }
 
 /**
- * Phase 1 reset — reload mock catalog (dev/testing only).
+ * Load demo fixture catalog (tests / explicit demos ONLY).
+ * Production hydration never calls this.
+ *
+ * mockSeriesData is loaded only here via import.meta.glob — not as a module-level
+ * `import` used by creator-truth hydration.
  */
 export function resetSeriesCatalogToMock() {
-    seriesCatalog.set([...catalog]);
+    allowDemoCatalogSession = true;
+    /** @type {Series[]} */
+    let demo = [];
+    try {
+        // Eager glob keeps reset sync (validators). Only this opt-in path touches mocks.
+        const modules = import.meta.glob('./mockSeriesData.js', { eager: true });
+        const mod = /** @type {{ MOCK_SERIES_CATALOG?: Series[] } | undefined} */ (
+            modules['./mockSeriesData.js']
+        );
+        demo = (mod?.MOCK_SERIES_CATALOG || []).filter(isSeries);
+    } catch (err) {
+        console.warn('[seriesStore] demo catalog unavailable', err);
+        demo = [];
+    }
+    seriesCatalog.set(
+        typeof structuredClone === 'function'
+            ? structuredClone(demo)
+            : /** @type {Series[]} */ (JSON.parse(JSON.stringify(demo)))
+    );
     reelSeriesMetadata.set({});
     persistReelSeriesMetadataMap({});
     rehydrateEpisodeVaultBindings();
+}
+
+/** Clear catalog to empty creator-truth baseline. */
+export function resetSeriesCatalogEmpty() {
+    allowDemoCatalogSession = false;
+    seriesCatalog.set([]);
+    reelSeriesMetadata.set({});
+    persistReelSeriesMetadataMap({});
+}
+
+/** @returns {boolean} */
+export function isDemoCatalogSessionActive() {
+    return allowDemoCatalogSession;
 }
 
 export { normalizeTags };

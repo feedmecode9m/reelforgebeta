@@ -5,7 +5,7 @@
     export let feedReels = [];
 
     /** @type {string} */
-    export let selectedSeriesId = 'series-neon-vengeance';
+    export let selectedSeriesId = null;
 </script>
 
 <ProductionCommandCenter {feedReels} bind:selectedSeriesId on:changed />

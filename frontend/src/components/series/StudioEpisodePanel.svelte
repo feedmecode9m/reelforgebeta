@@ -20,7 +20,7 @@
     export let feedReels = [];
 
     /** @type {string} */
-    export let selectedSeriesId = 'series-neon-vengeance';
+    export let selectedSeriesId = null;
 
     /** @type {string} */
     export let selectedEpisodeId = '';

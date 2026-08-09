@@ -103,7 +103,7 @@ export function runPlatformAudit() {
     });
 
     logPlatformAudit('Series Store', studioCount > 0 ? 'healthy' : 'degraded', {
-        dataSource: 'reelforge_series_metadata + mockSeriesData seed',
+        dataSource: 'reelforge_series_metadata (creator truth) + explicit demo session fixtures',
         dependencies: ['seriesStore', 'seriesMetadataStorage', 'initSeriesMetadata'],
         diagnostics: ['[INTELLIGENCE_SOURCE]'],
         failureModes: ['bridge-gap', 'no-catalog-match', 'single-tab-only'],

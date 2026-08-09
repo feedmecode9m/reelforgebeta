@@ -12,7 +12,7 @@
     export let open = false;
 
     /** @type {string} */
-    export let seriesId = 'series-neon-vengeance';
+    export let seriesId = null;
 
     /** @type {string} */
     export let selectedEpisodeId = '';

@@ -21,6 +21,14 @@
     resolvePublicSeriesBySlug
   } from '../../lib/series/publicSeriesHydration.js';
   import {
+    seriesCatalogCounts,
+    creatorFacingDescription,
+    creatorFacingGenre,
+    resolveSeriesPosterSrc
+  } from '../../lib/series/seriesCatalogTruth.js';
+  import { resolvePublicGenreDisplay } from '../../lib/architecture/intelligenceProvenance.js';
+  import { DEFAULT_MEDIA_PLACEHOLDER } from '../../lib/config.js';
+  import {
     theaterReelFromVaultResolve,
     logEpisodeVaultResolve
   } from '../../lib/series/episodeVaultResolver.js';
@@ -108,7 +116,9 @@
 
   $: series = resolveSeriesFromSlug(slug, $seriesCatalog);
   $: sortedSeasons = series
-    ? [...(series.seasons || [])].sort((a, b) => a.seasonNumber - b.seasonNumber)
+    ? [...(series.seasons || [])]
+        .filter((s) => Array.isArray(s.episodes) && s.episodes.length > 0)
+        .sort((a, b) => a.seasonNumber - b.seasonNumber)
     : [];
   $: allEpisodes = sortedSeasons.flatMap((season) =>
     [...(season.episodes || [])]
@@ -124,6 +134,29 @@
     const resolved = resolveEpisodeMedia({ episode, readyVaultAssets: heroVaultAssets });
     return resolved.matched;
   }).length;
+  // Counts only from series.seasons[].episodes[] (+ real vault playability).
+  $: catalogCounts = series
+    ? seriesCatalogCounts(series, (episode) => {
+        const resolved = resolveEpisodeMedia({ episode, readyVaultAssets: heroVaultAssets });
+        return resolved.matched;
+      })
+    : { seasonCount: 0, episodeCount: 0, playableCount: 0 };
+  // Official Genre only when creator assigned it — never discovery shelf labels.
+  $: publicGenre = (() => {
+    const raw = creatorFacingGenre(series?.genre);
+    const resolved = resolvePublicGenreDisplay(raw, 'creator');
+    return resolved.official ? resolved.display : '';
+  })();
+  $: publicDescription = creatorFacingDescription(series?.description);
+  $: seriesPosterSrc = resolveSeriesPosterSrc({
+    seriesPoster: series?.poster,
+    episodeThumbnails: allEpisodes.map(({ episode }) => {
+      const resolved = resolveEpisodeMedia({ episode, readyVaultAssets: heroVaultAssets });
+      if (!resolved.matched) return null;
+      return resolved.thumbnail || resolved.mediaUrl || null;
+    }),
+    placeholder: DEFAULT_MEDIA_PLACEHOLDER
+  });
 
   function refreshHeroVaultAssets() {
     try {
@@ -301,30 +334,34 @@
       <p>Resolving Hero Vault catalog for <code>/series/{slug}</code>.</p>
     </section>
   {:else if !series}
-    <section class="series-public__missing" aria-live="polite">
+    <section class="series-public__missing" aria-live="polite" data-series-not-found>
       <h1>Series not found</h1>
-      <p>We couldn't find a series for <code>/series/{slug}</code>.</p>
+      <p>No creator series is available for <code>/series/{slug}</code>.</p>
+      <p class="series-public__empty-hint">
+        Series pages only render content that exists in the creator catalog
+        (Hero Vault uploads, title edits, and explicit episode bindings).
+      </p>
       <a class="series-public__cta series-public__cta--ghost" href="/">Back to home</a>
     </section>
   {:else}
     <section class="series-public__hero" aria-labelledby="series-public-title">
-      {#if series.poster}
+      {#if seriesPosterSrc}
         <div class="series-public__poster-wrap" aria-hidden="true">
-          <img class="series-public__poster" src={series.poster} alt="" />
+          <img class="series-public__poster" src={seriesPosterSrc} alt="" />
         </div>
       {/if}
       <div class="series-public__hero-copy">
-        {#if series.genre}
-          <p class="series-public__eyebrow">{series.genre}</p>
+        {#if publicGenre}
+          <p class="series-public__eyebrow">{publicGenre}</p>
         {/if}
         <h1 id="series-public-title" class="series-public__title">{series.title}</h1>
-        {#if series.description}
-          <p class="series-public__desc">{series.description}</p>
+        {#if publicDescription}
+          <p class="series-public__desc">{publicDescription}</p>
         {/if}
-        <p class="series-public__meta">
-          {sortedSeasons.length} season{sortedSeasons.length === 1 ? '' : 's'}
-          · {allEpisodes.length} episode{allEpisodes.length === 1 ? '' : 's'}
-          · {playableCount} playable
+        <p class="series-public__meta" data-series-catalog-counts>
+          {catalogCounts.seasonCount} season{catalogCounts.seasonCount === 1 ? '' : 's'}
+          · {catalogCounts.episodeCount} episode{catalogCounts.episodeCount === 1 ? '' : 's'}
+          · {catalogCounts.playableCount} playable
           {#if series.releaseYear}
             · {series.releaseYear}
           {/if}
@@ -356,57 +393,69 @@
 
     <section class="series-public__seasons" aria-label="Seasons and episodes">
       <h2 class="series-public__section-title">Episodes</h2>
-      <div class="series-public__season-list">
-        {#each sortedSeasons as season (season.seasonId || season.seasonNumber)}
-          <SeasonAccordion
-            seriesId={series.id}
-            {season}
-            heroVaultAssets={heroVaultAssets}
-            defaultExpanded={season.seasonNumber === (sortedSeasons[0]?.seasonNumber ?? 1)}
-            bind:selectedEpisodeId
-            on:episodeSelect={handleEpisodeSelect}
-          />
-        {/each}
-      </div>
+      {#if sortedSeasons.length === 0}
+        <p class="series-public__empty-episodes" data-series-empty-episodes>
+          No creator episodes yet. Upload and bind media in Hero Vault to populate this series.
+        </p>
+      {:else}
+        <div class="series-public__season-list">
+          {#each sortedSeasons as season (season.seasonId || season.seasonNumber)}
+            <SeasonAccordion
+              seriesId={series.id}
+              {season}
+              heroVaultAssets={heroVaultAssets}
+              defaultExpanded={season.seasonNumber === (sortedSeasons[0]?.seasonNumber ?? 1)}
+              bind:selectedEpisodeId
+              on:episodeSelect={handleEpisodeSelect}
+            />
+          {/each}
+        </div>
+      {/if}
     </section>
 
     <section class="series-public__status-board" aria-label="Episode guide">
       <h2 class="series-public__section-title">Episode guide</h2>
-      <ul class="series-public__status-list">
-        {#each allEpisodes as row (row.episode.episodeId)}
-          {@const resolved = resolveEpisodeMedia({
-            episode: row.episode,
-            readyVaultAssets: heroVaultAssets
-          })}
-          {@const chip = episodeChipPresentation(row.episode, resolved)}
-          <li
-            class="series-public__status-row"
-            class:playable={chip.playable}
-            class:unavailable={!chip.playable}
-            data-episode-id={row.episode.episodeId}
-            data-media-asset-id={chip.mediaAssetId || undefined}
-            data-binding-mode={chip.bindingMode || undefined}
-          >
-            <span class="series-public__status-code"
-              >S{row.season.seasonNumber}:E{row.episode.episodeNumber}</span
+      {#if allEpisodes.length === 0}
+        <p class="series-public__empty-episodes" data-series-empty-guide>
+          No episode guide entries — the guide only lists catalog episodes bound by the creator.
+        </p>
+      {:else}
+        <ul class="series-public__status-list">
+          {#each allEpisodes as row (row.episode.episodeId)}
+            {@const resolved = resolveEpisodeMedia({
+              episode: row.episode,
+              readyVaultAssets: heroVaultAssets
+            })}
+            {@const chip = episodeChipPresentation(row.episode, resolved)}
+            <li
+              class="series-public__status-row"
+              class:playable={chip.playable}
+              class:unavailable={!chip.playable}
+              data-episode-id={row.episode.episodeId}
+              data-media-asset-id={chip.mediaAssetId || undefined}
+              data-binding-mode={chip.bindingMode || undefined}
             >
-            <span class="series-public__status-title">{row.episode.title}</span>
-            {#if chip.thumbnailUrl}
-              <img class="series-public__status-thumb" src={chip.thumbnailUrl} alt="" />
-            {/if}
-            <span class="series-public__status-badge">{chip.bindingLabel}</span>
-            {#if chip.playable}
-              <button
-                type="button"
-                class="series-public__row-play"
-                on:click={() => playEpisode(row.episode.episodeId, 'drawer')}
+              <span class="series-public__status-code"
+                >S{row.season.seasonNumber}:E{row.episode.episodeNumber}</span
               >
-                ▶ Enter Theater
-              </button>
-            {/if}
-          </li>
-        {/each}
-      </ul>
+              <span class="series-public__status-title">{row.episode.title}</span>
+              {#if chip.thumbnailUrl}
+                <img class="series-public__status-thumb" src={chip.thumbnailUrl} alt="" />
+              {/if}
+              <span class="series-public__status-badge">{chip.bindingLabel}</span>
+              {#if chip.playable}
+                <button
+                  type="button"
+                  class="series-public__row-play"
+                  on:click={() => playEpisode(row.episode.episodeId, 'drawer')}
+                >
+                  ▶ Enter Theater
+                </button>
+              {/if}
+            </li>
+          {/each}
+        </ul>
+      {/if}
     </section>
   {/if}
   </div>
@@ -563,6 +612,15 @@
     margin: 0.85rem 0 0;
     color: #fbbf24;
     font-size: 0.88rem;
+  }
+
+  .series-public__empty-hint,
+  .series-public__empty-episodes {
+    margin: 0.5rem 0 0;
+    color: var(--lz-ink-muted, rgba(255, 255, 255, 0.55));
+    font-size: 0.9rem;
+    line-height: 1.45;
+    max-width: 36rem;
   }
 
   .series-public__section-title {

@@ -1,6 +1,11 @@
 /**
- * Intelligence source audit — Studio must be sole content authority.
+ * Intelligence source audit — maps UI fields back to Creator Truth vs interpretation.
  * Emits [INTELLIGENCE_SOURCE] { field, source, value }
+ *
+ * Prefer STUDIO / creator metadata over NLP/FALLBACK. Intelligence may explain;
+ * it must not be the author of public catalog content.
+ *
+ * @see ../architecture/creatorTruthLayers.js
  */
 
 import { getReelSeriesMetadata } from './seriesStore.js';

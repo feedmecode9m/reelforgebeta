@@ -63,7 +63,7 @@ function loadFeedReelsFromStorage() {
 function resolveSeriesId(seriesId) {
     if (seriesId) return seriesId;
     const catalog = get(seriesCatalog);
-    return catalog[0]?.id || 'series-neon-vengeance';
+    return catalog[0]?.id || null;
 }
 
 /**

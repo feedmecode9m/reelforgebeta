@@ -61,11 +61,15 @@ function resolveSeriesContext(seriesId, feedReels) {
     const unpublishedReady = records.filter(
         (record) => record.status === 'Ready' || record.status === 'Draft' || record.status === 'Scheduled'
     );
-    const catalogSeries = get(seriesCatalog).find((series) => series.id === seriesId);
+    const catalogSeries = seriesId
+        ? get(seriesCatalog).find((series) => series.id === seriesId)
+        : null;
     const seriesTitle =
         catalogSeries?.title ||
-        seriesId.replace(/^series-/, '').replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase()) ||
-        'Neon Vengeance';
+        (seriesId
+            ? seriesId.replace(/^series-/, '').replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
+            : '') ||
+        '';
 
     return {
         health,
@@ -256,7 +260,7 @@ export function analyzeSeriesPerformance(seriesId, feedReels = []) {
  * @param {Record<string, unknown>[]} [feedReels]
  * @param {{ emitDiagnostics?: boolean }} [options]
  */
-export function masterMonetizationAnalysis(seriesId = 'series-neon-vengeance', feedReels = [], options = {}) {
+export function masterMonetizationAnalysis(seriesId = null, feedReels = [], options = {}) {
     const emitDiagnostics = options.emitDiagnostics !== false;
     const revenue = analyzeRevenue(seriesId, feedReels);
     const subscriptions = analyzeSubscriptions(seriesId, feedReels);

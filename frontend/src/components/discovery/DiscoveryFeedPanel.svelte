@@ -10,7 +10,7 @@
     /** @type {Record<string, unknown>[]} */
     export let feedReels = [];
     /** @type {string} */
-    export let seriesId = 'series-neon-vengeance';
+    export let seriesId = null;
 
     const SECTION_ORDER = [
         'trendingCreators',

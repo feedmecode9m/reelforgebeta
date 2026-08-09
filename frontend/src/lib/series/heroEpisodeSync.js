@@ -13,6 +13,10 @@ import {
 } from './seriesMetadataStorage.js';
 import { reelSeriesMetadata, seriesCatalog, getEpisodeByReelId } from './seriesStore.js';
 import { logHeroEpisodeSync } from '../diagnostics/heroEpisodeSyncDiagnostics.js';
+import {
+    isTruthProvenanceSource,
+    normalizeProvenanceSource
+} from '../architecture/intelligenceProvenance.js';
 
 /**
  * @param {unknown} value
@@ -25,8 +29,8 @@ function text(value) {
 /**
  * Sync hero creator identity onto series episode metadata for Theater menus.
  *
+ * Creator Truth only: description/genre prose from AI/discovery sources is not written.
  * Preserves episodeId / seriesId / seasonNumber / episodeNumber when present.
- * Updates episodeTitle, description, tags, genre.
  *
  * @param {string} reelId
  * @param {{
@@ -71,19 +75,37 @@ export function syncHeroIdentityToEpisodeMetadata(reelId, identity = {}) {
         return existing;
     }
 
+    const truthSource = isTruthProvenanceSource(identity.source || 'creator');
+    const sourceType = normalizeProvenanceSource(identity.source || 'creator');
+
     /** @type {Partial<import('./seriesMetadataStorage.js').ReelSeriesMetadata>} */
     const patch = {
         reelId: id,
         episodeTitle: newTitle,
-        description: text(identity.description) || existing?.description || '',
         tags: normalizeTags([
             ...(Array.isArray(identity.tags) ? identity.tags : []),
-            ...(Array.isArray(identity.keywords) ? identity.keywords : []),
+            ...(Array.isArray(identity.keywords) && truthSource ? identity.keywords : []),
             ...(existing?.tags || [])
         ]),
-        genre: text(identity.genre) || existing?.genre || '',
         updatedAt: Date.now()
     };
+
+    // Prose stays empty unless source is creator/vault/binding (or already stored).
+    if (truthSource) {
+        patch.description = text(identity.description) || existing?.description || '';
+        patch.genre = text(identity.genre) || existing?.genre || '';
+    } else {
+        patch.description = existing?.description || '';
+        patch.genre = existing?.genre || '';
+        if (text(identity.description) || text(identity.genre)) {
+            console.info('[INTELLIGENCE_PROVENANCE_GUARD]', {
+                phase: 'hero-episode-sync-skip-prose',
+                sourceType,
+                reelId: id,
+                ts: new Date().toISOString()
+            });
+        }
+    }
 
     // Preserve bind keys — never invent episode / series ids without a catalog bind.
     if (existing?.episodeId) patch.episodeId = existing.episodeId;

@@ -25,7 +25,10 @@
   } from '../../lib/diagnostics/renderGateForensics.js';
   import { uploadMedia, uploadThumbnail, fetchReadyReels as apiFetchReadyReels, deleteReelById as apiDeleteReelById } from '../../lib/api/media.js';
   import { acceptVaultImageUploadResponse } from '../../lib/vault/normalizeVaultAsset.js';
-  import { resolveThumbnailUploadMediaUrl } from '../../lib/vault/resolveThumbnailUploadMediaUrl.js';
+  import {
+    resolveThumbnailUploadMediaUrl,
+    isAcceptableThumbnailUploadMedia
+  } from '../../lib/vault/resolveThumbnailUploadMediaUrl.js';
   import { logHeroImagePipeline, saveHeroManagerConfig } from '../../lib/hero/heroIntelligence.js';
   import {
     resolveActiveHeroVideoReel,
@@ -2389,33 +2392,50 @@
       });
       logVaultFieldAudit('POST /api/reels response', response);
 
-      // Canonical normalizer: accept image rows with id + url OR thumbnailUrl + ready status.
-      const normalized = acceptVaultImageUploadResponse(response, { fallbackName: name });
-      if (!normalized) {
-        throw new Error(`Invalid upload response: ${JSON.stringify(response)}`);
-      }
+      // Metadata normalizer (optional enrichment). Never gate acceptance solely on it.
+      const normalized =
+        acceptVaultImageUploadResponse(response, { fallbackName: name }) || null;
 
-      // Accept relative /thumbs/* and absolute https://…/thumbs/*; reject empty + blob:
-      const thumbPath = resolveThumbnailUploadMediaUrl({ normalized, response });
-      if (!thumbPath) {
+      // Path gate: relative /thumbs/* OR absolute https://…/thumbs/* — reject empty/blob only.
+      // Do NOT require startsWith('/thumbs/') after toRelativeMediaPath (breaks Netlify absolute URLs).
+      const thumbPath = resolveThumbnailUploadMediaUrl({
+        normalized,
+        response: response && typeof response === 'object' ? response : {}
+      });
+      const id = String(normalized?.id || response?.id || '').trim();
+      const status = String(response?.status || normalized?.status || 'ready')
+        .trim()
+        .toLowerCase();
+      const statusOk =
+        !status ||
+        status === 'ready' ||
+        status === 'complete' ||
+        status === 'completed';
+
+      if (
+        !id ||
+        !statusOk ||
+        !thumbPath ||
+        !isAcceptableThumbnailUploadMedia(response, normalized)
+      ) {
         throw new Error(`Invalid upload response: ${JSON.stringify(response)}`);
       }
 
       const entryName =
         String(thumbPath).split('/').pop()?.split('?')[0] ||
-        normalized.displayTitle ||
+        normalized?.displayTitle ||
         name;
       const entry = {
-        id: String(normalized.id || response.id || ''),
+        id,
         fileName: entryName,
-        name: name || normalized.title,
-        title: name || normalized.title,
-        displayTitle: normalized.displayTitle,
+        name: name || normalized?.title || response?.name || entryName,
+        title: name || normalized?.title || response?.title || entryName,
+        displayTitle: normalized?.displayTitle || name || entryName,
         type: response.type || response.media_type || 'image',
         url: thumbPath,
         thumbnailUrl: thumbPath,
-        status: normalized.status || 'ready',
-        keywords: normalized.keywords || [],
+        status: statusOk ? 'ready' : status,
+        keywords: normalized?.keywords || [],
         size: response.size ?? file.size,
         addedAt: new Date().toISOString()
       };

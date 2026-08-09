@@ -11,7 +11,7 @@
     /** @type {Record<string, unknown>[]} */
     export let feedReels = [];
     /** @type {string} */
-    export let seriesId = 'series-neon-vengeance';
+    export let seriesId = null;
     /** @type {string | null} */
     export let creatorId = null;
 

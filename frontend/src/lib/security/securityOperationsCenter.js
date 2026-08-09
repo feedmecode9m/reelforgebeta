@@ -44,7 +44,7 @@ function severityFromThreatLevel(level) {
  * @param {Record<string, unknown>[]} [feedReels]
  * @param {{ emitDiagnostics?: boolean }} [options]
  */
-export function buildSecurityOperationsBrief(seriesId = 'series-neon-vengeance', feedReels = [], options = {}) {
+export function buildSecurityOperationsBrief(seriesId = null, feedReels = [], options = {}) {
     const audit =
         typeof window !== 'undefined' && window.__reelforgeSecurityAudit?.runSecurityAudit
             ? window.__reelforgeSecurityAudit.runSecurityAudit({ emitDiagnostics: false })

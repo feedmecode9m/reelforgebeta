@@ -1,6 +1,11 @@
 /**
- * Phase 56 — ReelForge Discovery Engine.
- * Global NLP-inspired search across platform domains.
+ * Phase 56 — ReelForge Discovery Engine (DISCOVERY LAYER).
+ *
+ * Indexes and ranks platform data for search / recommendations only.
+ * Does not write seriesCatalog, invent episodes, or override bindings.
+ * Reads series metadata as search text; creator catalog remains source of truth.
+ *
+ * @see ../architecture/creatorTruthLayers.js
  */
 
 import { get } from 'svelte/store';
@@ -318,7 +323,7 @@ export function buildDiscoveryIndex() {
     }
 
     // Revenue
-    for (const seriesId of seriesIds.length ? seriesIds : ['series-neon-vengeance']) {
+    for (const seriesId of seriesIds.length ? seriesIds : []) {
         const brief = buildRevenueDashboardBrief(seriesId, [], {});
         pushDoc(docs, {
             id: `revenue:${seriesId}`,
@@ -340,7 +345,7 @@ export function buildDiscoveryIndex() {
 
     // Hero content
     const heroConfig = loadHeroManagerConfig();
-    const heroCandidates = buildHeroCandidates([], { seriesId: seriesIds[0] || 'series-neon-vengeance' });
+    const heroCandidates = buildHeroCandidates([], { seriesId: seriesIds[0] || null });
     for (const candidate of heroCandidates.slice(0, 12)) {
         if (
             isHeroAsset({
@@ -421,7 +426,7 @@ export function buildDiscoveryIndex() {
     }
 
     // Sentinel recommendations
-    for (const seriesId of seriesIds.length ? seriesIds : ['series-neon-vengeance']) {
+    for (const seriesId of seriesIds.length ? seriesIds : []) {
         const analysis = masterAnalysis(seriesId, [], { emitDiagnostics: false });
         for (let i = 0; i < analysis.recommendations.length; i += 1) {
             const recommendation = analysis.recommendations[i];

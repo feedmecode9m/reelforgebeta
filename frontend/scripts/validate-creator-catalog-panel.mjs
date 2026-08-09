@@ -118,7 +118,12 @@ try {
 
     const catalog = get(seriesStore.seriesCatalog);
     assert('catalog includes STIRRED', catalog.some((s) => s.id === STIRRED_SERIES));
+    // Catalog intentionally keeps opt-in demo fixtures when resetSeriesCatalogToMock is used
     assert('catalog still includes Neon (not removed)', catalog.some((s) => s.id === 'series-neon-vengeance'));
+    assert(
+        'demo reset is opt-in only (fixture loader present)',
+        typeof seriesStore.resetSeriesCatalogToMock === 'function'
+    );
 
     const defaultId = resolveDefaultSeriesId(catalog, '');
     assert(

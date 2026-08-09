@@ -1,12 +1,20 @@
 /**
  * Phase 33 — intelligent hero command surface + showcase selection.
- * Aggregates production signals for the hero command center without touching playback.
+ *
+ * Aggregation of production *signals* for the command center / carousel.
+ * Selection must prefer real catalog / vault series (Creator Truth).
+ * Demo fixtures are filtered via isDemoSeriesId — never featured as public truth.
+ * Fallback titles/subtitles stay null/empty when creator data is missing.
+ *
+ * @see ../architecture/creatorTruthLayers.js
+ * @see ../series/seriesCatalogTruth.js
  */
 
 import { getOperationsSnapshot } from '../observability/platformMetrics.js';
 import { loadWatchProgressMap } from '../series/seriesWatchProgress.js';
 import { buildReleaseCenterSnapshot } from '../release/releaseCenter.js';
 import { getEpisodeById, getSeriesById, seriesCatalog } from '../series/seriesStore.js';
+import { isDemoSeriesId } from '../series/seriesCatalogTruth.js';
 import { resolveReelForEpisode } from '../series/episodeBridge.js';
 import { get } from 'svelte/store';
 import { TEAM_STORAGE_KEY } from '../teams/creatorTeams.js';
@@ -720,8 +728,8 @@ export function getDefaultHeroManagerConfig() {
             // Visiting /series/neon-vengeance still works when the user navigates there.
             ctaSecondaryTarget: '',
             campaignType: 'editorial_story',
-            featuredCollection: 'Black Legacy Stories',
-            featuredSeries: 'Neon Vengeance',
+            featuredCollection: '',
+            featuredSeries: '',
             storyStatus: 'draft',
             storyScheduledFor: ''
     };
@@ -2393,7 +2401,26 @@ export const LEGACY_MODE_ALIASES = {
     CREATOR_PICK: 'CREATOR_SPOTLIGHT'
 };
 
-const FEATURED_SERIES_ID = 'series-neon-vengeance';
+const FEATURED_SERIES_ID = '';
+
+/**
+ * Prefer a real catalog series (first bound entry), never a demo id unless it exists.
+ * @param {string} [preferred]
+ * @returns {string}
+ */
+function resolveFeaturedSeriesId(preferred = '') {
+    const pref = String(preferred || '').trim();
+    if (pref && getSeriesById(pref)) return pref;
+    const list = get(seriesCatalog) || [];
+    // Prefer vault-inferred / creator series over legacy demo fixtures if any were loaded.
+    const vaultish = list.find(
+        (s) => Array.isArray(s.tags) && s.tags.includes('vault-inferred')
+    );
+    if (vaultish?.id) return vaultish.id;
+    const firstReal = list.find((s) => s?.id && !isDemoSeriesId(s.id));
+    if (firstReal?.id) return firstReal.id;
+    return list[0]?.id || '';
+}
 
 /**
  * @typedef {Object} HeroScoreBreakdown
@@ -2776,7 +2803,9 @@ function buildHighestCompletionCandidate(feedReels) {
 
 /** @param {Record<string, unknown>[]} feedReels @param {string} [seriesId] */
 function buildUpcomingReleaseCandidate(feedReels, seriesId = FEATURED_SERIES_ID) {
-    const release = buildReleaseCenterSnapshot(seriesId, feedReels);
+    const resolvedId = resolveFeaturedSeriesId(seriesId);
+    if (!resolvedId) return null;
+    const release = buildReleaseCenterSnapshot(resolvedId, feedReels);
     const now = Date.now();
     const upcoming = (release.calendar || [])
         .filter(
@@ -2821,7 +2850,8 @@ function buildUpcomingReleaseCandidate(feedReels, seriesId = FEATURED_SERIES_ID)
 
 /** @param {Record<string, unknown>[]} feedReels @param {string} [seriesId] */
 function buildFeaturedSeriesCandidate(feedReels, seriesId = FEATURED_SERIES_ID) {
-    const series = getSeriesById(seriesId) || get(get(seriesCatalog))?.[0];
+    const resolvedId = resolveFeaturedSeriesId(seriesId);
+    const series = (resolvedId && getSeriesById(resolvedId)) || get(seriesCatalog)?.[0] || null;
     if (!series) return null;
 
     const published = series.seasons
@@ -2836,18 +2866,26 @@ function buildFeaturedSeriesCandidate(feedReels, seriesId = FEATURED_SERIES_ID) 
             feedReels,
             'featured_series',
             75,
-            series.description || 'Featured series spotlight',
+            '',
             { featured: true, releaseStatus: episode.status }
         );
         if (candidate) {
-            return { ...candidate, title: series.title, subtitle: series.description || candidate.subtitle };
+            const subtitle = String(series.description || '').trim().replace(/^Vault-inferred series:\s*/i, '');
+            return {
+                ...candidate,
+                title: series.title,
+                subtitle: subtitle || candidate.subtitle || ''
+            };
         }
     }
 
+    const fallbackSubtitle = String(series.description || '')
+        .trim()
+        .replace(/^Vault-inferred series:\s*/i, '');
     const fallback = {
         source: 'featured_series',
         title: series.title,
-        subtitle: series.description || 'Featured series spotlight',
+        subtitle: fallbackSubtitle,
         seriesId: series.id,
         seriesTitle: series.title,
         posterUrl: series.poster || undefined,
@@ -2861,7 +2899,8 @@ function buildFeaturedSeriesCandidate(feedReels, seriesId = FEATURED_SERIES_ID) 
 
 /** @param {Record<string, unknown>[]} feedReels @param {string} [seriesId] */
 function buildEditorsChoiceCandidate(feedReels, seriesId = FEATURED_SERIES_ID) {
-    const series = getSeriesById(seriesId);
+    const resolvedId = resolveFeaturedSeriesId(seriesId);
+    const series = resolvedId ? getSeriesById(resolvedId) : null;
     if (!series) return buildFeaturedSeriesCandidate(feedReels, seriesId);
 
     const ranked = series.seasons
@@ -3262,9 +3301,9 @@ export function selectHeroContent(mode = 'TRENDING', feed, options = {}) {
         candidates.sort((a, b) => b.score - a.score)[0] ||
         {
             source: 'featured_series',
-            title: options.fallbackTitle || 'Neon Vengeance',
-            subtitle: options.fallbackSubtitle || 'The code was his legacy. The betrayal was his rebirth.',
-            seriesId: options.seriesId || FEATURED_SERIES_ID,
+            title: options.fallbackTitle || '',
+            subtitle: options.fallbackSubtitle || '',
+            seriesId: options.seriesId || FEATURED_SERIES_ID || null,
             score: 0
         };
 
@@ -3529,7 +3568,7 @@ export function buildHeroCommandBrief(seriesId = FEATURED_SERIES_ID, feed) {
     const release = buildReleaseCenterSnapshot(resolvedSeriesId, feedReels);
     const analytics = getOperationsSnapshot(resolvedSeriesId);
     const series = getSeriesById(resolvedSeriesId);
-    const seriesTitle = series?.title || 'Neon Vengeance';
+    const seriesTitle = series?.title || '';
 
     const biggestBlocker =
         copilot.biggestBlocker ||

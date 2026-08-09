@@ -1188,7 +1188,7 @@
 <StudioWalkthrough
   bind:this={studioWalkthrough}
   feedReels={studioFeedReels}
-  seriesId={$studioSelectedSeriesId || 'series-neon-vengeance'}
+  seriesId={$studioSelectedSeriesId || null}
 />
 
 {#if $controlCenterOpen}
@@ -1238,7 +1238,7 @@
         >
           <div slot="production" class="studio-workspace-slot forge-zone">
 <CreatorOnboardingWizard
-  seriesId={studioFeedReels?.[0]?.seriesId || 'series-neon-vengeance'}
+  seriesId={studioFeedReels?.[0]?.seriesId || null}
   feedReels={studioFeedReels}
 />
 <EpisodeReelAttachmentPanel
@@ -2110,11 +2110,11 @@
           </div>
           <div slot="analytics" class="studio-workspace-slot">
             <RevenueDashboard
-              seriesId={$studioSelectedSeriesId || 'series-neon-vengeance'}
+              seriesId={$studioSelectedSeriesId || null}
               feedReels={studioFeedReels}
             />
             <MarketplaceDashboard
-              seriesId={$studioSelectedSeriesId || 'series-neon-vengeance'}
+              seriesId={$studioSelectedSeriesId || null}
               feedReels={studioFeedReels}
             />
           </div>
@@ -2134,7 +2134,7 @@
             {uploadStatus}
           />
           <SentinelSecurityCard />
-          <SentinelAssistantPanel feedReels={studioFeedReels} seriesId={$studioSelectedSeriesId || 'series-neon-vengeance'} />
+          <SentinelAssistantPanel feedReels={studioFeedReels} seriesId={$studioSelectedSeriesId || null} />
           <HeroManagerPanel
             feedReels={studioFeedReels}
             {feed}

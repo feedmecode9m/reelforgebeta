@@ -160,7 +160,7 @@ export function persistDailyEngagementState(state) {
  */
 export function buildDailyEngagementState(options = {}) {
     const dayKey = getDailyKey();
-    const seriesId = options.seriesId || 'series-neon-vengeance';
+    const seriesId = options.seriesId || null;
     const feedReels = Array.isArray(options.feedReels) ? options.feedReels : [];
 
     const state = {

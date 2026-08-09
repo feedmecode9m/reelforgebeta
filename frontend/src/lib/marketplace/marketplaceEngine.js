@@ -711,7 +711,7 @@ export function seedDefaultMarketplace() {
         serviceId: featuredService.serviceId,
         creatorId: featuredService.creatorId,
         category: 'editing',
-        title: 'Neon Vengeance Episodic Edit',
+        title: 'Episodic edit listing',
         status: 'completed',
         budgetCents: 12000
     });

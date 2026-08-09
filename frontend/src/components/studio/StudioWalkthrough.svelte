@@ -17,7 +17,7 @@
     export let feedReels = [];
 
     /** @type {string} */
-    export let seriesId = 'series-neon-vengeance';
+    export let seriesId = null;
 
     const WALKTHROUGH_KEY = 'reelforge_studio_walkthrough_complete';
 

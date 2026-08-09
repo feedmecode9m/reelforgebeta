@@ -183,7 +183,7 @@ export function getMissingAssetQueue(feedReels = [], seriesId) {
  * @param {string} [seriesId]
  * @param {boolean} [emitLogs]
  */
-export function auditProductionOperations(feedReels = [], seriesId = 'series-neon-vengeance', emitLogs = true) {
+export function auditProductionOperations(feedReels = [], seriesId = null, emitLogs = true) {
     const health = computeSeriesHealth(feedReels, seriesId);
     const readiness = computeProductionReadiness(feedReels, seriesId);
     const queue = getMissingAssetQueue(feedReels, seriesId);

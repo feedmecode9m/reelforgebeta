@@ -45,7 +45,7 @@
     };
 
     /** @type {string} */
-    export let seriesId = 'series-neon-vengeance';
+    export let seriesId = null;
     /** @type {Record<string, unknown>[]} */
     export let feedReels = [];
 

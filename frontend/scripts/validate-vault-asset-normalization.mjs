@@ -36,9 +36,8 @@ try {
         resolveVaultKeywords,
         cleanVaultFilename
     } = await vite.ssrLoadModule('/src/lib/vault/resolveVaultAssetTitle.js');
-    const { resolveThumbnailUploadMediaUrl } = await vite.ssrLoadModule(
-        '/src/lib/vault/resolveThumbnailUploadMediaUrl.js'
-    );
+    const { resolveThumbnailUploadMediaUrl, isAcceptableThumbnailUploadMedia } =
+        await vite.ssrLoadModule('/src/lib/vault/resolveThumbnailUploadMediaUrl.js');
 
     console.log('\nvalidate-vault-asset-normalization\n');
 
@@ -182,6 +181,49 @@ try {
         'absolute Netlify thumbnail URL acceptance',
         netlifyThumb === 'https://strong-lolly-a9fcb4.netlify.app/thumbs/aa032c74.png'
     );
+
+    // Live production rejection payload (UUID.PNG title + absolute Netlify thumbs)
+    const liveRejectPayload = {
+        id: '9cb18bee-c035-42e8-88ff-f3ab5bdc0e24',
+        name: '94E28916-619A-4356-88E7-90D1C71CAC2D.PNG',
+        type: 'image',
+        url: 'https://strong-lolly-a9fcb4.netlify.app/thumbs/9cb18bee-c035-42e8-88ff-f3ab5bdc0e24.png',
+        thumbnailUrl:
+            'https://strong-lolly-a9fcb4.netlify.app/thumbs/9cb18bee-c035-42e8-88ff-f3ab5bdc0e24.png',
+        thumbnail_url:
+            'https://strong-lolly-a9fcb4.netlify.app/thumbs/9cb18bee-c035-42e8-88ff-f3ab5bdc0e24.png',
+        createdAt: '2026-08-09T02:49:11.988337+00:00',
+        category: 'Trending',
+        status: 'ready',
+        fileName: '9cb18bee-c035-42e8-88ff-f3ab5bdc0e24.png',
+        title: '94E28916-619A-4356-88E7-90D1C71CAC2D.PNG',
+        created_at: '2026-08-09T02:49:11.988337+00:00'
+    };
+    const liveNorm = acceptVaultImageUploadResponse(liveRejectPayload, {
+        fallbackName: liveRejectPayload.name
+    });
+    const livePath = resolveThumbnailUploadMediaUrl({
+        normalized: liveNorm,
+        response: liveRejectPayload
+    });
+    assert('live Netlify payload normalizes or path resolves independently', Boolean(livePath));
+    assert(
+        'live Netlify absolute thumb accepted without /thumbs/ prefix gate',
+        livePath === liveRejectPayload.url
+    );
+    assert(
+        'live Netlify isAcceptableThumbnailUploadMedia',
+        isAcceptableThumbnailUploadMedia(liveRejectPayload, liveNorm) === true
+    );
+    // Must accept even when normalizer is skipped (path-primary gate)
+    assert(
+        'path-primary accepts absolute URL with null normalized',
+        resolveThumbnailUploadMediaUrl({
+            normalized: null,
+            response: liveRejectPayload
+        }) === liveRejectPayload.url
+    );
+
     assert(
         'relative /thumbs path accepted',
         resolveThumbnailUploadMediaUrl({

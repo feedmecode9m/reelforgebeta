@@ -1,6 +1,11 @@
 /**
- * Mock series catalog — local metadata only (Phase 1).
- * `reelId` values are placeholders that can map to existing feed reels in later phases.
+ * DEMO fixture catalog only (Neon Vengeance, etc.).
+ *
+ * Not public Creator truth. The live seriesCatalog store seeds empty;
+ * call seriesStore.resetSeriesCatalogToMock() only for demos/legacy tests.
+ *
+ * Do not surface these titles, genres, or episode counts unless a test
+ * explicitly loads this fixture.
  */
 
 /** @type {import('./seriesTypes.js').Series[]} */

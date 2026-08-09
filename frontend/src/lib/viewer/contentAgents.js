@@ -96,8 +96,12 @@ export function createContentAgents(deps) {
   }
   };
   // ==========================================
-  // Category Detector
+  // Category Detector — DISCOVERY LAYER ONLY
   // ==========================================
+  // Shelf/upload *recommendation* buckets (Cyber-Action, Romance, …).
+  // These labels are NOT series genre truth and MUST NOT create Series/Episode
+  // public catalog entries or overwrite creator series metadata.
+  // @see ../architecture/creatorTruthLayers.js
   const CATEGORY_DETECTOR = {
   keywords: {
   'Cyber-Action': ['cyber', 'hack', 'action', 'fight', 'chase', 'shoot', 'explosion', 'thriller', 'adventure', 'secret', 'agent', 'mission', 'combat', 'gun', 'weapon', 'war', 'battle', 'revenge', 'justice', 'crime', 'detective', 'investigation', 'spy', 'espionage', 'danger'],
@@ -158,7 +162,16 @@ export function createContentAgents(deps) {
   }
   if (title.toLowerCase().includes('barbershop') || title.toLowerCase().includes('barber')) { finalCategory = 'Trending'; confidence = 'Very High'; }
   isAutoDetecting.set(false);
-  return { category: finalCategory, confidence, titleCategory, videoMetadata };
+  // Interpretation only — shelf bucket, not public series genre truth.
+  return {
+    category: finalCategory,
+    confidence,
+    titleCategory,
+    videoMetadata,
+    sourceType: 'discovery',
+    officialGenre: false,
+    explanation: `Suggested theme detected from your uploaded title: ${finalCategory}`
+  };
   }
   };
   // ==========================================

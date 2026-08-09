@@ -4,7 +4,10 @@
  * Accepts relative paths and absolute media URLs.
  * Rejects empty values and blob: placeholders.
  *
- * Does not alter upload routes or the vault asset normalizer.
+ * Candidate order:
+ *   normalized.thumbnailUrl → normalized.url →
+ *   response.thumbnailUrl → response.thumbnail_url → response.url →
+ *   response.thumbnailPath → response.thumbnail_path
  *
  * @param {{
  *   normalized?: Record<string, unknown> | null;
@@ -13,8 +16,10 @@
  * @returns {string}
  */
 export function resolveThumbnailUploadMediaUrl(sources = {}) {
-    const normalized = sources.normalized && typeof sources.normalized === 'object' ? sources.normalized : {};
-    const response = sources.response && typeof sources.response === 'object' ? sources.response : {};
+    const normalized =
+        sources.normalized && typeof sources.normalized === 'object' ? sources.normalized : {};
+    const response =
+        sources.response && typeof sources.response === 'object' ? sources.response : {};
 
     const candidates = [
         normalized.thumbnailUrl,
@@ -29,14 +34,14 @@ export function resolveThumbnailUploadMediaUrl(sources = {}) {
     for (const candidate of candidates) {
         const raw = String(candidate ?? '').trim();
         if (!raw) continue;
-        if (raw.startsWith('blob:')) continue;
+        if (/^blob:/i.test(raw) || /^data:/i.test(raw)) continue;
 
-        // Absolute URLs (Netlify/CDN/Railway) — keep as-is.
+        // Absolute CDN / Netlify / Railway URLs — keep origin intact.
         if (/^https?:\/\//i.test(raw)) {
             return raw;
         }
 
-        // Relative paths — ensure leading slash for /thumbs/* style keys.
+        // Relative media paths (/thumbs/…, /videos/…)
         if (raw.startsWith('/')) {
             return raw;
         }
@@ -46,4 +51,24 @@ export function resolveThumbnailUploadMediaUrl(sources = {}) {
     }
 
     return '';
+}
+
+/**
+ * True when a ready image upload payload has an accept-able media URL
+ * (relative /thumbs/* OR absolute https://…/thumbs/*).
+ *
+ * @param {unknown} response
+ * @param {Record<string, unknown> | null} [normalized]
+ */
+export function isAcceptableThumbnailUploadMedia(response, normalized = null) {
+    const media = resolveThumbnailUploadMediaUrl({
+        normalized: normalized && typeof normalized === 'object' ? normalized : null,
+        response:
+            response && typeof response === 'object'
+                ? /** @type {Record<string, unknown>} */ (response)
+                : null
+    });
+    if (!media) return false;
+    if (/^blob:/i.test(media) || /^data:/i.test(media)) return false;
+    return true;
 }

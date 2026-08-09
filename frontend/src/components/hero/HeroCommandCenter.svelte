@@ -6,7 +6,7 @@
     export let feedReels = [];
 
     /** @type {string} */
-    export let seriesId = 'series-neon-vengeance';
+    export let seriesId = null;
     /** @type {'overlay' | 'below'} */
     export let dock = 'overlay';
 

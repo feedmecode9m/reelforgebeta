@@ -10,7 +10,7 @@
     /** @type {Record<string, unknown>[]} */
     export let feedReels = [];
     /** @type {string} */
-    export let seriesId = 'series-neon-vengeance';
+    export let seriesId = null;
 
     let state = loadCreatorHomeFeed() || { cards: [], updatedAt: Date.now() };
     let cards = state.cards || [];

@@ -455,16 +455,23 @@ export function resolveEpisodeVaultAsset(episodeTitle, readyVaultAssets = []) {
  */
 export function theaterReelFromVaultResolve(episodeTitle, resolved, ctx = null) {
     if (!resolved?.matched || !resolved.mediaUrl || !resolved.assetId) return null;
+    const isImage = resolved.type === 'image';
+    const mediaType = isImage ? 'image' : 'video';
+    const mime = isImage ? 'image/jpeg' : 'video/mp4';
+    const src = resolved.mediaUrl;
+    const thumbnailUrl = resolved.thumbnail || (isImage ? src : '');
     return {
         id: resolved.assetId,
         name: episodeTitle || resolved.title,
         title: episodeTitle || resolved.title,
-        url: resolved.mediaUrl,
-        video_url: resolved.mediaUrl,
-        videoUrl: resolved.mediaUrl,
-        thumbnailUrl: resolved.thumbnail || '',
-        thumbnail_url: resolved.thumbnail || '',
-        type: resolved.type === 'image' ? 'image/jpeg' : 'video/mp4',
+        url: src,
+        src,
+        video_url: isImage ? '' : src,
+        videoUrl: isImage ? '' : src,
+        thumbnailUrl: thumbnailUrl || '',
+        thumbnail_url: thumbnailUrl || '',
+        type: mime,
+        mediaType,
         status: 'ready',
         episodeId: ctx?.episodeId || null,
         episode_id: ctx?.episodeId || null,
@@ -472,6 +479,7 @@ export function theaterReelFromVaultResolve(episodeTitle, resolved, ctx = null) 
         seasonNumber: ctx?.seasonNumber ?? null,
         episodeNumber: ctx?.episodeNumber ?? null,
         isPersonalVideo: true,
+        isPersonalThumbnail: isImage,
         mediaAssetId: resolved.assetId,
         vaultMatchTier: resolved.matchTier
     };

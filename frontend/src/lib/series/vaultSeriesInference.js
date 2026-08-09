@@ -81,26 +81,190 @@ function normalizeTitleish(value) {
 const PRODUCTION_TITLE_PREFIXES = ['MICROS', 'MICRO', 'RFPROD', 'RF'];
 
 /**
+ * Known franchise series roots (canonical identity).
+ * Episode suffixes (Motherland, V1, numbered labels) never redefine these.
+ */
+const FRANCHISE_KEYWORDS = ['STIRRED'];
+
+/**
+ * Tokens that are episode décor only — never become a series title.
+ */
+const EPISODE_ONLY_SUFFIXES = new Set([
+    'motherland',
+    'final',
+    'cut',
+    'director',
+    'extended',
+    'recut',
+    'rough',
+    'draft',
+    'alt',
+    'alternate',
+    'teaser',
+    'trailer',
+    'preview'
+]);
+
+/**
+ * @param {string} value
+ */
+function escapeRegExp(value) {
+    return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Strip house/production prefixes (MICROS …) from a vault title.
+ * @param {string} raw
+ */
+export function stripProductionTitlePrefixes(raw) {
+    let text = cleanSeriesBase(raw);
+    let guard = 0;
+    while (guard < 6) {
+        guard += 1;
+        let hit = false;
+        for (const prefix of PRODUCTION_TITLE_PREFIXES) {
+            const re = new RegExp(`^${escapeRegExp(prefix)}[\\s\\-_.]+`, 'i');
+            if (re.test(text)) {
+                text = cleanSeriesBase(text.replace(re, ''));
+                hit = true;
+                break;
+            }
+        }
+        if (!hit) break;
+    }
+    return text;
+}
+
+/**
+ * True when a candidate series base is only episode décor / version noise.
+ * @param {string} candidate
+ */
+function isEpisodeOnlySeriesCandidate(candidate) {
+    const cleaned = cleanSeriesBase(candidate);
+    if (!cleaned) return true;
+    if (/^\d+$/.test(cleaned)) return true;
+    if (/^[Vv]\d{1,3}$/i.test(cleaned)) return true;
+    if (PRODUCTION_TITLE_PREFIXES.some((p) => p.toLowerCase() === cleaned.toLowerCase())) {
+        return true;
+    }
+    const tokens = cleaned
+        .toLowerCase()
+        .split(/[\s\-_.]+/)
+        .filter(Boolean);
+    if (!tokens.length) return true;
+    // Pure version stacks: V1 V2
+    if (tokens.every((t) => /^v\d{1,3}$/i.test(t) || /^\d+$/.test(t))) return true;
+    // Motherland / final cut alone
+    if (tokens.every((t) => EPISODE_ONLY_SUFFIXES.has(t) || /^v?\d{1,3}$/i.test(t))) {
+        return true;
+    }
+    return false;
+}
+
+/**
+ * Pull canonical franchise identity + episode number from known keywords.
+ * Preserves full human title as episodeTitle.
+ *
+ * @param {string} rawTitle
+ * @returns {{
+ *   seriesTitle: string;
+ *   seasonNumber: number;
+ *   episodeNumber: number;
+ *   episodeTitle: string;
+ *   confidence: string;
+ *   rawTitle: string;
+ *   normalizedTitle: string;
+ * } | null}
+ */
+export function parseFranchiseEpisodeTitle(rawTitle) {
+    const full = stripMediaExtension(rawTitle);
+    if (!full || full.length < 3) return null;
+    if (UUID_RE.test(full)) return null;
+
+    const stripped = stripProductionTitlePrefixes(full);
+    if (!stripped) return null;
+
+    for (const franchise of FRANCHISE_KEYWORDS) {
+        // Franchise must appear as its own token (not inside another word).
+        const headRe = new RegExp(`^${escapeRegExp(franchise)}(?:[\\s\\-_.]+(.*))?$`, 'i');
+        const headMatch = stripped.match(headRe);
+        if (!headMatch) continue;
+
+        const rest = cleanSeriesBase(headMatch[1] || '');
+        /** @type {number | null} */
+        let episodeNumber = null;
+        let confidence = 'franchise-keyword';
+
+        // STIRRED V1(2) / STIRRED Motherland V1(2) — paren episode index
+        let m = rest.match(/[Vv](\d{1,3})\s*[\(\[]\s*(\d{1,3})\s*[\)\]]\s*$/);
+        if (m) {
+            episodeNumber = Math.max(1, Number(m[2]) || Number(m[1]) || 1);
+            confidence = 'franchise-version-paren';
+        }
+
+        // STIRRED 2 Motherland / STIRRED 1 — leading number after franchise
+        if (episodeNumber == null) {
+            m = rest.match(/^(\d{1,3})(?:[\s\-_.]+.*)?$/);
+            if (m) {
+                episodeNumber = Math.max(1, Number(m[1]) || 1);
+                confidence = 'franchise-leading-number';
+            }
+        }
+
+        // STIRRED V1 / STIRRED Motherland V3 — version token (prefer leading number when both)
+        if (episodeNumber == null) {
+            m = rest.match(/(?:^|[\s\-_.])[Vv](\d{1,3})\s*$/);
+            if (m) {
+                episodeNumber = Math.max(1, Number(m[1]) || 1);
+                confidence = 'franchise-version';
+            }
+        }
+
+        // Bare STIRRED with no number — not high-confidence
+        if (episodeNumber == null) return null;
+
+        return {
+            seriesTitle: franchise,
+            seasonNumber: 1,
+            episodeNumber,
+            episodeTitle: full,
+            confidence,
+            rawTitle: full,
+            normalizedTitle: franchise
+        };
+    }
+
+    return null;
+}
+
+/**
  * Normalize creator vault naming into a canonical series/episode seed.
  *
- * Strict gate: requires a removable production prefix AND a version marker (V1/V2…).
- * Examples accept: "MICROS STIRRED V1", "MICROS STIRRED V2"
- * Examples reject: "MICROS STIRRED", "STIRRED DOCUMENTARY", "STIRRED V1"
+ * Accepts:
+ *   - MICROS STIRRED V1 / MICROS STIRRED V2 (production prefix + franchise + version)
+ *   - STIRRED V1 (bare franchise version)
+ *
+ * Rejects series roots that are only episode décor (Motherland, V1, …).
  *
  * @param {string | null | undefined} rawTitle
  * @returns {{
  *   seriesTitle: string;
  *   seasonNumber: number;
  *   episodeNumber: number;
- *   confidence: 'normalized-prefix-version';
+ *   episodeTitle?: string;
+ *   confidence: string;
  *   rawTitle: string;
  *   normalizedTitle: string;
  * } | null}
  */
 export function normalizeVaultTitle(rawTitle) {
     const raw = stripMediaExtension(rawTitle);
-    if (!raw || raw.length < 5) return null;
+    if (!raw || raw.length < 3) return null;
     if (UUID_RE.test(raw)) return null;
+
+    // Franchise path first (preserves full title semantics).
+    const franchise = parseFranchiseEpisodeTitle(raw);
+    if (franchise) return franchise;
 
     // Episode suffix: version marker V1 / V2 (standalone token at end)
     const versionMatch = raw.match(/^(?=.*[A-Za-z])(.+?)[\s\-_.]+[Vv](\d{1,3})\s*$/);
@@ -110,20 +274,26 @@ export function normalizeVaultTitle(rawTitle) {
     const episodeNumber = Math.max(1, Math.min(999, Number(versionMatch[2]) || 1));
     if (!head || head.length < 2) return null;
 
-    // Reject bare "prefix Vn" / require prefix + series name
-    const prefixAlt = PRODUCTION_TITLE_PREFIXES.map((p) =>
-        p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    ).join('|');
-    const prefixMatch = head.match(
-        new RegExp(`^(?:${prefixAlt})[\\s\\-_.]+(.+)$`, 'i')
-    );
-    if (!prefixMatch) return null;
+    // Strip production prefix if present
+    let seriesTitle = stripProductionTitlePrefixes(head);
+    // If after stripping prefix we only have décor, fail — do not invent "Motherland" series
+    if (isEpisodeOnlySeriesCandidate(seriesTitle)) return null;
 
-    const seriesTitle = cleanSeriesBase(prefixMatch[1]);
+    // Prefer franchise keyword embedded in remaining head
+    const franchiseFromHead = parseFranchiseEpisodeTitle(`${seriesTitle} V${episodeNumber}`);
+    if (franchiseFromHead) {
+        return {
+            ...franchiseFromHead,
+            episodeTitle: raw,
+            rawTitle: raw
+        };
+    }
+
+    seriesTitle = cleanSeriesBase(seriesTitle);
     if (
         seriesTitle.length < 2 ||
         /^\d+$/.test(seriesTitle) ||
-        PRODUCTION_TITLE_PREFIXES.some((p) => p.toLowerCase() === seriesTitle.toLowerCase())
+        isEpisodeOnlySeriesCandidate(seriesTitle)
     ) {
         return null;
     }
@@ -132,6 +302,7 @@ export function normalizeVaultTitle(rawTitle) {
         seriesTitle,
         seasonNumber: 1,
         episodeNumber,
+        episodeTitle: raw,
         confidence: 'normalized-prefix-version',
         rawTitle: raw,
         normalizedTitle: seriesTitle
@@ -140,13 +311,18 @@ export function normalizeVaultTitle(rawTitle) {
 
 /**
  * Parse only high-confidence episode titles (explicit season/ep or trailing number).
- * Priority: (A) explicit patterns → (B) normalized creator naming → (C) null.
+ * Priority:
+ *   (0) known franchise keywords
+ *   (A) explicit patterns (with franchise / décor guards)
+ *   (B) normalized creator naming
+ *   (C) null
  *
  * @param {string | null | undefined} rawTitle
  * @returns {{
  *   seriesTitle: string;
  *   seasonNumber: number;
  *   episodeNumber: number;
+ *   episodeTitle?: string;
  *   confidence: string;
  *   rawTitle?: string;
  *   normalizedTitle?: string;
@@ -160,17 +336,41 @@ export function parseHighConfidenceEpisodeTitle(rawTitle) {
     if (/^hero[-_\s]?background/i.test(text)) return null;
     if (/^untitled/i.test(text)) return null;
 
+    // --- 0. Known franchise keywords (STIRRED 2 Motherland, STIRRED V1, …) ---
+    const franchise = parseFranchiseEpisodeTitle(text);
+    if (franchise) return franchise;
+
     // --- A. Existing explicit patterns ---
 
     // NAME V1(2) / NAME V1 (2) — version + episode in parens
     let m = text.match(/^(.*?)[\s\-_.]*[Vv]\d+\s*[\(\[]\s*(\d{1,3})\s*[\)\]]\s*$/);
     if (m) {
-        const seriesTitle = cleanSeriesBase(m[1]);
-        if (seriesTitle.length >= 2) {
+        let seriesTitle = cleanSeriesBase(m[1]);
+        seriesTitle = stripProductionTitlePrefixes(seriesTitle);
+        // Prefer franchise inside left-hand side
+        const viaFranchise = parseFranchiseEpisodeTitle(text);
+        if (viaFranchise) return viaFranchise;
+        if (seriesTitle.length >= 2 && !isEpisodeOnlySeriesCandidate(seriesTitle)) {
+            // Drop trailing episode-only tokens from series base (STIRRED Motherland → STIRRED)
+            const franchiseEmbed = FRANCHISE_KEYWORDS.find((f) =>
+                new RegExp(`^${escapeRegExp(f)}(?:[\\s\\-_.]|$)`, 'i').test(seriesTitle)
+            );
+            if (franchiseEmbed) {
+                return {
+                    seriesTitle: franchiseEmbed,
+                    seasonNumber: 1,
+                    episodeNumber: Math.max(1, Number(m[2]) || 1),
+                    episodeTitle: text,
+                    confidence: 'version-paren-ep',
+                    rawTitle: text,
+                    normalizedTitle: franchiseEmbed
+                };
+            }
             return {
                 seriesTitle,
                 seasonNumber: 1,
                 episodeNumber: Math.max(1, Number(m[2]) || 1),
+                episodeTitle: text,
                 confidence: 'version-paren-ep'
             };
         }
@@ -179,12 +379,13 @@ export function parseHighConfidenceEpisodeTitle(rawTitle) {
     // NAME S01E02 / NAME S1E2
     m = text.match(/^(.*?)[\s\-_.]*(?:[\[(])?S(\d{1,2})\s*[Ee](\d{1,3})[\])]?\s*$/i);
     if (m) {
-        const seriesTitle = cleanSeriesBase(m[1]);
-        if (seriesTitle.length >= 2) {
+        let seriesTitle = stripProductionTitlePrefixes(cleanSeriesBase(m[1]));
+        if (seriesTitle.length >= 2 && !isEpisodeOnlySeriesCandidate(seriesTitle)) {
             return {
                 seriesTitle,
                 seasonNumber: Math.max(1, Number(m[2]) || 1),
                 episodeNumber: Math.max(1, Number(m[3]) || 1),
+                episodeTitle: text,
                 confidence: 'sxe'
             };
         }
@@ -193,12 +394,13 @@ export function parseHighConfidenceEpisodeTitle(rawTitle) {
     // NAME EP 2 / NAME Episode 3
     m = text.match(/^(.*?)[\s\-_.]+(?:ep(?:isode)?[\s\-_.]*)(\d{1,3})\s*$/i);
     if (m) {
-        const seriesTitle = cleanSeriesBase(m[1]);
-        if (seriesTitle.length >= 2) {
+        let seriesTitle = stripProductionTitlePrefixes(cleanSeriesBase(m[1]));
+        if (seriesTitle.length >= 2 && !isEpisodeOnlySeriesCandidate(seriesTitle)) {
             return {
                 seriesTitle,
                 seasonNumber: 1,
                 episodeNumber: Math.max(1, Number(m[2]) || 1),
+                episodeTitle: text,
                 confidence: 'ep-token'
             };
         }
@@ -207,24 +409,26 @@ export function parseHighConfidenceEpisodeTitle(rawTitle) {
     // NAME 1 / STIRRED 1 — requires letter in base + standalone trailing number
     m = text.match(/^(?=.*[A-Za-z])(.+?)[\s\-_.]+(\d{1,3})\s*$/);
     if (m) {
-        const seriesTitle = cleanSeriesBase(m[1]);
-        // Avoid pure camera dumps and year-only bases
+        let seriesTitle = stripProductionTitlePrefixes(cleanSeriesBase(m[1]));
+        // Avoid pure camera dumps and year-only bases; reject episode-only bases
         if (
             seriesTitle.length >= 2 &&
             !/^\d+$/.test(seriesTitle) &&
             !/^dsc/i.test(seriesTitle) &&
-            !/^vid_/i.test(seriesTitle)
+            !/^vid_/i.test(seriesTitle) &&
+            !isEpisodeOnlySeriesCandidate(seriesTitle)
         ) {
             return {
                 seriesTitle,
                 seasonNumber: 1,
                 episodeNumber: Math.max(1, Number(m[2]) || 1),
+                episodeTitle: text,
                 confidence: 'trailing-number'
             };
         }
     }
 
-    // --- B. Normalized creator naming (prefix + version) ---
+    // --- B. Normalized creator naming (prefix + version / franchise) ---
     const normalized = normalizeVaultTitle(text);
     if (normalized) return normalized;
 
@@ -297,7 +501,9 @@ function ensureSeriesInCatalog(seriesTitle) {
     const created = {
         id: seriesId,
         title,
-        description: `Vault-inferred series: ${title}`,
+        // Creator truth: no synthetic marketing description or genre.
+        // Season 1 shell is structural scaffolding only (empty until episodes bind).
+        description: '',
         tags: ['vault-inferred'],
         seasons: [
             {
@@ -326,6 +532,7 @@ function ensureSeriesInCatalog(seriesTitle) {
 
 /**
  * Ensure episode exists in series catalog.
+ * Same episode number can hold distinct vault titles (STIRRED 1 vs STIRRED V1).
  * @param {string} seriesId
  * @param {number} seasonNumber
  * @param {number} episodeNumber
@@ -337,22 +544,72 @@ function ensureEpisodeInCatalog(seriesId, seasonNumber, episodeNumber, episodeTi
     if (!series) return null;
 
     const slug = slugifySeriesKey(seriesId.replace(/^series-/, '') || series.title);
-    const episodeId = `ep-${slug}-s${String(seasonNumber).padStart(2, '0')}e${String(episodeNumber).padStart(2, '0')}`;
+    const humanTitle = cleanSeriesBase(episodeTitle) || `Episode ${episodeNumber}`;
+    const titleSlug = slugifySeriesKey(humanTitle);
+    const padS = String(seasonNumber).padStart(2, '0');
+    const padE = String(episodeNumber).padStart(2, '0');
+    const baseId = `ep-${slug}-s${padS}e${padE}`;
+
+    // Prefer stable short id when title is just the franchise + number.
+    // Disambiguate STIRRED 1 vs STIRRED V1 with a version suffix.
+    const simpleNumber = new RegExp(
+        `^${escapeRegExp(series.title || slug)}[\\s\\-_.]+${episodeNumber}$`,
+        'i'
+    );
+    const simpleVersion = new RegExp(
+        `^${escapeRegExp(series.title || slug)}[\\s\\-_.]+[Vv]${episodeNumber}$`,
+        'i'
+    );
+    let episodeId = baseId;
+    if (simpleVersion.test(humanTitle)) {
+        episodeId = `${baseId}-v${episodeNumber}`;
+    } else if (!simpleNumber.test(humanTitle) && titleSlug && titleSlug !== slug) {
+        episodeId = `${baseId}-${titleSlug}`.slice(0, 96);
+    }
 
     const existingCtx = getEpisodeById(episodeId);
-    if (existingCtx?.episode) return existingCtx.episode;
+    if (existingCtx?.episode) {
+        if (
+            humanTitle &&
+            String(existingCtx.episode.title || '').trim().toLowerCase() !== humanTitle.toLowerCase()
+        ) {
+            seriesCatalog.update((items) =>
+                items.map((s) => {
+                    if (s.id !== seriesId) return s;
+                    return {
+                        ...s,
+                        seasons: (s.seasons || []).map((season) => {
+                            if (season.seasonNumber !== seasonNumber) return season;
+                            return {
+                                ...season,
+                                episodes: (season.episodes || []).map((ep) =>
+                                    ep.episodeId === episodeId ? { ...ep, title: humanTitle } : ep
+                                )
+                            };
+                        })
+                    };
+                })
+            );
+            return getEpisodeById(episodeId)?.episode || existingCtx.episode;
+        }
+        return existingCtx.episode;
+    }
 
     const seasonHit = series.seasons?.find((s) => s.seasonNumber === seasonNumber);
-    const existingByNumber = seasonHit?.episodes?.find((e) => e.episodeNumber === episodeNumber);
-    if (existingByNumber) {
-        return getEpisodeById(existingByNumber.episodeId)?.episode || existingByNumber;
+    const existingByTitle = seasonHit?.episodes?.find(
+        (e) =>
+            String(e.title || '').trim().toLowerCase() === humanTitle.toLowerCase() ||
+            e.episodeId === episodeId
+    );
+    if (existingByTitle) {
+        return getEpisodeById(existingByTitle.episodeId)?.episode || existingByTitle;
     }
 
     /** @type {import('./seriesTypes.js').Episode} */
     const episode = {
         episodeId,
         episodeNumber,
-        title: episodeTitle,
+        title: humanTitle,
         status: 'published',
         reelId: null,
         tags: ['vault-inferred']
@@ -373,11 +630,23 @@ function ensureEpisodeInCatalog(seriesId, seasonNumber, episodeNumber, episodeTi
             } else {
                 const season = { ...seasons[seasonIdx] };
                 const episodes = Array.isArray(season.episodes) ? [...season.episodes] : [];
-                if (episodes.some((e) => e.episodeId === episodeId || e.episodeNumber === episodeNumber)) {
+                if (
+                    episodes.some(
+                        (e) =>
+                            e.episodeId === episodeId ||
+                            (e.episodeNumber === episodeNumber &&
+                                String(e.title || '').toLowerCase() === humanTitle.toLowerCase())
+                    )
+                ) {
                     return s;
                 }
                 episodes.push(episode);
-                episodes.sort((a, b) => a.episodeNumber - b.episodeNumber);
+                episodes.sort((a, b) => {
+                    if (a.episodeNumber !== b.episodeNumber) {
+                        return a.episodeNumber - b.episodeNumber;
+                    }
+                    return String(a.title || '').localeCompare(String(b.title || ''));
+                });
                 season.episodes = episodes;
                 seasons[seasonIdx] = season;
             }
@@ -390,7 +659,7 @@ function ensureEpisodeInCatalog(seriesId, seasonNumber, episodeNumber, episodeTi
         seriesId,
         episodeId,
         episodeNumber,
-        episodeTitle,
+        episodeTitle: humanTitle,
         source: 'vault-title-inference'
     });
 
@@ -465,11 +734,15 @@ export function inferAndBindVaultSeries(reels = [], options = {}) {
         }
         if (!seriesIds.includes(series.id)) seriesIds.push(series.id);
 
-        // Dedupe episode numbers within group (keep first reel)
+        // Dedupe by season + episode number + human title (keep STIRRED 1 and STIRRED V1)
         /** @type {Map<string, typeof group.members[0]>} */
         const byEpKey = new Map();
         for (const member of group.members) {
-            const key = `${member.parsed.seasonNumber}:${member.parsed.episodeNumber}`;
+            const human =
+                member.parsed.episodeTitle ||
+                reelDisplayTitle(member.reel) ||
+                group.seriesTitle;
+            const key = `${member.parsed.seasonNumber}:${member.parsed.episodeNumber}:${normalizeTitleish(human)}`;
             if (!byEpKey.has(key)) byEpKey.set(key, member);
             else skipped += 1;
         }
@@ -481,7 +754,10 @@ export function inferAndBindVaultSeries(reels = [], options = {}) {
                 continue;
             }
 
-            const episodeTitle = reelDisplayTitle(member.reel) || group.seriesTitle;
+            const episodeTitle =
+                member.parsed.episodeTitle ||
+                reelDisplayTitle(member.reel) ||
+                group.seriesTitle;
             const episode = ensureEpisodeInCatalog(
                 series.id,
                 member.parsed.seasonNumber,
@@ -537,16 +813,20 @@ export function inferAndBindVaultSeries(reels = [], options = {}) {
             }
 
             // Authoritative studio map write (includes seriesName, S/E, episodeId)
-            const saved = saveReelSeriesMetadata(reelId, {
+            const saved = saveReelSeriesMetadata(
                 reelId,
-                seriesId: series.id,
-                seriesName: series.title,
-                seasonNumber: member.parsed.seasonNumber,
-                episodeNumber: member.parsed.episodeNumber,
-                episodeTitle,
-                episodeId,
-                episodeStatus: 'published'
-            });
+                {
+                    reelId,
+                    seriesId: series.id,
+                    seriesName: series.title,
+                    seasonNumber: member.parsed.seasonNumber,
+                    episodeNumber: member.parsed.episodeNumber,
+                    episodeTitle,
+                    episodeId,
+                    episodeStatus: 'published'
+                },
+                { sourceType: 'vault', context: 'inferAndBindVaultSeries' }
+            );
 
             // Prefer full vault title as aliases seed (title match first; aliases second).
             const aliasSeed = [];

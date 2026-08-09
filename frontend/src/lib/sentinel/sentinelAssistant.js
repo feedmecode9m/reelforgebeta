@@ -152,7 +152,7 @@ function probeTeamHealth(seriesId) {
 function buildExampleRecommendations(seriesId, feedReels, context) {
     const health = computeSeriesHealth(feedReels, seriesId);
     const series = getSeriesById(seriesId);
-    const seriesTitle = series?.title || 'Neon Vengeance';
+    const seriesTitle = series?.title || '';
     const missing = getMissingAssetQueue(feedReels, seriesId);
     const episodeCodes = missing.slice(0, 2).map((row) => episodeCode(row.episodeId)).filter(Boolean);
     const examples = [];
@@ -190,7 +190,7 @@ function buildExampleRecommendations(seriesId, feedReels, context) {
  * @param {string} [seriesId]
  * @param {Record<string, unknown>[]} [feedReels]
  */
-export function analyzePlatform(seriesId = 'series-neon-vengeance', feedReels = []) {
+export function analyzePlatform(seriesId = null, feedReels = []) {
     void runPlatformAudit;
     const catalog = get(seriesCatalog);
     const metrics = getOperationsSnapshot(seriesId);
@@ -469,7 +469,7 @@ export function analyzeTeams(seriesId, feedReels = []) {
  * @param {{ emitDiagnostics?: boolean }} [options]
  * @returns {SentinelMasterAnalysis}
  */
-export function masterAnalysis(seriesId = 'series-neon-vengeance', feedReels = [], options = {}) {
+export function masterAnalysis(seriesId = null, feedReels = [], options = {}) {
     const emitDiagnostics = options.emitDiagnostics !== false;
 
     const platform = analyzePlatform(seriesId, feedReels);
@@ -680,7 +680,7 @@ export function getSentinelGuideMeOverlay(master) {
     };
 }
 
-export function askSentinel(questionId, seriesId = 'series-neon-vengeance', feedReels = []) {
+export function askSentinel(questionId, seriesId = null, feedReels = []) {
     const question = SENTINEL_QUESTIONS.find((item) => item.id === questionId);
     const master = masterAnalysis(seriesId, feedReels, { emitDiagnostics: false });
     const overlay = getSentinelGuideMeOverlay(master);
@@ -710,7 +710,7 @@ export function askSentinel(questionId, seriesId = 'series-neon-vengeance', feed
     return { questionId, question: question?.label || questionId, answer, analysis: master };
 }
 
-export function buildSentinelReports(seriesId = 'series-neon-vengeance', feedReels = []) {
+export function buildSentinelReports(seriesId = null, feedReels = []) {
     const master = masterAnalysis(seriesId, feedReels, { emitDiagnostics: false });
 
     return {
@@ -773,7 +773,7 @@ export function initSentinelAssistant(options = {}) {
     logSentinelDiag('SENTINEL_ANALYSIS', {
         phase: 'engine_initialized',
         version: SENTINEL_ASSISTANT_VERSION,
-        seriesId: options.seriesId || 'series-neon-vengeance'
+        seriesId: options.seriesId || null
     });
 
     return masterAnalysis(options.seriesId, options.feedReels, { emitDiagnostics: false });

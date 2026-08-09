@@ -380,7 +380,7 @@ export let sanitizeViewer = false;
     });
   })();
   $: carouselSlides = buildHeroCarouselSlides(feedReels, {
-    seriesId: heroSelection?.seriesId || 'series-neon-vengeance',
+    seriesId: heroSelection?.seriesId || null,
     limit: 7
   });
   $: {
@@ -724,7 +724,7 @@ $: heroBadgeLabel = sanitizeViewer
   $: heroTransitionStyle = heroManagerConfig.carouselTransitionStyle || 'fade';
   $: heroTypographyClass = `hero-typography--${(heroManagerConfig.heroTypography || 'cinematic').replace(/_/g, '-')}`;
   $: releaseSnapshot = buildReleaseCenterSnapshot(
-    heroSelection?.seriesId || 'series-neon-vengeance',
+    heroSelection?.seriesId || null,
     feedReels || []
   );
   $: eventsRegistry = (releaseSnapshot?.calendar || []).slice(0, 6);
@@ -2434,7 +2434,7 @@ $: heroBadgeLabel = sanitizeViewer
   </section>
   {#if !sanitizeViewer}
     <HeroCommandCenter
-      seriesId={heroSelection?.seriesId || 'series-neon-vengeance'}
+      seriesId={heroSelection?.seriesId || null}
       {feedReels}
       dock="below"
     />

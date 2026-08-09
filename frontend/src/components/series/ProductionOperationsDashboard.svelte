@@ -8,7 +8,7 @@
     export let feedReels = [];
 
     /** @type {string} */
-    export let selectedSeriesId = 'series-neon-vengeance';
+    export let selectedSeriesId = null;
 
     function handleChanged() {
         dispatch('changed');

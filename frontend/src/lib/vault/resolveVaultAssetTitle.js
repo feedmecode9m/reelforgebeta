@@ -46,8 +46,8 @@ export function cleanVaultFilename(raw) {
  */
 export function inferVaultMediaKind(asset, hint = '') {
     const mime = String(asset?.type || asset?.media_type || asset?.mimeType || '').toLowerCase();
-    if (mime.startsWith('video/')) return 'video';
-    if (mime.startsWith('image/')) return 'image';
+    if (mime.startsWith('video/') || mime === 'video') return 'video';
+    if (mime.startsWith('image/') || mime === 'image') return 'image';
     if (String(hint).toLowerCase() === 'video') return 'video';
     if (String(hint).toLowerCase() === 'image') return 'image';
 

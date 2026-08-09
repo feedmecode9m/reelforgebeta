@@ -63,7 +63,7 @@
     export let feedReels = [];
 
     /** @type {string} */
-    export let selectedSeriesId = 'series-neon-vengeance';
+    export let selectedSeriesId = null;
 
     /** When true, parent ProductionCommandCenter owns command-center diagnostics. */
     export let embeddedInCommandCenter = false;

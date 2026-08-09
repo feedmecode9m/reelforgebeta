@@ -1890,7 +1890,7 @@
             </label>
             <label class="hero-manager__field">
                 <span>Featured Series</span>
-                <input type="text" bind:value={config.featuredSeries} placeholder="Neon Vengeance" on:change={handleFieldCommit} on:blur={handleFieldCommit} />
+                <input type="text" bind:value={config.featuredSeries} placeholder="Series title" on:change={handleFieldCommit} on:blur={handleFieldCommit} />
             </label>
             <label class="hero-manager__field">
                 <span>Schedule Story</span>

@@ -56,7 +56,7 @@ function buildDefaultBrief(seriesId) {
     };
 }
 
-export function toRevenueDashboardBriefFromApi(payload = {}, fallbackSeriesId = 'series-neon-vengeance') {
+export function toRevenueDashboardBriefFromApi(payload = {}, fallbackSeriesId = null) {
     const seriesId = payload.seriesId || fallbackSeriesId;
     const currency = payload.currency || 'USD';
     const base = buildDefaultBrief(seriesId);

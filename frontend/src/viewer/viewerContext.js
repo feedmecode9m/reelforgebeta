@@ -1762,8 +1762,8 @@ function handleHeroManagerUpdated(event) {
   const feedSnapshot = get(feed);
   heroSelection.set(
     selectHeroContent(config.heroType, feedSnapshot, {
-      fallbackTitle: 'Neon Vengeance',
-      fallbackSubtitle: 'The code was his legacy. The betrayal was his rebirth.'
+      fallbackTitle: null,
+      fallbackSubtitle: null
     })
   );
   if (config.autoRotate) {
@@ -1832,12 +1832,12 @@ function applyHeroIntelligence(force = false) {
     );
   const feedSnapshot = get(feed);
   heroSelection.set(selectHeroContent(mode, feedSnapshot, {
-    fallbackTitle: 'Neon Vengeance',
-    fallbackSubtitle: 'The code was his legacy. The betrayal was his rebirth.'
+    fallbackTitle: null,
+    fallbackSubtitle: null
   }));
 
   buildHeroCommandBrief(
-    get(heroSelection)?.seriesId || 'series-neon-vengeance',
+    get(heroSelection)?.seriesId || null,
     feedSnapshot
   );
 

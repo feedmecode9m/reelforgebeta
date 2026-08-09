@@ -25,6 +25,7 @@ import {
     loadEpisodeVaultBindingMap,
     applyStoredBindingsToCatalog
 } from './episodeVaultBindingStorage.js';
+import { isDemoSeriesId } from './seriesCatalogTruth.js';
 
 /**
  * Display title for Hero Vault pickable rows (canonical vault intelligence).
@@ -46,16 +47,22 @@ export function resolvePublicSeriesBySlug(rawSlug, catalog = null) {
         .replace(/^series-/, '');
     if (!key) return null;
 
-    const list = Array.isArray(catalog) ? catalog : get(seriesCatalog);
+    // Slug is an identifier only — never invent series content from the path.
+    const list = (Array.isArray(catalog) ? catalog : get(seriesCatalog)).filter(
+        (s) => s && !isDemoSeriesId(s.id)
+    );
     const byId = getSeriesById(`series-${key}`) || list.find((s) => s.id === `series-${key}`);
-    if (byId) return byId;
+    if (byId) {
+        return isDemoSeriesId(byId.id) ? null : byId;
+    }
 
     const needle = slugifySeriesKey(key);
-    return (
+    const hit =
         list.find((s) => slugifySeriesKey(s.id?.replace(/^series-/, '') || '') === needle) ||
         list.find((s) => slugifySeriesKey(s.title) === needle) ||
-        null
-    );
+        null;
+    if (hit && isDemoSeriesId(hit.id)) return null;
+    return hit;
 }
 
 /**

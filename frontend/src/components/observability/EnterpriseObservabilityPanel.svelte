@@ -3,7 +3,7 @@
     import { buildEnterpriseObservabilitySnapshot } from '../../lib/observability/observabilityCenter.js';
 
     /** @type {string} */
-    export let seriesId = 'series-neon-vengeance';
+    export let seriesId = null;
 
     /** @type {ReturnType<typeof buildEnterpriseObservabilitySnapshot> | null} */
     let snapshot = null;

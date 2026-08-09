@@ -158,7 +158,7 @@ export function buildUniversalSearchIndex() {
     const metadataMap = get(reelSeriesMetadata) || {};
     const reels = loadFeedReelsFromStorage();
     const seriesIds = catalog.map((series) => series.id);
-    const primarySeriesId = seriesIds[0] || 'series-neon-vengeance';
+    const primarySeriesId = seriesIds[0] || null;
 
     // Reels
     for (const reel of reels) {

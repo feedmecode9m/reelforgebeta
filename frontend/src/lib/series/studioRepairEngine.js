@@ -1,6 +1,15 @@
 /**
- * Studio Repair Engine — one-click reversible fixes for common production issues.
- * Does not delete user data, auto-publish, or modify playback.
+ * Studio Repair Engine — one-click reversible fixes for production issues.
+ *
+ * Architecture boundary (Creator Truth Layer):
+ * - MAY: link reels to episodes, re-attach orphaned metadata bindings, copy
+ *   existing series poster overlays, use already-known catalog runtime values.
+ * - MUST NOT: invent episode/series descriptions, invent runtime/genre, or write
+ *   marketing copy into reel series metadata as if the creator authored it.
+ *
+ * Missing description/synopsis is surfaceable as guidance only (not auto-filled).
+ *
+ * @see ../architecture/creatorTruthLayers.js
  */
 
 import { get } from 'svelte/store';
@@ -135,12 +144,30 @@ function episodeLabel(episodeId) {
 }
 
 /**
+ * Interpretation helper only — never persisted automatically.
+ * Surfaces a coaching synopsis for Studio UI; creator must edit to own truth.
+ * @param {string} seriesTitle
+ * @param {string} episodeTitle
+ * @param {number} episodeNumber
+ */
+export function suggestSynopsisCoachingText(seriesTitle, episodeTitle, episodeNumber) {
+    const ep = String(episodeTitle || '').trim() || 'This episode';
+    const series = String(seriesTitle || '').trim() || 'this series';
+    const n = Number(episodeNumber) > 0 ? Number(episodeNumber) : null;
+    if (n != null) {
+        return `Suggested draft (not saved): "${ep}" is episode ${n} of ${series}. Edit and save if this fits.`;
+    }
+    return `Suggested draft (not saved): Add a short synopsis for "${ep}" in ${series}.`;
+}
+
+/**
+ * @deprecated No longer writes catalog truth. Use suggestSynopsisCoachingText for UI guidance.
  * @param {string} seriesTitle
  * @param {string} episodeTitle
  * @param {number} episodeNumber
  */
 function defaultDescription(seriesTitle, episodeTitle, episodeNumber) {
-    return `${episodeTitle} — Episode ${episodeNumber} of ${seriesTitle}.`;
+    return suggestSynopsisCoachingText(seriesTitle, episodeTitle, episodeNumber);
 }
 
 /**
@@ -205,20 +232,26 @@ export function detectStudioRepairIssues(seriesId, feedReels = []) {
                 ctx?.series?.description?.trim()
         );
         if (!hasDescription && row.reelId) {
+            // Guidance only — do not invent synopsis and write it as creator metadata.
             pushIssue({
                 id: `repair-${row.episodeId}-missing-description`,
                 issue: 'missing-description',
-                repairable: true,
-                action: 'generate-default-description',
+                repairable: false,
+                action: 'open-metadata-editor-for-description',
                 severity: ISSUE_SEVERITY['missing-description'],
                 episodeId: row.episodeId,
                 reelId: row.reelId,
                 label,
-                detail: `${label} has no synopsis`
+                detail: `${label} has no synopsis — add one in Studio (AI may propose, not auto-author)`
             });
         }
 
-        if (!(row.runtime != null && row.runtime > 0) && row.reelId) {
+        const catalogRuntime =
+            ctx?.episode?.runtime != null && Number(ctx.episode.runtime) > 0
+                ? Number(ctx.episode.runtime)
+                : null;
+        if (!(row.runtime != null && row.runtime > 0) && row.reelId && catalogRuntime) {
+            // Only sync runtime that already exists on the episode record.
             pushIssue({
                 id: `repair-${row.episodeId}-missing-runtime`,
                 issue: 'missing-runtime',
@@ -228,7 +261,19 @@ export function detectStudioRepairIssues(seriesId, feedReels = []) {
                 episodeId: row.episodeId,
                 reelId: row.reelId,
                 label,
-                detail: `${label} runtime is missing`
+                detail: `${label} can copy runtime from catalog (${catalogRuntime}s)`
+            });
+        } else if (!(row.runtime != null && row.runtime > 0) && row.reelId) {
+            pushIssue({
+                id: `repair-${row.episodeId}-missing-runtime`,
+                issue: 'missing-runtime',
+                repairable: false,
+                action: 'measure-runtime-from-media',
+                severity: ISSUE_SEVERITY['missing-runtime'],
+                episodeId: row.episodeId,
+                reelId: row.reelId,
+                label,
+                detail: `${label} runtime is missing — measure from media; do not invent`
             });
         }
 
@@ -402,20 +447,26 @@ export function executeRepair(item) {
     let ok = false;
 
     try {
-        if (item.action === 'generate-default-description' && item.reelId && ctx) {
-            const description = defaultDescription(
-                ctx.series.title,
-                ctx.episode.title,
-                ctx.episode.episodeNumber
-            );
-            saveReelSeriesMetadata(item.reelId, { description });
-            ok = true;
+        if (item.action === 'generate-default-description') {
+            // Legacy action id — never write synthetic synopsis into creator truth.
+            logStudioRepair('STUDIO_REPAIR', {
+                phase: 'blocked-synthetic-description',
+                repairId: item.id,
+                reason: 'creator-truth-boundary'
+            });
+            return { ok: false, repairId: item.id, reason: 'synthetic-description-blocked' };
         }
 
         if (item.action === 'infer-runtime-from-catalog' && item.reelId && ctx) {
-            const runtime = ctx.episode.runtime && ctx.episode.runtime > 0 ? ctx.episode.runtime : 300;
-            saveReelSeriesMetadata(item.reelId, { runtime });
-            ok = true;
+            const runtime =
+                ctx.episode.runtime && ctx.episode.runtime > 0 ? ctx.episode.runtime : null;
+            if (runtime) {
+                saveReelSeriesMetadata(item.reelId, { runtime }, {
+                    sourceType: 'binding',
+                    context: 'studioRepair-runtime-from-catalog'
+                });
+                ok = true;
+            }
         }
 
         if (item.action === 'assign-series-poster-thumbnail' && item.episodeId && ctx?.series?.poster) {
@@ -449,7 +500,11 @@ export function executeRepair(item) {
         if (item.action === 'relink-orphaned-metadata' && item.reelId && item.episodeId) {
             const meta = loadReelSeriesMetadataMap()[item.reelId];
             if (meta) {
-                saveReelSeriesMetadata(item.reelId, { episodeId: item.episodeId });
+                saveReelSeriesMetadata(
+                    item.reelId,
+                    { episodeId: item.episodeId },
+                    { sourceType: 'binding', context: 'studioRepair-relink' }
+                );
                 ok = true;
             }
         }

@@ -52,18 +52,22 @@
 
     function handleSave() {
         if (!reelId) return;
-        const saved = saveReelSeriesMetadata(reelId, {
-            seriesName: seriesName.trim(),
-            seasonNumber: Number(seasonNumber) || 1,
-            episodeNumber: Number(episodeNumber) || 1,
-            episodeTitle: episodeTitle.trim(),
-            description: description.trim(),
-            genre: genre.trim(),
-            runtime: runtime.trim() ? Number(runtime) : undefined,
-            releaseYear: releaseYear.trim() ? Number(releaseYear) : undefined,
-            episodeStatus: /** @type {'draft' | 'ready' | 'published' | 'archived'} */ (episodeStatus),
-            tags: normalizeTags(tagsInput)
-        });
+        const saved = saveReelSeriesMetadata(
+            reelId,
+            {
+                seriesName: seriesName.trim(),
+                seasonNumber: Number(seasonNumber) || 1,
+                episodeNumber: Number(episodeNumber) || 1,
+                episodeTitle: episodeTitle.trim(),
+                description: description.trim(),
+                genre: genre.trim(),
+                runtime: runtime.trim() ? Number(runtime) : undefined,
+                releaseYear: releaseYear.trim() ? Number(releaseYear) : undefined,
+                episodeStatus: /** @type {'draft' | 'ready' | 'published' | 'archived'} */ (episodeStatus),
+                tags: normalizeTags(tagsInput)
+            },
+            { sourceType: 'creator', context: 'SeriesMetadataEditor' }
+        );
         if (!saved) {
             saveMessage = 'Save failed';
             return;
@@ -92,7 +96,7 @@
         <div class="series-metadata-editor__grid">
             <label class="series-metadata-editor__field">
                 <span>Series Name</span>
-                <input bind:value={seriesName} placeholder="e.g. Neon Vengeance" />
+                <input bind:value={seriesName} placeholder="Series title" />
             </label>
 
             <label class="series-metadata-editor__field series-metadata-editor__field--compact">
@@ -117,7 +121,7 @@
 
             <label class="series-metadata-editor__field">
                 <span>Genre</span>
-                <input bind:value={genre} placeholder="e.g. Cyberpunk Thriller" />
+                <input bind:value={genre} placeholder="Genre (optional)" />
             </label>
 
             <label class="series-metadata-editor__field series-metadata-editor__field--compact">

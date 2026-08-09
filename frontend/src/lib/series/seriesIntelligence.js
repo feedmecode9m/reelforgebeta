@@ -1,3 +1,13 @@
+/**
+ * Series intelligence — INTERPRETATION over creator-truth catalog data.
+ *
+ * Reads only: seriesCatalog + reel series metadata + watch progress.
+ * Does not invent genre, year, episode titles, or public marketing copy.
+ * Empty/null fields mean "not provided by creator" (valid).
+ *
+ * @see ../architecture/creatorTruthLayers.js
+ */
+
 import { getNextEpisode, getReelSeriesMetadata, getSeriesById } from './seriesStore.js';
 import { getStoredWatchPercent, hasWatchProgressData } from './seriesWatchProgress.js';
 import { episodeIsPlayable } from './seriesTypes.js';
@@ -49,6 +59,9 @@ export function getReleaseYear(ctx) {
 }
 
 /**
+ * Genre label only when the creator (or studio edit) stored one.
+ * Never infers genre from keywords / presets / discovery shelves.
+ *
  * @param {{ series?: { genre?: string }; episode?: { genre?: string; reelId?: string | null } } | null | undefined} ctx
  * @returns {string}
  */
@@ -56,7 +69,9 @@ export function resolveGenreLabel(ctx) {
     if (!ctx) return '';
     const reelId = ctx.episode?.reelId || '';
     const stored = studioForReel(reelId);
-    return (stored?.genre || ctx.episode?.genre || ctx.series?.genre || '').trim();
+    const raw = (stored?.genre || ctx.episode?.genre || ctx.series?.genre || '').trim();
+    // Empty string when absent — do not fall back to Cyber-Action discovery buckets.
+    return raw;
 }
 
 /**

@@ -10,7 +10,6 @@
     import { applyEpisodeFieldsToReel } from '../../lib/series/episodeBridge.js';
     import { navigateFromDrawer, navigateOnSwipeUp } from '../../lib/series/episodeNavigation.js';
     import { resolveSeriesContextForReel } from '../../lib/series/seriesStore.js';
-    import { isRealVaultUuid } from '../../lib/series/vaultSeriesInference.js';
     import {
         activePublishingProfile,
         episodeNavigationFlags,
@@ -513,12 +512,6 @@
         if (mobileControlsHideTimer != null) clearTimeout(mobileControlsHideTimer);
     });
 
-    /**
-     * Demo shelf fallback only — never forced for real vault UUID reels that are unbound.
-     * @deprecated kept for non-vault placeholders
-     */
-    const DEFAULT_THEATER_SERIES_ID = 'series-neon-vengeance';
-
     /** Creator identity for the active reel (Hero Vault source of truth). */
     $: contentIdentity = (() => {
         const reelId = $activeReel?.id == null ? '' : String($activeReel.id);
@@ -541,7 +534,7 @@
     $: hasSeriesMetadata = Boolean(seriesContext);
     $: seriesId = seriesContext?.series.id ?? '';
     $: drawerSeriesId = (() => {
-        // Canonical bind for open reel
+        // Bound series only — never invent demo catalog (e.g. Neon Vengeance).
         if (seriesId && getSeriesById(seriesId)) return seriesId;
         const reelId = $activeReel?.id == null ? '' : String($activeReel.id);
         if (reelId) {
@@ -550,11 +543,6 @@
                 return byReel.series.id;
             }
         }
-        // Unbound real vault media must never surface Neon Vengeance demo episodes
-        if (reelId && isRealVaultUuid(reelId)) return '';
-        // Soft demo fallback only for non-UUID / placeholder reels
-        if ($activeReel?.isPersonalVideo) return '';
-        if (getSeriesById(DEFAULT_THEATER_SERIES_ID)) return DEFAULT_THEATER_SERIES_ID;
         return '';
     })();
     $: hasSeriesDrawer = Boolean(drawerSeriesId);
