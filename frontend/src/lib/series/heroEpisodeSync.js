@@ -2,18 +2,23 @@
  * Push creator Hero identity into reel-level series metadata (Theater consumers).
  *
  * Does not invent catalog episodes — only patches metadata for an existing reelId.
- * Uses upsertStoredReelSeriesMetadata (localStorage reelforge_series_metadata).
+ * All persistence goes through saveReelSeriesMetadata (fail-closed provenance).
  */
 
 import { get } from 'svelte/store';
 import {
     getStoredReelSeriesMetadata,
-    upsertStoredReelSeriesMetadata,
     normalizeTags
 } from './seriesMetadataStorage.js';
-import { reelSeriesMetadata, seriesCatalog, getEpisodeByReelId } from './seriesStore.js';
+import {
+    getEpisodeByReelId,
+    getReelSeriesMetadata,
+    saveReelSeriesMetadata
+} from './seriesStore.js';
 import { logHeroEpisodeSync } from '../diagnostics/heroEpisodeSyncDiagnostics.js';
 import {
+    formatIntelligenceExplanation,
+    isExplicitTruthSourceToken,
     isTruthProvenanceSource,
     normalizeProvenanceSource
 } from '../architecture/intelligenceProvenance.js';
@@ -29,8 +34,8 @@ function text(value) {
 /**
  * Sync hero creator identity onto series episode metadata for Theater menus.
  *
- * Creator Truth only: description/genre prose from AI/discovery sources is not written.
- * Preserves episodeId / seriesId / seasonNumber / episodeNumber when present.
+ * Creator / vault / binding may set official title/description/genre.
+ * AI / discovery / system may only attach suggestedGenre + intelligenceExplanation.
  *
  * @param {string} reelId
  * @param {{
@@ -41,33 +46,57 @@ function text(value) {
  *   keywords?: string[];
  *   seriesName?: string;
  *   genre?: string;
+ *   suggestedGenre?: string;
+ *   intelligenceExplanation?: string;
  *   source?: string;
  * }} identity
  * @returns {import('./seriesMetadataStorage.js').ReelSeriesMetadata | null}
  */
 export function syncHeroIdentityToEpisodeMetadata(reelId, identity = {}) {
     const id = text(reelId);
+    const rawSource = identity.source;
+    // Fail closed: default missing source to system (no silent creator elevation).
+    const sourceType = isExplicitTruthSourceToken(rawSource)
+        ? normalizeProvenanceSource(rawSource)
+        : rawSource
+          ? normalizeProvenanceSource(rawSource)
+          : 'system';
+    const truthSource = isTruthProvenanceSource(sourceType);
+
     if (!id) {
         logHeroEpisodeSync({
             reelId: '',
             oldTitle: '',
             newTitle: '',
-            source: identity.source || 'creator',
+            source: sourceType,
             updated: false
         });
         return null;
     }
 
-    const existing = getStoredReelSeriesMetadata(id) || get(reelSeriesMetadata)[id] || null;
+    const existing = getStoredReelSeriesMetadata(id) || getReelSeriesMetadata(id) || null;
     const oldTitle = text(existing?.episodeTitle);
-
     const newTitle = text(identity.episodeTitle || identity.title);
-    if (!newTitle) {
+
+    // Intelligence may propose genre; never promote keywords[0] to official genre.
+    const keywordHint =
+        Array.isArray(identity.keywords) && identity.keywords.length
+            ? text(identity.keywords[0])
+            : '';
+    const suggestedGenre =
+        text(identity.suggestedGenre) || (!truthSource ? keywordHint : '') || '';
+    const intelligenceExplanation =
+        text(identity.intelligenceExplanation) ||
+        (suggestedGenre
+            ? formatIntelligenceExplanation(suggestedGenre, { fromTitle: true })
+            : '');
+
+    if (!newTitle && !suggestedGenre && truthSource === false) {
         logHeroEpisodeSync({
             reelId: id,
             oldTitle,
             newTitle: '',
-            source: identity.source || 'creator',
+            source: sourceType,
             episodeId: existing?.episodeId || null,
             seriesId: existing?.seriesId || null,
             updated: false
@@ -75,39 +104,67 @@ export function syncHeroIdentityToEpisodeMetadata(reelId, identity = {}) {
         return existing;
     }
 
-    const truthSource = isTruthProvenanceSource(identity.source || 'creator');
-    const sourceType = normalizeProvenanceSource(identity.source || 'creator');
+    if (!newTitle && truthSource) {
+        // Allow storing suggested side-channel without title change when only suggestions arrive.
+        if (suggestedGenre || intelligenceExplanation) {
+            return saveReelSeriesMetadata(
+                id,
+                {
+                    reelId: id,
+                    suggestedGenre: suggestedGenre || existing?.suggestedGenre || '',
+                    intelligenceExplanation:
+                        intelligenceExplanation || existing?.intelligenceExplanation || ''
+                },
+                { sourceType: 'ai', context: 'syncHeroIdentity-suggestions', skipEpisodeBind: true }
+            );
+        }
+        logHeroEpisodeSync({
+            reelId: id,
+            oldTitle,
+            newTitle: '',
+            source: sourceType,
+            episodeId: existing?.episodeId || null,
+            seriesId: existing?.seriesId || null,
+            updated: false
+        });
+        return existing;
+    }
 
-    /** @type {Partial<import('./seriesMetadataStorage.js').ReelSeriesMetadata>} */
+    /** @type {Record<string, unknown>} */
     const patch = {
-        reelId: id,
-        episodeTitle: newTitle,
-        tags: normalizeTags([
-            ...(Array.isArray(identity.tags) ? identity.tags : []),
-            ...(Array.isArray(identity.keywords) && truthSource ? identity.keywords : []),
-            ...(existing?.tags || [])
-        ]),
-        updatedAt: Date.now()
+        reelId: id
     };
 
-    // Prose stays empty unless source is creator/vault/binding (or already stored).
-    if (truthSource) {
+    if (truthSource && newTitle) {
+        patch.episodeTitle = newTitle;
+        patch.tags = normalizeTags([
+            ...(Array.isArray(identity.tags) ? identity.tags : []),
+            ...(existing?.tags || [])
+        ]);
+        // Official description only from creator/vault/binding identity — never keywords as genre.
         patch.description = text(identity.description) || existing?.description || '';
-        patch.genre = text(identity.genre) || existing?.genre || '';
-    } else {
-        patch.description = existing?.description || '';
-        patch.genre = existing?.genre || '';
-        if (text(identity.description) || text(identity.genre)) {
-            console.info('[INTELLIGENCE_PROVENANCE_GUARD]', {
-                phase: 'hero-episode-sync-skip-prose',
-                sourceType,
-                reelId: id,
-                ts: new Date().toISOString()
-            });
+        // Official genre only when creator explicitly provided genre (never keywords[0]).
+        if (text(identity.genre)) {
+            patch.genre = text(identity.genre);
+        } else if (existing?.genre) {
+            patch.genre = existing.genre;
+        }
+        if (existing?.seriesName) {
+            patch.seriesName = existing.seriesName;
+        } else if (text(identity.seriesName)) {
+            patch.seriesName = text(identity.seriesName);
         }
     }
 
-    // Preserve bind keys — never invent episode / series ids without a catalog bind.
+    // Suggestions always use non-truth fields (persist even under creator writes).
+    if (suggestedGenre || keywordHint) {
+        patch.suggestedGenre = suggestedGenre || keywordHint;
+        patch.intelligenceExplanation =
+            intelligenceExplanation ||
+            formatIntelligenceExplanation(suggestedGenre || keywordHint, { fromTitle: true });
+    }
+
+    // Preserve bind keys from existing / catalog.
     if (existing?.episodeId) patch.episodeId = existing.episodeId;
     if (existing?.seriesId) patch.seriesId = existing.seriesId;
     if (existing?.seasonNumber != null) patch.seasonNumber = existing.seasonNumber;
@@ -116,13 +173,6 @@ export function syncHeroIdentityToEpisodeMetadata(reelId, identity = {}) {
     if (existing?.runtime != null) patch.runtime = existing.runtime;
     if (existing?.releaseYear != null) patch.releaseYear = existing.releaseYear;
 
-    if (existing?.seriesName) {
-        patch.seriesName = existing.seriesName;
-    } else if (text(identity.seriesName)) {
-        patch.seriesName = text(identity.seriesName);
-    }
-
-    // Fill bind fields from catalog when this reel is already attached.
     if (patch.seasonNumber == null || patch.episodeNumber == null || !patch.episodeId) {
         const bound = getEpisodeByReelId(id);
         if (bound) {
@@ -134,13 +184,39 @@ export function syncHeroIdentityToEpisodeMetadata(reelId, identity = {}) {
         }
     }
 
-    const saved = upsertStoredReelSeriesMetadata(id, patch);
+    // Interpretation sources: only suggestions + structural ids, no prose titles.
+    const writeSource = truthSource
+        ? sourceType
+        : suggestedGenre || intelligenceExplanation
+          ? 'ai'
+          : 'system';
+
+    if (!truthSource && newTitle) {
+        console.info('[INTELLIGENCE_PROVENANCE_GUARD]', {
+            phase: 'hero-episode-sync-skip-title',
+            sourceType,
+            reelId: id,
+            ts: new Date().toISOString()
+        });
+        // Drop official title when not a truth source.
+        delete patch.episodeTitle;
+        delete patch.description;
+        delete patch.genre;
+        delete patch.seriesName;
+    }
+
+    const saved = saveReelSeriesMetadata(id, patch, {
+        sourceType: writeSource,
+        context: 'syncHeroIdentityToEpisodeMetadata',
+        skipEpisodeBind: true
+    });
+
     if (!saved) {
         logHeroEpisodeSync({
             reelId: id,
             oldTitle,
             newTitle,
-            source: identity.source || 'creator',
+            source: sourceType,
             episodeId: patch.episodeId || null,
             seriesId: patch.seriesId || null,
             updated: false
@@ -148,44 +224,11 @@ export function syncHeroIdentityToEpisodeMetadata(reelId, identity = {}) {
         return null;
     }
 
-    // Mirror localStorage → live store so Theater menus update without reload.
-    reelSeriesMetadata.update((map) => ({
-        ...map,
-        [id]: saved
-    }));
-
-    // When episode is already bound, update catalog display fields only (no new episodes).
-    if (saved.episodeId) {
-        seriesCatalog.update((catalogItems) => {
-            let changed = false;
-            const next = catalogItems.map((series) => ({
-                ...series,
-                seasons: series.seasons.map((season) => ({
-                    ...season,
-                    episodes: season.episodes.map((episode) => {
-                        const linked =
-                            episode.episodeId === saved.episodeId || episode.reelId === id;
-                        if (!linked) return episode;
-                        changed = true;
-                        return {
-                            ...episode,
-                            title: newTitle,
-                            description: saved.description ?? episode.description,
-                            tags: saved.tags?.length ? saved.tags : episode.tags,
-                            genre: saved.genre ?? episode.genre
-                        };
-                    })
-                }))
-            }));
-            return changed ? next : catalogItems;
-        });
-    }
-
     logHeroEpisodeSync({
         reelId: id,
         oldTitle,
-        newTitle,
-        source: identity.source || 'creator',
+        newTitle: truthSource ? newTitle : oldTitle,
+        source: sourceType,
         episodeId: saved.episodeId || null,
         seriesId: saved.seriesId || null,
         updated: true

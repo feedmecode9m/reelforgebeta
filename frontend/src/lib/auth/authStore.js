@@ -126,6 +126,19 @@ function applySession(session) {
     authError.set(null);
     mirrorAdminBridge(nextToken, nextUser?.role);
     authStatus.set(nextUser ? 'ready' : 'idle');
+
+    // Hero authority runtime bridge (Phase 8)
+    try {
+        import('./authorityIdentity.js').then((mod) => {
+            if (nextUser && nextToken) {
+                mod.publishAuthorityIdentityBridge(nextUser, nextToken);
+            } else {
+                mod.publishAuthorityIdentityBridge(null);
+            }
+        });
+    } catch {
+        /* ignore */
+    }
 }
 
 export function getAuthToken() {

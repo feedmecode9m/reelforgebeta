@@ -4,10 +4,19 @@
     loadCollections,
     selectFeaturedCollection
   } from '../../lib/collections/collectionIntelligence.js';
+  import { presentFeaturedCollection } from '../../lib/viewer/viewerIntelligencePresentation.js';
 
   let collections = loadCollections();
   let featured = selectFeaturedCollection(collections);
   let discoveryLinks = buildCollectionDiscoveryLayer(collections);
+
+  $: presentation = (() => {
+    if (!featured) return null;
+    const connections =
+      discoveryLinks.find((item) => item.collectionId === featured.collectionId)
+        ?.discoveryConnections || [];
+    return presentFeaturedCollection(featured, { discoveryConnections: connections });
+  })();
 
   function refreshCollections() {
     collections = loadCollections();
@@ -16,10 +25,16 @@
   }
 
   function handleOpenCollection() {
-    if (!featured) return;
+    if (!featured || !presentation) return;
     console.info('[FEATURED_COLLECTION_OPEN]', {
       collectionId: featured.collectionId,
-      collectionTitle: featured.collectionTitle
+      // Only creator truth title — never NLP rewrite
+      collectionTitle: presentation.creatorTruth.title,
+      provenance: {
+        creatorTruth: true,
+        intelligenceExplanation: presentation.intelligenceExplanation.authoritative === false,
+        discoveryContext: presentation.discoveryContext.authoritative === false
+      }
     });
   }
 
@@ -32,22 +47,46 @@
   <header>
     <h3>Featured Collection</h3>
   </header>
-  {#if featured}
+  {#if presentation}
     <article class="featured-collection-panel__card" data-featured-collection-card>
-      <div class="featured-collection-panel__meta">
+      <div class="featured-collection-panel__meta" data-creator-truth>
         <span>{featured.collectionType}</span>
-        <h4>{featured.collectionTitle}</h4>
-        <p>{featured.collectionDescription}</p>
+        <!-- Creator title only — primary display -->
+        <h4 data-creator-title>{presentation.display.primaryTitle}</h4>
+        {#if presentation.display.officialDescription}
+          <p data-creator-description>{presentation.display.officialDescription}</p>
+        {/if}
       </div>
-      <div class="featured-collection-panel__chips">
-        {#each (featured.searchKeywords || []).slice(0, 5) as keyword (keyword)}
-          <small>{keyword}</small>
-        {/each}
-      </div>
-      <p class="featured-collection-panel__links">
-        Discovery links:
-        {(discoveryLinks.find((item) => item.collectionId === featured.collectionId)?.discoveryConnections || []).join(' • ') || 'pending'}
-      </p>
+
+      {#if presentation.display.showIntelligence}
+        <div
+          class="featured-collection-panel__intelligence"
+          data-intelligence-explanation
+          aria-label="Intelligence interpretation"
+        >
+          <p class="featured-collection-panel__intel-label">Viewer intelligence</p>
+          {#each presentation.display.intelligenceLines as line (line)}
+            <p class="featured-collection-panel__intel-line">{line}</p>
+          {/each}
+        </div>
+      {/if}
+
+      {#if presentation.display.discoveryChips.length}
+        <div class="featured-collection-panel__chips" data-discovery-context>
+          <p class="featured-collection-panel__discovery-label">Discovery signals (not official metadata)</p>
+          {#each presentation.display.discoveryChips as chip (chip)}
+            <small>{chip}</small>
+          {/each}
+        </div>
+      {/if}
+
+      {#if presentation.discoveryContext.connectionTags.length}
+        <p class="featured-collection-panel__links" data-discovery-links>
+          Discovery links:
+          {presentation.discoveryContext.connectionTags.join(' • ')}
+        </p>
+      {/if}
+
       <button type="button" on:click={handleOpenCollection}>Explore Collection</button>
     </article>
   {:else}
@@ -73,7 +112,7 @@
   .featured-collection-panel__card {
     margin-top: 0.5rem;
     display: grid;
-    gap: 0.4rem;
+    gap: 0.45rem;
   }
   .featured-collection-panel__meta span {
     font-size: 0.56rem;
@@ -91,6 +130,34 @@
     color: rgba(255, 255, 255, 0.78);
     font-size: 0.7rem;
     line-height: 1.35;
+  }
+  .featured-collection-panel__intelligence {
+    padding: 0.4rem 0.5rem;
+    border-radius: 8px;
+    border: 1px dashed rgba(250, 204, 21, 0.35);
+    background: rgba(250, 204, 21, 0.06);
+  }
+  .featured-collection-panel__intel-label {
+    margin: 0 0 0.25rem;
+    font-size: 0.52rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: rgba(250, 204, 21, 0.9);
+  }
+  .featured-collection-panel__intel-line {
+    margin: 0.15rem 0 0;
+    font-size: 0.68rem;
+    line-height: 1.35;
+    color: rgba(255, 255, 255, 0.82);
+    font-style: italic;
+  }
+  .featured-collection-panel__discovery-label {
+    width: 100%;
+    margin: 0 0 0.2rem;
+    font-size: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(255, 255, 255, 0.5);
   }
   .featured-collection-panel__chips {
     display: flex;

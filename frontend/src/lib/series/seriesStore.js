@@ -370,19 +370,24 @@ export function getReelSeriesMetadata(reelId) {
 
 /**
  * Persist reel-level series metadata (Creator Truth write path).
- * Prose fields (title, description, genre, runtime, …) are stripped when
- * sourceType is AI/discovery/demo — use proposals instead of silent catalog writes.
+ * Fail-closed: missing sourceType resolves to system and cannot write prose fields.
+ * sourceType creator | vault | binding may author title/description/genre/runtime.
+ * sourceType ai | discovery | demo | system cannot write creator prose.
  *
  * @param {string} reelId
  * @param {Partial<ReelSeriesMetadata> & { provenanceSource?: string; sourceType?: string }} patch
- * @param {{ sourceType?: string; context?: string }} [options]
+ * @param {{ sourceType?: string; context?: string; skipEpisodeBind?: boolean }} [options]
  */
 export function saveReelSeriesMetadata(reelId, patch, options = {}) {
+    const explicit =
+        options.sourceType ??
+        patch?.provenanceSource ??
+        patch?.sourceType;
+    // Never default missing provenance to creator.
     const sourceType =
-        options.sourceType ||
-        patch?.provenanceSource ||
-        patch?.sourceType ||
-        PROVENANCE_SOURCE_TYPES.CREATOR;
+        explicit === undefined || explicit === null || String(explicit).trim() === ''
+            ? PROVENANCE_SOURCE_TYPES.SYSTEM
+            : explicit;
     const { provenanceSource: _p, sourceType: _s, ...rest } = patch || {};
     const guarded = guardIntelligenceMetadataWrite(rest, {
         sourceType,
@@ -395,8 +400,13 @@ export function saveReelSeriesMetadata(reelId, patch, options = {}) {
     if (!saved) return null;
     reelSeriesMetadata.update((map) => ({ ...map, [reelId]: saved }));
     applyMetadataToCatalog(reelId, saved);
-    if (saved.episodeId) {
-        bindEpisodeToFeedReel(reelId, saved.episodeId, { ...saved });
+    // Structural catalog reels only — metadata already written via this function.
+    if (saved.episodeId && !options.skipEpisodeBind) {
+        bindEpisodeReelIdOnCatalog(reelId, saved.episodeId, {
+            mediaAssetId: rest.mediaAssetId,
+            thumbnailAssetId: rest.thumbnailAssetId,
+            aliases: rest.aliases
+        });
     }
     void persistReelMetadataToApi(reelId, saved);
     scheduleSyncPush('seriesMetadata');
@@ -438,17 +448,13 @@ async function persistReelMetadataToApi(reelId, saved) {
 }
 
 /**
- * Bind a feed reel UUID to a catalog episode and persist studio metadata.
+ * Catalog-only reel attachment (no metadata upsert).
  * @param {string} feedReelId
  * @param {string} episodeId
- * @param {Partial<ReelSeriesMetadata>} [metaPatch]
+ * @param {{ mediaAssetId?: unknown; thumbnailAssetId?: unknown; aliases?: unknown }} [structural]
  */
-export function bindEpisodeToFeedReel(feedReelId, episodeId, metaPatch = {}) {
+function bindEpisodeReelIdOnCatalog(feedReelId, episodeId, structural = {}) {
     if (!feedReelId || !episodeId) return false;
-
-    const ctx = getEpisodeById(episodeId);
-    if (!ctx) return false;
-
     let changed = false;
     seriesCatalog.update((catalogItems) => {
         const next = catalogItems.map((series) => ({
@@ -458,22 +464,21 @@ export function bindEpisodeToFeedReel(feedReelId, episodeId, metaPatch = {}) {
                 episodes: season.episodes.map((episode) => {
                     if (episode.episodeId !== episodeId) return episode;
                     changed = true;
-                    const aliases = Array.isArray(metaPatch.aliases)
-                        ? metaPatch.aliases.map(String).filter(Boolean)
+                    const aliases = Array.isArray(structural.aliases)
+                        ? structural.aliases.map(String).filter(Boolean)
                         : Array.isArray(episode.aliases)
                           ? episode.aliases
                           : [];
                     return {
                         ...episode,
                         reelId: feedReelId,
-                        // Hero Vault media bind — same ready vault asset id (no re-upload).
                         mediaAssetId:
-                            metaPatch.mediaAssetId != null
-                                ? metaPatch.mediaAssetId
+                            structural.mediaAssetId != null
+                                ? structural.mediaAssetId
                                 : feedReelId,
                         thumbnailAssetId:
-                            metaPatch.thumbnailAssetId !== undefined
-                                ? metaPatch.thumbnailAssetId
+                            structural.thumbnailAssetId !== undefined
+                                ? structural.thumbnailAssetId
                                 : episode.thumbnailAssetId ?? null,
                         aliases
                     };
@@ -482,27 +487,67 @@ export function bindEpisodeToFeedReel(feedReelId, episodeId, metaPatch = {}) {
         }));
         return changed ? next : catalogItems;
     });
+    return changed;
+}
 
-    const saved = upsertStoredReelSeriesMetadata(feedReelId, {
-        reelId: feedReelId,
-        episodeId,
-        seriesId: ctx.series.id,
-        seasonNumber: ctx.season.seasonNumber,
-        episodeNumber: ctx.episode.episodeNumber,
-        episodeTitle: ctx.episode.title,
-        seriesName: ctx.series.title,
-        description: metaPatch.description ?? ctx.episode.description ?? ctx.series.description,
-        genre: metaPatch.genre ?? ctx.episode.genre ?? ctx.series.genre,
-        runtime: metaPatch.runtime ?? ctx.episode.runtime,
-        releaseYear: metaPatch.releaseYear ?? ctx.series.releaseYear,
-        episodeStatus: metaPatch.episodeStatus ?? ctx.episode.status,
-        tags: metaPatch.tags ?? ctx.episode.tags ?? ctx.series.tags,
-        ...metaPatch
+/**
+ * Bind a feed reel UUID to a catalog episode and persist studio metadata
+ * through the fail-closed saveReelSeriesMetadata path (sourceType: binding).
+ *
+ * @param {string} feedReelId
+ * @param {string} episodeId
+ * @param {Partial<ReelSeriesMetadata> & { sourceType?: string; provenanceSource?: string; source?: string }} [metaPatch]
+ * @param {{ sourceType?: string; context?: string }} [options]
+ */
+export function bindEpisodeToFeedReel(feedReelId, episodeId, metaPatch = {}, options = {}) {
+    if (!feedReelId || !episodeId) return false;
+
+    const ctx = getEpisodeById(episodeId);
+    if (!ctx) return false;
+
+    const {
+        sourceType: patchSourceType,
+        provenanceSource,
+        source: _legacySource,
+        ...rest
+    } = metaPatch || {};
+
+    const sourceType =
+        options.sourceType ||
+        patchSourceType ||
+        provenanceSource ||
+        'binding';
+
+    const changed = bindEpisodeReelIdOnCatalog(feedReelId, episodeId, {
+        mediaAssetId: rest.mediaAssetId,
+        thumbnailAssetId: rest.thumbnailAssetId,
+        aliases: rest.aliases
     });
 
-    if (saved) {
-        reelSeriesMetadata.update((map) => ({ ...map, [feedReelId]: saved }));
-    }
+    const saved = saveReelSeriesMetadata(
+        feedReelId,
+        {
+            reelId: feedReelId,
+            episodeId,
+            seriesId: ctx.series.id,
+            seasonNumber: ctx.season.seasonNumber,
+            episodeNumber: ctx.episode.episodeNumber,
+            episodeTitle: rest.episodeTitle ?? ctx.episode.title,
+            seriesName: rest.seriesName ?? ctx.series.title,
+            description: rest.description ?? ctx.episode.description ?? ctx.series.description,
+            genre: rest.genre ?? ctx.episode.genre ?? ctx.series.genre,
+            runtime: rest.runtime ?? ctx.episode.runtime,
+            releaseYear: rest.releaseYear ?? ctx.series.releaseYear,
+            episodeStatus: rest.episodeStatus ?? ctx.episode.status,
+            tags: rest.tags ?? ctx.episode.tags ?? ctx.series.tags,
+            ...rest
+        },
+        {
+            sourceType,
+            context: options.context || 'bindEpisodeToFeedReel',
+            skipEpisodeBind: true
+        }
+    );
 
     return changed || Boolean(saved);
 }
@@ -882,33 +927,35 @@ export function updateEpisodeTitleForReel(reelId, nextTitle) {
 
 /**
  * Sync reel-level metadata map from current catalog episode (no media rebinding logic).
- * Uses metadata persistence APIs; does not run vault title inference.
+ * Routes through fail-closed save with binding provenance (mirrors existing catalog truth).
  * @param {{ series: Series; season: Season; episode: Episode }} ctx
  */
 function syncReelMetadataFromCatalogEpisode(ctx) {
     const reelId = ctx?.episode?.reelId ? String(ctx.episode.reelId).trim() : '';
     if (!reelId) return null;
 
-    const saved = upsertStoredReelSeriesMetadata(reelId, {
+    return saveReelSeriesMetadata(
         reelId,
-        episodeId: ctx.episode.episodeId,
-        seriesId: ctx.series.id,
-        seriesName: ctx.series.title,
-        seasonNumber: ctx.season.seasonNumber,
-        episodeNumber: ctx.episode.episodeNumber,
-        episodeTitle: ctx.episode.title,
-        description: ctx.episode.description,
-        episodeStatus: ctx.episode.status,
-        genre: ctx.episode.genre ?? ctx.series.genre,
-        tags: ctx.episode.tags ?? ctx.series.tags,
-        runtime: ctx.episode.runtime
-    });
-    if (!saved) return null;
-
-    reelSeriesMetadata.update((map) => ({ ...map, [reelId]: saved }));
-    void persistReelMetadataToApi(reelId, saved);
-    scheduleSyncPush('seriesMetadata');
-    return saved;
+        {
+            reelId,
+            episodeId: ctx.episode.episodeId,
+            seriesId: ctx.series.id,
+            seriesName: ctx.series.title,
+            seasonNumber: ctx.season.seasonNumber,
+            episodeNumber: ctx.episode.episodeNumber,
+            episodeTitle: ctx.episode.title,
+            description: ctx.episode.description,
+            episodeStatus: ctx.episode.status,
+            genre: ctx.episode.genre ?? ctx.series.genre,
+            tags: ctx.episode.tags ?? ctx.series.tags,
+            runtime: ctx.episode.runtime
+        },
+        {
+            sourceType: 'binding',
+            context: 'syncReelMetadataFromCatalogEpisode',
+            skipEpisodeBind: true
+        }
+    );
 }
 
 /**

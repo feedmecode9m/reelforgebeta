@@ -362,6 +362,26 @@ async fn main() -> std::io::Result<()> {
                             .route(web::get().to(api::hero_presentation::get_presentation))
                             .route(web::put().to(api::hero_presentation::put_presentation)),
                     )
+                    // Hero authority events — server grants publication (append-only audit).
+                    // POST/GET require admin session on mutating/diagnostic paths.
+                    .service(
+                        web::resource("/hero/authority/events")
+                            .route(web::post().to(api::hero_authority::post_authority_event))
+                            .route(web::get().to(api::hero_authority::list_authority_events)),
+                    )
+                    .service(
+                        web::resource("/hero/authority/events/")
+                            .route(web::post().to(api::hero_authority::post_authority_event))
+                            .route(web::get().to(api::hero_authority::list_authority_events)),
+                    )
+                    .service(
+                        web::resource("/hero/authority/events/{heroId}")
+                            .route(web::get().to(api::hero_authority::get_authority_events_for_hero)),
+                    )
+                    .service(
+                        web::resource("/hero/authority/events/{heroId}/")
+                            .route(web::get().to(api::hero_authority::get_authority_events_for_hero)),
+                    )
                     .route(
                         "/uploads/sign",
                         web::post().to(crate::signed_upload::sign_upload),

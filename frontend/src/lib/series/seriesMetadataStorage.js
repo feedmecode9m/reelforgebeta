@@ -13,6 +13,8 @@ export const SERIES_METADATA_STORAGE_KEY = 'reelforge_series_metadata';
  * @property {string} episodeTitle
  * @property {string} [description]
  * @property {string} [genre]
+ * @property {string} [suggestedGenre] Intelligence proposal only — never official until creator assigns genre
+ * @property {string} [intelligenceExplanation] Labeled suggestion text for studio/viewer
  * @property {string[]} [tags]
  * @property {number} [runtime]
  * @property {number} [releaseYear]

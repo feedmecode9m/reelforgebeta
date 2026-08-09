@@ -188,16 +188,20 @@ try {
     if (prior?.episode?.episodeId) {
         // Detach by overwriting episode reel via attach null path: overwrite metadata map
         // and catalog entry so isReelAlreadySeriesBound allows re-infer
-        seriesStore.saveReelSeriesMetadata(STIRRED_1_ID, {
-            reelId: STIRRED_1_ID,
-            seriesId: '',
-            seriesName: '',
-            seasonNumber: 0,
-            episodeNumber: 0,
-            episodeTitle: '',
-            episodeId: '',
-            episodeStatus: ''
-        });
+        seriesStore.saveReelSeriesMetadata(
+            STIRRED_1_ID,
+            {
+                reelId: STIRRED_1_ID,
+                seriesId: '',
+                seriesName: '',
+                seasonNumber: 0,
+                episodeNumber: 0,
+                episodeTitle: '',
+                episodeId: '',
+                episodeStatus: ''
+            },
+            { sourceType: 'binding', context: 'validate-vault-series-runtime-clear' }
+        );
         seriesStore.seriesCatalog.update((items) =>
             items.map((s) => ({
                 ...s,

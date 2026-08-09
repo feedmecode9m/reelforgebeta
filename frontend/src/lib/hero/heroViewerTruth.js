@@ -255,7 +255,7 @@ export function seedContentIntelligenceFromHeroTruth(models, truth, viewer = {})
 
     fill(series, 'seriesTitle', title);
     if (safeDescription) fill(series, 'seriesDescription', safeDescription);
-    fill(series, 'genre', intelligence.category);
+    // Genre stays creator-owned — NLP category is discovery/interpretation only.
     if (truth.mediaUrl && (force || !String(series.seriesTrailer || '').trim())) {
         if (truth.isVideo) series.seriesTrailer = truth.mediaUrl;
     }
@@ -298,6 +298,14 @@ export function seedContentIntelligenceFromHeroTruth(models, truth, viewer = {})
     discovery.mood = pushUnique(discovery.mood, intelligence.mood);
     discovery.audienceInterests = pushUnique(discovery.audienceInterests, intelligence.audienceSignal);
     discovery.collectionCategories = pushUnique(discovery.collectionCategories, 'Hero Background');
+    // NLP shelf classification → discovery only (never series.genre truth).
+    if (intelligence.category) {
+        discovery.collectionCategories = pushUnique(
+            discovery.collectionCategories,
+            String(intelligence.category)
+        );
+        discovery.topics = pushUnique(discovery.topics, String(intelligence.category));
+    }
 
     if (force || !String(rights.copyrightOwner || '').trim()) {
         rights.copyrightOwner = rights.copyrightOwner || 'Studio vault owner';

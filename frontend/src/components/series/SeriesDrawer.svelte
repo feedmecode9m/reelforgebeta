@@ -1,6 +1,11 @@
 <script>
     import { createEventDispatcher, onDestroy, tick } from 'svelte';
-    import { getSeriesById } from '../../lib/series/seriesStore.js';
+    import { getSeriesById, getReelSeriesMetadata } from '../../lib/series/seriesStore.js';
+    import {
+        creatorFacingDescription,
+        creatorFacingGenre
+    } from '../../lib/series/seriesCatalogTruth.js';
+    import { formatIntelligenceExplanation } from '../../lib/architecture/intelligenceProvenance.js';
     import { emitAccessibilityAudit } from '../../lib/accessibility/accessibilityAudit.js';
     import MediaPoster from '../media/MediaPoster.svelte';
     import SeasonAccordion from './SeasonAccordion.svelte';
@@ -19,6 +24,8 @@
 
     $: series = getSeriesById(seriesId);
     $: sortedSeasons = [...(series?.seasons || [])].sort((a, b) => a.seasonNumber - b.seasonNumber);
+    $: officialSeriesDescription = creatorFacingDescription(series?.description);
+    $: officialSeriesGenre = creatorFacingGenre(series?.genre);
 
     /** @param {CustomEvent<{ episodeId: string }>} event */
     function handleEpisodeSelect(event) {
@@ -161,8 +168,11 @@
                 <div class="series-drawer__hero-copy">
                     <p class="series-drawer__eyebrow">Series</p>
                     <h2 id="series-drawer-title" class="series-drawer__title">{series.title}</h2>
-                    {#if series.description}
-                        <p class="series-drawer__description">{series.description}</p>
+                    {#if officialSeriesDescription}
+                        <p class="series-drawer__description">{officialSeriesDescription}</p>
+                    {/if}
+                    {#if officialSeriesGenre}
+                        <p class="series-drawer__official-genre">Genre: {officialSeriesGenre}</p>
                     {/if}
                     {#if selectedEpisodeId}
                         <SeriesBadge episodeId={selectedEpisodeId} />
@@ -191,16 +201,30 @@
                 {#if selectedEpisodeId}
                     {@const ctx = series.seasons.flatMap((s) => s.episodes).find((e) => e.episodeId === selectedEpisodeId)}
                     {#if ctx}
+                        {@const reelMeta = ctx.reelId ? getReelSeriesMetadata(ctx.reelId) : null}
+                        {@const officialEpDesc = creatorFacingDescription(ctx.description)}
+                        {@const officialEpGenre = creatorFacingGenre(ctx.genre)}
+                        {@const suggestedGenre = String(reelMeta?.suggestedGenre || '').trim()}
+                        {@const suggestionText =
+                            String(reelMeta?.intelligenceExplanation || '').trim() ||
+                            (suggestedGenre
+                                ? formatIntelligenceExplanation(suggestedGenre, { fromTitle: true })
+                                : '')}
                         <section class="series-drawer__detail" aria-label="Selected episode details">
                             <h4>{ctx.title}</h4>
-                            {#if ctx.description}
-                                <p>{ctx.description}</p>
+                            {#if officialEpDesc}
+                                <p>{officialEpDesc}</p>
                             {/if}
                             <div class="series-drawer__detail-meta">
                                 <span>Runtime: {formatRuntime(ctx.runtime)}</span>
                                 <span>Status: {ctx.status}</span>
-                                {#if ctx.genre}<span>Genre: {ctx.genre}</span>{/if}
+                                {#if officialEpGenre}<span>Genre: {officialEpGenre}</span>{/if}
                             </div>
+                            {#if suggestionText}
+                                <p class="series-drawer__suggestion" data-intelligence-suggestion>
+                                    {suggestionText}
+                                </p>
+                            {/if}
                             {#if ctx.tags?.length}
                                 <div class="series-drawer__tags">
                                     {#each ctx.tags as tag}
@@ -324,6 +348,20 @@
         -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
         overflow: hidden;
+    }
+    .series-drawer__official-genre {
+        margin: 0;
+        font-size: 0.72rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.55);
+    }
+    .series-drawer__suggestion {
+        margin: 0.5rem 0 0;
+        font-size: 0.78rem;
+        color: rgba(250, 204, 21, 0.85);
+        line-height: 1.4;
+        font-style: italic;
     }
     .series-drawer__content {
         flex: 1;

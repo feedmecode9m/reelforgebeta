@@ -40,6 +40,10 @@ export const LOCKED_FIELDS = Object.freeze([
     'heroAssetTitle',
     'creatorName',
     'episodeTitle',
+    'seriesTitle',
+    'genre',
+    'communityRepresented',
+    'culturalRegion',
     'brandName',
     'heroIdentity'
 ]);

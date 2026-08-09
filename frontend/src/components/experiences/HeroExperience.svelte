@@ -28,6 +28,10 @@
     isStockHeroViewerCopy,
     resolveTruthLabel
   } from '../../lib/hero/heroViewerTruth.js';
+  import { resolvePublicHeroViewerCopy } from '../../lib/hero/heroPresentationAuthority.js';
+  import { loadHeroRecord, loadHeroRecordUnverified } from '../../lib/hero/heroRecord.js';
+  import { hydrateHeroAuthorityRuntime } from '../../lib/hero/heroAuthorityRuntime.js';
+  import { isServerGrantedPublished } from '../../lib/hero/heroServerAuthorityEngine.js';
   import {
     isUnsafeHeroFilenameTitle,
     resolveCanonicalHeroTitle
@@ -176,7 +180,16 @@ export let sanitizeViewer = false;
   let heroStoryPrimaryTarget = '';
   let heroStorySecondaryLabel = '';
   let heroStorySecondaryTarget = '';
+  /** Phase 8 — server-hydrated hero authority record (null until rehydrate). */
+  let hydratedAuthorityRecord = null;
   let heroViewerDescription = '';
+  /** @type {string[]} */
+  let heroIntelligenceLines = [];
+  let heroCreatorIntentText = '';
+  /** @type {import('../../lib/viewer/viewerTrustPresentation.js').ViewerTrustSignalItem[]} */
+  let heroTrustSignals = [];
+  /** @type {Array<Record<string, unknown>>} */
+  let heroDiscoveryConnections = [];
   let heroLayoutHotfixLogged = false;
   let heroMp4RenderFixLogged = false;
   let mediaPlaceholderFixLogged = false;
@@ -568,11 +581,85 @@ $: heroBadgeLabel = sanitizeViewer
     const scheduleReady = !Number.isNaN(scheduledTs) && Date.now() >= scheduledTs;
     heroStoryPublished = storyStatus === 'published' || (storyStatus === 'scheduled' && scheduleReady);
     heroStoryLabel = String(heroManagerConfig?.heroLabel || '').trim();
-    heroStoryTitle = String(heroManagerConfig?.heroTitle || '').trim();
+
+    // Public resolve order:
+    // 1. server verified heroPresentation
+    // 2. creatorTruth
+    // 3. approved creatorIntentContext
+    // 4. approved intelligenceExplanation
+    // 5. approved discovery connections
+    // 6. viewer trust signals
+    // never AI suggestion / discovery category as identity
+    let publicResolved = null;
+    try {
+      const baseRecord =
+        hydratedAuthorityRecord ||
+        (typeof window !== 'undefined' ? loadHeroRecord() : null);
+      const record =
+        typeof window !== 'undefined' && baseRecord
+          ? {
+              ...baseRecord,
+              heroTitle: heroManagerConfig?.heroTitle,
+              heroDescription: heroManagerConfig?.heroDescription,
+              // Never prefer manager-local presentation over server hydration claim
+              heroPresentation: isServerGrantedPublished(baseRecord)
+                ? baseRecord.heroPresentation
+                : baseRecord.heroPresentation || heroManagerConfig?.heroPresentation,
+              creatorTruth: baseRecord.creatorTruth || heroManagerConfig?.creatorTruth,
+              creatorIntentContext:
+                baseRecord.creatorIntentContext ||
+                heroManagerConfig?.creatorIntentContext,
+              intelligenceExplanation:
+                baseRecord.intelligenceExplanation ||
+                heroManagerConfig?.intelligenceExplanation,
+              discoveryGraph:
+                baseRecord.discoveryGraph || heroManagerConfig?.discoveryGraph,
+              featuredCollection: heroManagerConfig?.featuredCollection,
+              featuredSeries: heroManagerConfig?.featuredSeries,
+              serverAuthorityReceipt: baseRecord.serverAuthorityReceipt,
+              serverAuthorityState: baseRecord.serverAuthorityState
+            }
+          : null;
+      publicResolved = resolvePublicHeroViewerCopy(record, {
+        forceShowIntelligence: heroManagerConfig?.showIntelligenceExplanation === true,
+        featuredCollection: heroManagerConfig?.featuredCollection,
+        featuredSeries: heroManagerConfig?.featuredSeries
+      });
+    } catch {
+      publicResolved = null;
+    }
+
+    if (publicResolved?.isPublicApproved && publicResolved.title) {
+      heroStoryTitle = publicResolved.title;
+      heroStoryDescription = publicResolved.description || '';
+    } else if (publicResolved?.titleSource === 'creatorTruth' && publicResolved.title) {
+      heroStoryTitle = publicResolved.title;
+      heroStoryDescription = publicResolved.description || '';
+    } else {
+      heroStoryTitle = String(heroManagerConfig?.heroTitle || '').trim();
+      heroStoryDescription = isStockHeroViewerCopy(heroManagerConfig?.heroDescription, 'description')
+        ? ''
+        : String(heroManagerConfig?.heroDescription || '').trim();
+    }
     heroStorySubtitle = String(heroManagerConfig?.heroSubtitle || '').trim();
-    heroStoryDescription = isStockHeroViewerCopy(heroManagerConfig?.heroDescription, 'description')
-      ? ''
-      : String(heroManagerConfig?.heroDescription || '').trim();
+    // Approved creator intent only (not private notes, not AI invent).
+    heroCreatorIntentText =
+      publicResolved?.creatorIntent?.visible
+        ? String(publicResolved.creatorIntent.text || '')
+        : '';
+    // Labeled intelligence context only (not identity).
+    heroIntelligenceLines =
+      publicResolved?.intelligenceExplanation?.visible
+        ? publicResolved.intelligenceExplanation.lines
+        : [];
+    // Approved discovery connections only (never identity)
+    heroDiscoveryConnections = Array.isArray(publicResolved?.discoveryConnections?.connections)
+      ? publicResolved.discoveryConnections.connections
+      : [];
+    // Viewer trust signals only (Creator Collection / Featured Collection / Explore Themes)
+    heroTrustSignals = Array.isArray(publicResolved?.trustSignals?.items)
+      ? publicResolved.trustSignals.items
+      : [];
     heroStoryPrimaryLabel = String(heroManagerConfig?.ctaPrimaryLabel || '').trim();
     heroStoryPrimaryTarget = String(heroManagerConfig?.ctaPrimaryTarget || '').trim();
     heroStorySecondaryLabel = String(heroManagerConfig?.ctaSecondaryLabel || '').trim();
@@ -1331,11 +1418,24 @@ $: heroBadgeLabel = sanitizeViewer
       reason: 'onMount_before_applyHeroManagerBackground'
     });
     applyHeroManagerBackground(heroManagerConfig, getHeroBackgroundStores());
+    // Phase 8 — automatic server authority rehydration (server wins).
+    hydrateHeroAuthorityRuntime(loadHeroRecordUnverified(), { persist: true })
+      .then((result) => {
+        hydratedAuthorityRecord = result.record || loadHeroRecord();
+      })
+      .catch(() => {
+        hydratedAuthorityRecord = loadHeroRecord();
+      });
     const handleManagerUpdate = (event) => {
       heroManagerConfig = event.detail || loadHeroManagerConfig();
       applyHeroManagerBackground(heroManagerConfig, getHeroBackgroundStores());
       restartCarouselTimers();
       queueHeroRenderDiagnostics();
+      hydrateHeroAuthorityRuntime(loadHeroRecordUnverified(), { persist: true })
+        .then((result) => {
+          hydratedAuthorityRecord = result.record || loadHeroRecord();
+        })
+        .catch(() => {});
     };
     window.addEventListener('reelforge:hero-manager-updated', handleManagerUpdate);
     restartCarouselTimers();
@@ -2237,6 +2337,44 @@ $: heroBadgeLabel = sanitizeViewer
       {#if heroViewerDescription}
         <p class="hero-story-description" data-hero-story-description>{heroViewerDescription}</p>
       {/if}
+      {#if heroCreatorIntentText}
+        <div class="hero-creator-intent" data-creator-intent>
+          <p class="hero-creator-intent__text">{heroCreatorIntentText}</p>
+        </div>
+      {/if}
+      {#if heroIntelligenceLines?.length}
+        <div class="hero-intelligence-context" data-intelligence-explanation>
+          {#each heroIntelligenceLines as line (line)}
+            <p class="hero-intelligence-context__line">{line}</p>
+          {/each}
+        </div>
+      {/if}
+      {#if heroDiscoveryConnections?.length}
+        <div class="hero-discovery-connections" data-discovery-connections>
+          {#each heroDiscoveryConnections as conn, i (conn.relationshipId || conn.label || i)}
+            <p class="hero-discovery-connections__item" data-discovery-type={conn.type || ''}>
+              <span class="hero-discovery-connections__label">{conn.publicLabel || 'Explore Further'}</span>
+              <span class="hero-discovery-connections__value">
+                {conn.label}{#if conn.target}{` → ${conn.target}`}{/if}
+              </span>
+            </p>
+          {/each}
+        </div>
+      {/if}
+      {#if heroTrustSignals?.length}
+        <div class="hero-viewer-trust" data-viewer-trust-signals>
+          {#each heroTrustSignals as signal, i (signal.label + String(i))}
+            <p class="hero-viewer-trust__item" data-trust-label={signal.label}>
+              <span class="hero-viewer-trust__label">{signal.label}</span>
+              {#if signal.values?.length}
+                <span class="hero-viewer-trust__value">{signal.values.join(' · ')}</span>
+              {:else if signal.value}
+                <span class="hero-viewer-trust__value">{signal.value}</span>
+              {/if}
+            </p>
+          {/each}
+        </div>
+      {/if}
       {#if !sanitizeViewer && activeHeroSlide?.type === 'upcoming_release'}
         <div class="hero-event-card" data-hero-upcoming-card>
           <strong>Upcoming Event</strong>
@@ -2570,6 +2708,78 @@ $: heroBadgeLabel = sanitizeViewer
     font-size: 0.88rem;
     line-height: 1.45;
     color: rgba(255, 255, 255, 0.9);
+  }
+  .hero-creator-intent {
+    margin: 0.5rem 0 0;
+    max-width: 42rem;
+  }
+  .hero-creator-intent__text {
+    margin: 0;
+    font-size: 0.84rem;
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.88);
+    font-weight: 500;
+  }
+  .hero-intelligence-context {
+    margin: 0.45rem 0 0;
+    max-width: 42rem;
+    padding: 0.4rem 0.55rem;
+    border-left: 2px solid rgba(250, 204, 21, 0.4);
+    background: rgba(0, 0, 0, 0.28);
+  }
+  .hero-intelligence-context__line {
+    margin: 0.15rem 0 0;
+    font-size: 0.78rem;
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.75);
+    line-height: 1.35;
+  }
+  .hero-intelligence-context__line:first-child {
+    margin-top: 0;
+  }
+  .hero-discovery-connections {
+    margin: 0.5rem 0 0;
+    max-width: 42rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.28rem;
+  }
+  .hero-discovery-connections__item {
+    margin: 0;
+    font-size: 0.74rem;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  .hero-discovery-connections__label {
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    opacity: 0.82;
+    margin-right: 0.4rem;
+  }
+  .hero-discovery-connections__value {
+    opacity: 0.92;
+  }
+  .hero-viewer-trust {
+    margin: 0.55rem 0 0;
+    max-width: 42rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.85rem;
+  }
+  .hero-viewer-trust__item {
+    margin: 0;
+    font-size: 0.72rem;
+    letter-spacing: 0.02em;
+    color: rgba(255, 255, 255, 0.78);
+  }
+  .hero-viewer-trust__label {
+    font-weight: 600;
+    text-transform: uppercase;
+    opacity: 0.85;
+    margin-right: 0.35rem;
+  }
+  .hero-viewer-trust__value {
+    opacity: 0.92;
   }
   .hero-stage--viewer .hero-story-description {
     margin: 1rem 0 0;

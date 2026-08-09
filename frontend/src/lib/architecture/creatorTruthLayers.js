@@ -54,6 +54,10 @@
  *
  * The AI layer is a guide, not the author of content.
  *
+ * Viewer Intelligence Presentation partitions display provenance:
+ *   creatorTruth | intelligenceExplanation | discoveryContext
+ * @see ../viewer/viewerIntelligencePresentation.js
+ *
  * @see ../series/seriesCatalogTruth.js
  * @see ../intelligence/contentIdentityGuard.js
  * @see ../series/seriesStore.js
@@ -86,6 +90,7 @@ export {
     INTERPRETATION_PROVENANCE_SOURCES,
     CREATOR_TRUTH_PROSE_FIELDS,
     normalizeProvenanceSource,
+    isExplicitTruthSourceToken,
     isTruthProvenanceSource,
     isInterpretationProvenanceSource,
     buildProvenanceRecord,

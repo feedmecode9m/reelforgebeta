@@ -27,6 +27,7 @@
     resolveSeriesPosterSrc
   } from '../../lib/series/seriesCatalogTruth.js';
   import { resolvePublicGenreDisplay } from '../../lib/architecture/intelligenceProvenance.js';
+  import { buildViewerIntelligencePresentation } from '../../lib/viewer/viewerIntelligencePresentation.js';
   import { DEFAULT_MEDIA_PLACEHOLDER } from '../../lib/config.js';
   import {
     theaterReelFromVaultResolve,
@@ -148,6 +149,17 @@
     return resolved.official ? resolved.display : '';
   })();
   $: publicDescription = creatorFacingDescription(series?.description);
+  // Intelligence is viewer-explaining only — never replaces series.title / genre / description.
+  $: viewerPresentation = series
+    ? buildViewerIntelligencePresentation({
+        title: series.title,
+        description: publicDescription,
+        genre: publicGenre,
+        identityTerms: Array.isArray(series.tags) ? series.tags : [],
+        themes: Array.isArray(series.tags) ? series.tags : [],
+        discoveryKeywords: Array.isArray(series.tags) ? series.tags : []
+      })
+    : null;
   $: seriesPosterSrc = resolveSeriesPosterSrc({
     seriesPoster: series?.poster,
     episodeThumbnails: allEpisodes.map(({ episode }) => {
@@ -354,9 +366,18 @@
         {#if publicGenre}
           <p class="series-public__eyebrow">{publicGenre}</p>
         {/if}
-        <h1 id="series-public-title" class="series-public__title">{series.title}</h1>
+        <h1 id="series-public-title" class="series-public__title" data-creator-title>
+          {viewerPresentation?.display.primaryTitle || series.title}
+        </h1>
         {#if publicDescription}
-          <p class="series-public__desc">{publicDescription}</p>
+          <p class="series-public__desc" data-creator-description>{publicDescription}</p>
+        {/if}
+        {#if viewerPresentation?.display.showIntelligence}
+          <div class="series-public__intelligence" data-intelligence-explanation>
+            {#each viewerPresentation.display.intelligenceLines as line (line)}
+              <p class="series-public__intel-line">{line}</p>
+            {/each}
+          </div>
         {/if}
         <p class="series-public__meta" data-series-catalog-counts>
           {catalogCounts.seasonCount} season{catalogCounts.seasonCount === 1 ? '' : 's'}
@@ -554,6 +575,26 @@
     color: var(--lz-ink-soft, rgba(255, 255, 255, 0.72));
     line-height: var(--lz-leading, 1.5);
     max-width: 42rem;
+  }
+
+  .series-public__intelligence {
+    margin: 0 0 0.9rem;
+    max-width: 42rem;
+    padding: 0.55rem 0.7rem;
+    border-left: 2px solid rgba(250, 204, 21, 0.45);
+    background: rgba(250, 204, 21, 0.05);
+  }
+
+  .series-public__intel-line {
+    margin: 0.2rem 0 0;
+    font-size: var(--lz-size-small, 0.85rem);
+    color: rgba(255, 255, 255, 0.72);
+    font-style: italic;
+    line-height: 1.4;
+  }
+
+  .series-public__intel-line:first-child {
+    margin-top: 0;
   }
 
   .series-public__meta {

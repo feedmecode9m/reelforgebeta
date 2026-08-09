@@ -197,6 +197,23 @@ export function buildCollectionDiscoveryLayer(collections) {
   });
 }
 
+/**
+ * Viewer Presentation Layer adapters for collections (discovery ranking ≠ creator metadata).
+ * @see ../viewer/viewerIntelligencePresentation.js
+ */
+export function presentFeaturedCollectionWithDiscovery(collections) {
+  const featured = selectFeaturedCollection(collections);
+  if (!featured) return null;
+  const links = buildCollectionDiscoveryLayer(collections || [featured]);
+  const match = links.find((item) => item.collectionId === featured.collectionId);
+  // Dynamic import avoided — keep graph simple for SSR validators.
+  // Presentation is composed by the UI via presentFeaturedCollection.
+  return {
+    featured,
+    discoveryConnections: match?.discoveryConnections || []
+  };
+}
+
 export function selectFeaturedCollection(collections) {
   const sorted = [...(Array.isArray(collections) ? collections : [])]
     .map((item) => normalizeCollectionMetadata(item))

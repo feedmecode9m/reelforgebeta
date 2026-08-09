@@ -1,6 +1,24 @@
 /**
  * HeroRecord — versioned single source of truth for Smart Production Studio Hero state.
  *
+ * Layer separation on every record:
+ * - creatorTruth: real uploaded/edited creator identity (immutable once set)
+ * - heroPresentation: approved public editorial layer + lifecycle status
+ * - creatorIntentContext: creator/admin meaning (approved public statement; private notes never public)
+* - intelligenceExplanation: NLP explanations only (approved metadata required for public)
+ * - discoveryGraph: approved discovery relationships only (never identity / truth)
+ * - auditLog: governance history only (append-only)
+ * - serverAuthorityReceipt: server grant of publication (Phase 6+)
+ * - serverAuthorityState: canonical server lifecycle snapshot (Phase 7)
+ * - auditLog: client cache of governance trail only (not authority)
+ *
+ * Concerns:
+ * - Authority:    who is allowed to publish?
+ * - Verification: can this stored state be trusted?  → heroAuthorityVerification
+ * - Presentation: what does the public see?
+ * - Intelligence: what does NLP suggest?
+ * - Discovery:    how is content categorized?
+ *
  * Commit 2: persistence layer + legacy importer.
  * Commit 3: HeroReel compatibility projections (heroReelIdentity is a facade over this).
  *
@@ -16,6 +34,40 @@
  * - needs_reselection  — mode is safe selection; user must pick again
  * - unresolved_legacy  — durable legacy media found without a safe asset id
  */
+
+import {
+    captureCreatorTruth,
+    createEmptyAdminContext,
+    createEmptyHeroPresentation,
+    HERO_VISIBILITY_POLICY,
+    normalizeAdminContext,
+    normalizeCreatorTruth,
+    normalizeHeroPresentation
+} from './heroPresentationAuthority.js';
+import {
+    createEmptyIntelligenceExplanation,
+    normalizeIntelligenceExplanation
+} from './heroIntelligenceExplanation.js';
+import {
+    createEmptyCreatorIntentContext,
+    normalizeCreatorIntentContext
+} from './creatorIntentContext.js';
+import {
+    createEmptyDiscoveryGraph,
+    normalizeDiscoveryGraph
+} from '../discovery/discoveryGraph.js';
+import {
+    mergeHeroAuditLogForPersistence,
+    normalizeHeroAuditLog
+} from './heroAuditEvents.js';
+import {
+    scrubUnverifiedHeroForPublic,
+    verifyHeroRecordIntegrity
+} from './heroAuthorityVerification.js';
+import {
+    normalizeServerAuthorityReceipt,
+    normalizeServerAuthorityState
+} from './heroServerAuthorityEngine.js';
 
 /** @typedef {'selection' | 'asset' | 'none'} HeroRecordMode */
 /** @typedef {'image' | 'video' | ''} HeroRecordMediaKind */
@@ -39,6 +91,27 @@
  * @property {string} heroSubtitle
  * @property {string} heroDescription
  * @property {string} source
+ * @property {import('./heroPresentationAuthority.js').HeroCreatorTruthBlock} [creatorTruth]
+ * @property {import('./heroPresentationAuthority.js').HeroAdminContextBlock} [adminContext]
+ * @property {import('./heroPresentationAuthority.js').HeroPresentationBlock} [heroPresentation]
+ * @property {import('./creatorIntentContext.js').CreatorIntentContextBlock} [creatorIntentContext]
+ * @property {import('./heroIntelligenceExplanation.js').IntelligenceExplanationBlock} [intelligenceExplanation]
+ * @property {import('../discovery/discoveryGraph.js').DiscoveryGraphBlock} [discoveryGraph]
+ * @property {{ creatorTruth: string; intelligenceExplanation: string; heroPresentation: string }} [visibility]
+ * @property {import('./heroAuditEvents.js').HeroAuditEvent[]} [auditLog]
+ * @property {{
+ *   authorityEventId: string;
+ *   serverTimestamp: number;
+ *   serverSignature: string;
+ *   signatureVersion?: string;
+ * } | null} [serverAuthorityReceipt]
+ * @property {{
+ *   status: string;
+ *   authorityEventId: string;
+ *   serverTimestamp: number;
+ *   verified: boolean;
+ *   signatureVersion?: string;
+ * } | null} [serverAuthorityState]
  */
 
 /**
@@ -128,7 +201,17 @@ export function createDefaultHeroRecord() {
         heroTitle: '',
         heroSubtitle: '',
         heroDescription: '',
-        source: 'default'
+        source: 'default',
+        creatorTruth: captureCreatorTruth(null),
+        adminContext: createEmptyAdminContext(),
+        heroPresentation: createEmptyHeroPresentation(),
+        creatorIntentContext: createEmptyCreatorIntentContext(),
+        intelligenceExplanation: createEmptyIntelligenceExplanation(),
+        discoveryGraph: createEmptyDiscoveryGraph(),
+        visibility: { ...HERO_VISIBILITY_POLICY },
+        auditLog: [],
+        serverAuthorityReceipt: null,
+        serverAuthorityState: null
     };
 }
 
@@ -232,6 +315,40 @@ export function validateHeroRecord(candidate) {
     const heroDescription = typeof raw.heroDescription === 'string' ? raw.heroDescription : '';
     const source = typeof raw.source === 'string' ? raw.source : 'local';
 
+    // Presentation boundary layers (optional — normalized when present).
+    const creatorTruth = normalizeCreatorTruth(
+        raw.creatorTruth || {
+            title: title || heroTitle,
+            description: heroDescription,
+            sourceAssetTitle: title
+        }
+    );
+    const adminContext = normalizeAdminContext(raw.adminContext);
+    const heroPresentation = normalizeHeroPresentation(raw.heroPresentation);
+    const creatorIntentContext = normalizeCreatorIntentContext(raw.creatorIntentContext);
+    const intelligenceExplanation = normalizeIntelligenceExplanation(raw.intelligenceExplanation);
+    const discoveryGraph = normalizeDiscoveryGraph(raw.discoveryGraph);
+    const auditLog = normalizeHeroAuditLog(raw.auditLog);
+    const serverAuthorityReceipt = normalizeServerAuthorityReceipt(raw.serverAuthorityReceipt);
+    const serverAuthorityState = normalizeServerAuthorityState(raw.serverAuthorityState);
+    const visibility =
+        raw.visibility && typeof raw.visibility === 'object'
+            ? {
+                  creatorTruth: String(
+                      /** @type {Record<string, unknown>} */ (raw.visibility).creatorTruth ||
+                          HERO_VISIBILITY_POLICY.creatorTruth
+                  ),
+                  intelligenceExplanation: String(
+                      /** @type {Record<string, unknown>} */ (raw.visibility)
+                          .intelligenceExplanation || HERO_VISIBILITY_POLICY.intelligenceExplanation
+                  ),
+                  heroPresentation: String(
+                      /** @type {Record<string, unknown>} */ (raw.visibility).heroPresentation ||
+                          HERO_VISIBILITY_POLICY.heroPresentation
+                  )
+              }
+            : { ...HERO_VISIBILITY_POLICY };
+
     let mediaKind = /** @type {HeroRecordMediaKind} */ (
         raw.mediaKind === 'image' || raw.mediaKind === 'video' || raw.mediaKind === ''
             ? raw.mediaKind
@@ -308,7 +425,17 @@ export function validateHeroRecord(candidate) {
         heroTitle,
         heroSubtitle,
         heroDescription,
-        source
+        source,
+        creatorTruth,
+        adminContext,
+        heroPresentation,
+        creatorIntentContext,
+        intelligenceExplanation,
+        discoveryGraph,
+        visibility,
+        auditLog,
+        serverAuthorityReceipt,
+        serverAuthorityState
     };
     return { ok: true, record };
 }
@@ -417,11 +544,14 @@ function recoverSafeSelectionRecord(source) {
 }
 
 /**
- * Load validated HeroRecord. Runs one-way legacy migration when missing.
- * Corrupt / unsupported stored values are recovered safely.
+ * Schema-only load (no authority verification). Used for:
+ * - admin diagnostics
+ * - save merge base
+ * - Manager editorial tools that must see raw lifecycle state
+ *
  * @returns {HeroRecord}
  */
-export function loadHeroRecord() {
+export function loadHeroRecordUnverified() {
     const inspection = inspectHeroRecordStorage();
     if (inspection.state === 'valid' && inspection.record) {
         return inspection.record;
@@ -434,11 +564,45 @@ export function loadHeroRecord() {
         );
         if (recovered) return recovered;
     }
-    // missing | invalid → attempt one-way legacy import
     migrateLegacyHeroRecordIfNeeded();
     const after = readStoredHeroRecord();
     if (after) return after;
     return createDefaultHeroRecord();
+}
+
+/**
+ * Load HeroRecord for public / trust-sensitive consumers.
+ *
+ * Flow:
+ *   schema hydrate → verifyHeroRecordIntegrity → verified record only
+ *
+ * Invalid records:
+ * - left untouched in storage (never silently repaired)
+ * - scrubbed view returned (creatorTruth fallback only; no publish claims)
+ * - full raw available via loadHeroRecordUnverified / integrity diagnostics
+ *
+ * @returns {HeroRecord & { authorityVerified?: boolean; authorityFailureReason?: string }}
+ */
+export function loadHeroRecord() {
+    const raw = loadHeroRecordUnverified();
+    const verification = verifyHeroRecordIntegrity(raw);
+    if (verification.verified) {
+        return /** @type {HeroRecord & { authorityVerified: boolean }} */ ({
+            ...raw,
+            authorityVerified: true
+        });
+    }
+
+    console.warn('[HERO_AUTHORITY_VERIFY_FAILED]', {
+        reason: verification.reason,
+        violations: verification.violations,
+        ts: new Date().toISOString()
+    });
+
+    // Fail closed for presentation claims — do not rewrite storage.
+    return /** @type {any} */ (
+        scrubUnverifiedHeroForPublic(raw, verification.reason, verification.violations)
+    );
 }
 
 /**
@@ -465,10 +629,77 @@ export function saveHeroRecord(patch = {}, options = {}) {
         return null;
     }
 
+    // Merge against raw storage (never against scrubbed public load).
     const base = existing || createDefaultHeroRecord();
+    // Creator truth: merge but protect immutability once captured.
+    const previousTruth = normalizeCreatorTruth(base.creatorTruth);
+    let nextCreatorTruth = previousTruth;
+    if (patch.creatorTruth && typeof patch.creatorTruth === 'object') {
+        if (previousTruth.title || previousTruth.sourceAssetTitle) {
+            // Immutable — ignore overwrite attempts except explicit structural capture via captureCreatorTruth force.
+            nextCreatorTruth = previousTruth;
+        } else {
+            nextCreatorTruth = normalizeCreatorTruth(patch.creatorTruth);
+        }
+    } else if (!previousTruth.title && (base.heroTitle || base.title || patch.heroTitle || patch.title)) {
+        nextCreatorTruth = captureCreatorTruth({
+            ...base,
+            ...patch
+        });
+    }
+
+    // Audit log: append-only — never overwrite or rewrite historical events.
+    const auditMerge = mergeHeroAuditLogForPersistence(
+        base.auditLog,
+        patch.auditLog !== undefined ? patch.auditLog : undefined
+    );
+    if (auditMerge.rejected && auditMerge.errors.length) {
+        console.warn('[HERO_AUDIT_APPEND_ONLY_GUARD]', {
+            errors: auditMerge.errors,
+            ts: new Date().toISOString()
+        });
+    }
+
     const merged = {
         ...base,
         ...patch,
+        creatorTruth: nextCreatorTruth,
+        adminContext: normalizeAdminContext(
+            patch.adminContext !== undefined ? patch.adminContext : base.adminContext
+        ),
+        heroPresentation: normalizeHeroPresentation(
+            patch.heroPresentation !== undefined ? patch.heroPresentation : base.heroPresentation
+        ),
+        creatorIntentContext: normalizeCreatorIntentContext(
+            patch.creatorIntentContext !== undefined
+                ? patch.creatorIntentContext
+                : base.creatorIntentContext
+        ),
+        intelligenceExplanation: normalizeIntelligenceExplanation(
+            patch.intelligenceExplanation !== undefined
+                ? patch.intelligenceExplanation
+                : base.intelligenceExplanation
+        ),
+        discoveryGraph: normalizeDiscoveryGraph(
+            patch.discoveryGraph !== undefined ? patch.discoveryGraph : base.discoveryGraph
+        ),
+        visibility:
+            patch.visibility && typeof patch.visibility === 'object'
+                ? { ...HERO_VISIBILITY_POLICY, ...patch.visibility }
+                : base.visibility || { ...HERO_VISIBILITY_POLICY },
+        auditLog: auditMerge.auditLog,
+        serverAuthorityReceipt:
+            patch.serverAuthorityReceipt !== undefined
+                ? normalizeServerAuthorityReceipt(patch.serverAuthorityReceipt)
+                : base.serverAuthorityReceipt
+                  ? normalizeServerAuthorityReceipt(base.serverAuthorityReceipt)
+                  : null,
+        serverAuthorityState:
+            patch.serverAuthorityState !== undefined
+                ? normalizeServerAuthorityState(patch.serverAuthorityState)
+                : base.serverAuthorityState
+                  ? normalizeServerAuthorityState(base.serverAuthorityState)
+                  : null,
         schemaVersion: HERO_RECORD_SCHEMA_VERSION
     };
 
@@ -1154,12 +1385,17 @@ export function setHeroMode(mode, options = {}) {
 
 /**
  * Update presentation/copy fields without changing mode or asset identity — ONE write.
+ * Prefer heroPresentation authority path for public copy (approveHeroPresentation).
+ *
  * @param {{
  *   heroTitle?: string;
  *   heroSubtitle?: string;
  *   heroDescription?: string;
  *   title?: string;
  *   source?: string;
+ *   heroPresentation?: import('./heroPresentationAuthority.js').HeroPresentationBlock;
+ *   adminContext?: import('./heroPresentationAuthority.js').HeroAdminContextBlock;
+ *   creatorTruth?: import('./heroPresentationAuthority.js').HeroCreatorTruthBlock;
  * }} patch
  * @returns {HeroRecord | null}
  */
@@ -1172,6 +1408,9 @@ export function updateHeroPresentation(patch = {}) {
     if (typeof patch.heroSubtitle === 'string') next.heroSubtitle = patch.heroSubtitle;
     if (typeof patch.heroDescription === 'string') next.heroDescription = patch.heroDescription;
     if (typeof patch.title === 'string') next.title = patch.title;
+    if (patch.heroPresentation) next.heroPresentation = patch.heroPresentation;
+    if (patch.adminContext) next.adminContext = patch.adminContext;
+    if (patch.creatorTruth) next.creatorTruth = patch.creatorTruth;
 
     const keys = Object.keys(next).filter((k) => k !== 'source');
     if (!keys.length) {
@@ -1227,18 +1466,40 @@ export function mergeHeroRecordIntoManagerConfig(managerConfig, record) {
 
     const active = validated.record;
     const pointer = projectHeroRecordToManagerPointer(active);
+    const presentation = normalizeHeroPresentation(active.heroPresentation);
+    // Prefer published presentation as manager viewer copy when live on vault.
+    const published =
+        presentation.status === 'published' &&
+        Boolean(presentation.approvedBy) &&
+        Boolean(presentation.approvedAt);
+    const publicTitle = published
+        ? presentation.publicTitle || active.heroTitle
+        : active.heroTitle;
+    const publicDescription = published
+        ? presentation.publicDescription || active.heroDescription
+        : active.heroDescription;
+
     /** @type {Record<string, unknown>} */
     const next = {
         ...base,
         backgroundSource: pointer.backgroundSource,
         heroAssetId: pointer.heroAssetId,
-        heroTitle: typeof active.heroTitle === 'string' ? active.heroTitle : String(base.heroTitle || ''),
+        heroTitle: typeof publicTitle === 'string' ? publicTitle : String(base.heroTitle || ''),
         heroSubtitle:
             typeof active.heroSubtitle === 'string' ? active.heroSubtitle : String(base.heroSubtitle || ''),
         heroDescription:
-            typeof active.heroDescription === 'string'
-                ? active.heroDescription
-                : String(base.heroDescription || '')
+            typeof publicDescription === 'string'
+                ? publicDescription
+                : String(base.heroDescription || ''),
+        // Admin presentation draft controls
+        heroPresentation: presentation,
+        adminContext: normalizeAdminContext(active.adminContext),
+        creatorTruth: normalizeCreatorTruth(active.creatorTruth),
+        creatorIntentContext: normalizeCreatorIntentContext(active.creatorIntentContext),
+        intelligenceExplanation: normalizeIntelligenceExplanation(active.intelligenceExplanation),
+        discoveryGraph: normalizeDiscoveryGraph(active.discoveryGraph),
+        visibility: active.visibility || { ...HERO_VISIBILITY_POLICY },
+        showIntelligenceExplanation: presentation.showIntelligence !== false
     };
     if (pointer.backgroundStyle) {
         next.backgroundStyle = pointer.backgroundStyle;

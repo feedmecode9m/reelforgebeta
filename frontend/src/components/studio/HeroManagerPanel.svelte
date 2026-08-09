@@ -48,14 +48,61 @@
         refreshHeroReelLegacyMirror
     } from '../../lib/hero/heroReelIdentity.js';
     import {
-        loadHeroRecord,
+        loadHeroRecordUnverified,
         setHeroMode,
         updateHeroPresentation,
         projectHeroRecordToManagerPointer,
         mergeHeroRecordIntoManagerConfig,
-        projectManagerConfigFromHeroRecord
+        projectManagerConfigFromHeroRecord,
+        saveHeroRecord
     } from '../../lib/hero/heroRecord.js';
+    import {
+        approveHeroPresentation,
+        draftHeroPresentation,
+        normalizeHeroPresentation,
+        resolvePublicHeroViewerCopy
+    } from '../../lib/hero/heroPresentationAuthority.js';
+    import {
+        createIntelligenceExplanation,
+        approveIntelligenceExplanation,
+        editIntelligenceExplanation,
+        hideIntelligenceExplanation,
+        normalizeIntelligenceExplanation,
+        autoPublishIntelligenceExplanation
+    } from '../../lib/hero/heroIntelligenceExplanation.js';
+    import { resolveIdentityLanguageSuggestions } from '../../lib/intelligence/identityLanguageResolver.js';
+    import { buildIntelligenceExplanationLines } from '../../lib/viewer/viewerIntelligencePresentation.js';
+    import {
+        createCreatorIntentContext,
+        draftCreatorIntentContext,
+        approveCreatorIntentContext,
+        hideCreatorIntentContext,
+        normalizeCreatorIntentContext,
+        autoPublishCreatorIntent
+    } from '../../lib/hero/creatorIntentContext.js';
+    import {
+        createDiscoveryRelationship,
+        approveDiscoveryRelationship,
+        rejectDiscoveryRelationship,
+        hideDiscoveryRelationship,
+        normalizeDiscoveryGraph,
+        upsertDiscoveryRelationship,
+        DISCOVERY_RELATIONSHIP_TYPES,
+        autoApproveDiscoveryRelationship
+    } from '../../lib/discovery/discoveryGraph.js';
     import { enrichPresentationConfigFromLocalIdentity } from '../../lib/hero/heroPresentationSync.js';
+    import {
+        requestAuthenticatedHeroPublish,
+        hydrateHeroAuthorityRuntime,
+        saveHeroDraftLocally
+    } from '../../lib/hero/heroAuthorityRuntime.js';
+    import {
+        HERO_AUTHORITY_UI_STATE,
+        resolveHeroAuthorityUiState,
+        canDisplayPublishedLabel
+    } from '../../lib/hero/heroAuthorityUiState.js';
+    import { resolveAuthorityIdentity } from '../../lib/auth/authorityIdentity.js';
+    import { isServerGrantedPublished } from '../../lib/hero/heroServerAuthorityEngine.js';
     import {
         getEpisodeByReelId,
         updateEpisodeTitleForReel
@@ -86,9 +133,72 @@
     let config =
         typeof window !== 'undefined'
             ? /** @type {any} */ (
-                  mergeHeroRecordIntoManagerConfig(loadHeroManagerConfig(), loadHeroRecord())
+                  mergeHeroRecordIntoManagerConfig(loadHeroManagerConfig(), loadHeroRecordUnverified())
               )
             : loadHeroManagerConfig();
+    // Master Hero Admin presentation draft (public surface — separate from creator truth)
+    let publicHeroTitle = String(config.heroPresentation?.publicTitle || config.heroTitle || '');
+    let publicHeroDescription = String(
+        config.heroPresentation?.publicDescription || config.heroDescription || ''
+    );
+    let publicHeroTheme = String(config.heroPresentation?.publicTheme || '');
+    let showIntelligenceExplanation =
+        config.showIntelligenceExplanation !== false &&
+        config.heroPresentation?.showIntelligence !== false;
+    let editorialNotes = String(config.adminContext?.editorialNotes || '');
+    let identityNotes = String(config.adminContext?.identityNotes || '');
+    /** Master Hero Intelligence Review — draft statements (//-separated lines in UI). */
+    let intelligenceStatementsText = (() => {
+        const block = normalizeIntelligenceExplanation(
+            config.intelligenceExplanation ||
+                (typeof window !== 'undefined'
+                    ? loadHeroRecordUnverified()?.intelligenceExplanation
+                    : null)
+        );
+        return (block.statements || []).join('\n');
+    })();
+    let intelligenceReviewStatus = '';
+    /** Creator Intent Context — private notes + public statement */
+    let intentPrivateNotesText = (() => {
+        const ctx = normalizeCreatorIntentContext(
+            config.creatorIntentContext ||
+                (typeof window !== 'undefined'
+                    ? loadHeroRecordUnverified()?.creatorIntentContext
+                    : null)
+        );
+        return (ctx.privateNotes || []).join('\n');
+    })();
+    let intentPublicStatementText = (() => {
+        const ctx = normalizeCreatorIntentContext(
+            config.creatorIntentContext ||
+                (typeof window !== 'undefined'
+                    ? loadHeroRecordUnverified()?.creatorIntentContext
+                    : null)
+        );
+        return ctx.publicStatement?.text || '';
+    })();
+    let intentReviewStatus = '';
+    /** Master Hero Admin — Suggested Discovery Connections */
+    let discoveryDraftType = 'theme_connection';
+    let discoveryDraftLabel = '';
+    let discoveryDraftTarget = '';
+    let discoveryReviewStatus = '';
+    /** @type {import('../../lib/discovery/discoveryGraph.js').DiscoveryRelationship[]} */
+    let discoverySuggestions = (() => {
+        const graph = normalizeDiscoveryGraph(
+            config.discoveryGraph ||
+                (typeof window !== 'undefined'
+                    ? loadHeroRecordUnverified()?.discoveryGraph
+                    : null)
+        );
+        return graph.relationships || [];
+    })();
+    let presentationStatus = '';
+    /** @type {string} */
+    let authorityUiLabel = 'Draft editing';
+    /** @type {string} */
+    let authorityUiId = 'draft_editing';
+    let authorityPending = false;
     let statusMessage = '';
     let heroAssetSelect = null;
     let refreshAuditTimer = null;
@@ -123,10 +233,597 @@
             managerDetail && typeof managerDetail === 'object'
                 ? managerDetail
                 : loadHeroManagerConfig();
-        config = /** @type {any} */ (mergeHeroRecordIntoManagerConfig(manager, loadHeroRecord()));
+        config = /** @type {any} */ (mergeHeroRecordIntoManagerConfig(manager, loadHeroRecordUnverified()));
         storyScheduledFor = String(config.storyScheduledFor || storyScheduledFor || '');
         syncDescriptionModeFromConfig();
+        const presentation = normalizeHeroPresentation(config.heroPresentation);
+        publicHeroTitle = presentation.publicTitle || String(config.heroTitle || '');
+        publicHeroDescription =
+            presentation.publicDescription || String(config.heroDescription || '');
+        publicHeroTheme = presentation.publicTheme || '';
+        showIntelligenceExplanation = presentation.showIntelligence !== false;
+        editorialNotes = String(config.adminContext?.editorialNotes || '');
+        identityNotes = String(config.adminContext?.identityNotes || '');
     }
+
+    /**
+     * Persist local draft only (not public until server grants publish).
+     * Actor identity is session-bound — no display-string elevation.
+     */
+    function savePresentationDraft() {
+        const record = loadHeroRecordUnverified();
+        const identity = resolveAuthorityIdentity();
+        const layers = draftHeroPresentation(record, {
+            publicTitle: publicHeroTitle,
+            publicDescription: publicHeroDescription,
+            publicTheme: publicHeroTheme,
+            showIntelligence: showIntelligenceExplanation,
+            editorialNotes,
+            identityNotes,
+            sourceTitle: String(record?.title || config.heroAssetTitle || config.heroTitle || ''),
+            sourceDescription: String(config.heroDescription || record?.heroDescription || ''),
+            // Authority: explicit provenance — never omit (omit ⇒ system/untrusted).
+            sourceType: 'creator',
+            // Draft may use session actor id when present; never hard-code admin strings.
+            actor: identity.authenticated ? identity.actorId : 'session_pending',
+            actorType: identity.authenticated && identity.role === 'admin' ? 'admin' : 'creator'
+        });
+        if (layers.ok === false) {
+            presentationStatus = `Draft blocked: ${(layers.errors || []).join(', ') || 'authority'}`;
+            return;
+        }
+        // Local draft only — force non-public lifecycle via runtime helper.
+        const saved = saveHeroDraftLocally({
+            ...layers,
+            source: 'hero_authority_draft_local'
+        });
+        if (!saved) {
+            presentationStatus = 'Draft save failed';
+            return;
+        }
+        config = {
+            ...config,
+            heroPresentation: layers.heroPresentation,
+            adminContext: layers.adminContext,
+            creatorTruth: layers.creatorTruth,
+            showIntelligenceExplanation
+        };
+        saveHeroManagerConfig(/** @type {any} */ (config), { skipServer: true });
+        presentationStatus = 'Presentation draft saved (not public until server approval)';
+        authorityUiId = HERO_AUTHORITY_UI_STATE.DRAFT_EDITING;
+        authorityUiLabel = 'Draft editing';
+        refreshAuthorityUi();
+    }
+
+
+    function readIntelligenceStatementsFromUi() {
+        return String(intelligenceStatementsText || '')
+            .split(/\n+/)
+            .map((s) => s.trim())
+            .filter(Boolean);
+    }
+
+    function syncIntelligenceUiFromRecord(record) {
+        const block = normalizeIntelligenceExplanation(record?.intelligenceExplanation);
+        intelligenceStatementsText = (block.statements || []).join('\n');
+        if (block.approved && !block.hidden) {
+            intelligenceReviewStatus = `Approved by ${block.approvedBy || 'admin'}`;
+        } else if (block.hidden) {
+            intelligenceReviewStatus = 'Hidden from public Hero';
+        } else if (block.statements?.length) {
+            intelligenceReviewStatus = 'Draft explanation (not public until approved)';
+        } else {
+            intelligenceReviewStatus = '';
+        }
+    }
+
+    /**
+     * NLP draft generation — creates unapproved explanation only (never auto-publishes).
+     */
+    function generateIntelligenceDraftFromSignals() {
+        const record = loadHeroRecordUnverified();
+        const title =
+            publicHeroTitle ||
+            record?.creatorTruth?.title ||
+            record?.title ||
+            config.heroTitle ||
+            '';
+        const lines = buildIntelligenceExplanationLines({
+            title: String(title || ''),
+            themes: publicHeroTheme ? [publicHeroTheme] : [],
+            rawExplanation: ''
+        });
+        if (!lines.length) {
+            intelligenceReviewStatus = 'No draft lines generated';
+            return;
+        }
+        const created = createIntelligenceExplanation({
+            statements: lines,
+            source: 'nlp'
+        });
+        if (!created.ok || !created.block) {
+            intelligenceReviewStatus = `Draft blocked: ${(created.errors || []).join(', ')}`;
+            return;
+        }
+        // Explicitly reject AI auto-publish path
+        const auto = autoPublishIntelligenceExplanation(created.block);
+        if (auto.ok) {
+            intelligenceReviewStatus = 'Blocked: intelligence cannot auto publish';
+            return;
+        }
+        const saved = saveHeroRecord({
+            intelligenceExplanation: created.block,
+            source: 'hero_intelligence_nlp_draft'
+        });
+        if (!saved) {
+            intelligenceReviewStatus = 'Draft save failed';
+            return;
+        }
+        config = { ...config, intelligenceExplanation: created.block };
+        intelligenceStatementsText = lines.join('\n');
+        intelligenceReviewStatus = 'NLP draft saved (not public — requires approval)';
+        // Identity language suggestions are advisory only
+        const suggestions = resolveIdentityLanguageSuggestions({
+            adminTerms: identityNotes ? [identityNotes] : [],
+            creatorIdentityTerms: record?.creatorTruth?.identityTerms || []
+        });
+        if (suggestions.suggestions.length) {
+            intelligenceReviewStatus += ` · ${suggestions.suggestions.length} language suggestion(s) need admin review`;
+        }
+    }
+
+    function saveIntelligenceExplanationEdit() {
+        const record = loadHeroRecordUnverified();
+        const statements = readIntelligenceStatementsFromUi();
+        const edited = editIntelligenceExplanation(record?.intelligenceExplanation, { statements });
+        if (!edited.ok || !edited.block) {
+            intelligenceReviewStatus = `Edit blocked: ${(edited.errors || []).join(', ')}`;
+            return;
+        }
+        const saved = saveHeroRecord({
+            intelligenceExplanation: edited.block,
+            source: 'hero_intelligence_edit'
+        });
+        if (!saved) {
+            intelligenceReviewStatus = 'Edit save failed';
+            return;
+        }
+        config = { ...config, intelligenceExplanation: edited.block };
+        intelligenceReviewStatus = 'Explanation edited (re-approval required for public)';
+    }
+
+    function approveIntelligenceExplanationForPublic() {
+        const identity = resolveAuthorityIdentity();
+        if (!identity.authenticated) {
+            intelligenceReviewStatus = 'Waiting for authentication';
+            return;
+        }
+        const record = loadHeroRecordUnverified();
+        const statements = readIntelligenceStatementsFromUi();
+        let block = normalizeIntelligenceExplanation(record?.intelligenceExplanation);
+        if (statements.length) {
+            const edited = editIntelligenceExplanation(block, { statements });
+            if (!edited.ok) {
+                intelligenceReviewStatus = `Edit blocked: ${(edited.errors || []).join(', ')}`;
+                return;
+            }
+            block = edited.block;
+        }
+        const approved = approveIntelligenceExplanation(block, {
+            approvedBy: identity.actorId
+        });
+        if (!approved.ok || !approved.block) {
+            intelligenceReviewStatus = `Approval blocked: ${(approved.errors || []).join(', ')}`;
+            return;
+        }
+        // Never allow auto-publish path
+        const auto = autoPublishIntelligenceExplanation(approved.block);
+        if (auto.ok) {
+            intelligenceReviewStatus = 'Blocked: intelligence cannot auto publish';
+            return;
+        }
+        const saved = saveHeroRecord({
+            intelligenceExplanation: approved.block,
+            source: 'hero_intelligence_approve'
+        });
+        if (!saved) {
+            intelligenceReviewStatus = 'Approval save failed';
+            return;
+        }
+        config = { ...config, intelligenceExplanation: approved.block };
+        intelligenceReviewStatus = 'Published intelligence approved for public Hero';
+        // Not presentation publish — only explanation approval
+    }
+
+    function hideIntelligenceExplanationFromPublic() {
+        const record = loadHeroRecordUnverified();
+        const hidden = hideIntelligenceExplanation(record?.intelligenceExplanation);
+        const saved = saveHeroRecord({
+            intelligenceExplanation: hidden.block,
+            source: 'hero_intelligence_hide'
+        });
+        if (!saved) {
+            intelligenceReviewStatus = 'Hide failed';
+            return;
+        }
+        config = { ...config, intelligenceExplanation: hidden.block };
+        intelligenceReviewStatus = 'Hidden from public Hero';
+    }
+
+    
+    function refreshDiscoverySuggestions(record) {
+        const graph = normalizeDiscoveryGraph(record?.discoveryGraph || config.discoveryGraph);
+        discoverySuggestions = graph.relationships || [];
+    }
+
+    function addSuggestedDiscoveryConnection() {
+        const created = createDiscoveryRelationship({
+            type: discoveryDraftType || DISCOVERY_RELATIONSHIP_TYPES.THEME,
+            label: discoveryDraftLabel,
+            target: discoveryDraftTarget,
+            suggestedBy: 'discovery'
+        });
+        if (!created.ok || !created.relationship) {
+            discoveryReviewStatus = `Suggestion blocked: ${(created.errors || []).join(', ')}`;
+            return;
+        }
+        const auto = autoApproveDiscoveryRelationship(created.relationship);
+        if (auto.ok) {
+            discoveryReviewStatus = 'Blocked: discovery cannot auto-approve';
+            return;
+        }
+        const record = loadHeroRecordUnverified();
+        const graph = upsertDiscoveryRelationship(record?.discoveryGraph, created.relationship);
+        const saved = saveHeroRecord({
+            discoveryGraph: graph,
+            source: 'hero_discovery_suggest'
+        });
+        if (!saved) {
+            discoveryReviewStatus = 'Save failed';
+            return;
+        }
+        config = { ...config, discoveryGraph: graph };
+        discoveryDraftLabel = '';
+        discoveryDraftTarget = '';
+        refreshDiscoverySuggestions(saved);
+        discoveryReviewStatus = 'Suggested connection queued (not public until approved)';
+    }
+
+    function approveDiscoverySuggestion(relationshipId) {
+        const identity = resolveAuthorityIdentity();
+        if (!identity.authenticated) {
+            discoveryReviewStatus = 'Waiting for authentication';
+            return;
+        }
+        const record = loadHeroRecordUnverified();
+        const graph = normalizeDiscoveryGraph(record?.discoveryGraph);
+        const current = graph.relationships.find((r) => r.relationshipId === relationshipId);
+        if (!current) {
+            discoveryReviewStatus = 'Relationship not found';
+            return;
+        }
+        const approved = approveDiscoveryRelationship(current, { approvedBy: identity.actorId });
+        if (!approved.ok || !approved.relationship) {
+            discoveryReviewStatus = `Approve blocked: ${(approved.errors || []).join(', ')}`;
+            return;
+        }
+        const next = upsertDiscoveryRelationship(graph, approved.relationship);
+        const saved = saveHeroRecord({
+            discoveryGraph: next,
+            source: 'hero_discovery_approve'
+        });
+        if (!saved) {
+            discoveryReviewStatus = 'Approve save failed';
+            return;
+        }
+        config = { ...config, discoveryGraph: next };
+        refreshDiscoverySuggestions(saved);
+        discoveryReviewStatus = 'Discovery connection approved for public';
+    }
+
+    function rejectDiscoverySuggestion(relationshipId) {
+        const identity = resolveAuthorityIdentity();
+        const record = loadHeroRecordUnverified();
+        const graph = normalizeDiscoveryGraph(record?.discoveryGraph);
+        const current = graph.relationships.find((r) => r.relationshipId === relationshipId);
+        if (!current) {
+            discoveryReviewStatus = 'Relationship not found';
+            return;
+        }
+        const rejected = rejectDiscoveryRelationship(current, {
+            rejectedBy: identity.authenticated ? identity.actorId : 'admin'
+        });
+        const next = upsertDiscoveryRelationship(graph, rejected.relationship);
+        const saved = saveHeroRecord({
+            discoveryGraph: next,
+            source: 'hero_discovery_reject'
+        });
+        if (!saved) {
+            discoveryReviewStatus = 'Reject save failed';
+            return;
+        }
+        config = { ...config, discoveryGraph: next };
+        refreshDiscoverySuggestions(saved);
+        discoveryReviewStatus = 'Discovery connection rejected';
+    }
+
+    function hideDiscoverySuggestion(relationshipId) {
+        const record = loadHeroRecordUnverified();
+        const graph = normalizeDiscoveryGraph(record?.discoveryGraph);
+        const current = graph.relationships.find((r) => r.relationshipId === relationshipId);
+        if (!current) {
+            discoveryReviewStatus = 'Relationship not found';
+            return;
+        }
+        const hidden = hideDiscoveryRelationship(current);
+        const next = upsertDiscoveryRelationship(graph, hidden.relationship);
+        const saved = saveHeroRecord({
+            discoveryGraph: next,
+            source: 'hero_discovery_hide'
+        });
+        if (!saved) {
+            discoveryReviewStatus = 'Hide failed';
+            return;
+        }
+        config = { ...config, discoveryGraph: next };
+        refreshDiscoverySuggestions(saved);
+        discoveryReviewStatus = 'Discovery connection hidden from public';
+    }
+
+    
+    function saveCreatorIntentDraft() {
+        const identity = resolveAuthorityIdentity();
+        const notes = String(intentPrivateNotesText || '')
+            .split(/\n+/)
+            .map((s) => s.trim())
+            .filter(Boolean);
+        const existing = normalizeCreatorIntentContext(
+            loadHeroRecordUnverified()?.creatorIntentContext
+        );
+        const source =
+            identity.authenticated && identity.role === 'admin' ? 'admin' : 'creator';
+        const drafted = draftCreatorIntentContext(existing, {
+            text: intentPublicStatementText,
+            privateNotes: notes,
+            source,
+            suppliedBy: identity.authenticated ? identity.actorId : 'creator'
+        });
+        if (!drafted.ok || !drafted.context) {
+            // Prefer create if empty existing
+            const created = createCreatorIntentContext({
+                privateNotes: notes,
+                publicText: intentPublicStatementText,
+                source,
+                suppliedBy: identity.authenticated ? identity.actorId : 'creator'
+            });
+            if (!created.ok || !created.context) {
+                intentReviewStatus = `Draft blocked: ${(drafted.errors || created.errors || []).join(', ')}`;
+                return;
+            }
+            drafted.context = created.context;
+            drafted.ok = true;
+        }
+        const auto = autoPublishCreatorIntent(drafted.context);
+        if (auto.ok) {
+            intentReviewStatus = 'Blocked: intent cannot auto-publish';
+            return;
+        }
+        const saved = saveHeroRecord({
+            creatorIntentContext: drafted.context,
+            source: 'hero_creator_intent_draft'
+        });
+        if (!saved) {
+            intentReviewStatus = 'Draft save failed';
+            return;
+        }
+        config = { ...config, creatorIntentContext: drafted.context };
+        intentReviewStatus = 'Intent draft saved (private notes admin-only; public statement needs approval)';
+    }
+
+    function approveCreatorIntentForPublic() {
+        const identity = resolveAuthorityIdentity();
+        if (!identity.authenticated) {
+            intentReviewStatus = 'Waiting for authentication';
+            return;
+        }
+        // Ensure latest draft is stored first
+        const notes = String(intentPrivateNotesText || '')
+            .split(/\n+/)
+            .map((s) => s.trim())
+            .filter(Boolean);
+        let context = normalizeCreatorIntentContext(
+            loadHeroRecordUnverified()?.creatorIntentContext
+        );
+        const drafted = draftCreatorIntentContext(context, {
+            text: intentPublicStatementText,
+            privateNotes: notes,
+            source: context.provenance?.source || 'admin',
+            suppliedBy: context.provenance?.suppliedBy || identity.actorId
+        });
+        if (drafted.ok && drafted.context) context = drafted.context;
+
+        const approved = approveCreatorIntentContext(context, {
+            approvedBy: identity.actorId
+        });
+        if (!approved.ok || !approved.context) {
+            intentReviewStatus = `Approval blocked: ${(approved.errors || []).join(', ')}`;
+            return;
+        }
+        const auto = autoPublishCreatorIntent(approved.context);
+        if (auto.ok) {
+            intentReviewStatus = 'Blocked: intent cannot auto-publish';
+            return;
+        }
+        const saved = saveHeroRecord({
+            creatorIntentContext: approved.context,
+            source: 'hero_creator_intent_approve'
+        });
+        if (!saved) {
+            intentReviewStatus = 'Approval save failed';
+            return;
+        }
+        config = { ...config, creatorIntentContext: approved.context };
+        intentReviewStatus = 'Creator intent approved for public Hero';
+    }
+
+    function hideCreatorIntentFromPublic() {
+        const context = hideCreatorIntentContext(
+            loadHeroRecordUnverified()?.creatorIntentContext
+        );
+        const saved = saveHeroRecord({
+            creatorIntentContext: context.context,
+            source: 'hero_creator_intent_hide'
+        });
+        if (!saved) {
+            intentReviewStatus = 'Hide failed';
+            return;
+        }
+        config = { ...config, creatorIntentContext: context.context };
+        intentReviewStatus = 'Creator intent hidden from public';
+    }
+
+        function refreshAuthorityUi(extra = {}) {
+        try {
+            const record = loadHeroRecordUnverified();
+            const ui = resolveHeroAuthorityUiState(record, {
+                identity: resolveAuthorityIdentity(),
+                pending: authorityPending,
+                ...extra
+            });
+            authorityUiId = ui.id;
+            authorityUiLabel = ui.label;
+            if (ui.id === HERO_AUTHORITY_UI_STATE.PUBLISHED_VERIFIED && canDisplayPublishedLabel(record)) {
+                presentationStatus = ui.label;
+            } else if (!presentationStatus || !authorityPending) {
+                presentationStatus = ui.label;
+            }
+        } catch {
+            /* ignore */
+        }
+    }
+
+    /**
+     * Request public Hero publication (server grants; no optimistic publish).
+     * Identity is session-bound — no master_hero_admin / caller actor strings.
+     */
+    async function approvePublicHeroPresentation() {
+        const record = loadHeroRecordUnverified();
+        const identity = resolveAuthorityIdentity();
+        if (!identity.authenticated) {
+            presentationStatus = 'Waiting for authentication';
+            authorityUiLabel = presentationStatus;
+            authorityUiId = HERO_AUTHORITY_UI_STATE.WAITING_AUTH;
+            statusMessage = presentationStatus;
+            return;
+        }
+
+        authorityPending = true;
+        presentationStatus = 'Pending approval';
+        authorityUiLabel = presentationStatus;
+        authorityUiId = HERO_AUTHORITY_UI_STATE.PENDING_APPROVAL;
+        statusMessage = presentationStatus;
+
+        const result = await requestAuthenticatedHeroPublish(record, {
+            publicTitle: publicHeroTitle,
+            publicDescription: publicHeroDescription,
+            publicTheme: publicHeroTheme,
+            showIntelligence: showIntelligenceExplanation,
+            sourceType: 'creator'
+            // actor / approvedBy intentionally omitted — identity only
+        });
+
+        authorityPending = false;
+
+        if (!result.ok || !result.recordPatch || result.published !== true) {
+            const ui = result.ui || resolveHeroAuthorityUiState(record, {
+                identity,
+                lastError: result.reason || 'rejected'
+            });
+            authorityUiId = ui.id;
+            authorityUiLabel = ui.label;
+            presentationStatus = ui.label;
+            if (result.reason) {
+                presentationStatus = `${ui.label}: ${result.reason}`;
+            }
+            statusMessage = presentationStatus;
+            return;
+        }
+
+        result.recordPatch.adminContext = {
+            ...result.recordPatch.adminContext,
+            editorialNotes,
+            identityNotes,
+            sourceTitle:
+                result.recordPatch.adminContext?.sourceTitle ||
+                String(record?.title || config.heroAssetTitle || ''),
+            sourceDescription:
+                result.recordPatch.adminContext?.sourceDescription ||
+                String(config.heroDescription || '')
+        };
+
+        const saved = saveHeroRecord({
+            ...result.recordPatch,
+            heroTitle: publicHeroTitle || record.heroTitle,
+            heroDescription: publicHeroDescription,
+            source: 'hero_authority_server_grant'
+        });
+        if (!saved) {
+            presentationStatus = 'Server granted, but local save failed';
+            return;
+        }
+
+        config = {
+            ...config,
+            heroTitle: publicHeroTitle || config.heroTitle,
+            heroDescription: publicHeroDescription,
+            heroPresentation: result.recordPatch.heroPresentation,
+            adminContext: result.recordPatch.adminContext,
+            creatorTruth: result.recordPatch.creatorTruth,
+            showIntelligenceExplanation
+        };
+        void persistHeroSettings('presentation-approve', {
+            heroTitle: config.heroTitle,
+            heroDescription: config.heroDescription,
+            heroPresentation: config.heroPresentation,
+            adminContext: config.adminContext,
+            creatorTruth: config.creatorTruth,
+            showIntelligenceExplanation
+        });
+        authorityUiId = HERO_AUTHORITY_UI_STATE.PUBLISHED_VERIFIED;
+        authorityUiLabel = 'Published and verified';
+        presentationStatus = authorityUiLabel;
+        statusMessage = presentationStatus;
+    }
+
+    $: presentationPreview = (() => {
+        try {
+            const current = typeof window !== 'undefined' ? loadHeroRecordUnverified() : null;
+            return resolvePublicHeroViewerCopy({
+                ...(current || {}),
+                heroPresentation: {
+                    publicTitle: publicHeroTitle,
+                    publicDescription: publicHeroDescription,
+                    publicTheme: publicHeroTheme,
+                    showIntelligence: showIntelligenceExplanation,
+                    approvedBy: '',
+                    approvedAt: null,
+                    status: 'draft',
+                    visibility: 'draft'
+                },
+                creatorTruth: config.creatorTruth
+            });
+        } catch {
+            return null;
+        }
+    })();
+
+    $: approvedViewerPreview = (() => {
+        try {
+            return typeof window !== 'undefined' ? resolvePublicHeroViewerCopy(loadHeroRecordUnverified()) : null;
+        } catch {
+            return null;
+        }
+    })();
 
     /**
      * Push identity/mode + display copy from a manager snapshot into HeroRecord.
@@ -136,7 +833,7 @@
      */
     function syncHeroRecordFromManagerSnapshot(snapshot, reason = 'persist') {
         const bg = String(snapshot?.backgroundSource || '').trim();
-        let current = loadHeroRecord();
+        let current = loadHeroRecordUnverified();
         const sourceTag = `manager_${reason}`;
 
         if (bg === 'none') {
@@ -156,7 +853,7 @@
             }
         }
 
-        current = loadHeroRecord();
+        current = loadHeroRecordUnverified();
         const nextTitle = String(snapshot?.heroTitle ?? '');
         const nextSub = String(snapshot?.heroSubtitle ?? '');
         const nextDesc = String(snapshot?.heroDescription ?? '');
@@ -172,7 +869,7 @@
                 source: sourceTag
             });
         }
-        return loadHeroRecord();
+        return loadHeroRecordUnverified();
     }
 
     function readPersistentTitleMap() {
@@ -410,8 +1107,14 @@
                 tags: resolved.tags,
                 keywords: resolved.keywords,
                 seriesName: resolved.seriesName,
-                genre: Array.isArray(resolved.keywords) ? resolved.keywords[0] : '',
-                source: resolved.source || source || 'creator'
+                // Never promote keywords[0] → official genre. Store as suggestion only.
+                suggestedGenre: Array.isArray(resolved.keywords)
+                    ? String(resolved.keywords[0] || '').trim()
+                    : '',
+                intelligenceExplanation: Array.isArray(resolved.keywords) && resolved.keywords[0]
+                    ? `Suggested theme detected from your uploaded title: ${String(resolved.keywords[0]).trim()}`
+                    : '',
+                source: 'creator'
             });
         } catch (error) {
             console.warn('[HERO_EPISODE_SYNC_FAILED]', error?.message || error);
@@ -659,7 +1362,7 @@
         if (config.backgroundSource === 'selection') {
             setHeroMode('selection', { source: 'manager_background_source' });
             refreshHeroReelLegacyMirror();
-            const pointer = projectHeroRecordToManagerPointer(loadHeroRecord());
+            const pointer = projectHeroRecordToManagerPointer(loadHeroRecordUnverified());
             const saved = saveHeroManagerConfig({
                 ...buildConfigSnapshot({
                     backgroundSource: 'selection',
@@ -1133,6 +1836,23 @@
                 tags: resolved.tags,
                 keywords: [...(resolved.keywords || []), ...(intelligence.storyKeywords || [])],
                 seriesName: resolved.seriesName,
+                suggestedGenre: [
+                    ...(resolved.keywords || []),
+                    ...(intelligence.storyKeywords || [])
+                ]
+                    .map((k) => String(k || '').trim())
+                    .find(Boolean) || '',
+                intelligenceExplanation: (() => {
+                    const hint = [
+                        ...(resolved.keywords || []),
+                        ...(intelligence.storyKeywords || [])
+                    ]
+                        .map((k) => String(k || '').trim())
+                        .find(Boolean);
+                    return hint
+                        ? `Suggested theme detected from your uploaded title: ${hint}`
+                        : '';
+                })(),
                 source: 'creator'
             });
         } catch {
@@ -1557,6 +2277,41 @@
         refresh();
         window.addEventListener('reelforge:hero-manager-updated', handleManagerUpdate);
         reconcilePendingTitlePatches(authHeaders).catch(() => {});
+        // Phase 8: rehydrate server authority on Manager load
+        authorityPending = true;
+        presentationStatus = 'Syncing server authority…';
+        hydrateHeroAuthorityRuntime(loadHeroRecordUnverified(), { persist: true })
+            .then((result) => {
+                authorityPending = false;
+                if (result.record) {
+                    config = /** @type {any} */ (
+                        mergeHeroRecordIntoManagerConfig(config, result.record)
+                    );
+                    const presentation = result.record.heroPresentation || {};
+                    if (presentation.publicTitle) publicHeroTitle = String(presentation.publicTitle);
+                    if (presentation.publicDescription) {
+                        publicHeroDescription = String(presentation.publicDescription);
+                    }
+                    if (presentation.publicTheme) publicHeroTheme = String(presentation.publicTheme);
+                }
+                if (result.ui) {
+                    authorityUiId = result.ui.id;
+                    authorityUiLabel = result.ui.label;
+                    presentationStatus = result.ui.label;
+                } else {
+                    refreshAuthorityUi({
+                        lastError: result.ok ? '' : result.reason,
+                        serverReachable: result.ok
+                    });
+                }
+            })
+            .catch(() => {
+                authorityPending = false;
+                refreshAuthorityUi({
+                    lastError: 'server_unavailable',
+                    serverReachable: false
+                });
+            });
         if (!heroVaultVideoCssFixLogged) {
             heroVaultVideoCssFixLogged = true;
             console.info('[HERO_VAULT_VIDEO_CSS_FIX_APPLIED]', {
@@ -1846,6 +2601,345 @@
                 <input type="text" bind:value={config.ctaSecondaryLabel} placeholder="Learn More" on:change={handleFieldCommit} on:blur={handleFieldCommit} />
             </label>
         </div>
+    </section>
+
+    <section class="hero-admin-presentation" data-master-hero-admin-presentation>
+        <div class="hero-admin-presentation__header">
+            <span class="hero-manager__label">Master Hero Admin — Public Presentation</span>
+            <span class="hero-admin-presentation__badge">
+                {approvedViewerPreview?.isPublicApproved ? 'PUBLIC APPROVED' : 'DRAFT / CREATOR FALLBACK'}
+            </span>
+        </div>
+        <p class="hero-manager__field-hint">
+            Creator truth stays protected (admin-only). Public Hero Vault shows approved presentation first.
+            AI never publishes automatically. Discovery categories never become Hero identity.
+        </p>
+        <div class="hero-admin-presentation__grid">
+            <label class="hero-manager__field hero-viewer-content__field--wide">
+                <span>Public Hero Title</span>
+                <input
+                    type="text"
+                    bind:value={publicHeroTitle}
+                    placeholder="Public headline viewers will see"
+                    data-public-hero-title
+                />
+            </label>
+            <label class="hero-manager__field hero-viewer-content__field--wide">
+                <span>Public Hero Description</span>
+                <textarea
+                    rows="3"
+                    bind:value={publicHeroDescription}
+                    placeholder="Public-facing description (admin-authored presentation)"
+                    data-public-hero-description
+                ></textarea>
+            </label>
+            <label class="hero-manager__field">
+                <span>Public Theme</span>
+                <input
+                    type="text"
+                    bind:value={publicHeroTheme}
+                    placeholder="Presentation theme (not official genre)"
+                    data-public-hero-theme
+                />
+            </label>
+            <label class="hero-manager__field hero-admin-presentation__toggle">
+                <span>Show AI explanation on public Hero</span>
+                <input type="checkbox" bind:checked={showIntelligenceExplanation} data-show-intelligence />
+            </label>
+            <label class="hero-manager__field hero-viewer-content__field--wide">
+                <span>Admin identity notes (admin only)</span>
+                <textarea rows="2" bind:value={identityNotes} placeholder="Identity / cultural notes for staff" data-admin-identity-notes></textarea>
+            </label>
+            <label class="hero-manager__field hero-viewer-content__field--wide">
+                <span>Editorial notes (admin only)</span>
+                <textarea rows="2" bind:value={editorialNotes} placeholder="Internal editorial notes" data-admin-editorial-notes></textarea>
+            </label>
+        </div>
+        <div class="hero-admin-presentation__actions">
+            <button type="button" class="hero-manager__btn hero-manager__btn--ghost" on:click|stopPropagation={savePresentationDraft} disabled={persistBusy || authorityPending}>
+                Save presentation draft
+            </button>
+            <button type="button" class="hero-manager__btn" on:click|stopPropagation={approvePublicHeroPresentation} disabled={persistBusy || authorityPending} data-approve-hero-presentation>
+                Request publish authority
+            </button>
+        </div>
+        <p
+            class="hero-manager__field-hint hero-authority-ui-state"
+            data-hero-authority-ui-state={authorityUiId}
+            data-presentation-status
+        >
+            Authority: {authorityUiLabel}
+            {#if isServerGrantedPublished(typeof window !== 'undefined' ? loadHeroRecordUnverified() : null)}
+                · live grant verified
+            {/if}
+        </p>
+        {#if presentationStatus && presentationStatus !== authorityUiLabel}
+            <p class="hero-manager__field-hint" data-presentation-detail>{presentationStatus}</p>
+        {/if}
+        <div class="hero-admin-presentation__preview" data-hero-presentation-preview>
+            <span class="hero-manager__label">Viewer resolve order preview</span>
+            <p><strong>Live public title:</strong> {approvedViewerPreview?.title || '—'}</p>
+            <p><strong>Source:</strong> {approvedViewerPreview?.titleSource || 'none'}</p>
+            <p><strong>Creator truth (admin):</strong> {approvedViewerPreview?.creatorTruth?.title || config.creatorTruth?.title || '—'}</p>
+            {#if approvedViewerPreview?.intelligenceExplanation?.visible}
+                <div data-intelligence-explanation>
+                    {#each approvedViewerPreview.intelligenceExplanation.lines as line (line)}
+                        <p class="hero-admin-presentation__intel">{line}</p>
+                    {/each}
+                </div>
+            {/if}
+        </div>
+    </section>
+
+
+    <section class="hero-creator-intent-review" data-master-hero-creator-intent>
+        <div class="hero-creator-intent-review__header">
+            <span class="hero-manager__label">Creator Intent Context</span>
+            <span class="hero-creator-intent-review__badge">Creator / admin only · never AI invents meaning</span>
+        </div>
+        <p class="hero-manager__field-hint">
+            Preserve why this Hero matters. Private notes stay admin-only. Public statement requires approval.
+            NLP and discovery cannot invent intent.
+        </p>
+        <label class="hero-manager__field hero-viewer-content__field--wide">
+            <span>Private notes (never public)</span>
+            <textarea
+                rows="3"
+                bind:value={intentPrivateNotesText}
+                placeholder="Internal creator intent notes…"
+                data-creator-intent-private-notes
+            ></textarea>
+        </label>
+        <label class="hero-manager__field hero-viewer-content__field--wide">
+            <span>Public intent statement</span>
+            <textarea
+                rows="3"
+                bind:value={intentPublicStatementText}
+                placeholder="Approved public meaning viewers may read…"
+                data-creator-intent-public-statement
+            ></textarea>
+        </label>
+        <div class="hero-creator-intent-review__actions">
+            <button
+                type="button"
+                class="hero-manager__btn hero-manager__btn--ghost"
+                on:click|stopPropagation={saveCreatorIntentDraft}
+                disabled={persistBusy}
+                data-creator-intent-draft
+            >
+                Save draft
+            </button>
+            <button
+                type="button"
+                class="hero-manager__btn"
+                on:click|stopPropagation={approveCreatorIntentForPublic}
+                disabled={persistBusy}
+                data-creator-intent-approve
+            >
+                Approve public statement
+            </button>
+            <button
+                type="button"
+                class="hero-manager__btn hero-manager__btn--ghost"
+                on:click|stopPropagation={hideCreatorIntentFromPublic}
+                disabled={persistBusy}
+                data-creator-intent-hide
+            >
+                Hide statement
+            </button>
+        </div>
+        {#if intentReviewStatus}
+            <p class="hero-manager__field-hint" data-creator-intent-status>{intentReviewStatus}</p>
+        {/if}
+        {#if approvedViewerPreview?.creatorIntent?.visible}
+            <div class="hero-creator-intent-review__public-preview" data-creator-intent-public-preview>
+                <span class="hero-manager__label">Public viewer will see</span>
+                <p class="hero-admin-presentation__intel">{approvedViewerPreview.creatorIntent.text}</p>
+            </div>
+        {:else}
+            <p class="hero-manager__field-hint">Public resolver: no approved creator intent (or hidden).</p>
+        {/if}
+    </section>
+
+    <section class="hero-intelligence-review" data-master-hero-intelligence-review>
+        <div class="hero-intelligence-review__header">
+            <span class="hero-manager__label">Master Hero Intelligence Review</span>
+            <span class="hero-intelligence-review__badge">Explanation only · never creator truth</span>
+        </div>
+        <p class="hero-manager__field-hint">
+            NLP may draft explanations. Public Hero shows approved statements only.
+            AI cannot auto-publish intelligence or rewrite title, genre, or identity.
+        </p>
+        <label class="hero-manager__field hero-viewer-content__field--wide">
+            <span>Explanation statements (one per line)</span>
+            <textarea
+                rows="4"
+                bind:value={intelligenceStatementsText}
+                placeholder="Exploring …&#10;Themes detected: …&#10;Suggested context: …"
+                data-intelligence-statements
+            ></textarea>
+        </label>
+        <div class="hero-intelligence-review__actions">
+            <button
+                type="button"
+                class="hero-manager__btn hero-manager__btn--ghost"
+                on:click|stopPropagation={generateIntelligenceDraftFromSignals}
+                disabled={persistBusy}
+                data-intelligence-generate-draft
+            >
+                Generate NLP draft
+            </button>
+            <button
+                type="button"
+                class="hero-manager__btn hero-manager__btn--ghost"
+                on:click|stopPropagation={saveIntelligenceExplanationEdit}
+                disabled={persistBusy}
+                data-intelligence-edit
+            >
+                Edit explanation
+            </button>
+            <button
+                type="button"
+                class="hero-manager__btn"
+                on:click|stopPropagation={approveIntelligenceExplanationForPublic}
+                disabled={persistBusy}
+                data-intelligence-approve
+            >
+                Approve explanation
+            </button>
+            <button
+                type="button"
+                class="hero-manager__btn hero-manager__btn--ghost"
+                on:click|stopPropagation={hideIntelligenceExplanationFromPublic}
+                disabled={persistBusy}
+                data-intelligence-hide
+            >
+                Hide explanation
+            </button>
+        </div>
+        {#if intelligenceReviewStatus}
+            <p class="hero-manager__field-hint" data-intelligence-review-status>
+                {intelligenceReviewStatus}
+            </p>
+        {/if}
+        {#if approvedViewerPreview?.intelligenceExplanation?.visible}
+            <div class="hero-intelligence-review__public-preview" data-intelligence-public-preview>
+                <span class="hero-manager__label">Public viewer will see</span>
+                {#each approvedViewerPreview.intelligenceExplanation.lines as line (line)}
+                    <p class="hero-admin-presentation__intel">{line}</p>
+                {/each}
+            </div>
+        {:else}
+            <p class="hero-manager__field-hint">Public resolver: no approved intelligence (or hidden).</p>
+        {/if}
+    </section>
+
+    <section class="hero-discovery-review" data-master-hero-discovery-review>
+        <div class="hero-discovery-review__header">
+            <span class="hero-manager__label">Suggested Discovery Connections</span>
+            <span class="hero-discovery-review__badge">Exploration only · never creator truth</span>
+        </div>
+        <p class="hero-manager__field-hint">
+            Discovery may suggest themes, historical context, related creators, and explore paths.
+            Public Hero shows approved connections only — never identity, genre, or ownership.
+        </p>
+        <div class="hero-discovery-review__form">
+            <label class="hero-manager__field">
+                <span>Type</span>
+                <select bind:value={discoveryDraftType} data-discovery-type>
+                    <option value="theme_connection">Theme connection</option>
+                    <option value="historical_context">Historical context</option>
+                    <option value="creator_connection">Creator connection</option>
+                    <option value="exploration_path">Exploration path</option>
+                </select>
+            </label>
+            <label class="hero-manager__field">
+                <span>Label</span>
+                <input type="text" bind:value={discoveryDraftLabel} placeholder="Land stewardship themes" data-discovery-label />
+            </label>
+            <label class="hero-manager__field">
+                <span>Target (exploration only)</span>
+                <input type="text" bind:value={discoveryDraftTarget} placeholder="Related archive or path" data-discovery-target />
+            </label>
+            <button
+                type="button"
+                class="hero-manager__btn hero-manager__btn--ghost"
+                on:click|stopPropagation={addSuggestedDiscoveryConnection}
+                disabled={persistBusy}
+                data-discovery-suggest
+            >
+                Add suggestion
+            </button>
+        </div>
+        {#if discoverySuggestions.length}
+            <ul class="hero-discovery-review__list" data-discovery-suggestions>
+                {#each discoverySuggestions as rel (rel.relationshipId)}
+                    <li class="hero-discovery-review__item" data-discovery-id={rel.relationshipId}>
+                        <div>
+                            <strong>{rel.label}</strong>
+                            <span class="hero-discovery-review__meta">
+                                {rel.type}
+                                {#if rel.target} · → {rel.target}{/if}
+                                ·
+                                {#if rel.hidden}
+                                    hidden
+                                {:else if rel.rejected}
+                                    rejected
+                                {:else if rel.approved}
+                                    approved
+                                {:else}
+                                    pending
+                                {/if}
+                            </span>
+                        </div>
+                        <div class="hero-discovery-review__actions">
+                            <button
+                                type="button"
+                                class="hero-manager__btn"
+                                on:click|stopPropagation={() => approveDiscoverySuggestion(rel.relationshipId)}
+                                disabled={persistBusy || rel.approved}
+                                data-discovery-approve
+                            >
+                                Approve
+                            </button>
+                            <button
+                                type="button"
+                                class="hero-manager__btn hero-manager__btn--ghost"
+                                on:click|stopPropagation={() => rejectDiscoverySuggestion(rel.relationshipId)}
+                                disabled={persistBusy || rel.rejected}
+                                data-discovery-reject
+                            >
+                                Reject
+                            </button>
+                            <button
+                                type="button"
+                                class="hero-manager__btn hero-manager__btn--ghost"
+                                on:click|stopPropagation={() => hideDiscoverySuggestion(rel.relationshipId)}
+                                disabled={persistBusy || rel.hidden}
+                                data-discovery-hide
+                            >
+                                Hide
+                            </button>
+                        </div>
+                    </li>
+                {/each}
+            </ul>
+        {:else}
+            <p class="hero-manager__field-hint">No suggested discovery connections yet.</p>
+        {/if}
+        {#if discoveryReviewStatus}
+            <p class="hero-manager__field-hint" data-discovery-review-status>{discoveryReviewStatus}</p>
+        {/if}
+        {#if approvedViewerPreview?.discoveryConnections?.visible}
+            <div class="hero-discovery-review__public-preview" data-discovery-public-preview>
+                <span class="hero-manager__label">Public viewer will see</span>
+                {#each approvedViewerPreview.discoveryConnections.connections as conn (conn.relationshipId || conn.label)}
+                    <p class="hero-admin-presentation__intel">
+                        {conn.publicLabel || 'Explore'}: {conn.label}{conn.target ? ` → ${conn.target}` : ''}
+                    </p>
+                {/each}
+            </div>
+        {/if}
     </section>
 
     <section class="hero-story-composer" data-hero-story-composer>
@@ -2251,6 +3345,162 @@
     }
     .hero-viewer-content__field--wide {
         grid-column: 1 / -1;
+    }
+    .hero-discovery-review {
+        margin-top: 1rem;
+        padding: 1rem 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .hero-discovery-review__header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 0.5rem 1rem;
+        margin-bottom: 0.5rem;
+    }
+    .hero-discovery-review__badge {
+        font-size: 0.75rem;
+        opacity: 0.75;
+    }
+    .hero-discovery-review__form {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+        gap: 0.65rem;
+        align-items: end;
+        margin: 0.75rem 0;
+    }
+    .hero-discovery-review__list {
+        list-style: none;
+        margin: 0.75rem 0 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+    }
+    .hero-discovery-review__item {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 0.65rem;
+        padding: 0.65rem 0.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .hero-discovery-review__meta {
+        display: block;
+        font-size: 0.75rem;
+        opacity: 0.75;
+        margin-top: 0.2rem;
+    }
+    .hero-discovery-review__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+    }
+    .hero-discovery-review__public-preview {
+        margin-top: 0.75rem;
+        padding: 0.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .hero-creator-intent-review {
+        margin-top: 1rem;
+        padding: 1rem 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .hero-creator-intent-review__header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 0.5rem 1rem;
+        margin-bottom: 0.5rem;
+    }
+    .hero-creator-intent-review__badge {
+        font-size: 0.75rem;
+        opacity: 0.75;
+    }
+    .hero-creator-intent-review__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+    }
+    .hero-creator-intent-review__public-preview {
+        margin-top: 0.75rem;
+        padding: 0.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .hero-intelligence-review {
+        margin-top: 1rem;
+        padding: 1rem 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .hero-intelligence-review__header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 0.5rem 1rem;
+        margin-bottom: 0.5rem;
+    }
+    .hero-intelligence-review__badge {
+        font-size: 0.75rem;
+        opacity: 0.75;
+    }
+    .hero-intelligence-review__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+    }
+    .hero-intelligence-review__public-preview {
+        margin-top: 0.75rem;
+        padding: 0.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .hero-admin-presentation {
+        margin-top: 1rem;
+        padding: 0.85rem;
+        border-radius: 10px;
+        border: 1px solid rgba(250, 204, 21, 0.28);
+        background: rgba(250, 204, 21, 0.05);
+        display: grid;
+        gap: 0.65rem;
+    }
+    .hero-admin-presentation__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+    }
+    .hero-admin-presentation__badge {
+        font-size: 0.62rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: rgba(250, 204, 21, 0.95);
+    }
+    .hero-admin-presentation__grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.65rem;
+    }
+    .hero-admin-presentation__toggle {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .hero-admin-presentation__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    .hero-admin-presentation__preview {
+        padding: 0.55rem 0.65rem;
+        border-radius: 8px;
+        background: rgba(0, 0, 0, 0.28);
+        font-size: 0.78rem;
+    }
+    .hero-admin-presentation__intel {
+        margin: 0.2rem 0 0;
+        font-style: italic;
+        color: rgba(255, 255, 255, 0.75);
     }
     .hero-title-intel-preview {
         margin-bottom: 0.55rem;
