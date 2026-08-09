@@ -24,6 +24,15 @@
         logTheaterOpen,
         logTheaterState
     } from '../../lib/theater/theaterDiagnostics.js';
+    import {
+        attachTheaterPlaybackDiagnostics,
+        inspectTheaterPlaybackElements,
+        logTheaterPlaybackPhase
+    } from '../../lib/theater/theaterPlaybackDiagnostics.js';
+    import {
+        pauseCompetingPageVideos,
+        resumeCompetingPageVideos
+    } from '../../lib/theater/theaterExclusivePlayback.js';
 
     export {
         activePublishingProfile,
@@ -40,6 +49,8 @@
         typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === 'theater';
 
     let resourceManagerRef = null;
+    /** @type {null | (() => void)} */
+    let disposeTheaterPlaybackDiag = null;
     let watchOnExitFn = () => {};
     let watchOnCompleteFn = () => {};
     let watchOnPlayFn = () => {};
@@ -87,6 +98,10 @@
         close() {
             const closingId = get(activeReel)?.id ?? null;
             logTheaterClose({ reelId: closingId, reason: 'theaterManager.close' });
+            if (typeof disposeTheaterPlaybackDiag === 'function') {
+                disposeTheaterPlaybackDiag();
+                disposeTheaterPlaybackDiag = null;
+            }
             const el = this.videoElement;
             if (el) {
                 watchOnExitFn(el);
@@ -97,6 +112,8 @@
             }
             resourceManagerRef?.cleanupAllBlobs?.();
             activeReel.set(null);
+            // Best-effort: free bandwidth for page/hero media again after exclusive Theater session.
+            resumeCompetingPageVideos();
             logTheaterState({ activeReelId: null, visible: false, phase: 'closed' });
         }
         handleVideoEnd() {
@@ -191,22 +208,60 @@
     /** @param {HTMLElement} node */
     export function theaterVideoMount(node) {
         theaterManager.setVideoElement(node);
+        if (typeof disposeTheaterPlaybackDiag === 'function') {
+            disposeTheaterPlaybackDiag();
+            disposeTheaterPlaybackDiag = null;
+        }
+        // Free bandwidth: pause hero/shelf videos so only the Theater primary streams this MP4.
+        pauseCompetingPageVideos();
+        disposeTheaterPlaybackDiag = attachTheaterPlaybackDiagnostics(
+            /** @type {HTMLVideoElement} */ (node),
+            { getReelId: () => get(activeReel)?.id ?? null }
+        );
         logTheaterMedia({
             phase: 'mount',
             reelId: get(activeReel)?.id ?? null,
             src: node.currentSrc || node.src,
             readyState: node.readyState
         });
+        logTheaterPlaybackPhase('mount', /** @type {HTMLVideoElement} */ (node), {
+            reelId: get(activeReel)?.id ?? null,
+            exclusive: inspectTheaterPlaybackElements()
+        });
         logTheater('📺 Theater video mounted', { src: node.currentSrc || node.src });
+        // Prefer the native muted `autoplay` attribute; only kick play() if still paused
+        // (avoids a second concurrent play() race while the first is starting).
         tick().then(() => {
-            node.play?.().catch((err) => {
-                logTheaterMedia({ phase: 'autoplay-blocked', message: err?.message, reelId: get(activeReel)?.id ?? null });
-                logTheater('autoplay blocked', { message: err?.message });
-            });
+            pauseCompetingPageVideos();
+            if (node.paused) {
+                node.play?.().catch((err) => {
+                    logTheaterMedia({
+                        phase: 'autoplay-blocked',
+                        message: err?.message,
+                        reelId: get(activeReel)?.id ?? null
+                    });
+                    logTheaterPlaybackPhase('autoplay-blocked', /** @type {HTMLVideoElement} */ (node), {
+                        reelId: get(activeReel)?.id ?? null,
+                        message: err?.message
+                    });
+                    logTheater('autoplay blocked', { message: err?.message });
+                });
+            }
             checkTheaterVideoMount();
+            if (DEBUG_THEATER || import.meta.env.DEV) {
+                const insp = inspectTheaterPlaybackElements();
+                logTheater('playback exclusive check', insp);
+                if (insp.theaterVideos > 1 || insp.theaterSrcs.length > 1) {
+                    console.warn('[THEATER] multiple primary theater videos or MP4 sources', insp);
+                }
+            }
         });
         return {
             destroy() {
+                if (typeof disposeTheaterPlaybackDiag === 'function') {
+                    disposeTheaterPlaybackDiag();
+                    disposeTheaterPlaybackDiag = null;
+                }
                 if (theaterManager.videoElement === node) theaterManager.videoElement = null;
             }
         };
@@ -270,7 +325,7 @@
         FRAMING_MODES
     } from '../../lib/theater/theaterFraming.js';
     import { logFinalMediaUrl, videoMimeForPath } from '../../lib/config.js';
-    import { isVideoReel } from '../../lib/api/reelContract.js';
+    import { isVideoReel, isImageReel } from '../../lib/api/reelContract.js';
     import { resolveTheaterPlayback } from '../../lib/media/theaterPlayback.js';
     import SeriesDrawer from '../series/SeriesDrawer.svelte';
     import TheaterSeriesPanel from '../series/TheaterSeriesPanel.svelte';
@@ -553,7 +608,13 @@
     }
 
     $: theaterPlayback =
-        $activeReel && ($activeReel.isPlaceholder || $activeReel.isBlackStoriesPlaceholder)
+        $activeReel &&
+        ($activeReel.isPlaceholder ||
+            $activeReel.isBlackStoriesPlaceholder ||
+            // Vault image assets (Theater media contract) — resolve image mode without treating as video
+            (Boolean($activeReel.mediaAssetId || $activeReel.mediaType === 'image') &&
+                !isVideoReel($activeReel) &&
+                isImageReel($activeReel)))
             ? resolveTheaterPlayback($activeReel, $personalVideos)
             : null;
     $: theaterVideoSrc =
@@ -734,7 +795,7 @@
                             action={theaterVideoMount}
                             mimeType={theaterVideoMime}
                             useSourceElement={true}
-                            preload="auto"
+                            preload="metadata"
                             autoplay
                             muted={theaterMuted}
                             controls
@@ -752,6 +813,9 @@
                                     currentTime: e.currentTarget.currentTime,
                                     paused: e.currentTarget.paused
                                 });
+                                logTheaterPlaybackPhase('playing-event', e.currentTarget, {
+                                    reelId: get(activeReel)?.id ?? null
+                                });
                                 logTheater('▶️ Theater video play');
                                 theaterWatchOnPlay(e.currentTarget);
                                 if (isMobileTheater) showMobileTheaterControls('playback_start');
@@ -759,6 +823,16 @@
                             on:pause={(e) => {
                                 theaterWatchOnPause(e.currentTarget);
                                 if (isMobileTheater) showMobileTheaterControls('pause');
+                            }}
+                            on:waiting={(e) => {
+                                logTheaterPlaybackPhase('waiting', e.currentTarget, {
+                                    reelId: get(activeReel)?.id ?? null
+                                });
+                            }}
+                            on:stalled={(e) => {
+                                logTheaterPlaybackPhase('stalled', e.currentTarget, {
+                                    reelId: get(activeReel)?.id ?? null
+                                });
                             }}
                             on:error={handleTheaterVideoError}
                             on:loadedmetadata={(e) => {
@@ -773,6 +847,10 @@
                                     videoHeight: e.currentTarget.videoHeight,
                                     framing: $theaterFraming
                                 });
+                                logTheaterPlaybackPhase('loadedmetadata', e.currentTarget, {
+                                    reelId: get(activeReel)?.id ?? null,
+                                    framing: $theaterFraming
+                                });
                                 logTheater('🎞️ Theater metadata loaded', {
                                     duration: e.currentTarget.duration,
                                     videoWidth: e.currentTarget.videoWidth,
@@ -780,8 +858,12 @@
                                     framing: $theaterFraming
                                 });
                             }}
-                            on:loadeddata={() => {
+                            on:loadeddata={(e) => {
                                 logTheaterMedia({ phase: 'loadeddata', reelId: get(activeReel)?.id ?? null, url: theaterVideoSrc });
+                                logTheaterPlaybackPhase('loadeddata', e.currentTarget, {
+                                    reelId: get(activeReel)?.id ?? null,
+                                    url: theaterVideoSrc
+                                });
                                 logTheater('✅ Theater video data loaded', { url: theaterVideoSrc });
                             }}
                             on:click={handleTheaterVideoInteraction}

@@ -183,6 +183,15 @@
             on:pause
             on:ended
             on:volumechange
+            on:timeupdate
+            on:waiting
+            on:stalled
+            on:suspend
+            on:progress
+            on:canplay
+            on:canplaythrough
+            on:seeking
+            on:seeked
             on:mouseenter
             on:mouseleave
             on:click
@@ -221,6 +230,15 @@
             on:pause
             on:ended
             on:volumechange
+            on:timeupdate
+            on:waiting
+            on:stalled
+            on:suspend
+            on:progress
+            on:canplay
+            on:canplaythrough
+            on:seeking
+            on:seeked
             on:mouseenter
             on:mouseleave
             on:click
