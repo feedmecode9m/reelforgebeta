@@ -302,6 +302,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(thumbs_path_data.clone())
             .app_data(health_state_data.clone())
             .route("/health", web::get().to(handlers::health_check))
+            .route("/api/health", web::get().to(handlers::health_check))
             .route("/api/status", web::get().to(handlers::health_check))
             .route("/admin/auth", web::post().to(handlers::admin_auth))
             .route("/ws/control-center", web::get().to(control_center_ws))

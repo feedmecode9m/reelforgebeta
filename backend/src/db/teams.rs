@@ -88,7 +88,7 @@ pub struct AssignTeamTaskInput {
 }
 
 pub async fn count_users(pool: &PgPool) -> Result<i64, sqlx::Error> {
-    sqlx::query_scalar("SELECT COUNT(*) FROM users")
+    sqlx::query_scalar("SELECT COUNT(*) FROM team_users")
         .fetch_one(pool)
         .await
 }
@@ -103,7 +103,7 @@ pub async fn list_users(pool: &PgPool) -> Result<Vec<UserRow>, sqlx::Error> {
     sqlx::query_as(
         r#"
         SELECT id, display_name, email, avatar_url, created_at
-        FROM users
+        FROM team_users
         ORDER BY display_name ASC
         "#,
     )
@@ -118,7 +118,7 @@ pub async fn create_user(pool: &PgPool, input: &CreateUserInput) -> Result<UserR
         .unwrap_or_else(|| format!("user-{}", uuid::Uuid::new_v4()));
     sqlx::query_as(
         r#"
-        INSERT INTO users (id, display_name, email, avatar_url)
+        INSERT INTO team_users (id, display_name, email, avatar_url)
         VALUES ($1, $2, $3, $4)
         ON CONFLICT (id) DO UPDATE SET
             display_name = EXCLUDED.display_name,
@@ -238,7 +238,7 @@ pub async fn list_team_members(pool: &PgPool, team_id: &str) -> Result<Vec<TeamM
             u.display_name,
             u.email
         FROM team_members tm
-        JOIN users u ON u.id = tm.user_id
+        JOIN team_users u ON u.id = tm.user_id
         WHERE tm.team_id = $1
         ORDER BY
             CASE tm.role
@@ -273,7 +273,7 @@ async fn get_team_member(
             u.display_name,
             u.email
         FROM team_members tm
-        JOIN users u ON u.id = tm.user_id
+        JOIN team_users u ON u.id = tm.user_id
         WHERE tm.team_id = $1 AND tm.user_id = $2
         "#,
     )
@@ -409,7 +409,7 @@ pub async fn list_team_activity(
             ta.created_at,
             u.display_name
         FROM team_activity ta
-        LEFT JOIN users u ON u.id = ta.user_id
+        LEFT JOIN team_users u ON u.id = ta.user_id
         WHERE ta.team_id = $1
         ORDER BY ta.created_at DESC
         LIMIT $2
@@ -434,7 +434,7 @@ pub async fn record_activity(
         INSERT INTO team_activity (id, team_id, user_id, activity_type, payload)
         VALUES ($1, $2, $3, $4, $5)
         RETURNING id, team_id, user_id, activity_type, payload, created_at,
-            (SELECT display_name FROM users WHERE id = $3) AS display_name
+            (SELECT display_name FROM team_users WHERE id = $3) AS display_name
         "#,
     )
     .bind(&id)
@@ -462,7 +462,7 @@ pub async fn assign_task_to_member(
             u.display_name,
             u.email
         FROM team_members tm
-        JOIN users u ON u.id = tm.user_id
+        JOIN team_users u ON u.id = tm.user_id
         WHERE tm.team_id = $1 AND tm.user_id = $2
         "#,
     )

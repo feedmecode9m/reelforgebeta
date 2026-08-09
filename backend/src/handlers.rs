@@ -103,60 +103,32 @@ pub async fn get_reel_status(
 }
 
 pub async fn health_check(
+    health_state: web::Data<crate::health_state::SharedHealthState>,
     db_available: web::Data<bool>,
     videos_path: web::Data<VideosDir>,
     thumbs_path: web::Data<ThumbsDir>,
 ) -> impl Responder {
-    let db_ok = **db_available;
-    let ingestion = crate::db::ingestion_v2_enabled();
-    let reels_source = if db_ok {
-        if ingestion {
-            "postgres-ingestion-v2"
-        } else {
-            "postgres"
+    // Prefer cached snapshot (DEV-HEALTH-2B) so `/health` never walks media on every poll.
+    // Full `build_storage_diagnostics` re-lists every file and can block for tens of seconds
+    // (invalid/huge media ffprobe), which surfaces as "Connection degraded" in the browser.
+    {
+        let guard = health_state.read().await;
+        if guard.phase == crate::health_state::HealthRefreshPhase::Ready {
+            return HttpResponse::Ok().json(guard.to_response());
         }
-    } else {
-        "unavailable"
-    };
+    }
 
+    // Warming path: lightweight probe only (no inventory / ffprobe walk).
+    let db_ok = **db_available;
     let public_root = videos_path.0.parent().unwrap_or(videos_path.0.as_path());
-    let storage_diag = crate::media_durability::build_storage_diagnostics(
+    let storage_diag = crate::media_durability::build_storage_probe_diagnostics(
         public_root,
         &videos_path.0,
         &thumbs_path.0,
     );
-    let storage_status = storage_diag.status.clone();
-    let overall_status = if !db_ok {
-        "degraded"
-    } else if matches!(
-        storage_status.as_str(),
-        "missing" | "unwritable" | "degraded" | "read_only"
-    ) {
-        "degraded"
-    } else {
-        "ok"
-    };
-
-    HttpResponse::Ok().json(HealthResponse {
-        status: overall_status,
-        timestamp: chrono::Utc::now().timestamp_millis(),
-        service: "reelforge-backend",
-        database: if db_ok { "connected" } else { "unavailable" },
-        reels_source,
-        services: HealthServices {
-            db: if db_ok { "connected" } else { "unavailable" },
-            storage: storage_status,
-            ingestion: if ingestion { "enabled" } else { "disabled" },
-            storage_detail: Some(StorageHealthDetail {
-                media_root: storage_diag.media_root,
-                videos_path: storage_diag.videos_path,
-                thumbs_path: storage_diag.thumbs_path,
-                writable: storage_diag.writable,
-                volume_mounted: storage_diag.volume_mounted,
-                ephemeral_storage_risk: storage_diag.ephemeral_storage_risk,
-            }),
-        },
-    })
+    HttpResponse::Ok().json(
+        crate::health_state::HealthSnapshot::ready(&storage_diag, db_ok).to_response(),
+    )
 }
 
 pub async fn ingest_client_log(body: web::Json<Value>) -> impl Responder {

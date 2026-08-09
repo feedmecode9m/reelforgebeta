@@ -14,7 +14,7 @@ pub enum HealthRefreshPhase {
 
 #[derive(Clone)]
 pub struct HealthSnapshot {
-    phase: HealthRefreshPhase,
+    pub phase: HealthRefreshPhase,
     db_available: bool,
     storage_status: String,
     storage_detail: StorageHealthDetail,
