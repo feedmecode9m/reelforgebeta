@@ -1,7 +1,11 @@
 <script>
     import { createEventDispatcher } from 'svelte';
     import EpisodeChip from './EpisodeChip.svelte';
-    import { episodeIsPlayable } from '../../lib/series/seriesTypes.js';
+    import {
+        resolveEpisodeMedia,
+        episodeChipPresentation
+    } from '../../lib/series/episodeVaultBindingResolver.js';
+    import { getReadyHeroVaultAssets } from '../../lib/series/heroVaultAssetSource.js';
 
     const dispatch = createEventDispatcher();
 
@@ -19,11 +23,28 @@
     /** @type {string} */
     export let selectedEpisodeId = '';
 
+    /**
+     * Ready Hero Vault assets (optional parent override; falls back to canonical source).
+     * @type {Record<string, unknown>[]}
+     */
+    export let heroVaultAssets = [];
+
+    $: readyVaultAssets =
+        Array.isArray(heroVaultAssets) && heroVaultAssets.length
+            ? heroVaultAssets
+            : getReadyHeroVaultAssets();
+
     $: sortedEpisodes = [...(season?.episodes || [])].sort((a, b) => a.episodeNumber - b.episodeNumber);
     $: seasonLabel = season?.title || `Season ${season?.seasonNumber ?? 1}`;
     $: episodeCount = sortedEpisodes.length;
 
-    /** @param {string} episodeId */
+    /**
+     * @param {import('../../lib/series/seriesTypes.js').Episode} episode
+     */
+    function resolveForChip(episode) {
+        return resolveEpisodeMedia({ episode, readyVaultAssets });
+    }
+
     function toggleExpanded() {
         expanded = !expanded;
     }
@@ -50,13 +71,19 @@
     {#if expanded}
         <div class="season-accordion__body" role="region" aria-label="{seasonLabel} episodes">
             {#each sortedEpisodes as episode (episode.episodeId)}
+                {@const vault = resolveForChip(episode)}
+                {@const chip = episodeChipPresentation(episode, vault)}
                 <EpisodeChip
                     seasonNumber={season.seasonNumber}
                     episodeNumber={episode.episodeNumber}
                     title={episode.title}
                     episodeId={episode.episodeId}
                     status={episode.status}
-                    playable={episodeIsPlayable(episode)}
+                    mediaAssetId={chip.mediaAssetId}
+                    thumbnailUrl={chip.thumbnailUrl}
+                    matchTier={chip.matchTier}
+                    bindingLabel={chip.bindingLabel}
+                    playable={chip.playable}
                     selected={selectedEpisodeId === episode.episodeId}
                     on:select={handleEpisodeSelect}
                 />

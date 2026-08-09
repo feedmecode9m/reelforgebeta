@@ -65,6 +65,16 @@ function cleanSeriesBase(raw) {
 }
 
 /**
+ * @param {unknown} value
+ */
+function normalizeTitleish(value) {
+    return String(value || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .trim();
+}
+
+/**
  * Known removable production / house prefixes that never form the series base alone.
  * Kept allowlist-tight — does not strip arbitrary leading words.
  */
@@ -537,6 +547,41 @@ export function inferAndBindVaultSeries(reels = [], options = {}) {
                 episodeId,
                 episodeStatus: 'published'
             });
+
+            // Prefer full vault title as aliases seed (title match first; aliases second).
+            const aliasSeed = [];
+            if (
+                episodeTitle &&
+                String(episode?.title || '').trim() &&
+                normalizeTitleish(episodeTitle) !== normalizeTitleish(episode.title)
+            ) {
+                aliasSeed.push(episodeTitle);
+            }
+
+            // Stamp Hero Vault mediaAssetId on catalog episode (reuse ready vault id — no re-upload).
+            seriesCatalog.update((items) =>
+                items.map((s) => {
+                    if (s.id !== series.id) return s;
+                    return {
+                        ...s,
+                        seasons: s.seasons.map((season) => ({
+                            ...season,
+                            episodes: season.episodes.map((ep) => {
+                                if (ep.episodeId !== episodeId) return ep;
+                                return {
+                                    ...ep,
+                                    reelId,
+                                    mediaAssetId: reelId,
+                                    thumbnailAssetId: ep.thumbnailAssetId || null,
+                                    aliases: Array.from(
+                                        new Set([...(ep.aliases || []), ...aliasSeed])
+                                    )
+                                };
+                            })
+                        }))
+                    };
+                })
+            );
 
             const byReel = getEpisodeByReelId(reelId);
             if (!byReel?.episode || String(byReel.episode.reelId) !== reelId) {

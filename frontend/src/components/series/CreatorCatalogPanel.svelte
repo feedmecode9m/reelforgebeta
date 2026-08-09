@@ -10,6 +10,8 @@
         detachEpisodeReel
     } from '../../lib/series/seriesStore.js';
     import { EPISODE_STATUSES } from '../../lib/series/seriesTypes.js';
+    import EpisodeVaultBindingPicker from './EpisodeVaultBindingPicker.svelte';
+    import { getReadyHeroVaultAssets } from '../../lib/series/heroVaultAssetSource.js';
 
     const dispatch = createEventDispatcher();
 
@@ -102,6 +104,11 @@
     }
 
     $: reelOptions = (feedReels || []).filter((r) => r?.id && !r.isPlaceholder);
+
+    /** Ready Hero Vault assets only — canonical source (same as public Series). */
+    $: readyVaultAssets = getReadyHeroVaultAssets({
+        extraItems: Array.isArray(feedReels) ? feedReels : null
+    });
 
     /**
      * @param {import('../../lib/series/seriesTypes.js').Episode} ep
@@ -475,6 +482,28 @@
                             <p class="creator-catalog__message" role="status">{attachMessage}</p>
                         {/if}
                     </div>
+
+                    <EpisodeVaultBindingPicker
+                        episodeId={selectedEpisodeId}
+                        selectedAssetId={selectedEpisode.heroVaultAssetId || null}
+                        {readyVaultAssets}
+                        on:bound={() => {
+                            saveMessage = 'Manual vault binding saved';
+                            dispatch('changed', {
+                                type: 'vault-binding',
+                                episodeId: selectedEpisodeId,
+                                seriesId: selectedSeriesId
+                            });
+                        }}
+                        on:cleared={() => {
+                            saveMessage = 'Vault binding cleared (auto-match)';
+                            dispatch('changed', {
+                                type: 'vault-binding-clear',
+                                episodeId: selectedEpisodeId,
+                                seriesId: selectedSeriesId
+                            });
+                        }}
+                    />
                 {/if}
             </section>
         </div>

@@ -9,6 +9,7 @@ import {
     getEpisodeByReelId,
     getReelSeriesMetadata,
     reelSeriesMetadata,
+    rehydrateEpisodeVaultBindings,
     seriesCatalog
 } from './seriesStore.js';
 import { episodeIsPlayable } from './seriesTypes.js';
@@ -285,6 +286,8 @@ export function bridgeFeedReelsToCatalog(feedReels = []) {
 
     // High-confidence vault title groups → canonical catalog bindings (no mock edits).
     const inference = inferAndBindVaultSeries(feedReels, { source: 'bridgeFeedReelsToCatalog' });
+    // Restore any persisted Hero Vault manual overrides after inference mutates catalog.
+    rehydrateEpisodeVaultBindings();
 
     // Recount after inference wrote reelId + metadata via seriesStore APIs.
     bound = 0;

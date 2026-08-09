@@ -17,6 +17,11 @@ export const EPISODE_STATUSES = /** @type {const} */ (['draft', 'ready', 'publis
  * @property {number} [runtime] - Duration in seconds
  * @property {EpisodeStatus} status
  * @property {string | null} [reelId] - Optional link to an existing feed/vault reel
+ * @property {string | null} [thumbnailAssetId] - Hero Vault ready image/poster asset id
+ * @property {string | null} [mediaAssetId] - Hero Vault ready playable media asset id
+ * @property {string[]} [aliases] - Alternate titles for Hero Vault matching
+ * @property {string | null} [heroVaultAssetId] - Optional manual Hero Vault ready asset override
+ * @property {'manual' | 'auto' | null} [heroVaultBindingMode] - How media is selected for this episode
  * @property {string} [genre]
  * @property {string[]} [tags]
  */
@@ -83,10 +88,43 @@ export function episodeHasReel(episode) {
 }
 
 /**
+ * Hero Vault media bind present (Ready state authority).
+ * @param {Episode | null | undefined} episode
+ * @returns {boolean}
+ */
+export function episodeHasMediaAsset(episode) {
+    return typeof episode?.mediaAssetId === 'string' && episode.mediaAssetId.trim().length > 0;
+}
+
+/**
+ * @param {Episode | null | undefined} episode
+ * @returns {boolean}
+ */
+export function episodeHasThumbnailAsset(episode) {
+    return (
+        typeof episode?.thumbnailAssetId === 'string' && episode.thumbnailAssetId.trim().length > 0
+    );
+}
+
+/**
+ * Episode is Ready only when a Hero Vault mediaAssetId is bound.
+ * @param {Episode | null | undefined} episode
+ * @returns {boolean}
+ */
+export function episodeIsReadyBound(episode) {
+    return episodeHasMediaAsset(episode);
+}
+
+/**
  * @param {Episode} episode
  * @returns {boolean}
  */
 export function episodeIsPlayable(episode) {
+    if (!episode) return false;
+    // Prefer Hero Vault media bind — Ready episodes open Theater from vault asset.
+    if (episodeHasMediaAsset(episode)) {
+        return episode.status !== 'draft' && episode.status !== 'archived';
+    }
     return episodeIsPublished(episode) && episodeHasReel(episode);
 }
 
