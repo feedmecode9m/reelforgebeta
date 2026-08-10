@@ -100,7 +100,8 @@ async function main() {
             (vaultExp.includes('VaultEpisodeCreatorStatus') ||
                 vaultExp.includes('VaultEpisodeEnrichment')) &&
                 vaultExp.includes('saveVaultEpisodeEnrichment') &&
-                vaultExp.includes('applyCreatorVaultEpisodeEnrichment'),
+                (vaultExp.includes('applyCreatorVaultEpisodeEnrichment') ||
+                    vaultExp.includes('applyPackageToVaultListByMediaAssetId')),
             'VaultExperience wires episode enrichment'
         );
         assert(

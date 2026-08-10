@@ -102,6 +102,7 @@
     role="region"
     aria-label="Episode package status"
     data-vault-creator-completeness
+    data-media-asset-id={model.mediaAssetId || undefined}
     data-identity-ready={model.identity.ready ? 'true' : 'false'}
     data-presentation-ready={model.presentation.ready ? 'true' : 'false'}
     data-media={model.media.state}

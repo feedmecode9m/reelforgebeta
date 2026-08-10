@@ -45,8 +45,13 @@
   import { isHeroAsset } from '../../lib/hero/heroDomainGuard.js';
   import { reelToVaultEntry } from '../../lib/api/reelContract.js';
   import { sealVaultSeriesIdentityForStorage } from '../../lib/series/vaultSeriesInference.js';
-  import { applyCreatorVaultIdentityConfirmation } from '../../lib/series/vaultIdentityConfirmation.js';
-  import { applyCreatorVaultEpisodeEnrichment } from '../../lib/series/vaultEpisodeEnrichment.js';
+  import {
+    resolveCreatorCardMutationTarget,
+    applyIdentityToVaultListByMediaAssetId,
+    applyPackageToVaultListByMediaAssetId,
+    assertNoCrossWrite,
+    resolveMediaAssetId
+  } from '../../lib/vault/vaultCreatorCardTargeting.js';
   import VaultEpisodeCreatorStatus from '../series/VaultEpisodeCreatorStatus.svelte';
   import { validateVideoFile } from '../../lib/runtime-guards.js';
   import { API_BASE_URL, toRelativeMediaPath, SIGNED_UPLOADS_MIN_BYTES } from '../../lib/config.js';
@@ -1740,73 +1745,109 @@
 
   /**
    * Creator identity confirmation → seal vault identity only.
+   * Target is always event.detail.mediaAssetId (never display index / S/E / filename).
    * Preserves mediaAssetId / playback refs; does not touch catalog order or publish state.
-   * @param {Record<string, unknown>} video
-   * @param {{ seriesLabel?: string; seasonNumber?: number; episodeNumber?: number }} detail
+   * @param {{ seriesLabel?: string; seasonNumber?: number; episodeNumber?: number; mediaAssetId?: string }} detail
+   * @param {string} [cardMediaAssetId]
    */
-  function confirmVaultVideoIdentity(video, detail) {
-    const id = String(video?.id || detail?.mediaAssetId || '').trim();
-    if (!id) return;
+  function confirmVaultVideoIdentity(detail, cardMediaAssetId = '') {
+    const target = resolveCreatorCardMutationTarget(detail, cardMediaAssetId);
+    const id = target.mediaAssetId;
+    if (!id) {
+      console.warn('[VAULT_IDENTITY_CONFIRM]', target.reason || 'missing mediaAssetId');
+      return;
+    }
+    if (!target.ok) {
+      console.warn('[VAULT_CARD_TARGET_MISMATCH]', {
+        action: 'identity',
+        reason: target.reason,
+        mediaAssetId: id
+      });
+    }
     personalVideos.update((videos) => {
       const list = Array.isArray(videos) ? videos : [];
-      const next = list.map((item) => {
-        if (String(item?.id || '').trim() !== id) return item;
-        try {
-          return applyCreatorVaultIdentityConfirmation(
-            /** @type {Record<string, unknown>} */ (item),
-            {
-              seriesLabel: detail?.seriesLabel,
-              seasonNumber: detail?.seasonNumber,
-              episodeNumber: detail?.episodeNumber
-            }
-          );
-        } catch (err) {
-          console.warn('[VAULT_IDENTITY_CONFIRM]', err);
-          return item;
-        }
-      });
       try {
-        persistPersonalVault(next);
-      } catch {
-        /* ignore */
+        const { list: next, mutated } = applyIdentityToVaultListByMediaAssetId(list, id, {
+          seriesLabel: detail?.seriesLabel,
+          seasonNumber: detail?.seasonNumber,
+          episodeNumber: detail?.episodeNumber
+        });
+        const cross = assertNoCrossWrite(list, next, id);
+        if (!cross.ok) {
+          console.error('[VAULT_CROSS_WRITE_BLOCKED]', { action: 'identity', mediaAssetId: id, violations: cross.violations });
+        }
+        console.info('[VAULT_CARD_MUTATION]', {
+          action: 'identity',
+          mediaAssetId: id,
+          cardMediaAssetId: String(cardMediaAssetId || '').trim() || null,
+          mutated,
+          crossWriteOk: cross.ok
+        });
+        if (!mutated) return list;
+        try {
+          persistPersonalVault(next);
+        } catch {
+          /* ignore */
+        }
+        return next;
+      } catch (err) {
+        console.warn('[VAULT_IDENTITY_CONFIRM]', err);
+        return list;
       }
-      return next;
     });
   }
 
   /**
    * Creator episode package (title / description / artwork) → vault enrichment only.
+   * Target is always event.detail.mediaAssetId (never display index / S/E / filename).
    * Preserves identity + mediaAssetId; does not touch catalog order or publish state.
-   * @param {Record<string, unknown>} video
    * @param {{ title?: string; description?: string; artworkUrl?: string; mediaAssetId?: string }} detail
+   * @param {string} [cardMediaAssetId]
    */
-  function saveVaultEpisodeEnrichment(video, detail) {
-    const id = String(video?.id || detail?.mediaAssetId || '').trim();
-    if (!id) return;
+  function saveVaultEpisodeEnrichment(detail, cardMediaAssetId = '') {
+    const target = resolveCreatorCardMutationTarget(detail, cardMediaAssetId);
+    const id = target.mediaAssetId;
+    if (!id) {
+      console.warn('[VAULT_EPISODE_ENRICH]', target.reason || 'missing mediaAssetId');
+      return;
+    }
+    if (!target.ok) {
+      console.warn('[VAULT_CARD_TARGET_MISMATCH]', {
+        action: 'package',
+        reason: target.reason,
+        mediaAssetId: id
+      });
+    }
     personalVideos.update((videos) => {
       const list = Array.isArray(videos) ? videos : [];
-      const next = list.map((item) => {
-        if (String(item?.id || '').trim() !== id) return item;
-        try {
-          return applyCreatorVaultEpisodeEnrichment(
-            /** @type {Record<string, unknown>} */ (item),
-            {
-              title: detail?.title,
-              description: detail?.description,
-              artworkUrl: detail?.artworkUrl
-            }
-          );
-        } catch (err) {
-          console.warn('[VAULT_EPISODE_ENRICH]', err);
-          return item;
-        }
-      });
       try {
-        persistPersonalVault(next);
-      } catch {
-        /* ignore */
+        const { list: next, mutated } = applyPackageToVaultListByMediaAssetId(list, id, {
+          title: detail?.title,
+          description: detail?.description,
+          artworkUrl: detail?.artworkUrl
+        });
+        const cross = assertNoCrossWrite(list, next, id);
+        if (!cross.ok) {
+          console.error('[VAULT_CROSS_WRITE_BLOCKED]', { action: 'package', mediaAssetId: id, violations: cross.violations });
+        }
+        console.info('[VAULT_CARD_MUTATION]', {
+          action: 'package',
+          mediaAssetId: id,
+          cardMediaAssetId: String(cardMediaAssetId || '').trim() || null,
+          mutated,
+          crossWriteOk: cross.ok
+        });
+        if (!mutated) return list;
+        try {
+          persistPersonalVault(next);
+        } catch {
+          /* ignore */
+        }
+        return next;
+      } catch (err) {
+        console.warn('[VAULT_EPISODE_ENRICH]', err);
+        return list;
       }
-      return next;
     });
   }
 
@@ -3168,8 +3209,9 @@
   </div>
   {#if vaultDisplayVideos.length > 0}
     <div class="thumbnail-grid vault-grid vault-grid--videos video-vault-grid">
-      {#each vaultDisplayVideos.filter(Boolean) as video, vi (video?.id || video?.url || video?.fileName || `video-${vi}`)}
+      {#each vaultDisplayVideos.filter(Boolean) as video, vi (resolveMediaAssetId(video) || `video-fallback-${vi}`)}
         {#if video}
+          {@const cardMediaAssetId = resolveMediaAssetId(video)}
           {@const reel = getVaultVideoReel(video)}
           {@const microDrama = isMicroDramaContent(video) || isMicroDramaContent(reel)}
           {@const isUploadingCard =
@@ -3382,8 +3424,10 @@
               <VaultEpisodeCreatorStatus
                 asset={video}
                 active={true}
-                on:confirmIdentity={(event) => confirmVaultVideoIdentity(video, event.detail || {})}
-                on:savePackage={(event) => saveVaultEpisodeEnrichment(video, event.detail || {})}
+                on:confirmIdentity={(event) =>
+                  confirmVaultVideoIdentity(event.detail || {}, cardMediaAssetId)}
+                on:savePackage={(event) =>
+                  saveVaultEpisodeEnrichment(event.detail || {}, cardMediaAssetId)}
               />
             {/if}
           </div>

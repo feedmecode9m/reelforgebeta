@@ -111,8 +111,11 @@ async function main() {
         const seriesPage = read('src/components/series/SeriesPublicPage.svelte');
         assert(
             vaultExp.includes('sealVaultSeriesIdentityForStorage') &&
-                vaultExp.includes('VaultIdentityConfirmation') &&
-                vaultExp.includes('VaultEpisodeEnrichment'),
+                vaultExp.includes('VaultEpisodeCreatorStatus') &&
+                vaultExp.includes('confirmVaultVideoIdentity') &&
+                vaultExp.includes('saveVaultEpisodeEnrichment') &&
+                (vaultExp.includes('applyIdentityToVaultListByMediaAssetId') ||
+                    vaultExp.includes('applyCreatorVaultIdentityConfirmation')),
             'Hero Vault wires seal + identity + enrichment'
         );
         assert(
