@@ -1,7 +1,8 @@
 import { API_BASE_URL, fetchWithRetry } from '../api.js';
 
 export const SERIES_API_MIGRATION_KEY = 'reelforge_series_api_migrated';
-export const SERIES_API_CACHE_KEY = 'reelforge_series_metadata';
+/** Offline API catalog snapshot only — must NOT share the reel metadata map key. */
+export const SERIES_API_CACHE_KEY = 'reelforge_series_api_offline_cache';
 
 /**
  * @typedef {import('../series/seriesTypes.js').Series} Series

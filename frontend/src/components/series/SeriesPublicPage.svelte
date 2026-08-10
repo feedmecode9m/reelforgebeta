@@ -485,6 +485,9 @@
               seriesId={series.id}
               {season}
               heroVaultAssets={heroVaultAssets}
+              seriesLabel={series.title || ''}
+              viewerMode={true}
+              flat={sortedSeasons.length === 1}
               defaultExpanded={season.seasonNumber === (sortedSeasons[0]?.seasonNumber ?? 1)}
               bind:selectedEpisodeId
               on:episodeSelect={handleEpisodeSelect}

@@ -1077,11 +1077,17 @@ export function buildHighConfidenceTitleGroups(reels = []) {
  */
 export function inferAndBindVaultSeries(reels = [], options = {}) {
     const source = options.source || 'vault-inference';
+    // Public viewer + post-API rebind: bind media onto existing catalog rows only.
+    // Never invent shell series/episodes that can steal authority before Catalog API arrives.
+    const bindOnly =
+        options.bindOnly === true ||
+        /public-series|after-api-catalog/i.test(String(source));
     const groups = buildHighConfidenceTitleGroups(reels);
 
     logVaultSeriesInference({
         phase: 'start',
         source,
+        bindOnly,
         reelCount: reels.filter((r) => r?.id).length,
         groupCount: groups.length
     });
@@ -1105,11 +1111,19 @@ export function inferAndBindVaultSeries(reels = [], options = {}) {
                 break;
             }
         }
-        if (!series) {
+        if (!series && !bindOnly) {
             series = ensureSeriesInCatalog(group.seriesTitle);
         }
         if (!series?.id) {
             skipped += group.members.length;
+            if (bindOnly) {
+                logVaultSeriesInference({
+                    phase: 'skipped-bind-only-no-catalog-series',
+                    source,
+                    seriesTitle: group.seriesTitle,
+                    reels: group.members.map((m) => String(m.reel?.id || '')).filter(Boolean)
+                });
+            }
             continue;
         }
         if (!seriesIds.includes(series.id)) seriesIds.push(series.id);
@@ -1167,12 +1181,31 @@ export function inferAndBindVaultSeries(reels = [], options = {}) {
                 member.parsed.episodeTitle ||
                 reelDisplayTitle(member.reel) ||
                 group.seriesTitle;
-            const episode = ensureEpisodeInCatalog(
-                series.id,
-                member.parsed.seasonNumber,
-                member.parsed.episodeNumber,
-                episodeTitle
-            );
+            // Public / post-API: only bind into an existing catalog episode for this series.
+            // Creating shells would invent S/E identity and leak ready/draft into the public model.
+            let episode = null;
+            if (bindOnly) {
+                const ridHit = getEpisodeByReelId(reelId);
+                if (ridHit?.series?.id === series.id) {
+                    episode = ridHit.episode;
+                } else {
+                    skipped += 1;
+                    logVaultSeriesInference({
+                        phase: 'skipped-bind-only-no-catalog-episode',
+                        source,
+                        seriesId: series.id,
+                        mediaId: reelId
+                    });
+                    continue;
+                }
+            } else {
+                episode = ensureEpisodeInCatalog(
+                    series.id,
+                    member.parsed.seasonNumber,
+                    member.parsed.episodeNumber,
+                    episodeTitle
+                );
+            }
             const episodeId = episode?.episodeId ? String(episode.episodeId) : '';
             if (!episodeId) {
                 skipped += 1;

@@ -24,6 +24,21 @@ export const SERIES_METADATA_STORAGE_KEY = 'reelforge_series_metadata';
  * @property {number} [updatedAt]
  */
 
+/**
+ * True when LS value is the offline API wrapper formerly written under the metadata key.
+ * @param {unknown} parsed
+ */
+function isOfflineApiCacheBlob(parsed) {
+    return (
+        Boolean(parsed) &&
+        typeof parsed === 'object' &&
+        !Array.isArray(parsed) &&
+        Array.isArray(/** @type {{ catalog?: unknown }} */ (parsed).catalog) &&
+        /** @type {{ map?: unknown }} */ (parsed).map &&
+        typeof /** @type {{ map?: unknown }} */ (parsed).map === 'object'
+    );
+}
+
 /** @returns {Record<string, ReelSeriesMetadata>} */
 export function loadReelSeriesMetadataMap() {
     if (typeof window === 'undefined') return {};
@@ -31,8 +46,22 @@ export function loadReelSeriesMetadataMap() {
         const raw = localStorage.getItem(SERIES_METADATA_STORAGE_KEY);
         if (!raw) return {};
         const parsed = JSON.parse(raw);
-        if (!parsed || typeof parsed !== 'object') return {};
-        return /** @type {Record<string, ReelSeriesMetadata>} */ (parsed);
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+        // Legacy collision: offline catalog was stored under the same key as the reel map.
+        if (isOfflineApiCacheBlob(parsed)) {
+            return /** @type {Record<string, ReelSeriesMetadata>} */ (
+                /** @type {{ map: Record<string, ReelSeriesMetadata> }} */ (parsed).map || {}
+            );
+        }
+        // Hybrid pollution: strip non-reel keys left by the collision repair race.
+        /** @type {Record<string, ReelSeriesMetadata>} */
+        const out = {};
+        for (const [key, value] of Object.entries(parsed)) {
+            if (key === 'catalog' || key === 'map' || key === 'cachedAt') continue;
+            if (!value || typeof value !== 'object' || Array.isArray(value)) continue;
+            out[key] = /** @type {ReelSeriesMetadata} */ (value);
+        }
+        return out;
     } catch {
         return {};
     }

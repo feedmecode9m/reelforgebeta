@@ -877,31 +877,32 @@ function applyMetadataToCatalog(reelId, meta) {
                     let episodeNumber = episode.episodeNumber;
                     if (!catalogHasNumber && Number.isFinite(metaEp) && metaEp >= 1) {
                         episodeNumber = Math.floor(metaEp);
-                    } else if (
-                        catalogHasNumber &&
-                        Number.isFinite(metaEp) &&
-                        metaEp >= 1 &&
-                        Math.floor(metaEp) === Number(episode.episodeNumber)
-                    ) {
-                        episodeNumber = episode.episodeNumber;
                     }
 
-                    // Publishing: vault writeback `ready` must never demote API/catalog draft|published|archived
-                    let status = meta.episodeStatus ?? episode.status;
-                    if (
-                        (episode.status === 'published' ||
-                            episode.status === 'draft' ||
-                            episode.status === 'archived') &&
-                        meta.episodeStatus === 'ready'
-                    ) {
-                        status = episode.status;
+                    // Publishing authority lives on the catalog episode (API / creator updateCatalogEpisode).
+                    // Reel metadata writeback may fill a missing status only — never elevate draft→published
+                    // or demote published→ready from sticky vault maps / filename inference.
+                    let status = episode.status;
+                    if (!isEpisodeStatus(status) && isEpisodeStatus(meta.episodeStatus)) {
+                        status = meta.episodeStatus;
                     }
+
+                    // Package title/description: catalog package wins; vault may only fill empty holes.
+                    const catalogTitle = String(episode.title || '').trim();
+                    const title = catalogTitle
+                        ? episode.title
+                        : meta.episodeTitle || episode.title;
+                    const catalogDesc =
+                        episode.description != null && String(episode.description).trim() !== '';
+                    const description = catalogDesc
+                        ? episode.description
+                        : meta.description ?? episode.description;
 
                     changed = true;
                     return {
                         ...episode,
-                        title: meta.episodeTitle || episode.title,
-                        description: meta.description ?? episode.description,
+                        title,
+                        description,
                         episodeNumber,
                         genre: meta.genre ?? episode.genre,
                         tags: meta.tags ?? episode.tags,
