@@ -175,6 +175,23 @@ export function resolveEpisodeMedia(input = {}) {
         staleManualCleared = true;
     }
 
+    // Honor explicit episode media binds (catalog or related-resolver mediaAssetId/reelId).
+    // Not a second title matcher — only id lookup against the ready vault.
+    if (!staleManualCleared) {
+        const boundId = String(episode?.mediaAssetId || episode?.reelId || '').trim();
+        if (boundId) {
+            const boundAsset = ready.find((item) => assetIdOf(item) === boundId) || null;
+            if (boundAsset && isReadyVaultAsset(boundAsset)) {
+                return {
+                    ...resolveResultFromReadyAsset(boundAsset),
+                    matchTier: 'bound',
+                    bindingMode: 'auto',
+                    bindingLabel: 'Auto matched'
+                };
+            }
+        }
+    }
+
     // Never present unmatched with orphan episode.mediaAssetId — resolution result only.
     const autoHit = resolveAuto(episode, ready);
     if (autoHit) {

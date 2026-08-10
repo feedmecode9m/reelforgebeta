@@ -2,6 +2,11 @@
     import { createEventDispatcher, onDestroy, tick } from 'svelte';
     import { getSeriesById, getReelSeriesMetadata } from '../../lib/series/seriesStore.js';
     import {
+        buildSeriesViewFromRelated,
+        resolveRelatedEpisodes
+    } from '../../lib/series/resolveRelatedEpisodes.js';
+    import { getReadyHeroVaultAssets } from '../../lib/series/heroVaultAssetSource.js';
+    import {
         creatorFacingDescription,
         creatorFacingGenre
     } from '../../lib/series/seriesCatalogTruth.js';
@@ -22,15 +27,68 @@
     /** @type {string} */
     export let selectedEpisodeId = '';
 
-    $: series = getSeriesById(seriesId);
+    /**
+     * Active theater reel / vault asset — seeds related-episode resolution.
+     * @type {Record<string, unknown> | null}
+     */
+    export let seedAsset = null;
+
+    /**
+     * Optional ready vault rows (personal videos, feed extras). Catalog incomplete → vault siblings.
+     * @type {Record<string, unknown>[]}
+     */
+    export let readyAssets = [];
+
+    /**
+     * Parent-provided series view (union already computed). When null, drawer resolves locally.
+     * @type {import('../../lib/series/seriesTypes.js').Series | null}
+     */
+    export let seriesView = null;
+
+    $: catalogSeries = seriesId ? getSeriesById(seriesId) : null;
+
+    $: relatedResult = (() => {
+        // Parent already supplied the unioned series view (Theater) — skip second resolve.
+        if (seriesView) return null;
+        if (!seedAsset) return null;
+        const ready =
+            Array.isArray(readyAssets) && readyAssets.length
+                ? readyAssets
+                : getReadyHeroVaultAssets({
+                      extraItems: seedAsset ? [seedAsset] : []
+                  });
+        return resolveRelatedEpisodes(seedAsset, { readyAssets: ready });
+    })();
+
+    /** Catalog preferred; incomplete catalog unioned with related vault members. */
+    $: series =
+        seriesView ||
+        buildSeriesViewFromRelated(
+            relatedResult || {
+                seriesId,
+                seriesTitle: catalogSeries?.title || '',
+                members: []
+            },
+            catalogSeries
+        ) ||
+        catalogSeries;
+
     $: sortedSeasons = [...(series?.seasons || [])].sort((a, b) => a.seasonNumber - b.seasonNumber);
     $: officialSeriesDescription = creatorFacingDescription(series?.description);
     $: officialSeriesGenre = creatorFacingGenre(series?.genre);
+    $: effectiveSeriesId = series?.id || seriesId || '';
 
     /** @param {CustomEvent<{ episodeId: string }>} event */
     function handleEpisodeSelect(event) {
         selectedEpisodeId = event.detail.episodeId;
-        dispatch('episodeSelect', event.detail);
+        const episode = series?.seasons
+            ?.flatMap((s) => s.episodes || [])
+            .find((e) => e.episodeId === event.detail.episodeId);
+        dispatch('episodeSelect', {
+            ...event.detail,
+            reelId: episode?.reelId || event.detail.reelId || null,
+            mediaAssetId: episode?.mediaAssetId || null
+        });
     }
 
     function closeDrawer() {
@@ -62,7 +120,7 @@
         (focusable[0] || drawerElement)?.focus();
         emitAccessibilityAudit('SeriesDrawer', {
             action: 'open',
-            seriesId
+            seriesId: effectiveSeriesId
         });
     }
 
@@ -119,7 +177,7 @@
     $: if (!open && focusTrapActive) {
         emitAccessibilityAudit('SeriesDrawer', {
             action: 'close',
-            seriesId
+            seriesId: effectiveSeriesId
         });
         focusTrapActive = false;
         restoreFocus();
@@ -189,10 +247,11 @@
                 <div class="series-drawer__seasons">
                     {#each sortedSeasons as season (season.seasonId || season.seasonNumber)}
                         <SeasonAccordion
-                            {seriesId}
+                            seriesId={effectiveSeriesId}
                             {season}
                             selectedEpisodeId={selectedEpisodeId}
                             defaultExpanded={season.seasonNumber === sortedSeasons[0]?.seasonNumber}
+                            heroVaultAssets={readyAssets}
                             on:episodeSelect={handleEpisodeSelect}
                         />
                     {/each}

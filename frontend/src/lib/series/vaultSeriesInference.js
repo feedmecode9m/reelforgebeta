@@ -391,8 +391,10 @@ export function parseHighConfidenceEpisodeTitle(rawTitle) {
         }
     }
 
-    // NAME EP 2 / NAME Episode 3
-    m = text.match(/^(.*?)[\s\-_.]+(?:ep(?:isode)?[\s\-_.]*)(\d{1,3})\s*$/i);
+    // NAME EP 2 / NAME Episode 3  (optional trailing subtitle: EPISODE 2 - SUBTITLE)
+    m = text.match(
+        /^(.*?)[\s\-_.]+(?:ep(?:isode)?[\s\-_.]*)(\d{1,3})(?:[\s\-_.]+.+)?\s*$/i
+    );
     if (m) {
         let seriesTitle = stripProductionTitlePrefixes(cleanSeriesBase(m[1]));
         if (seriesTitle.length >= 2 && !isEpisodeOnlySeriesCandidate(seriesTitle)) {
