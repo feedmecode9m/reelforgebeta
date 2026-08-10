@@ -134,6 +134,118 @@ export function hasWatchProgressData() {
     return Object.keys(loadWatchProgressMap()).length > 0;
 }
 
+/** Position-accurate viewer progress (not filename-based). */
+export const WATCH_POSITION_STORAGE_KEY = 'reelforge_viewer_watch_positions';
+
+/**
+ * @typedef {{
+ *   viewerId: string;
+ *   reelId: string;
+ *   position: number;
+ *   duration: number;
+ *   completed: boolean;
+ *   percent: number;
+ *   updatedAt: number;
+ * }} ViewerWatchPosition
+ */
+
+/** @returns {Record<string, ViewerWatchPosition>} */
+export function loadWatchPositionMap() {
+    if (typeof window === 'undefined') return {};
+    try {
+        const raw = localStorage.getItem(WATCH_POSITION_STORAGE_KEY);
+        if (!raw) return {};
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch {
+        return {};
+    }
+}
+
+/** @param {Record<string, ViewerWatchPosition>} map */
+export function persistWatchPositionMap(map) {
+    if (typeof window === 'undefined') return false;
+    try {
+        localStorage.setItem(WATCH_POSITION_STORAGE_KEY, JSON.stringify(map || {}));
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+/**
+ * @param {{
+ *   viewerId?: string;
+ *   reelId: string;
+ *   position: number;
+ *   duration: number;
+ *   completed?: boolean;
+ * }} input
+ * @returns {ViewerWatchPosition | null}
+ */
+export function savePlaybackPosition(input) {
+    const reelId = String(input?.reelId || '').trim();
+    if (!reelId) return null;
+    const duration = Math.max(0, Number(input.duration) || 0);
+    const position = Math.max(0, Math.min(duration || Number(input.position) || 0, Number(input.position) || 0));
+    const percent =
+        duration > 0 ? Math.max(0, Math.min(100, Math.round((position / duration) * 100))) : 0;
+    const completed =
+        input.completed === true || (duration > 0 && position / duration >= 0.92) || percent >= 92;
+    /** @type {ViewerWatchPosition} */
+    const row = {
+        viewerId: String(input.viewerId || 'local-viewer'),
+        reelId,
+        position: completed ? duration : position,
+        duration,
+        completed,
+        percent: completed ? 100 : percent,
+        updatedAt: Date.now()
+    };
+    const map = loadWatchPositionMap();
+    map[reelId] = row;
+    persistWatchPositionMap(map);
+    // Keep percent map in sync for existing badge rails
+    updateWatchProgress(null, reelId, row.percent);
+    return row;
+}
+
+/** @param {string} reelId */
+export function getPlaybackPosition(reelId) {
+    const id = String(reelId || '').trim();
+    if (!id) return null;
+    return loadWatchPositionMap()[id] || null;
+}
+
+/**
+ * Continue Watching rail rows sorted by recency.
+ * @param {{ limit?: number; viewerId?: string }} [options]
+ * @returns {ViewerWatchPosition[]}
+ */
+export function listContinueWatching(options = {}) {
+    const limit = Math.max(1, Math.min(40, Number(options.limit) || 12));
+    const viewerId = String(options.viewerId || '').trim();
+    return Object.values(loadWatchPositionMap())
+        .filter((row) => {
+            if (!row || row.completed) return false;
+            if (viewerId && row.viewerId !== viewerId) return false;
+            return Number(row.position) > 0 && Number(row.duration) > 0;
+        })
+        .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0))
+        .slice(0, limit);
+}
+
+/**
+ * @param {number} position
+ * @param {number} duration
+ */
+export function formatRemainingLabel(position, duration) {
+    const rem = Math.max(0, Math.floor((Number(duration) || 0) - (Number(position) || 0)));
+    const m = Math.floor(rem / 60);
+    const s = rem % 60;
+    return `${m}:${String(s).padStart(2, '0')} remaining`;
+}
+
 /**
  * @param {string | null | undefined} episodeId
  * @param {string | null | undefined} reelId
