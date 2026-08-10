@@ -5,6 +5,12 @@
   import MediaThumbnail from '../media/MediaThumbnail.svelte';
   import MediaPoster from '../media/MediaPoster.svelte';
   import { attachHeroPersistence } from '../../stores/heroStore.js';
+  import {
+    claimPlaybackOwner,
+    releasePlaybackOwner,
+    playbackOwner as playbackOwnerStore
+  } from '../../lib/media/playbackOwnership.js';
+  import { resolvePlayableMediaUrl } from '../../lib/media/resolvePlayableMediaUrl.js';
   import HeroCommandCenter from '../hero/HeroCommandCenter.svelte';
   import { buildReleaseCenterSnapshot } from '../../lib/release/releaseCenter.js';
   import { loadCreatorProfileStore } from '../../lib/creator/creatorProfileEngine.js';
@@ -372,7 +378,22 @@ export let sanitizeViewer = false;
       heroBackgroundPresentation.mediaUrl,
       $HERO_BACKGROUND_VIDEO
     );
-    return resolveHeroPlaybackUrl(raw, {
+    // Prefer ready playback derivative when hero presentation was sourced from a reel with fields.
+    const preferred = resolvePlayableMediaUrl(
+      {
+        url: raw,
+        playbackUrl:
+          heroBackgroundPresentation.playbackUrl ||
+          heroBackgroundPresentation.playback_url ||
+          '',
+        playbackStatus:
+          heroBackgroundPresentation.playbackStatus ||
+          heroBackgroundPresentation.playback_status ||
+          ''
+      },
+      'hero'
+    );
+    return resolveHeroPlaybackUrl(preferred || raw, {
       source: 'hero_render_video',
       backendOrigin: String(ReelforgeConfig.BACKEND_URL || ReelforgeConfig.ASSET_BASE_URL || '').replace(/\/+$/, '')
     });
@@ -1463,6 +1484,7 @@ $: heroBadgeLabel = sanitizeViewer
     return () => {
       clearCarouselTimers();
       window.removeEventListener('reelforge:hero-manager-updated', handleManagerUpdate);
+      releasePlaybackOwner('hero', 'hero-experience-destroy');
     };
   });
 
@@ -1500,6 +1522,7 @@ $: heroBadgeLabel = sanitizeViewer
   export function handleHeroVideoLoad() {
     heroVideoLoaded.set(true);
     heroVideoFailed.set(false);
+    claimPlaybackOwner('hero', 'hero-background-play');
     pipelineCheckpoint('VIDEO_ATTACHED', {
       vault: 'hero',
       videoSrc: prioritizedHeroVideo || get(HERO_BACKGROUND_VIDEO) || ''
@@ -2272,7 +2295,7 @@ $: heroBadgeLabel = sanitizeViewer
           <span>{activeHeroSlide?.type === 'video' ? '● Featured Background' : '● Featured Artwork'}</span>
         </div>
       {/if}
-      {#if activeHeroMediaMode === 'video'}
+      {#if activeHeroMediaMode === 'video' && $playbackOwnerStore !== 'theater'}
         {#if $heroResumeToast}
           <div class="hero-resume-toast" role="status">{$heroResumeToast}</div>
         {/if}
@@ -2290,10 +2313,17 @@ $: heroBadgeLabel = sanitizeViewer
             muted
             loop
             playsinline
+            playbackRole="hero"
             on:loadedmetadata={handleHeroVideoLoad}
             on:error={handleHeroVideoError}
           />
         {/key}
+      {:else if activeHeroMediaMode === 'video'}
+        {#if heroVideoPoster}
+          <MediaPoster url={heroVideoPoster} className="hero-fallback-image hero-media active" />
+        {:else}
+          <div class="hero-fallback-image hero-media active hero-gradient-fallback" aria-hidden="true"></div>
+        {/if}
       {:else if activeHeroMediaMode === 'image'}
         <MediaPoster url={prioritizedHeroImage} allowDataUrl className="hero-fallback-image hero-media active" />
       {:else if heroBlankBackdrop}

@@ -124,6 +124,12 @@
     import MediaPoster from '../media/MediaPoster.svelte';
     import { prefersHoverPreview } from '../../lib/vertical/feedCardAutoplay.js';
     import { videoMimeForPath } from '../../lib/config.js';
+    import {
+        claimPlaybackOwner,
+        releasePlaybackOwner,
+        canStartPlayback,
+        getPlaybackOwner
+    } from '../../lib/media/playbackOwnership.js';
     import { logBg7kCardRender, logBg7kPlaceholderFallback } from '../../lib/diagnostics/bg7kCardRenderTrace.js';
     import {
         logBg7nStage,
@@ -217,6 +223,35 @@
     });
 
     /** Real feed cards → sorted real-only → presentation padding (BG-7S). */
+
+    /** @type {string} */
+    let feedHoverPreviewId = '';
+
+    /**
+     * @param {string} reelId
+     */
+    function startFeedCardPreview(reelId) {
+        if (!prefersHoverPreview()) return;
+        const id = String(reelId || '').trim();
+        if (!id) return;
+        if (getPlaybackOwner() === 'theater') return;
+        if (!canStartPlayback('preview') && getPlaybackOwner() !== 'preview') return;
+        feedHoverPreviewId = id;
+        claimPlaybackOwner('preview', `feed-card:${id}`);
+    }
+
+    /**
+     * @param {string} reelId
+     */
+    function stopFeedCardPreview(reelId) {
+        const id = String(reelId || '').trim();
+        if (id && feedHoverPreviewId && id !== feedHoverPreviewId) return;
+        feedHoverPreviewId = '';
+        if (getPlaybackOwner() === 'preview') {
+            releasePlaybackOwner('preview', 'feed-card-leave');
+            claimPlaybackOwner('hero', 'feed-return');
+        }
+    }
     function getShelfDisplayItems(category) {
         const source = $normalizedFeed[category] || $feed[category] || [];
         const real = UIAgent.fillLandscape ? UIAgent.fillLandscape(source, category) : source;
@@ -343,7 +378,15 @@
                             }}
                             aria-label="Play {reel.title}"
                         >
-                            <div class="card-inner vault-card">
+                            <div
+                                class="card-inner vault-card"
+                                on:pointerenter={() => {
+                                    if (hasPlayableVideo(reel) && reel.url && !$feedCardVideoFallbacks.has(reel.id)) {
+                                        startFeedCardPreview(reel.id);
+                                    }
+                                }}
+                                on:pointerleave={() => stopFeedCardPreview(reel.id)}
+                            >
                                 {#if hasPlayableVideo(reel) && reel.url}
                                     {#if $feedCardVideoFallbacks.has(reel.id)}
                                         {traceFeedCardRender(reel, category, 'video_fallback_thumbnail', reel.thumbnailUrl || getImg(reel, category, i))}
@@ -353,7 +396,7 @@
                                             lazyLoad
                                             className="card-visual card-video-fallback"
                                         />
-                                    {:else}
+                                    {:else if prefersHoverPreview() && String(feedHoverPreviewId) === String(reel.id)}
                                         {traceFeedCardRender(reel, category, 'video', reel.url)}
                                         <MediaRenderer
                                             type="video"
@@ -365,12 +408,20 @@
                                             muted
                                             playsinline
                                             loop
+                                            autoplay={true}
                                             preload="metadata"
+                                            playbackRole="preview"
                                             className="card-visual"
-                                            on:mouseenter={(e) => { if (prefersHoverPreview()) e.currentTarget.play(); }}
-                                            on:mouseleave={(e) => { if (prefersHoverPreview()) { e.currentTarget.pause(); e.currentTarget.currentTime = 0; } }}
                                             on:loadeddata={() => console.log('✅ Video loaded:', reel.url, videoMimeForPath(reel.url))}
                                             on:error={(e) => onCardVideoError(e, reel)}
+                                        />
+                                    {:else}
+                                        {traceFeedCardRender(reel, category, 'video_poster', reel.thumbnailUrl || getImg(reel, category, i))}
+                                        <MediaThumbnail
+                                            url={reel.thumbnailUrl || getImg(reel, category, i)}
+                                            alt={reel.title || reel.name || 'Video poster'}
+                                            lazyLoad
+                                            className="card-visual card-video-poster"
                                         />
                                     {/if}
                                 {:else if reel.url}

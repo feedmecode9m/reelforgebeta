@@ -38,6 +38,16 @@
         ignoreIdentityProposal
     } from '../../lib/intelligence/contentIdentityGuard.js';
     import { buildHeroAssetRegistry, isVideoHeroAssetType } from '../../lib/hero/heroAssetBridge.js';
+    import MediaRenderer from '../media/MediaRenderer.svelte';
+    import MediaThumbnail from '../media/MediaThumbnail.svelte';
+    import { resolveMediaForRender } from '../media/resolveDisplayUrl.js';
+    import {
+        claimPlaybackOwner,
+        releasePlaybackOwner,
+        canStartPlayback,
+        getPlaybackOwner
+    } from '../../lib/media/playbackOwnership.js';
+    import { resolvePlayableMediaUrl } from '../../lib/media/resolvePlayableMediaUrl.js';
     import { deleteReelById, fetchReadyReels } from '../../lib/api/media.js';
     import { getAdminAuthHeaders } from '../../lib/api.js';
     import { applyCanonicalDeleteClientEffects } from '../../lib/deletionSync.js';
@@ -217,6 +227,8 @@
     let vaultVideoLoadedByAsset = {};
     /** @type {Record<string, boolean>} */
     let vaultVideoErrorByAsset = {};
+    /** Single Hero Vault card allowed to mount a <video> (hover or selected). */
+    let activeHeroVaultPreviewId = '';
 
     const HERO_IMAGE_STORAGE_KEY = 'reelforge_hero_image';
     const HERO_VIDEO_STORAGE_KEY = 'reelforge_hero_video';
@@ -1062,6 +1074,9 @@
         const vaultItems = loadHeroVaultItems(getLiveVaultExtras());
         const registry = buildHeroAssetRegistry(vaultItems, { storageSource: 'vault_pick' });
         heroAssetRegistry.set(registry);
+        // Reset preview load/error so remounted sources can re-bind cleanly.
+        vaultVideoLoadedByAsset = {};
+        vaultVideoErrorByAsset = {};
     }
 
     /** Snapshot of all control fields for a complete save (settings + story + campaigns). */
@@ -1520,6 +1535,57 @@
     }
 
     /**
+     * Browser-playable URL for Hero Vault grid preview (same pipeline as Content vault).
+     * Prefers ready playback derivative for hover preview only; catalog ids stay master-side.
+     * @param {Record<string, unknown>} item
+     */
+    function resolveHeroVaultPreviewUrl(item) {
+        const preferred = resolvePlayableMediaUrl(item, 'vault_preview');
+        const raw = String(preferred || item?.mediaUrl || item?.url || item?.videoUrl || '').trim();
+        if (!raw) return '';
+        if (raw.startsWith('blob:') || raw.startsWith('data:')) return raw;
+        return resolveMediaForRender(raw, 'video', 'HeroVaultVideoPreview') || raw;
+    }
+
+    /**
+     * @param {Record<string, unknown>} item
+     */
+    function resolveHeroVaultPosterUrl(item) {
+        const raw = String(item?.thumbnailUrl || item?.posterUrl || '').trim();
+        if (!raw) return '';
+        if (raw.startsWith('blob:') || raw.startsWith('data:')) return raw;
+        return resolveMediaForRender(raw, 'poster', 'HeroVaultPosterPreview') || raw;
+    }
+
+    /**
+     * Poster-first: only one vault card mounts video (hover / selected).
+     * @param {string} assetId
+     */
+    function activateHeroVaultPreview(assetId) {
+        const id = String(assetId || '').trim();
+        if (!id) return;
+        if (getPlaybackOwner() === 'theater') return;
+        if (!canStartPlayback('preview') && getPlaybackOwner() !== 'preview') return;
+        if (activeHeroVaultPreviewId === id) return;
+        activeHeroVaultPreviewId = id;
+        claimPlaybackOwner('preview', `hero-vault:${id}`);
+    }
+
+    /**
+     * @param {string} assetId
+     */
+    function deactivateHeroVaultPreview(assetId) {
+        const id = String(assetId || '').trim();
+        if (id && activeHeroVaultPreviewId && id !== activeHeroVaultPreviewId) return;
+        activeHeroVaultPreviewId = '';
+        if (getPlaybackOwner() === 'preview') {
+            releasePlaybackOwner('preview', 'hero-vault-leave');
+            // Allow hero background to reclaim bandwidth.
+            claimPlaybackOwner('hero', 'hero-vault-return');
+        }
+    }
+
+    /**
      * @param {Record<string, unknown>} item
      */
     function handleHeroVaultVideoMetadataLoad(item) {
@@ -1537,7 +1603,7 @@
         console.info('[HERO_VAULT_VIDEO_METADATA_LOADED]', {
             assetId,
             assetType: String(item?.assetType || ''),
-            mediaUrl: String(item?.mediaUrl || ''),
+            mediaUrl: resolveHeroVaultPreviewUrl(item) || String(item?.mediaUrl || ''),
             timestamp: Date.now()
         });
     }
@@ -1552,11 +1618,15 @@
                 ...vaultVideoErrorByAsset,
                 [assetId]: true
             };
+            vaultVideoLoadedByAsset = {
+                ...vaultVideoLoadedByAsset,
+                [assetId]: false
+            };
         }
-        console.info('[HERO_VAULT_VIDEO_ERROR]', {
+        console.warn('[HERO_VAULT_VIDEO_ERROR]', {
             assetId,
             assetType: String(item?.assetType || ''),
-            mediaUrl: String(item?.mediaUrl || ''),
+            mediaUrl: resolveHeroVaultPreviewUrl(item) || String(item?.mediaUrl || ''),
             timestamp: Date.now()
         });
     }
@@ -3048,39 +3118,92 @@
                     {@const storyIntel = getStoryPreviewIntel(item)}
                     {@const videoLoaded = Boolean(vaultVideoLoadedByAsset[item.assetId])}
                     {@const videoErrored = Boolean(vaultVideoErrorByAsset[item.assetId])}
+                    {@const vaultPreviewActive = String(activeHeroVaultPreviewId) === String(item.assetId)}
                     <article
                         class="hero-vault__card"
                         class:hero-vault__card--active={isActive}
                         data-hero-vault-card
                         data-asset-id={item.assetId}
+                        data-vault-preview-active={vaultPreviewActive ? 'true' : 'false'}
+                        on:pointerenter={() => {
+                            if (isVideoHeroAssetType(item.assetType)) {
+                                activateHeroVaultPreview(item.assetId);
+                            }
+                        }}
+                        on:pointerleave={() => deactivateHeroVaultPreview(item.assetId)}
+                        on:focusin={() => {
+                            if (isVideoHeroAssetType(item.assetType)) {
+                                activateHeroVaultPreview(item.assetId);
+                            }
+                        }}
+                        on:focusout={(e) => {
+                            const next = e.relatedTarget;
+                            if (next && e.currentTarget.contains(/** @type {Node} */ (next))) return;
+                            deactivateHeroVaultPreview(item.assetId);
+                        }}
                     >
                         <div class="hero-vault__preview">
                             {#if isVideoHeroAssetType(item.assetType)}
-                                <div
-                                    class="hero-vault__preview-placeholder"
-                                    class:hidden={videoLoaded && !videoErrored}
-                                    aria-hidden={videoLoaded && !videoErrored}
-                                >
-                                    <span>Loading video preview...</span>
-                                </div>
-                                {#key `${item.assetId}:${item.mediaUrl}`}
-                                    <video
-                                        class="hero-vault__video vault-preview-video"
-                                        src={item.mediaUrl}
-                                        poster={item.thumbnailUrl || ''}
-                                        autoplay
-                                        loop
-                                        muted
-                                        playsinline
-                                        preload="metadata"
-                                        on:loadedmetadata={() => handleHeroVaultVideoMetadataLoad(item)}
-                                        on:error={() => handleHeroVaultVideoError(item)}
-                                    ></video>
-                                {/key}
+                                {@const previewUrl = resolveHeroVaultPreviewUrl(item)}
+                                {@const posterUrl = resolveHeroVaultPosterUrl(item)}
+                                {#if vaultPreviewActive && previewUrl && !videoErrored}
+                                    {#key `${item.assetId}:${previewUrl}:live`}
+                                        <MediaRenderer
+                                            type="video"
+                                            url={previewUrl}
+                                            poster={posterUrl || undefined}
+                                            autoplay={true}
+                                            muted={true}
+                                            loop={true}
+                                            playsinline={true}
+                                            preload="metadata"
+                                            useSourceElement={true}
+                                            raw={previewUrl.startsWith('blob:') || previewUrl.startsWith('data:')}
+                                            playbackRole="preview"
+                                            className="hero-vault__video vault-preview-video"
+                                            width="100%"
+                                            height="100%"
+                                            on:loadeddata={() => handleHeroVaultVideoMetadataLoad(item)}
+                                            on:loadedmetadata={() => handleHeroVaultVideoMetadataLoad(item)}
+                                            on:error={() => handleHeroVaultVideoError(item)}
+                                        />
+                                    {/key}
+                                {:else if posterUrl}
+                                    <MediaThumbnail
+                                        url={posterUrl}
+                                        alt={displayTitle}
+                                        lazyLoad={true}
+                                        className="hero-vault__image"
+                                    />
+                                {:else if videoErrored}
+                                    <div
+                                        class="hero-vault__preview-placeholder error"
+                                        aria-hidden="false"
+                                    >
+                                        <span>Preview unavailable</span>
+                                    </div>
+                                {:else if !previewUrl}
+                                    <div
+                                        class="hero-vault__preview-placeholder error"
+                                        aria-hidden="false"
+                                    >
+                                        <span>No playable video URL</span>
+                                    </div>
+                                {:else}
+                                    <div
+                                        class="hero-vault__preview-placeholder"
+                                        data-hero-vault-poster-first
+                                        aria-hidden="false"
+                                    >
+                                        <span>Hover to preview</span>
+                                    </div>
+                                {/if}
                             {:else}
                                 <img
                                     class="hero-vault__image"
-                                    src={item.thumbnailUrl || item.mediaUrl}
+                                    src={resolveHeroVaultPosterUrl(item) ||
+                                        resolveMediaForRender(item.mediaUrl, 'thumbnail', 'HeroVaultImage') ||
+                                        item.mediaUrl}
                                     alt={displayTitle}
                                     loading="lazy"
                                 />
@@ -3725,11 +3848,12 @@
         top: 0;
         left: 0;
         z-index: 1;
+        background: #000;
     }
     .hero-vault__preview-placeholder {
         position: absolute;
         inset: 0;
-        z-index: 0;
+        z-index: 2;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -3740,10 +3864,16 @@
         background: linear-gradient(145deg, rgba(18, 20, 30, 0.9), rgba(6, 8, 12, 0.95));
         transition: opacity 0.2s ease;
         opacity: 1;
+        pointer-events: none;
     }
     .hero-vault__preview-placeholder.hidden {
         opacity: 0;
+        z-index: 0;
         pointer-events: none;
+    }
+    .hero-vault__preview-placeholder.error {
+        color: rgba(252, 165, 165, 0.95);
+        background: linear-gradient(145deg, rgba(40, 18, 20, 0.95), rgba(12, 6, 8, 0.98));
     }
     .hero-vault__badge,
     .hero-vault__active {

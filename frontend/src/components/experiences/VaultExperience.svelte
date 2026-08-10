@@ -5,6 +5,13 @@
   import { isImage, isVideo } from '../../lib/vaultMedia.js';
   import MediaRenderer from '../media/MediaRenderer.svelte';
   import MediaThumbnail from '../media/MediaThumbnail.svelte';
+  import {
+    claimPlaybackOwner,
+    releasePlaybackOwner,
+    canStartPlayback,
+    getPlaybackOwner
+  } from '../../lib/media/playbackOwnership.js';
+  import { resolvePlayableMediaUrl } from '../../lib/media/resolvePlayableMediaUrl.js';
   import VaultEngagementBadge from '../vertical/VaultEngagementBadge.svelte';
   import { reelshortActive } from '../vertical/ReelshortExperience.svelte';
   import { isMicroDramaContent } from '../../lib/vertical/reelshortProfile.js';
@@ -144,6 +151,8 @@
   let thumbnailCanonicalizationDone = false;
   /** @type {Record<string, number>} fileName → put percent */
   let vaultUploadPercents = {};
+  /** Single content-vault card allowed to mount a live <video> (hover). */
+  let activeVaultVideoPreviewId = '';
   let thumbnailCanonInFlight = false;
   // BG-7X: prevent identical duplicate uploads while an upload is in-flight (see uploadLockDiag.js).
   const VAULT_UPLOAD_TIMEOUT_MS_LARGE = 20 * 60 * 1000;
@@ -746,6 +755,33 @@
     const n = Number(video?.size);
     if (!Number.isFinite(n) || n <= 0) return '—';
     return `${(n / (1024 * 1024)).toFixed(1)}MB`;
+  }
+
+  /**
+   * Poster-first vault grid — only one hover preview may mount a decoder.
+   * @param {string} videoId
+   */
+  function activateVaultVideoPreview(videoId) {
+    const id = String(videoId || '').trim();
+    if (!id) return;
+    if (getPlaybackOwner() === 'theater') return;
+    if (!canStartPlayback('preview') && getPlaybackOwner() !== 'preview') return;
+    if (activeVaultVideoPreviewId === id) return;
+    activeVaultVideoPreviewId = id;
+    claimPlaybackOwner('preview', `content-vault:${id}`);
+  }
+
+  /**
+   * @param {string} videoId
+   */
+  function deactivateVaultVideoPreview(videoId) {
+    const id = String(videoId || '').trim();
+    if (id && activeVaultVideoPreviewId && id !== activeVaultVideoPreviewId) return;
+    activeVaultVideoPreviewId = '';
+    if (getPlaybackOwner() === 'preview') {
+      releasePlaybackOwner('preview', 'content-vault-leave');
+      claimPlaybackOwner('hero', 'content-vault-return');
+    }
   }
 
   function isHeroInjectedVaultCard(videoRef) {
@@ -3078,7 +3114,17 @@
             use:vaultCardDiagnostics={`video-${vi}`}
             draggable={!isGhostCard && !isUploadingCard}
             on:dragstart={(event) => handleVaultVideoDragStart(event, video)}
+            on:pointerenter={() => {
+              if (isVideo(reel) && reel.url && !isGhostCard && !isUploadingCard && !isFailedCard && !isPendingCard) {
+                activateVaultVideoPreview(String(video?.id || reel?.id || ''));
+              }
+            }}
+            on:pointerleave={() =>
+              deactivateVaultVideoPreview(String(video?.id || reel?.id || ''))}
             role="listitem"
+            data-vault-preview-active={String(activeVaultVideoPreviewId) === String(video?.id || reel?.id || '')
+              ? 'true'
+              : 'false'}
           >
             {#if $reelshortActive && microDrama}
               <VaultEngagementBadge itemId={video.id || reel.name} />
@@ -3109,34 +3155,58 @@
                 <small>{video.uploadState === 'interrupted' ? 'Interrupted' : 'Upload failed'}</small>
               </div>
             {:else if isVideo(reel) && reel.url}
-              <MediaRenderer
-                type="video"
-                url={reel.url}
-                poster={reel.thumbnailUrl || undefined}
-                raw={String(reel.url || '').startsWith('blob:') || String(reel.url || '').startsWith('data:')}
-                useSourceElement={true}
-                muted
-                playsinline
-                preload="metadata"
-                className="vault-grid-visual vault-grid-video"
-                width="100%"
-                height="100%"
-                on:loadeddata={(event) => {
-                  console.info('[VIDEO_RENDER]', { index: vi, url: reel.url, ts: new Date().toISOString() });
-                  pipelineCheckpoint('VIDEO_ATTACHED', {
-                    vault: 'mp4',
-                    videoSrc: reel.url,
-                    reelId: video?.id || reel?.id || null
-                  });
-                  handleVaultVideoLoaded(event, reel);
-                }}
-                on:loadedmetadata={(event) =>
-                  logVaultCardLayoutDiagnostics(
-                    event?.currentTarget?.closest?.('.vault-card'),
-                    `video-${vi}:load`
-                  )}
-                on:error={(event) => handleVaultVideoElementError(event, video, reel)}
-              />
+              {@const previewActive =
+                String(activeVaultVideoPreviewId) === String(video?.id || reel?.id || '')}
+              {@const vaultPreviewPlayUrl = resolvePlayableMediaUrl(reel, 'vault_preview') || reel.url}
+              {#if previewActive}
+                <MediaRenderer
+                  type="video"
+                  url={vaultPreviewPlayUrl}
+                  poster={reel.thumbnailUrl || undefined}
+                  raw={String(vaultPreviewPlayUrl || '').startsWith('blob:') || String(vaultPreviewPlayUrl || '').startsWith('data:')}
+                  useSourceElement={true}
+                  muted
+                  playsinline
+                  autoplay={true}
+                  loop={true}
+                  preload="metadata"
+                  playbackRole="preview"
+                  className="vault-grid-visual vault-grid-video"
+                  width="100%"
+                  height="100%"
+                  on:loadeddata={(event) => {
+                    console.info('[VIDEO_RENDER]', { index: vi, url: vaultPreviewPlayUrl, ts: new Date().toISOString() });
+                    pipelineCheckpoint('VIDEO_ATTACHED', {
+                      vault: 'mp4',
+                      videoSrc: vaultPreviewPlayUrl,
+                      reelId: video?.id || reel?.id || null
+                    });
+                    handleVaultVideoLoaded(event, reel);
+                  }}
+                  on:loadedmetadata={(event) =>
+                    logVaultCardLayoutDiagnostics(
+                      event?.currentTarget?.closest?.('.vault-card'),
+                      `video-${vi}:load`
+                    )}
+                  on:error={(event) => handleVaultVideoElementError(event, video, reel)}
+                />
+              {:else if reel.thumbnailUrl}
+                <MediaThumbnail
+                  url={reel.thumbnailUrl}
+                  alt={reel.name || reel.title || 'Video poster'}
+                  lazyLoad={true}
+                  className="vault-grid-visual vault-grid-poster"
+                />
+              {:else}
+                <div
+                  class="placeholder vault-poster-first"
+                  data-vault-poster-first
+                  aria-hidden="true"
+                >
+                  <span>▶</span>
+                  <small>Hover to preview</small>
+                </div>
+              {/if}
             {:else}
               {@const _vaultPlaceholderGate = logVaultPlaceholderGate(video, reel, vi)}
               <div class="placeholder" aria-hidden="true">▶</div>

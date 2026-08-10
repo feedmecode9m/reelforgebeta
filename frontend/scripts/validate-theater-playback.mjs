@@ -60,6 +60,14 @@ assert(
 );
 assert(/export function pauseCompetingPageVideos/.test(exclusive), 'pauseCompetingPageVideos exported');
 assert(/export function resumeCompetingPageVideos/.test(exclusive), 'resumeCompetingPageVideos exported');
+assert(
+    /snapshotAndUnloadVideo|removeAttribute\('src'\)/.test(exclusive),
+    'competing page videos unload network sources'
+);
+assert(
+    /claimPlaybackOwner\('theater'/.test(exclusive) || /claimPlaybackOwner/.test(exclusive),
+    'exclusive helpers claim theater ownership'
+);
 
 // 5. Diagnostics attached on mount
 assert(

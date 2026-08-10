@@ -1,10 +1,27 @@
 /**
- * Exclusive playback helpers — pause non-Theater media while Theater is open.
- * Prevents hero/shelf <video> elements competing for bandwidth with the primary MP4.
+ * Exclusive playback helpers — pause + unload non-Theater media while Theater is open.
+ * Prevents hero/shelf/preview <video> elements competing for bandwidth with the primary MP4.
  */
 
-/** @type {HTMLVideoElement[]} */
-let pausedByTheater = [];
+import {
+    claimPlaybackOwner,
+    releasePlaybackOwner,
+    getPlaybackOwner
+} from '../media/playbackOwnership.js';
+
+/**
+ * @typedef {{
+ *   el: HTMLVideoElement;
+ *   srcAttr: string;
+ *   sources: Array<{ src: string; type: string }>;
+ *   wasPlaying: boolean;
+ *   preload: string;
+ *   currentTime: number;
+ * }} SuspendedVideo
+ */
+
+/** @type {SuspendedVideo[]} */
+let suspendedByTheater = [];
 
 /**
  * @param {HTMLVideoElement} el
@@ -19,38 +36,149 @@ function isTheaterPrimaryVideo(el) {
 }
 
 /**
- * Pause every playing page video that is not the Theater primary.
- * Safe to call multiple times — only tracks videos paused by the first call until resume.
+ * Snapshot network sources then detach so the browser drops range downloads.
+ * @param {HTMLVideoElement} v
+ * @returns {SuspendedVideo | null}
+ */
+function snapshotAndUnloadVideo(v) {
+    if (!v) return null;
+    const sourceEls = [...v.querySelectorAll('source')];
+    const sources = sourceEls
+        .map((s) => ({
+            src: String(s.getAttribute('src') || '').trim(),
+            type: String(s.getAttribute('type') || '').trim()
+        }))
+        .filter((s) => s.src);
+    const srcAttr = String(v.getAttribute('src') || '').trim();
+    const wasPlaying = !v.paused && !v.ended;
+    const preload = String(v.getAttribute('preload') || v.preload || '');
+    const currentTime = Number(v.currentTime) || 0;
+
+    try {
+        v.pause();
+    } catch {
+        /* ignore */
+    }
+
+    try {
+        for (const s of sourceEls) {
+            s.removeAttribute('src');
+            s.remove();
+        }
+        v.removeAttribute('src');
+        // Empty string assignment drops active network pipelines in Chromium/WebKit.
+        v.src = '';
+        v.removeAttribute('src');
+        v.preload = 'none';
+        v.load();
+    } catch {
+        /* ignore */
+    }
+
+    return {
+        el: v,
+        srcAttr,
+        sources,
+        wasPlaying,
+        preload,
+        currentTime
+    };
+}
+
+/**
+ * Pause and unload every page video that is not the Theater primary.
+ * Safe to call multiple times — already-suspended nodes are updated in place.
  */
 export function pauseCompetingPageVideos() {
     if (typeof document === 'undefined') return;
-    // Keep prior list if theater re-opened without resume (e.g. episode change).
-    const stillTracked = new Set(pausedByTheater);
-    const playing = [...document.querySelectorAll('video')].filter(
-        (v) => !isTheaterPrimaryVideo(v) && !v.paused && !v.ended
-    );
-    for (const v of playing) {
-        try {
-            v.pause();
-            if (!stillTracked.has(v)) {
-                pausedByTheater.push(v);
-                stillTracked.add(v);
+
+    claimPlaybackOwner('theater', 'theater-open-exclusive');
+
+    const already = new Set(suspendedByTheater.map((s) => s.el));
+    const all = [...document.querySelectorAll('video')];
+
+    for (const v of all) {
+        if (isTheaterPrimaryVideo(v)) continue;
+        if (already.has(v)) {
+            // Re-assert unload if Svelte rebound src while Theater is open.
+            try {
+                if (v.getAttribute('src') || v.querySelector('source') || (v.currentSrc && !v.ended)) {
+                    const had = suspendedByTheater.find((s) => s.el === v);
+                    const snap = snapshotAndUnloadVideo(v);
+                    if (snap && had) {
+                        // Keep original snapshot fields for restore.
+                        had.el = snap.el;
+                    } else if (snap) {
+                        suspendedByTheater.push(snap);
+                    }
+                } else {
+                    try {
+                        v.pause();
+                    } catch {
+                        /* ignore */
+                    }
+                }
+            } catch {
+                /* ignore */
             }
-        } catch {
-            /* ignore */
+            continue;
         }
+        const snap = snapshotAndUnloadVideo(v);
+        if (snap) {
+            suspendedByTheater.push(snap);
+            already.add(v);
+        }
+    }
+
+    if (import.meta.env?.DEV) {
+        console.info('[THEATER_EXCLUSIVE]', {
+            phase: 'pause-unload',
+            suspended: suspendedByTheater.length,
+            owner: getPlaybackOwner(),
+            ts: new Date().toISOString()
+        });
     }
 }
 
 /**
- * Resume videos we paused when opening Theater (best-effort).
+ * Restore sources unloaded when opening Theater (best-effort).
+ * Does not force autoplay for non-hero previews; only replays if it was playing.
  */
 export function resumeCompetingPageVideos() {
-    const list = pausedByTheater;
-    pausedByTheater = [];
-    for (const v of list) {
+    const list = suspendedByTheater;
+    suspendedByTheater = [];
+    releasePlaybackOwner('theater', 'theater-close');
+
+    for (const item of list) {
+        const v = item.el;
         try {
-            if (v && v.isConnected) {
+            if (!v || !v.isConnected) continue;
+
+            // Prefer <source> restoration when card used useSourceElement.
+            if (item.sources && item.sources.length) {
+                v.removeAttribute('src');
+                for (const s of item.sources) {
+                    const el = document.createElement('source');
+                    el.src = s.src;
+                    if (s.type) el.type = s.type;
+                    v.appendChild(el);
+                }
+            } else if (item.srcAttr) {
+                v.setAttribute('src', item.srcAttr);
+                v.src = item.srcAttr;
+            }
+
+            if (item.preload) {
+                try {
+                    v.preload = item.preload;
+                } catch {
+                    /* ignore */
+                }
+            }
+
+            // Only restore play for media that was mid-play (typically hero).
+            // Svelte remounts may overwrite these attributes shortly after.
+            if (item.wasPlaying) {
                 const p = v.play?.();
                 if (p && typeof p.catch === 'function') p.catch(() => {});
             }
@@ -58,4 +186,39 @@ export function resumeCompetingPageVideos() {
             /* autoplay may block — acceptable */
         }
     }
+
+    if (import.meta.env?.DEV) {
+        console.info('[THEATER_EXCLUSIVE]', {
+            phase: 'resume-restore',
+            restored: list.length,
+            owner: getPlaybackOwner(),
+            ts: new Date().toISOString()
+        });
+    }
+}
+
+/**
+ * Count non-theater videos still holding a network src (validation / diagnostics).
+ * @returns {{ competitorsWithSrc: number; theaterVideos: number }}
+ */
+export function inspectCompetingVideoSources() {
+    if (typeof document === 'undefined') {
+        return { competitorsWithSrc: 0, theaterVideos: 0 };
+    }
+    const all = [...document.querySelectorAll('video')];
+    let theaterVideos = 0;
+    let competitorsWithSrc = 0;
+    for (const v of all) {
+        if (isTheaterPrimaryVideo(v)) {
+            theaterVideos += 1;
+            continue;
+        }
+        const hasSrc = Boolean(
+            (v.getAttribute('src') || '').trim() ||
+                v.querySelector('source[src]') ||
+                (v.currentSrc && String(v.currentSrc).trim())
+        );
+        if (hasSrc) competitorsWithSrc += 1;
+    }
+    return { competitorsWithSrc, theaterVideos };
 }

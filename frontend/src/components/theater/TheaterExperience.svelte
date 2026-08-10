@@ -11,6 +11,11 @@
     import { navigateFromDrawer, navigateOnSwipeUp } from '../../lib/series/episodeNavigation.js';
     import { resolveSeriesContextForReel } from '../../lib/series/seriesStore.js';
     import {
+        buildSeriesViewFromRelated,
+        resolveRelatedEpisodes
+    } from '../../lib/series/resolveRelatedEpisodes.js';
+    import { getReadyHeroVaultAssets } from '../../lib/series/heroVaultAssetSource.js';
+    import {
         activePublishingProfile,
         episodeNavigationFlags,
         metadataDisplayFlags,
@@ -113,6 +118,7 @@
             activeReel.set(null);
             // Best-effort: free bandwidth for page/hero media again after exclusive Theater session.
             resumeCompetingPageVideos();
+            // Hero background reclaim is handled by HeroExperience remount / load handlers.
             logTheaterState({ activeReelId: null, visible: false, phase: 'closed' });
         }
         handleVideoEnd() {
@@ -326,6 +332,7 @@
     import { logFinalMediaUrl, videoMimeForPath } from '../../lib/config.js';
     import { isVideoReel, isImageReel } from '../../lib/api/reelContract.js';
     import { resolveTheaterPlayback } from '../../lib/media/theaterPlayback.js';
+    import { resolvePlayableMediaUrl } from '../../lib/media/resolvePlayableMediaUrl.js';
     import SeriesDrawer from '../series/SeriesDrawer.svelte';
     import TheaterSeriesPanel from '../series/TheaterSeriesPanel.svelte';
     import TheaterSeriesMetadata from '../publishing/TheaterSeriesMetadata.svelte';
@@ -545,8 +552,39 @@
         }
         return '';
     })();
-    $: hasSeriesDrawer = Boolean(drawerSeriesId);
-    /** Episodes pop-out lives in the header next to framing controls — always on when catalog exists. */
+
+    /** Ready vault pool for related-episode resolution (does not alter Hero Vault UI). */
+    $: relatedReadyAssets = (() => {
+        if (!$activeReel) return [];
+        const extras = [$activeReel, ...($personalVideos || [])];
+        try {
+            return getReadyHeroVaultAssets({ extraItems: extras });
+        } catch {
+            return extras.filter(Boolean);
+        }
+    })();
+
+    $: relatedEpisodes = $activeReel
+        ? resolveRelatedEpisodes($activeReel, { readyAssets: relatedReadyAssets })
+        : null;
+
+    $: drawerSeriesView = (() => {
+        if (!$activeReel || !relatedEpisodes) return null;
+        const catalog =
+            (drawerSeriesId && getSeriesById(drawerSeriesId)) ||
+            (relatedEpisodes.seriesId && getSeriesById(relatedEpisodes.seriesId)) ||
+            null;
+        return buildSeriesViewFromRelated(relatedEpisodes, catalog);
+    })();
+
+    $: relatedEpisodeTitles = (drawerSeriesView?.seasons || [])
+        .flatMap((s) => s.episodes || [])
+        .map((e) => String(e.title || '').trim())
+        .filter(Boolean);
+
+    $: hasRelatedFamily = (relatedEpisodes?.members?.length || 0) >= 2 || relatedEpisodeTitles.length >= 2;
+    $: hasSeriesDrawer = Boolean(drawerSeriesId) || hasRelatedFamily;
+    /** Episodes pop-out — catalog series or related vault family (≥2 members). */
     $: showSeriesDrawerControl = hasSeriesDrawer;
     $: if (seriesContext) selectedSeriesEpisodeId = seriesContext.episode.episodeId;
     $: if (!$activeReel) {
@@ -573,10 +611,11 @@
     function handleSeriesEpisodeSelect(event) {
         const episodeId = event.detail.episodeId;
         selectedSeriesEpisodeId = episodeId;
+        const detailReelId = event.detail?.reelId ? String(event.detail.reelId) : '';
         console.info('[THEATER_EPISODE_LOAD]', {
-            seriesId: drawerSeriesId || seriesId || null,
+            seriesId: drawerSeriesId || seriesId || relatedEpisodes?.seriesId || null,
             episodeId,
-            mediaId: null,
+            mediaId: detailReelId || null,
             source: 'theater-drawer-select',
             phase: 'request',
             ts: new Date().toISOString()
@@ -586,6 +625,33 @@
             seriesDrawerOpen = false;
             episodeNavNotice = '';
             return;
+        }
+        // Related-resolver members may carry reelId without catalog bind yet.
+        const reelId =
+            detailReelId ||
+            (event.detail?.mediaAssetId ? String(event.detail.mediaAssetId) : '') ||
+            relatedEpisodes?.members?.find(
+                (m) =>
+                    m.episodeId === episodeId ||
+                    m.assetId === detailReelId ||
+                    m.assetId === String(event.detail?.mediaAssetId || '')
+            )?.reelId ||
+            drawerSeriesView?.seasons
+                ?.flatMap((s) => s.episodes || [])
+                .find((e) => e.episodeId === episodeId)?.reelId ||
+            '';
+        if (reelId) {
+            const fromVault = ($personalVideos || []).find((v) => String(v?.id || '') === reelId);
+            const fromReady = relatedReadyAssets.find(
+                (v) => String(v?.id || v?.assetId || '') === reelId
+            );
+            const candidate = fromVault || fromReady;
+            if (candidate && typeof openTheaterReel === 'function') {
+                openTheaterReel(candidate);
+                seriesDrawerOpen = false;
+                episodeNavNotice = '';
+                return;
+            }
         }
         episodeNavNotice = 'No playable reel is linked to that episode yet.';
     }
@@ -607,7 +673,7 @@
             : null;
     $: theaterVideoSrc =
         $activeReel && isVideoReel($activeReel) && !$activeReel.isPlaceholder && !$activeReel.isBlackStoriesPlaceholder
-            ? $activeReel.url
+            ? resolvePlayableMediaUrl($activeReel, 'theater')
             : theaterPlayback?.mode === 'video'
               ? theaterPlayback.url
               : null;
@@ -788,6 +854,7 @@
                             muted={theaterMuted}
                             controls
                             playsinline
+                            playbackRole="theater"
                             on:ended={handleTheaterEnded}
                             on:timeupdate={(e) => {
                                 handleTheaterTimeupdate(e);
@@ -997,7 +1064,10 @@
         {#if hasSeriesDrawer}
             <SeriesDrawer
                 bind:open={seriesDrawerOpen}
-                seriesId={drawerSeriesId}
+                seriesId={drawerSeriesId || relatedEpisodes?.seriesId || ''}
+                seriesView={drawerSeriesView}
+                seedAsset={$activeReel}
+                readyAssets={relatedReadyAssets}
                 selectedEpisodeId={selectedSeriesEpisodeId}
                 on:episodeSelect={handleSeriesEpisodeSelect}
             />

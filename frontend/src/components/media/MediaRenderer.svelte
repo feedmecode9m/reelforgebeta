@@ -4,6 +4,11 @@
     import { logBg7kPlaceholderFallback } from '../../lib/diagnostics/bg7kCardRenderTrace.js';
     import { logMediaRendererEvent } from '../../lib/diagnostics/renderGateForensics.js';
     import { resolveMediaForRender, resolveValidatedVideoUrl, isPassthroughMediaUrl } from './resolveDisplayUrl.js';
+    import {
+        getPlaybackOwner,
+        getPlaybackOwnerSnapshot,
+        tagVideoPlaybackRole
+    } from '../../lib/media/playbackOwnership.js';
 
     const dispatch = createEventDispatcher();
 
@@ -27,6 +32,7 @@
 
     export let lazyLoad = false;
 
+    /** Explicit opt-in — never default to true. */
     export let autoplay = false;
     export let muted = false;
     export let loop = false;
@@ -49,7 +55,13 @@
     /** @type {string | undefined} */
     export let mimeType = undefined;
 
+    /**
+     * Least-expensive default for video: no speculative download.
+     * Callers that need earliest frame (hero/theater) must pass "metadata".
+     * @type {string | undefined}
+     */
     export let preload = undefined;
+
     export let width = undefined;
     export let height = undefined;
 
@@ -64,6 +76,13 @@
 
     /** Sets data-theater-video on <video> (theater mount diagnostics). */
     export let dataTheaterVideo = false;
+
+    /**
+     * Logical bandwidth owner for this element: hero | theater | preview.
+     * Diagnostics only — claim/release lives in playbackOwnership + surfaces.
+     * @type {string}
+     */
+    export let playbackRole = '';
 
     $: mediaType = (() => {
         if (type && type !== 'thumbnail') return type;
@@ -102,6 +121,14 @@
 
     $: videoMime = mimeType || videoMimeForPath(resolvedSrc || url || '');
 
+    /** Default preload=none for video unless caller opts into metadata/auto. */
+    $: effectivePreload =
+        mediaType === 'video'
+            ? preload == null || preload === ''
+                ? 'none'
+                : String(preload)
+            : preload || undefined;
+
     $: aspectStyle = aspectRatio ? `aspect-ratio: ${aspectRatio};` : '';
     $: posterBackgroundStyle =
         mediaType === 'poster' && posterSrc
@@ -111,7 +138,16 @@
     $: imgLoading = lazyLoad ? 'lazy' : undefined;
 
     function mediaCtx() {
-        return { url, resolvedSrc, mediaType };
+        const snap = getPlaybackOwnerSnapshot();
+        return {
+            url,
+            resolvedSrc,
+            mediaType,
+            autoplay: Boolean(autoplay),
+            preload: effectivePreload,
+            playbackRole: String(playbackRole || '') || null,
+            activePlaybackOwner: snap.owner
+        };
     }
 
     function forwardVideoEvent(name, event) {
@@ -120,18 +156,46 @@
         dispatch(name, event);
     }
 
-    onMount(() => {
-        logMediaRendererEvent('mounted', videoElement, mediaCtx());
+    function logVideoMountDiag(node) {
+        if (!node) return;
+        tagVideoPlaybackRole(node, playbackRole);
         if (!import.meta.env.DEV) return;
-        const element = mediaType === 'video' ? 'video' : mediaType === 'poster' ? 'div' : 'img';
-        console.debug('[MediaRenderer]', {
-            type: mediaType,
-            originalUrl: url,
-            resolvedUrl: resolvedSrc,
-            element,
+        const snap = getPlaybackOwnerSnapshot();
+        console.info('[MediaRenderer:video]', {
+            src: node.currentSrc || node.getAttribute('src') || resolvedSrc || url || null,
+            autoplay: Boolean(autoplay),
+            muted: Boolean(muted),
+            preload: effectivePreload || null,
+            playbackRole: String(playbackRole || '') || null,
+            activePlaybackOwner: snap.owner,
+            dataTheaterVideo: Boolean(dataTheaterVideo),
             timestamp: new Date().toISOString()
         });
+    }
+
+    onMount(() => {
+        logMediaRendererEvent('mounted', videoElement, mediaCtx());
+        if (mediaType === 'video' && videoElement) {
+            logVideoMountDiag(videoElement);
+        } else if (import.meta.env.DEV) {
+            const element = mediaType === 'video' ? 'video' : mediaType === 'poster' ? 'div' : 'img';
+            console.debug('[MediaRenderer]', {
+                type: mediaType,
+                originalUrl: url,
+                resolvedUrl: resolvedSrc,
+                autoplay: Boolean(autoplay),
+                preload: effectivePreload,
+                playbackRole: playbackRole || null,
+                activePlaybackOwner: getPlaybackOwner(),
+                element,
+                timestamp: new Date().toISOString()
+            });
+        }
     });
+
+    $: if (videoElement && mediaType === 'video') {
+        tagVideoPlaybackRole(videoElement, playbackRole);
+    }
 
     function applyImageFallback(node) {
         const handler = () => {
@@ -167,12 +231,15 @@
             data-theater-video={dataTheaterVideo ? '' : undefined}
             data-media-renderer
             data-viewer-media-exempt
+            data-playback-role={playbackRole || undefined}
+            data-autoplay={autoplay ? 'true' : 'false'}
+            data-preload={effectivePreload || undefined}
             {autoplay}
             {muted}
             {loop}
             {controls}
             {playsinline}
-            preload={preload || undefined}
+            preload={effectivePreload || undefined}
             width={width || undefined}
             height={height || undefined}
             use:action={action}
@@ -215,12 +282,15 @@
             data-theater-video={dataTheaterVideo ? '' : undefined}
             data-media-renderer
             data-viewer-media-exempt
+            data-playback-role={playbackRole || undefined}
+            data-autoplay={autoplay ? 'true' : 'false'}
+            data-preload={effectivePreload || undefined}
             {autoplay}
             {muted}
             {loop}
             {controls}
             {playsinline}
-            preload={preload || undefined}
+            preload={effectivePreload || undefined}
             width={width || undefined}
             height={height || undefined}
             on:loadeddata={(e) => forwardVideoEvent('loadeddata', e)}
