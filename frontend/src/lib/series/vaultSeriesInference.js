@@ -676,13 +676,20 @@ export function withVaultSeriesIdentity(asset) {
         Number(existing.episodeNumber ?? existing.episode_number) >= 1
     ) {
         const identity = buildVaultSeriesIdentity({ ...asset, seriesIdentity: existing }) || built;
+        // Creator confirmation beats re-inferred confidence/parser metadata on re-seal.
+        const confirmedByCreator =
+            existing.confirmedByCreator === true ||
+            existing.identitySource === 'creator' ||
+            /** @type {Record<string, unknown>} */ (asset).confirmedByCreator === true;
         return {
             ...asset,
             seriesIdentity: {
                 seriesLabel: identity.seriesLabel,
                 seasonNumber: identity.seasonNumber,
                 episodeNumber: identity.episodeNumber,
-                confidence: identity.confidence
+                ...(confirmedByCreator
+                    ? { confirmedByCreator: true }
+                    : { confidence: identity.confidence })
             },
             seriesLabel: String(asset.seriesLabel || identity.seriesLabel).trim() || identity.seriesLabel,
             seasonNumber:

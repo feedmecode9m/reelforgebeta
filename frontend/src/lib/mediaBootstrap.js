@@ -23,6 +23,10 @@ import {
     pruneGhostVideoVaultEntries
 } from './deletionSync.js';
 import { traceVideoStoreBoundary } from './diagnostics/videoStoreTrace.js';
+import {
+    indexVaultAssetsByMediaId,
+    overlayLocalCreatorVaultAuthority
+} from './vault/vaultCreatorAuthority.js';
 
 /**
  * Media catalog bootstrap — reads authoritative catalog from GET /api/reels (Postgres).
@@ -388,7 +392,19 @@ export async function hydrateVaultFromReels(thumbnailKey, videoVaultKey, options
         }
         if (!thumbsOnly) {
             const localVideos = readVaultJson(videoVaultKey);
-            const prunedLocal = pruneGhostVideoVaultEntries(localVideos, videoEntries);
+            // Overlay creator-confirmed identity + episodeEnrichment onto catalog rows
+            // before writing localStorage — catalog wins media id/url, vault wins identity/package.
+            const localById = indexVaultAssetsByMediaId(localVideos);
+            const catalogWithAuthority = videoEntries.map((entry) => {
+                const id = String(entry?.id || '').trim();
+                const local = id ? localById.get(id) : null;
+                return (
+                    /** @type {Record<string, unknown>} */ (
+                        overlayLocalCreatorVaultAuthority(entry, local) || entry
+                    )
+                );
+            });
+            const prunedLocal = pruneGhostVideoVaultEntries(localVideos, catalogWithAuthority);
             const pendingLocal = prunedLocal
                 .filter((entry) => isPendingLocalVideoVaultEntry(entry))
                 .map((entry) => {
@@ -417,7 +433,7 @@ export async function hydrateVaultFromReels(thumbnailKey, videoVaultKey, options
                     }
                     return entry;
                 });
-            const merged = dedupeVideoEntries([...videoEntries, ...pendingLocal]);
+            const merged = dedupeVideoEntries([...catalogWithAuthority, ...pendingLocal]);
             const reconciled = filterOutDeletedMedia(merged);
             safeStorageSet(videoVaultKey, reconciled);
             videoCount = reconciled.length;

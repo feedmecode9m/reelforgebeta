@@ -42,6 +42,11 @@ import {
 import { loadHeroReel, resolveActiveHeroVideoReel, heroReelToVaultItem } from '../lib/hero/heroReelIdentity.js';
 import { isHeroAsset, filterNonHeroAssets } from '../lib/hero/heroDomainGuard.js';
 import { sealVaultAssetsWithEnrichment } from '../lib/series/vaultEpisodeEnrichment.js';
+import {
+    PERSONAL_VIDEO_VAULT_MINIMAL_FIELDS,
+    overlayLocalCreatorVaultAuthority,
+    indexVaultAssetsByMediaId
+} from '../lib/vault/vaultCreatorAuthority.js';
 import { shouldStreamDiagnostics } from '../lib/diagnostics/pipelineSnapshot.js';
 import { notifyInterruptedUploads } from '../lib/diagnostics/uploadRecovery.js';
 import { getActiveUploadLockCount } from '../lib/diagnostics/uploadLockDiag.js';
@@ -302,24 +307,8 @@ safeLocalStorageSet(CONFIG.VIDEO_VAULT_KEY, filtered, {
 quotaEvictThumbnailKey: CONFIG.THUMBNAIL_STORAGE_KEY,
 // Keep uploadState so dedupe can ignore in-flight optimistic cards after reload.
 // blob:/data: urls are stripped inside safeLocalStorageSet (memory-only preview).
-minimalFields: [
-  'id',
-  'name',
-  'title',
-  'fileName',
-  'type',
-  'size',
-  'addedAt',
-  'thumbnail',
-  'uploadState',
-  'isOptimisticLocal',
-  'uploadError',
-  // Durable Hero Vault series identity (viewer discovery signals)
-  'seriesIdentity',
-  'seriesLabel',
-  'seasonNumber',
-  'episodeNumber'
-]
+// episodeEnrichment + seriesIdentity (incl. confirmedByCreator) must survive hard reload.
+minimalFields: PERSONAL_VIDEO_VAULT_MINIMAL_FIELDS
 });
 }
 // ==========================================
@@ -1143,9 +1132,31 @@ if (backendReachable) {
       }),
     'backend-projection-pending-local'
   );
+  // Catalog projection first, but keep local creator identity + package by mediaAssetId.
+  const localAuthorityById = indexVaultAssetsByMediaId(existing);
   const seen = new Set();
   const merged = [];
-  for (const entry of [...incomingClean, ...pendingLocal]) {
+  for (const entry of incomingClean) {
+    if (!entry || typeof entry !== 'object') continue;
+    const rawUrl = String(entry.url || '').trim();
+    const canonicalUrl =
+      rawUrl && !rawUrl.startsWith('blob:') && !rawUrl.startsWith('data:')
+        ? toRelativeMediaPath(rawUrl)
+        : '';
+    const key =
+      canonicalUrl ||
+      String(entry.fileName || entry.name || entry.id || '').trim();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    const id = String(entry.id || entry.mediaAssetId || '').trim();
+    const local = id ? localAuthorityById.get(id) : null;
+    merged.push(
+      /** @type {Record<string, unknown>} */ (
+        overlayLocalCreatorVaultAuthority(entry, local) || entry
+      )
+    );
+  }
+  for (const entry of pendingLocal) {
     if (!entry || typeof entry !== 'object') continue;
     const rawUrl = String(entry.url || '').trim();
     const canonicalUrl =

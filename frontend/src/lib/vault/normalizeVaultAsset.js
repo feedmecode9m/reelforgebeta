@@ -253,27 +253,56 @@ export function normalizeVaultAsset(raw, options = {}) {
                 ? /** @type {Record<string, unknown>} */ (row.seriesIdentity)
                 : null;
         const confirmedByCreator =
-            priorNested?.confirmedByCreator === true || priorNested?.identitySource === 'creator';
+            priorNested?.confirmedByCreator === true ||
+            priorNested?.identitySource === 'creator' ||
+            row.confirmedByCreator === true;
+        // Creator-confirmed S/E from prior nested identity wins over title re-parse.
+        const label =
+            confirmedByCreator && firstString(priorNested?.seriesLabel, priorNested?.series_label)
+                ? firstString(priorNested?.seriesLabel, priorNested?.series_label)
+                : seriesIdentity.seriesLabel;
+        const season =
+            confirmedByCreator && Number(priorNested?.seasonNumber ?? priorNested?.season_number) >= 1
+                ? Number(priorNested?.seasonNumber ?? priorNested?.season_number)
+                : seriesIdentity.seasonNumber;
+        const episode =
+            confirmedByCreator && Number(priorNested?.episodeNumber ?? priorNested?.episode_number) >= 1
+                ? Number(priorNested?.episodeNumber ?? priorNested?.episode_number)
+                : seriesIdentity.episodeNumber;
         normalized.seriesIdentity = {
-            seriesLabel: seriesIdentity.seriesLabel,
-            seasonNumber: seriesIdentity.seasonNumber,
-            episodeNumber: seriesIdentity.episodeNumber,
+            seriesLabel: label,
+            seasonNumber: season,
+            episodeNumber: episode,
             ...(confirmedByCreator ? { confirmedByCreator: true } : {})
         };
         // Flat mirrors for consumers that read top-level fields (legacy-safe)
         normalized.seriesLabel =
-            firstString(row.seriesLabel, row.series_label, seriesIdentity.seriesLabel) ||
-            seriesIdentity.seriesLabel;
+            (confirmedByCreator
+                ? firstString(priorNested?.seriesLabel, row.seriesLabel, row.series_label, label)
+                : firstString(row.seriesLabel, row.series_label, seriesIdentity.seriesLabel)) ||
+            label;
         normalized.seasonNumber =
-            Number(row.seasonNumber ?? row.season_number) >= 1
-                ? Number(row.seasonNumber ?? row.season_number)
-                : seriesIdentity.seasonNumber;
+            confirmedByCreator && Number(priorNested?.seasonNumber) >= 1
+                ? Number(priorNested.seasonNumber)
+                : Number(row.seasonNumber ?? row.season_number) >= 1
+                  ? Number(row.seasonNumber ?? row.season_number)
+                  : season;
         normalized.episodeNumber =
-            Number(row.episodeNumber ?? row.episode_number) >= 1
-                ? Number(row.episodeNumber ?? row.episode_number)
-                : seriesIdentity.episodeNumber;
+            confirmedByCreator && Number(priorNested?.episodeNumber) >= 1
+                ? Number(priorNested.episodeNumber)
+                : Number(row.episodeNumber ?? row.episode_number) >= 1
+                  ? Number(row.episodeNumber ?? row.episode_number)
+                  : episode;
     } else {
         // Preserve pre-existing identity fields when present even if parse failed
+        const priorNested =
+            row.seriesIdentity && typeof row.seriesIdentity === 'object'
+                ? /** @type {Record<string, unknown>} */ (row.seriesIdentity)
+                : null;
+        const confirmedByCreator =
+            priorNested?.confirmedByCreator === true ||
+            priorNested?.identitySource === 'creator' ||
+            row.confirmedByCreator === true;
         const preserved = buildVaultSeriesIdentity({
             seriesIdentity: row.seriesIdentity,
             seriesLabel: row.seriesLabel,
@@ -285,7 +314,8 @@ export function normalizeVaultAsset(raw, options = {}) {
             normalized.seriesIdentity = {
                 seriesLabel: preserved.seriesLabel,
                 seasonNumber: preserved.seasonNumber,
-                episodeNumber: preserved.episodeNumber
+                episodeNumber: preserved.episodeNumber,
+                ...(confirmedByCreator ? { confirmedByCreator: true } : {})
             };
             normalized.seriesLabel = preserved.seriesLabel;
             normalized.seasonNumber = preserved.seasonNumber;
