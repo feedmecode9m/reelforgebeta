@@ -1,11 +1,27 @@
 /**
- * Durable Creator Series Editor edits (series/season metadata + episode display order).
- * Complements reel metadata; does not replace Hero Vault seriesIdentity.
+ * Durable Creator Series Catalog authority (beyond Hero Vault seriesIdentity).
+ *
+ * Owns (after creator mutation):
+ *   - series / season metadata (title, description, artwork, tags, genre)
+ *   - displayOrder (via seasons[n].episodeOrder)
+ *   - publishing status per episodeId (episodes[episodeId].status)
+ *
+ * Does NOT own media identity (mediaAssetId / seriesLabel / S/E labels) — Hero Vault does.
  *
  * Storage key: reelforge_series_catalog_edits
+ * Survives API catalog hydrate + vault rebind when reapplied after those merges.
  */
 
 export const SERIES_CATALOG_EDITS_KEY = 'reelforge_series_catalog_edits';
+
+/**
+ * @typedef {{
+ *   status?: 'draft' | 'ready' | 'published' | 'archived';
+ *   displayOrder?: number;
+ *   title?: string;
+ *   description?: string;
+ * }} EpisodeCatalogEdit
+ */
 
 /**
  * @typedef {{
@@ -20,6 +36,7 @@ export const SERIES_CATALOG_EDITS_KEY = 'reelforge_series_catalog_edits';
  *     poster?: string;
  *     episodeOrder?: string[];
  *   }>;
+ *   episodes?: Record<string, EpisodeCatalogEdit>;
  *   updatedAt?: number;
  * }} SeriesCatalogEdit
  */
@@ -69,11 +86,33 @@ export function upsertSeriesCatalogEdit(seriesId, patch = {}) {
         ...(prev.seasons && typeof prev.seasons === 'object' ? prev.seasons : {}),
         ...(patch.seasons && typeof patch.seasons === 'object' ? patch.seasons : {})
     };
+    // Deep-merge season keys rather than replace whole seasons blob when patch.seasons is partial
+    if (patch.seasons && typeof patch.seasons === 'object') {
+        for (const [k, v] of Object.entries(patch.seasons)) {
+            seasons[k] = {
+                ...(prev.seasons && prev.seasons[k] ? prev.seasons[k] : {}),
+                ...(v && typeof v === 'object' ? v : {})
+            };
+        }
+    }
+    const episodes = {
+        ...(prev.episodes && typeof prev.episodes === 'object' ? prev.episodes : {}),
+        ...(patch.episodes && typeof patch.episodes === 'object' ? patch.episodes : {})
+    };
+    if (patch.episodes && typeof patch.episodes === 'object') {
+        for (const [k, v] of Object.entries(patch.episodes)) {
+            episodes[k] = {
+                ...(prev.episodes && prev.episodes[k] ? prev.episodes[k] : {}),
+                ...(v && typeof v === 'object' ? v : {})
+            };
+        }
+    }
     /** @type {SeriesCatalogEdit} */
     const next = {
         ...prev,
         ...patch,
         seasons,
+        episodes,
         updatedAt: Date.now()
     };
     map[id] = next;
@@ -103,6 +142,55 @@ export function upsertSeasonCatalogEdit(seriesId, seasonNumber, seasonPatch = {}
 }
 
 /**
+ * Persist per-episode publishing / display annotations (creator authority).
+ * @param {string} seriesId
+ * @param {string} episodeId
+ * @param {EpisodeCatalogEdit} patch
+ */
+export function upsertEpisodeCatalogEdit(seriesId, episodeId, patch = {}) {
+    const sid = String(seriesId || '').trim();
+    const eid = String(episodeId || '').trim();
+    if (!sid || !eid || !patch || typeof patch !== 'object') return null;
+    const map = loadSeriesCatalogEditsMap();
+    const prev = map[sid] || {};
+    const episodes = {
+        ...(prev.episodes && typeof prev.episodes === 'object' ? prev.episodes : {})
+    };
+    episodes[eid] = {
+        ...(episodes[eid] || {}),
+        ...patch
+    };
+    return upsertSeriesCatalogEdit(sid, { episodes });
+}
+
+/**
+ * @param {string} seriesId
+ * @param {string} episodeId
+ * @returns {EpisodeCatalogEdit | null}
+ */
+export function getEpisodeCatalogEdit(seriesId, episodeId) {
+    const edit = getSeriesCatalogEdit(seriesId);
+    if (!edit?.episodes) return null;
+    const row = edit.episodes[String(episodeId || '').trim()];
+    return row && typeof row === 'object' ? row : null;
+}
+
+/**
+ * Resolve durable creator publishing status for an episode (if recorded).
+ * @param {string} seriesId
+ * @param {string} episodeId
+ * @returns {'draft' | 'ready' | 'published' | 'archived' | null}
+ */
+export function getCreatorEpisodeStatus(seriesId, episodeId) {
+    const row = getEpisodeCatalogEdit(seriesId, episodeId);
+    const st = row?.status;
+    if (st === 'draft' || st === 'ready' || st === 'published' || st === 'archived') {
+        return st;
+    }
+    return null;
+}
+
+/**
  * Sort episodes creator/viewer shelf order: displayOrder ASC, then episodeNumber, then title.
  * @param {Array<{ displayOrder?: number; episodeNumber?: number; title?: string; episodeId?: string }>} episodes
  */
@@ -123,7 +211,68 @@ export function sortEpisodesForDisplay(episodes) {
 }
 
 /**
+ * Stamp creator displayOrder + publishing status onto episodes (non-mutating).
+ * Does not rewrite episodeNumber / reelId / mediaAssetId (vault identity).
+ * @param {import('./seriesTypes.js').Episode[]} episodes
+ * @param {SeriesCatalogEdit | null | undefined} edit
+ * @param {{ episodeOrder?: string[] }} [seasonMeta]
+ */
+export function applyEpisodeAuthorityFromEdit(episodes, edit, seasonMeta = {}) {
+    let list = Array.isArray(episodes) ? episodes.map((ep) => ({ ...ep })) : [];
+    const order = Array.isArray(seasonMeta.episodeOrder) ? seasonMeta.episodeOrder : null;
+    const epEdits = edit?.episodes && typeof edit.episodes === 'object' ? edit.episodes : {};
+
+    if (order && order.length) {
+        const byId = new Map(list.map((ep) => [ep.episodeId, ep]));
+        /** @type {typeof list} */
+        const ordered = [];
+        let orderIdx = 0;
+        for (const epId of order) {
+            const id = String(epId || '').trim();
+            if (!id || !byId.has(id)) continue;
+            const prev = byId.get(id);
+            ordered.push({ ...prev, displayOrder: orderIdx });
+            byId.delete(id);
+            orderIdx += 1;
+        }
+        for (const rest of byId.values()) {
+            ordered.push({ ...rest, displayOrder: orderIdx });
+            orderIdx += 1;
+        }
+        list = ordered;
+    }
+
+    list = list.map((ep) => {
+        const row = epEdits[String(ep.episodeId || '')];
+        if (!row || typeof row !== 'object') return ep;
+        /** @type {typeof ep} */
+        const next = { ...ep };
+        if (
+            row.status === 'draft' ||
+            row.status === 'ready' ||
+            row.status === 'published' ||
+            row.status === 'archived'
+        ) {
+            next.status = row.status;
+        }
+        if (Number.isFinite(Number(row.displayOrder))) {
+            next.displayOrder = Number(row.displayOrder);
+        }
+        if (row.title != null && String(row.title).trim()) {
+            next.title = String(row.title).trim();
+        }
+        if (row.description != null) {
+            next.description = String(row.description);
+        }
+        return next;
+    });
+
+    return sortEpisodesForDisplay(list);
+}
+
+/**
  * Apply durable catalog edits onto a series object (non-mutating).
+ * Creator authority layer for order + publishing + series/season meta.
  * @param {import('./seriesTypes.js').Series | null | undefined} series
  * @param {SeriesCatalogEdit | null | undefined} [edit]
  */
@@ -152,28 +301,7 @@ export function applySeriesCatalogEdit(series, edit = null) {
         tags: Array.isArray(e.tags) ? e.tags : series.tags || [],
         seasons: (series.seasons || []).map((season) => {
             const sm = seasonsMeta[String(season.seasonNumber)] || {};
-            let episodes = [...(season.episodes || [])];
-            if (Array.isArray(sm.episodeOrder) && sm.episodeOrder.length) {
-                const byId = new Map(episodes.map((ep) => [ep.episodeId, ep]));
-                /** @type {typeof episodes} */
-                const ordered = [];
-                let orderIdx = 0;
-                for (const epId of sm.episodeOrder) {
-                    const id = String(epId || '').trim();
-                    if (!id || !byId.has(id)) continue;
-                    const prev = byId.get(id);
-                    ordered.push({ ...prev, displayOrder: orderIdx });
-                    byId.delete(id);
-                    orderIdx += 1;
-                }
-                for (const rest of byId.values()) {
-                    ordered.push({ ...rest, displayOrder: orderIdx });
-                    orderIdx += 1;
-                }
-                episodes = ordered;
-            } else {
-                episodes = sortEpisodesForDisplay(episodes);
-            }
+            const episodes = applyEpisodeAuthorityFromEdit(season.episodes || [], e, sm);
             return {
                 ...season,
                 title: sm.title != null ? String(sm.title) : season.title,
@@ -183,4 +311,17 @@ export function applySeriesCatalogEdit(series, edit = null) {
             };
         })
     };
+}
+
+/**
+ * Materialize durable edits onto a full catalog list (store rehydrate after API/vault).
+ * @param {import('./seriesTypes.js').Series[]} catalog
+ * @returns {import('./seriesTypes.js').Series[]}
+ */
+export function reapplyCreatorCatalogAuthority(catalog) {
+    const list = Array.isArray(catalog) ? catalog : [];
+    return list.map((series) => {
+        const applied = applySeriesCatalogEdit(series);
+        return applied && typeof applied === 'object' ? applied : series;
+    });
 }

@@ -962,7 +962,8 @@ function ensureEpisodeInCatalog(seriesId, seasonNumber, episodeNumber, episodeTi
         episodeId,
         episodeNumber,
         title: humanTitle,
-        status: 'published',
+        // Vault-inferred media is creator-preview ready, never auto-published.
+        status: 'ready',
         reelId: null,
         tags: ['vault-inferred']
     };
@@ -1149,7 +1150,8 @@ export function inferAndBindVaultSeries(reels = [], options = {}) {
                     seasonNumber: member.parsed.seasonNumber,
                     episodeNumber: member.parsed.episodeNumber,
                     episodeTitle,
-                    episodeStatus: 'published'
+                    // Vault media bound ≠ published. Creator publishing owns status.
+                    episodeStatus: 'ready'
                 });
                 if (!boundOk) {
                     skipped += 1;
@@ -1164,7 +1166,18 @@ export function inferAndBindVaultSeries(reels = [], options = {}) {
                 }
             }
 
+            // Prefer catalog episode status if already creator-controlled
+            const catalogEp = getEpisodeById(episodeId)?.episode;
+            const statusForMeta =
+                catalogEp?.status === 'draft' ||
+                catalogEp?.status === 'ready' ||
+                catalogEp?.status === 'published' ||
+                catalogEp?.status === 'archived'
+                    ? catalogEp.status
+                    : 'ready';
+
             // Authoritative studio map write (includes seriesName, S/E, episodeId)
+            // Never force published — vault presence is not publishing.
             const saved = saveReelSeriesMetadata(
                 reelId,
                 {
@@ -1175,7 +1188,7 @@ export function inferAndBindVaultSeries(reels = [], options = {}) {
                     episodeNumber: member.parsed.episodeNumber,
                     episodeTitle,
                     episodeId,
-                    episodeStatus: 'published'
+                    episodeStatus: statusForMeta
                 },
                 { sourceType: 'vault', context: 'inferAndBindVaultSeries' }
             );

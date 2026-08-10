@@ -13,7 +13,8 @@ import {
     initSeriesMetadata,
     rehydrateEpisodeVaultBindings,
     getSeriesById,
-    seriesCatalog
+    seriesCatalog,
+    reapplyCreatorCatalogAuthorityToStore
 } from './seriesStore.js';
 import { get } from 'svelte/store';
 import { getReadyHeroVaultAssets } from './heroVaultAssetSource.js';
@@ -119,6 +120,13 @@ export function hydratePublicSeriesFromVault(options = {}) {
     const map = loadEpisodeVaultBindingMap();
     if (Object.keys(map).length) {
         seriesCatalog.update((items) => applyStoredBindingsToCatalog(items, map));
+    }
+
+    // Creator order + publishing must win over vault defaults after public hydrate
+    try {
+        reapplyCreatorCatalogAuthorityToStore();
+    } catch {
+        /* store may still be cold */
     }
 
     console.info('[PUBLIC_SERIES_VAULT_HYDRATION]', {

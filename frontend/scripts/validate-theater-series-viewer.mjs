@@ -102,7 +102,11 @@ async function main() {
         assert(stirredRelated.members.length >= 2, 'STIRRED: related members ≥ 2');
         assert(/stirred/i.test(stirredRelated.seriesTitle), 'STIRRED: series title from vault labels');
 
-        const stirredView = buildSeriesViewFromRelated(stirredRelated, null);
+        const publishMembers = (related) => ({
+            ...related,
+            members: (related.members || []).map((m) => ({ ...m, status: 'published' }))
+        });
+        const stirredView = buildSeriesViewFromRelated(publishMembers(stirredRelated), null);
         assert(Boolean(stirredView), 'STIRRED: drawer series view');
         assert(/stirred/i.test(String(stirredView?.title || '')), 'STIRRED: series title visible');
         assert(
@@ -154,7 +158,7 @@ async function main() {
         const fromEp2 = resolveRelatedEpisodes(ep2, { readyAssets: vicVault });
         assert(fromPilot.members.length >= 2, 'Vic G: pilot seed family ≥ 2');
         assert(fromEp2.members.length >= 2, 'Vic G: EP2 seed family ≥ 2');
-        const vicView = buildSeriesViewFromRelated(fromPilot, null);
+        const vicView = buildSeriesViewFromRelated(publishMembers(fromPilot), null);
         const vicTitles = titlesOf(vicView);
         assert(
             vicTitles.some((t) => /vic g la story/i.test(t)) &&
@@ -187,7 +191,7 @@ async function main() {
                 }
             ]
         };
-        const unionView = buildSeriesViewFromRelated(stirredRelated, incompleteCatalog);
+        const unionView = buildSeriesViewFromRelated(publishMembers(stirredRelated), incompleteCatalog);
         const unionTitles = titlesOf(unionView);
         assert(
             unionTitles.some((t) => /stirred 1/i.test(t)) &&

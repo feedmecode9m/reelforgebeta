@@ -48,7 +48,11 @@ import {
     applySeriesCatalogEdit,
     sortEpisodesForDisplay,
     upsertSeriesCatalogEdit,
-    upsertSeasonCatalogEdit
+    upsertSeasonCatalogEdit,
+    upsertEpisodeCatalogEdit,
+    reapplyCreatorCatalogAuthority,
+    getCreatorEpisodeStatus,
+    loadSeriesCatalogEditsMap
 } from './seriesCatalogEdits.js';
 import { episodeIsViewerDiscoverable } from './publishingLifecycle.js';
 
@@ -141,6 +145,104 @@ async function isSeriesApiAvailable() {
 }
 
 /**
+ * Merge API reel metadata with local creator-authored publishing state.
+ * API may introduce new rows; never wipe local episodeStatus for known reels
+ * unless API explicit status is present AND no durable catalog-edit status exists.
+ *
+ * @param {Record<string, ReelSeriesMetadata>} localMap
+ * @param {Record<string, ReelSeriesMetadata>} apiMap
+ * @returns {Record<string, ReelSeriesMetadata>}
+ */
+function mergeMetadataMapsPreservingCreator(localMap, apiMap) {
+    /** @type {Record<string, ReelSeriesMetadata>} */
+    const out = { ...(localMap || {}) };
+    for (const [reelId, apiRow] of Object.entries(apiMap || {})) {
+        if (!apiRow) continue;
+        const local = out[reelId];
+        if (!local) {
+            out[reelId] = { ...apiRow };
+            continue;
+        }
+        const editStatus = getCreatorEpisodeStatus(
+            String(local.seriesId || apiRow.seriesId || ''),
+            String(local.episodeId || apiRow.episodeId || '')
+        );
+        out[reelId] = {
+            ...apiRow,
+            // Keep durable creator linkage when API omits
+            seriesId: local.seriesId || apiRow.seriesId,
+            episodeId: local.episodeId || apiRow.episodeId,
+            seriesName: local.seriesName || apiRow.seriesName,
+            seasonNumber: local.seasonNumber ?? apiRow.seasonNumber,
+            episodeNumber: local.episodeNumber ?? apiRow.episodeNumber,
+            episodeTitle: local.episodeTitle || apiRow.episodeTitle,
+            // Publishing: durable catalog-edit status wins, then local, then API
+            episodeStatus:
+                editStatus || local.episodeStatus || apiRow.episodeStatus || 'ready'
+        };
+    }
+    // Overlay every durable publisher status by episodeId onto map rows
+    const editMap = loadSeriesCatalogEditsMap();
+    for (const [seriesId, edit] of Object.entries(editMap || {})) {
+        const episodes = edit?.episodes;
+        if (!episodes || typeof episodes !== 'object') continue;
+        for (const [episodeId, epEdit] of Object.entries(episodes)) {
+            if (!epEdit?.status) continue;
+            for (const [reelId, row] of Object.entries(out)) {
+                if (
+                    String(row.episodeId || '') === String(episodeId) ||
+                    (String(row.seriesId || '') === String(seriesId) &&
+                        String(row.episodeId || '') === String(episodeId))
+                ) {
+                    out[reelId] = { ...row, episodeStatus: epEdit.status };
+                }
+            }
+        }
+    }
+    return out;
+}
+
+/**
+ * Stamp durable creator catalog edits (order + status + series/season meta)
+ * onto the live seriesCatalog store after API/vault merges.
+ */
+export function reapplyCreatorCatalogAuthorityToStore() {
+    seriesCatalog.update((items) => reapplyCreatorCatalogAuthority(items));
+    // Keep reel map statuses aligned after authority reapply
+    const catalog = get(seriesCatalog);
+    /** @type {Record<string, ReelSeriesMetadata>} */
+    const map = { ...get(reelSeriesMetadata) };
+    let changed = false;
+    for (const series of catalog) {
+        for (const season of series.seasons || []) {
+            for (const ep of season.episodes || []) {
+                const reelId = ep.reelId ? String(ep.reelId) : '';
+                if (!reelId) continue;
+                const prev = map[reelId] || { reelId };
+                if (prev.episodeStatus !== ep.status || prev.episodeId !== ep.episodeId) {
+                    map[reelId] = {
+                        ...prev,
+                        reelId,
+                        episodeId: ep.episodeId,
+                        seriesId: series.id,
+                        seriesName: series.title,
+                        seasonNumber: season.seasonNumber,
+                        episodeNumber: ep.episodeNumber,
+                        episodeTitle: ep.title,
+                        episodeStatus: ep.status
+                    };
+                    changed = true;
+                }
+            }
+        }
+    }
+    if (changed) {
+        reelSeriesMetadata.set(map);
+        persistReelSeriesMetadataMap(map);
+    }
+}
+
+/**
  * @param {import('./seriesTypes.js').Series[]} catalogItems
  * @param {Record<string, ReelSeriesMetadata>} map
  */
@@ -148,13 +250,19 @@ function applyApiCatalogState(catalogItems, map) {
     // API rows may still contain previously migrated demo series — strip always.
     const clean = stripDemoSeriesFromCatalog(catalogItems);
     const cleanMap = stripDemoReelMetadata(map);
+    const localMap = stripDemoReelMetadata(loadReelSeriesMetadataMap());
+    // Creator publishing + local bindings survive API catalog replace
+    const mergedMap = mergeMetadataMapsPreservingCreator(localMap, cleanMap);
+
     seriesCatalog.set(clean);
-    reelSeriesMetadata.set(cleanMap);
-    applyAllMetadataToCatalog(cleanMap);
+    reelSeriesMetadata.set(mergedMap);
+    applyAllMetadataToCatalog(mergedMap);
     // API replace is authoritative for studio rows, but must not erase vault-inferred
     // series needed for public /series/:slug cold loads (Hero Vault is source of truth).
     rebindVaultInferredSeries('after-api-catalog');
     rehydrateEpisodeVaultBindings();
+    // Creator Series Catalog / publishing authority final layer
+    reapplyCreatorCatalogAuthorityToStore();
     seriesPersistenceMode.set('api');
 }
 
@@ -185,10 +293,20 @@ function stripDemoReelMetadata(map) {
 function rebindVaultInferredSeries(source) {
     try {
         const ready = getReadyHeroVaultAssets();
-        if (!ready.length) return;
+        if (!ready.length) {
+            reapplyCreatorCatalogAuthorityToStore();
+            return;
+        }
         inferAndBindVaultSeries(ready, { source: source || 'after-catalog-replace' });
+        // Vault bind must never wipe creator order/status
+        reapplyCreatorCatalogAuthorityToStore();
     } catch (err) {
         console.warn('[seriesStore] vault rebind after catalog replace failed', err);
+        try {
+            reapplyCreatorCatalogAuthorityToStore();
+        } catch {
+            /* non-fatal */
+        }
     }
 }
 
@@ -254,8 +372,9 @@ async function hydrateSeriesFromApi() {
             const catalogItems = response.map((row) => apiSeriesToCatalog(row)).filter(isSeries);
             const map = catalogToReelMetadataMap(catalogItems);
             applyApiCatalogState(catalogItems, map);
-            persistReelSeriesMetadataMap(map);
-            cacheSeriesCatalogOffline(catalogItems, map);
+            // applyApiCatalogState already merged + reapplied creator authority into map
+            persistReelSeriesMetadataMap(get(reelSeriesMetadata));
+            cacheSeriesCatalogOffline(get(seriesCatalog), get(reelSeriesMetadata));
             markSeriesApiMigrated();
             logSeriesApiRead({ source: 'api', seriesCount: catalogItems.length });
             return;
@@ -270,8 +389,8 @@ async function hydrateSeriesFromApi() {
                 const catalogItems = refreshed.map((row) => apiSeriesToCatalog(row)).filter(isSeries);
                 const map = catalogToReelMetadataMap(catalogItems);
                 applyApiCatalogState(catalogItems, map);
-                persistReelSeriesMetadataMap(map);
-                cacheSeriesCatalogOffline(catalogItems, map);
+                persistReelSeriesMetadataMap(get(reelSeriesMetadata));
+                cacheSeriesCatalogOffline(get(seriesCatalog), get(reelSeriesMetadata));
                 logSeriesApiSync({ source: 'migrated', seriesCount: catalogItems.length });
                 return;
             }
@@ -347,6 +466,7 @@ export function initSeriesMetadata() {
     reelSeriesMetadata.set(map);
     applyAllMetadataToCatalog(map);
     rehydrateEpisodeVaultBindings();
+    reapplyCreatorCatalogAuthorityToStore();
 
     if (!apiHydrationStarted) {
         apiHydrationStarted = true;
@@ -359,9 +479,12 @@ export function initSeriesMetadata() {
             const syncMap = stripDemoReelMetadata(
                 detail?.seriesMetadata || loadReelSeriesMetadataMap()
             );
-            reelSeriesMetadata.set(syncMap);
-            applyAllMetadataToCatalog(syncMap);
+            const localMap = stripDemoReelMetadata(loadReelSeriesMetadataMap());
+            const merged = mergeMetadataMapsPreservingCreator(localMap, syncMap);
+            reelSeriesMetadata.set(merged);
+            applyAllMetadataToCatalog(merged);
             rehydrateEpisodeVaultBindings();
+            reapplyCreatorCatalogAuthorityToStore();
         });
     }
 }
@@ -861,9 +984,10 @@ export function getEpisodeById(episodeId) {
  */
 export function getEpisodeByReelId(reelId) {
     if (!reelId) return undefined;
-    for (const series of get(seriesCatalog)) {
-        for (const season of series.seasons) {
-            const episode = season.episodes.find((e) => e.reelId === reelId);
+    for (const raw of get(seriesCatalog)) {
+        const series = /** @type {Series} */ (applySeriesCatalogEdit(raw));
+        for (const season of series.seasons || []) {
+            const episode = (season.episodes || []).find((e) => e.reelId === reelId);
             if (episode) return { series, season, episode };
         }
     }
@@ -1038,6 +1162,16 @@ export function updateCatalogEpisode(episodeId, patch = {}) {
 
     const updated = getEpisodeById(id);
     if (!updated) return null;
+
+    // Durable creator authority — survives API hydrate + vault rebind
+    /** @type {import('./seriesCatalogEdits.js').EpisodeCatalogEdit} */
+    const durable = {};
+    if (fields.status) durable.status = fields.status;
+    if (fields.title) durable.title = fields.title;
+    if ('description' in fields) durable.description = fields.description;
+    if (Object.keys(durable).length) {
+        upsertEpisodeCatalogEdit(updated.series.id, id, durable);
+    }
 
     if (updated.episode.reelId) {
         syncReelMetadataFromCatalogEpisode(updated);
@@ -1233,6 +1367,9 @@ export function reorderEpisodesInSeason(seriesId, seasonNumber, orderedEpisodeId
 
     // Durable order for reload + viewer parity
     upsertSeasonCatalogEdit(sid, sn, { episodeOrder: ordered });
+    ordered.forEach((epId, index) => {
+        upsertEpisodeCatalogEdit(sid, epId, { displayOrder: index });
+    });
 
     for (const episode of reordered) {
         if (!episode.reelId) continue;

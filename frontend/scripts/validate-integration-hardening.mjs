@@ -95,7 +95,11 @@ async function main() {
             normalizeTitle(fromPilot.seriesTitle) === normalizeTitle(fromEp2.seriesTitle),
             `same series identity both directions (${fromPilot.seriesTitle})`
         );
-        const viewFromPilot = buildSeriesViewFromRelated(fromPilot, null);
+        const publishMembers = (related) => ({
+            ...related,
+            members: (related.members || []).map((m) => ({ ...m, status: 'published' }))
+        });
+        const viewFromPilot = buildSeriesViewFromRelated(publishMembers(fromPilot), null);
         const drawerTitles = (viewFromPilot?.seasons || [])
             .flatMap((s) => s.episodes || [])
             .map((e) => e.title);
@@ -125,7 +129,7 @@ async function main() {
                 }
             ]
         };
-        const unioned = buildSeriesViewFromRelated(fromEp2, incompleteCatalog);
+        const unioned = buildSeriesViewFromRelated(publishMembers(fromEp2), incompleteCatalog);
         const unionTitles = (unioned?.seasons || [])
             .flatMap((s) => s.episodes || [])
             .map((e) => String(e.title));

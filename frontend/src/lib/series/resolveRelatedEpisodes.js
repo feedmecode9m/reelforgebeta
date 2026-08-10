@@ -561,7 +561,7 @@ export function buildSeriesViewFromRelated(related, catalogSeries = null, option
             episodeId,
             episodeNumber: m.episodeNumber,
             title: m.title,
-            status: m.status || 'published',
+            status: m.status || 'ready',
             reelId: m.reelId,
             mediaAssetId: m.assetId || null,
             tags: ['vault-related'],

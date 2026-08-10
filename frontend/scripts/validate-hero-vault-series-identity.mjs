@@ -159,7 +159,12 @@ async function main() {
         assert(related.members.length >= 3, `related members ≥ 3 (got ${related.members.length})`);
         assert(/stirred/i.test(related.seriesTitle), `viewer series title STIRRED (got ${related.seriesTitle})`);
 
-        const view = buildSeriesViewFromRelated(related, null);
+        // Explicit publish: vault identity alone is never published status
+        const relatedPublished = {
+            ...related,
+            members: (related.members || []).map((m) => ({ ...m, status: 'published' }))
+        };
+        const view = buildSeriesViewFromRelated(relatedPublished, null);
         assert(/stirred/i.test(String(view?.title || '')), 'All Episodes shelf title STIRRED');
         const eps = orderedEps(view);
         assert(

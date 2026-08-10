@@ -119,7 +119,11 @@ async function main() {
         assert(related.members.length >= 3, `STIRRED S01 trio members ≥ 3 (got ${related.members.length})`);
         assert(/stirred/i.test(related.seriesTitle), `STIRRED series title (got ${related.seriesTitle})`);
 
-        const view = buildSeriesViewFromRelated(related, null);
+        const relatedPublished = {
+            ...related,
+            members: (related.members || []).map((m) => ({ ...m, status: 'published' }))
+        };
+        const view = buildSeriesViewFromRelated(relatedPublished, null);
         const order = orderedEpNumbers(view);
         assert(
             order[0] === 1 && order[1] === 2 && order[2] === 3,

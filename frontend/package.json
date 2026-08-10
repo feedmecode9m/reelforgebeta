@@ -62,6 +62,7 @@
     "validate:continue-watching": "node scripts/validate-continue-watching.mjs",
     "validate:recommendations": "node scripts/validate-recommendations.mjs",
     "validate:creator-viewer-runtime": "node scripts/validate-creator-viewer-runtime.mjs",
+    "validate:catalog-authority-hydration": "node scripts/validate-catalog-authority-hydration.mjs",
     "validate:theater-series-viewer": "node scripts/validate-theater-series-viewer.mjs",
     "validate:integration-hardening": "node scripts/validate-integration-hardening.mjs",
     "validate:theater-playback": "node scripts/validate-theater-playback.mjs",

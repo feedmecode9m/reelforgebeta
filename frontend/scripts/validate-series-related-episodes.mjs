@@ -130,7 +130,11 @@ async function main() {
         );
 
         // --- Fixture C: Theater drawer simulation ---
-        const drawerView = buildSeriesViewFromRelated(fromEp2, null);
+        const drawerRelated = {
+            ...fromEp2,
+            members: (fromEp2.members || []).map((m) => ({ ...m, status: 'published' }))
+        };
+        const drawerView = buildSeriesViewFromRelated(drawerRelated, null);
         const drawerTitles = (drawerView?.seasons || [])
             .flatMap((s) => s.episodes || [])
             .map((e) => e.title);
