@@ -6,6 +6,7 @@
         episodeChipPresentation
     } from '../../lib/series/episodeVaultBindingResolver.js';
     import { getReadyHeroVaultAssets } from '../../lib/series/heroVaultAssetSource.js';
+    import { resolveViewerEpisodePosterUrl } from '../../lib/series/viewerEpisodePoster.js';
 
     const dispatch = createEventDispatcher();
 
@@ -69,6 +70,20 @@
         return resolveEpisodeMedia({ episode, readyVaultAssets });
     }
 
+    /**
+     * Viewer poster: chip/vault first, then mediaAssetId-keyed product thumbs.
+     * Does not change playable selection or media ownership.
+     * @param {import('../../lib/series/seriesTypes.js').Episode} episode
+     * @param {{ thumbnailUrl?: string }} chip
+     */
+    function posterForChip(episode, chip) {
+        return resolveViewerEpisodePosterUrl({
+            episode,
+            chipThumbnailUrl: chip?.thumbnailUrl || '',
+            readyVaultAssets
+        });
+    }
+
     function toggleExpanded() {
         if (flat) return;
         expanded = !expanded;
@@ -111,9 +126,7 @@
                     episodeId={episode.episodeId}
                     status={episode.status}
                     mediaAssetId={chip.mediaAssetId || episode.mediaAssetId || episode.reelId || null}
-                    thumbnailUrl={chip.thumbnailUrl ||
-                        (typeof episode.thumbnailUrl === 'string' ? episode.thumbnailUrl : '') ||
-                        ''}
+                    thumbnailUrl={posterForChip(episode, chip)}
                     matchTier={null}
                     bindingLabel={''}
                     playable={chip.playable || Boolean(episode.mediaAssetId || episode.reelId)}
@@ -157,9 +170,7 @@
                         episodeId={episode.episodeId}
                         status={episode.status}
                         mediaAssetId={chip.mediaAssetId || episode.mediaAssetId || episode.reelId || null}
-                        thumbnailUrl={chip.thumbnailUrl ||
-                            (typeof episode.thumbnailUrl === 'string' ? episode.thumbnailUrl : '') ||
-                            ''}
+                        thumbnailUrl={posterForChip(episode, chip)}
                         matchTier={null}
                         bindingLabel={''}
                         playable={chip.playable || Boolean(episode.mediaAssetId || episode.reelId)}
@@ -200,9 +211,7 @@
                         episodeId={episode.episodeId}
                         status={episode.status}
                         mediaAssetId={chip.mediaAssetId || episode.mediaAssetId || episode.reelId || null}
-                        thumbnailUrl={chip.thumbnailUrl ||
-                            (typeof episode.thumbnailUrl === 'string' ? episode.thumbnailUrl : '') ||
-                            ''}
+                        thumbnailUrl={posterForChip(episode, chip)}
                         matchTier={chip.matchTier}
                         bindingLabel={chip.bindingLabel}
                         playable={chip.playable || Boolean(episode.mediaAssetId || episode.reelId)}
