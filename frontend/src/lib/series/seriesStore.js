@@ -145,9 +145,15 @@ async function isSeriesApiAvailable() {
 }
 
 /**
- * Merge API reel metadata with local creator-authored publishing state.
- * API may introduce new rows; never wipe local episodeStatus for known reels
- * unless API explicit status is present AND no durable catalog-edit status exists.
+ * Merge API reel metadata with local map after catalog hydrate.
+ *
+ * Authority (public viewer + API catalog):
+ *   - episodeId / seasonNumber / episodeNumber / seriesId ← API catalog row wins
+ *   - episodeTitle ← API catalog title wins (vault must not replace with filename)
+ *   - episodeStatus ← durable series_catalog_edits, else API, else local
+ *   - vault local map may only fill gaps when API omits a field
+ *
+ * Vault inference must never manufacture public publication state over API draft/published.
  *
  * @param {Record<string, ReelSeriesMetadata>} localMap
  * @param {Record<string, ReelSeriesMetadata>} apiMap
@@ -155,33 +161,49 @@ async function isSeriesApiAvailable() {
  */
 function mergeMetadataMapsPreservingCreator(localMap, apiMap) {
     /** @type {Record<string, ReelSeriesMetadata>} */
-    const out = { ...(localMap || {}) };
+    const out = {};
+
+    // 1) API catalog rows are the base for every bound reel.
     for (const [reelId, apiRow] of Object.entries(apiMap || {})) {
         if (!apiRow) continue;
-        const local = out[reelId];
+        const local = localMap?.[reelId];
         if (!local) {
             out[reelId] = { ...apiRow };
             continue;
         }
-        const editStatus = getCreatorEpisodeStatus(
-            String(local.seriesId || apiRow.seriesId || ''),
-            String(local.episodeId || apiRow.episodeId || '')
-        );
+        const seriesId = String(apiRow.seriesId || local.seriesId || '');
+        const episodeId = String(apiRow.episodeId || local.episodeId || '');
+        const editStatus = getCreatorEpisodeStatus(seriesId, episodeId);
         out[reelId] = {
+            ...local,
             ...apiRow,
-            // Keep durable creator linkage when API omits
-            seriesId: local.seriesId || apiRow.seriesId,
-            episodeId: local.episodeId || apiRow.episodeId,
-            seriesName: local.seriesName || apiRow.seriesName,
-            seasonNumber: local.seasonNumber ?? apiRow.seasonNumber,
-            episodeNumber: local.episodeNumber ?? apiRow.episodeNumber,
-            episodeTitle: local.episodeTitle || apiRow.episodeTitle,
-            // Publishing: durable catalog-edit status wins, then local, then API
+            // Structural identity: API catalog first
+            seriesId: apiRow.seriesId || local.seriesId,
+            episodeId: apiRow.episodeId || local.episodeId,
+            seriesName: apiRow.seriesName || local.seriesName,
+            seasonNumber:
+                apiRow.seasonNumber != null ? apiRow.seasonNumber : local.seasonNumber,
+            episodeNumber:
+                apiRow.episodeNumber != null ? apiRow.episodeNumber : local.episodeNumber,
+            // Presentation title: catalog package wins over vault filename inference
+            episodeTitle: apiRow.episodeTitle || local.episodeTitle,
+            description:
+                apiRow.description != null && String(apiRow.description).trim() !== ''
+                    ? apiRow.description
+                    : local.description,
+            // Publishing: catalog-edits → API → local (never local-ready over API draft/published)
             episodeStatus:
-                editStatus || local.episodeStatus || apiRow.episodeStatus || 'ready'
+                editStatus || apiRow.episodeStatus || local.episodeStatus || 'draft'
         };
     }
-    // Overlay every durable publisher status by episodeId onto map rows
+
+    // 2) Keep local-only reels (vault-inferred offline series with no API row yet).
+    for (const [reelId, local] of Object.entries(localMap || {})) {
+        if (!local || out[reelId]) continue;
+        out[reelId] = { ...local };
+    }
+
+    // 3) Overlay durable creator catalog-edit statuses by episodeId
     const editMap = loadSeriesCatalogEditsMap();
     for (const [seriesId, edit] of Object.entries(editMap || {})) {
         const episodes = edit?.episodes;
@@ -196,6 +218,43 @@ function mergeMetadataMapsPreservingCreator(localMap, apiMap) {
                 ) {
                     out[reelId] = { ...row, episodeStatus: epEdit.status };
                 }
+            }
+        }
+    }
+    return out;
+}
+
+/**
+ * Force reel metadata map fields to match live catalog episodes (status, S/E, title, ids).
+ * Used after API catalog replace so vault inference writeback cannot stay sticky.
+ *
+ * @param {Record<string, ReelSeriesMetadata>} map
+ * @param {import('./seriesTypes.js').Series[]} catalog
+ * @returns {Record<string, ReelSeriesMetadata>}
+ */
+function alignReelMetadataMapToCatalog(map, catalog) {
+    /** @type {Record<string, ReelSeriesMetadata>} */
+    const out = { ...(map || {}) };
+    const list = Array.isArray(catalog) ? catalog : [];
+    for (const series of list) {
+        for (const season of series.seasons || []) {
+            for (const ep of season.episodes || []) {
+                const reelId = ep.reelId ? String(ep.reelId).trim() : '';
+                if (!reelId) continue;
+                const prev = out[reelId] || { reelId };
+                out[reelId] = {
+                    ...prev,
+                    reelId,
+                    seriesId: series.id,
+                    seriesName: series.title,
+                    seasonNumber: season.seasonNumber,
+                    episodeNumber: ep.episodeNumber,
+                    episodeTitle: ep.title,
+                    description: ep.description ?? prev.description,
+                    episodeStatus: ep.status,
+                    episodeId: ep.episodeId,
+                    updatedAt: Date.now()
+                };
             }
         }
     }
@@ -251,19 +310,45 @@ function applyApiCatalogState(catalogItems, map) {
     const clean = stripDemoSeriesFromCatalog(catalogItems);
     const cleanMap = stripDemoReelMetadata(map);
     const localMap = stripDemoReelMetadata(loadReelSeriesMetadataMap());
-    // Creator publishing + local bindings survive API catalog replace
-    const mergedMap = mergeMetadataMapsPreservingCreator(localMap, cleanMap);
+    // API catalog identity + publish status win over vault-local filename maps.
+    let mergedMap = mergeMetadataMapsPreservingCreator(localMap, cleanMap);
 
+    // Catalog episodes (with reelId) are authoritative — never re-apply vault rewrite
+    // of status / S/E / titles onto the clean catalog tree.
     seriesCatalog.set(clean);
+    mergedMap = alignReelMetadataMapToCatalog(mergedMap, clean);
     reelSeriesMetadata.set(mergedMap);
-    applyAllMetadataToCatalog(mergedMap);
-    // API replace is authoritative for studio rows, but must not erase vault-inferred
-    // series needed for public /series/:slug cold loads (Hero Vault is source of truth).
+    persistReelSeriesMetadataMap(mergedMap);
+
+    // Vault may attach media for reels not yet in catalog, or fill heroVaultAssetId —
+    // must not invent publication or renumber catalog episodes.
     rebindVaultInferredSeries('after-api-catalog');
     rehydrateEpisodeVaultBindings();
-    // Creator Series Catalog / publishing authority final layer
+
+    // Re-align after optional vault bind (bindings only touch structural media ids).
+    const postBindCatalog = get(seriesCatalog);
+    const realigned = alignReelMetadataMapToCatalog(get(reelSeriesMetadata), postBindCatalog);
+    reelSeriesMetadata.set(realigned);
+    persistReelSeriesMetadataMap(realigned);
+
+    // Creator Series Catalog edits (order + optional status overrides) final layer.
     reapplyCreatorCatalogAuthorityToStore();
+    // Catalog won for status — keep map in sync with final store (including edits).
+    const afterEdits = alignReelMetadataMapToCatalog(get(reelSeriesMetadata), get(seriesCatalog));
+    reelSeriesMetadata.set(afterEdits);
+    persistReelSeriesMetadataMap(afterEdits);
+
     seriesPersistenceMode.set('api');
+}
+
+/**
+ * Test / tooling entry: apply API catalog authority onto the live store
+ * (skips network — same merge path as hydrateSeriesFromApi success).
+ * @param {import('./seriesTypes.js').Series[]} catalogItems
+ */
+export function applyAuthoritativeApiCatalog(catalogItems) {
+    const list = Array.isArray(catalogItems) ? catalogItems : [];
+    applyApiCatalogState(list, catalogToReelMetadataMap(list));
 }
 
 /**
@@ -782,25 +867,56 @@ function applyMetadataToCatalog(reelId, meta) {
                         episode.reelId === reelId ||
                         (meta.episodeId && episode.episodeId === meta.episodeId);
                     if (!linked) return episode;
+
+                    const catalogHasNumber =
+                        Number.isFinite(Number(episode.episodeNumber)) &&
+                        Number(episode.episodeNumber) >= 1;
+                    const metaEp = Number(meta.episodeNumber);
+                    // Identity labels (S/E) are vault/catalog stable — never renumber solely because
+                    // vault inference parsed a different display-order-like "E1" from a filename.
+                    let episodeNumber = episode.episodeNumber;
+                    if (!catalogHasNumber && Number.isFinite(metaEp) && metaEp >= 1) {
+                        episodeNumber = Math.floor(metaEp);
+                    } else if (
+                        catalogHasNumber &&
+                        Number.isFinite(metaEp) &&
+                        metaEp >= 1 &&
+                        Math.floor(metaEp) === Number(episode.episodeNumber)
+                    ) {
+                        episodeNumber = episode.episodeNumber;
+                    }
+
+                    // Publishing: vault writeback `ready` must never demote API/catalog draft|published|archived
+                    let status = meta.episodeStatus ?? episode.status;
+                    if (
+                        (episode.status === 'published' ||
+                            episode.status === 'draft' ||
+                            episode.status === 'archived') &&
+                        meta.episodeStatus === 'ready'
+                    ) {
+                        status = episode.status;
+                    }
+
                     changed = true;
                     return {
                         ...episode,
                         title: meta.episodeTitle || episode.title,
                         description: meta.description ?? episode.description,
-                        episodeNumber: meta.episodeNumber ?? episode.episodeNumber,
-                        genre: meta.genre,
-                        tags: meta.tags,
+                        episodeNumber,
+                        genre: meta.genre ?? episode.genre,
+                        tags: meta.tags ?? episode.tags,
                         runtime: meta.runtime ?? episode.runtime,
-                        status: meta.episodeStatus ?? episode.status
+                        status
                     };
                 })
             })),
-            title: seriesMatchesReel(series, reelId, meta) ? meta.seriesName || series.title : series.title,
+            // Do not rename an API/creator series from vault franchise inference on media bind
+            title: series.title,
             genre: seriesMatchesReel(series, reelId, meta) ? meta.genre ?? series.genre : series.genre,
             releaseYear: seriesMatchesReel(series, reelId, meta)
                 ? meta.releaseYear ?? series.releaseYear
                 : series.releaseYear,
-            tags: seriesMatchesReel(series, reelId, meta) ? meta.tags ?? series.tags : series.tags
+            tags: series.tags
         }));
         return changed ? next : catalogItems;
     });

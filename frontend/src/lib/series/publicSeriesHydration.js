@@ -79,8 +79,14 @@ export function publicSeriesPath(series) {
 /**
  * Hydrate seriesCatalog from Hero Vault ready assets for public (and studio-parity) views.
  *
+ * Authority:
+ *   - Catalog API / seriesCatalog already holds publish status, episodeId, displayOrder, package titles.
+ *   - Vault supplies mediaAssetId / seriesIdentity / enrichment for bound reels.
+ *   - Vault inference may bind media for unbound reels, but must not invent publication state
+ *     or renumber/replace catalog identity.
+ *
  * Flow:
- *   ready vault assets → title inference → seriesCatalog → restore episode vault bindings
+ *   ready vault assets → bind-only inference → restore episode vault bindings → creator catalog authority
  *
  * @param {{
  *   extraItems?: Record<string, unknown>[] | null;
@@ -109,7 +115,12 @@ export function hydratePublicSeriesFromVault(options = {}) {
         items: options.items
     });
 
+    // Snapshot catalog publish identity before vault bind so we can reassert after.
+    const preCatalog = get(seriesCatalog);
+    const preStatuses = snapshotCatalogEpisodeAuthority(preCatalog);
+
     // Inference treats ready assets as vault reels (id + url + title) — no media copy.
+    // Must not overwrite status / S/E labels / package titles on existing catalog rows.
     const inference = inferAndBindVaultSeries(readyAssets, {
         source: options.source || 'public-series-vault-hydration'
     });
@@ -129,11 +140,22 @@ export function hydratePublicSeriesFromVault(options = {}) {
         /* store may still be cold */
     }
 
+    // Restore publish status + episode numbers + catalog package titles if vault bind clobbered them.
+    if (preStatuses.size) {
+        seriesCatalog.update((items) => reassertCatalogEpisodeAuthority(items, preStatuses));
+        try {
+            reapplyCreatorCatalogAuthorityToStore();
+        } catch {
+            /* non-fatal */
+        }
+    }
+
     console.info('[PUBLIC_SERIES_VAULT_HYDRATION]', {
         readyCount: readyAssets.length,
         bound: inference.bound,
         seriesIds: inference.seriesIds,
         bindingKeys: Object.keys(map).length,
+        authoritySnapshots: preStatuses.size,
         ts: new Date().toISOString()
     });
 
@@ -143,6 +165,59 @@ export function hydratePublicSeriesFromVault(options = {}) {
         seriesIds: inference.seriesIds || [],
         bindingCount: Object.keys(map).length
     };
+}
+
+/**
+ * @param {import('./seriesTypes.js').Series[] | null | undefined} catalog
+ * @returns {Map<string, { status: string; episodeNumber: number; title: string; reelId: string | null }>}
+ */
+function snapshotCatalogEpisodeAuthority(catalog) {
+    /** @type {Map<string, { status: string; episodeNumber: number; title: string; reelId: string | null }>} */
+    const map = new Map();
+    for (const series of Array.isArray(catalog) ? catalog : []) {
+        for (const season of series.seasons || []) {
+            for (const ep of season.episodes || []) {
+                const id = String(ep?.episodeId || '').trim();
+                if (!id) continue;
+                map.set(id, {
+                    status: String(ep.status || 'draft'),
+                    episodeNumber: Number(ep.episodeNumber) || 1,
+                    title: String(ep.title || ''),
+                    reelId: ep.reelId != null ? String(ep.reelId) : null
+                });
+            }
+        }
+    }
+    return map;
+}
+
+/**
+ * Re-apply known catalog identity / publish fields after vault media bind.
+ * @param {import('./seriesTypes.js').Series[]} catalog
+ * @param {Map<string, { status: string; episodeNumber: number; title: string; reelId: string | null }>} snap
+ */
+function reassertCatalogEpisodeAuthority(catalog, snap) {
+    if (!snap?.size) return catalog;
+    return (Array.isArray(catalog) ? catalog : []).map((series) => ({
+        ...series,
+        seasons: (series.seasons || []).map((season) => ({
+            ...season,
+            episodes: (season.episodes || []).map((ep) => {
+                const prev = snap.get(String(ep.episodeId || ''));
+                if (!prev) return ep;
+                return {
+                    ...ep,
+                    status: prev.status || ep.status,
+                    episodeNumber:
+                        Number.isFinite(prev.episodeNumber) && prev.episodeNumber >= 1
+                            ? prev.episodeNumber
+                            : ep.episodeNumber,
+                    title: prev.title !== '' && prev.title != null ? prev.title : ep.title,
+                    reelId: ep.reelId || prev.reelId
+                };
+            })
+        }))
+    }));
 }
 
 /**

@@ -942,29 +942,7 @@ function ensureEpisodeInCatalog(seriesId, seasonNumber, episodeNumber, episodeTi
 
     const existingCtx = getEpisodeById(episodeId);
     if (existingCtx?.episode) {
-        if (
-            humanTitle &&
-            String(existingCtx.episode.title || '').trim().toLowerCase() !== humanTitle.toLowerCase()
-        ) {
-            seriesCatalog.update((items) =>
-                items.map((s) => {
-                    if (s.id !== seriesId) return s;
-                    return {
-                        ...s,
-                        seasons: (s.seasons || []).map((season) => {
-                            if (season.seasonNumber !== seasonNumber) return season;
-                            return {
-                                ...season,
-                                episodes: (season.episodes || []).map((ep) =>
-                                    ep.episodeId === episodeId ? { ...ep, title: humanTitle } : ep
-                                )
-                            };
-                        })
-                    };
-                })
-            );
-            return getEpisodeById(episodeId)?.episode || existingCtx.episode;
-        }
+        // Existing catalog episode keeps its title/status — vault inference only fills identity holes.
         return existingCtx.episode;
     }
 
@@ -976,6 +954,15 @@ function ensureEpisodeInCatalog(seriesId, seasonNumber, episodeNumber, episodeTi
     );
     if (existingByTitle) {
         return getEpisodeById(existingByTitle.episodeId)?.episode || existingByTitle;
+    }
+
+    // Prefer binding to an existing catalog episode that already carries this reel (API path)
+    // rather than inventing a new episodeNumber / episodeId from filename parse.
+    const existingByNumber = seasonHit?.episodes?.find(
+        (e) => Number(e.episodeNumber) === Number(episodeNumber)
+    );
+    if (existingByNumber && !existingByNumber.reelId) {
+        return getEpisodeById(existingByNumber.episodeId)?.episode || existingByNumber;
     }
 
     /** @type {import('./seriesTypes.js').Episode} */
@@ -1078,6 +1065,12 @@ export function buildHighConfidenceTitleGroups(reels = []) {
 /**
  * Infer series/episodes from vault titles and bind via seriesStore APIs.
  *
+ * Public / API authority rules:
+ *   - If a reel already belongs to a catalog episode (by reelId / episode map),
+ *     do not invent a second series or overwrite status / S/E / package title.
+ *   - New vault-only groups may still create draft/ready catalog shells for Studio,
+ *     never auto-publish.
+ *
  * @param {Record<string, unknown>[]} reels
  * @param {{ source?: string }} [options]
  * @returns {{ bound: number; skipped: number; groups: number; seriesIds: string[]; bindings: Array<Record<string, unknown>> }}
@@ -1101,7 +1094,20 @@ export function inferAndBindVaultSeries(reels = [], options = {}) {
     const bindings = [];
 
     for (const group of groups) {
-        const series = ensureSeriesInCatalog(group.seriesTitle);
+        // Prefer an existing catalog series that already owns one of these reels (API / creator).
+        // Do not create a duplicate "series-stirred" when "series-stirred-gate" (title STIRRED) owns them.
+        let series = null;
+        for (const member of group.members) {
+            const rid = String(member.reel?.id || '').trim();
+            const byReel = rid ? getEpisodeByReelId(rid) : null;
+            if (byReel?.series) {
+                series = byReel.series;
+                break;
+            }
+        }
+        if (!series) {
+            series = ensureSeriesInCatalog(group.seriesTitle);
+        }
         if (!series?.id) {
             skipped += group.members.length;
             continue;
@@ -1124,7 +1130,36 @@ export function inferAndBindVaultSeries(reels = [], options = {}) {
         for (const member of byEpKey.values()) {
             const reelId = String(member.reel.id);
             if (isReelAlreadySeriesBound(reelId)) {
+                // Attach mediaAssetId only — no status / number / title writeback
+                const existing = getEpisodeByReelId(reelId);
+                if (existing?.episode && existing.series?.id === series.id) {
+                    seriesCatalog.update((items) =>
+                        items.map((s) => {
+                            if (s.id !== series.id) return s;
+                            return {
+                                ...s,
+                                seasons: s.seasons.map((season) => ({
+                                    ...season,
+                                    episodes: season.episodes.map((ep) => {
+                                        if (String(ep.reelId || '') !== reelId) return ep;
+                                        return {
+                                            ...ep,
+                                            reelId,
+                                            mediaAssetId: ep.mediaAssetId || reelId
+                                        };
+                                    })
+                                }))
+                            };
+                        })
+                    );
+                }
                 skipped += 1;
+                logVaultSeriesInference({
+                    phase: 'skipped-already-bound',
+                    source,
+                    seriesId: series.id,
+                    mediaId: reelId
+                });
                 continue;
             }
 
@@ -1150,6 +1185,28 @@ export function inferAndBindVaultSeries(reels = [], options = {}) {
                 continue;
             }
 
+            // Prefer the catalog episode's own number/status/title when binding media
+            const catalogEp = getEpisodeById(episodeId)?.episode;
+            const seasonNumber =
+                catalogEp != null
+                    ? getEpisodeById(episodeId)?.season?.seasonNumber ?? member.parsed.seasonNumber
+                    : member.parsed.seasonNumber;
+            const episodeNumber =
+                catalogEp && Number(catalogEp.episodeNumber) >= 1
+                    ? Number(catalogEp.episodeNumber)
+                    : member.parsed.episodeNumber;
+            const bindTitle =
+                catalogEp && String(catalogEp.title || '').trim()
+                    ? String(catalogEp.title)
+                    : episodeTitle;
+            const statusForMeta =
+                catalogEp?.status === 'draft' ||
+                catalogEp?.status === 'ready' ||
+                catalogEp?.status === 'published' ||
+                catalogEp?.status === 'archived'
+                    ? catalogEp.status
+                    : 'ready';
+
             // attachEpisodeReel → bindEpisodeToFeedReel (catalog reelId + metadata seed)
             let attached = false;
             try {
@@ -1168,11 +1225,11 @@ export function inferAndBindVaultSeries(reels = [], options = {}) {
                 const boundOk = bindEpisodeToFeedReel(reelId, episodeId, {
                     seriesId: series.id,
                     seriesName: series.title,
-                    seasonNumber: member.parsed.seasonNumber,
-                    episodeNumber: member.parsed.episodeNumber,
-                    episodeTitle,
-                    // Vault media bound ≠ published. Creator publishing owns status.
-                    episodeStatus: 'ready'
+                    seasonNumber,
+                    episodeNumber,
+                    episodeTitle: bindTitle,
+                    // Vault media bound ≠ published. Use catalog status when present.
+                    episodeStatus: statusForMeta
                 });
                 if (!boundOk) {
                     skipped += 1;
@@ -1187,44 +1244,33 @@ export function inferAndBindVaultSeries(reels = [], options = {}) {
                 }
             }
 
-            // Prefer catalog episode status if already creator-controlled
-            const catalogEp = getEpisodeById(episodeId)?.episode;
-            const statusForMeta =
-                catalogEp?.status === 'draft' ||
-                catalogEp?.status === 'ready' ||
-                catalogEp?.status === 'published' ||
-                catalogEp?.status === 'archived'
-                    ? catalogEp.status
-                    : 'ready';
-
-            // Authoritative studio map write (includes seriesName, S/E, episodeId)
-            // Never force published — vault presence is not publishing.
+            // Map write: structural bind + catalog-preserved identity/package/status
             const saved = saveReelSeriesMetadata(
                 reelId,
                 {
                     reelId,
                     seriesId: series.id,
                     seriesName: series.title,
-                    seasonNumber: member.parsed.seasonNumber,
-                    episodeNumber: member.parsed.episodeNumber,
-                    episodeTitle,
+                    seasonNumber,
+                    episodeNumber,
+                    episodeTitle: bindTitle,
                     episodeId,
                     episodeStatus: statusForMeta
                 },
                 { sourceType: 'vault', context: 'inferAndBindVaultSeries' }
             );
 
-            // Prefer full vault title as aliases seed (title match first; aliases second).
             const aliasSeed = [];
             if (
                 episodeTitle &&
-                String(episode?.title || '').trim() &&
-                normalizeTitleish(episodeTitle) !== normalizeTitleish(episode.title)
+                String(catalogEp?.title || episode?.title || '').trim() &&
+                normalizeTitleish(episodeTitle) !==
+                    normalizeTitleish(catalogEp?.title || episode?.title)
             ) {
                 aliasSeed.push(episodeTitle);
             }
 
-            // Stamp Hero Vault mediaAssetId on catalog episode (reuse ready vault id — no re-upload).
+            // Stamp Hero Vault mediaAssetId only — keep catalog title/status/number intact.
             seriesCatalog.update((items) =>
                 items.map((s) => {
                     if (s.id !== series.id) return s;
@@ -1268,17 +1314,18 @@ export function inferAndBindVaultSeries(reels = [], options = {}) {
                 mediaId: reelId,
                 seriesId: series.id,
                 episodeId,
-                seasonNumber: member.parsed.seasonNumber,
-                episodeNumber: member.parsed.episodeNumber,
+                seasonNumber,
+                episodeNumber,
                 confidence: member.parsed.confidence,
                 metadata: {
                     reelId: saved?.reelId || reelId,
                     seriesId: saved?.seriesId || series.id,
                     seriesName: saved?.seriesName || series.title,
-                    seasonNumber: saved?.seasonNumber ?? member.parsed.seasonNumber,
-                    episodeNumber: saved?.episodeNumber ?? member.parsed.episodeNumber,
-                    episodeTitle: saved?.episodeTitle || episodeTitle,
-                    episodeId: saved?.episodeId || episodeId
+                    seasonNumber: saved?.seasonNumber ?? seasonNumber,
+                    episodeNumber: saved?.episodeNumber ?? episodeNumber,
+                    episodeTitle: saved?.episodeTitle || bindTitle,
+                    episodeId: saved?.episodeId || episodeId,
+                    episodeStatus: statusForMeta
                 }
             });
 
@@ -1289,7 +1336,7 @@ export function inferAndBindVaultSeries(reels = [], options = {}) {
                 episodeId,
                 mediaId: reelId,
                 seriesTitle: series.title,
-                episodeTitle,
+                episodeTitle: bindTitle,
                 confidence: member.parsed.confidence,
                 rawTitle: member.parsed.rawTitle || reelDisplayTitle(member.reel) || episodeTitle,
                 normalizedTitle:
@@ -1306,8 +1353,7 @@ export function inferAndBindVaultSeries(reels = [], options = {}) {
         source,
         bound,
         skipped,
-        groups: groups.length,
-        seriesIds
+        groups: groups.length
     });
 
     return { bound, skipped, groups: groups.length, seriesIds, bindings };

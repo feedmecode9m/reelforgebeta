@@ -65,6 +65,7 @@
     "validate:series-metadata": "node scripts/validate-series-metadata.mjs",
     "validate:publishing-controls": "node scripts/validate-publishing-controls.mjs",
     "validate:series-page": "node scripts/validate-series-page.mjs",
+    "validate:public-catalog-authority": "node scripts/validate-public-catalog-authority.mjs",
     "validate:viewer-progress": "node scripts/validate-viewer-progress.mjs",
     "validate:continue-watching": "node scripts/validate-continue-watching.mjs",
     "validate:recommendations": "node scripts/validate-recommendations.mjs",
