@@ -1121,18 +1121,38 @@
     }
     .theater-overlay--series-landscape {
         align-items: stretch;
-        justify-content: center;
+        justify-content: stretch;
         gap: 0;
         padding: 0;
         background: #050508;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) min(360px, 34vw);
     }
     .theater-overlay--series-landscape .theater-container {
-        max-width: min(58vw, 860px);
+        max-width: none;
         max-height: 100vh;
         width: 100%;
+        height: 100%;
         border-radius: 0;
         margin: 0;
-        flex: 1 1 auto;
+        flex: unset;
+        padding: 1rem 1.25rem;
+        box-sizing: border-box;
+    }
+    .theater-overlay--series-landscape .theater-glow-border {
+        display: none;
+    }
+    @media (max-width: 900px) {
+        .theater-overlay--series-landscape {
+            display: flex;
+            grid-template-columns: none;
+        }
+        .theater-overlay--series-landscape .theater-container {
+            max-width: min(96vw, 520px);
+            max-height: 92vh;
+            border-radius: 12px;
+            padding: 1.25rem;
+        }
     }
     .theater-container {
         width: 100%;

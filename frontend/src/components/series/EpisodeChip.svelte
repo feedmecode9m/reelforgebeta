@@ -3,14 +3,6 @@
 
     const dispatch = createEventDispatcher();
 
-    /** @param {string} s */
-    function normalizeLoose(s) {
-        return String(s || '')
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, ' ')
-            .trim();
-    }
-
     /** @type {number} */
     export let seasonNumber = 1;
 
@@ -25,7 +17,7 @@
     export let seriesLabel = '';
 
     /**
-     * Viewer Theater mode — posters + titles only, no admin binding chrome.
+     * Viewer Theater mode — poster + S/E labels + active state.
      * @type {boolean}
      */
     export let viewerMode = false;
@@ -64,13 +56,31 @@
     $: code = `S${seasonNumber}:E${episodeNumber}`;
     $: epPad = String(Math.max(0, episodeNumber || 0)).padStart(2, '0');
     $: labelRoot = String(seriesLabel || '').trim();
-    $: viewerLine = labelRoot
-        ? `${epPad}  ${labelRoot} • S${seasonNumber} • E${episodeNumber}`
-        : `${epPad}  ${title}`;
-    /** Playability comes from parent presentation (resolver match only). */
+    $: seBadge = `S${seasonNumber} · E${episodeNumber}`;
+    /** Prefer a human episode title without repeating the franchise alone. */
+    $: displayTitle = (() => {
+        const t = String(title || '').trim();
+        if (!t) return labelRoot ? `Episode ${episodeNumber}` : `Episode ${episodeNumber}`;
+        if (labelRoot) {
+            const loose = (s) =>
+                String(s || '')
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]+/g, ' ')
+                    .trim();
+            const lt = loose(t);
+            const ll = loose(labelRoot);
+            // "STIRRED 1" → "Episode 1" when franchise is STIRRED
+            if (lt === ll || lt === `${ll} ${episodeNumber}`) {
+                return `Episode ${episodeNumber}`;
+            }
+        }
+        return t;
+    })();
+    /** Playability comes from parent presentation. */
     $: isPlayable = playable === true || (playable === undefined && Boolean(mediaAssetId));
     $: readyBound = isPlayable && Boolean(mediaAssetId && String(mediaAssetId).trim());
     $: showUnavailable = !isPlayable;
+    $: hasPoster = Boolean(String(thumbnailUrl || '').trim());
     $: displayBindingLabel = bindingLabel
         ? bindingLabel
         : readyBound
@@ -94,12 +104,13 @@
     data-match-tier={viewerMode ? undefined : matchTier || undefined}
     data-binding-label={viewerMode ? undefined : displayBindingLabel || undefined}
     data-viewer-mode={viewerMode ? 'true' : undefined}
+    data-active={selected ? 'true' : undefined}
     data-testid={episodeId ? `episode-chip-${episodeId}` : undefined}
     aria-pressed={selected}
     aria-disabled={!isPlayable}
     disabled={!isPlayable}
     aria-label={viewerMode
-        ? `${viewerLine}${readyBound ? ' — play' : ' — unavailable'}`
+        ? `${seBadge} ${displayTitle}${selected ? ' — now playing' : readyBound ? ' — play' : ' — unavailable'}`
         : `${code} ${title} — ${displayBindingLabel}${readyBound ? ' — Enter Theater' : ''}`}
     on:click={() => {
         if (!isPlayable) return;
@@ -115,18 +126,26 @@
     }}
 >
     {#if viewerMode}
-        <div class="episode-chip__viewer-row">
-            {#if thumbnailUrl && readyBound}
-                <div class="episode-chip__thumb-wrap episode-chip__thumb-wrap--viewer">
-                    <img class="episode-chip__thumb" src={thumbnailUrl} alt="" loading="lazy" />
-                </div>
-            {:else}
-                <div class="episode-chip__thumb-wrap episode-chip__thumb-wrap--viewer episode-chip__thumb-wrap--empty" aria-hidden="true"></div>
-            {/if}
-            <div class="episode-chip__viewer-copy">
-                <p class="episode-chip__viewer-line">{viewerLine}</p>
-                {#if title && labelRoot && !normalizeLoose(title).includes(normalizeLoose(labelRoot))}
-                    <p class="episode-chip__viewer-sub">{title}</p>
+        <div class="episode-card">
+            <div
+                class="episode-card__poster"
+                class:episode-card__poster--empty={!hasPoster}
+                aria-hidden="true"
+            >
+                {#if hasPoster}
+                    <img class="episode-card__img" src={thumbnailUrl} alt="" loading="lazy" />
+                {:else}
+                    <span class="episode-card__ep-num">{epPad}</span>
+                {/if}
+                {#if selected}
+                    <span class="episode-card__live">Now playing</span>
+                {/if}
+            </div>
+            <div class="episode-card__copy">
+                <span class="episode-card__se">{seBadge}</span>
+                <span class="episode-card__title">{displayTitle}</span>
+                {#if labelRoot && displayTitle !== labelRoot}
+                    <span class="episode-card__series">{labelRoot}</span>
                 {/if}
             </div>
         </div>
@@ -136,7 +155,7 @@
             <p class="episode-chip__title">{title}</p>
         </div>
 
-        {#if thumbnailUrl && readyBound}
+        {#if hasPoster && readyBound}
             <div class="episode-chip__thumb-wrap">
                 <img class="episode-chip__thumb" src={thumbnailUrl} alt="" loading="lazy" />
             </div>
@@ -146,7 +165,8 @@
             <span
                 class="episode-chip__status"
                 class:episode-chip__status--ready={true}
-                class:episode-chip__status--manual={matchTier === 'manual' || displayBindingLabel === 'Manual Vault Asset'}
+                class:episode-chip__status--manual={matchTier === 'manual' ||
+                    displayBindingLabel === 'Manual Vault Asset'}
             >{displayBindingLabel}</span>
             <span class="episode-chip__enter">▶ Enter Theater</span>
         {:else if showUnavailable}
@@ -171,7 +191,7 @@
         color: #fff;
         cursor: pointer;
         text-align: left;
-        transition: border-color 0.2s ease, background 0.2s ease;
+        transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease;
         font-family: inherit;
     }
     .episode-chip:hover:not(:disabled) {
@@ -259,51 +279,110 @@
         color: var(--neon-cyan, #00f2ff);
         letter-spacing: 0.02em;
     }
-    /* Viewer Theater — posters + episode lines only */
+
+    /* Viewer streaming episode cards */
     .episode-chip.viewer {
-        flex-direction: row;
-        align-items: center;
-        padding: 0.55rem 0.7rem;
-        gap: 0.75rem;
+        padding: 0;
+        border: 1px solid transparent;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.03);
+        overflow: hidden;
     }
-    .episode-chip__viewer-row {
-        display: flex;
+    .episode-chip.viewer:hover:not(:disabled) {
+        border-color: rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.06);
+        box-shadow: none;
+    }
+    .episode-chip.viewer.selected {
+        border-color: rgba(255, 255, 255, 0.28);
+        background: rgba(255, 255, 255, 0.08);
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+    .episode-chip.viewer.ready {
+        border-color: transparent;
+    }
+    .episode-chip.viewer.selected.ready {
+        border-color: rgba(255, 255, 255, 0.28);
+    }
+    .episode-card {
+        display: grid;
+        grid-template-columns: 5.6rem minmax(0, 1fr);
+        gap: 0.8rem;
         align-items: center;
-        gap: 0.75rem;
         width: 100%;
-        min-width: 0;
+        padding: 0.5rem 0.65rem 0.5rem 0.5rem;
     }
-    .episode-chip__thumb-wrap--viewer {
-        width: 4.5rem;
-        min-width: 4.5rem;
-        max-height: none;
+    .episode-card__poster {
+        position: relative;
+        width: 5.6rem;
         aspect-ratio: 16 / 10;
+        border-radius: 6px;
+        overflow: hidden;
+        background: #1a1c24;
         flex-shrink: 0;
     }
-    .episode-chip__thumb-wrap--empty {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(0, 242, 255, 0.08));
+    .episode-card__poster--empty {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(145deg, #1a1c24 0%, #12141a 100%);
+        border: 1px solid rgba(255, 255, 255, 0.06);
     }
-    .episode-chip__viewer-copy {
+    .episode-card__img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .episode-card__ep-num {
+        font-size: 1rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        color: rgba(255, 255, 255, 0.35);
+    }
+    .episode-card__live {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding: 0.2rem 0.25rem;
+        font-size: 0.55rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        text-align: center;
+        color: #0a0a0a;
+        background: rgba(255, 255, 255, 0.92);
+    }
+    .episode-card__copy {
         min-width: 0;
-        flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 0.15rem;
+        gap: 0.12rem;
     }
-    .episode-chip__viewer-line {
-        margin: 0;
+    .episode-card__se {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.5);
+    }
+    .episode-chip.viewer.selected .episode-card__se {
+        color: rgba(255, 255, 255, 0.75);
+    }
+    .episode-card__title {
         font-size: 0.92rem;
         font-weight: 600;
-        letter-spacing: 0.02em;
         line-height: 1.25;
+        color: #fff;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
-    .episode-chip__viewer-sub {
-        margin: 0;
-        font-size: 0.72rem;
-        color: rgba(255, 255, 255, 0.55);
+    .episode-card__series {
+        font-size: 0.7rem;
+        color: rgba(255, 255, 255, 0.4);
+        letter-spacing: 0.02em;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;

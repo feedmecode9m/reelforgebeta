@@ -34,7 +34,7 @@
     export let seedAsset = null;
 
     /**
-     * Optional ready vault rows (personal videos, feed extras). Catalog incomplete → vault siblings.
+     * Optional ready vault rows (personal videos, feed extras).
      * @type {Record<string, unknown>[]}
      */
     export let readyAssets = [];
@@ -46,13 +46,13 @@
     export let seriesView = null;
 
     /**
-     * Viewer Theater presentation — vault-inferred chrome, poster-only list.
+     * Viewer Theater presentation — streaming shelf chrome (not admin).
      * @type {boolean}
      */
     export let viewerMode = true;
 
     /**
-     * Dock as landscape side panel (no full-screen modal). Theater passes true on wide screens.
+     * Dock as landscape side panel (no full-screen modal).
      * @type {boolean}
      */
     export let docked = false;
@@ -60,7 +60,6 @@
     $: catalogSeries = seriesId ? getSeriesById(seriesId) : null;
 
     $: relatedResult = (() => {
-        // Parent already supplied the unioned series view (Theater) — skip second resolve.
         if (seriesView) return null;
         if (!seedAsset) return null;
         const ready =
@@ -85,16 +84,28 @@
         ) ||
         catalogSeries;
 
-    $: sortedSeasons = [...(series?.seasons || [])].sort((a, b) => a.seasonNumber - b.seasonNumber);
+    /** Drop empty seasons — no blank accordion shells. */
+    $: sortedSeasons = [...(series?.seasons || [])]
+        .filter((s) => Array.isArray(s?.episodes) && s.episodes.length > 0)
+        .sort((a, b) => a.seasonNumber - b.seasonNumber);
+
+    $: episodeCount = sortedSeasons.reduce((n, s) => n + (s.episodes?.length || 0), 0);
+    $: seasonCount = sortedSeasons.length;
+    $: flatViewerShelf = viewerMode && seasonCount <= 1;
+
     $: officialSeriesDescription = viewerMode
         ? ''
         : creatorFacingDescription(series?.description);
     $: officialSeriesGenre = viewerMode ? '' : creatorFacingGenre(series?.genre);
     $: effectiveSeriesId = series?.id || seriesId || '';
     $: seriesLabelText = String(series?.title || '').trim();
-    $: isVaultInferred =
-        Array.isArray(series?.tags) &&
-        series.tags.some((t) => /vault-inferred|related-resolver|vault-related/i.test(String(t)));
+    $: hasViewerBody = viewerMode && episodeCount > 0;
+    $: seriesMetaLine =
+        seasonCount > 0 && episodeCount > 0
+            ? seasonCount === 1
+                ? `${episodeCount} episode${episodeCount === 1 ? '' : 's'}`
+                : `${seasonCount} seasons · ${episodeCount} episodes`
+            : '';
 
     /** @param {CustomEvent<{ episodeId: string }>} event */
     function handleEpisodeSelect(event) {
@@ -243,95 +254,127 @@
             aria-labelledby="series-drawer-title"
             tabindex="-1"
         >
-            <header class="series-drawer__hero" class:series-drawer__hero--compact={viewerMode}>
-                {#if series.poster && !viewerMode}
-                    <MediaPoster url={series.poster} className="series-drawer__poster" aria-hidden="true" />
-                {/if}
-                <div class="series-drawer__hero-scrim"></div>
-                <button type="button" class="series-drawer__close" aria-label="Close episode browser" on:click={closeDrawer}>✕</button>
-                <div class="series-drawer__hero-copy">
-                    <p class="series-drawer__eyebrow">
-                        {#if viewerMode && isVaultInferred}
-                            Vault-inferred series
-                        {:else}
-                            Series
+            {#if viewerMode}
+                <!-- Streaming shelf header: title + counts only (no empty hero plane) -->
+                <header class="series-shelf__header">
+                    <div class="series-shelf__heading">
+                        <p class="series-shelf__eyebrow">All Episodes</p>
+                        <h2 id="series-drawer-title" class="series-shelf__title" data-series-label>
+                            {seriesLabelText || 'Series'}
+                        </h2>
+                        {#if seriesMetaLine}
+                            <p class="series-shelf__meta">{seriesMetaLine}</p>
                         {/if}
-                    </p>
-                    <h2 id="series-drawer-title" class="series-drawer__title">{series.title}</h2>
-                    {#if viewerMode && seriesLabelText}
-                        <p class="series-drawer__vault-label" data-series-label>{seriesLabelText}</p>
-                    {/if}
-                    {#if officialSeriesDescription}
-                        <p class="series-drawer__description">{officialSeriesDescription}</p>
-                    {/if}
-                    {#if officialSeriesGenre}
-                        <p class="series-drawer__official-genre">Genre: {officialSeriesGenre}</p>
-                    {/if}
-                    {#if selectedEpisodeId && !viewerMode}
-                        <SeriesBadge episodeId={selectedEpisodeId} />
-                    {/if}
-                </div>
-            </header>
+                    </div>
+                    <button
+                        type="button"
+                        class="series-shelf__close"
+                        aria-label="Close episode browser"
+                        on:click={closeDrawer}
+                    >✕</button>
+                </header>
 
-            <div class="series-drawer__content">
-                <div class="series-drawer__toolbar">
-                    <h3>Episodes</h3>
-                    <span>{sortedSeasons.length} season{sortedSeasons.length === 1 ? '' : 's'}</span>
-                </div>
-
-                <div class="series-drawer__seasons">
-                    {#each sortedSeasons as season (season.seasonId || season.seasonNumber)}
-                        <SeasonAccordion
-                            seriesId={effectiveSeriesId}
-                            {season}
-                            selectedEpisodeId={selectedEpisodeId}
-                            defaultExpanded={season.seasonNumber === sortedSeasons[0]?.seasonNumber}
-                            heroVaultAssets={readyAssets}
-                            seriesLabel={seriesLabelText}
-                            {viewerMode}
-                            on:episodeSelect={handleEpisodeSelect}
-                        />
-                    {/each}
-                </div>
-
-                {#if selectedEpisodeId && !viewerMode}
-                    {@const ctx = series.seasons.flatMap((s) => s.episodes).find((e) => e.episodeId === selectedEpisodeId)}
-                    {#if ctx}
-                        {@const reelMeta = ctx.reelId ? getReelSeriesMetadata(ctx.reelId) : null}
-                        {@const officialEpDesc = creatorFacingDescription(ctx.description)}
-                        {@const officialEpGenre = creatorFacingGenre(ctx.genre)}
-                        {@const suggestedGenre = String(reelMeta?.suggestedGenre || '').trim()}
-                        {@const suggestionText =
-                            String(reelMeta?.intelligenceExplanation || '').trim() ||
-                            (suggestedGenre
-                                ? formatIntelligenceExplanation(suggestedGenre, { fromTitle: true })
-                                : '')}
-                        <section class="series-drawer__detail" aria-label="Selected episode details">
-                            <h4>{ctx.title}</h4>
-                            {#if officialEpDesc}
-                                <p>{officialEpDesc}</p>
-                            {/if}
-                            <div class="series-drawer__detail-meta">
-                                <span>Runtime: {formatRuntime(ctx.runtime)}</span>
-                                <span>Status: {ctx.status}</span>
-                                {#if officialEpGenre}<span>Genre: {officialEpGenre}</span>{/if}
-                            </div>
-                            {#if suggestionText}
-                                <p class="series-drawer__suggestion" data-intelligence-suggestion>
-                                    {suggestionText}
-                                </p>
-                            {/if}
-                            {#if ctx.tags?.length}
-                                <div class="series-drawer__tags">
-                                    {#each ctx.tags as tag}
-                                        <span class="series-drawer__tag">{tag}</span>
-                                    {/each}
-                                </div>
-                            {/if}
-                        </section>
-                    {/if}
+                {#if hasViewerBody}
+                    <div class="series-shelf__body">
+                        {#each sortedSeasons as season (season.seasonId || season.seasonNumber)}
+                            <SeasonAccordion
+                                seriesId={effectiveSeriesId}
+                                {season}
+                                selectedEpisodeId={selectedEpisodeId}
+                                defaultExpanded={true}
+                                heroVaultAssets={readyAssets}
+                                seriesLabel={seriesLabelText}
+                                viewerMode={true}
+                                flat={flatViewerShelf}
+                                on:episodeSelect={handleEpisodeSelect}
+                            />
+                        {/each}
+                    </div>
                 {/if}
-            </div>
+            {:else}
+                <header class="series-drawer__hero">
+                    {#if series.poster}
+                        <MediaPoster url={series.poster} className="series-drawer__poster" aria-hidden="true" />
+                    {/if}
+                    <div class="series-drawer__hero-scrim"></div>
+                    <button type="button" class="series-drawer__close" aria-label="Close episode browser" on:click={closeDrawer}>✕</button>
+                    <div class="series-drawer__hero-copy">
+                        <p class="series-drawer__eyebrow">Series</p>
+                        <h2 id="series-drawer-title" class="series-drawer__title">{series.title}</h2>
+                        {#if officialSeriesDescription}
+                            <p class="series-drawer__description">{officialSeriesDescription}</p>
+                        {/if}
+                        {#if officialSeriesGenre}
+                            <p class="series-drawer__official-genre">Genre: {officialSeriesGenre}</p>
+                        {/if}
+                        {#if selectedEpisodeId}
+                            <SeriesBadge episodeId={selectedEpisodeId} />
+                        {/if}
+                    </div>
+                </header>
+
+                {#if sortedSeasons.length}
+                    <div class="series-drawer__content">
+                        <div class="series-drawer__toolbar">
+                            <h3>Episodes</h3>
+                            <span>{sortedSeasons.length} season{sortedSeasons.length === 1 ? '' : 's'}</span>
+                        </div>
+
+                        <div class="series-drawer__seasons">
+                            {#each sortedSeasons as season (season.seasonId || season.seasonNumber)}
+                                <SeasonAccordion
+                                    seriesId={effectiveSeriesId}
+                                    {season}
+                                    selectedEpisodeId={selectedEpisodeId}
+                                    defaultExpanded={season.seasonNumber === sortedSeasons[0]?.seasonNumber}
+                                    heroVaultAssets={readyAssets}
+                                    seriesLabel={seriesLabelText}
+                                    viewerMode={false}
+                                    on:episodeSelect={handleEpisodeSelect}
+                                />
+                            {/each}
+                        </div>
+
+                        {#if selectedEpisodeId}
+                            {@const ctx = series.seasons.flatMap((s) => s.episodes).find((e) => e.episodeId === selectedEpisodeId)}
+                            {#if ctx}
+                                {@const reelMeta = ctx.reelId ? getReelSeriesMetadata(ctx.reelId) : null}
+                                {@const officialEpDesc = creatorFacingDescription(ctx.description)}
+                                {@const officialEpGenre = creatorFacingGenre(ctx.genre)}
+                                {@const suggestedGenre = String(reelMeta?.suggestedGenre || '').trim()}
+                                {@const suggestionText =
+                                    String(reelMeta?.intelligenceExplanation || '').trim() ||
+                                    (suggestedGenre
+                                        ? formatIntelligenceExplanation(suggestedGenre, { fromTitle: true })
+                                        : '')}
+                                <section class="series-drawer__detail" aria-label="Selected episode details">
+                                    <h4>{ctx.title}</h4>
+                                    {#if officialEpDesc}
+                                        <p>{officialEpDesc}</p>
+                                    {/if}
+                                    <div class="series-drawer__detail-meta">
+                                        <span>Runtime: {formatRuntime(ctx.runtime)}</span>
+                                        <span>Status: {ctx.status}</span>
+                                        {#if officialEpGenre}<span>Genre: {officialEpGenre}</span>{/if}
+                                    </div>
+                                    {#if suggestionText}
+                                        <p class="series-drawer__suggestion" data-intelligence-suggestion>
+                                            {suggestionText}
+                                        </p>
+                                    {/if}
+                                    {#if ctx.tags?.length}
+                                        <div class="series-drawer__tags">
+                                            {#each ctx.tags as tag}
+                                                <span class="series-drawer__tag">{tag}</span>
+                                            {/each}
+                                        </div>
+                                    {/if}
+                                </section>
+                            {/if}
+                        {/if}
+                    </div>
+                {/if}
+            {/if}
         </aside>
     </div>
 {/if}
@@ -529,50 +572,99 @@
         border: 1px solid rgba(0, 242, 255, 0.25);
         color: rgba(255, 255, 255, 0.75);
     }
-    /* Viewer Theater — landscape dock + compact chrome */
+
+    /* —— Viewer streaming shelf —— */
+    .series-drawer--viewer {
+        background: #0c0d12;
+        border-left-color: rgba(255, 255, 255, 0.08);
+    }
+    .series-shelf__header {
+        flex-shrink: 0;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 1.1rem 1rem 0.85rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .series-shelf__heading {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.28rem;
+    }
+    .series-shelf__eyebrow {
+        margin: 0;
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.45);
+    }
+    .series-shelf__title {
+        margin: 0;
+        font-size: 1.45rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        line-height: 1.15;
+        color: #fff;
+    }
+    .series-shelf__meta {
+        margin: 0;
+        font-size: 0.78rem;
+        color: rgba(255, 255, 255, 0.5);
+        letter-spacing: 0.01em;
+    }
+    .series-shelf__close {
+        flex-shrink: 0;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.04);
+        color: rgba(255, 255, 255, 0.85);
+        cursor: pointer;
+        font-size: 0.85rem;
+        line-height: 1;
+        transition: background 0.15s ease, border-color 0.15s ease;
+    }
+    .series-shelf__close:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.22);
+    }
+    .series-shelf__body {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 0.75rem 0.75rem 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Docked landscape rail */
     .series-drawer-overlay--docked {
         position: relative;
         inset: auto;
         z-index: 1;
-        width: min(400px, 38vw);
-        min-width: 280px;
+        width: min(360px, 34vw);
+        min-width: 300px;
+        max-width: 400px;
         height: 100%;
         max-height: 100vh;
         background: transparent;
         backdrop-filter: none;
         flex-shrink: 0;
-        justify-content: flex-end;
+        justify-content: stretch;
     }
     .series-drawer--docked {
         width: 100%;
         height: 100%;
         border-radius: 0;
-        border-left: 1px solid rgba(0, 242, 255, 0.22);
+        border-left: 1px solid rgba(255, 255, 255, 0.07);
         box-shadow: none;
         animation: none;
-    }
-    .series-drawer__hero--compact {
-        min-height: 0;
-        padding: 0;
-    }
-    .series-drawer__hero--compact .series-drawer__hero-copy {
-        position: relative;
-        padding: 1rem 1rem 0.85rem;
-    }
-    .series-drawer__hero--compact .series-drawer__hero-scrim {
-        display: none;
-    }
-    .series-drawer__vault-label {
-        margin: 0;
-        font-size: 0.78rem;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: rgba(255, 255, 255, 0.55);
-    }
-    .series-drawer--viewer .series-drawer__title {
-        font-size: 1.35rem;
-    }
-    .series-drawer--viewer {
-        background: linear-gradient(180deg, #14161c 0%, #0b0c10 100%);
     }
 </style>
