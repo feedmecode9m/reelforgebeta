@@ -276,6 +276,7 @@
 
                 {#if hasViewerBody}
                     <div class="series-shelf__body">
+                        <h3 class="series-shelf__section" data-series-episodes-heading>Episodes</h3>
                         {#each sortedSeasons as season (season.seasonId || season.seasonNumber)}
                             <SeasonAccordion
                                 seriesId={effectiveSeriesId}
@@ -640,8 +641,16 @@
         padding: 0.75rem 0.75rem 1.25rem;
         display: flex;
         flex-direction: column;
-        gap: 1rem;
+        gap: 0.75rem;
         -webkit-overflow-scrolling: touch;
+    }
+    .series-shelf__section {
+        margin: 0 0 0.15rem;
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.4);
     }
 
     /* Docked landscape rail */

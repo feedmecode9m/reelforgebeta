@@ -456,6 +456,7 @@ export function createLocalReel(partial = {}) {
 
 /**
  * Video vault entry from a normalized reel (display name from reel.name, disk ops from fileName).
+ * Title / file labels are retained; durable seriesIdentity is sealed by the vault persist path.
  * @param {Record<string, unknown>} reel
  * @returns {Record<string, unknown>}
  */
@@ -478,13 +479,20 @@ export function reelToVaultEntry(reel) {
     return {
         id: String(reel.id || `reel_${fileName}`),
         name,
+        title: name,
         fileName,
         url: resolveMediaUrl(String(reel.url || ''), 'video'),
         thumbnail: reel.thumbnailUrl ? resolveMediaUrl(String(reel.thumbnailUrl), 'thumbnail') : '',
         type: fileName.toLowerCase().endsWith('.mov') ? 'video/quicktime' : 'video/mp4',
         addedAt: reel.createdAt || reel.created_at || new Date().toISOString(),
         ...(playbackUrl ? { playbackUrl } : {}),
-        ...(playbackStatus ? { playbackStatus } : {})
+        ...(playbackStatus ? { playbackStatus } : {}),
+        ...(reel.seriesIdentity && typeof reel.seriesIdentity === 'object'
+            ? { seriesIdentity: reel.seriesIdentity }
+            : {}),
+        ...(reel.seriesLabel ? { seriesLabel: reel.seriesLabel } : {}),
+        ...(reel.seasonNumber != null ? { seasonNumber: reel.seasonNumber } : {}),
+        ...(reel.episodeNumber != null ? { episodeNumber: reel.episodeNumber } : {})
     };
 }
 

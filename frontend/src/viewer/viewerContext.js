@@ -41,6 +41,7 @@ import {
 } from '../lib/hero/heroRecord.js';
 import { loadHeroReel, resolveActiveHeroVideoReel, heroReelToVaultItem } from '../lib/hero/heroReelIdentity.js';
 import { isHeroAsset, filterNonHeroAssets } from '../lib/hero/heroDomainGuard.js';
+import { sealVaultAssetsSeriesIdentity } from '../lib/series/vaultSeriesInference.js';
 import { shouldStreamDiagnostics } from '../lib/diagnostics/pipelineSnapshot.js';
 import { notifyInterruptedUploads } from '../lib/diagnostics/uploadRecovery.js';
 import { getActiveUploadLockCount } from '../lib/diagnostics/uploadLockDiag.js';
@@ -251,6 +252,8 @@ resetLocalData();
 function persistPersonalVault(videos) {
 const inputVideos = Array.isArray(videos) ? videos : [];
 let filtered = filterOutDeletedMedia(filterNonHeroAssets(inputVideos));
+// Seal durable seriesIdentity from Hero Vault title labels before write
+filtered = sealVaultAssetsSeriesIdentity(filtered);
 traceVideoStoreBoundary('persistPersonalVault:filterNonHeroAssets', inputVideos, filtered, {
 reasons: 'filterNonHeroAssets+filterOutDeletedMedia'
 });
@@ -267,6 +270,8 @@ if (pendingHeroAssetIds.size) {
     }
     return !blocked;
   });
+  // Re-seal after pending filter (entries not restructured, but keep identity path consistent)
+  filtered = sealVaultAssetsSeriesIdentity(filtered);
   traceVideoStoreBoundary('persistPersonalVault:pendingHeroAssetIds', inputVideos, filtered, {
     removed: pendingRemoved,
     reasons: 'pendingHeroAssetIds'
@@ -300,6 +305,7 @@ quotaEvictThumbnailKey: CONFIG.THUMBNAIL_STORAGE_KEY,
 minimalFields: [
   'id',
   'name',
+  'title',
   'fileName',
   'type',
   'size',
@@ -307,7 +313,12 @@ minimalFields: [
   'thumbnail',
   'uploadState',
   'isOptimisticLocal',
-  'uploadError'
+  'uploadError',
+  // Durable Hero Vault series identity (viewer discovery signals)
+  'seriesIdentity',
+  'seriesLabel',
+  'seasonNumber',
+  'episodeNumber'
 ]
 });
 }
@@ -1016,14 +1027,16 @@ const filteredStoredVideos = filterOutDeletedMedia(filterNonHeroAssets(storedVid
 traceVideoStoreBoundary('reloadVaultStoresFromStorage:filterNonHeroAssets', storedVideos, filteredStoredVideos, {
 reasons: 'filterNonHeroAssets+filterOutDeletedMedia'
 });
-personalVideos.set(filteredStoredVideos.map((video) => ({
+// Rehydrate durable identity; seal legacy rows that predate seriesIdentity storage
+const sealedVideos = sealVaultAssetsSeriesIdentity(filteredStoredVideos);
+personalVideos.set(sealedVideos.map((video) => ({
 ...video,
 url: video.url ? toRelativeMediaPath(video.url) : '',
 thumbnail: resolveUserPosterUrl(video.thumbnail) || ''
 })));
 console.info('[STORE_UPDATE]', {
 store: 'personalVideos',
-count: filteredStoredVideos.length,
+count: sealedVideos.length,
 ts: new Date().toISOString()
 });
 }

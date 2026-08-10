@@ -716,6 +716,79 @@ export function withVaultSeriesIdentity(asset) {
 }
 
 /**
+ * Durable Hero Vault identity for localStorage / vault records.
+ * Stores only viewer-facing identity signals (no confidence / parser codes).
+ *
+ * @param {Record<string, unknown> | null | undefined} asset
+ * @returns {Record<string, unknown> | null | undefined}
+ */
+export function sealVaultSeriesIdentityForStorage(asset) {
+    if (!asset || typeof asset !== 'object') return asset;
+    const sealed = withVaultSeriesIdentity(asset);
+    if (!sealed || typeof sealed !== 'object') return asset;
+    const nested =
+        sealed.seriesIdentity && typeof sealed.seriesIdentity === 'object'
+            ? /** @type {Record<string, unknown>} */ (sealed.seriesIdentity)
+            : null;
+    const seriesLabel = String(nested?.seriesLabel || sealed.seriesLabel || '').trim();
+    const seasonNumber = Number(nested?.seasonNumber ?? sealed.seasonNumber);
+    const episodeNumber = Number(nested?.episodeNumber ?? sealed.episodeNumber);
+    if (
+        !seriesLabel ||
+        !Number.isFinite(seasonNumber) ||
+        seasonNumber < 1 ||
+        !Number.isFinite(episodeNumber) ||
+        episodeNumber < 1
+    ) {
+        // Drop internal confidence if present without a durable identity
+        if (sealed.seriesIdentity && typeof sealed.seriesIdentity === 'object') {
+            const { confidence: _c, parseConfidence: _p, ...rest } = /** @type {Record<string, unknown>} */ (
+                sealed.seriesIdentity
+            );
+            if (String(rest.seriesLabel || '').trim()) {
+                return {
+                    ...sealed,
+                    seriesIdentity: {
+                        seriesLabel: String(rest.seriesLabel).trim(),
+                        seasonNumber: Math.max(1, Number(rest.seasonNumber) || 1),
+                        episodeNumber: Math.max(1, Number(rest.episodeNumber) || 1)
+                    }
+                };
+            }
+        }
+        return sealed;
+    }
+    return {
+        ...sealed,
+        seriesIdentity: {
+            seriesLabel,
+            seasonNumber: Math.max(1, Math.floor(seasonNumber)),
+            episodeNumber: Math.max(1, Math.floor(episodeNumber))
+        },
+        seriesLabel,
+        seasonNumber: Math.max(1, Math.floor(seasonNumber)),
+        episodeNumber: Math.max(1, Math.floor(episodeNumber))
+    };
+}
+
+/**
+ * Seal identity on a list of vault assets (non-mutating per item).
+ * @param {unknown} list
+ * @returns {Record<string, unknown>[]}
+ */
+export function sealVaultAssetsSeriesIdentity(list) {
+    return (Array.isArray(list) ? list : [])
+        .map((item) => {
+            if (!item || typeof item !== 'object') return null;
+            return /** @type {Record<string, unknown>} */ (
+                sealVaultSeriesIdentityForStorage(/** @type {Record<string, unknown>} */ (item)) ||
+                    item
+            );
+        })
+        .filter(Boolean);
+}
+
+/**
  * @param {unknown} reelId
  */
 export function isRealVaultUuid(reelId) {

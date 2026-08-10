@@ -44,6 +44,7 @@
   } from '../../lib/hero/heroReelIdentity.js';
   import { isHeroAsset } from '../../lib/hero/heroDomainGuard.js';
   import { reelToVaultEntry } from '../../lib/api/reelContract.js';
+  import { sealVaultSeriesIdentityForStorage } from '../../lib/series/vaultSeriesInference.js';
   import { validateVideoFile } from '../../lib/runtime-guards.js';
   import { API_BASE_URL, toRelativeMediaPath, SIGNED_UPLOADS_MIN_BYTES } from '../../lib/config.js';
   import {
@@ -2127,12 +2128,20 @@
         vault: 'mp4',
         isVideoUrl: Boolean(vaultEntry?.url && String(vaultEntry.url).includes('/videos/'))
       });
-      const entry = {
-        ...vaultEntry,
-        size: file.size,
-        type: file.type || vaultEntry.type,
-        addedAt: response.createdAt || response.created_at || new Date().toISOString()
-      };
+      // Durable Hero Vault identity (seriesLabel S/E) from file/title labels — not admin metadata
+      const entry = /** @type {Record<string, unknown>} */ (
+        sealVaultSeriesIdentityForStorage({
+          ...vaultEntry,
+          size: file.size,
+          type: file.type || vaultEntry.type,
+          addedAt: response.createdAt || response.created_at || new Date().toISOString()
+        }) || {
+          ...vaultEntry,
+          size: file.size,
+          type: file.type || vaultEntry.type,
+          addedAt: response.createdAt || response.created_at || new Date().toISOString()
+        }
+      );
       if (isHeroAsset(entry)) {
         // Still show in MP4 vault — hero domain should not hide a successful content upload.
         console.warn('[BG7W_HERO_VAULT_GATE]', {

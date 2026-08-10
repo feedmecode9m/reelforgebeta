@@ -251,8 +251,7 @@ export function normalizeVaultAsset(raw, options = {}) {
         normalized.seriesIdentity = {
             seriesLabel: seriesIdentity.seriesLabel,
             seasonNumber: seriesIdentity.seasonNumber,
-            episodeNumber: seriesIdentity.episodeNumber,
-            confidence: seriesIdentity.confidence
+            episodeNumber: seriesIdentity.episodeNumber
         };
         // Flat mirrors for consumers that read top-level fields (legacy-safe)
         normalized.seriesLabel =
@@ -279,8 +278,7 @@ export function normalizeVaultAsset(raw, options = {}) {
             normalized.seriesIdentity = {
                 seriesLabel: preserved.seriesLabel,
                 seasonNumber: preserved.seasonNumber,
-                episodeNumber: preserved.episodeNumber,
-                confidence: preserved.confidence
+                episodeNumber: preserved.episodeNumber
             };
             normalized.seriesLabel = preserved.seriesLabel;
             normalized.seasonNumber = preserved.seasonNumber;

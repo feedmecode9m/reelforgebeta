@@ -57,6 +57,13 @@
     $: epPad = String(Math.max(0, episodeNumber || 0)).padStart(2, '0');
     $: labelRoot = String(seriesLabel || '').trim();
     $: seBadge = `S${seasonNumber} · E${episodeNumber}`;
+    /**
+     * Viewer shelf line: "01  STIRRED • S1 • E1"
+     * Never includes confidence, vault inference, or admin binding labels.
+     */
+    $: viewerIdentityLine = labelRoot
+        ? `${epPad}  ${labelRoot} • S${seasonNumber} • E${episodeNumber}`
+        : `${epPad}  S${seasonNumber} • E${episodeNumber}`;
     /** Prefer a human episode title without repeating the franchise alone. */
     $: displayTitle = (() => {
         const t = String(title || '').trim();
@@ -69,9 +76,17 @@
                     .trim();
             const lt = loose(t);
             const ll = loose(labelRoot);
-            // "STIRRED 1" → "Episode 1" when franchise is STIRRED
-            if (lt === ll || lt === `${ll} ${episodeNumber}`) {
-                return `Episode ${episodeNumber}`;
+            // "STIRRED 1" / "STIRRED S01E01" → let identity line carry S/E; hide redundant title
+            if (
+                lt === ll ||
+                lt === `${ll} ${episodeNumber}` ||
+                lt === `${ll} s${seasonNumber} e${episodeNumber}` ||
+                lt === `${ll} s0${seasonNumber} e0${episodeNumber}` ||
+                new RegExp(
+                    `^${ll.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*s0*${seasonNumber}\\s*e0*${episodeNumber}$`
+                ).test(lt)
+            ) {
+                return '';
             }
         }
         return t;
@@ -110,7 +125,7 @@
     aria-disabled={!isPlayable}
     disabled={!isPlayable}
     aria-label={viewerMode
-        ? `${seBadge} ${displayTitle}${selected ? ' — now playing' : readyBound ? ' — play' : ' — unavailable'}`
+        ? `${viewerIdentityLine}${selected ? ' — now playing' : readyBound ? ' — play' : ' — unavailable'}`
         : `${code} ${title} — ${displayBindingLabel}${readyBound ? ' — Enter Theater' : ''}`}
     on:click={() => {
         if (!isPlayable) return;
@@ -142,10 +157,9 @@
                 {/if}
             </div>
             <div class="episode-card__copy">
-                <span class="episode-card__se">{seBadge}</span>
-                <span class="episode-card__title">{displayTitle}</span>
-                {#if labelRoot && displayTitle !== labelRoot}
-                    <span class="episode-card__series">{labelRoot}</span>
+                <span class="episode-card__identity" data-viewer-episode-identity>{viewerIdentityLine}</span>
+                {#if displayTitle}
+                    <span class="episode-card__title">{displayTitle}</span>
                 {/if}
             </div>
         </div>
@@ -360,6 +374,19 @@
         flex-direction: column;
         gap: 0.12rem;
     }
+    .episode-card__identity {
+        font-size: 0.88rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        line-height: 1.3;
+        color: rgba(255, 255, 255, 0.88);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .episode-chip.viewer.selected .episode-card__identity {
+        color: #fff;
+    }
     .episode-card__se {
         font-size: 0.68rem;
         font-weight: 700;
@@ -371,10 +398,10 @@
         color: rgba(255, 255, 255, 0.75);
     }
     .episode-card__title {
-        font-size: 0.92rem;
-        font-weight: 600;
+        font-size: 0.78rem;
+        font-weight: 500;
         line-height: 1.25;
-        color: #fff;
+        color: rgba(255, 255, 255, 0.45);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
