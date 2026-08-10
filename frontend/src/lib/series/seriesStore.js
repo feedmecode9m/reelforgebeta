@@ -44,6 +44,13 @@ import {
     guardIntelligenceMetadataWrite,
     PROVENANCE_SOURCE_TYPES
 } from '../architecture/intelligenceProvenance.js';
+import {
+    applySeriesCatalogEdit,
+    sortEpisodesForDisplay,
+    upsertSeriesCatalogEdit,
+    upsertSeasonCatalogEdit
+} from './seriesCatalogEdits.js';
+import { episodeIsViewerDiscoverable } from './publishingLifecycle.js';
 
 /** @typedef {import('./seriesTypes.js').Series} Series */
 /** @typedef {import('./seriesTypes.js').Season} Season */
@@ -806,7 +813,9 @@ export function getSeriesById(seriesId) {
     if (!seriesId) return undefined;
     // Demo fixtures are invisible unless an explicit demo catalog session is open.
     if (isDemoSeriesId(seriesId) && !allowDemoCatalogSession) return undefined;
-    return get(seriesCatalog).find((series) => series.id === seriesId);
+    const raw = get(seriesCatalog).find((series) => series.id === seriesId);
+    if (!raw) return undefined;
+    return /** @type {Series} */ (applySeriesCatalogEdit(raw));
 }
 
 /**
@@ -819,7 +828,13 @@ export function getSeasonByNumber(seriesId, seasonNumber) {
     if (!series) return undefined;
     const season = series.seasons.find((s) => s.seasonNumber === seasonNumber);
     if (!season) return undefined;
-    return { series, season };
+    return {
+        series,
+        season: {
+            ...season,
+            episodes: sortEpisodesForDisplay(season.episodes || [])
+        }
+    };
 }
 
 /**
@@ -827,9 +842,12 @@ export function getSeasonByNumber(seriesId, seasonNumber) {
  * @returns {{ series: Series; season: Season; episode: Episode } | undefined}
  */
 export function getEpisodeById(episodeId) {
-    for (const series of get(seriesCatalog)) {
-        for (const season of series.seasons) {
-            const episode = season.episodes.find((e) => e.episodeId === episodeId);
+    const id = String(episodeId || '').trim();
+    if (!id) return undefined;
+    for (const raw of get(seriesCatalog)) {
+        const series = /** @type {Series} */ (applySeriesCatalogEdit(raw));
+        for (const season of series.seasons || []) {
+            const episode = (season.episodes || []).find((e) => e.episodeId === id);
             if (episode) return { series, season, episode };
         }
     }
@@ -986,6 +1004,9 @@ export function updateCatalogEpisode(episodeId, patch = {}) {
     if ('status' in patch) {
         if (!isEpisodeStatus(patch.status)) return null;
         fields.status = /** @type {import('./seriesTypes.js').EpisodeStatus} */ (patch.status);
+        if (fields.status === 'published') {
+            fields.publishedAt = new Date().toISOString();
+        }
     }
     if (Object.keys(fields).length === 0) {
         return existing;
@@ -1150,7 +1171,9 @@ export function clearEpisodeVaultBinding({ episodeId } = {}) {
 }
 
 /**
- * Reorder episodes within a single season. Preserves episodeId and reelId; renumbers 1..n.
+ * Reorder episodes within a single season.
+ * Preserves episodeId, reelId, and episodeNumber labels; stamps displayOrder 0..n-1.
+ * Order persists via series catalog edits (and reel meta when bound).
  *
  * @param {string} seriesId
  * @param {number} seasonNumber
@@ -1164,26 +1187,29 @@ export function reorderEpisodesInSeason(seriesId, seasonNumber, orderedEpisodeId
     if (!Array.isArray(orderedEpisodeIds) || orderedEpisodeIds.length === 0) return false;
 
     const hit = getSeasonByNumber(sid, sn);
-    if (!hit) return false;
+    // Read raw season lengths (edits apply may re-sort)
+    const raw = get(seriesCatalog).find((s) => s.id === sid);
+    const rawSeason = raw?.seasons?.find((s) => s.seasonNumber === sn);
+    if (!hit || !rawSeason) return false;
 
-    const { season } = hit;
-    const byId = new Map(season.episodes.map((ep) => [ep.episodeId, ep]));
+    const byId = new Map(rawSeason.episodes.map((ep) => [ep.episodeId, ep]));
     const ordered = orderedEpisodeIds.map((id) => String(id || '').trim()).filter(Boolean);
 
-    if (ordered.length !== season.episodes.length) return false;
+    if (ordered.length !== rawSeason.episodes.length) return false;
     if (new Set(ordered).size !== ordered.length) return false;
     for (const epId of ordered) {
         if (!byId.has(epId)) return false;
     }
 
     /** @type {Episode[]} */
-    const renumbered = ordered.map((epId, index) => {
+    const reordered = ordered.map((epId, index) => {
         const prev = byId.get(epId);
         return {
             ...prev,
             episodeId: prev.episodeId,
             reelId: prev.reelId,
-            episodeNumber: index + 1
+            episodeNumber: prev.episodeNumber, // preserve creator / vault labels
+            displayOrder: index
         };
     });
 
@@ -1196,7 +1222,7 @@ export function reorderEpisodesInSeason(seriesId, seasonNumber, orderedEpisodeId
                 seasons: series.seasons.map((s) => {
                     if (s.seasonNumber !== sn) return s;
                     applied = true;
-                    return { ...s, episodes: renumbered };
+                    return { ...s, episodes: reordered };
                 })
             };
         });
@@ -1205,7 +1231,10 @@ export function reorderEpisodesInSeason(seriesId, seasonNumber, orderedEpisodeId
 
     if (!applied) return false;
 
-    for (const episode of renumbered) {
+    // Durable order for reload + viewer parity
+    upsertSeasonCatalogEdit(sid, sn, { episodeOrder: ordered });
+
+    for (const episode of reordered) {
         if (!episode.reelId) continue;
         const ctx = getEpisodeById(episode.episodeId);
         if (ctx) syncReelMetadataFromCatalogEpisode(ctx);
@@ -1215,10 +1244,103 @@ export function reorderEpisodesInSeason(seriesId, seasonNumber, orderedEpisodeId
         seriesId: sid,
         seasonNumber: sn,
         orderedEpisodeIds: ordered,
+        preserveEpisodeNumbers: true,
         ts: new Date().toISOString()
     });
 
     return true;
+}
+
+/**
+ * Patch series-level metadata (title, description, poster, genre, tags).
+ * @param {string} seriesId
+ * @param {{ title?: string; description?: string; poster?: string; genre?: string; tags?: string[] }} patch
+ * @returns {Series | null}
+ */
+export function updateCatalogSeries(seriesId, patch = {}) {
+    const sid = String(seriesId || '').trim();
+    if (!sid || !patch || typeof patch !== 'object') return null;
+    const existing = get(seriesCatalog).find((s) => s.id === sid);
+    if (!existing) return null;
+
+    /** @type {Partial<Series>} */
+    const fields = {};
+    if ('title' in patch) {
+        const title = String(patch.title ?? '').trim();
+        if (!title) return null;
+        fields.title = title;
+    }
+    if ('description' in patch) fields.description = String(patch.description ?? '');
+    if ('poster' in patch) fields.poster = String(patch.poster ?? '').trim();
+    if ('genre' in patch) fields.genre = String(patch.genre ?? '').trim();
+    if ('tags' in patch) fields.tags = normalizeTags(patch.tags);
+
+    if (Object.keys(fields).length === 0) return getSeriesById(sid) || null;
+
+    seriesCatalog.update((items) =>
+        items.map((s) => (s.id === sid ? { ...s, ...fields } : s))
+    );
+
+    upsertSeriesCatalogEdit(sid, {
+        title: fields.title,
+        description: fields.description,
+        poster: fields.poster,
+        genre: fields.genre,
+        tags: fields.tags
+    });
+
+    console.info('[CATALOG_SERIES_UPDATE]', {
+        seriesId: sid,
+        fields: Object.keys(fields),
+        ts: new Date().toISOString()
+    });
+    return getSeriesById(sid) || null;
+}
+
+/**
+ * Patch season-level metadata (name, description, artwork). Not filename-derived.
+ * @param {string} seriesId
+ * @param {number} seasonNumber
+ * @param {{ title?: string; description?: string; poster?: string }} patch
+ * @returns {{ series: Series; season: Season } | null}
+ */
+export function updateCatalogSeason(seriesId, seasonNumber, patch = {}) {
+    const sid = String(seriesId || '').trim();
+    const sn = Number(seasonNumber);
+    if (!sid || !Number.isFinite(sn) || sn < 1 || !patch || typeof patch !== 'object') return null;
+
+    /** @type {Record<string, string>} */
+    const fields = {};
+    if ('title' in patch) fields.title = String(patch.title ?? '').trim();
+    if ('description' in patch) fields.description = String(patch.description ?? '');
+    if ('poster' in patch) fields.poster = String(patch.poster ?? '').trim();
+    if (Object.keys(fields).length === 0) return getSeasonByNumber(sid, sn) || null;
+
+    let applied = false;
+    seriesCatalog.update((items) =>
+        items.map((series) => {
+            if (series.id !== sid) return series;
+            return {
+                ...series,
+                seasons: series.seasons.map((season) => {
+                    if (season.seasonNumber !== sn) return season;
+                    applied = true;
+                    return { ...season, ...fields };
+                })
+            };
+        })
+    );
+    if (!applied) return null;
+
+    upsertSeasonCatalogEdit(sid, sn, fields);
+
+    console.info('[CATALOG_SEASON_UPDATE]', {
+        seriesId: sid,
+        seasonNumber: sn,
+        fields: Object.keys(fields),
+        ts: new Date().toISOString()
+    });
+    return getSeasonByNumber(sid, sn) || null;
 }
 
 /**
@@ -1264,8 +1386,7 @@ export function getPublishedEpisodesForSeries(seriesId) {
     if (!series) return [];
     return series.seasons
         .flatMap((season) => season.episodes)
-        .filter((episode) => episodeIsPlayable(episode))
-        .sort((a, b) => a.episodeNumber - b.episodeNumber);
+        .filter((episode) => episodeIsViewerDiscoverable(episode) && episodeIsPlayable(episode));
 }
 
 /**

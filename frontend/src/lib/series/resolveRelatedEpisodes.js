@@ -25,6 +25,8 @@ import {
     stripProductionTitlePrefixes,
     buildVaultSeriesIdentity
 } from './vaultSeriesInference.js';
+import { sortEpisodesForDisplay } from './seriesCatalogEdits.js';
+import { episodeIsViewerDiscoverable } from './publishingLifecycle.js';
 
 const UUID_RE =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -472,9 +474,11 @@ function dedupeMembers(list) {
  *
  * @param {RelatedEpisodesResult} related
  * @param {import('./seriesTypes.js').Series | null | undefined} [catalogSeries]
+ * @param {{ viewerMode?: boolean }} [options] viewerMode defaults true — draft/ready/archived filtered from shelf
  * @returns {import('./seriesTypes.js').Series | null}
  */
-export function buildSeriesViewFromRelated(related, catalogSeries = null) {
+export function buildSeriesViewFromRelated(related, catalogSeries = null, options = {}) {
+    const viewerMode = options.viewerMode !== false;
     if (!related?.members?.length && !catalogSeries) return null;
 
     const seriesId =
@@ -532,7 +536,7 @@ export function buildSeriesViewFromRelated(related, catalogSeries = null) {
             episodeId,
             episodeNumber: m.episodeNumber,
             title: m.title,
-            status: 'published',
+            status: m.status || 'published',
             reelId: m.reelId,
             mediaAssetId: m.assetId || null,
             tags: ['vault-related'],
@@ -540,6 +544,7 @@ export function buildSeriesViewFromRelated(related, catalogSeries = null) {
             seriesLabel: m.seriesLabel || related.seriesTitle || seriesTitle,
             createdAtMs: m.createdAtMs,
             vaultIndex: m.vaultIndex,
+            displayOrder: m.displayOrder,
             thumbnailUrl: m.thumbnailUrl || undefined
         });
     }
@@ -580,18 +585,25 @@ export function buildSeriesViewFromRelated(related, catalogSeries = null) {
                 });
                 continue;
             }
-            // Catalog-only episode (not in vault) — still list for completeness
+            // Catalog-only episode (not in vault) — viewer mode: published only
+            if (viewerMode && !episodeIsViewerDiscoverable(ep)) continue;
             putEpisode(`c:${ep.episodeId}`, {
                 ...ep,
                 seasonNumber: season.seasonNumber,
+                displayOrder: ep.displayOrder,
                 tags: [...(ep.tags || []), 'catalog-only']
             });
         }
     }
 
-    /** @type {Map<number, Array<import('./seriesTypes.js').Episode & { seriesLabel?: string; createdAtMs?: number; vaultIndex?: number }>>} */
+    // Carry catalog display order + status onto vault spine when episodeId/reel match
+    // (already merged via putEpisode enrich above)
+
+    /** @type {Map<number, Array<import('./seriesTypes.js').Episode & { seriesLabel?: string; createdAtMs?: number; vaultIndex?: number; displayOrder?: number }>>} */
     const bySeason = new Map();
     for (const ep of episodeMap.values()) {
+        // Viewer shelf: published only (ready/draft/archived hidden from discovery lists)
+        if (viewerMode && ep.status && !episodeIsViewerDiscoverable(ep)) continue;
         const sn = Number(ep.seasonNumber) || 1;
         const { seasonNumber: _drop, ...rest } = ep;
         const list = bySeason.get(sn) || [];
@@ -601,31 +613,41 @@ export function buildSeriesViewFromRelated(related, catalogSeries = null) {
 
     const seasons = [...bySeason.entries()]
         .sort((a, b) => a[0] - b[0])
-        .map(([seasonNumber, episodes]) => ({
-            seasonId: `season-${slugifySeriesKey(seriesId)}-${seasonNumber}`,
-            seasonNumber,
-            title: `Season ${seasonNumber}`,
-            episodes: episodes.sort((a, b) => {
-                if (a.episodeNumber !== b.episodeNumber) return a.episodeNumber - b.episodeNumber;
-                const ca = Number(a.createdAtMs) || 0;
-                const cb = Number(b.createdAtMs) || 0;
-                if (ca && cb && ca !== cb) return ca - cb;
-                const ia = Number(a.vaultIndex);
-                const ib = Number(b.vaultIndex);
-                if (Number.isFinite(ia) && Number.isFinite(ib) && ia !== ib) return ia - ib;
-                return String(a.title).localeCompare(String(b.title));
-            })
-        }));
+        .map(([seasonNumber, episodes]) => {
+            const catSeason = catalogSeries?.seasons?.find((s) => s.seasonNumber === seasonNumber);
+            return {
+                seasonId: catSeason?.seasonId || `season-${slugifySeriesKey(seriesId)}-${seasonNumber}`,
+                seasonNumber,
+                title: catSeason?.title || `Season ${seasonNumber}`,
+                description: catSeason?.description || '',
+                poster: /** @type {{ poster?: string }} */ (catSeason || {}).poster || '',
+                episodes: sortEpisodesForDisplay(episodes)
+            };
+        });
 
-    if (!seasons.length) return catalogSeries || null;
+    if (!seasons.length) {
+        // Viewer mode: never fall back to raw catalog (would reintroduce draft/ready/archived)
+        if (viewerMode) {
+            return {
+                id: seriesId,
+                title: seriesTitle || catalogSeries?.title || 'Series',
+                description: catalogSeries?.description || '',
+                poster: catalogSeries?.poster || '',
+                genre: catalogSeries?.genre,
+                tags: [...new Set([...(catalogSeries?.tags || []), 'vault-inferred', 'related-resolver'])],
+                seasons: []
+            };
+        }
+        return catalogSeries || null;
+    }
 
     return {
         id: seriesId,
-        title: seriesTitle,
+        title: seriesTitle || catalogSeries?.title || 'Series',
         description: catalogSeries?.description || '',
         poster:
-            related.members?.find((m) => m.thumbnailUrl)?.thumbnailUrl ||
             catalogSeries?.poster ||
+            related.members?.find((m) => m.thumbnailUrl)?.thumbnailUrl ||
             '',
         genre: catalogSeries?.genre,
         tags: [...new Set([...(catalogSeries?.tags || []), 'vault-inferred', 'related-resolver'])],

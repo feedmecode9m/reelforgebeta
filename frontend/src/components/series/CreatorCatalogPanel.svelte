@@ -4,6 +4,8 @@
         seriesCatalog,
         getSeriesById,
         updateCatalogEpisode,
+        updateCatalogSeries,
+        updateCatalogSeason,
         setEpisodeStatus,
         reorderEpisodesInSeason,
         attachEpisodeReel,
@@ -88,8 +90,114 @@
     $: season =
         seasons.find((s) => s.seasonNumber === selectedSeasonNumber) || seasons[0] || null;
     $: episodes = season?.episodes
-        ? [...season.episodes].sort((a, b) => a.episodeNumber - b.episodeNumber)
+        ? sortDisplay([...season.episodes])
         : [];
+
+    /**
+     * @param {import('../../lib/series/seriesTypes.js').Episode[]} list
+     */
+    function sortDisplay(list) {
+        return [...list].sort((a, b) => {
+            const da = Number(a.displayOrder);
+            const db = Number(b.displayOrder);
+            if (Number.isFinite(da) && Number.isFinite(db) && da !== db) return da - db;
+            return (a.episodeNumber || 0) - (b.episodeNumber || 0);
+        });
+    }
+
+    let editSeriesTitle = '';
+    let editSeriesDescription = '';
+    let editSeriesPoster = '';
+    let editSeasonTitle = '';
+    let editSeasonDescription = '';
+    let editSeasonPoster = '';
+    let seriesSaveMessage = '';
+
+    $: if (series) {
+        editSeriesTitle = series.title || '';
+        editSeriesDescription = series.description || '';
+        editSeriesPoster = series.poster || '';
+    }
+    $: if (season) {
+        editSeasonTitle = season.title || `Season ${season.seasonNumber}`;
+        editSeasonDescription = season.description || '';
+        editSeasonPoster = /** @type {{ poster?: string }} */ (season).poster || '';
+    }
+
+    function handleSaveSeriesMeta() {
+        if (!selectedSeriesId) return;
+        const updated = updateCatalogSeries(selectedSeriesId, {
+            title: editSeriesTitle,
+            description: editSeriesDescription,
+            poster: editSeriesPoster
+        });
+        seriesSaveMessage = updated ? 'Series metadata saved' : 'Series save failed';
+        if (updated) {
+            dispatch('changed', { type: 'series-meta', seriesId: selectedSeriesId });
+        }
+    }
+
+    function handleSaveSeasonMeta() {
+        if (!selectedSeriesId || !season) return;
+        const updated = updateCatalogSeason(selectedSeriesId, season.seasonNumber, {
+            title: editSeasonTitle,
+            description: editSeasonDescription,
+            poster: editSeasonPoster
+        });
+        seriesSaveMessage = updated ? 'Season metadata saved' : 'Season save failed';
+        if (updated) {
+            dispatch('changed', {
+                type: 'season-meta',
+                seriesId: selectedSeriesId,
+                seasonNumber: season.seasonNumber
+            });
+        }
+    }
+
+    /** HTML5 drag reorder */
+    let dragEpisodeId = '';
+
+    /** @param {DragEvent} event @param {string} episodeId */
+    function onEpisodeDragStart(event, episodeId) {
+        dragEpisodeId = episodeId;
+        try {
+            event.dataTransfer?.setData('text/plain', episodeId);
+            if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
+        } catch {
+            /* ignore */
+        }
+    }
+
+    /** @param {DragEvent} event @param {string} targetId */
+    function onEpisodeDrop(event, targetId) {
+        event.preventDefault();
+        const fromId = dragEpisodeId || event.dataTransfer?.getData('text/plain') || '';
+        dragEpisodeId = '';
+        if (!fromId || !targetId || fromId === targetId || !selectedSeriesId || !season) return;
+        const ordered = episodes.map((e) => e.episodeId);
+        const from = ordered.indexOf(fromId);
+        const to = ordered.indexOf(targetId);
+        if (from < 0 || to < 0) return;
+        const next = [...ordered];
+        const [moved] = next.splice(from, 1);
+        next.splice(to, 0, moved);
+        const ok = reorderEpisodesInSeason(selectedSeriesId, season.seasonNumber, next);
+        saveMessage = ok ? 'Episode order updated (persisted)' : 'Reorder failed';
+        if (ok) {
+            dispatch('changed', {
+                type: 'reorder',
+                seriesId: selectedSeriesId,
+                seasonNumber: season.seasonNumber,
+                orderedEpisodeIds: next
+            });
+        }
+    }
+
+    /** @param {DragEvent} event */
+    function onEpisodeDragOver(event) {
+        event.preventDefault();
+        if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+    }
 
     $: if (episodes.length && !episodes.some((e) => e.episodeId === selectedEpisodeId)) {
         selectedEpisodeId = episodes[0].episodeId;
@@ -298,19 +406,71 @@
         </div>
 
         <div class="creator-catalog__body">
+            {#if series}
+                <section class="creator-catalog__meta-block" data-series-editor-meta>
+                    <h5 class="creator-catalog__meta-title">Series metadata</h5>
+                    <label class="creator-catalog__field">
+                        <span>Title</span>
+                        <input bind:value={editSeriesTitle} data-series-title />
+                    </label>
+                    <label class="creator-catalog__field">
+                        <span>Description</span>
+                        <textarea rows="2" bind:value={editSeriesDescription} data-series-description
+                        ></textarea>
+                    </label>
+                    <label class="creator-catalog__field">
+                        <span>Series artwork URL</span>
+                        <input bind:value={editSeriesPoster} data-series-poster placeholder="/or https://…" />
+                    </label>
+                    <button type="button" class="creator-catalog__btn" data-save-series on:click={handleSaveSeriesMeta}
+                        >Save series</button
+                    >
+                    {#if season}
+                        <h5 class="creator-catalog__meta-title">Season {season.seasonNumber} metadata</h5>
+                        <label class="creator-catalog__field">
+                            <span>Season name</span>
+                            <input bind:value={editSeasonTitle} data-season-title />
+                        </label>
+                        <label class="creator-catalog__field">
+                            <span>Season description</span>
+                            <textarea rows="2" bind:value={editSeasonDescription} data-season-description
+                            ></textarea>
+                        </label>
+                        <label class="creator-catalog__field">
+                            <span>Season artwork URL</span>
+                            <input bind:value={editSeasonPoster} data-season-poster />
+                        </label>
+                        <button
+                            type="button"
+                            class="creator-catalog__btn"
+                            data-save-season
+                            on:click={handleSaveSeasonMeta}>Save season</button
+                        >
+                    {/if}
+                    {#if seriesSaveMessage}
+                        <p class="creator-catalog__msg" role="status">{seriesSaveMessage}</p>
+                    {/if}
+                </section>
+            {/if}
+
             <div class="creator-catalog__list" data-creator-catalog-episodes role="list">
                 {#if !episodes.length}
                     <p class="creator-catalog__empty">No episodes in this season.</p>
                 {:else}
-                    {#each episodes as ep (ep.episodeId)}
+                    {#each episodes as ep, epIndex (ep.episodeId)}
                         {@const code = `S${season?.seasonNumber ?? 1}:E${ep.episodeNumber}`}
                         <div
                             class="creator-catalog__row"
                             class:selected={selectedEpisodeId === ep.episodeId}
                             role="listitem"
+                            draggable="true"
                             data-episode-id={ep.episodeId}
                             data-episode-status={ep.status}
+                            data-display-order={ep.displayOrder ?? epIndex}
                             data-has-reel={Boolean(ep.reelId)}
+                            on:dragstart={(e) => onEpisodeDragStart(e, ep.episodeId)}
+                            on:dragover={onEpisodeDragOver}
+                            on:drop={(e) => onEpisodeDrop(e, ep.episodeId)}
                         >
                             <button
                                 type="button"
@@ -318,6 +478,7 @@
                                 data-episode-id={ep.episodeId}
                                 on:click={() => selectEpisode(ep.episodeId)}
                             >
+                                <span class="creator-catalog__drag" aria-hidden="true">⋮⋮</span>
                                 <span class="creator-catalog__code">{code}</span>
                                 <span class="creator-catalog__ep-title">{ep.title}</span>
                                 <span
@@ -344,7 +505,7 @@
                                     data-reorder="up"
                                     data-episode-id={ep.episodeId}
                                     title="Move up"
-                                    disabled={ep.episodeNumber <= 1}
+                                    disabled={epIndex <= 0}
                                     on:click|stopPropagation={() => {
                                         selectEpisode(ep.episodeId);
                                         handleReorder('up');
@@ -358,7 +519,7 @@
                                     data-reorder="down"
                                     data-episode-id={ep.episodeId}
                                     title="Move down"
-                                    disabled={ep.episodeNumber >= episodes.length}
+                                    disabled={epIndex >= episodes.length - 1}
                                     on:click|stopPropagation={() => {
                                         selectEpisode(ep.episodeId);
                                         handleReorder('down');

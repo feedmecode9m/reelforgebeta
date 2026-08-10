@@ -11,7 +11,8 @@ export const EPISODE_STATUSES = /** @type {const} */ (['draft', 'ready', 'publis
 /**
  * @typedef {Object} Episode
  * @property {string} episodeId - Stable episode identifier (series metadata)
- * @property {number} episodeNumber - 1-based position within the season
+ * @property {number} episodeNumber - 1-based creator label within the season (not display sort key)
+ * @property {number} [displayOrder] - Creator-controlled shelf order (0-based). Sort key for viewer/creator lists.
  * @property {string} title
  * @property {string} [description]
  * @property {number} [runtime] - Duration in seconds
@@ -24,6 +25,7 @@ export const EPISODE_STATUSES = /** @type {const} */ (['draft', 'ready', 'publis
  * @property {'manual' | 'auto' | null} [heroVaultBindingMode] - How media is selected for this episode
  * @property {string} [genre]
  * @property {string[]} [tags]
+ * @property {string} [publishedAt] - ISO timestamp when status became published
  */
 
 /**
@@ -32,6 +34,7 @@ export const EPISODE_STATUSES = /** @type {const} */ (['draft', 'ready', 'publis
  * @property {number} seasonNumber - 1-based season index
  * @property {string} [title]
  * @property {string} [description]
+ * @property {string} [poster] - Season artwork URL/path
  * @property {Episode[]} episodes
  */
 
@@ -40,7 +43,7 @@ export const EPISODE_STATUSES = /** @type {const} */ (['draft', 'ready', 'publis
  * @property {string} id
  * @property {string} title
  * @property {string} [description]
- * @property {string} [poster] - Poster/thumbnail path or URL (resolved at UI layer)
+ * @property {string} [poster] - Series poster/thumbnail path or URL
  * @property {string} [genre]
  * @property {number} [releaseYear]
  * @property {string[]} [tags]
@@ -129,9 +132,19 @@ export function episodeIsPlayable(episode) {
 }
 
 /**
+ * True when episode may appear in viewer discovery / series page lists.
+ * (Ready is creator preview only — not publicly discoverable.)
  * @param {Episode} episode
  * @returns {boolean}
  */
 export function episodeIsPublished(episode) {
-    return episode?.status === 'published' || episode?.status === 'ready';
+    return episode?.status === 'published';
+}
+
+/**
+ * @param {Episode} episode
+ * @returns {boolean}
+ */
+export function episodeIsPubliclyPlayable(episode) {
+    return episodeIsPublished(episode) && (episodeHasMediaAsset(episode) || episodeHasReel(episode));
 }

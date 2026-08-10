@@ -126,36 +126,47 @@ try {
     const seasonBefore = seriesStore.getSeasonByNumber(SERIES, 1)?.season;
     const idsBefore = (seasonBefore?.episodes || [])
         .slice()
-        .sort((a, b) => a.episodeNumber - b.episodeNumber)
+        .sort((a, b) => (Number(a.displayOrder) || a.episodeNumber) - (Number(b.displayOrder) || b.episodeNumber))
         .map((e) => e.episodeId);
     assert('season has 4 episodes', idsBefore.length === 4);
 
     const reverseOrder = [...idsBefore].reverse();
+    // Capture original episode numbers before reorder (labels preserved)
+    const numById = Object.fromEntries(
+        (seasonBefore?.episodes || []).map((e) => [e.episodeId, e.episodeNumber])
+    );
     const reordered = seriesStore.reorderEpisodesInSeason(SERIES, 1, reverseOrder);
     assert('reorder returns true', reordered === true);
 
     const seasonAfter = seriesStore.getSeasonByNumber(SERIES, 1)?.season;
-    const sorted = [...(seasonAfter?.episodes || [])].sort(
-        (a, b) => a.episodeNumber - b.episodeNumber
-    );
+    const sorted = [...(seasonAfter?.episodes || [])];
     assert('episode count unchanged', sorted.length === 4);
-    assert('episodeNumbers contiguous 1..n', sorted.every((e, i) => e.episodeNumber === i + 1));
     assert(
         'order matches requested',
         sorted.map((e) => e.episodeId).join(',') === reverseOrder.join(',')
+    );
+    assert(
+        'episodeNumbers preserved as labels',
+        sorted.every((e) => e.episodeNumber === numById[e.episodeId])
+    );
+    assert(
+        'displayOrder stamped 0..n-1',
+        sorted.every((e, i) => e.displayOrder === i)
     );
 
     const epAAfter = seriesStore.getEpisodeById(EP_A);
     assert('EP_A still has same reelId after reorder', epAAfter?.episode?.reelId === SYNTH_REEL);
     assert('EP_A episodeId unchanged after reorder', epAAfter?.episode?.episodeId === EP_A);
-    const expectedNum = reverseOrder.indexOf(EP_A) + 1;
-    assert(`EP_A episodeNumber is ${expectedNum}`, epAAfter?.episode?.episodeNumber === expectedNum);
+    assert(
+        `EP_A episodeNumber label preserved (${numById[EP_A]})`,
+        epAAfter?.episode?.episodeNumber === numById[EP_A]
+    );
 
     const metaAfterReorder =
         loadReelSeriesMetadataMap()[SYNTH_REEL] || get(seriesStore.reelSeriesMetadata)[SYNTH_REEL];
     assert(
-        'metadata episodeNumber synced after reorder',
-        Number(metaAfterReorder?.episodeNumber) === expectedNum
+        'metadata episodeNumber synced after reorder (label)',
+        Number(metaAfterReorder?.episodeNumber) === numById[EP_A]
     );
 
     // Cross-season / incomplete lists fail closed
