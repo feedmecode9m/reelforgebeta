@@ -198,6 +198,30 @@ impl R2Storage {
         file.flush().await.map_err(|e| e.to_string())?;
         Ok(total)
     }
+
+    /// Upload a local file as `{key_prefix}/{stored_name}` (playback derivatives, etc.).
+    pub async fn put_file(
+        &self,
+        stored_name: &str,
+        path: &std::path::Path,
+        content_type: &str,
+    ) -> Result<(), String> {
+        let key = self.object_key(stored_name);
+        let body = aws_sdk_s3::primitives::ByteStream::from_path(path)
+            .await
+            .map_err(|e| format!("R2 put_file read failed: {}", e))?;
+        self.client
+            .put_object()
+            .bucket(&self.bucket)
+            .key(&key)
+            .content_type(content_type)
+            .cache_control("public, max-age=31536000, immutable")
+            .body(body)
+            .send()
+            .await
+            .map_err(|e| format!("R2 put_object failed: {}", e))?;
+        Ok(())
+    }
 }
 
 fn env_first(keys: &[&str]) -> Result<String, String> {

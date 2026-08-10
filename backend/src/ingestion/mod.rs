@@ -1,5 +1,6 @@
 pub mod ffmpeg;
 pub mod reconcile;
+pub mod transcode;
 pub mod upload;
 pub mod worker;
 

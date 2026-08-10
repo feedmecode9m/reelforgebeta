@@ -13,6 +13,7 @@ pub struct ReelV1 {
     pub file_name: String,
     #[serde(rename = "type")]
     pub media_type: String,
+    /// Master / source media URL (unchanged contract).
     pub url: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub thumbnail_url: Option<String>,
@@ -22,6 +23,15 @@ pub struct ReelV1 {
     pub status: String,
     pub validated: bool,
     pub created_at: String,
+    /// Additive playback derivative fields (optional; master remains `url`).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub playback_url: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub playback_status: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub playback_file_size: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub playback_profile: Option<String>,
 }
 
 /// GET /api/reels/{id} — ReelV1 plus ingestion poll fields.
@@ -104,6 +114,13 @@ pub fn row_to_reel_v1(row: &ReelRow) -> ReelV1 {
     let thumb_rel = row.thumbnail_url.clone().filter(|s| !s.trim().is_empty());
     let thumb_abs = thumb_rel.as_ref().map(|p| db::canonical_media_url(p));
 
+    let playback_rel = row.playback_url.clone().filter(|s| !s.trim().is_empty());
+    let playback_abs = playback_rel.as_ref().map(|p| db::canonical_media_url(p));
+    let playback_status = row
+        .playback_status
+        .clone()
+        .filter(|s| !s.trim().is_empty());
+
     ReelV1 {
         id: row.id.to_string(),
         name: if row.title.trim().is_empty() {
@@ -120,6 +137,13 @@ pub fn row_to_reel_v1(row: &ReelRow) -> ReelV1 {
         status: row.status.clone(),
         validated: row.validated,
         created_at: row.created_at.to_rfc3339(),
+        playback_url: playback_abs,
+        playback_status,
+        playback_file_size: row.playback_file_size,
+        playback_profile: row
+            .playback_profile
+            .clone()
+            .filter(|s| !s.trim().is_empty()),
     }
 }
 

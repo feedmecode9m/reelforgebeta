@@ -348,6 +348,35 @@ pub async fn delete_reel(
                 reel_id, p, existed, video_removed
             );
         }
+        // Best-effort remove playback derivative next to master (additive phase).
+        let playback_keys: Vec<String> = {
+            let mut keys = Vec::new();
+            if let Some(ref n) = row.playback_file_name {
+                let t = n.trim();
+                if !t.is_empty() {
+                    keys.push(t.to_string());
+                }
+            }
+            keys.push(format!("{}.playback.mp4", reel_id));
+            keys.sort();
+            keys.dedup();
+            keys
+        };
+        for pb_name in playback_keys {
+            let p = videos_path.0.join(&pb_name);
+            if p.is_file() {
+                let _ = std::fs::remove_file(&p);
+            }
+            if crate::storage::r2::R2Storage::enabled() {
+                if let Some(r2) = crate::storage::r2::R2Storage::global() {
+                    let _ = r2.delete_object(&pb_name).await;
+                }
+            }
+            eprintln!(
+                "[VAULT-DELETE-TRACE] handlers::delete_reel:playback id={} key={}",
+                reel_id, pb_name
+            );
+        }
         if let Some(ref t) = row.thumbnail_url {
             if let Some(name) = crate::media_seed::media_basename(t) {
                 let p = thumbs_path.0.join(&name);

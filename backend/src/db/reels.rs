@@ -4,6 +4,14 @@ use chrono::{DateTime, Utc};
 use sqlx::PgPool;
 use uuid::Uuid;
 
+/// Shared reel SELECT list (includes additive playback derivative columns).
+const REEL_SELECT: &str = r#"
+        id, title, category, description, video_url, thumbnail_url,
+        status, error_message, file_name, file_size, mime_type, validated,
+        created_at, updated_at,
+        playback_url, playback_status, playback_file_size, playback_profile, playback_file_name
+"#;
+
 #[derive(Debug, Clone, sqlx::FromRow)]
 pub struct ReelRow {
     pub id: Uuid,
@@ -20,6 +28,12 @@ pub struct ReelRow {
     pub validated: bool,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+    /// Additive playback derivative fields (nullable; never required for ready).
+    pub playback_url: Option<String>,
+    pub playback_status: Option<String>,
+    pub playback_file_size: Option<i64>,
+    pub playback_profile: Option<String>,
+    pub playback_file_name: Option<String>,
 }
 
 pub async fn insert_pending_reel(
@@ -57,32 +71,30 @@ pub async fn insert_pending_reel(
 }
 
 pub async fn list_ready_reels(pool: &PgPool) -> Result<Vec<ReelRow>, sqlx::Error> {
-    sqlx::query_as::<_, ReelRow>(
+    let q = format!(
         r#"
-        SELECT id, title, category, description, video_url, thumbnail_url,
-               status, error_message, file_name, file_size, mime_type, validated,
-               created_at, updated_at
+        SELECT {cols}
         FROM reels
         WHERE status = 'ready' AND validated = true
         ORDER BY created_at DESC
         "#,
-    )
-    .fetch_all(pool)
-    .await
+        cols = REEL_SELECT
+    );
+    sqlx::query_as::<_, ReelRow>(&q).fetch_all(pool).await
 }
 
 pub async fn get_reel_by_id(pool: &PgPool, id: Uuid) -> Result<Option<ReelRow>, sqlx::Error> {
-    sqlx::query_as::<_, ReelRow>(
+    let q = format!(
         r#"
-        SELECT id, title, category, description, video_url, thumbnail_url,
-               status, error_message, file_name, file_size, mime_type, validated,
-               created_at, updated_at
+        SELECT {cols}
         FROM reels WHERE id = $1
         "#,
-    )
-    .bind(id)
-    .fetch_optional(pool)
-    .await
+        cols = REEL_SELECT
+    );
+    sqlx::query_as::<_, ReelRow>(&q)
+        .bind(id)
+        .fetch_optional(pool)
+        .await
 }
 
 pub async fn set_status_processing(pool: &PgPool, id: Uuid) -> Result<(), sqlx::Error> {
@@ -103,6 +115,39 @@ pub async fn mark_ready(pool: &PgPool, id: Uuid, thumbnail_url: &str) -> Result<
     )
     .bind(id)
     .bind(thumbnail_url)
+    .execute(pool)
+    .await?;
+    Ok(())
+}
+
+/// Persist playback derivative metadata without changing status / video_url.
+pub async fn set_playback_derivative(
+    pool: &PgPool,
+    id: Uuid,
+    playback_url: Option<&str>,
+    playback_status: &str,
+    playback_file_size: Option<i64>,
+    playback_profile: Option<&str>,
+    playback_file_name: Option<&str>,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        r#"
+        UPDATE reels
+        SET playback_url = $2,
+            playback_status = $3,
+            playback_file_size = $4,
+            playback_profile = $5,
+            playback_file_name = $6,
+            updated_at = now()
+        WHERE id = $1
+        "#,
+    )
+    .bind(id)
+    .bind(playback_url)
+    .bind(playback_status)
+    .bind(playback_file_size)
+    .bind(playback_profile)
+    .bind(playback_file_name)
     .execute(pool)
     .await?;
     Ok(())
@@ -188,19 +233,19 @@ pub async fn find_by_video_basename(
     pool: &PgPool,
     basename: &str,
 ) -> Result<Option<ReelRow>, sqlx::Error> {
-    sqlx::query_as::<_, ReelRow>(
+    let q = format!(
         r#"
-        SELECT id, title, category, description, video_url, thumbnail_url,
-               status, error_message, file_name, file_size, mime_type, validated,
-               created_at, updated_at
+        SELECT {cols}
         FROM reels
         WHERE video_url LIKE '%' || $1
         LIMIT 1
         "#,
-    )
-    .bind(basename)
-    .fetch_optional(pool)
-    .await
+        cols = REEL_SELECT
+    );
+    sqlx::query_as::<_, ReelRow>(&q)
+        .bind(basename)
+        .fetch_optional(pool)
+        .await
 }
 
 /// All video basenames referenced by reels (any status) for reconciliation dedup.
@@ -212,6 +257,10 @@ pub async fn list_cataloged_video_basenames(pool: &PgPool) -> Result<HashSet<Str
         SELECT split_part(video_url, '/', array_length(string_to_array(video_url, '/'), 1))
         FROM reels
         WHERE video_url IS NOT NULL AND video_url <> ''
+        UNION
+        SELECT playback_file_name
+        FROM reels
+        WHERE playback_file_name IS NOT NULL AND playback_file_name <> ''
         "#,
     )
     .fetch_all(pool)
@@ -223,19 +272,19 @@ pub async fn find_by_file_name(
     pool: &PgPool,
     basename: &str,
 ) -> Result<Option<ReelRow>, sqlx::Error> {
-    sqlx::query_as::<_, ReelRow>(
+    let q = format!(
         r#"
-        SELECT id, title, category, description, video_url, thumbnail_url,
-               status, error_message, file_name, file_size, mime_type, validated,
-               created_at, updated_at
+        SELECT {cols}
         FROM reels
         WHERE file_name = $1
         LIMIT 1
         "#,
-    )
-    .bind(basename)
-    .fetch_optional(pool)
-    .await
+        cols = REEL_SELECT
+    );
+    sqlx::query_as::<_, ReelRow>(&q)
+        .bind(basename)
+        .fetch_optional(pool)
+        .await
 }
 
 #[derive(Debug, Clone, sqlx::FromRow)]
@@ -280,20 +329,20 @@ pub async fn update_category(
     id: Uuid,
     category: &str,
 ) -> Result<Option<ReelRow>, sqlx::Error> {
-    sqlx::query_as::<_, ReelRow>(
+    let q = format!(
         r#"
         UPDATE reels
         SET category = $2, updated_at = now()
         WHERE id = $1
-        RETURNING id, title, category, description, video_url, thumbnail_url,
-                  status, error_message, file_name, file_size, mime_type, validated,
-                  created_at, updated_at
+        RETURNING {cols}
         "#,
-    )
-    .bind(id)
-    .bind(category)
-    .fetch_optional(pool)
-    .await
+        cols = REEL_SELECT
+    );
+    sqlx::query_as::<_, ReelRow>(&q)
+        .bind(id)
+        .bind(category)
+        .fetch_optional(pool)
+        .await
 }
 
 /// Re-verify ready reels that predate the validated column.
@@ -303,18 +352,15 @@ pub async fn backfill_validated_ready_reels(
 ) -> (usize, usize) {
     use crate::media_validator;
 
-    let rows = match sqlx::query_as::<_, ReelRow>(
+    let q = format!(
         r#"
-        SELECT id, title, category, description, video_url, thumbnail_url,
-               status, error_message, file_name, file_size, mime_type, validated,
-               created_at, updated_at
+        SELECT {cols}
         FROM reels
         WHERE status = 'ready' AND validated = false AND video_url LIKE '/videos/%'
         "#,
-    )
-    .fetch_all(pool)
-    .await
-    {
+        cols = REEL_SELECT
+    );
+    let rows = match sqlx::query_as::<_, ReelRow>(&q).fetch_all(pool).await {
         Ok(r) => r,
         Err(e) => {
             eprintln!("[validation-backfill] query failed: {}", e);
