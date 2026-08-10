@@ -222,16 +222,22 @@ async function main() {
         const drawer = read('src/components/series/SeriesDrawer.svelte');
         assert(/viewerMode/.test(drawer), 'SeriesDrawer supports viewerMode');
         assert(/docked/.test(drawer), 'SeriesDrawer supports docked landscape');
-        assert(/Vault-inferred series/.test(drawer), 'Drawer shows vault-inferred eyebrow');
+        assert(/All Episodes/.test(drawer), 'Drawer uses viewer-facing All Episodes label');
+        assert(
+            !/Vault-inferred series/.test(drawer),
+            'Drawer does not expose internal vault-inferred wording to viewers'
+        );
         assert(/data-theater-series-drawer/.test(drawer), 'Drawer has theater series marker');
+        assert(/series-shelf|episodeCount|hasViewerBody/.test(drawer), 'Viewer shelf collapses empty chrome');
 
         const chip = read('src/components/series/EpisodeChip.svelte');
         assert(/viewerMode/.test(chip), 'EpisodeChip viewerMode');
-        assert(/viewerLine|S\$\{seasonNumber\}/.test(chip), 'Viewer episode line format');
+        assert(/episode-card|Now playing|seBadge/.test(chip), 'Viewer episode card with S/E + active');
         assert(!/<video/.test(chip), 'Episode chips never mount <video>');
 
         const accordion = read('src/components/series/SeasonAccordion.svelte');
         assert(/viewerMode/.test(accordion), 'SeasonAccordion passes viewerMode');
+        assert(/flat/.test(accordion), 'SeasonAccordion supports flat single-season shelf');
         assert(!/<video/.test(accordion), 'Season list never mounts <video>');
 
         const resolverSrc = read('src/lib/series/resolveRelatedEpisodes.js');
