@@ -47,8 +47,7 @@
   import { sealVaultSeriesIdentityForStorage } from '../../lib/series/vaultSeriesInference.js';
   import { applyCreatorVaultIdentityConfirmation } from '../../lib/series/vaultIdentityConfirmation.js';
   import { applyCreatorVaultEpisodeEnrichment } from '../../lib/series/vaultEpisodeEnrichment.js';
-  import VaultIdentityConfirmation from '../series/VaultIdentityConfirmation.svelte';
-  import VaultEpisodeEnrichment from '../series/VaultEpisodeEnrichment.svelte';
+  import VaultEpisodeCreatorStatus from '../series/VaultEpisodeCreatorStatus.svelte';
   import { validateVideoFile } from '../../lib/runtime-guards.js';
   import { API_BASE_URL, toRelativeMediaPath, SIGNED_UPLOADS_MIN_BYTES } from '../../lib/config.js';
   import {
@@ -3380,15 +3379,11 @@
               </label>
             </div>
             {#if !isUploadingCard && !isFailedCard && !isPendingCard && !isGhostCard}
-              <VaultIdentityConfirmation
+              <VaultEpisodeCreatorStatus
                 asset={video}
                 active={true}
-                on:confirm={(event) => confirmVaultVideoIdentity(video, event.detail || {})}
-              />
-              <VaultEpisodeEnrichment
-                asset={video}
-                active={true}
-                on:save={(event) => saveVaultEpisodeEnrichment(video, event.detail || {})}
+                on:confirmIdentity={(event) => confirmVaultVideoIdentity(video, event.detail || {})}
+                on:savePackage={(event) => saveVaultEpisodeEnrichment(video, event.detail || {})}
               />
             {/if}
           </div>

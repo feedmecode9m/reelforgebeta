@@ -97,7 +97,8 @@ async function main() {
         const viewerCtx = read('src/viewer/viewerContext.js');
 
         assert(
-            vaultExp.includes('VaultEpisodeEnrichment') &&
+            (vaultExp.includes('VaultEpisodeCreatorStatus') ||
+                vaultExp.includes('VaultEpisodeEnrichment')) &&
                 vaultExp.includes('saveVaultEpisodeEnrichment') &&
                 vaultExp.includes('applyCreatorVaultEpisodeEnrichment'),
             'VaultExperience wires episode enrichment'

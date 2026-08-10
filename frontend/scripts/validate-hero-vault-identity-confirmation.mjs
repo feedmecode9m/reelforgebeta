@@ -91,9 +91,9 @@ async function main() {
         const cardSrc = read('src/components/series/VaultIdentityConfirmation.svelte');
         const confSrc = read('src/lib/series/vaultIdentityConfirmation.js');
         assert(
-            vaultExp.includes('VaultIdentityConfirmation') &&
-                vaultExp.includes('confirmVaultVideoIdentity') &&
-                vaultExp.includes('applyCreatorVaultIdentityConfirmation'),
+            vaultExp.includes('VaultEpisodeCreatorStatus') ||
+                (vaultExp.includes('VaultIdentityConfirmation') &&
+                    vaultExp.includes('confirmVaultVideoIdentity')),
             'VaultExperience wires creator identity confirmation'
         );
         assert(

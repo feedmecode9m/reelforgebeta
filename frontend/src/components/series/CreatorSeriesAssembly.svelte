@@ -14,6 +14,7 @@
     buildCreatorSeriesPreview,
     attemptMarkEpisodeReady
   } from '../../lib/series/seriesAssemblyWorkflow.js';
+  import { polishAssemblyRowMarks } from '../../lib/series/creatorExperiencePresentation.js';
 
   const dispatch = createEventDispatcher();
 
@@ -213,8 +214,10 @@
           </h5>
           <ul class="series-assembly__episodes">
             {#each season.episodes as ep (ep.episodeId)}
+              {@const polish = polishAssemblyRowMarks(ep)}
               <li
                 class="series-assembly__episode"
+                class:series-assembly__episode--incomplete={!ep.canMarkReady && ep.publishing.status !== 'published' && ep.publishing.status !== 'ready'}
                 data-episode-id={ep.episodeId}
                 data-display-order={ep.displayOrder}
                 data-episode-number={ep.episodeNumber}
@@ -236,19 +239,19 @@
                   <div class="series-assembly__stat" data-identity={ep.identity.state}>
                     <span class="series-assembly__stat-key">Identity</span>
                     <span class="series-assembly__stat-val {stateClass(ep.identity.state)}"
-                      >{ep.identity.state}</span
+                      >{polish.identityMark ? '✓ ' : '○ '}{ep.identity.state}</span
                     >
                   </div>
                   <div class="series-assembly__stat" data-presentation={ep.presentation.state}>
                     <span class="series-assembly__stat-key">Presentation</span>
                     <span class="series-assembly__stat-val {stateClass(ep.presentation.state)}"
-                      >{ep.presentation.state}</span
+                      >{ep.presentation.state === 'complete' ? '✓ complete' : '○ incomplete'}</span
                     >
                   </div>
                   <div class="series-assembly__stat" data-media={ep.media.state}>
                     <span class="series-assembly__stat-key">Media</span>
                     <span class="series-assembly__stat-val {stateClass(ep.media.state)}"
-                      >{ep.media.state}</span
+                      >{polish.mediaMark ? '✓ available' : '○ missing'}</span
                     >
                   </div>
                   <div class="series-assembly__stat" data-publishing={ep.publishing.status}>
@@ -256,6 +259,17 @@
                     <span class="series-assembly__stat-val">{ep.publishing.status}</span>
                   </div>
                 </div>
+                <ul class="series-assembly__package-checks" data-package-checks>
+                  <li class:missing={!polish.presentationMarks.title}
+                    >{polish.presentationMarks.title ? '✓' : '○'} Title</li
+                  >
+                  <li class:missing={!polish.presentationMarks.description}
+                    >{polish.presentationMarks.description ? '✓' : '○'} Description</li
+                  >
+                  <li class:missing={!polish.presentationMarks.artwork}
+                    >{polish.presentationMarks.artwork ? '✓' : '○'} Artwork</li
+                  >
+                </ul>
                 {#if ep.presentation.title || ep.presentation.description}
                   <div class="series-assembly__ep-package">
                     <strong>{ep.presentation.title || 'No title'}</strong>
@@ -450,6 +464,22 @@
     border-radius: 8px;
     padding: 0.6rem 0.7rem;
     background: rgba(2, 8, 16, 0.45);
+  }
+  .series-assembly__episode--incomplete {
+    border-color: rgba(251, 191, 36, 0.4);
+  }
+  .series-assembly__package-checks {
+    list-style: none;
+    margin: 0.4rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.75rem;
+    font-size: 0.72rem;
+    color: #6ee7b7;
+  }
+  .series-assembly__package-checks li.missing {
+    color: #fbbf24;
   }
   .series-assembly__ep-head {
     display: flex;
