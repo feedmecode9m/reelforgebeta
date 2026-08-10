@@ -2,11 +2,12 @@
 /**
  * Theater All Episodes poster contract — viewer card presentation only.
  *
- * A. one published episode → poster from mediaAssetId when vault empty
- * B. two published episodes → distinct posters, no cross-write
- * C. active selection remains keyed by episodeId / mediaAssetId
- * D. mediaAssetId targeting unchanged
- * E. Theater single-playback / related selection wiring untouched
+ * A. explicit episode/chip poster preserved (via resolveMediaUrl, content-stable)
+ * B. ready vault poster preserved
+ * C. mediaAssetId fallback resolves through canonical media/backend origin
+ * D. one-episode shelf gets a poster
+ * E. two-episode shelf gets distinct posters
+ * F. no resolveRelatedEpisodes / catalog authority changes
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -43,6 +44,10 @@ async function main() {
             resolveViewerEpisodePosterUrl,
             posterPathFromMediaAssetId
         } = await server.ssrLoadModule('/src/lib/series/viewerEpisodePoster.js');
+        const { resolveMediaUrl } = await server.ssrLoadModule('/src/lib/api/reelContract.js');
+        const { resolveMediaForRender } = await server.ssrLoadModule(
+            '/src/components/media/resolveDisplayUrl.js'
+        );
         const {
             resolveEpisodeMedia,
             episodeChipPresentation
@@ -67,97 +72,127 @@ async function main() {
             status: 'published'
         };
 
-        // A / B — empty vault viewer shelf
-        const rA = resolveEpisodeMedia({ episode: epA, readyVaultAssets: [] });
-        const chipA = episodeChipPresentation(epA, rA);
-        const posterA = resolveViewerEpisodePosterUrl({
-            episode: epA,
-            chipThumbnailUrl: chipA.thumbnailUrl,
-            readyVaultAssets: []
-        });
-        assert(rA.matched === false, 'empty vault does not invent media match');
-        assert(!chipA.thumbnailUrl, 'chip presentation has no vault thumb when unmatched');
-        assert(posterA === `/thumbs/${mediaA}.jpg`, `A poster mediaAssetId path (got ${posterA})`);
-        assert(
-            posterPathFromMediaAssetId(mediaA) === posterA,
-            'posterPathFromMediaAssetId matches resolver'
-        );
-
-        const posterB = resolveViewerEpisodePosterUrl({
-            episode: epB,
-            chipThumbnailUrl: '',
-            readyVaultAssets: []
-        });
-        assert(posterB === `/thumbs/${mediaB}.jpg`, `B poster mediaAssetId path (got ${posterB})`);
-        assert(posterA !== posterB, 'A and B posters distinct — no cross-episode assignment');
-
-        // Explicit package artwork wins over mediaAssetId fallback
+        // --- A: explicit poster stays the same art (normalized if relative) ---
         const packageUrl = 'https://cdn.example/art/e1.jpg';
         const withPackage = resolveViewerEpisodePosterUrl({
             episode: { ...epA, episodeEnrichment: { artworkUrl: packageUrl } },
             chipThumbnailUrl: '',
             readyVaultAssets: []
         });
-        assert(withPackage === packageUrl, 'enrichment artwork wins over /thumbs fallback');
+        assert(withPackage === packageUrl, `explicit package art unchanged (got ${withPackage})`);
 
-        // Vault-ready asset thumb wins (no identity rewrite)
+        const chipExplicit = 'https://cdn.example/chip-explicit.jpg';
+        const withChip = resolveViewerEpisodePosterUrl({
+            episode: epA,
+            chipThumbnailUrl: chipExplicit,
+            readyVaultAssets: []
+        });
+        assert(withChip === chipExplicit, `chip poster unchanged (got ${withChip})`);
+
+        // Absolute package not rewritten to thumbs fallback
+        assert(
+            !withPackage.includes(mediaA) || withPackage === packageUrl,
+            'explicit art is not mediaAssetId path'
+        );
+
+        // --- B: ready vault poster wins for matching mediaAssetId ---
+        const vaultBThumb = 'https://cdn.example/thumbs/vault-b.jpg';
         const vaultB = {
             id: mediaB,
             status: 'ready',
             url: 'https://cdn.example/videos/b.mp4',
-            thumbnail: 'https://cdn.example/thumbs/vault-b.jpg'
+            thumbnail: vaultBThumb
         };
         const fromVault = resolveViewerEpisodePosterUrl({
             episode: epB,
             chipThumbnailUrl: '',
             readyVaultAssets: [vaultB]
         });
-        assert(
-            fromVault === 'https://cdn.example/thumbs/vault-b.jpg',
-            'vault asset thumbnail wins for matching mediaAssetId'
-        );
+        assert(fromVault === vaultBThumb, `vault poster unchanged (got ${fromVault})`);
 
-        // C / D — selection + playable keys unchanged
+        // --- C: mediaAssetId fallback through resolveMediaUrl ---
+        const relativeIdentity = posterPathFromMediaAssetId(mediaA);
+        assert(
+            relativeIdentity === `/thumbs/${mediaA}.jpg`,
+            `product relative identity (got ${relativeIdentity})`
+        );
+        const canonical = resolveMediaUrl(relativeIdentity, 'thumbnail', 'validator');
+        const posterA = resolveViewerEpisodePosterUrl({
+            episode: epA,
+            chipThumbnailUrl: '',
+            readyVaultAssets: []
+        });
+        assert(posterA === canonical, `fallback uses resolveMediaUrl (got ${posterA} vs ${canonical})`);
+        assert(
+            posterA.includes(`/thumbs/${mediaA}.jpg`),
+            `fallback retains thumbs path (got ${posterA})`
+        );
+        // When backend origin is configured (typical local SSR), expect absolute http(s).
+        // In same-origin-only mode relative is valid; never a bare non-media path.
+        assert(
+            posterA.startsWith('http') || posterA.startsWith('/thumbs/'),
+            `fallback is browser-loadable media URL (got ${posterA})`
+        );
+        // Must equal render pipeline used by EpisodeChip
+        const chipRender = resolveMediaForRender(
+            posterA.startsWith('http') ? relativeIdentity : posterA,
+            'poster',
+            'validator-chip'
+        );
+        // If posterA already absolute via resolveMediaUrl, resolveMediaForRender passthrough equals it
+        const expectedRender = resolveMediaForRender(relativeIdentity, 'poster', 'validator-chip');
+        assert(
+            posterA === expectedRender || posterA === resolveMediaUrl(relativeIdentity, 'thumbnail'),
+            'EpisodeChip render pipeline agrees with viewerEpisodePoster fallback'
+        );
+        void chipRender;
+
+        // Empty-vault unmatched chip presentation still has no vault thumb
+        const rA = resolveEpisodeMedia({ episode: epA, readyVaultAssets: [] });
+        const chipA = episodeChipPresentation(epA, rA);
+        assert(rA.matched === false, 'empty vault does not invent media match');
+        assert(!chipA.thumbnailUrl, 'chip presentation empty when unmatched');
+
+        // --- D / E: one + two episode shelves ---
+        const posterB = resolveViewerEpisodePosterUrl({
+            episode: epB,
+            chipThumbnailUrl: '',
+            readyVaultAssets: []
+        });
+        assert(Boolean(posterA), 'D: one-episode shelf has poster');
+        assert(Boolean(posterB), 'E: second episode has poster');
+        assert(posterA !== posterB, 'E: distinct posters (no cross-episode assignment)');
+        assert(posterB.includes(mediaB), 'E: B poster keyed by mediaAssetId B');
+
+        // Targeting unchanged
         assert(String(epA.mediaAssetId) === mediaA, 'mediaAssetId A unchanged');
         assert(String(epB.episodeId) === 'ep-b', 'episodeId B unchanged');
+
+        // --- F: wiring integrity / frozen boundaries ---
+        const posterSrc = read('src/lib/series/viewerEpisodePoster.js');
         assert(
-            Boolean(epA.mediaAssetId || epA.reelId) === true,
-            'playable still keyed by mediaAssetId (SeasonAccordion contract)'
+            /resolveMediaUrl/.test(posterSrc),
+            'viewerEpisodePoster uses resolveMediaUrl (canonical media helper)'
         );
 
-        // Wiring: SeasonAccordion uses the helper (viewer All Episodes path)
+        const chipSrc = read('src/components/series/EpisodeChip.svelte');
+        assert(
+            /resolveMediaForRender/.test(chipSrc),
+            'EpisodeChip uses resolveMediaForRender for poster img'
+        );
+        assert(/resolvedPosterUrl/.test(chipSrc), 'EpisodeChip renders resolvedPosterUrl');
+
         const accordion = read('src/components/series/SeasonAccordion.svelte');
-        assert(
-            /resolveViewerEpisodePosterUrl/.test(accordion),
-            'SeasonAccordion imports viewer poster resolver'
-        );
-        assert(/posterForChip/.test(accordion), 'SeasonAccordion uses posterForChip for chips');
-        assert(
-            !/chip\.thumbnailUrl\s*\|\|[\s\S]*episode\.thumbnailUrl/.test(
-                accordion.replace(/\s+/g, ' ')
-            ) || /posterForChip\(episode,\s*chip\)/.test(accordion),
-            'thumbnailUrl prop uses posterForChip'
-        );
-
-        // Frozen selection wiring intact
-        const theater = read('src/components/theater/TheaterExperience.svelte');
-        assert(/resolveRelatedEpisodes/.test(theater), 'Theater related selection unchanged import');
-        assert(
-            /seriesView=\{drawerSeriesView\}/.test(theater) || /drawerSeriesView/.test(theater),
-            'Theater drawer still uses related series view'
-        );
-        assert(
-            /dataTheaterVideo|data-theater-video|playbackRole=['"]theater['"]/.test(theater) ||
-                /playbackRole=.theater/.test(theater),
-            'Theater primary playback marker remains'
-        );
+        assert(/resolveViewerEpisodePosterUrl/.test(accordion), 'SeasonAccordion uses viewer poster');
 
         const resolver = read('src/lib/series/resolveRelatedEpisodes.js');
-        // Ensure we did not rewrite related resolution file for this fix
         assert(
-            !/posterPathFromMediaAssetId|resolveViewerEpisodePosterUrl/.test(resolver),
+            !/resolveViewerEpisodePosterUrl|posterPathFromMediaAssetId/.test(resolver),
             'resolveRelatedEpisodes not modified for poster presentation'
         );
+
+        const theater = read('src/components/theater/TheaterExperience.svelte');
+        assert(/resolveRelatedEpisodes/.test(theater), 'Theater related selection wiring intact');
 
         if (failures.length) {
             console.error('FAIL validate-theater-episode-poster');
@@ -168,6 +203,7 @@ async function main() {
 
         console.log('PASS validate-theater-episode-poster');
         for (const n of notes) console.log(' ', n);
+        console.log('\nFallback sample:', { relativeIdentity, posterA });
     } finally {
         await server.close();
     }

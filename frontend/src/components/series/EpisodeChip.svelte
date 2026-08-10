@@ -1,5 +1,6 @@
 <script>
     import { createEventDispatcher } from 'svelte';
+    import { resolveMediaForRender } from '../media/resolveDisplayUrl.js';
 
     const dispatch = createEventDispatcher();
 
@@ -95,7 +96,15 @@
     $: isPlayable = playable === true || (playable === undefined && Boolean(mediaAssetId));
     $: readyBound = isPlayable && Boolean(mediaAssetId && String(mediaAssetId).trim());
     $: showUnavailable = !isPlayable;
-    $: hasPoster = Boolean(String(thumbnailUrl || '').trim());
+    /**
+     * Final <img> URL through the same media/backend resolver as MediaRenderer/Theater posters.
+     * Absolute URLs passthrough; relative `/thumbs/*` join configured media origin.
+     */
+    $: resolvedPosterUrl = String(thumbnailUrl || '').trim()
+        ? resolveMediaForRender(thumbnailUrl, 'poster', 'EpisodeChip:viewerPoster') ||
+          String(thumbnailUrl || '').trim()
+        : '';
+    $: hasPoster = Boolean(resolvedPosterUrl);
     $: displayBindingLabel = bindingLabel
         ? bindingLabel
         : readyBound
@@ -148,7 +157,7 @@
                 aria-hidden="true"
             >
                 {#if hasPoster}
-                    <img class="episode-card__img" src={thumbnailUrl} alt="" loading="lazy" />
+                    <img class="episode-card__img" src={resolvedPosterUrl} alt="" loading="lazy" />
                 {:else}
                     <span class="episode-card__ep-num">{epPad}</span>
                 {/if}
@@ -171,7 +180,7 @@
 
         {#if hasPoster && readyBound}
             <div class="episode-chip__thumb-wrap">
-                <img class="episode-chip__thumb" src={thumbnailUrl} alt="" loading="lazy" />
+                <img class="episode-chip__thumb" src={resolvedPosterUrl} alt="" loading="lazy" />
             </div>
         {/if}
 
