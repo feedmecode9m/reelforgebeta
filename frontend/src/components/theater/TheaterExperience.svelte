@@ -595,9 +595,15 @@
         .filter(Boolean);
 
     $: hasRelatedFamily = (relatedEpisodes?.members?.length || 0) >= 2 || relatedEpisodeTitles.length >= 2;
-    $: hasSeriesDrawer = Boolean(drawerSeriesId) || hasRelatedFamily;
+    /** All Episodes — vault-related family first; catalog series id can also open drawer. */
+    $: hasSeriesDrawer =
+        hasRelatedFamily ||
+        Boolean(drawerSeriesView && (drawerSeriesView.seasons || []).some((s) => (s.episodes || []).length > 0)) ||
+        Boolean(drawerSeriesId);
     /** Episodes pop-out — catalog series or related vault family (≥2 members). */
     $: showSeriesDrawerControl = hasSeriesDrawer;
+    /** Landscape Theater: dock episode rail beside player (desktop / wide canvas). */
+    $: seriesDrawerDocked = seriesDrawerOpen && !isMobileTheater && hasSeriesDrawer;
     $: if (seriesContext) selectedSeriesEpisodeId = seriesContext.episode.episodeId;
     $: if (!$activeReel) {
         seriesDrawerOpen = false;
@@ -740,6 +746,8 @@
 {#if $activeReel}
     <div
         class="theater-overlay"
+        class:theater-overlay--series-landscape={seriesDrawerDocked}
+        data-series-open={seriesDrawerOpen ? 'true' : undefined}
         role="button"
         tabindex="-1"
         aria-label="Close theater"
@@ -1081,6 +1089,8 @@
                 seedAsset={$activeReel}
                 readyAssets={relatedReadyAssets}
                 selectedEpisodeId={selectedSeriesEpisodeId}
+                viewerMode={true}
+                docked={seriesDrawerDocked}
                 on:episodeSelect={handleSeriesEpisodeSelect}
             />
         {/if}
@@ -1108,6 +1118,21 @@
         justify-content: center;
         padding: 1rem;
         backdrop-filter: blur(10px);
+    }
+    .theater-overlay--series-landscape {
+        align-items: stretch;
+        justify-content: center;
+        gap: 0;
+        padding: 0;
+        background: #050508;
+    }
+    .theater-overlay--series-landscape .theater-container {
+        max-width: min(58vw, 860px);
+        max-height: 100vh;
+        width: 100%;
+        border-radius: 0;
+        margin: 0;
+        flex: 1 1 auto;
     }
     .theater-container {
         width: 100%;

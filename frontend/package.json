@@ -51,6 +51,7 @@
     "validate:playback-derivative": "node scripts/validate-playback-derivative.mjs",
     "validate:playback-selection": "node scripts/validate-playback-selection.mjs",
     "validate:series-related-episodes": "node scripts/validate-series-related-episodes.mjs",
+    "validate:theater-series-viewer": "node scripts/validate-theater-series-viewer.mjs",
     "validate:integration-hardening": "node scripts/validate-integration-hardening.mjs",
     "validate:theater-playback": "node scripts/validate-theater-playback.mjs",
     "validate:support-reelforge": "node scripts/validate-support-reelforge.mjs",

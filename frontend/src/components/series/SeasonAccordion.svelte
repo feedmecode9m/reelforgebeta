@@ -29,6 +29,15 @@
      */
     export let heroVaultAssets = [];
 
+    /**
+     * Viewer Theater list — no admin binding chrome on chips.
+     * @type {boolean}
+     */
+    export let viewerMode = false;
+
+    /** @type {string} */
+    export let seriesLabel = '';
+
     $: readyVaultAssets =
         Array.isArray(heroVaultAssets) && heroVaultAssets.length
             ? heroVaultAssets
@@ -37,6 +46,7 @@
     $: sortedEpisodes = [...(season?.episodes || [])].sort((a, b) => a.episodeNumber - b.episodeNumber);
     $: seasonLabel = season?.title || `Season ${season?.seasonNumber ?? 1}`;
     $: episodeCount = sortedEpisodes.length;
+    $: effectiveSeriesLabel = String(seriesLabel || '').trim();
 
     /**
      * @param {import('../../lib/series/seriesTypes.js').Episode} episode
@@ -56,7 +66,7 @@
     }
 </script>
 
-<section class="season-accordion" class:expanded>
+<section class="season-accordion" class:expanded class:viewer={viewerMode}>
     <button
         type="button"
         class="season-accordion__header"
@@ -77,13 +87,18 @@
                     seasonNumber={season.seasonNumber}
                     episodeNumber={episode.episodeNumber}
                     title={episode.title}
+                    seriesLabel={/** @type {{ seriesLabel?: string }} */ (episode).seriesLabel ||
+                        effectiveSeriesLabel}
+                    {viewerMode}
                     episodeId={episode.episodeId}
                     status={episode.status}
-                    mediaAssetId={chip.mediaAssetId}
-                    thumbnailUrl={chip.thumbnailUrl}
-                    matchTier={chip.matchTier}
-                    bindingLabel={chip.bindingLabel}
-                    playable={chip.playable}
+                    mediaAssetId={chip.mediaAssetId || episode.mediaAssetId || episode.reelId || null}
+                    thumbnailUrl={chip.thumbnailUrl ||
+                        (typeof episode.thumbnailUrl === 'string' ? episode.thumbnailUrl : '') ||
+                        ''}
+                    matchTier={viewerMode ? null : chip.matchTier}
+                    bindingLabel={viewerMode ? '' : chip.bindingLabel}
+                    playable={chip.playable || Boolean(episode.mediaAssetId || episode.reelId)}
                     selected={selectedEpisodeId === episode.episodeId}
                     on:select={handleEpisodeSelect}
                 />

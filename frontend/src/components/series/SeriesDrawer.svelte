@@ -45,6 +45,18 @@
      */
     export let seriesView = null;
 
+    /**
+     * Viewer Theater presentation — vault-inferred chrome, poster-only list.
+     * @type {boolean}
+     */
+    export let viewerMode = true;
+
+    /**
+     * Dock as landscape side panel (no full-screen modal). Theater passes true on wide screens.
+     * @type {boolean}
+     */
+    export let docked = false;
+
     $: catalogSeries = seriesId ? getSeriesById(seriesId) : null;
 
     $: relatedResult = (() => {
@@ -60,7 +72,7 @@
         return resolveRelatedEpisodes(seedAsset, { readyAssets: ready });
     })();
 
-    /** Catalog preferred; incomplete catalog unioned with related vault members. */
+    /** Vault related first; catalog enriches via buildSeriesViewFromRelated. */
     $: series =
         seriesView ||
         buildSeriesViewFromRelated(
@@ -74,9 +86,15 @@
         catalogSeries;
 
     $: sortedSeasons = [...(series?.seasons || [])].sort((a, b) => a.seasonNumber - b.seasonNumber);
-    $: officialSeriesDescription = creatorFacingDescription(series?.description);
-    $: officialSeriesGenre = creatorFacingGenre(series?.genre);
+    $: officialSeriesDescription = viewerMode
+        ? ''
+        : creatorFacingDescription(series?.description);
+    $: officialSeriesGenre = viewerMode ? '' : creatorFacingGenre(series?.genre);
     $: effectiveSeriesId = series?.id || seriesId || '';
+    $: seriesLabelText = String(series?.title || '').trim();
+    $: isVaultInferred =
+        Array.isArray(series?.tags) &&
+        series.tags.some((t) => /vault-inferred|related-resolver|vault-related/i.test(String(t)));
 
     /** @param {CustomEvent<{ episodeId: string }>} event */
     function handleEpisodeSelect(event) {
@@ -201,38 +219,55 @@
 {#if open && series}
     <div
         class="series-drawer-overlay"
+        class:series-drawer-overlay--docked={docked}
         role="presentation"
+        data-theater-series-drawer
+        data-viewer-mode={viewerMode ? 'true' : undefined}
+        data-docked={docked ? 'true' : undefined}
     >
-        <button
-            type="button"
-            class="series-drawer-backdrop"
-            aria-label="Close episode browser"
-            on:click={closeDrawer}
-        ></button>
+        {#if !docked}
+            <button
+                type="button"
+                class="series-drawer-backdrop"
+                aria-label="Close episode browser"
+                on:click={closeDrawer}
+            ></button>
+        {/if}
         <aside
             bind:this={drawerElement}
             class="series-drawer"
+            class:series-drawer--viewer={viewerMode}
+            class:series-drawer--docked={docked}
             role="dialog"
-            aria-modal="true"
+            aria-modal={!docked}
             aria-labelledby="series-drawer-title"
             tabindex="-1"
         >
-            <header class="series-drawer__hero">
-                {#if series.poster}
+            <header class="series-drawer__hero" class:series-drawer__hero--compact={viewerMode}>
+                {#if series.poster && !viewerMode}
                     <MediaPoster url={series.poster} className="series-drawer__poster" aria-hidden="true" />
                 {/if}
                 <div class="series-drawer__hero-scrim"></div>
                 <button type="button" class="series-drawer__close" aria-label="Close episode browser" on:click={closeDrawer}>✕</button>
                 <div class="series-drawer__hero-copy">
-                    <p class="series-drawer__eyebrow">Series</p>
+                    <p class="series-drawer__eyebrow">
+                        {#if viewerMode && isVaultInferred}
+                            Vault-inferred series
+                        {:else}
+                            Series
+                        {/if}
+                    </p>
                     <h2 id="series-drawer-title" class="series-drawer__title">{series.title}</h2>
+                    {#if viewerMode && seriesLabelText}
+                        <p class="series-drawer__vault-label" data-series-label>{seriesLabelText}</p>
+                    {/if}
                     {#if officialSeriesDescription}
                         <p class="series-drawer__description">{officialSeriesDescription}</p>
                     {/if}
                     {#if officialSeriesGenre}
                         <p class="series-drawer__official-genre">Genre: {officialSeriesGenre}</p>
                     {/if}
-                    {#if selectedEpisodeId}
+                    {#if selectedEpisodeId && !viewerMode}
                         <SeriesBadge episodeId={selectedEpisodeId} />
                     {/if}
                 </div>
@@ -252,12 +287,14 @@
                             selectedEpisodeId={selectedEpisodeId}
                             defaultExpanded={season.seasonNumber === sortedSeasons[0]?.seasonNumber}
                             heroVaultAssets={readyAssets}
+                            seriesLabel={seriesLabelText}
+                            {viewerMode}
                             on:episodeSelect={handleEpisodeSelect}
                         />
                     {/each}
                 </div>
 
-                {#if selectedEpisodeId}
+                {#if selectedEpisodeId && !viewerMode}
                     {@const ctx = series.seasons.flatMap((s) => s.episodes).find((e) => e.episodeId === selectedEpisodeId)}
                     {#if ctx}
                         {@const reelMeta = ctx.reelId ? getReelSeriesMetadata(ctx.reelId) : null}
@@ -491,5 +528,51 @@
         background: rgba(0, 242, 255, 0.1);
         border: 1px solid rgba(0, 242, 255, 0.25);
         color: rgba(255, 255, 255, 0.75);
+    }
+    /* Viewer Theater — landscape dock + compact chrome */
+    .series-drawer-overlay--docked {
+        position: relative;
+        inset: auto;
+        z-index: 1;
+        width: min(400px, 38vw);
+        min-width: 280px;
+        height: 100%;
+        max-height: 100vh;
+        background: transparent;
+        backdrop-filter: none;
+        flex-shrink: 0;
+        justify-content: flex-end;
+    }
+    .series-drawer--docked {
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+        border-left: 1px solid rgba(0, 242, 255, 0.22);
+        box-shadow: none;
+        animation: none;
+    }
+    .series-drawer__hero--compact {
+        min-height: 0;
+        padding: 0;
+    }
+    .series-drawer__hero--compact .series-drawer__hero-copy {
+        position: relative;
+        padding: 1rem 1rem 0.85rem;
+    }
+    .series-drawer__hero--compact .series-drawer__hero-scrim {
+        display: none;
+    }
+    .series-drawer__vault-label {
+        margin: 0;
+        font-size: 0.78rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.55);
+    }
+    .series-drawer--viewer .series-drawer__title {
+        font-size: 1.35rem;
+    }
+    .series-drawer--viewer {
+        background: linear-gradient(180deg, #14161c 0%, #0b0c10 100%);
     }
 </style>

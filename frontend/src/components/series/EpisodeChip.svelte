@@ -3,6 +3,14 @@
 
     const dispatch = createEventDispatcher();
 
+    /** @param {string} s */
+    function normalizeLoose(s) {
+        return String(s || '')
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, ' ')
+            .trim();
+    }
+
     /** @type {number} */
     export let seasonNumber = 1;
 
@@ -11,6 +19,16 @@
 
     /** @type {string} */
     export let title = '';
+
+    /** Franchise / series label for viewer list lines (e.g. STIRRED). */
+    /** @type {string} */
+    export let seriesLabel = '';
+
+    /**
+     * Viewer Theater mode — posters + titles only, no admin binding chrome.
+     * @type {boolean}
+     */
+    export let viewerMode = false;
 
     /** @type {string} */
     export let episodeId = '';
@@ -44,6 +62,11 @@
     export let bindingLabel = '';
 
     $: code = `S${seasonNumber}:E${episodeNumber}`;
+    $: epPad = String(Math.max(0, episodeNumber || 0)).padStart(2, '0');
+    $: labelRoot = String(seriesLabel || '').trim();
+    $: viewerLine = labelRoot
+        ? `${epPad}  ${labelRoot} • S${seasonNumber} • E${episodeNumber}`
+        : `${epPad}  ${title}`;
     /** Playability comes from parent presentation (resolver match only). */
     $: isPlayable = playable === true || (playable === undefined && Boolean(mediaAssetId));
     $: readyBound = isPlayable && Boolean(mediaAssetId && String(mediaAssetId).trim());
@@ -64,16 +87,20 @@
     class:draft={status === 'draft'}
     class:unplayable={!isPlayable}
     class:ready={readyBound}
+    class:viewer={viewerMode}
     data-episode-id={episodeId || undefined}
     data-media-asset-id={mediaAssetId || undefined}
     data-thumbnail-asset-id={thumbnailAssetId || undefined}
-    data-match-tier={matchTier || undefined}
-    data-binding-label={displayBindingLabel || undefined}
+    data-match-tier={viewerMode ? undefined : matchTier || undefined}
+    data-binding-label={viewerMode ? undefined : displayBindingLabel || undefined}
+    data-viewer-mode={viewerMode ? 'true' : undefined}
     data-testid={episodeId ? `episode-chip-${episodeId}` : undefined}
     aria-pressed={selected}
     aria-disabled={!isPlayable}
     disabled={!isPlayable}
-    aria-label="{code} {title} — {displayBindingLabel}{readyBound ? ' — Enter Theater' : ''}"
+    aria-label={viewerMode
+        ? `${viewerLine}${readyBound ? ' — play' : ' — unavailable'}`
+        : `${code} ${title} — ${displayBindingLabel}${readyBound ? ' — Enter Theater' : ''}`}
     on:click={() => {
         if (!isPlayable) return;
         dispatch('select', {
@@ -82,32 +109,51 @@
             episodeNumber,
             title,
             mediaAssetId,
-            thumbnailAssetId
+            thumbnailAssetId,
+            reelId: mediaAssetId || null
         });
     }}
 >
-    <div class="episode-chip__header">
-        <p class="episode-chip__code">{code}</p>
-        <p class="episode-chip__title">{title}</p>
-    </div>
-
-    {#if thumbnailUrl && readyBound}
-        <div class="episode-chip__thumb-wrap">
-            <img class="episode-chip__thumb" src={thumbnailUrl} alt="" loading="lazy" />
+    {#if viewerMode}
+        <div class="episode-chip__viewer-row">
+            {#if thumbnailUrl && readyBound}
+                <div class="episode-chip__thumb-wrap episode-chip__thumb-wrap--viewer">
+                    <img class="episode-chip__thumb" src={thumbnailUrl} alt="" loading="lazy" />
+                </div>
+            {:else}
+                <div class="episode-chip__thumb-wrap episode-chip__thumb-wrap--viewer episode-chip__thumb-wrap--empty" aria-hidden="true"></div>
+            {/if}
+            <div class="episode-chip__viewer-copy">
+                <p class="episode-chip__viewer-line">{viewerLine}</p>
+                {#if title && labelRoot && !normalizeLoose(title).includes(normalizeLoose(labelRoot))}
+                    <p class="episode-chip__viewer-sub">{title}</p>
+                {/if}
+            </div>
         </div>
-    {/if}
+    {:else}
+        <div class="episode-chip__header">
+            <p class="episode-chip__code">{code}</p>
+            <p class="episode-chip__title">{title}</p>
+        </div>
 
-    {#if readyBound}
-        <span
-            class="episode-chip__status"
-            class:episode-chip__status--ready={true}
-            class:episode-chip__status--manual={matchTier === 'manual' || displayBindingLabel === 'Manual Vault Asset'}
-        >{displayBindingLabel}</span>
-        <span class="episode-chip__enter">▶ Enter Theater</span>
-    {:else if showUnavailable}
-        <span class="episode-chip__status episode-chip__status--unavailable">{displayBindingLabel}</span>
-    {:else if status === 'draft'}
-        <span class="episode-chip__status">Draft</span>
+        {#if thumbnailUrl && readyBound}
+            <div class="episode-chip__thumb-wrap">
+                <img class="episode-chip__thumb" src={thumbnailUrl} alt="" loading="lazy" />
+            </div>
+        {/if}
+
+        {#if readyBound}
+            <span
+                class="episode-chip__status"
+                class:episode-chip__status--ready={true}
+                class:episode-chip__status--manual={matchTier === 'manual' || displayBindingLabel === 'Manual Vault Asset'}
+            >{displayBindingLabel}</span>
+            <span class="episode-chip__enter">▶ Enter Theater</span>
+        {:else if showUnavailable}
+            <span class="episode-chip__status episode-chip__status--unavailable">{displayBindingLabel}</span>
+        {:else if status === 'draft'}
+            <span class="episode-chip__status">Draft</span>
+        {/if}
     {/if}
 </button>
 
@@ -212,5 +258,54 @@
         font-weight: 600;
         color: var(--neon-cyan, #00f2ff);
         letter-spacing: 0.02em;
+    }
+    /* Viewer Theater — posters + episode lines only */
+    .episode-chip.viewer {
+        flex-direction: row;
+        align-items: center;
+        padding: 0.55rem 0.7rem;
+        gap: 0.75rem;
+    }
+    .episode-chip__viewer-row {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        width: 100%;
+        min-width: 0;
+    }
+    .episode-chip__thumb-wrap--viewer {
+        width: 4.5rem;
+        min-width: 4.5rem;
+        max-height: none;
+        aspect-ratio: 16 / 10;
+        flex-shrink: 0;
+    }
+    .episode-chip__thumb-wrap--empty {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(0, 242, 255, 0.08));
+    }
+    .episode-chip__viewer-copy {
+        min-width: 0;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+    }
+    .episode-chip__viewer-line {
+        margin: 0;
+        font-size: 0.92rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        line-height: 1.25;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .episode-chip__viewer-sub {
+        margin: 0;
+        font-size: 0.72rem;
+        color: rgba(255, 255, 255, 0.55);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 </style>
