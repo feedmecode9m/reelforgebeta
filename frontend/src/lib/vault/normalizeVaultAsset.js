@@ -13,6 +13,16 @@ import {
     resolveVaultKeywords,
     isUuidLikeToken
 } from './resolveVaultAssetTitle.js';
+import { buildVaultSeriesIdentity } from '../series/vaultSeriesInference.js';
+
+/**
+ * @typedef {{
+ *   seriesLabel: string;
+ *   seasonNumber: number;
+ *   episodeNumber: number;
+ *   confidence?: 'high' | 'medium' | 'low';
+ * }} VaultSeriesIdentityFields
+ */
 
 /**
  * @typedef {{
@@ -27,6 +37,10 @@ import {
  *   createdAt: string | null;
  *   category: string | null;
  *   keywords: string[];
+ *   seriesIdentity?: VaultSeriesIdentityFields | null;
+ *   seriesLabel?: string;
+ *   seasonNumber?: number;
+ *   episodeNumber?: number;
  * }} NormalizedVaultAsset
  */
 
@@ -208,7 +222,18 @@ export function normalizeVaultAsset(raw, options = {}) {
 
     const category = firstString(row.category, row.genre) || null;
 
-    return {
+    // Optional series identity from Hero Vault labels / title parse.
+    // Missing identity is valid — never fail normalize for unlabeled assets.
+    const titleForIdentity = title || displayTitle;
+    const identitySource = {
+        ...row,
+        title: titleForIdentity,
+        name: firstString(row.name, titleForIdentity)
+    };
+    const seriesIdentity = buildVaultSeriesIdentity(identitySource);
+
+    /** @type {NormalizedVaultAsset} */
+    const normalized = {
         id,
         assetId: id,
         title,
@@ -221,6 +246,49 @@ export function normalizeVaultAsset(raw, options = {}) {
         category,
         keywords
     };
+
+    if (seriesIdentity) {
+        normalized.seriesIdentity = {
+            seriesLabel: seriesIdentity.seriesLabel,
+            seasonNumber: seriesIdentity.seasonNumber,
+            episodeNumber: seriesIdentity.episodeNumber,
+            confidence: seriesIdentity.confidence
+        };
+        // Flat mirrors for consumers that read top-level fields (legacy-safe)
+        normalized.seriesLabel =
+            firstString(row.seriesLabel, row.series_label, seriesIdentity.seriesLabel) ||
+            seriesIdentity.seriesLabel;
+        normalized.seasonNumber =
+            Number(row.seasonNumber ?? row.season_number) >= 1
+                ? Number(row.seasonNumber ?? row.season_number)
+                : seriesIdentity.seasonNumber;
+        normalized.episodeNumber =
+            Number(row.episodeNumber ?? row.episode_number) >= 1
+                ? Number(row.episodeNumber ?? row.episode_number)
+                : seriesIdentity.episodeNumber;
+    } else {
+        // Preserve pre-existing identity fields when present even if parse failed
+        const preserved = buildVaultSeriesIdentity({
+            seriesIdentity: row.seriesIdentity,
+            seriesLabel: row.seriesLabel,
+            series_label: row.series_label,
+            seasonNumber: row.seasonNumber,
+            episodeNumber: row.episodeNumber
+        });
+        if (preserved) {
+            normalized.seriesIdentity = {
+                seriesLabel: preserved.seriesLabel,
+                seasonNumber: preserved.seasonNumber,
+                episodeNumber: preserved.episodeNumber,
+                confidence: preserved.confidence
+            };
+            normalized.seriesLabel = preserved.seriesLabel;
+            normalized.seasonNumber = preserved.seasonNumber;
+            normalized.episodeNumber = preserved.episodeNumber;
+        }
+    }
+
+    return normalized;
 }
 
 /**

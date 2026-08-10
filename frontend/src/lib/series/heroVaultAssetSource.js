@@ -7,12 +7,14 @@
 
 import { loadHeroVaultItems } from '../hero/heroIntelligence.js';
 import { filterReadyVaultAssets, isReadyVaultAsset, assetIdOf } from './episodeVaultResolver.js';
+import { withVaultSeriesIdentity } from './vaultSeriesInference.js';
 
 /**
  * Collect ready Hero Vault assets only (shared source).
  *
  * - pulls personal video vault, thumbnail vault, feed, optional live extras
  * - filters pending / failed / blob / placeholder
+ * - exposes Hero Vault seriesIdentity when labels can be derived (non-destructive)
  *
  * @param {{
  *   extraItems?: Record<string, unknown>[] | null;
@@ -45,7 +47,9 @@ export function getReadyHeroVaultAssets(options = {}) {
     for (const item of ready) {
         const id = assetIdOf(item);
         if (!id || byId.has(id)) continue;
-        byId.set(id, item);
+        // Hero Vault identity first: attach seriesIdentity without mutating storage
+        const withIdentity = withVaultSeriesIdentity(item) || item;
+        byId.set(id, withIdentity);
     }
     return [...byId.values()];
 }

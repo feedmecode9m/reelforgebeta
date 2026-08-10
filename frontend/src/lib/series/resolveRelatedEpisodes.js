@@ -6,13 +6,14 @@
  * reel metadata, then unions incomplete catalog rows with vault siblings.
  *
  * Priority:
- *   1. Explicit seriesId / episodeId / reel metadata
- *   2. Existing catalog relationships
- *   3. Entity / title normalization (+ franchise upgrade from free-form pilots)
- *   4. Creator identity
- *   5. Shared franchise tokens
- *   6. Description references
- *   7. Episode-number parse patterns (via vaultSeriesInference)
+ *   1. Hero Vault seriesIdentity metadata (labels from vault authority)
+ *   2. Explicit seriesId / episodeId / reel metadata (mediaAssetId relationships)
+ *   3. Existing catalog relationships
+ *   4. Entity / title normalization (+ franchise upgrade from free-form pilots)
+ *   5. Creator identity
+ *   6. Shared franchise tokens
+ *   7. Description references
+ *   8. Episode-number parse patterns (via vaultSeriesInference)
  */
 
 import { getEpisodeById, getEpisodeByReelId, getReelSeriesMetadata, getSeriesById } from './seriesStore.js';
@@ -21,7 +22,8 @@ import { assetIdOf } from './episodeVaultResolver.js';
 import {
     parseHighConfidenceEpisodeTitle,
     slugifySeriesKey,
-    stripProductionTitlePrefixes
+    stripProductionTitlePrefixes,
+    buildVaultSeriesIdentity
 } from './vaultSeriesInference.js';
 
 const UUID_RE =
@@ -55,6 +57,7 @@ const STOP = new Set([
  * @property {number} seasonNumber
  * @property {number} episodeNumber
  * @property {string} episodeTitle
+ * @property {'high' | 'medium' | 'low'} [confidence]
  */
 
 /**
@@ -279,8 +282,9 @@ function episodeNumberForTitle(title, parsed) {
 
 /**
  * Viewer-facing series label normalization from Hero Vault titles / metadata.
- * Example: "STIRRED S01E01" → { seriesLabel:"STIRRED", seasonNumber:1, episodeNumber:1 }
+ * Example: "STIRRED S01E01" → { seriesLabel:"STIRRED", seasonNumber:1, episodeNumber:1, confidence:"high" }
  *
+ * Priority: seriesIdentity → flat vault fields → title parse → safe fallback.
  * Does not touch Hero Manager UI — pure label parsing for Theater relationships.
  *
  * @param {Record<string, unknown> | string | null | undefined} assetOrTitle
@@ -299,61 +303,44 @@ export function normalizeHeroVaultSeriesLabel(assetOrTitle) {
         ? String(resolveSeedId(item) || assetIdOf(item) || '').trim()
         : '';
 
-    // Explicit vault metadata fields win when present
-    const explicitLabel = String(
-        item.seriesLabel || item.series_label || item.seriesName || item.series_name || ''
-    ).trim();
-    const explicitSeason = Number(item.seasonNumber ?? item.season_number);
-    const explicitEpisode = Number(item.episodeNumber ?? item.episode_number);
-    const explicitEpisodeTitle = String(
-        item.episodeTitle || item.episode_title || ''
-    ).trim();
-
-    if (
-        explicitLabel &&
-        Number.isFinite(explicitSeason) &&
-        explicitSeason >= 1 &&
-        Number.isFinite(explicitEpisode) &&
-        explicitEpisode >= 1
-    ) {
+    const identity = buildVaultSeriesIdentity(assetOrTitle);
+    if (identity?.seriesLabel) {
         return {
             assetId,
-            title: title || explicitEpisodeTitle || explicitLabel,
-            seriesLabel: explicitLabel,
-            seasonNumber: Math.max(1, Math.floor(explicitSeason)),
-            episodeNumber: Math.max(1, Math.floor(explicitEpisode)),
-            episodeTitle: explicitEpisodeTitle || title || explicitLabel
+            title: title || identity.episodeTitle || identity.seriesLabel,
+            seriesLabel: identity.seriesLabel,
+            seasonNumber: identity.seasonNumber,
+            episodeNumber: identity.episodeNumber,
+            episodeTitle: identity.episodeTitle || title || identity.seriesLabel,
+            confidence: identity.confidence
         };
     }
 
-    const parsed = parseHighConfidenceEpisodeTitle(title);
-    if (parsed) {
-        return {
-            assetId,
-            title: title || String(parsed.episodeTitle || ''),
-            seriesLabel: String(parsed.seriesTitle || '').trim() || stripEpisodeDecorFromTitle(title),
-            seasonNumber: Math.max(1, Number(parsed.seasonNumber) || 1),
-            episodeNumber: Math.max(1, Number(parsed.episodeNumber) || 1),
-            episodeTitle: String(parsed.episodeTitle || title || '').trim()
-        };
-    }
-
-    const seriesLabel =
-        explicitLabel || stripEpisodeDecorFromTitle(title) || title || 'Series';
+    // Safe fallback when identity cannot be resolved — still deterministic
+    const seriesLabel = stripEpisodeDecorFromTitle(title) || title || 'Series';
     return {
         assetId,
         title: title || seriesLabel,
         seriesLabel: cleanSpaces(seriesLabel),
-        seasonNumber:
-            Number.isFinite(explicitSeason) && explicitSeason >= 1
-                ? Math.floor(explicitSeason)
-                : 1,
-        episodeNumber:
-            Number.isFinite(explicitEpisode) && explicitEpisode >= 1
-                ? Math.floor(explicitEpisode)
-                : 1,
-        episodeTitle: explicitEpisodeTitle || title || seriesLabel
+        seasonNumber: 1,
+        episodeNumber: 1,
+        episodeTitle: title || seriesLabel,
+        confidence: 'low'
     };
+}
+
+/**
+ * Normalized series identity key for family grouping (Hero Vault labels).
+ * Low-confidence placeholders never form a family key (avoids false "Series" joins).
+ * @param {Record<string, unknown> | null | undefined} asset
+ */
+function seriesIdentityKeyOf(asset) {
+    if (!asset || typeof asset !== 'object') return '';
+    const label = normalizeHeroVaultSeriesLabel(asset);
+    if (label.confidence === 'low') return '';
+    const key = normalizeSeriesText(label.seriesLabel || '');
+    if (!key || key === 'series') return '';
+    return key;
 }
 
 /**
@@ -691,7 +678,7 @@ export function resolveRelatedEpisodes(assetOrReel, options = {}) {
             : [...readyAssets, assetOrReel];
     }
 
-    // --- 1. Explicit metadata ---
+    // --- 1. Explicit reel/catalog metadata (mediaAssetId relationship) ---
     const meta = seedId ? getReelSeriesMetadata(seedId) : null;
     let seriesId =
         String(meta?.seriesId || assetOrReel.seriesId || assetOrReel.series_id || '').trim() || null;
@@ -716,10 +703,16 @@ export function resolveRelatedEpisodes(assetOrReel, options = {}) {
     // Catalog title preferred when present
     let seriesTitle = String(catalogSeries?.title || meta?.seriesName || '').trim();
 
-    // --- 3–7. Vault family via entity/franchise ---
+    // --- Vault family: seriesIdentity first, then reel/catalog links, then title/entity ---
     const seedParsed = parseHighConfidenceEpisodeTitle(seedTitle);
     const seedTokens = identityTokens(seedTitle);
     const seedEntity = entityKeyFromTokens(seedTokens);
+    const seedIdentityKey = seriesIdentityKeyOf(assetOrReel);
+    // Prefer Hero Vault identity title when present
+    const seedVaultIdentity = buildVaultSeriesIdentity(assetOrReel);
+    if (!seriesTitle && seedVaultIdentity?.seriesLabel) {
+        seriesTitle = seedVaultIdentity.seriesLabel;
+    }
 
     /** @type {Array<Record<string, unknown>>} */
     const family = [];
@@ -736,7 +729,19 @@ export function resolveRelatedEpisodes(assetOrReel, options = {}) {
             continue;
         }
 
-        // Explicit same series from metadata
+        // 1) Shared Hero Vault seriesIdentity / seriesLabel (authority — not a second matcher)
+        const otherIdentityKey = seriesIdentityKeyOf(asset);
+        if (
+            seedIdentityKey &&
+            otherIdentityKey &&
+            seedIdentityKey === otherIdentityKey &&
+            seedIdentityKey.length >= 2
+        ) {
+            family.push(asset);
+            continue;
+        }
+
+        // 2) Explicit same series from mediaAssetId / reel metadata
         const otherMeta = id ? getReelSeriesMetadata(id) : null;
         if (seriesId && otherMeta?.seriesId && String(otherMeta.seriesId) === seriesId) {
             family.push(asset);
@@ -750,6 +755,7 @@ export function resolveRelatedEpisodes(assetOrReel, options = {}) {
             }
         }
 
+        // 3–4) Title / entity / creator / description inference (existing fallback)
         if (
             titlesRelated(
                 seedTitle,

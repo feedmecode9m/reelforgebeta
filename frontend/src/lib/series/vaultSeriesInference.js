@@ -376,8 +376,10 @@ export function parseHighConfidenceEpisodeTitle(rawTitle) {
         }
     }
 
-    // NAME S01E02 / NAME S1E2
-    m = text.match(/^(.*?)[\s\-_.]*(?:[\[(])?S(\d{1,2})\s*[Ee](\d{1,3})[\])]?\s*$/i);
+    // NAME S01E02 / NAME S1E2 (optional trailing subtitle after packed marker)
+    m = text.match(
+        /^(.*?)[\s\-_.]*(?:[\[(])?S(\d{1,2})\s*[Ee](\d{1,3})[\])]?(?:[\s\-_.]+.*)?\s*$/i
+    );
     if (m) {
         let seriesTitle = stripProductionTitlePrefixes(cleanSeriesBase(m[1]));
         if (seriesTitle.length >= 2 && !isEpisodeOnlySeriesCandidate(seriesTitle)) {
@@ -387,6 +389,23 @@ export function parseHighConfidenceEpisodeTitle(rawTitle) {
                 episodeNumber: Math.max(1, Number(m[3]) || 1),
                 episodeTitle: text,
                 confidence: 'sxe'
+            };
+        }
+    }
+
+    // NAME S01 EPISODE 2 / NAME S1 EP 3 (season token + episode word/number, not packed SxxExx)
+    m = text.match(
+        /^(.*?)[\s\-_.]*(?:[\[(])?S(\d{1,2})[\s\-_.]+(?:ep(?:isode)?[\s\-_.]*)(\d{1,3})[\])]?(?:[\s\-_.]+.*)?\s*$/i
+    );
+    if (m) {
+        let seriesTitle = stripProductionTitlePrefixes(cleanSeriesBase(m[1]));
+        if (seriesTitle.length >= 2 && !isEpisodeOnlySeriesCandidate(seriesTitle)) {
+            return {
+                seriesTitle,
+                seasonNumber: Math.max(1, Number(m[2]) || 1),
+                episodeNumber: Math.max(1, Number(m[3]) || 1),
+                episodeTitle: text,
+                confidence: 'sxe-episode'
             };
         }
     }
@@ -436,6 +455,264 @@ export function parseHighConfidenceEpisodeTitle(rawTitle) {
 
     // --- C. Fail closed ---
     return null;
+}
+
+/**
+ * Map internal parse confidence codes → viewer/vault tier (high|medium|low).
+ * Deterministic; does not invent franchises.
+ * @param {string | null | undefined} code
+ * @returns {'high' | 'medium' | 'low'}
+ */
+export function mapSeriesParseConfidence(code) {
+    const c = String(code || '').toLowerCase();
+    if (!c) return 'low';
+    if (
+        c === 'high' ||
+        c === 'sxe' ||
+        c === 'sxe-episode' ||
+        c === 'ep-token' ||
+        c === 'trailing-number' ||
+        c === 'version-paren-ep' ||
+        c === 'franchise-leading-number' ||
+        c === 'franchise-version' ||
+        c === 'franchise-version-paren' ||
+        c === 'franchise-keyword'
+    ) {
+        return 'high';
+    }
+    if (
+        c === 'medium' ||
+        c === 'normalized-prefix-version' ||
+        c === 'series-subtitle' ||
+        c === 'series-root'
+    ) {
+        return 'medium';
+    }
+    if (c === 'low') return 'low';
+    return 'medium';
+}
+
+/**
+ * @typedef {{
+ *   seriesLabel: string;
+ *   seasonNumber: number;
+ *   episodeNumber: number;
+ *   confidence: 'high' | 'medium' | 'low';
+ *   episodeTitle?: string;
+ *   parseConfidence?: string;
+ * }} VaultSeriesIdentity
+ */
+
+/**
+ * Parse a free-form series-only title: "STIRRED - The Beginning".
+ * Returns medium confidence — series root only, default season/episode 1.
+ * Does not hardcode franchise names.
+ *
+ * @param {string} text
+ * @returns {VaultSeriesIdentity | null}
+ */
+function parseSeriesSubtitleIdentity(text) {
+    const m = text.match(/^(?=.*[A-Za-z])(.+?)\s*[-–—]\s+(.+)$/);
+    if (!m) return null;
+    let seriesTitle = stripProductionTitlePrefixes(cleanSeriesBase(m[1]));
+    const subtitle = cleanSeriesBase(m[2]);
+    if (!seriesTitle || seriesTitle.length < 2 || !subtitle) return null;
+    // Reject if left side already carries episode markers
+    if (/\bS\d{1,2}\s*[Ee]\d{1,3}\b/i.test(seriesTitle)) return null;
+    if (/\b(?:ep(?:isode)?)\s*\d{1,3}\b/i.test(seriesTitle)) return null;
+    if (isEpisodeOnlySeriesCandidate(seriesTitle)) return null;
+    if (/^\d+$/.test(seriesTitle)) return null;
+    return {
+        seriesLabel: seriesTitle,
+        seasonNumber: 1,
+        episodeNumber: 1,
+        confidence: 'medium',
+        episodeTitle: text,
+        parseConfidence: 'series-subtitle'
+    };
+}
+
+/**
+ * Canonical Hero Vault series identity from a title or asset row.
+ * Prefer persisted seriesIdentity / flat fields; otherwise parse deterministically.
+ *
+ * Examples:
+ *   "STIRRED S01E01" → { seriesLabel:"STIRRED", seasonNumber:1, episodeNumber:1, confidence:"high" }
+ *   "STIRRED S01 EPISODE 2" → same shape, ep 2
+ *   "STIRRED - The Beginning" → medium, ep 1
+ *
+ * @param {Record<string, unknown> | string | null | undefined} assetOrTitle
+ * @returns {VaultSeriesIdentity | null}
+ */
+export function buildVaultSeriesIdentity(assetOrTitle) {
+    const isObj = assetOrTitle && typeof assetOrTitle === 'object';
+    /** @type {Record<string, unknown>} */
+    const item = isObj ? /** @type {Record<string, unknown>} */ (assetOrTitle) : {};
+    const title = isObj
+        ? String(item.name || item.title || item.fileName || item.file_name || item.displayTitle || '').trim()
+        : String(assetOrTitle || '')
+              .trim()
+              .replace(/\.(mp4|mov|webm|m4v|avi|mkv)$/i, '');
+
+    // 1) Explicit nested seriesIdentity (Hero Vault authority)
+    const nested =
+        item.seriesIdentity && typeof item.seriesIdentity === 'object'
+            ? /** @type {Record<string, unknown>} */ (item.seriesIdentity)
+            : null;
+    if (nested) {
+        const seriesLabel = cleanSeriesBase(
+            String(nested.seriesLabel || nested.series_label || nested.seriesTitle || '')
+        );
+        const seasonNumber = Number(nested.seasonNumber ?? nested.season_number);
+        const episodeNumber = Number(nested.episodeNumber ?? nested.episode_number);
+        if (
+            seriesLabel &&
+            Number.isFinite(seasonNumber) &&
+            seasonNumber >= 1 &&
+            Number.isFinite(episodeNumber) &&
+            episodeNumber >= 1
+        ) {
+            const confRaw = String(nested.confidence || 'high').toLowerCase();
+            /** @type {'high' | 'medium' | 'low'} */
+            const confidence =
+                confRaw === 'low' || confRaw === 'medium' || confRaw === 'high'
+                    ? confRaw
+                    : mapSeriesParseConfidence(confRaw);
+            return {
+                seriesLabel,
+                seasonNumber: Math.max(1, Math.floor(seasonNumber)),
+                episodeNumber: Math.max(1, Math.floor(episodeNumber)),
+                confidence,
+                episodeTitle: String(nested.episodeTitle || title || seriesLabel).trim(),
+                parseConfidence: String(nested.parseConfidence || 'persisted')
+            };
+        }
+    }
+
+    // 2) Flat vault metadata fields
+    const flatLabel = cleanSeriesBase(
+        String(item.seriesLabel || item.series_label || item.seriesName || item.series_name || '')
+    );
+    const flatSeason = Number(item.seasonNumber ?? item.season_number);
+    const flatEpisode = Number(item.episodeNumber ?? item.episode_number);
+    if (
+        flatLabel &&
+        Number.isFinite(flatSeason) &&
+        flatSeason >= 1 &&
+        Number.isFinite(flatEpisode) &&
+        flatEpisode >= 1
+    ) {
+        return {
+            seriesLabel: flatLabel,
+            seasonNumber: Math.max(1, Math.floor(flatSeason)),
+            episodeNumber: Math.max(1, Math.floor(flatEpisode)),
+            confidence: 'high',
+            episodeTitle: String(item.episodeTitle || item.episode_title || title || flatLabel).trim(),
+            parseConfidence: 'flat-metadata'
+        };
+    }
+
+    // 3) Title parse (no second relationship matcher — same high-confidence path)
+    const parsed = parseHighConfidenceEpisodeTitle(title);
+    if (parsed) {
+        const seriesLabel = cleanSeriesBase(String(parsed.seriesTitle || ''));
+        if (seriesLabel) {
+            return {
+                seriesLabel,
+                seasonNumber: Math.max(1, Number(parsed.seasonNumber) || 1),
+                episodeNumber: Math.max(1, Number(parsed.episodeNumber) || 1),
+                confidence: mapSeriesParseConfidence(parsed.confidence),
+                episodeTitle: String(parsed.episodeTitle || title || seriesLabel).trim(),
+                parseConfidence: String(parsed.confidence || '')
+            };
+        }
+    }
+
+    // 4) Series root + subtitle (deterministic, medium)
+    if (title) {
+        const sub = parseSeriesSubtitleIdentity(stripMediaExtension(title));
+        if (sub) return sub;
+    }
+
+    // Flat label alone (season/ep missing → default 1) when creator set seriesLabel only
+    if (flatLabel) {
+        return {
+            seriesLabel: flatLabel,
+            seasonNumber:
+                Number.isFinite(flatSeason) && flatSeason >= 1 ? Math.floor(flatSeason) : 1,
+            episodeNumber:
+                Number.isFinite(flatEpisode) && flatEpisode >= 1 ? Math.floor(flatEpisode) : 1,
+            confidence: 'medium',
+            episodeTitle: String(item.episodeTitle || title || flatLabel).trim(),
+            parseConfidence: 'flat-label-only'
+        };
+    }
+
+    return null;
+}
+
+/**
+ * Attach optional seriesIdentity onto a vault asset without mutating the input.
+ * Missing identity remains valid (returns a shallow copy only when identity can be derived).
+ *
+ * @param {Record<string, unknown> | null | undefined} asset
+ * @returns {Record<string, unknown> | null | undefined}
+ */
+export function withVaultSeriesIdentity(asset) {
+    if (!asset || typeof asset !== 'object') return asset;
+    const existing =
+        asset.seriesIdentity && typeof asset.seriesIdentity === 'object'
+            ? /** @type {Record<string, unknown>} */ (asset.seriesIdentity)
+            : null;
+    const built = buildVaultSeriesIdentity(asset);
+    if (!built) {
+        return asset;
+    }
+    // Preserve explicit persisted identity; still ensure flat mirrors when missing
+    if (
+        existing &&
+        String(existing.seriesLabel || existing.series_label || '').trim() &&
+        Number(existing.seasonNumber ?? existing.season_number) >= 1 &&
+        Number(existing.episodeNumber ?? existing.episode_number) >= 1
+    ) {
+        const identity = buildVaultSeriesIdentity({ ...asset, seriesIdentity: existing }) || built;
+        return {
+            ...asset,
+            seriesIdentity: {
+                seriesLabel: identity.seriesLabel,
+                seasonNumber: identity.seasonNumber,
+                episodeNumber: identity.episodeNumber,
+                confidence: identity.confidence
+            },
+            seriesLabel: String(asset.seriesLabel || identity.seriesLabel).trim() || identity.seriesLabel,
+            seasonNumber:
+                Number(asset.seasonNumber ?? asset.season_number) >= 1
+                    ? Number(asset.seasonNumber ?? asset.season_number)
+                    : identity.seasonNumber,
+            episodeNumber:
+                Number(asset.episodeNumber ?? asset.episode_number) >= 1
+                    ? Number(asset.episodeNumber ?? asset.episode_number)
+                    : identity.episodeNumber
+        };
+    }
+    return {
+        ...asset,
+        seriesIdentity: {
+            seriesLabel: built.seriesLabel,
+            seasonNumber: built.seasonNumber,
+            episodeNumber: built.episodeNumber,
+            confidence: built.confidence
+        },
+        seriesLabel: String(asset.seriesLabel || built.seriesLabel).trim() || built.seriesLabel,
+        seasonNumber:
+            Number(asset.seasonNumber ?? asset.season_number) >= 1
+                ? Number(asset.seasonNumber ?? asset.season_number)
+                : built.seasonNumber,
+        episodeNumber:
+            Number(asset.episodeNumber ?? asset.episode_number) >= 1
+                ? Number(asset.episodeNumber ?? asset.episode_number)
+                : built.episodeNumber
+    };
 }
 
 /**
