@@ -5,18 +5,22 @@
  * catalog authority, or vault persistence.
  *
  * Priority:
- *   1. Explicit chip / episode poster fields
- *   2. Ready vault asset fields keyed by mediaAssetId
- *   3. Deterministic product poster path `/thumbs/{mediaAssetId}.jpg` (viewer card only)
+ *   1. Explicit chip / episode poster fields (absolute API thumbs pass through)
+ *   2. Ready vault / catalog inventory fields keyed by mediaAssetId
+ *      (thumbnailUrl, thumbnailPath, image-type url with correct extension)
+ *   3. Last-resort product identity path only when a real path cannot be found
  *
- * Final URLs always pass through resolveMediaUrl (toBackendMediaUrl) so
- * relative `/thumbs/*` is browser-loadable — same pipeline as MediaRenderer/Theater.
+ * Final URLs always pass through resolveMediaUrl so:
+ *   - absolute production thumbs stay absolute (never `/thumbs/https://…`)
+ *   - relative `/thumbs/*` joins the media origin when configured
+ *   - double-prefixed corruption is peeled before resolve
  */
 
 import { resolveMediaUrl } from '../api/reelContract.js';
 
 const UUID_RE =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const IMAGE_EXT_RE = /\.(png|jpe?g|webp|gif)(\?|$)/i;
 
 /**
  * @param {unknown} value
@@ -24,6 +28,27 @@ const UUID_RE =
  */
 function cleanUrl(value) {
     return String(value || '').trim();
+}
+
+/**
+ * Peel accidental `/thumbs/https://host/thumbs/file.ext` corruption back to a loadable URL.
+ * Production browsers showed this exact DOM src (404) when absolute API thumbs were re-prefixed.
+ * @param {string} raw
+ * @returns {string}
+ */
+export function repairDoublePrefixedMediaUrl(raw) {
+    const trimmed = cleanUrl(raw);
+    if (!trimmed) return '';
+
+    // `/thumbs/https://host/...` or `/videos/https://host/...`
+    const nakedAbs = trimmed.match(/^\/(?:thumbs|videos)\/(https?:\/\/.+)$/i);
+    if (nakedAbs) return cleanUrl(nakedAbs[1]);
+
+    // `/thumbs/http://host/thumbs/file.ext` → `/thumbs/file.ext`
+    const embedded = trimmed.match(/^\/(thumbs|videos)\/https?:\/\/[^/]+\/(thumbs|videos)\/(.+)$/i);
+    if (embedded) return `/${embedded[2]}/${embedded[3]}`;
+
+    return trimmed;
 }
 
 /**
@@ -35,9 +60,11 @@ function thumbOf(item) {
         item.episodeEnrichment && typeof item.episodeEnrichment === 'object'
             ? /** @type {Record<string, unknown>} */ (item.episodeEnrichment)
             : null;
-    return cleanUrl(
+    const explicit = cleanUrl(
         item.thumbnailUrl ||
             item.thumbnail_url ||
+            item.thumbnailPath ||
+            item.thumbnail_path ||
             item.thumbnail ||
             item.posterUrl ||
             item.poster_url ||
@@ -45,6 +72,21 @@ function thumbOf(item) {
             item.artworkUrl ||
             nested?.artworkUrl
     );
+    if (explicit) return explicit;
+
+    // Image reels often only set `url` to the real /thumbs/{id}.png (never invent .jpg).
+    const primary = cleanUrl(item.url || item.mediaUrl || item.src || '');
+    const type = cleanUrl(item.type).toLowerCase();
+    if (
+        primary &&
+        (type === 'image' ||
+            type.startsWith('image/') ||
+            IMAGE_EXT_RE.test(primary) ||
+            primary.includes('/thumbs/'))
+    ) {
+        return primary;
+    }
+    return '';
 }
 
 /**
@@ -60,20 +102,37 @@ function assetIdOf(item) {
  * @returns {string}
  */
 function finalizePosterUrl(raw) {
-    const trimmed = cleanUrl(raw);
+    const trimmed = repairDoublePrefixedMediaUrl(raw);
     if (!trimmed) return '';
     return resolveMediaUrl(trimmed, 'thumbnail', 'viewerEpisodePoster') || '';
 }
 
 /**
- * Deterministic product-relative poster path from stable media id.
- * Callers must run this through resolveMediaUrl / finalizePosterUrl for browser load.
+ * Relative poster path for a stable media id.
+ * Prefer a proven extension from a known thumb URL; last-resort `.jpg` keeps
+ * cold-load catalog UUID cards (STIRRED) working when inventory is empty.
+ * Never invent over an already-known absolute/relative art URL — callers must
+ * pass those through finalizePosterUrl first.
+ *
  * @param {unknown} mediaAssetId
+ * @param {string} [knownThumbHint] absolute/relative thumb with a real extension
  * @returns {string}
  */
-export function posterPathFromMediaAssetId(mediaAssetId) {
+export function posterPathFromMediaAssetId(mediaAssetId, knownThumbHint = '') {
     const id = cleanUrl(mediaAssetId);
     if (!id || !UUID_RE.test(id)) return '';
+
+    const hint = cleanUrl(knownThumbHint);
+    const fromHint = hint.match(IMAGE_EXT_RE);
+    if (fromHint) {
+        const file = hint.split('/').pop()?.split('?')[0] || '';
+        if (file && file.toLowerCase().includes(id.toLowerCase())) {
+            return `/thumbs/${file}`;
+        }
+        const ext = fromHint[1].toLowerCase().replace('jpeg', 'jpg');
+        return `/thumbs/${id}.${ext}`;
+    }
+    // Last resort only — many production reels use .png; prefer inventory when available.
     return `/thumbs/${id}.jpg`;
 }
 
@@ -105,7 +164,6 @@ export function resolveViewerEpisodePosterUrl(input = {}) {
     const fromVault = thumbOf(bound);
     if (fromVault) return finalizePosterUrl(fromVault);
 
-    // Product convention matches catalog reel posters: /thumbs/{mediaAssetId}.jpg
-    // Canonical resolve attaches backend/media origin when configured.
+    // Only invent identity path when no real inventory art exists for this media id.
     return finalizePosterUrl(posterPathFromMediaAssetId(mediaId));
 }

@@ -103,11 +103,16 @@ export function createVaultUtils(deps) {
   const value = String(nameOrUrl).trim();
   if (!value) return getFallbackImage();
   if (value.startsWith('data:') || value.startsWith('blob:')) return value;
+  // Absolute API thumbs (Netlify/Railway) — never re-prefix as `/thumbs/https://…`.
+  if (/^https?:\/\//i.test(value)) return value;
   if (value.startsWith('/thumbs/') || value.startsWith('/videos/')) return value;
   const stored = getStoredThumbnailEntries();
   const entry = findStoredThumbnailEntry(stored, value, index);
   if (entry?.url && !entry.url.startsWith('data:') && !entry.url.startsWith('blob:')) {
-  const rel = toRelativeMediaPath(entry.url);
+  const raw = String(entry.url).trim();
+  if (/^https?:\/\//i.test(raw)) return raw;
+  const rel = toRelativeMediaPath(raw);
+  if (/^https?:\/\//i.test(rel)) return rel;
   return rel.startsWith('/thumbs/') ? rel : `/thumbs/${rel.replace(/^\/+/, '').replace(/^thumbs\//, '')}`;
   }
   if (entry?.preview) return entry.preview;

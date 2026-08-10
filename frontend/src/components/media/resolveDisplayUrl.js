@@ -68,7 +68,15 @@ export function resolvePosterBackgroundUrl(originalUrl, type = 'poster') {
 export function toRelativePosterPath(originalUrl) {
     const original = originalUrl == null ? '' : String(originalUrl).trim();
     if (!original) return '';
+    // Absolute production thumbs must stay absolute — never become `/thumbs/https://…`.
+    if (/^https?:\/\//i.test(original)) {
+        return original;
+    }
     const relative = toRelativeMediaPath(original);
+    // toRelativeMediaPath may preserve absolute media hosts; still never re-prefix.
+    if (/^https?:\/\//i.test(relative)) {
+        return relative;
+    }
     if (relative.startsWith('/thumbs/') || relative.startsWith('/videos/')) return relative;
     if (relative.startsWith('/')) return relative;
     return `/thumbs/${relative.replace(/^\/+/, '')}`;
