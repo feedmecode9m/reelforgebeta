@@ -248,10 +248,17 @@ export function normalizeVaultAsset(raw, options = {}) {
     };
 
     if (seriesIdentity) {
+        const priorNested =
+            row.seriesIdentity && typeof row.seriesIdentity === 'object'
+                ? /** @type {Record<string, unknown>} */ (row.seriesIdentity)
+                : null;
+        const confirmedByCreator =
+            priorNested?.confirmedByCreator === true || priorNested?.identitySource === 'creator';
         normalized.seriesIdentity = {
             seriesLabel: seriesIdentity.seriesLabel,
             seasonNumber: seriesIdentity.seasonNumber,
-            episodeNumber: seriesIdentity.episodeNumber
+            episodeNumber: seriesIdentity.episodeNumber,
+            ...(confirmedByCreator ? { confirmedByCreator: true } : {})
         };
         // Flat mirrors for consumers that read top-level fields (legacy-safe)
         normalized.seriesLabel =
@@ -283,6 +290,28 @@ export function normalizeVaultAsset(raw, options = {}) {
             normalized.seriesLabel = preserved.seriesLabel;
             normalized.seasonNumber = preserved.seasonNumber;
             normalized.episodeNumber = preserved.episodeNumber;
+        }
+    }
+
+    // Durable creator presentation package (title / description / artwork)
+    const priorEnrich =
+        row.episodeEnrichment && typeof row.episodeEnrichment === 'object'
+            ? /** @type {Record<string, unknown>} */ (row.episodeEnrichment)
+            : null;
+    if (priorEnrich) {
+        const title = firstString(priorEnrich.title);
+        const description = firstString(priorEnrich.description);
+        const artworkUrl = firstString(
+            priorEnrich.artworkUrl,
+            priorEnrich.artwork,
+            priorEnrich.posterUrl
+        );
+        if (title || description || artworkUrl) {
+            normalized.episodeEnrichment = {
+                ...(title ? { title } : {}),
+                ...(description ? { description } : {}),
+                ...(artworkUrl ? { artworkUrl } : {})
+            };
         }
     }
 

@@ -41,7 +41,7 @@ import {
 } from '../lib/hero/heroRecord.js';
 import { loadHeroReel, resolveActiveHeroVideoReel, heroReelToVaultItem } from '../lib/hero/heroReelIdentity.js';
 import { isHeroAsset, filterNonHeroAssets } from '../lib/hero/heroDomainGuard.js';
-import { sealVaultAssetsSeriesIdentity } from '../lib/series/vaultSeriesInference.js';
+import { sealVaultAssetsWithEnrichment } from '../lib/series/vaultEpisodeEnrichment.js';
 import { shouldStreamDiagnostics } from '../lib/diagnostics/pipelineSnapshot.js';
 import { notifyInterruptedUploads } from '../lib/diagnostics/uploadRecovery.js';
 import { getActiveUploadLockCount } from '../lib/diagnostics/uploadLockDiag.js';
@@ -253,7 +253,7 @@ function persistPersonalVault(videos) {
 const inputVideos = Array.isArray(videos) ? videos : [];
 let filtered = filterOutDeletedMedia(filterNonHeroAssets(inputVideos));
 // Seal durable seriesIdentity from Hero Vault title labels before write
-filtered = sealVaultAssetsSeriesIdentity(filtered);
+filtered = sealVaultAssetsWithEnrichment(filtered);
 traceVideoStoreBoundary('persistPersonalVault:filterNonHeroAssets', inputVideos, filtered, {
 reasons: 'filterNonHeroAssets+filterOutDeletedMedia'
 });
@@ -271,7 +271,7 @@ if (pendingHeroAssetIds.size) {
     return !blocked;
   });
   // Re-seal after pending filter (entries not restructured, but keep identity path consistent)
-  filtered = sealVaultAssetsSeriesIdentity(filtered);
+  filtered = sealVaultAssetsWithEnrichment(filtered);
   traceVideoStoreBoundary('persistPersonalVault:pendingHeroAssetIds', inputVideos, filtered, {
     removed: pendingRemoved,
     reasons: 'pendingHeroAssetIds'
@@ -1027,8 +1027,8 @@ const filteredStoredVideos = filterOutDeletedMedia(filterNonHeroAssets(storedVid
 traceVideoStoreBoundary('reloadVaultStoresFromStorage:filterNonHeroAssets', storedVideos, filteredStoredVideos, {
 reasons: 'filterNonHeroAssets+filterOutDeletedMedia'
 });
-// Rehydrate durable identity; seal legacy rows that predate seriesIdentity storage
-const sealedVideos = sealVaultAssetsSeriesIdentity(filteredStoredVideos);
+// Rehydrate durable identity + episode package; seal legacy rows that predate seriesIdentity storage
+const sealedVideos = sealVaultAssetsWithEnrichment(filteredStoredVideos);
 personalVideos.set(sealedVideos.map((video) => ({
 ...video,
 url: video.url ? toRelativeMediaPath(video.url) : '',

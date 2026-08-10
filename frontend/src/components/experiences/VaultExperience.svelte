@@ -45,6 +45,10 @@
   import { isHeroAsset } from '../../lib/hero/heroDomainGuard.js';
   import { reelToVaultEntry } from '../../lib/api/reelContract.js';
   import { sealVaultSeriesIdentityForStorage } from '../../lib/series/vaultSeriesInference.js';
+  import { applyCreatorVaultIdentityConfirmation } from '../../lib/series/vaultIdentityConfirmation.js';
+  import { applyCreatorVaultEpisodeEnrichment } from '../../lib/series/vaultEpisodeEnrichment.js';
+  import VaultIdentityConfirmation from '../series/VaultIdentityConfirmation.svelte';
+  import VaultEpisodeEnrichment from '../series/VaultEpisodeEnrichment.svelte';
   import { validateVideoFile } from '../../lib/runtime-guards.js';
   import { API_BASE_URL, toRelativeMediaPath, SIGNED_UPLOADS_MIN_BYTES } from '../../lib/config.js';
   import {
@@ -1735,6 +1739,78 @@
     });
   }
 
+  /**
+   * Creator identity confirmation → seal vault identity only.
+   * Preserves mediaAssetId / playback refs; does not touch catalog order or publish state.
+   * @param {Record<string, unknown>} video
+   * @param {{ seriesLabel?: string; seasonNumber?: number; episodeNumber?: number }} detail
+   */
+  function confirmVaultVideoIdentity(video, detail) {
+    const id = String(video?.id || detail?.mediaAssetId || '').trim();
+    if (!id) return;
+    personalVideos.update((videos) => {
+      const list = Array.isArray(videos) ? videos : [];
+      const next = list.map((item) => {
+        if (String(item?.id || '').trim() !== id) return item;
+        try {
+          return applyCreatorVaultIdentityConfirmation(
+            /** @type {Record<string, unknown>} */ (item),
+            {
+              seriesLabel: detail?.seriesLabel,
+              seasonNumber: detail?.seasonNumber,
+              episodeNumber: detail?.episodeNumber
+            }
+          );
+        } catch (err) {
+          console.warn('[VAULT_IDENTITY_CONFIRM]', err);
+          return item;
+        }
+      });
+      try {
+        persistPersonalVault(next);
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  }
+
+  /**
+   * Creator episode package (title / description / artwork) → vault enrichment only.
+   * Preserves identity + mediaAssetId; does not touch catalog order or publish state.
+   * @param {Record<string, unknown>} video
+   * @param {{ title?: string; description?: string; artworkUrl?: string; mediaAssetId?: string }} detail
+   */
+  function saveVaultEpisodeEnrichment(video, detail) {
+    const id = String(video?.id || detail?.mediaAssetId || '').trim();
+    if (!id) return;
+    personalVideos.update((videos) => {
+      const list = Array.isArray(videos) ? videos : [];
+      const next = list.map((item) => {
+        if (String(item?.id || '').trim() !== id) return item;
+        try {
+          return applyCreatorVaultEpisodeEnrichment(
+            /** @type {Record<string, unknown>} */ (item),
+            {
+              title: detail?.title,
+              description: detail?.description,
+              artworkUrl: detail?.artworkUrl
+            }
+          );
+        } catch (err) {
+          console.warn('[VAULT_EPISODE_ENRICH]', err);
+          return item;
+        }
+      });
+      try {
+        persistPersonalVault(next);
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  }
+
   function isVaultVideoFileCandidate(f) {
     if (!f) return false;
     const type = (f.type || '').toLowerCase();
@@ -3303,6 +3379,18 @@
                 Select
               </label>
             </div>
+            {#if !isUploadingCard && !isFailedCard && !isPendingCard && !isGhostCard}
+              <VaultIdentityConfirmation
+                asset={video}
+                active={true}
+                on:confirm={(event) => confirmVaultVideoIdentity(video, event.detail || {})}
+              />
+              <VaultEpisodeEnrichment
+                asset={video}
+                active={true}
+                on:save={(event) => saveVaultEpisodeEnrichment(video, event.detail || {})}
+              />
+            {/if}
           </div>
         {/if}
       {/each}

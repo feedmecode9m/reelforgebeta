@@ -213,7 +213,10 @@ async function main() {
 
         const persistSrc = read('src/viewer/viewerContext.js');
         assert(/seriesIdentity/.test(persistSrc), 'persistPersonalVault keeps seriesIdentity fields');
-        assert(/sealVaultAssetsSeriesIdentity/.test(persistSrc), 'vault persist seals durable identity');
+        assert(
+            /sealVaultAssetsWithEnrichment|sealVaultAssetsSeriesIdentity/.test(persistSrc),
+            'vault persist seals durable identity'
+        );
 
         const vaultExp = read('src/components/experiences/VaultExperience.svelte');
         assert(

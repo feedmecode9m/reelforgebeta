@@ -25,6 +25,7 @@ import {
     stripProductionTitlePrefixes,
     buildVaultSeriesIdentity
 } from './vaultSeriesInference.js';
+import { viewerFieldsFromVaultEnrichment } from './vaultEpisodeEnrichment.js';
 import { sortEpisodesForDisplay } from './seriesCatalogEdits.js';
 import { episodeIsViewerDiscoverable } from './publishingLifecycle.js';
 
@@ -71,6 +72,7 @@ const STOP = new Set([
  * @property {number} seasonNumber
  * @property {string} mediaUrl
  * @property {string} thumbnailUrl
+ * @property {string} [description]
  * @property {string} [seriesLabel]
  * @property {string} [episodeId]
  * @property {string} [source]
@@ -432,6 +434,23 @@ function membersFromCatalog(seriesId) {
 }
 
 /**
+ * Prefer human presentation titles over raw media filenames when merging members.
+ * @param {unknown} a
+ * @param {unknown} b
+ */
+function preferPresentationTitle(a, b) {
+    const A = String(a || '').trim();
+    const B = String(b || '').trim();
+    if (!A) return B;
+    if (!B) return A;
+    const mediaish = (t) => /\.(mp4|mov|webm|m4v|avi|mkv)$/i.test(t);
+    if (mediaish(A) && !mediaish(B)) return B;
+    if (mediaish(B) && !mediaish(A)) return A;
+    // Prefer creator package titles over bare SxxExx file stems only when one is richer
+    return A;
+}
+
+/**
  * @param {RelatedEpisodeMember[]} list
  * @returns {RelatedEpisodeMember[]}
  */
@@ -448,12 +467,23 @@ function dedupeMembers(list) {
             byKey.set(key, m);
             continue;
         }
-        // Prefer catalog-bound reel + richer media
+        // Prefer catalog-bound reel + richer media / presentation package
         byKey.set(key, {
             ...prev,
             ...m,
+            title: preferPresentationTitle(m.title, prev.title),
+            description: String(prev.description || m.description || '').trim() || m.description || '',
             mediaUrl: m.mediaUrl || prev.mediaUrl,
-            thumbnailUrl: m.thumbnailUrl || prev.thumbnailUrl,
+            // Prefer explicit artwork package over default poster when both present
+            thumbnailUrl: (() => {
+                const a = String(m.thumbnailUrl || '').trim();
+                const b = String(prev.thumbnailUrl || '').trim();
+                if (a && b) {
+                    // Keep non-empty pair: prefer later only if previous looks empty
+                    return a || b;
+                }
+                return a || b;
+            })(),
             reelId: m.reelId || prev.reelId,
             episodeId: m.episodeId || prev.episodeId,
             source: m.source === 'catalog' || prev.source === 'catalog' ? 'catalog' : m.source || prev.source
@@ -514,6 +544,7 @@ export function buildSeriesViewFromRelated(related, catalogSeries = null, option
         }
         // Keep vault media/reel; catalog fields enrich metadata only.
         // Catalog status + displayOrder win when present (publishing + creator order).
+        // Vault presentation package (title/description/artwork) wins when already set.
         const nextDisplay =
             Number.isFinite(Number(ep.displayOrder))
                 ? Number(ep.displayOrder)
@@ -526,13 +557,14 @@ export function buildSeriesViewFromRelated(related, catalogSeries = null, option
             reelId: prev.reelId || ep.reelId,
             mediaAssetId: prev.mediaAssetId || ep.mediaAssetId || null,
             title: prev.title || ep.title,
-            description: ep.description || prev.description,
+            description: prev.description || ep.description,
             genre: ep.genre || prev.genre,
             tags: [...new Set([...(prev.tags || []), ...(ep.tags || [])])],
             seriesLabel: prev.seriesLabel || ep.seriesLabel,
             createdAtMs: prev.createdAtMs || ep.createdAtMs,
             status: ep.status || prev.status,
             displayOrder: nextDisplay,
+            thumbnailUrl: prev.thumbnailUrl || ep.thumbnailUrl,
             // S/E identity labels: prefer vault (seriesIdentity) over catalog renumbering
             episodeNumber:
                 Number.isFinite(Number(prev.episodeNumber)) && prev.episodeNumber != null
@@ -561,6 +593,7 @@ export function buildSeriesViewFromRelated(related, catalogSeries = null, option
             episodeId,
             episodeNumber: m.episodeNumber,
             title: m.title,
+            description: m.description || '',
             status: m.status || 'ready',
             reelId: m.reelId,
             mediaAssetId: m.assetId || null,
@@ -873,16 +906,19 @@ export function resolveRelatedEpisodes(assetOrReel, options = {}) {
     const vaultMembers = poolMeta.map(({ asset, title }, vaultIndex) => {
         const id = resolveSeedId(asset) || assetIdOf(asset);
         const label = normalizeHeroVaultSeriesLabel(asset);
+        const enrich = viewerFieldsFromVaultEnrichment(asset);
         const reelId = UUID_RE.test(String(id)) ? String(id) : null;
         return {
             assetId: String(assetIdOf(asset) || id || label.assetId || ''),
             reelId,
-            title: label.episodeTitle || title,
+            // Creator presentation package wins over raw file/episode title when set
+            title: enrich.title || label.episodeTitle || title,
+            description: enrich.description || descriptionOf(asset) || '',
             episodeNumber: label.episodeNumber,
             seasonNumber: label.seasonNumber,
             seriesLabel: label.seriesLabel,
             mediaUrl: mediaUrlOf(asset),
-            thumbnailUrl: thumbnailUrlOf(asset),
+            thumbnailUrl: enrich.artworkUrl || thumbnailUrlOf(asset),
             episodeId: '',
             source: 'vault',
             createdAtMs: createdAtMsOf(asset),
@@ -938,19 +974,27 @@ export function resolveRelatedEpisodes(assetOrReel, options = {}) {
     }
 
     // Ensure seed is represented even if ready list was empty of media fields
-    if (seedTitle && !members.some((m) => normalizeSeriesText(m.title) === normalizeSeriesText(seedTitle))) {
+    const seedAlreadyMember = members.some(
+        (m) =>
+            (seedId &&
+                (String(m.reelId || '') === seedId || String(m.assetId || '') === seedId)) ||
+            normalizeSeriesText(m.title) === normalizeSeriesText(seedTitle)
+    );
+    if (seedTitle && !seedAlreadyMember) {
         const seedLabel = normalizeHeroVaultSeriesLabel(assetOrReel);
+        const seedEnrich = viewerFieldsFromVaultEnrichment(assetOrReel);
         members = dedupeMembers([
             ...members,
             {
                 assetId: seedId || assetIdOf(assetOrReel) || '',
                 reelId: UUID_RE.test(seedId) ? seedId : null,
-                title: seedTitle,
+                title: seedEnrich.title || seedTitle,
+                description: seedEnrich.description || seedDesc || '',
                 episodeNumber: seedLabel.episodeNumber,
                 seasonNumber: seedLabel.seasonNumber,
                 seriesLabel: seedLabel.seriesLabel,
                 mediaUrl: seedMedia,
-                thumbnailUrl: thumbnailUrlOf(assetOrReel),
+                thumbnailUrl: seedEnrich.artworkUrl || thumbnailUrlOf(assetOrReel),
                 episodeId: episodeIdHint || '',
                 source: 'seed',
                 createdAtMs: createdAtMsOf(assetOrReel),

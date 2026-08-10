@@ -14,6 +14,10 @@
     import { EPISODE_STATUSES } from '../../lib/series/seriesTypes.js';
     import EpisodeVaultBindingPicker from './EpisodeVaultBindingPicker.svelte';
     import { getReadyHeroVaultAssets } from '../../lib/series/heroVaultAssetSource.js';
+    import {
+        evaluateEpisodeReadyRequirements,
+        resolveVaultAssetForEpisode
+    } from '../../lib/series/seriesAssemblyWorkflow.js';
 
     const dispatch = createEventDispatcher();
 
@@ -251,6 +255,30 @@
             saveMessage = 'Select an episode first';
             return;
         }
+        if (editStatus === 'ready') {
+            const vaultAsset = resolveVaultAssetForEpisode(
+                /** @type {import('../../lib/series/seriesTypes.js').Episode} */ ({
+                    ...selectedEpisode,
+                    title: editTitle,
+                    description: editDescription,
+                    status: editStatus
+                }),
+                readyVaultAssets
+            );
+            const req = evaluateEpisodeReadyRequirements(
+                {
+                    ...selectedEpisode,
+                    title: editTitle,
+                    description: editDescription,
+                    status: editStatus
+                },
+                vaultAsset
+            );
+            if (!req.ok) {
+                saveMessage = `Cannot set Ready — missing: ${req.missing.join(', ')}`;
+                return;
+            }
+        }
         const updated = updateCatalogEpisode(selectedEpisodeId, {
             title: editTitle,
             description: editDescription,
@@ -273,6 +301,15 @@
 
     function handleStatusQuick(status) {
         if (!selectedEpisodeId) return;
+        if (status === 'ready') {
+            const vaultAsset = resolveVaultAssetForEpisode(selectedEpisode, readyVaultAssets);
+            const req = evaluateEpisodeReadyRequirements(selectedEpisode, vaultAsset);
+            if (!req.ok) {
+                editStatus = selectedEpisode?.status || editStatus;
+                saveMessage = `Cannot mark Ready — missing: ${req.missing.join(', ')}`;
+                return;
+            }
+        }
         editStatus = status;
         const updated = setEpisodeStatus(selectedEpisodeId, status);
         if (!updated) {

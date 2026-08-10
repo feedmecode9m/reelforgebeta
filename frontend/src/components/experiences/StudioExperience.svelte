@@ -33,6 +33,7 @@
   import PublishingProfileSelector from '../publishing/PublishingProfileSelector.svelte';
   import SeriesMetadataEditor from '../series/SeriesMetadataEditor.svelte';
   import CreatorCatalogPanel from '../series/CreatorCatalogPanel.svelte';
+  import CreatorSeriesAssembly from '../series/CreatorSeriesAssembly.svelte';
   import ContentIntelligencePanel from '../studio/ContentIntelligencePanel.svelte';
   import CollectionsManagerPanel from '../studio/CollectionsManagerPanel.svelte';
   import ProductionCommandCenter from '../studio/ProductionCommandCenter.svelte';
@@ -1486,6 +1487,19 @@
           <div slot="content" class="studio-workspace-slot">
             <div class="creator-catalog-studio-section" data-content-panel="creator-catalog">
               <div class="smart-header">
+                <div class="ai-badge">SERIES ASSEMBLY</div>
+                <h3>Creator Series Assembly</h3>
+                <p class="smart-subtitle">
+                  Complete episode packages, check readiness, and preview series before publish
+                </p>
+              </div>
+              <CreatorSeriesAssembly
+                feedReels={studioFeedReels}
+                preferredSeriesId={$studioSelectedSeriesId || ''}
+                on:changed={handleCreatorCatalogChanged}
+                on:seriesSelect={handleCreatorCatalogSeriesSelect}
+              />
+              <div class="smart-header" style="margin-top: 1.25rem;">
                 <div class="ai-badge">SERIES CATALOG</div>
                 <h3>Creator Catalog Control</h3>
                 <p class="smart-subtitle">

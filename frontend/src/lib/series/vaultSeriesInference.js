@@ -733,6 +733,18 @@ export function sealVaultSeriesIdentityForStorage(asset) {
     const seriesLabel = String(nested?.seriesLabel || sealed.seriesLabel || '').trim();
     const seasonNumber = Number(nested?.seasonNumber ?? sealed.seasonNumber);
     const episodeNumber = Number(nested?.episodeNumber ?? sealed.episodeNumber);
+    // Creator confirmation is product-layer only (not confidence / parser internals).
+    const inputNested =
+        asset.seriesIdentity && typeof asset.seriesIdentity === 'object'
+            ? /** @type {Record<string, unknown>} */ (asset.seriesIdentity)
+            : null;
+    const confirmedByCreator =
+        inputNested?.confirmedByCreator === true ||
+        inputNested?.identitySource === 'creator' ||
+        nested?.confirmedByCreator === true ||
+        nested?.identitySource === 'creator' ||
+        /** @type {Record<string, unknown>} */ (asset).confirmedByCreator === true;
+    const identityExtras = confirmedByCreator ? { confirmedByCreator: true } : {};
     if (
         !seriesLabel ||
         !Number.isFinite(seasonNumber) ||
@@ -751,7 +763,8 @@ export function sealVaultSeriesIdentityForStorage(asset) {
                     seriesIdentity: {
                         seriesLabel: String(rest.seriesLabel).trim(),
                         seasonNumber: Math.max(1, Number(rest.seasonNumber) || 1),
-                        episodeNumber: Math.max(1, Number(rest.episodeNumber) || 1)
+                        episodeNumber: Math.max(1, Number(rest.episodeNumber) || 1),
+                        ...identityExtras
                     }
                 };
             }
@@ -763,7 +776,8 @@ export function sealVaultSeriesIdentityForStorage(asset) {
         seriesIdentity: {
             seriesLabel,
             seasonNumber: Math.max(1, Math.floor(seasonNumber)),
-            episodeNumber: Math.max(1, Math.floor(episodeNumber))
+            episodeNumber: Math.max(1, Math.floor(episodeNumber)),
+            ...identityExtras
         },
         seriesLabel,
         seasonNumber: Math.max(1, Math.floor(seasonNumber)),
