@@ -46,6 +46,18 @@ try {
     const reopened = progress.loadWatchPositionMap()['reel-e2'];
     assert(reopened?.duration === 600, 'progress survives storage map');
 
+    // Runtime wiring: Theater tracker must call savePlaybackPosition (not percent-only)
+    const rootFs = await import('node:fs');
+    const trackerSrc = rootFs.readFileSync(
+        path.join(root, 'src/lib/watch/watchTracker.js'),
+        'utf8'
+    );
+    assert(/savePlaybackPosition\(/.test(trackerSrc), 'watchTracker calls savePlaybackPosition');
+    assert(
+        /POSITION_SAVE_THROTTLE|lastPositionSaveAt/.test(trackerSrc),
+        'watchTracker throttles position writes'
+    );
+
     if (failures.length) {
         console.error('FAIL validate-viewer-progress\n' + failures.map((f) => `  - ${f}`).join('\n'));
         process.exit(1);

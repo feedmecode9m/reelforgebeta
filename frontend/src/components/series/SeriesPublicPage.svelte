@@ -13,12 +13,21 @@
     initSeriesMetadata,
     resolveSeriesContextForReel
   } from '../../lib/series/seriesStore.js';
-  import { episodeIsPlayable } from '../../lib/series/seriesTypes.js';
+  import { episodeIsPubliclyPlayable } from '../../lib/series/seriesTypes.js';
+  import { episodeIsViewerDiscoverable } from '../../lib/series/publishingLifecycle.js';
+  import { sortEpisodesForDisplay } from '../../lib/series/seriesCatalogEdits.js';
+  import {
+    listContinueWatching,
+    formatRemainingLabel,
+    getStoredWatchPercent
+  } from '../../lib/series/seriesWatchProgress.js';
+  import { recommendSeries } from '../../lib/series/seriesRecommendations.js';
   import { resolveReelForEpisode } from '../../lib/series/episodeBridge.js';
   import { configureEpisodeNavigation } from '../../lib/series/episodeNavigation.js';
   import {
     hydratePublicSeriesFromVault,
-    resolvePublicSeriesBySlug
+    resolvePublicSeriesBySlug,
+    publicSeriesPath
   } from '../../lib/series/publicSeriesHydration.js';
   import {
     seriesCatalogCounts,
@@ -46,7 +55,17 @@
   import TheaterExperience from '../theater/TheaterExperience.svelte';
   import { isVideoReel } from '../../lib/api/reelContract.js';
   import { resolveTheaterPlayback } from '../../lib/media/theaterPlayback.js';
+  import {
+    watchSessionStart,
+    watchOnProgress,
+    watchOnPlay,
+    watchOnPause,
+    watchOnComplete,
+    watchOnExit,
+    watchApplyResume
+  } from '../../lib/watch/watchTracker.js';
   import ConsumerChrome from '../navigation/ConsumerChrome.svelte';
+  import ContinueWatchingBadge from './ContinueWatchingBadge.svelte';
 
   /** URL slug segment (e.g. neon-vengeance) */
   export let slug = '';
@@ -118,30 +137,60 @@
   $: series = resolveSeriesFromSlug(slug, $seriesCatalog);
   $: sortedSeasons = series
     ? [...(series.seasons || [])]
+        .map((s) => ({
+          ...s,
+          episodes: sortEpisodesForDisplay(
+            (s.episodes || []).filter((ep) => episodeIsViewerDiscoverable(ep))
+          )
+        }))
         .filter((s) => Array.isArray(s.episodes) && s.episodes.length > 0)
         .sort((a, b) => a.seasonNumber - b.seasonNumber)
     : [];
   $: allEpisodes = sortedSeasons.flatMap((season) =>
-    [...(season.episodes || [])]
-      .sort((a, b) => a.episodeNumber - b.episodeNumber)
-      .map((episode) => ({ season, episode }))
+    (season.episodes || []).map((episode) => ({ season, episode }))
   );
   $: firstPlayable =
     allEpisodes.find(({ episode }) => {
+      if (!episodeIsPubliclyPlayable(episode) && !episode.mediaAssetId && !episode.reelId) {
+        return false;
+      }
+      // Viewer: published discovery only; still require media match
+      if (!episodeIsViewerDiscoverable(episode)) return false;
       const resolved = resolveEpisodeMedia({ episode, readyVaultAssets: heroVaultAssets });
-      return resolved.matched;
+      return resolved.matched || episodeIsPubliclyPlayable(episode);
     }) || null;
   $: playableCount = allEpisodes.filter(({ episode }) => {
+    if (!episodeIsViewerDiscoverable(episode)) return false;
     const resolved = resolveEpisodeMedia({ episode, readyVaultAssets: heroVaultAssets });
-    return resolved.matched;
+    return resolved.matched || episodeIsPubliclyPlayable(episode);
   }).length;
   // Counts only from series.seasons[].episodes[] (+ real vault playability).
   $: catalogCounts = series
-    ? seriesCatalogCounts(series, (episode) => {
-        const resolved = resolveEpisodeMedia({ episode, readyVaultAssets: heroVaultAssets });
-        return resolved.matched;
-      })
+    ? seriesCatalogCounts(
+        {
+          ...series,
+          seasons: sortedSeasons
+        },
+        (episode) => {
+          if (!episodeIsViewerDiscoverable(episode)) return false;
+          const resolved = resolveEpisodeMedia({ episode, readyVaultAssets: heroVaultAssets });
+          return resolved.matched || episodeIsPubliclyPlayable(episode);
+        }
+      )
     : { seasonCount: 0, episodeCount: 0, playableCount: 0 };
+  $: continueRows = (() => {
+    if (!series) return [];
+    const ids = new Set(
+      allEpisodes
+        .flatMap(({ episode }) => [episode.reelId, episode.mediaAssetId, episode.episodeId])
+        .map((x) => String(x || '').trim())
+        .filter(Boolean)
+    );
+    return listContinueWatching({ limit: 8 }).filter((row) => ids.has(String(row.reelId)));
+  })();
+  $: recommendations = series
+    ? recommendSeries({ seedSeriesId: series.id, seedSeriesLabel: series.title, limit: 6 })
+    : [];
   // Official Genre only when creator assigned it — never discovery shelf labels.
   $: publicGenre = (() => {
     const raw = creatorFacingGenre(series?.genre);
@@ -223,6 +272,12 @@
       return;
     }
 
+    // Viewer series page: published-only (ready/draft/archived cannot open Theater)
+    if (!episodeIsViewerDiscoverable(ctx.episode)) {
+      playNotice = 'This episode is not available to viewers yet.';
+      return;
+    }
+
     refreshHeroVaultAssets();
     // Manual binding override → keyword resolve (unchanged algorithm) → unavailable.
     const resolved = resolveEpisodeMedia({
@@ -254,8 +309,7 @@
       }
     }
 
-    // Legacy catalog reelId path for mock episodes without vault media.
-    if (!episodeIsPlayable(ctx.episode)) {
+    if (!episodeIsPubliclyPlayable(ctx.episode)) {
       playNotice = 'Asset unavailable — no ready Hero Vault media matches this episode.';
       return;
     }
@@ -326,7 +380,13 @@
       getPersonalVideos: () => get(personalVideos),
       resolveTheaterPlayback,
       isVideoReel,
-      watchSessionStart: () => {}
+      watchSessionStart,
+      watchOnProgress,
+      watchOnPlay,
+      watchOnPause,
+      watchOnComplete,
+      watchOnExit,
+      watchApplyResume
     });
 
     bootstrapped = true;
@@ -434,6 +494,65 @@
       {/if}
     </section>
 
+    {#if continueRows.length}
+      <section class="series-public__continue" aria-label="Continue watching" data-series-continue-watching>
+        <h2 class="series-public__section-title">Continue Watching</h2>
+        <ul class="series-public__continue-list">
+          {#each continueRows as row (row.reelId)}
+            {@const epMatch =
+              allEpisodes.find(
+                ({ episode }) =>
+                  String(episode.reelId || '') === String(row.reelId) ||
+                  String(episode.mediaAssetId || '') === String(row.reelId)
+              ) || null}
+            <li class="series-public__continue-row">
+              <div class="series-public__continue-copy">
+                <span class="series-public__continue-title"
+                  >{epMatch?.episode?.title || row.reelId}</span
+                >
+                <span class="series-public__continue-meta"
+                  >{formatRemainingLabel(row.position, row.duration)}</span
+                >
+                <ContinueWatchingBadge percent={row.percent} />
+              </div>
+              {#if epMatch}
+                <button
+                  type="button"
+                  class="series-public__row-play"
+                  data-continue-resume={row.reelId}
+                  on:click={() => playEpisode(epMatch.episode.episodeId, 'manual')}
+                >
+                  Resume
+                </button>
+              {/if}
+            </li>
+          {/each}
+        </ul>
+      </section>
+    {/if}
+
+    {#if recommendations.length}
+      <section class="series-public__recs" aria-label="Recommended series" data-series-recommendations>
+        <h2 class="series-public__section-title">More like this</h2>
+        <ul class="series-public__recs-list">
+          {#each recommendations as rec (rec.seriesId)}
+            {@const path =
+              publicSeriesPath({ id: rec.seriesId, title: rec.title }) ||
+              `/series/${String(rec.seriesId).replace(/^series-/, '')}`}
+            <li class="series-public__rec-row">
+              <a class="series-public__rec-link" href={path} data-recommendation-series={rec.seriesId}>
+                {#if rec.poster}
+                  <img class="series-public__rec-poster" src={rec.poster} alt="" loading="lazy" />
+                {/if}
+                <span class="series-public__rec-title">{rec.title}</span>
+                <span class="series-public__rec-reason">{rec.reason}</span>
+              </a>
+            </li>
+          {/each}
+        </ul>
+      </section>
+    {/if}
+
     <section class="series-public__status-board" aria-label="Episode guide">
       <h2 class="series-public__section-title">Episode guide</h2>
       {#if allEpisodes.length === 0}
@@ -448,13 +567,18 @@
               readyVaultAssets: heroVaultAssets
             })}
             {@const chip = episodeChipPresentation(row.episode, resolved)}
+            {@const progressPct = getStoredWatchPercent(
+              row.episode.episodeId,
+              row.episode.reelId || row.episode.mediaAssetId
+            )}
             <li
               class="series-public__status-row"
-              class:playable={chip.playable}
-              class:unavailable={!chip.playable}
+              class:playable={chip.playable && episodeIsPubliclyPlayable(row.episode)}
+              class:unavailable={!chip.playable || !episodeIsPubliclyPlayable(row.episode)}
               data-episode-id={row.episode.episodeId}
               data-media-asset-id={chip.mediaAssetId || undefined}
               data-binding-mode={chip.bindingMode || undefined}
+              data-display-order={row.episode.displayOrder ?? undefined}
             >
               <span class="series-public__status-code"
                 >S{row.season.seasonNumber}:E{row.episode.episodeNumber}</span
@@ -464,7 +588,10 @@
                 <img class="series-public__status-thumb" src={chip.thumbnailUrl} alt="" />
               {/if}
               <span class="series-public__status-badge">{chip.bindingLabel}</span>
-              {#if chip.playable}
+              {#if progressPct != null && progressPct > 0 && progressPct < 100}
+                <ContinueWatchingBadge percent={progressPct} />
+              {/if}
+              {#if chip.playable && episodeIsPubliclyPlayable(row.episode)}
                 <button
                   type="button"
                   class="series-public__row-play"
@@ -763,6 +890,78 @@
   .series-public__row-play:focus-visible {
     outline: 2px solid var(--lz-focus, rgba(0, 242, 255, 0.65));
     outline-offset: 2px;
+  }
+
+  .series-public__continue,
+  .series-public__recs {
+    margin-bottom: var(--lz-space-6, 2rem);
+  }
+
+  .series-public__continue-list,
+  .series-public__recs-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.65rem;
+  }
+
+  .series-public__continue-row,
+  .series-public__rec-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--lz-radius-md, 10px);
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .series-public__continue-copy {
+    display: grid;
+    gap: 0.25rem;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .series-public__continue-title,
+  .series-public__rec-title {
+    font-weight: 650;
+    color: var(--lz-ink, #f4f4f5);
+  }
+
+  .series-public__continue-meta,
+  .series-public__rec-reason {
+    font-size: 0.75rem;
+    color: var(--lz-ink-dim, rgba(255, 255, 255, 0.5));
+  }
+
+  .series-public__rec-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    min-width: 0;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .series-public__rec-poster {
+    width: 2.5rem;
+    height: 3.5rem;
+    object-fit: cover;
+    border-radius: 4px;
+    flex-shrink: 0;
+    background: rgba(0, 0, 0, 0.3);
+  }
+
+  .series-public__rec-title {
+    display: block;
+  }
+
+  .series-public__rec-reason {
+    display: block;
   }
 
   @media (max-width: 560px) {

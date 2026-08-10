@@ -100,6 +100,12 @@ try {
     assert(!recs.some((r) => r.seriesId === 'series-draft-only'), 'skips draft-only series');
     assert(!recs.some((r) => r.seriesId === 'series-stirred'), 'excludes seed');
 
+    // UI must consume recommendSeries (not contract-only)
+    const fs = await import('node:fs');
+    const page = fs.readFileSync(path.join(root, 'src/components/series/SeriesPublicPage.svelte'), 'utf8');
+    assert(/recommendSeries/.test(page), 'SeriesPublicPage imports recommendSeries');
+    assert(/data-series-recommendations/.test(page), 'SeriesPublicPage has recommendation surface');
+
     if (failures.length) {
         console.error('FAIL validate-recommendations\n' + failures.map((f) => `  - ${f}`).join('\n'));
         process.exit(1);

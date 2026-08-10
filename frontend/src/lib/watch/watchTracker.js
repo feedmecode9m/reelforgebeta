@@ -1,5 +1,5 @@
 import { fetchWatchStatus, postWatchEvent, getOrCreateViewerId } from '../api/watch.js';
-import { resolveWatchProgress, updateWatchProgress } from '../series/seriesWatchProgress.js';
+import { resolveWatchProgress, updateWatchProgress, savePlaybackPosition, getPlaybackPosition } from '../series/seriesWatchProgress.js';
 import {
     recordEpisodeCompletion,
     recordWatchDuration
@@ -15,6 +15,9 @@ let wasPaused = false;
 let currentReelId = null;
 let currentEpisodeId = null;
 let lastHistoryPostAt = 0;
+/** Throttle wall-clock for position persistence (seconds identity). */
+let lastPositionSaveAt = 0;
+const POSITION_SAVE_THROTTLE_MS = 3000;
 
 async function ensureEnabled() {
     if (statusChecked) return enabled;
@@ -39,12 +42,31 @@ function snapshot(videoEl) {
     return { position_seconds: position, duration_seconds: duration };
 }
 
-function persistLocalWatchProgress(videoEl) {
+/**
+ * Persist percent map + durable second-level position (throttled unless force).
+ * Uses reel identity when available — never temporary vault-only labels.
+ * @param {HTMLVideoElement | null | undefined} videoEl
+ * @param {{ force?: boolean; completed?: boolean }} [opts]
+ */
+function persistLocalWatchProgress(videoEl, opts = {}) {
     if (!currentReelId && !currentEpisodeId) return;
     const snap = snapshot(videoEl);
     if (!snap.duration_seconds || snap.duration_seconds <= 0) return;
     const percent = (snap.position_seconds / snap.duration_seconds) * 100;
     updateWatchProgress(currentEpisodeId, currentReelId, percent);
+
+    // Position map: require reelId (authoritative for Theater open/resume)
+    if (!currentReelId) return;
+    const now = Date.now();
+    if (!opts.force && now - lastPositionSaveAt < POSITION_SAVE_THROTTLE_MS) return;
+    lastPositionSaveAt = now;
+    savePlaybackPosition({
+        viewerId: getOrCreateViewerId(),
+        reelId: currentReelId,
+        position: snap.position_seconds,
+        duration: snap.duration_seconds,
+        completed: opts.completed === true
+    });
 }
 
 /**
@@ -107,6 +129,7 @@ export async function watchSessionStart({ reelId, episodeId = null, seriesId = n
     currentReelId = reelId ? String(reelId) : null;
     currentEpisodeId = episodeId ? String(episodeId) : null;
     lastHistoryPostAt = 0;
+    lastPositionSaveAt = 0;
     clearPendingResume();
     getOrCreateViewerId();
 
@@ -116,7 +139,18 @@ export async function watchSessionStart({ reelId, episodeId = null, seriesId = n
         restoreContext: 'session_start'
     });
 
-    // VIEWER-1: account resume foundation
+    // Local durable seconds (Phase 4): resume without relying on percentage-only map
+    if (currentReelId) {
+        const localPos = getPlaybackPosition(currentReelId);
+        if (localPos && !localPos.completed && Number(localPos.position) >= 3) {
+            setPendingResume(currentReelId, localPos.position, {
+                completed: false,
+                durationSeconds: localPos.duration
+            });
+        }
+    }
+
+    // VIEWER-1: account resume foundation (overrides local when remote is newer/valid)
     if (isAuthenticatedSync() && currentReelId) {
         try {
             const row = await fetchViewerHistoryForReel(currentReelId);
@@ -129,6 +163,13 @@ export async function watchSessionStart({ reelId, episodeId = null, seriesId = n
                 if (Number.isFinite(duration) && duration > 0 && row.positionSeconds != null) {
                     const percent = (Number(row.positionSeconds) / duration) * 100;
                     updateWatchProgress(currentEpisodeId, currentReelId, percent);
+                    savePlaybackPosition({
+                        viewerId: getOrCreateViewerId(),
+                        reelId: currentReelId,
+                        position: Number(row.positionSeconds),
+                        duration,
+                        completed: false
+                    });
                 }
             }
         } catch {
@@ -164,7 +205,7 @@ export async function watchOnPlay(videoEl) {
 
 export async function watchOnPause(videoEl) {
     wasPaused = true;
-    persistLocalWatchProgress(videoEl);
+    persistLocalWatchProgress(videoEl, { force: true });
     await persistAccountHistory(videoEl, { force: true });
     const snap = snapshot(videoEl);
     if (snap.duration_seconds && snap.duration_seconds > 0) {
@@ -178,7 +219,7 @@ export async function watchOnPause(videoEl) {
 }
 
 export async function watchOnComplete(videoEl) {
-    persistLocalWatchProgress(videoEl);
+    persistLocalWatchProgress(videoEl, { force: true, completed: true });
     updateWatchProgress(currentEpisodeId, currentReelId, 100);
     await persistAccountHistory(videoEl, { completed: true, force: true });
     const snap = snapshot(videoEl);
@@ -195,7 +236,7 @@ export async function watchOnComplete(videoEl) {
 }
 
 export async function watchOnExit(videoEl) {
-    persistLocalWatchProgress(videoEl);
+    persistLocalWatchProgress(videoEl, { force: true });
     await persistAccountHistory(videoEl, { force: true });
     const snap = snapshot(videoEl);
     if (snap.duration_seconds && snap.duration_seconds > 0) {
@@ -210,11 +251,12 @@ export async function watchOnExit(videoEl) {
     currentReelId = null;
     currentEpisodeId = null;
     wasPaused = false;
+    lastPositionSaveAt = 0;
 }
 
 /** Throttled progress save during playback (timeupdate from theater). */
 export async function watchOnProgress(videoEl) {
-    persistLocalWatchProgress(videoEl);
+    persistLocalWatchProgress(videoEl, { force: false });
     await persistAccountHistory(videoEl, { force: false });
 }
 
@@ -230,6 +272,7 @@ export function resetWatchTrackerForTests() {
     currentReelId = null;
     currentEpisodeId = null;
     lastHistoryPostAt = 0;
+    lastPositionSaveAt = 0;
     clearPendingResume();
 }
 

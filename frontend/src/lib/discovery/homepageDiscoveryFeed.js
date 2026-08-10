@@ -12,7 +12,12 @@ import { getThreatSnapshot, loadSecurityEvents } from '../security/threatDetecti
 import { masterAnalysis } from '../sentinel/sentinelAssistant.js';
 import { masterMonetizationAnalysis } from '../revenue/monetizationAI.js';
 import { TEAM_STORAGE_KEY } from '../teams/creatorTeams.js';
-import { loadWatchProgressMap } from '../series/seriesWatchProgress.js';
+import {
+    loadWatchProgressMap,
+    listContinueWatching,
+    formatRemainingLabel,
+    getPlaybackPosition
+} from '../series/seriesWatchProgress.js';
 import { indexPlatformData, searchPlatform } from './discoveryEngine.js';
 
 export const HOMEPAGE_FEED_VERSION = '1.0.0';
@@ -90,14 +95,34 @@ function resolveContinueWatchingItem(key, percent) {
 
 /** @param {number} limit */
 function buildContinueWatching(limit = 8) {
+    // Prefer durable second-level positions (Theater → savePlaybackPosition)
+    const fromPositions = listContinueWatching({ limit }).map((row) => {
+        const pct = Number(row.percent) || 0;
+        const base = resolveContinueWatchingItem(row.reelId, pct);
+        return {
+            ...base,
+            id: `continue:${row.reelId}`,
+            reelId: row.reelId,
+            percent: pct,
+            position: row.position,
+            duration: row.duration,
+            detail: formatRemainingLabel(row.position, row.duration)
+        };
+    });
+    if (fromPositions.length) return fromPositions;
+
+    // Fallback: legacy percent map when positions not yet written
     const map = loadWatchProgressMap();
-    const entries = Object.entries(map)
+    return Object.entries(map)
         .map(([key, value]) => [key, Number(value)])
-        .filter(([, percent]) => Number.isFinite(percent) && percent > 0 && percent < 100)
+        .filter(([key, percent]) => {
+            if (!Number.isFinite(percent) || percent <= 0 || percent >= 100) return false;
+            const pos = getPlaybackPosition(key);
+            return !(pos && pos.completed);
+        })
         .sort((a, b) => b[1] - a[1])
         .slice(0, limit)
         .map(([key, percent]) => resolveContinueWatchingItem(key, percent));
-    return entries;
 }
 
 /** @param {number} limit */

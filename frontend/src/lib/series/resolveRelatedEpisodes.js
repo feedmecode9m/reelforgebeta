@@ -420,7 +420,11 @@ function membersFromCatalog(seriesId) {
                 mediaUrl: '',
                 thumbnailUrl: '',
                 episodeId: String(ep.episodeId || ''),
-                source: 'catalog'
+                source: 'catalog',
+                status: ep.status || 'draft',
+                displayOrder: Number.isFinite(Number(ep.displayOrder))
+                    ? Number(ep.displayOrder)
+                    : undefined
             });
         }
     }
@@ -457,6 +461,13 @@ function dedupeMembers(list) {
     }
     return [...byKey.values()].sort((a, b) => {
         if (a.seasonNumber !== b.seasonNumber) return a.seasonNumber - b.seasonNumber;
+        // Creator displayOrder overrides episodeNumber presentation order when present
+        const da = Number(a.displayOrder);
+        const db = Number(b.displayOrder);
+        const aHas = Number.isFinite(da);
+        const bHas = Number.isFinite(db);
+        if (aHas && bHas && da !== db) return da - db;
+        if (aHas !== bHas) return aHas ? -1 : 1;
         if (a.episodeNumber !== b.episodeNumber) return a.episodeNumber - b.episodeNumber;
         const ca = Number(a.createdAtMs) || 0;
         const cb = Number(b.createdAtMs) || 0;
@@ -502,6 +513,13 @@ export function buildSeriesViewFromRelated(related, catalogSeries = null, option
             return;
         }
         // Keep vault media/reel; catalog fields enrich metadata only.
+        // Catalog status + displayOrder win when present (publishing + creator order).
+        const nextDisplay =
+            Number.isFinite(Number(ep.displayOrder))
+                ? Number(ep.displayOrder)
+                : Number.isFinite(Number(prev.displayOrder))
+                  ? Number(prev.displayOrder)
+                  : undefined;
         episodeMap.set(key, {
             ...prev,
             ...ep,
@@ -513,6 +531,13 @@ export function buildSeriesViewFromRelated(related, catalogSeries = null, option
             tags: [...new Set([...(prev.tags || []), ...(ep.tags || [])])],
             seriesLabel: prev.seriesLabel || ep.seriesLabel,
             createdAtMs: prev.createdAtMs || ep.createdAtMs,
+            status: ep.status || prev.status,
+            displayOrder: nextDisplay,
+            // S/E identity labels: prefer vault (seriesIdentity) over catalog renumbering
+            episodeNumber:
+                Number.isFinite(Number(prev.episodeNumber)) && prev.episodeNumber != null
+                    ? prev.episodeNumber
+                    : ep.episodeNumber,
             vaultIndex:
                 Number.isFinite(prev.vaultIndex) && prev.vaultIndex != null
                     ? prev.vaultIndex
@@ -865,14 +890,18 @@ export function resolveRelatedEpisodes(assetOrReel, options = {}) {
         };
     });
 
-    // Enrich vault members with catalog episode ids when known
+    // Enrich vault members with catalog binding (status + displayOrder; preserve S/E labels)
     for (const m of vaultMembers) {
         if (!m.reelId) continue;
         const ctx = getEpisodeByReelId(m.reelId);
         if (ctx?.episode?.episodeId) {
             m.episodeId = String(ctx.episode.episodeId);
             m.source = 'catalog';
-            if (ctx.episode.episodeNumber) m.episodeNumber = Number(ctx.episode.episodeNumber);
+            if (ctx.episode.status) m.status = ctx.episode.status;
+            if (Number.isFinite(Number(ctx.episode.displayOrder))) {
+                m.displayOrder = Number(ctx.episode.displayOrder);
+            }
+            // Do not rewrite vault seriesIdentity episode numbers from catalog
         }
     }
 

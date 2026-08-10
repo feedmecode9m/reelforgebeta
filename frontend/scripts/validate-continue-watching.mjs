@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 /** Continue Watching rail from position model. */
+import fs from 'fs';
 import { createServer } from 'vite';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -9,6 +10,9 @@ const failures = [];
 function assert(cond, msg) {
     if (!cond) failures.push(msg);
     else console.log(`  ok: ${msg}`);
+}
+function fsRead(rel) {
+    return fs.readFileSync(path.join(root, rel), 'utf8');
 }
 const bag = new Map();
 globalThis.localStorage = {
@@ -50,6 +54,12 @@ try {
     assert(!list.some((r) => r.reelId === 'done-one'), 'completed excluded');
     const label = progress.formatRemainingLabel(400, 900);
     assert(/remaining/.test(label), `remaining label (${label})`);
+
+    // Surface consumers (not API-only)
+    const page = fsRead('src/components/series/SeriesPublicPage.svelte');
+    const home = fsRead('src/lib/discovery/homepageDiscoveryFeed.js');
+    assert(/listContinueWatching/.test(page), 'SeriesPublicPage consumes listContinueWatching');
+    assert(/listContinueWatching/.test(home), 'homepage feed consumes listContinueWatching');
 
     if (failures.length) {
         console.error('FAIL validate-continue-watching\n' + failures.map((f) => `  - ${f}`).join('\n'));

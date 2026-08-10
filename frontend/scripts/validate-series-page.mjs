@@ -21,6 +21,10 @@ assert(/\/series\//.test(app) || /series\//.test(app), 'series slug route presen
 assert(/poster|thumbnail|MediaPoster|artwork/i.test(page), 'series page has poster plane');
 assert(!/<video[\s>]/.test(page) || /Theater/.test(page), 'page poster-first (video only via Theater if any)');
 assert(/getSeriesById|publicSeriesHydration|resolveSeries/.test(page), 'page uses series identity hydration');
+assert(/episodeIsViewerDiscoverable|episodeIsPubliclyPlayable/.test(page), 'page gates viewer discovery/play');
+assert(/sortEpisodesForDisplay/.test(page), 'page orders with displayOrder');
+assert(/listContinueWatching|recommendSeries/.test(page), 'page wires discovery rails');
+assert(!/watchSessionStart:\s*\(\)\s*=>\s*\{\s*\}/.test(page), 'page does not stub watchSessionStart');
 
 if (failures.length) {
     console.error('FAIL validate-series-page\n' + failures.map((f) => `  - ${f}`).join('\n'));
