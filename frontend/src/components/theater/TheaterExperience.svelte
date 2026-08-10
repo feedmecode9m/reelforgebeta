@@ -153,7 +153,16 @@
         logTheaterOpen(reel, { source: 'openTheaterReel', activeReelBefore: get(activeReel)?.id ?? null });
         clearTheaterCountdown();
         resetTheaterTimeline();
-        let fresh = findReelInFeedFn(reel.id) || reel;
+        const fromFeed = findReelInFeedFn(reel.id);
+        const vaultHit = (getPersonalVideosFn() || []).find(
+            (v) => String(v?.id || '') === String(reel?.id || '')
+        );
+        // Feed redistributes can omit derivative fields; merge from click target + vault.
+        const playbackMeta = mergePlaybackDerivativeFields(reel, fromFeed, vaultHit);
+        let fresh = {
+            ...(fromFeed || reel),
+            ...playbackMeta
+        };
         const seriesCtx = resolveSeriesContextForReel(fresh);
         if (seriesCtx) {
             fresh = applyEpisodeFieldsToReel(fresh, seriesCtx);
@@ -332,7 +341,10 @@
     import { logFinalMediaUrl, videoMimeForPath } from '../../lib/config.js';
     import { isVideoReel, isImageReel } from '../../lib/api/reelContract.js';
     import { resolveTheaterPlayback } from '../../lib/media/theaterPlayback.js';
-    import { resolvePlayableMediaUrl } from '../../lib/media/resolvePlayableMediaUrl.js';
+    import {
+        resolvePlayableMediaUrl,
+        mergePlaybackDerivativeFields
+    } from '../../lib/media/resolvePlayableMediaUrl.js';
     import SeriesDrawer from '../series/SeriesDrawer.svelte';
     import TheaterSeriesPanel from '../series/TheaterSeriesPanel.svelte';
     import TheaterSeriesMetadata from '../publishing/TheaterSeriesMetadata.svelte';

@@ -34,6 +34,14 @@ function isDevDiagnosticsEnabled() {
         if (process.env.REELFORGE_PLAYBACK_DIAG === '1') return true;
         if (process.env.NODE_ENV === 'development') return true;
     }
+    try {
+        if (typeof window !== 'undefined') {
+            if (window.localStorage?.getItem('reelforge_playback_diag') === '1') return true;
+            if (new URLSearchParams(window.location.search).get('debug') === 'playback') return true;
+        }
+    } catch {
+        /* ignore */
+    }
     return false;
 }
 
@@ -42,8 +50,38 @@ function isDevDiagnosticsEnabled() {
  * @param {string} source
  */
 function logDerivative(context, source) {
-    if (!isDevDiagnosticsEnabled()) return;
+    // Always emit derivative selection so production acceptance can capture the marker.
+    // Fallback (master) remains quiet outside DEV / explicit diag flags.
     console.info(`[PLAYBACK_DERIVATIVE]\ncontext=${context}\nsource=${source}`);
+}
+
+/**
+ * Merge playback derivative metadata from one or more reel-like sources.
+ * Prefers an explicit ready pair; otherwise first non-empty fields.
+ * Used when feed redistributes strip/omit fields that catalog still has.
+ *
+ * @param {...(Record<string, unknown> | null | undefined)} sources
+ * @returns {{ playbackUrl?: string, playbackStatus?: string }}
+ */
+export function mergePlaybackDerivativeFields(...sources) {
+    let playbackUrl = '';
+    let playbackStatus = '';
+    for (const src of sources) {
+        if (!src || typeof src !== 'object') continue;
+        const url = String(src.playbackUrl || src.playback_url || '').trim();
+        const status = String(src.playbackStatus || src.playback_status || '')
+            .trim()
+            .toLowerCase();
+        if (url && status === 'ready') {
+            return { playbackUrl: url, playbackStatus: 'ready' };
+        }
+        if (!playbackUrl && url) playbackUrl = url;
+        if (!playbackStatus && status) playbackStatus = status;
+    }
+    return {
+        ...(playbackUrl ? { playbackUrl } : {}),
+        ...(playbackStatus ? { playbackStatus } : {})
+    };
 }
 
 /**

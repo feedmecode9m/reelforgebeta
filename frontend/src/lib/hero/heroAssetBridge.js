@@ -1,4 +1,4 @@
-import { toRelativeMediaPath } from '../config.js';
+import { toRelativeMediaPath, toBackendMediaUrl } from '../config.js';
 import { resolveUserPosterUrl } from '../vaultMedia.js';
 
 const VIDEO_EXT = /\.(mp4|mov|webm|m4v|avi|mkv)(\?|$)/i;
@@ -23,6 +23,20 @@ function getMediaCandidate(item) {
             item?.mediaUrl ||
             ''
     ).trim();
+}
+
+/**
+ * Browser-playable media URL for hero vault grid + select.
+ * Absolute / blob / data pass through; relative /videos|/thumbs join backend origin.
+ * @param {string} mediaCandidate
+ */
+function resolvePlayableMediaUrl(mediaCandidate) {
+    const raw = String(mediaCandidate || '').trim();
+    if (!raw) return '';
+    if (raw.startsWith('blob:') || raw.startsWith('data:')) return raw;
+    if (/^https?:\/\//i.test(raw)) return raw;
+    const relative = toRelativeMediaPath(raw) || raw;
+    return toBackendMediaUrl(relative) || relative;
 }
 
 /**
@@ -63,27 +77,19 @@ export function isVideoHeroAssetType(assetType) {
 export function normalizeHeroAssetRecord(item, options = {}) {
     if (!item || typeof item !== 'object') return null;
     const mediaCandidate = getMediaCandidate(item);
-    // Absolute hosts stay absolute — relative rewrite only for bare/local paths.
-    let mediaUrl = '';
-    if (mediaCandidate) {
-        if (
-            /^https?:\/\//i.test(mediaCandidate) ||
-            mediaCandidate.startsWith('blob:') ||
-            mediaCandidate.startsWith('data:')
-        ) {
-            mediaUrl = mediaCandidate;
-        } else {
-            mediaUrl = toRelativeMediaPath(mediaCandidate) || mediaCandidate;
-        }
-    }
+    const mediaUrl = resolvePlayableMediaUrl(mediaCandidate);
     if (!mediaUrl) return null;
 
+    const thumbnailRaw = String(
+        item?.thumbnailUrl || item?.thumbnail_url || item?.thumbnail || item?.posterUrl || item?.poster_url || ''
+    ).trim();
     const thumbnailUrl =
-        resolveUserPosterUrl(item?.thumbnailUrl || item?.thumbnail_url || item?.thumbnail) ||
-        resolveUserPosterUrl(item?.posterUrl || item?.poster_url) ||
+        resolvePlayableMediaUrl(
+            resolveUserPosterUrl(thumbnailRaw) || thumbnailRaw
+        ) ||
         (isVideoHeroAssetType(inferAssetType(mediaUrl, String(item?.type || '')))
             ? ''
-            : resolveUserPosterUrl(item?.url));
+            : resolvePlayableMediaUrl(mediaUrl));
 
     const assetId =
         normalizeAssetId(String(item?.id || '')) ||

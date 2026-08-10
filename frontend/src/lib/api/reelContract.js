@@ -9,8 +9,10 @@
  * @property {string} name - Display title (DB title)
  * @property {string} fileName - Disk basename under public/videos or public/thumbs
  * @property {ReelType} type - Primary media kind
- * @property {string} url - Absolute primary media URL
+ * @property {string} url - Absolute primary media URL (master / source)
  * @property {string} [thumbnailUrl] - Absolute preview image
+ * @property {string} [playbackUrl] - Optimized derivative when playbackStatus is ready
+ * @property {string} [playbackStatus] - pending | processing | ready | failed
  * @property {string} category
  * @property {'pending' | 'processing' | 'ready' | 'failed'} status
  * @property {string} createdAt - ISO 8601 timestamp
@@ -303,6 +305,18 @@ export function normalizeReel(raw, endpoint = 'unknown') {
 
     const status = contract.status;
 
+    // Additive playback derivative fields (optional; master remains contract.url).
+    const playbackRaw = raw.playbackUrl ?? raw.playback_url;
+    const playbackUrl =
+        playbackRaw != null && String(playbackRaw).trim() !== ''
+            ? resolveMediaUrl(String(playbackRaw), 'video', `${endpoint}:playback`)
+            : '';
+    const playbackStatusRaw = raw.playbackStatus ?? raw.playback_status;
+    const playbackStatus =
+        playbackStatusRaw != null && String(playbackStatusRaw).trim() !== ''
+            ? String(playbackStatusRaw).trim()
+            : null;
+
     const merged = {
         ...raw,
         ...contract,
@@ -310,7 +324,10 @@ export function normalizeReel(raw, endpoint = 'unknown') {
         category: contract.category,
         created_at: contract.createdAt,
         status,
-        type: ensurePrimaryMediaType({ ...raw, ...contract })
+        type: ensurePrimaryMediaType({ ...raw, ...contract }),
+        // Keep camelCase on the FE; never replace master `url`.
+        ...(playbackUrl ? { playbackUrl } : {}),
+        ...(playbackStatus ? { playbackStatus } : {})
     };
 
     const isReadyCatalog =
@@ -447,6 +464,17 @@ export function reelToVaultEntry(reel) {
         String(reel.fileName || reel.file_name || fileNameFromUrl(reel.url)).trim() ||
         'Untitled';
     const name = String(reel.name || reel.title || 'Untitled');
+    // Preserve playback derivative metadata so vault → feed redistribute can select optimized media.
+    const playbackRaw = reel?.playbackUrl ?? reel?.playback_url;
+    const playbackUrl =
+        playbackRaw != null && String(playbackRaw).trim() !== ''
+            ? resolveMediaUrl(String(playbackRaw), 'video', 'reelToVaultEntry:playback')
+            : '';
+    const playbackStatusRaw = reel?.playbackStatus ?? reel?.playback_status;
+    const playbackStatus =
+        playbackStatusRaw != null && String(playbackStatusRaw).trim() !== ''
+            ? String(playbackStatusRaw).trim()
+            : '';
     return {
         id: String(reel.id || `reel_${fileName}`),
         name,
@@ -454,7 +482,9 @@ export function reelToVaultEntry(reel) {
         url: resolveMediaUrl(String(reel.url || ''), 'video'),
         thumbnail: reel.thumbnailUrl ? resolveMediaUrl(String(reel.thumbnailUrl), 'thumbnail') : '',
         type: fileName.toLowerCase().endsWith('.mov') ? 'video/quicktime' : 'video/mp4',
-        addedAt: reel.createdAt || reel.created_at || new Date().toISOString()
+        addedAt: reel.createdAt || reel.created_at || new Date().toISOString(),
+        ...(playbackUrl ? { playbackUrl } : {}),
+        ...(playbackStatus ? { playbackStatus } : {})
     };
 }
 

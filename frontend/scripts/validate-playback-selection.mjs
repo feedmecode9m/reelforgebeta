@@ -126,6 +126,22 @@ assert(
 const contract = read('src/lib/api/reelContract.js');
 assert(/playbackUrl/.test(contract), 'normalizeReel preserves playbackUrl');
 assert(/playbackStatus/.test(contract), 'normalizeReel preserves playbackStatus');
+assert(
+    /function reelToVaultEntry[\s\S]*playbackUrl[\s\S]*playbackStatus/.test(contract) ||
+        /reelToVaultEntry[\s\S]{0,800}playbackUrl/.test(contract),
+    'reelToVaultEntry preserves playback derivative fields'
+);
+
+const cleanupAgent = read('src/lib/viewer/aiCleanupAgent.js');
+assert(
+    /vaultPlaybackUrl|playbackUrl: vaultPlaybackUrl/.test(cleanupAgent),
+    'distributeVideoToFeed carries playbackUrl into feed redistributes'
+);
+
+assert(
+    /mergePlaybackDerivativeFields/.test(theaterExp),
+    'Theater open merges derivative fields across feed/vault sources'
+);
 
 const resolverSrc = read('src/lib/media/resolvePlayableMediaUrl.js');
 assert(

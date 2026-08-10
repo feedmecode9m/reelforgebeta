@@ -259,6 +259,10 @@ export function createAiCleanupAgent(deps) {
   )
   );
   });
+  const vaultPlaybackUrl = String(videoData?.playbackUrl || videoData?.playback_url || '').trim();
+  const vaultPlaybackStatus = String(
+    videoData?.playbackStatus || videoData?.playback_status || ''
+  ).trim();
   const reel = {
   ...createLocalReel({
   id: String(videoData.id),
@@ -275,9 +279,39 @@ export function createAiCleanupAgent(deps) {
   match: '🎬 PRIMARY',
   auto_detected: true,
   detection_confidence: 'High',
-  createdAt: videoData.addedAt || new Date().toISOString()
+  createdAt: videoData.addedAt || new Date().toISOString(),
+  // Carry catalog/worker derivative fields through vault → feed redistribute.
+  ...(vaultPlaybackUrl ? { playbackUrl: vaultPlaybackUrl } : {}),
+  ...(vaultPlaybackStatus ? { playbackStatus: vaultPlaybackStatus } : {})
   })
   };
+  // If vault entry lags catalog, keep derivative fields already on feed cards for this asset.
+  if (!reel.playbackUrl || String(reel.playbackStatus || '').toLowerCase() !== 'ready') {
+    let inheritedUrl = '';
+    let inheritedStatus = '';
+    for (const cat of categoriesList) {
+      for (const existing of currentFeed[cat] || []) {
+        if (!existing) continue;
+        const sameId =
+          String(existing.personal_video_id || existing.id || '') === String(videoData.id || '');
+        const sameUrl =
+          existing.url && videoData.url && String(existing.url) === String(videoData.url);
+        if (!sameId && !sameUrl) continue;
+        const u = String(existing.playbackUrl || existing.playback_url || '').trim();
+        const s = String(existing.playbackStatus || existing.playback_status || '').trim();
+        if (u && s.toLowerCase() === 'ready') {
+          inheritedUrl = u;
+          inheritedStatus = s;
+          break;
+        }
+        if (!inheritedUrl && u) inheritedUrl = u;
+        if (!inheritedStatus && s) inheritedStatus = s;
+      }
+      if (inheritedUrl && String(inheritedStatus).toLowerCase() === 'ready') break;
+    }
+    if (inheritedUrl) reel.playbackUrl = reel.playbackUrl || inheritedUrl;
+    if (inheritedStatus) reel.playbackStatus = reel.playbackStatus || inheritedStatus;
+  }
   // Keep Studio rename overlay when vault redistribute replaces catalog cards.
   try {
     const titles = JSON.parse(localStorage.getItem(CONFIG.TITLES_STORAGE_KEY) || '{}');

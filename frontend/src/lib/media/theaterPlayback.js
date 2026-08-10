@@ -1,6 +1,7 @@
 import { toRelativeMediaPath } from '../config.js';
 import { isVideoReel, isImageReel } from '../api/reelContract.js';
 import { resolveActiveHeroVideoReel, heroReelToVaultItem } from '../hero/heroReelIdentity.js';
+import { resolvePlayableMediaUrl } from './resolvePlayableMediaUrl.js';
 
 /** Raw path for MediaRenderer — no pre-resolution. */
 function rawMediaPath(url) {
@@ -40,12 +41,16 @@ function playbackFromVideoSource(reel, video, source) {
     ) {
         return null;
     }
-    const url = String(video?.url || video?.video_url || video?.src || '').trim();
-    if (!url || url.startsWith('blob:') || url.startsWith('data:')) return null;
-    if (!url || !isVideoReel({ ...video, url })) return null;
+    const master = String(video?.url || video?.video_url || video?.src || '').trim();
+    if (!master || master.startsWith('blob:') || master.startsWith('data:')) return null;
+    if (!isVideoReel({ ...video, url: master })) return null;
+    // Theater prefers ready playback derivative; master remains fallback.
+    const playable = resolvePlayableMediaUrl({ ...video, url: master }, 'theater');
+    const chosen = String(playable || master).trim();
+    if (!chosen) return null;
     return {
         mode: 'video',
-        url: rawMediaPath(url),
+        url: rawMediaPath(chosen),
         poster: resolvePlaceholderThumbUrl(reel) || null,
         source,
         linkedName: video.name || video.fileName || video.title
@@ -99,13 +104,15 @@ export function resolveTheaterPlayback(reel, vaultVideos = []) {
     const primaryUrl = String(reel.url || reel.video_url || '').trim();
 
     if (primaryUrl && isVideoReel({ ...reel, url: primaryUrl })) {
-        const url = rawMediaPath(primaryUrl);
+        // Prefer ready derivative for Theater; master when unavailable.
+        const playable = resolvePlayableMediaUrl(reel, 'theater');
+        const url = rawMediaPath(playable || primaryUrl);
         if (url) {
             return {
                 mode: 'video',
                 url,
                 poster: reel.thumbnailUrl ? rawMediaPath(String(reel.thumbnailUrl)) : null,
-                source: 'reel'
+                source: playable && playable !== primaryUrl ? 'reel-playback' : 'reel'
             };
         }
     }
