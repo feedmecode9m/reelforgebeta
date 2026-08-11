@@ -140,3 +140,21 @@ export function tagVideoPlaybackRole(el, role = '') {
     if (r) el.setAttribute('data-playback-owner-role', r);
     el.setAttribute('data-playback-owner-active', getPlaybackOwner());
 }
+
+/**
+ * Hero / Vault / feed preview must not attach or start network media while Theater owns playback.
+ * Theater primary (role theater) is never blocked.
+ *
+ * @param {PlaybackOwner | string | null | undefined} role
+ * @returns {boolean} true when role may bind a media source
+ */
+export function canAttachMediaForRole(role) {
+    const r = String(role || '')
+        .trim()
+        .toLowerCase();
+    if (!r || r === 'theater') return true;
+    if (r === 'hero' || r === 'preview') {
+        return getPlaybackOwner() !== 'theater';
+    }
+    return canStartPlayback(r);
+}

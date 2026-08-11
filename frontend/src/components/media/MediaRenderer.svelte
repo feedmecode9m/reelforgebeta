@@ -7,7 +7,9 @@
     import {
         getPlaybackOwner,
         getPlaybackOwnerSnapshot,
-        tagVideoPlaybackRole
+        tagVideoPlaybackRole,
+        canAttachMediaForRole,
+        playbackOwner
     } from '../../lib/media/playbackOwnership.js';
 
     const dispatch = createEventDispatcher();
@@ -92,7 +94,18 @@
         return 'thumbnail';
     })();
 
+    // Reactive owner: when Theater claims bandwidth, hero/preview must drop network sources.
+    $: activePlaybackOwner = $playbackOwner;
+
     $: resolvedSrc = (() => {
+        // While Theater owns playback, block Hero/Vault/preview from attaching masters.
+        if (
+            mediaType === 'video' &&
+            !canAttachMediaForRole(playbackRole) &&
+            activePlaybackOwner === 'theater'
+        ) {
+            return '';
+        }
         if (raw) return url || '';
         if (mediaType === 'video' && validateVideo) {
             const validated = resolveValidatedVideoUrl(url);

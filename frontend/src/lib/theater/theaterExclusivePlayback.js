@@ -36,6 +36,40 @@ function isTheaterPrimaryVideo(el) {
 }
 
 /**
+ * Hard-unload a single media element — terminates progressive/range downloads.
+ * Used for competing page media and for outgoing Theater primary on remount.
+ * @param {HTMLVideoElement | null | undefined} v
+ * @returns {boolean}
+ */
+export function hardUnloadVideoElement(v) {
+    if (!v) return false;
+    try {
+        v.pause();
+    } catch {
+        /* ignore */
+    }
+    try {
+        for (const s of [...v.querySelectorAll('source')]) {
+            s.removeAttribute('src');
+            s.remove();
+        }
+        v.removeAttribute('src');
+        // Empty string assignment drops active network pipelines in Chromium/WebKit.
+        v.src = '';
+        v.removeAttribute('src');
+        try {
+            v.preload = 'none';
+        } catch {
+            /* ignore */
+        }
+        v.load();
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+/**
  * Snapshot network sources then detach so the browser drops range downloads.
  * @param {HTMLVideoElement} v
  * @returns {SuspendedVideo | null}
@@ -54,26 +88,7 @@ function snapshotAndUnloadVideo(v) {
     const preload = String(v.getAttribute('preload') || v.preload || '');
     const currentTime = Number(v.currentTime) || 0;
 
-    try {
-        v.pause();
-    } catch {
-        /* ignore */
-    }
-
-    try {
-        for (const s of sourceEls) {
-            s.removeAttribute('src');
-            s.remove();
-        }
-        v.removeAttribute('src');
-        // Empty string assignment drops active network pipelines in Chromium/WebKit.
-        v.src = '';
-        v.removeAttribute('src');
-        v.preload = 'none';
-        v.load();
-    } catch {
-        /* ignore */
-    }
+    hardUnloadVideoElement(v);
 
     return {
         el: v,
@@ -83,6 +98,16 @@ function snapshotAndUnloadVideo(v) {
         preload,
         currentTime
     };
+}
+
+/**
+ * Claim Theater bandwidth ownership and unload competing Hero/Vault/preview media.
+ * Call BEFORE Theater attaches a media source so masters never race the derivative.
+ * @param {string} [reason]
+ */
+export function beginTheaterExclusiveSession(reason = 'theater-open-before-attach') {
+    claimPlaybackOwner('theater', reason);
+    pauseCompetingPageVideos();
 }
 
 /**

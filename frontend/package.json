@@ -87,6 +87,7 @@
     "validate:theater-episode-poster": "node scripts/validate-theater-episode-poster.mjs",
     "validate:integration-hardening": "node scripts/validate-integration-hardening.mjs",
     "validate:theater-playback": "node scripts/validate-theater-playback.mjs",
+    "validate:theater-playback-reliability": "node scripts/validate-theater-playback-reliability.mjs",
     "validate:support-reelforge": "node scripts/validate-support-reelforge.mjs",
     "validate:daily-engagement": "node scripts/validate-daily-engagement.mjs",
     "validate:universal-search": "node scripts/validate-universal-search.mjs",

@@ -61,12 +61,30 @@ assert(
 assert(/export function pauseCompetingPageVideos/.test(exclusive), 'pauseCompetingPageVideos exported');
 assert(/export function resumeCompetingPageVideos/.test(exclusive), 'resumeCompetingPageVideos exported');
 assert(
-    /snapshotAndUnloadVideo|removeAttribute\('src'\)/.test(exclusive),
+    /export function beginTheaterExclusiveSession/.test(exclusive),
+    'beginTheaterExclusiveSession claims ownership before media attach'
+);
+assert(
+    /beginTheaterExclusiveSession\(['"]theater-open-before-attach['"]\)/.test(theater),
+    'openTheaterReel claims exclusive session before activeReel attach'
+);
+assert(
+    /export function hardUnloadVideoElement/.test(exclusive) &&
+        /hardUnloadVideoElement/.test(theater),
+    'hardUnloadVideoElement wired for Theater destroy/close'
+);
+assert(
+    /snapshotAndUnloadVideo|removeAttribute\('src'\)|hardUnloadVideoElement/.test(exclusive),
     'competing page videos unload network sources'
 );
 assert(
     /claimPlaybackOwner\('theater'/.test(exclusive) || /claimPlaybackOwner/.test(exclusive),
     'exclusive helpers claim theater ownership'
+);
+// Phase 1: no redundant play() after mount/tick (autoplay only)
+assert(
+    !/tick\(\)\.then\([\s\S]{0,500}node\.play\?\./.test(theater),
+    'Theater mount does not race a second play() after tick'
 );
 
 // 5. Diagnostics attached on mount

@@ -38,9 +38,15 @@
         logTheaterPlaybackPhase
     } from '../../lib/theater/theaterPlaybackDiagnostics.js';
     import {
+        beginTheaterExclusiveSession,
+        hardUnloadVideoElement,
         pauseCompetingPageVideos,
         resumeCompetingPageVideos
     } from '../../lib/theater/theaterExclusivePlayback.js';
+    import {
+        mergePlaybackDerivativeFields,
+        resolvePlayableMediaUrl as resolvePlayableMediaUrlForTheater
+    } from '../../lib/media/resolvePlayableMediaUrl.js';
 
     export {
         activePublishingProfile,
@@ -135,9 +141,7 @@
             const el = this.videoElement;
             if (el) {
                 watchOnExitFn(el);
-                el.pause();
-                el.src = '';
-                el.load();
+                hardUnloadVideoElement(/** @type {HTMLVideoElement} */ (el));
                 this.videoElement = null;
             }
             resourceManagerRef?.cleanupAllBlobs?.();
@@ -170,6 +174,31 @@
         else theaterManager.handleVideoEnd();
     }
 
+    /**
+     * Build the Theater reel with feed+vault + ready playback derivative fields.
+     * Ready playbackUrl must be present before MediaRenderer attaches a source.
+     * @param {Record<string, unknown> | null | undefined} reel
+     * @returns {Record<string, unknown> | null}
+     */
+    export function enrichTheaterReelForPlayback(reel) {
+        if (!reel || typeof reel !== 'object') return null;
+        const reelId = reel.id != null ? String(reel.id) : '';
+        const fromFeed = reelId ? findReelInFeedFn(reelId) : null;
+        const vaultList = getPersonalVideosFn() || [];
+        const vaultHit = reelId
+            ? vaultList.find((v) => String(v?.id || '') === reelId)
+            : null;
+        // Prefer ready derivative from any source before first Theater media attachment.
+        const playbackMeta = mergePlaybackDerivativeFields(reel, fromFeed, vaultHit);
+        let fresh = {
+            ...(fromFeed && typeof fromFeed === 'object' ? fromFeed : {}),
+            ...(vaultHit && typeof vaultHit === 'object' ? vaultHit : {}),
+            ...reel,
+            ...playbackMeta
+        };
+        return fresh;
+    }
+
     /** @param {unknown} reel */
     export function openTheaterReel(reel) {
         if (!reel) {
@@ -179,16 +208,12 @@
         logTheaterOpen(reel, { source: 'openTheaterReel', activeReelBefore: get(activeReel)?.id ?? null });
         clearTheaterCountdown();
         resetTheaterTimeline();
-        const fromFeed = findReelInFeedFn(reel.id);
-        const vaultHit = (getPersonalVideosFn() || []).find(
-            (v) => String(v?.id || '') === String(reel?.id || '')
-        );
-        // Feed redistributes can omit derivative fields; merge from click target + vault.
-        const playbackMeta = mergePlaybackDerivativeFields(reel, fromFeed, vaultHit);
-        let fresh = {
-            ...(fromFeed || reel),
-            ...playbackMeta
-        };
+        // Phase 1: own bandwidth + unload hero/preview masters BEFORE any Theater <video> src binds.
+        beginTheaterExclusiveSession('theater-open-before-attach');
+
+        let fresh = enrichTheaterReelForPlayback(/** @type {Record<string, unknown>} */ (reel));
+        if (!fresh) return;
+
         const seriesCtx = resolveSeriesContextForReel(fresh);
         if (seriesCtx) {
             fresh = applyEpisodeFieldsToReel(fresh, seriesCtx);
@@ -211,6 +236,23 @@
                     title: canonical,
                     name: canonical,
                     title_original: canonical
+                };
+            }
+        }
+        // Defensive: stamp the resolved theater playable url so intermediate objects can't lose ready derivative.
+        const preferred = resolvePlayableMediaUrlForTheater(fresh, 'theater', { silent: true });
+        if (preferred) {
+            const master = String(fresh.url || fresh.video_url || '').trim();
+            // When ready derivative wins, expose it explicitly alongside master.
+            if (
+                preferred !== master &&
+                (preferred.includes('.playback.') || preferred.endsWith('.playback.mp4'))
+            ) {
+                fresh = {
+                    ...fresh,
+                    playbackUrl: preferred,
+                    playback_url: preferred,
+                    playbackStatus: String(fresh.playbackStatus || fresh.playback_status || 'ready')
                 };
             }
         }
@@ -273,7 +315,8 @@
             disposeTheaterPlaybackDiag();
             disposeTheaterPlaybackDiag = null;
         }
-        // Free bandwidth: pause hero/shelf videos so only the Theater primary streams this MP4.
+        // Re-assert exclusive unload (session already claimed in openTheaterReel).
+        // Do NOT call play() here — native autoplay owns start; avoids concurrent play race.
         pauseCompetingPageVideos();
         disposeTheaterPlaybackDiag = attachTheaterPlaybackDiagnostics(
             /** @type {HTMLVideoElement} */ (node),
@@ -290,39 +333,21 @@
             exclusive: inspectTheaterPlaybackElements()
         });
         logTheater('📺 Theater video mounted', { src: node.currentSrc || node.src });
-        // Prefer the native muted `autoplay` attribute; only kick play() if still paused
-        // (avoids a second concurrent play() race while the first is starting).
-        tick().then(() => {
-            pauseCompetingPageVideos();
-            if (node.paused) {
-                node.play?.().catch((err) => {
-                    logTheaterMedia({
-                        phase: 'autoplay-blocked',
-                        message: err?.message,
-                        reelId: get(activeReel)?.id ?? null
-                    });
-                    logTheaterPlaybackPhase('autoplay-blocked', /** @type {HTMLVideoElement} */ (node), {
-                        reelId: get(activeReel)?.id ?? null,
-                        message: err?.message
-                    });
-                    logTheater('autoplay blocked', { message: err?.message });
-                });
+        if (DEBUG_THEATER || import.meta.env.DEV) {
+            const insp = inspectTheaterPlaybackElements();
+            logTheater('playback exclusive check', insp);
+            if (insp.theaterVideos > 1 || insp.theaterSrcs.length > 1) {
+                console.warn('[THEATER] multiple primary theater videos or MP4 sources', insp);
             }
-            checkTheaterVideoMount();
-            if (DEBUG_THEATER || import.meta.env.DEV) {
-                const insp = inspectTheaterPlaybackElements();
-                logTheater('playback exclusive check', insp);
-                if (insp.theaterVideos > 1 || insp.theaterSrcs.length > 1) {
-                    console.warn('[THEATER] multiple primary theater videos or MP4 sources', insp);
-                }
-            }
-        });
+        }
         return {
             destroy() {
                 if (typeof disposeTheaterPlaybackDiag === 'function') {
                     disposeTheaterPlaybackDiag();
                     disposeTheaterPlaybackDiag = null;
                 }
+                // Hard-unload outgoing Theater primary so E1→E2 does not keep the old range pipeline.
+                hardUnloadVideoElement(/** @type {HTMLVideoElement} */ (node));
                 if (theaterManager.videoElement === node) theaterManager.videoElement = null;
             }
         };
@@ -388,10 +413,7 @@
     import { logFinalMediaUrl, videoMimeForPath } from '../../lib/config.js';
     import { isVideoReel, isImageReel } from '../../lib/api/reelContract.js';
     import { resolveTheaterPlayback } from '../../lib/media/theaterPlayback.js';
-    import {
-        resolvePlayableMediaUrl,
-        mergePlaybackDerivativeFields
-    } from '../../lib/media/resolvePlayableMediaUrl.js';
+    import { resolvePlayableMediaUrl } from '../../lib/media/resolvePlayableMediaUrl.js';
     import SeriesDrawer from '../series/SeriesDrawer.svelte';
     import TheaterSeriesPanel from '../series/TheaterSeriesPanel.svelte';
     import TheaterSeriesMetadata from '../publishing/TheaterSeriesMetadata.svelte';
