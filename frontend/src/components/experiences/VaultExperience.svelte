@@ -110,6 +110,14 @@
   import { appendUploadIdentityToFormData } from '../../lib/api/uploadIdentity.js';
   import { bindEpisodeToFeedReel } from '../../lib/series/seriesStore.js';
   import { clearUploadCheckpoint } from '../../lib/diagnostics/uploadRecovery.js';
+  import {
+    filterVideoVaultVisible,
+    hideVideoVaultAsset,
+    isVideoVaultHidden,
+    readVideoVaultHiddenIds,
+    restoreVideoVaultAsset,
+    VIDEO_VAULT_HIDDEN_STORAGE_KEY
+  } from '../../lib/vault/videoVaultWorkspace.js';
 
   export let showPersonalControls = true;
 
@@ -153,6 +161,18 @@
   let videoFileInputEl;
   /** Local pending MP4 preview (Accept/Reject) — mirrors thumbnail vault. */
   const pendingVaultVideo = writable(null);
+  /**
+   * Soft-hide revision — bump when workspace hide set changes so vaultDisplayVideos re-filters.
+   * Persisted separately under VIDEO_VAULT_HIDDEN_STORAGE_KEY (not durable media delete).
+   */
+  let vaultHideRevision = 0;
+  /**
+   * Most recent soft-remove for in-place Undo (same asset id; no re-upload).
+   * @type {{ assetId: string; name: string; at: number } | null}
+   */
+  let lastSoftRemoved = null;
+  /** Per-asset edit signal for VaultEpisodeCreatorStatus (no media re-upload). */
+  let vaultEditSignals = /** @type {Record<string, number>} */ ({});
   $: vaultShelfCategories = (CONFIG?.CATEGORIES ?? []).filter((c) => c !== 'Auto-Detect');
   let deleteAuditLogged = false;
   let selectedThumbnailIds = [];
@@ -226,12 +246,21 @@
     return [heroReelToVaultItem(hero), ...list];
   }
 
-  $: vaultDisplayVideos = mergeHeroVideoIntoVaultDisplay($personalVideos);
+  /**
+   * Presentation list only. Soft-hidden ids stay in personalVideos (and Hero binding)
+   * so hard refresh can still hydrate media while the workspace card stays reversible.
+   */
+  $: vaultDisplayVideos = (() => {
+    void vaultHideRevision;
+    const merged = mergeHeroVideoIntoVaultDisplay($personalVideos);
+    return filterVideoVaultVisible(merged, readVideoVaultHiddenIds());
+  })();
 
   $: console.info('[VAULT_ITEM_COUNT]', {
     images: ($personalThumbnailCollection ?? []).filter(Boolean).length,
     videos: vaultDisplayVideos.length,
     persistedVideos: ($personalVideos ?? []).filter(Boolean).length,
+    softHiddenVideos: readVideoVaultHiddenIds().length,
     ts: new Date().toISOString()
   });
   $: demoDebugMode = isDemoDebugMode();
@@ -882,6 +911,112 @@
     uploadStatus.set('✅ Removed leftover vault stub');
     resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
     return true;
+  }
+
+  /**
+   * Reversible workspace remove: hide from Video Vault UI only.
+   * Does not DELETE /api/reels, does not tombstone durable media, does not clear HeroRecord.
+   * @param {Record<string, unknown> | null | undefined} video
+   */
+  function softRemoveFromVideoVault(video) {
+    if (!video || typeof video !== 'object') return;
+    // Ghost / failed upload chrome only — never soft-hide durable media.
+    // Hero-injected display cards are soft-hidden (do not clearHeroReel).
+    if (
+      isGhostVideoVaultEntry(video) ||
+      String(video?.uploadState || '') === 'failed' ||
+      String(video?.uploadState || '') === 'interrupted' ||
+      String(video?.uploadState || '') === 'pending_accept' ||
+      String(video?.id || '').startsWith('local-upload-') ||
+      String(video?.id || '').startsWith('local-pending-')
+    ) {
+      purgeFailedVaultVideo(video);
+      return;
+    }
+
+    const assetId = String(
+      resolveMediaAssetId(video) || video?.id || video?.assetId || video?.mediaAssetId || ''
+    ).trim();
+    if (!assetId) {
+      uploadStatus.set('❌ Video not found');
+      resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
+      return;
+    }
+
+    hideVideoVaultAsset(assetId);
+    lastSoftRemoved = {
+      assetId,
+      name: String(video?.name || video?.fileName || video?.title || assetId),
+      at: Date.now()
+    };
+    selectedVideoIds = selectedVideoIds.filter((id) => String(id || '').trim() !== assetId);
+    vaultHideRevision += 1;
+
+    console.info('[VIDEO_VAULT_SOFT_REMOVE]', {
+      action: 'soft-remove-from-vault',
+      assetId,
+      storageKey: VIDEO_VAULT_HIDDEN_STORAGE_KEY,
+      personalVideosStillHeld: (get(personalVideos) || []).some(
+        (item) => String(item?.id || '').trim() === assetId
+      ),
+      heroInjectedCard: isHeroInjectedVaultCard(video),
+      heroUntouched: true,
+      durableMediaUntouched: true,
+      ts: new Date().toISOString()
+    });
+
+    uploadStatus.set('Removed from Video Vault — Undo');
+  }
+
+  /** Restore last soft-removed asset identity without re-upload or duplicate. */
+  function undoLastVideoVaultSoftRemove() {
+    const assetId = String(lastSoftRemoved?.assetId || '').trim();
+    if (!assetId) {
+      uploadStatus.set('Nothing to restore');
+      resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
+      return;
+    }
+    const { restored } = restoreVideoVaultAsset(assetId);
+    const restoredName = lastSoftRemoved?.name || assetId;
+    lastSoftRemoved = null;
+    vaultHideRevision += 1;
+
+    console.info('[VIDEO_VAULT_SOFT_RESTORE]', {
+      action: 'restore-to-vault',
+      assetId,
+      restored,
+      duplicate: false,
+      reupload: false,
+      ts: new Date().toISOString()
+    });
+
+    uploadStatus.set(
+      restored
+        ? `Restored to Video Vault: ${String(restoredName).slice(0, 48)}`
+        : 'Already visible in Video Vault'
+    );
+    resourceManager.setTimeout(() => uploadStatus.set('Standby'), 3000);
+  }
+
+  /**
+   * Open existing asset package/identity editor — no re-upload.
+   * @param {Record<string, unknown> | null | undefined} video
+   */
+  function requestVaultVideoEdit(video) {
+    const assetId = String(
+      resolveMediaAssetId(video) || video?.id || video?.assetId || video?.mediaAssetId || ''
+    ).trim();
+    if (!assetId) return;
+    vaultEditSignals = {
+      ...vaultEditSignals,
+      [assetId]: Number(vaultEditSignals[assetId] || 0) + 1
+    };
+    console.info('[VIDEO_VAULT_EDIT]', {
+      action: 'edit-existing-asset',
+      assetId,
+      reupload: false,
+      ts: new Date().toISOString()
+    });
   }
 
   async function handleVideoDelete(videoId, videoRef = null) {
@@ -2463,7 +2598,11 @@
 
   export function handleVaultVideoDragStart(event, video) {
     const target = /** @type {HTMLElement | null} */ (event?.target);
-    if (target?.closest?.('.thumb-delete-btn, .batch-select-label, .batch-select-checkbox')) {
+    if (
+      target?.closest?.(
+        '.thumb-delete-btn, .batch-select-label, .batch-select-checkbox, .vault-card-actions, .vault-soft-remove-bar'
+      )
+    ) {
       event.preventDefault();
       return;
     }
@@ -3105,6 +3244,30 @@
       </button>
     </div>
   </div>
+  {#if lastSoftRemoved?.assetId}
+    <div
+      class="vault-soft-remove-bar"
+      data-vault-soft-remove-undo
+      role="status"
+      aria-live="polite"
+    >
+      <span class="vault-soft-remove-bar__msg">
+        Removed from Video Vault
+        {#if lastSoftRemoved.name}
+          <strong>{String(lastSoftRemoved.name).slice(0, 42)}</strong>
+        {/if}
+        — reversible (media kept)
+      </span>
+      <button
+        type="button"
+        class="vault-soft-remove-bar__undo"
+        data-vault-soft-restore
+        on:click|stopPropagation={undoLastVideoVaultSoftRemove}
+      >
+        Undo
+      </button>
+    </div>
+  {/if}
   <div
     class="drop-zone video-vault-drop"
     class:active={$videoDragActive}
@@ -3367,14 +3530,53 @@
               <button
                 type="button"
                 class="thumb-delete-btn"
+                data-vault-action={isGhostCard || isFailedCard || isPendingCard ? 'purge-stub' : 'soft-remove'}
                 on:pointerdown={stopVaultCardDragGesture}
                 on:mousedown={stopVaultCardDragGesture}
                 on:touchstart={stopVaultCardDragGesture}
-                on:click|stopPropagation|preventDefault={() => purgeFailedVaultVideo(video)}
-                aria-label="Delete video {video.name || 'leftover stub'}"
+                on:click|stopPropagation|preventDefault={() =>
+                  isGhostCard || isFailedCard || isPendingCard
+                    ? purgeFailedVaultVideo(video)
+                    : softRemoveFromVideoVault(video)}
+                aria-label={
+                  isGhostCard || isFailedCard || isPendingCard
+                    ? `Remove stub ${video.name || ''}`
+                    : `Remove ${video.name || 'video'} from Video Vault`
+                }
+                title={
+                  isGhostCard || isFailedCard || isPendingCard
+                    ? 'Remove leftover stub'
+                    : 'Remove from Video Vault (reversible — does not delete the file)'
+                }
               >
                 ✕
               </button>
+              {#if !isGhostCard && !isFailedCard && !isPendingCard && !isUploadingCard}
+                <div class="vault-card-actions" data-vault-card-actions>
+                  <button
+                    type="button"
+                    class="vault-card-action vault-card-action--edit"
+                    data-vault-edit
+                    on:pointerdown={stopVaultCardDragGesture}
+                    on:mousedown={stopVaultCardDragGesture}
+                    on:touchstart={stopVaultCardDragGesture}
+                    on:click|stopPropagation|preventDefault={() => requestVaultVideoEdit(video)}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    class="vault-card-action vault-card-action--remove"
+                    data-vault-soft-remove
+                    on:pointerdown={stopVaultCardDragGesture}
+                    on:mousedown={stopVaultCardDragGesture}
+                    on:touchstart={stopVaultCardDragGesture}
+                    on:click|stopPropagation|preventDefault={() => softRemoveFromVideoVault(video)}
+                  >
+                    Remove
+                  </button>
+                </div>
+              {/if}
               {#if video.uploadState === 'failed' || video.uploadState === 'interrupted'}
                 <button
                   type="button"
@@ -3424,6 +3626,7 @@
               <VaultEpisodeCreatorStatus
                 asset={video}
                 active={true}
+                editSignal={vaultEditSignals[cardMediaAssetId] || 0}
                 on:confirmIdentity={(event) =>
                   confirmVaultVideoIdentity(event.detail || {}, cardMediaAssetId)}
                 on:savePackage={(event) =>

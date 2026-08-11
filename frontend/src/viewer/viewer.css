@@ -1156,6 +1156,77 @@ margin: 0;
   border-color: #ffc107;
   color: #111;
 }
+.vault-soft-remove-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 0.75rem;
+  margin: 0 0 0.65rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid rgba(125, 211, 252, 0.35);
+  background: rgba(14, 48, 72, 0.55);
+  color: #e2e8f0;
+  font-size: 0.78rem;
+}
+.vault-soft-remove-bar__msg {
+  flex: 1 1 12rem;
+  line-height: 1.35;
+}
+.vault-soft-remove-bar__msg strong {
+  color: #7dd3fc;
+  font-weight: 700;
+}
+.vault-soft-remove-bar__undo {
+  border: 1px solid rgba(110, 231, 183, 0.55);
+  background: rgba(16, 80, 55, 0.45);
+  color: #a7f3d0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  border-radius: 6px;
+  padding: 0.4rem 0.85rem;
+  cursor: pointer;
+}
+.vault-soft-remove-bar__undo:hover {
+  background: rgba(16, 120, 80, 0.75);
+  border-color: #6ee7b7;
+}
+.vault-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+  pointer-events: auto;
+  z-index: 25;
+  position: relative;
+}
+.vault-card-action {
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: rgba(15, 23, 42, 0.75);
+  color: #e2e8f0;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  padding: 0.2rem 0.4rem;
+  cursor: pointer;
+  line-height: 1.2;
+}
+.vault-card-action--edit {
+  border-color: rgba(125, 211, 252, 0.45);
+  color: #bae6fd;
+}
+.vault-card-action--remove {
+  border-color: rgba(251, 191, 36, 0.45);
+  color: #fde68a;
+}
+.vault-card-action:hover {
+  filter: brightness(1.1);
+}
 @media (max-width: 720px) {
   .vault-batch-toolbar,
   .vault-batch-actions {

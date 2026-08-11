@@ -60,6 +60,7 @@
     "validate:hero-vault-enrichment": "node scripts/validate-hero-vault-enrichment.mjs",
     "validate:hero-vault-production-persistence": "node scripts/validate-hero-vault-production-persistence.mjs",
     "validate:hero-vault-card-targeting": "node scripts/validate-hero-vault-card-targeting.mjs",
+    "validate:video-vault-soft-remove": "node scripts/validate-video-vault-soft-remove.mjs",
     "validate:series-assembly-workflow": "node scripts/validate-series-assembly-workflow.mjs",
     "validate:creator-viewer-lifecycle-acceptance": "node scripts/validate-creator-viewer-lifecycle-acceptance.mjs",
     "validate:creator-experience-polish": "node scripts/validate-creator-experience-polish.mjs",

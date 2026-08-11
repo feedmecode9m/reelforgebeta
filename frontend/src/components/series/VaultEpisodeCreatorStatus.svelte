@@ -9,6 +9,11 @@
   /** @type {Record<string, unknown> | null} */
   export let asset = null;
   export let active = true;
+  /**
+   * Parent increments this to open Edit (identity or package) without re-upload.
+   * @type {number}
+   */
+  export let editSignal = 0;
 
   const dispatch = createEventDispatcher();
 
@@ -21,8 +26,17 @@
   let draftDescription = '';
   let draftArtwork = '';
   let formError = '';
+  let lastEditSignal = 0;
 
   $: model = active && asset ? presentVaultEpisodeCompleteness(asset) : null;
+
+  $: if (active && model && editSignal !== lastEditSignal) {
+    lastEditSignal = editSignal;
+    if (editSignal > 0) {
+      if (model.identity.ready) openPackage();
+      else openIdentity();
+    }
+  }
 
   function stopDrag(event) {
     event?.stopPropagation?.();
