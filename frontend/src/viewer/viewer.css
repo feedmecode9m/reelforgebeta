@@ -752,6 +752,20 @@ margin: 0;
   border-color: rgba(251, 191, 36, 0.45);
   background: rgba(80, 55, 10, 0.35);
 }
+.vault-creator-card__pill--neutral {
+  color: #94a3b8;
+  border-color: rgba(148, 163, 184, 0.35);
+  background: rgba(30, 41, 59, 0.4);
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.vault-creator-card__axis-hint {
+  margin: 0 0 0.25rem;
+  font-size: 0.52rem;
+  line-height: 1.35;
+  color: #64748b;
+}
 .vault-creator-card__checks {
   list-style: none;
   margin: 0;

@@ -30,7 +30,9 @@ export function presentVaultMediaAvailability(asset) {
 }
 
 /**
- * Catalog publishing status for a vault asset (when bound). Presentation only.
+ * Catalog episode publication status for a vault asset (when bound).
+ * Presentation only — independent of Hero PUBLIC APPROVED / manager storyStatus.
+ * Underlying enum remains draft | ready | published | archived.
  * @param {Record<string, unknown> | null | undefined} asset
  */
 export function presentVaultPublishingStatus(asset) {
@@ -39,15 +41,25 @@ export function presentVaultPublishingStatus(asset) {
     const status = String(wrap?.episode?.status || 'draft').toLowerCase();
     const allowed = ['draft', 'ready', 'published', 'archived'];
     const normalized = allowed.includes(status) ? status : 'draft';
+    const bound = Boolean(wrap?.episode);
+    const statusWord =
+        normalized.charAt(0).toUpperCase() + normalized.slice(1);
     return {
         status: /** @type {'draft' | 'ready' | 'published' | 'archived'} */ (normalized),
-        label: normalized.charAt(0).toUpperCase() + normalized.slice(1),
-        bound: Boolean(wrap?.episode)
+        /** Short catalog status word (Draft / Ready / Published / Archived). */
+        label: statusWord,
+        /** Creator-facing axis label — catalog packaging, not Hero approval. */
+        axisLabel: 'Episode publication',
+        /** Full status for UI: e.g. "Published" or "Draft · not bound to catalog". */
+        displayLabel: bound ? statusWord : `${statusWord} · not bound to catalog`,
+        bound,
+        hint: 'Series catalog status for this episode. Independent of Hero PUBLIC APPROVED.'
     };
 }
 
 /**
  * Unified creator completeness card model for a ready MP4 vault asset.
+ * Axes are independent: Identity ≠ Presentation package ≠ Episode publication ≠ Media.
  * @param {Record<string, unknown> | null | undefined} asset
  */
 export function presentVaultEpisodeCompleteness(asset) {
@@ -63,6 +75,14 @@ export function presentVaultEpisodeCompleteness(asset) {
     const artOk = Boolean(enrich.artworkUrl);
     const presentationReady = titleOk && descOk && artOk;
 
+    /** Presentation-package gaps only (Title / Description / Artwork). */
+    /** @type {string[]} */
+    const presentationMissing = [];
+    if (!titleOk) presentationMissing.push('Title');
+    if (!descOk) presentationMissing.push('Description');
+    if (!artOk) presentationMissing.push('Artwork');
+
+    /** Aggregated gaps for compatibility with existing consumers (lowercase). */
     /** @type {string[]} */
     const missing = [];
     if (!identityReady) missing.push('identity');
@@ -86,7 +106,9 @@ export function presentVaultEpisodeCompleteness(asset) {
                 : '',
         identity: {
             ready: identityReady,
-            statusLabel: identity.statusLabel,
+            /** What is this video? Confirm Series / Season / Episode. */
+            axisLabel: 'Identity',
+            statusLabel: identityReady ? 'Confirmed' : 'Needs confirmation',
             needsConfirmation: identity.needsConfirmation,
             marks: {
                 series: Boolean(identity.seriesLabel),
@@ -96,6 +118,9 @@ export function presentVaultEpisodeCompleteness(asset) {
         },
         presentation: {
             ready: presentationReady,
+            /** Episode package readiness (title / description / artwork) — not publication. */
+            axisLabel: 'Presentation',
+            statusLabel: presentationReady ? 'Ready' : 'Incomplete',
             title: enrich.title || '',
             description: enrich.description || '',
             artworkUrl: enrich.artworkUrl || '',
@@ -103,11 +128,34 @@ export function presentVaultEpisodeCompleteness(asset) {
                 title: titleOk,
                 description: descOk,
                 artwork: artOk
-            }
+            },
+            missing: presentationMissing,
+            hint: presentationReady
+                ? 'Package fields are set. This is not the same as catalog publication.'
+                : 'Package fields for audiences. Incomplete does not mean the video is missing or unpublished.'
         },
-        media,
-        publishing,
+        media: {
+            ...media,
+            axisLabel: 'Media',
+            statusLabel: media.state === 'available' ? 'Available' : 'Missing',
+            hint: 'Whether a playable file is available. Independent of package fields and publication.'
+        },
+        publishing: {
+            ...publishing,
+            /** Alias used by UI for episode catalog status. */
+            statusLabel: publishing.displayLabel
+        },
+        /**
+         * Hero approval is a separate product axis (Hero Manager + server grant).
+         * Never inferred from episode catalog status.
+         */
+        hero: {
+            axisLabel: 'Hero',
+            statusLabel: 'Managed in Hero Manager',
+            hint: 'PUBLIC APPROVED is server-authoritative Hero presentation grant — not episode Draft/Ready/Published.'
+        },
         missing,
+        presentationMissing,
         complete: missing.length === 0
     };
 }

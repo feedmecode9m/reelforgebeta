@@ -87,6 +87,23 @@ async function main() {
             !/parseConfidence|confidence score|validator|inference/i.test(card),
             'creator card has no parser/confidence/validator language'
         );
+        // Phase A: independent status axes (Identity / Media / Presentation / Publication / Hero)
+        assert(
+            card.includes('data-section="identity"') &&
+                card.includes('data-section="media"') &&
+                card.includes('data-section="presentation"') &&
+                card.includes('data-section-axis="episode-publication"') &&
+                card.includes('data-section-axis="hero-approval"'),
+            'creator card separates identity, media, presentation, episode publication, hero axes'
+        );
+        assert(
+            card.includes('data-presentation-missing') && card.includes('Missing:'),
+            'creator card surfaces explicit presentation package gaps'
+        );
+        assert(
+            /PUBLIC APPROVED/.test(card) && !/Publishing Published/i.test(card),
+            'episode catalog status is not labeled as Hero PUBLIC APPROVED'
+        );
         assert(
             assemblyUi.includes('polishAssemblyRowMarks') &&
                 assemblyUi.includes('data-package-checks'),
@@ -126,6 +143,18 @@ async function main() {
 
         // --- Missing package states ---
         assert(completeness.presentation.ready === false, 'package incomplete without enrichment');
+        assert(
+            completeness.presentation.statusLabel === 'Incomplete' &&
+                completeness.presentation.axisLabel === 'Presentation',
+            'presentation axis uses Incomplete label (package only)'
+        );
+        assert(
+            Array.isArray(completeness.presentation.missing) &&
+                completeness.presentation.missing.includes('Title') &&
+                completeness.presentation.missing.includes('Description') &&
+                completeness.presentation.missing.includes('Artwork'),
+            'presentation.missing lists Title/Description/Artwork for UI'
+        );
         assert(completeness.presentation.marks.title === false, 'title missing mark');
         assert(completeness.presentation.marks.description === false, 'description missing mark');
         assert(completeness.presentation.marks.artwork === false, 'artwork missing mark');
@@ -136,7 +165,20 @@ async function main() {
             `missing list includes package fields (${completeness.missing.join(',')})`
         );
         assert(completeness.media.state === 'available', 'media available from playback url');
+        assert(
+            completeness.media.statusLabel === 'Available' && completeness.media.axisLabel === 'Media',
+            'media axis labeled Available independently'
+        );
         assert(completeness.publishing.status === 'draft', 'default publishing draft unbound/catalog');
+        assert(
+            completeness.publishing.axisLabel === 'Episode publication',
+            'catalog status is Episode publication (not Hero approval)'
+        );
+        assert(
+            completeness.hero?.axisLabel === 'Hero' &&
+                String(completeness.hero?.hint || '').includes('PUBLIC APPROVED'),
+            'Hero axis remains independent of episode package/publication'
+        );
 
         // Complete package
         asset = idConf.applyCreatorVaultIdentityConfirmation(asset, {
@@ -151,12 +193,22 @@ async function main() {
         });
         const full = polish.presentVaultEpisodeCompleteness(asset);
         assert(full.presentation.ready === true, 'presentation complete after package');
+        assert(full.presentation.statusLabel === 'Ready', 'presentation Ready label after package');
         assert(full.complete === true || full.missing.length === 0, 'card complete when identity+package+media present');
         assert(full.series === 'STIRRED' && full.season === 1 && full.episode === 2, 'identity unchanged after package');
         assert(
             full.presentation.title === 'The Beginning' &&
                 full.presentation.artworkUrl.includes('poster-e2'),
             'package fields surface for creator'
+        );
+        // Independent axes: package ready does not invent Episode Published or Hero PUBLIC APPROVED
+        assert(
+            full.publishing.status === 'draft' || full.publishing.status === 'ready',
+            `package completion is not an auto-publish (${full.publishing.status})`
+        );
+        assert(
+            full.hero?.statusLabel === 'Managed in Hero Manager',
+            'Hero PUBLIC APPROVED is not inferred from presentation package'
         );
 
         // --- Ready gate remains enforced / publish separate ---
@@ -231,7 +283,7 @@ async function main() {
                             {
                                 episodeId: 'ep2',
                                 episodeNumber: 2,
-                                title: 'E2',
+                                title: 'The Beginning',
                                 status: 'published',
                                 reelId: R2,
                                 mediaAssetId: R2,

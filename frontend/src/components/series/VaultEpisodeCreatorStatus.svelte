@@ -164,18 +164,20 @@
         >
       </div>
     {:else}
+      <!-- Identity: what this video is (Series / Season / Episode). -->
       <div class="vault-creator-card__section" data-section="identity">
         <div class="vault-creator-card__section-head">
-          <span class="vault-creator-card__section-title">Identity</span>
+          <span class="vault-creator-card__section-title">{model.identity.axisLabel || 'Identity'}</span>
           <span
             class="vault-creator-card__pill"
             class:ok={model.identity.ready}
             class:warn={!model.identity.ready}
             data-identity-status
           >
-            {model.identity.ready ? 'Confirmed' : 'Needs confirmation'}
+            {model.identity.statusLabel}
           </span>
         </div>
+        <p class="vault-creator-card__axis-hint" data-identity-hint>What is this video?</p>
         <ul class="vault-creator-card__checks">
           <li class:missing={!model.identity.marks.series} data-check="series">
             <span class="vault-creator-card__mark">{mark(model.identity.marks.series)}</span>
@@ -203,18 +205,44 @@
         </button>
       </div>
 
+      <!-- Media: playable file availability — separate from package / catalog status. -->
+      <div class="vault-creator-card__section" data-section="media" data-media={model.media.state}>
+        <div class="vault-creator-card__section-head">
+          <span class="vault-creator-card__section-title">{model.media.axisLabel || 'Media'}</span>
+          <span
+            class="vault-creator-card__pill"
+            class:ok={model.media.state === 'available'}
+            class:warn={model.media.state !== 'available'}
+            data-media-status
+          >
+            {model.media.state === 'available' ? '✓ Available' : '○ Missing'}
+          </span>
+        </div>
+        <p class="vault-creator-card__axis-hint" data-media-hint>
+          {model.media.hint || 'Playable file availability (not package or publication).'}
+        </p>
+      </div>
+
+      <!-- Presentation: episode package fields only. Independent of published catalog status. -->
       <div class="vault-creator-card__section" data-section="presentation">
         <div class="vault-creator-card__section-head">
-          <span class="vault-creator-card__section-title">Presentation</span>
+          <span class="vault-creator-card__section-title"
+            >{model.presentation.axisLabel || 'Presentation'}</span
+          >
           <span
             class="vault-creator-card__pill"
             class:ok={model.presentation.ready}
             class:warn={!model.presentation.ready}
             data-presentation-status
           >
-            {model.presentation.ready ? 'Complete' : 'Incomplete'}
+            {model.presentation.statusLabel ||
+              (model.presentation.ready ? 'Ready' : 'Incomplete')}
           </span>
         </div>
+        <p class="vault-creator-card__axis-hint" data-presentation-hint>
+          {model.presentation.hint ||
+            'Package readiness for Title, Description, and Artwork.'}
+        </p>
         <ul class="vault-creator-card__checks">
           <li class:missing={!model.presentation.marks.title} data-check="title">
             <span class="vault-creator-card__mark">{mark(model.presentation.marks.title)}</span>
@@ -242,6 +270,11 @@
             >
           </li>
         </ul>
+        {#if !model.presentation.ready && model.presentation.missing?.length}
+          <p class="vault-creator-card__missing" data-presentation-missing>
+            Missing: {model.presentation.missing.join(', ')}
+          </p>
+        {/if}
         {#if model.presentation.artworkUrl}
           <div class="vault-creator-card__art" aria-hidden="true">
             <img src={model.presentation.artworkUrl} alt="" loading="lazy" />
@@ -259,28 +292,44 @@
         {/if}
       </div>
 
-      <div class="vault-creator-card__footer">
-        <div class="vault-creator-card__meta" data-section="media" data-media={model.media.state}>
-          <span class="vault-creator-card__k">Media</span>
-          <span class="vault-creator-card__pill" class:ok={model.media.state === 'available'} class:warn={model.media.state !== 'available'}
-            >{model.media.state === 'available' ? '✓ Available' : '○ Missing'}</span
+      <!-- Episode publication: catalog enum — not Hero PUBLIC APPROVED. -->
+      <div
+        class="vault-creator-card__section"
+        data-section="publishing"
+        data-section-axis="episode-publication"
+        data-publishing={model.publishing.status}
+      >
+        <div class="vault-creator-card__section-head">
+          <span class="vault-creator-card__section-title"
+            >{model.publishing.axisLabel || 'Episode publication'}</span
           >
+          <span
+            class="vault-creator-card__pub"
+            data-publishing-status
+            data-episode-status={model.publishing.status}
+          >
+            {model.publishing.displayLabel || model.publishing.label}
+          </span>
         </div>
-        <div
-          class="vault-creator-card__meta"
-          data-section="publishing"
-          data-publishing={model.publishing.status}
-        >
-          <span class="vault-creator-card__k">Publishing</span>
-          <span class="vault-creator-card__pub">{model.publishing.label}</span>
-        </div>
+        <p class="vault-creator-card__axis-hint" data-publishing-hint>
+          {model.publishing.hint ||
+            'Catalog Draft / Ready / Published / Archived. Not Hero approval.'}
+        </p>
       </div>
 
-      {#if model.missing.length}
-        <p class="vault-creator-card__missing" data-missing-fields>
-          Missing: {model.missing.join(', ')}
+      <!-- Hero: separate authority surface (not derived from episode status). -->
+      <div class="vault-creator-card__section" data-section="hero" data-section-axis="hero-approval">
+        <div class="vault-creator-card__section-head">
+          <span class="vault-creator-card__section-title">{model.hero?.axisLabel || 'Hero'}</span>
+          <span class="vault-creator-card__pill vault-creator-card__pill--neutral" data-hero-axis-status>
+            {model.hero?.statusLabel || 'Managed in Hero Manager'}
+          </span>
+        </div>
+        <p class="vault-creator-card__axis-hint" data-hero-hint>
+          {model.hero?.hint ||
+            'PUBLIC APPROVED is server-authoritative Hero grant — independent of episode publication.'}
         </p>
-      {/if}
+      </div>
     {/if}
   </div>
 {/if}
