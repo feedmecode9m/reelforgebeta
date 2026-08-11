@@ -1070,9 +1070,25 @@
         return extras;
     }
 
+    /**
+     * Rebuild pickable Hero Vault registry and reassign $heroAssetRegistry.
+     * Harvested rows may still carry stale feed/vault `title`/`name`; stamp the
+     * existing canonical resolver onto each row so Edit Title + later sync
+     * rebuilds expose the durable title without relying on hidden reads inside
+     * getDisplayTitle() for Svelte invalidation.
+     */
     function refreshHeroAssetRegistry() {
         const vaultItems = loadHeroVaultItems(getLiveVaultExtras());
-        const registry = buildHeroAssetRegistry(vaultItems, { storageSource: 'vault_pick' });
+        const rawRegistry = buildHeroAssetRegistry(vaultItems, { storageSource: 'vault_pick' });
+        // New array + new row objects → reactive $heroAssetRegistry reassignment.
+        const registry = rawRegistry.map((item) => {
+            const canonicalTitle = getDisplayTitle(item);
+            return {
+                ...item,
+                title: canonicalTitle,
+                name: canonicalTitle
+            };
+        });
         heroAssetRegistry.set(registry);
         // Reset preview load/error so remounted sources can re-bind cleanly.
         vaultVideoLoadedByAsset = {};
@@ -3120,7 +3136,7 @@
             <div class="hero-vault__grid">
                 {#each $heroAssetRegistry as item (item.assetId)}
                     {@const isActive = String(item.assetId) === String(config.heroAssetId || '')}
-                    {@const displayTitle = getDisplayTitle(item)}
+                    {@const displayTitle = item.title || getDisplayTitle(item)}
                     {@const storyIntel = getStoryPreviewIntel(item)}
                     {@const videoLoaded = Boolean(vaultVideoLoadedByAsset[item.assetId])}
                     {@const videoErrored = Boolean(vaultVideoErrorByAsset[item.assetId])}
