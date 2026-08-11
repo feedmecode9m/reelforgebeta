@@ -1546,6 +1546,12 @@ heroAssetId: heroAssetIdSnapshot,
 ts: new Date().toISOString()
 });
 persistPersonalVault(nonHeroMergedVaultVideos);
+// Master Edit defense: catalog harvest cannot revive names that lose to reel_titles_persistent.
+try {
+  AI_CLEANUP_AGENT.applyPersistedTitlesOverlay();
+} catch {
+  /* ignore */
+}
 console.log(
 `[syncFromVault] Video vault merged (local + backend): ${existingVaultVideos.length} + ${backendVaultVideos.length} => ${nonHeroMergedVaultVideos.length}`
 );

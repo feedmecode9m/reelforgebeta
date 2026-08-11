@@ -656,14 +656,16 @@ $: heroBadgeLabel = sanitizeViewer || heroStoryPublished
     if (publicResolved?.isPublicApproved && publicResolved.title) {
       heroStoryTitle = publicResolved.title;
       heroStoryDescription = publicResolved.description || '';
-    } else if (publicResolved?.titleSource === 'creatorTruth' && publicResolved.title) {
-      heroStoryTitle = publicResolved.title;
-      heroStoryDescription = publicResolved.description || '';
     } else {
-      heroStoryTitle = String(heroManagerConfig?.heroTitle || '').trim();
+      // Landscape headline for vault-bound heroes = manager/presentation heroTitle
+      // after vault-canonical reconcile (persistent/rename). Sticky creatorTruth
+      // first-capture must not resurrect an older title over Edit Title / persistent.
+      // Never treat heroDescription as the title.
+      heroStoryTitle = String(heroManagerConfig?.heroTitle || '').trim()
+        || String(publicResolved?.title || '').trim();
       heroStoryDescription = isStockHeroViewerCopy(heroManagerConfig?.heroDescription, 'description')
         ? ''
-        : String(heroManagerConfig?.heroDescription || '').trim();
+        : String(heroManagerConfig?.heroDescription || publicResolved?.description || '').trim();
     }
     heroStorySubtitle = String(heroManagerConfig?.heroSubtitle || '').trim();
     // Approved creator intent only (not private notes, not AI invent).

@@ -193,6 +193,139 @@ export function resolveCanonicalHeroTitle(sources = {}) {
     return UNTITLED_CREATOR_EXPERIENCE;
 }
 
+/** Existing vault title map — never invent another storage key. */
+export const REEL_TITLES_PERSISTENT_KEY = 'reel_titles_persistent';
+
+/**
+ * Read durable reel title from the existing reel_titles_persistent map (browser only).
+ * @param {string} assetId
+ * @param {string} [storageKey]
+ * @returns {string}
+ */
+export function lookupPersistentHeroTitle(assetId, storageKey = REEL_TITLES_PERSISTENT_KEY) {
+    const id = String(assetId || '').trim();
+    if (!id || typeof localStorage === 'undefined') return '';
+    try {
+        const raw = localStorage.getItem(storageKey);
+        if (!raw) return '';
+        const map = JSON.parse(raw);
+        if (!map || typeof map !== 'object') return '';
+        const entry = map[id];
+        if (!entry || typeof entry !== 'object') return '';
+        return String(
+            /** @type {{ title?: string; title_original?: string }} */ (entry).title ||
+                /** @type {{ title?: string; title_original?: string }} */ (entry).title_original ||
+                ''
+        ).trim();
+    } catch {
+        return '';
+    }
+}
+
+/**
+ * Same resolve inputs Hero Vault getDisplayTitle uses (plus optional session rename).
+ * heroDescription is intentionally never an input.
+ *
+ * @param {{
+ *   assetId?: string;
+ *   editedTitle?: string;
+ *   persistentTitle?: string;
+ *   episodeTitle?: string;
+ *   assetTitle?: string;
+ *   fileName?: string;
+ *   managerHeroTitle?: string;
+ *   titlesStorageKey?: string;
+ * }} [sources]
+ * @returns {string}
+ */
+export function resolveActiveHeroCanonicalTitle(sources = {}) {
+    const assetId = String(sources.assetId || '').trim();
+    const persistentTitle =
+        sources.persistentTitle !== undefined
+            ? String(sources.persistentTitle || '').trim()
+            : assetId
+              ? lookupPersistentHeroTitle(assetId, sources.titlesStorageKey || REEL_TITLES_PERSISTENT_KEY)
+              : '';
+    return resolveCanonicalHeroTitle({
+        editedTitle: sources.editedTitle,
+        persistentTitle,
+        episodeTitle: sources.episodeTitle,
+        // Manager/server headline is an asset-level candidate, not description.
+        assetTitle: sources.assetTitle || sources.managerHeroTitle,
+        fileName: sources.fileName
+    });
+}
+
+/**
+ * Reconcile presentation/manager heroTitle to vault-canonical resolve for the active assetId.
+ * Does not rewrite heroDescription. Does not invent title storage.
+ *
+ * @template {Record<string, unknown>} T
+ * @param {T | null | undefined} config
+ * @param {{
+ *   assetId?: string;
+ *   editedTitle?: string;
+ *   persistentTitle?: string;
+ *   episodeTitle?: string;
+ *   assetTitle?: string;
+ *   fileName?: string;
+ *   titlesStorageKey?: string;
+ * }} [options]
+ * @returns {T | null | undefined}
+ */
+export function reconcileActivePresentationHeroTitle(config, options = {}) {
+    if (!config || typeof config !== 'object') return config;
+    const assetId = String(options.assetId || config.heroAssetId || '').trim();
+    if (!assetId) return config;
+
+    const managerTitle = String(config.heroTitle || config.heroAssetTitle || '').trim();
+    const assetTitle = String(
+        options.assetTitle !== undefined ? options.assetTitle : managerTitle
+    ).trim();
+    const persistentTitle =
+        options.persistentTitle !== undefined
+            ? String(options.persistentTitle || '').trim()
+            : lookupPersistentHeroTitle(assetId, options.titlesStorageKey || REEL_TITLES_PERSISTENT_KEY);
+    const editedTitle =
+        options.editedTitle !== undefined ? String(options.editedTitle || '').trim() : '';
+    const episodeTitle = String(options.episodeTitle || '').trim();
+    const fileName = String(options.fileName || '').trim();
+
+    const hasStrongSignal = Boolean(
+        editedTitle ||
+            persistentTitle ||
+            episodeTitle ||
+            (assetTitle && !isUnsafeHeroFilenameTitle(assetTitle))
+    );
+    if (!hasStrongSignal) return config;
+
+    const title = resolveCanonicalHeroTitle({
+        editedTitle,
+        persistentTitle,
+        episodeTitle,
+        assetTitle,
+        fileName
+    });
+    if (!title) return config;
+    // Avoid promoting Untitled when the only signals were unsafe filenames.
+    if (title === UNTITLED_CREATOR_EXPERIENCE && !editedTitle && !persistentTitle && !episodeTitle) {
+        return config;
+    }
+
+    if (
+        String(config.heroTitle || '').trim() === title &&
+        String(config.heroAssetTitle || '').trim() === title
+    ) {
+        return config;
+    }
+
+    return {
+        ...config,
+        heroTitle: title,
+        heroAssetTitle: title
+    };
+}
+
 /**
  * @param {string} text
  */

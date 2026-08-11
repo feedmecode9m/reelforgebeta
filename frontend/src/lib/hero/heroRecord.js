@@ -64,6 +64,7 @@ import {
     scrubUnverifiedHeroForPublic,
     verifyHeroRecordIntegrity
 } from './heroAuthorityVerification.js';
+import { reconcileActivePresentationHeroTitle } from './heroTitleIntelligence.js';
 import {
     normalizeServerAuthorityReceipt,
     normalizeServerAuthorityState
@@ -1516,7 +1517,10 @@ export function mergeHeroRecordIntoManagerConfig(managerConfig, record) {
             next.posterUrl = poster;
         }
     }
-    return next;
+    // Sticky HeroRecord/creatorTruth first-capture must not outrank vault-canonical title.
+    return /** @type {Record<string, unknown>} */ (
+        reconcileActivePresentationHeroTitle(next) || next
+    );
 }
 
 /**

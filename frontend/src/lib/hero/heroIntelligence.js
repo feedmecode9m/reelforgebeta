@@ -50,7 +50,8 @@ import {
 } from './heroViewerTruth.js';
 import {
     analyzeHeroTitle,
-    buildHeroManagerPatchFromTitleIntel
+    buildHeroManagerPatchFromTitleIntel,
+    reconcileActivePresentationHeroTitle
 } from './heroTitleIntelligence.js';
 import {
     loadHeroReel,
@@ -948,11 +949,15 @@ export function loadHeroManagerConfig() {
         };
         // Repair stale NLP location in cache (La → Los Angeles) without server push.
         const locationSafe = sanitizeHeroConfigLocationIntelligence(config);
-        setLastHeroConfigSource(locationSafe.heroAssetId ? 'localStorage' : 'default');
+        // Active presentation headline = vault-canonical resolve (persistent outranks sticky manager/copy).
+        const titleSafe = /** @type {typeof locationSafe} */ (
+            reconcileActivePresentationHeroTitle(locationSafe) || locationSafe
+        );
+        setLastHeroConfigSource(titleSafe.heroAssetId ? 'localStorage' : 'default');
         console.info('[HERO_LOAD]', {
             key: HERO_MANAGER_STORAGE_KEY,
-            backgroundSource: locationSafe.backgroundSource,
-            heroAssetId: locationSafe.heroAssetId || '',
+            backgroundSource: titleSafe.backgroundSource,
+            heroAssetId: titleSafe.heroAssetId || '',
             ts: new Date().toISOString()
         });
         logHeroConfigBootTrace({
@@ -961,12 +966,12 @@ export function loadHeroManagerConfig() {
             storageRawBeforeParse: raw,
             parsedHeroAssetId: String(parsed.heroAssetId || parsed.backgroundAsset || '').trim(),
             parsedBackgroundSource: String(parsed.backgroundSource || ''),
-            heroAssetId: locationSafe.heroAssetId,
-            backgroundSource: locationSafe.backgroundSource,
+            heroAssetId: titleSafe.heroAssetId,
+            backgroundSource: titleSafe.backgroundSource,
             configSource: 'localStorage_merged_with_defaults',
             reason: 'storage_hit'
         });
-        return finalizeHeroManagerConfigLoad(locationSafe, locationSafe);
+        return finalizeHeroManagerConfigLoad(titleSafe, titleSafe);
     } catch (error) {
         const defaultConfig = getDefaultHeroManagerConfig();
         const config = finalizeHeroManagerConfigLoad(defaultConfig);
@@ -1317,8 +1322,12 @@ export function saveHeroManagerConfig(patch = {}, options = {}) {
     } = merged;
     // Fix NLP location persistence (e.g. "La" → "Los Angeles") without rewriting titles.
     const locationSafe = sanitizeHeroConfigLocationIntelligence(sanitized);
+    // Keep manager heroTitle aligned with vault-canonical resolve for the active asset.
+    const titleSafe = /** @type {typeof locationSafe} */ (
+        reconcileActivePresentationHeroTitle(locationSafe) || locationSafe
+    );
     // Ensure mediaUrl/posterUrl cache fields travel with heroAssetId for server push.
-    const withMedia = enrichPresentationConfigFromLocalIdentity(locationSafe);
+    const withMedia = enrichPresentationConfigFromLocalIdentity(titleSafe);
     const next = {
         ...withMedia,
         heroAssetId: String(withMedia.heroAssetId || '').trim(),
@@ -1727,7 +1736,27 @@ export function commitHeroAssetSelection(assetId, extraItems = null) {
     } catch {
         /* ignore */
     }
-    const intelBundle = buildHeroManagerPatchFromTitleIntel(asset.assetId, truth.title, {
+    // Same vault-canonical resolve as getDisplayTitle (persistent > harvest/manager name).
+    const canonicalTitle = String(
+        reconcileActivePresentationHeroTitle(
+            {
+                heroAssetId: asset.assetId,
+                heroTitle: truth.title,
+                heroAssetTitle: truth.title
+            },
+            {
+                assetId: asset.assetId,
+                assetTitle: String(truth.title || asset.title || ''),
+                fileName: String(asset.fileName || asset.file_name || '')
+            }
+        )?.heroTitle ||
+            truth.title ||
+            asset.title ||
+            'Hero'
+    ).trim();
+    truth.title = canonicalTitle;
+
+    const intelBundle = buildHeroManagerPatchFromTitleIntel(asset.assetId, canonicalTitle, {
         isVideo,
         force: true,
         previous: {
@@ -1746,8 +1775,8 @@ export function commitHeroAssetSelection(assetId, extraItems = null) {
         posterUrl,
         mediaKind,
         fileName: String(asset.title || asset.assetId),
-        title: String(truth.title || asset.title || 'Hero'),
-        heroTitle: intelBundle.patch?.heroTitle,
+        title: canonicalTitle,
+        heroTitle: String(intelBundle.patch?.heroTitle || canonicalTitle),
         heroSubtitle: intelBundle.patch?.heroSubtitle,
         heroDescription: intelBundle.patch?.heroDescription,
         source: 'commit_hero_asset_selection'
@@ -1778,7 +1807,10 @@ export function commitHeroAssetSelection(assetId, extraItems = null) {
             mediaUrl,
             posterUrl,
             backgroundMediaUrl: mediaUrl,
-            ...intelBundle.patch
+            ...intelBundle.patch,
+            // Force intel may omit heroTitle under edge guards — always stamp canonical.
+            heroTitle: String(intelBundle.patch?.heroTitle || canonicalTitle),
+            heroAssetTitle: String(intelBundle.patch?.heroAssetTitle || canonicalTitle)
         },
         { skipServer: true }
     );

@@ -1,7 +1,7 @@
 /**
  * Pure hero presentation helpers (no network) — safe for Node validation scripts.
  */
-import { analyzeHeroTitle } from './heroTitleIntelligence.js';
+import { analyzeHeroTitle, reconcileActivePresentationHeroTitle } from './heroTitleIntelligence.js';
 
 /** @type {'localStorage' | 'backend' | 'default' | null} */
 let lastHeroConfigSource = null;
@@ -246,5 +246,9 @@ export function mapServerPresentationToManagerPatch(remote) {
         }
     }
 
-    return sanitizeHeroConfigLocationIntelligence(patch);
+    return sanitizeHeroConfigLocationIntelligence(
+        /** @type {Record<string, unknown>} */ (
+            reconcileActivePresentationHeroTitle(patch) || patch
+        )
+    );
 }

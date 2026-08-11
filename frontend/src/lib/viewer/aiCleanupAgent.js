@@ -368,6 +368,31 @@ export function createAiCleanupAgent(deps) {
         return next;
       });
       storageSet(CONFIG.FEED_STORAGE_KEY, get(feed));
+      // Same map must win over harvested catalog name on Video Vault rows after sync/rebuild.
+      personalVideos.update((videos) => {
+        const list = Array.isArray(videos) ? videos : [];
+        let changed = false;
+        const next = list.map((item) => {
+          const id = String(item?.id || item?.personal_video_id || '').trim();
+          const saved = id ? titles[id] : null;
+          if (!saved?.title) return item;
+          changed = true;
+          return {
+            ...item,
+            title: saved.title,
+            name: saved.title,
+            title_original: saved.title_original || saved.title,
+            _localModified: true
+          };
+        });
+        if (!changed) return list;
+        try {
+          storageSet(CONFIG.VIDEO_VAULT_KEY, next);
+        } catch {
+          /* ignore */
+        }
+        return next;
+      });
     } catch {
       /* ignore */
     }

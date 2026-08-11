@@ -49,6 +49,14 @@
   } from '../../lib/dropAffordance.js';
   import { SYNC_DOMAIN } from '../../lib/viewer/domainSync.js';
   import { appendUploadIdentityToFormData } from '../../lib/api/uploadIdentity.js';
+  import {
+    loadHeroManagerConfig,
+    saveHeroManagerConfig
+  } from '../../lib/hero/heroIntelligence.js';
+  import {
+    dispatchVaultTitleUpdated,
+    reconcileActivePresentationHeroTitle
+  } from '../../lib/hero/heroTitleIntelligence.js';
 
   export let studioWalkthrough = null;
 
@@ -1021,16 +1029,83 @@
       title: trimmed,
       title_original: trimmed
     });
+    // Immediate feed projection (Studio list / catalog rows).
     feed.update((currentFeed) => {
       const next = { ...currentFeed };
       Object.keys(next).forEach((cat) => {
         next[cat] = next[cat].map((item) =>
           item.id === reel.id
-            ? { ...item, title: trimmed, title_original: trimmed, _localModified: true }
+            ? { ...item, title: trimmed, title_original: trimmed, name: trimmed, _localModified: true }
             : item
         );
       });
       return next;
+    });
+    // Immediate Video Vault projection — do not wait for PATCH / syncFromVault.
+    if (personalVideos && typeof personalVideos.update === 'function') {
+      personalVideos.update((videos) => {
+        const list = Array.isArray(videos) ? videos : [];
+        const next = list.map((entry) =>
+          String(entry?.id || entry?.personal_video_id || '').trim() === reelId
+            ? {
+                ...entry,
+                title: trimmed,
+                name: trimmed,
+                title_original: trimmed,
+                _localModified: true
+              }
+            : entry
+        );
+        try {
+          if (typeof persistPersonalVault === 'function') {
+            persistPersonalVault(next);
+          }
+        } catch {
+          /* ignore */
+        }
+        return next;
+      });
+    }
+    // Active Hero landscape must converge when this reel is the bound background.
+    let heroBound = false;
+    try {
+      const cfg = loadHeroManagerConfig();
+      heroBound = String(cfg?.heroAssetId || '').trim() === reelId;
+      if (heroBound) {
+        const reconciled = reconcileActivePresentationHeroTitle(
+          {
+            ...cfg,
+            heroAssetId: reelId,
+            heroTitle: trimmed,
+            heroAssetTitle: trimmed
+          },
+          {
+            assetId: reelId,
+            editedTitle: trimmed,
+            persistentTitle: trimmed,
+            assetTitle: trimmed
+          }
+        );
+        if (reconciled) {
+          saveHeroManagerConfig(
+            {
+              heroTitle: reconciled.heroTitle,
+              heroAssetTitle: reconciled.heroAssetTitle || reconciled.heroTitle
+            },
+            { skipServer: true }
+          );
+        }
+      }
+    } catch {
+      /* ignore presentation fan-out errors; vault title still local */
+    }
+    // Existing title bus for independently mounted consumers (e.g. Content Intelligence).
+    dispatchVaultTitleUpdated({
+      reelId,
+      oldTitle: original,
+      newTitle: trimmed,
+      heroBound,
+      source: 'studio-update-reel-title'
     });
     renameBusyId = reelId;
     setRenameRowFeedback(reelId, 'saving', 'Saving…');
