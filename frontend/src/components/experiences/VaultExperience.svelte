@@ -113,7 +113,9 @@
   import {
     filterVideoVaultVisible,
     hideVideoVaultAsset,
+    isDurableVideoVaultWorkspaceAsset,
     isVideoVaultHidden,
+    isVideoVaultStubPurgeTarget,
     readVideoVaultHiddenIds,
     restoreVideoVaultAsset,
     VIDEO_VAULT_HIDDEN_STORAGE_KEY
@@ -915,21 +917,14 @@
 
   /**
    * Reversible workspace remove: hide from Video Vault UI only.
-   * Does not DELETE /api/reels, does not tombstone durable media, does not clear HeroRecord.
+   * Never routes durable Hero-bound assets to stub purge / clearHeroReel.
    * @param {Record<string, unknown> | null | undefined} video
    */
   function softRemoveFromVideoVault(video) {
     if (!video || typeof video !== 'object') return;
-    // Ghost / failed upload chrome only — never soft-hide durable media.
-    // Hero-injected display cards are soft-hidden (do not clearHeroReel).
-    if (
-      isGhostVideoVaultEntry(video) ||
-      String(video?.uploadState || '') === 'failed' ||
-      String(video?.uploadState || '') === 'interrupted' ||
-      String(video?.uploadState || '') === 'pending_accept' ||
-      String(video?.id || '').startsWith('local-upload-') ||
-      String(video?.id || '').startsWith('local-pending-')
-    ) {
+
+    // True stub / failed chrome → legacy local purge only for non-durable entries.
+    if (!isDurableVideoVaultWorkspaceAsset(video)) {
       purgeFailedVaultVideo(video);
       return;
     }
@@ -944,6 +939,8 @@
     }
 
     hideVideoVaultAsset(assetId);
+    // Session-only Undo affordance. Not persisted — after hard refresh the
+    // asset simply stays hidden (no Undo bar resurrection).
     lastSoftRemoved = {
       assetId,
       name: String(video?.name || video?.fileName || video?.title || assetId),
@@ -960,6 +957,7 @@
         (item) => String(item?.id || '').trim() === assetId
       ),
       heroInjectedCard: isHeroInjectedVaultCard(video),
+      durableWorkspaceAsset: true,
       heroUntouched: true,
       durableMediaUntouched: true,
       ts: new Date().toISOString()
@@ -1038,8 +1036,15 @@
       videoRef ||
       (id ? (get(personalVideos) || []).find((item) => String(item?.id || '').trim() === id) : null);
 
-    // Ghost outline / hero-injected chrome: never block on confirm or personalVideos find.
-    if (ref && (isGhostVideoVaultEntry(ref) || isHeroInjectedVaultCard(ref))) {
+    // Outline / display-only chrome: never block on confirm.
+    // Durable Hero-bound assets (same id as Hero) must NOT fall through to
+    // purgeLocalVaultVideoStub — that path clearHeroReel + tombstones.
+    if (
+      ref &&
+      !isDurableVideoVaultWorkspaceAsset(ref) &&
+      (isGhostVideoVaultEntry(ref) ||
+        isVideoVaultStubPurgeTarget(ref, { isHeroInjected: isHeroInjectedVaultCard(ref) }))
+    ) {
       purgeLocalVaultVideoStub(ref, 'tap_ghost_or_hero_stub');
       canonicalizeVideoSelectionAfterDelete([id].filter(Boolean), {
         beforeCount,
@@ -3387,11 +3392,16 @@
             vaultUploadPercents[String(video?.fileName || video?.name || '').trim()] ??
             vaultUploadPercents[String(video?.name || '').trim()] ??
             null}
+          {@const isGhostOnly =
+            isGhostVideoVaultEntry(video) && !isDurableVideoVaultWorkspaceAsset(video)}
+          {@const isStubPurgeCard = isVideoVaultStubPurgeTarget(video, {
+            isGhost: isGhostOnly,
+            // Hero inject alone must not mark durable vault assets as stubs.
+            isHeroInjected:
+              isHeroInjectedVaultCard(video) && !isDurableVideoVaultWorkspaceAsset(video)
+          })}
           {@const isGhostCard =
-            isGhostVideoVaultEntry(video) ||
-            isHeroInjectedVaultCard(video) ||
-            isFailedCard ||
-            isPendingCard}
+            isStubPurgeCard || isFailedCard || isPendingCard}
           {@const _vaultRenderGateBranch = logVaultRenderGate(video, reel, vi, { isVideo, isVideoReel })}
           <div
             class="vault-card thumbnail-item video-vault-item video"
@@ -3530,28 +3540,30 @@
               <button
                 type="button"
                 class="thumb-delete-btn"
-                data-vault-action={isGhostCard || isFailedCard || isPendingCard ? 'purge-stub' : 'soft-remove'}
+                data-vault-action={isStubPurgeCard || isFailedCard || isPendingCard
+                  ? 'purge-stub'
+                  : 'soft-remove'}
                 on:pointerdown={stopVaultCardDragGesture}
                 on:mousedown={stopVaultCardDragGesture}
                 on:touchstart={stopVaultCardDragGesture}
                 on:click|stopPropagation|preventDefault={() =>
-                  isGhostCard || isFailedCard || isPendingCard
+                  isStubPurgeCard || isFailedCard || isPendingCard
                     ? purgeFailedVaultVideo(video)
                     : softRemoveFromVideoVault(video)}
                 aria-label={
-                  isGhostCard || isFailedCard || isPendingCard
+                  isStubPurgeCard || isFailedCard || isPendingCard
                     ? `Remove stub ${video.name || ''}`
                     : `Remove ${video.name || 'video'} from Video Vault`
                 }
                 title={
-                  isGhostCard || isFailedCard || isPendingCard
+                  isStubPurgeCard || isFailedCard || isPendingCard
                     ? 'Remove leftover stub'
-                    : 'Remove from Video Vault (reversible — does not delete the file)'
+                    : 'Remove from Video Vault (reversible — does not delete the file or Hero)'
                 }
               >
                 ✕
               </button>
-              {#if !isGhostCard && !isFailedCard && !isPendingCard && !isUploadingCard}
+              {#if !isStubPurgeCard && !isFailedCard && !isPendingCard && !isUploadingCard}
                 <div class="vault-card-actions" data-vault-card-actions>
                   <button
                     type="button"
@@ -3599,7 +3611,7 @@
                 >
                   Remove stub
                 </button>
-              {:else if isGhostCard}
+              {:else if isStubPurgeCard}
                 <button
                   type="button"
                   class="ghost-purge-btn"
@@ -3622,7 +3634,7 @@
                 Select
               </label>
             </div>
-            {#if !isUploadingCard && !isFailedCard && !isPendingCard && !isGhostCard}
+            {#if !isUploadingCard && !isFailedCard && !isPendingCard && !isStubPurgeCard}
               <VaultEpisodeCreatorStatus
                 asset={video}
                 active={true}

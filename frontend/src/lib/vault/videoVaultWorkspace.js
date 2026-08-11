@@ -6,6 +6,9 @@
  * they are only filtered from the Video Vault presentation surface.
  *
  * Does not touch HeroRecord, PUBLIC APPROVED, or DELETE /api/reels.
+ *
+ * IMPORTANT: Being the active Hero asset must not reclassify a durable
+ * personalVideos row as "ghost chrome". Soft-remove hides from Video Vault only.
  */
 
 /** @type {string} */
@@ -13,6 +16,61 @@ export const VIDEO_VAULT_HIDDEN_STORAGE_KEY = 'reelforge_video_vault_hidden_ids'
 
 /** Cap hidden-id list (newest first). */
 export const VIDEO_VAULT_HIDDEN_CAP = 200;
+
+/**
+ * Durable workspace asset: eligible for soft-remove (hide) only.
+ * True ghosts / failed / local-pending never pass this gate.
+ *
+ * @param {unknown} entry
+ * @returns {boolean}
+ */
+export function isDurableVideoVaultWorkspaceAsset(entry) {
+    if (!entry || typeof entry !== 'object') return false;
+    const row = /** @type {Record<string, unknown>} */ (entry);
+    const state = String(row.uploadState || '').trim();
+    if (
+        row.isOptimisticLocal ||
+        state === 'pending_accept' ||
+        state === 'uploading' ||
+        state === 'interrupted' ||
+        state === 'failed'
+    ) {
+        return false;
+    }
+    if (row.urlExpired === true) return false;
+    const id = String(row.id || row.assetId || row.mediaAssetId || '').trim();
+    if (!id || id.startsWith('local-upload-') || id.startsWith('local-pending-')) {
+        return false;
+    }
+    const url = String(row.url || row.video_url || row.src || '').trim();
+    if (!url) return false;
+    // In-memory blob chrome is not a durable workspace asset for soft-remove.
+    if (url.startsWith('blob:') || url.startsWith('data:')) return false;
+    return true;
+}
+
+/**
+ * Stub / ghost purge targets only (NOT soft-remove).
+ * Hero-bound durable assets must return false so soft-remove can run instead.
+ *
+ * @param {unknown} entry
+ * @param {{ isHeroInjected?: boolean; isGhost?: boolean }} [flags]
+ * @returns {boolean}
+ */
+export function isVideoVaultStubPurgeTarget(entry, flags = {}) {
+    if (isDurableVideoVaultWorkspaceAsset(entry)) return false;
+    if (flags.isGhost === true) return true;
+    if (flags.isHeroInjected === true) return true;
+    if (!entry || typeof entry !== 'object') return true;
+    const row = /** @type {Record<string, unknown>} */ (entry);
+    const state = String(row.uploadState || '').trim();
+    if (state === 'failed' || state === 'interrupted' || state === 'pending_accept') return true;
+    if (row.isHeroBackground === true) return true;
+    if (row.urlExpired === true) return true;
+    const url = String(row.url || row.video_url || row.src || '').trim();
+    if (!url || url.startsWith('blob:')) return true;
+    return false;
+}
 
 /**
  * @returns {string[]}
