@@ -1876,10 +1876,9 @@ $: heroBadgeLabel = sanitizeViewer || heroStoryPublished
       if (!isOperationActive()) return;
       const currentConfig = loadHeroManagerConfig();
       const derivedHeadline = humanizeFileName(name || file?.name || '');
+      // Preserve an explicit custom Viewer Label; never invent brand when empty.
       const viewerPatch = {
-        heroLabel: shouldHydrateViewerField(currentConfig?.heroLabel)
-          ? 'LOOK@ZAKANDA PRESENTS'
-          : String(currentConfig?.heroLabel || '').trim(),
+        heroLabel: String(currentConfig?.heroLabel || '').trim(),
         heroTitle: shouldHydrateViewerField(currentConfig?.heroTitle)
           ? derivedHeadline
           : String(currentConfig?.heroTitle || '').trim(),

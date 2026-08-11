@@ -1248,6 +1248,12 @@
             // Creator identity → Theater episode metadata (same reelId / heroAssetId).
             pushHeroIdentityToEpisode(config, reason);
 
+            // heroLabel: "" is intentional (optional badge). Never recover prior brand via ||.
+            const publishedHeroLabel = Object.prototype.hasOwnProperty.call(config, 'heroLabel')
+                ? String(config.heroLabel ?? '').trim()
+                : Object.prototype.hasOwnProperty.call(savedConfig, 'heroLabel')
+                  ? String(savedConfig.heroLabel ?? '').trim()
+                  : '';
             const publishBody = enrichPresentationConfigFromLocalIdentity({
                 ...savedConfig,
                 heroAssetId: config.heroAssetId || savedConfig.heroAssetId,
@@ -1256,7 +1262,7 @@
                 heroTitle: config.heroTitle || savedConfig.heroTitle,
                 heroSubtitle: config.heroSubtitle || savedConfig.heroSubtitle,
                 heroDescription: config.heroDescription || savedConfig.heroDescription,
-                heroLabel: config.heroLabel || savedConfig.heroLabel,
+                heroLabel: publishedHeroLabel,
                 backgroundSource: config.backgroundSource || savedConfig.backgroundSource,
                 backgroundStyle: config.backgroundStyle || savedConfig.backgroundStyle
             });
@@ -2614,7 +2620,7 @@
         <div class="hero-viewer-content__grid">
             <label class="hero-manager__field">
                 <span>Viewer Label</span>
-                <input type="text" bind:value={config.heroLabel} placeholder="LOOK@ZAKANDA PRESENTS" on:change={handleFieldCommit} on:blur={handleFieldCommit} />
+                <input type="text" bind:value={config.heroLabel} placeholder="Optional viewer label" on:change={handleFieldCommit} on:blur={handleFieldCommit} />
             </label>
             <label class="hero-manager__field">
                 <span>Viewer Headline</span>

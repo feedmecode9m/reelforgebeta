@@ -5,7 +5,11 @@
  * - mapServerPresentationToManagerPatch recovers heroAssetId from backend payload
  * - sanitize fixes location "La" → "Los Angeles" for "Vic G LA Story"
  * - simulated clear-localStorage still resolves the canonical hero asset from server
+ * - optional Viewer Label: empty default, null hydrate, explicit clear, no brand invent
  */
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
     buildServerPresentationPayload,
     mapServerPresentationToManagerPatch,
@@ -16,6 +20,8 @@ import {
     pickHeroBackgroundMediaUrl,
     resolveHeroPlaybackUrl
 } from '../src/lib/hero/heroPlaybackUrl.js';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const EXPECTED_HERO_ASSET_ID = '3894107e-ae44-43c5-af72-b3f5d5e0ad90';
 
@@ -234,6 +240,128 @@ const noVaultPatch = mapServerPresentationToManagerPatch({
 });
 assert(Boolean(noVaultPatch?.mediaUrl), 'patch preserves server mediaUrl without vault');
 assertEq('patch mediaUrl is R2', String(noVaultPatch.mediaUrl), R2);
+
+console.log('\n[optional Viewer Label: defaults, clear, accept, stage badge sources]');
+const heroExpSrc = readFileSync(
+    join(__dirname, '../src/components/experiences/HeroExperience.svelte'),
+    'utf8'
+);
+const managerSrc = readFileSync(
+    join(__dirname, '../src/components/studio/HeroManagerPanel.svelte'),
+    'utf8'
+);
+const headerSrc = readFileSync(
+    join(__dirname, '../src/components/navigation/ConsumerHeader.svelte'),
+    'utf8'
+);
+const intelSrc = readFileSync(join(__dirname, '../src/lib/hero/heroIntelligence.js'), 'utf8');
+
+assert(
+    /heroLabel:\s*['"]{0,2}\s*['"]/.test(intelSrc) ||
+        /heroLabel:\s*''/.test(intelSrc) ||
+        /heroLabel:\s*""/.test(intelSrc),
+    'default manager config sets empty heroLabel'
+);
+assert(
+    !/heroLabel:\s*'LOOK@ZAKANDA PRESENTS'/.test(intelSrc),
+    'default manager config no longer hard-codes brand as heroLabel'
+);
+assert(
+    /placeholder="Optional viewer label"/.test(managerSrc),
+    'Viewer Label placeholder is neutral optional copy'
+);
+assert(
+    !/placeholder="LOOK@ZAKANDA PRESENTS"/.test(managerSrc),
+    'Viewer Label placeholder must not be brand text'
+);
+assert(
+    /Object\.prototype\.hasOwnProperty\.call\(config,\s*'heroLabel'\)/.test(managerSrc),
+    'persistHeroSettings keeps explicit heroLabel including empty'
+);
+assert(
+    !/heroLabel:\s*config\.heroLabel\s*\|\|\s*savedConfig\.heroLabel/.test(managerSrc),
+    'persistHeroSettings no longer uses falsy || brand recover for heroLabel'
+);
+// Accept path: preserve label trim only — no LOOK inject for empty.
+const acceptIdx = heroExpSrc.indexOf('const viewerPatch = {');
+assert(acceptIdx >= 0, 'Hero accept viewerPatch present');
+const acceptSlice = heroExpSrc.slice(acceptIdx, acceptIdx + 650);
+assert(
+    !/shouldHydrateViewerField\(currentConfig\?\.heroLabel\)[\s\S]{0,80}LOOK@ZAKANDA PRESENTS/.test(
+        acceptSlice
+    ),
+    'Hero accept does not inject brand Viewer Label when empty'
+);
+assert(
+    /heroLabel:\s*String\(currentConfig\?\.heroLabel\s*\|\|\s*''\)\.trim\(\)/.test(acceptSlice) ||
+        /heroLabel:\s*String\(currentConfig\?\.heroLabel \|\| ''\)\.trim\(\)/.test(acceptSlice),
+    'Hero accept preserves current heroLabel (empty stays empty)'
+);
+// Stage: no brand fallback for empty published label.
+assert(
+    !/heroStoryLabel\s*\|\|\s*['"]Look@Zakanda Presents['"]/.test(heroExpSrc),
+    'HeroExperience does not resurrect Look@Zakanda badge from empty label'
+);
+assert(
+    /\{#if heroBadgeLabel\}/.test(heroExpSrc),
+    'HeroExperience only mounts badge when heroBadgeLabel is non-empty'
+);
+assert(
+    /brand\s*=\s*['"]LOOK@ZAKANDA PRESENTS['"]/.test(headerSrc),
+    'ConsumerHeader default brand remains LOOK@ZAKANDA PRESENTS'
+);
+
+// Explicit clear publish-body semantics (mirrors Hero Manager fix).
+function resolvePublishedHeroLabel(config, savedConfig) {
+    if (Object.prototype.hasOwnProperty.call(config, 'heroLabel')) {
+        return String(config.heroLabel ?? '').trim();
+    }
+    if (Object.prototype.hasOwnProperty.call(savedConfig, 'heroLabel')) {
+        return String(savedConfig.heroLabel ?? '').trim();
+    }
+    return '';
+}
+const priorBrand = { heroLabel: 'LOOK@ZAKANDA PRESENTS', heroTitle: 'Vic G LA Story' };
+const clearedUi = { ...priorBrand, heroLabel: '' };
+assertEq(
+    'explicit clear publish body heroLabel is empty string',
+    resolvePublishedHeroLabel(clearedUi, priorBrand),
+    ''
+);
+assertEq(
+    'custom label publish preserved',
+    resolvePublishedHeroLabel({ heroLabel: 'A ZAKANDA ORIGINAL' }, priorBrand),
+    'A ZAKANDA ORIGINAL'
+);
+assertEq(
+    'absent key falls back to saved',
+    resolvePublishedHeroLabel({}, priorBrand),
+    'LOOK@ZAKANDA PRESENTS'
+);
+
+// Dynamic default + hydrate when Node can load manager defaults.
+try {
+    const { createServer } = await import('vite');
+    const server = await createServer({
+        root: join(__dirname, '..'),
+        server: { middlewareMode: true },
+        appType: 'custom',
+        logLevel: 'error'
+    });
+    try {
+        const intel = await server.ssrLoadModule('/src/lib/hero/heroIntelligence.js');
+        const defaults = intel.getDefaultHeroManagerConfig();
+        assertEq('runtime default heroLabel is empty', String(defaults.heroLabel ?? ''), '');
+        assert(
+            String(defaults.heroLabel) !== 'LOOK@ZAKANDA PRESENTS',
+            'runtime default is not brand'
+        );
+    } finally {
+        await server.close();
+    }
+} catch (err) {
+    console.warn('  ⊘ runtime getDefaultHeroManagerConfig skip:', err?.message || err);
+}
 
 console.log(
     failed === 0

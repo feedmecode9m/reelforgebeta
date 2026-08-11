@@ -714,7 +714,8 @@ export function getDefaultHeroManagerConfig() {
         heroTypography: 'cinematic',
         autoplayEnabled: true,
         carouselSlideOverrides: getDefaultCarouselSlideOverrides(),
-            heroLabel: 'LOOK@ZAKANDA PRESENTS',
+            // Optional Viewer Label — empty means no Hero-stage badge (chrome brand is separate).
+            heroLabel: '',
             // Leave empty so live vault title can become truth — avoids demo mismatch on personal heroes.
             heroTitle: '',
             heroSubtitle: '',
