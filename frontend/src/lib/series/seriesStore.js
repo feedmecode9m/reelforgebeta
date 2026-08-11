@@ -46,6 +46,10 @@ import {
     stripDemoSeriesFromCatalog
 } from './seriesCatalogTruth.js';
 import {
+    mergeVicGSeriesIntoCatalog,
+    VIC_G_SERIES_ID
+} from './vicGSeriesPackage.js';
+import {
     guardIntelligenceMetadataWrite,
     PROVENANCE_SOURCE_TYPES
 } from '../architecture/intelligenceProvenance.js';
@@ -317,15 +321,21 @@ export function reapplyCreatorCatalogAuthorityToStore() {
 function applyApiCatalogState(catalogItems, map) {
     // API rows may still contain previously migrated demo series — strip always.
     const clean = stripDemoSeriesFromCatalog(catalogItems);
-    const cleanMap = stripDemoReelMetadata(map);
+    // Creator package: Vic G reel bindings (structural; display titles remain persistent/canonical).
+    const withPackages = mergeVicGSeriesIntoCatalog(clean);
+    const packageMap = catalogToReelMetadataMap(withPackages);
+    const cleanMap = stripDemoReelMetadata({
+        ...(map && typeof map === 'object' ? map : {}),
+        ...packageMap
+    });
     const localMap = stripDemoReelMetadata(loadReelSeriesMetadataMap());
     // API catalog identity + publish status win over vault-local filename maps.
     let mergedMap = mergeMetadataMapsPreservingCreator(localMap, cleanMap);
 
     // Catalog episodes (with reelId) are authoritative — never re-apply vault rewrite
     // of status / S/E / titles onto the clean catalog tree.
-    seriesCatalog.set(clean);
-    mergedMap = alignReelMetadataMapToCatalog(mergedMap, clean);
+    seriesCatalog.set(withPackages);
+    mergedMap = alignReelMetadataMapToCatalog(mergedMap, withPackages);
     reelSeriesMetadata.set(mergedMap);
     persistReelSeriesMetadataMap(mergedMap);
 
@@ -335,6 +345,8 @@ function applyApiCatalogState(catalogItems, map) {
     rehydrateEpisodeVaultBindings();
 
     // Re-align after optional vault bind (bindings only touch structural media ids).
+    // Re-assert Vic G package after vault inference (must not invent titles).
+    seriesCatalog.update((items) => mergeVicGSeriesIntoCatalog(items));
     const postBindCatalog = get(seriesCatalog);
     const realigned = alignReelMetadataMapToCatalog(get(reelSeriesMetadata), postBindCatalog);
     reelSeriesMetadata.set(realigned);
@@ -343,11 +355,30 @@ function applyApiCatalogState(catalogItems, map) {
     // Creator Series Catalog edits (order + optional status overrides) final layer.
     reapplyCreatorCatalogAuthorityToStore();
     // Catalog won for status — keep map in sync with final store (including edits).
+    seriesCatalog.update((items) => mergeVicGSeriesIntoCatalog(items));
     const afterEdits = alignReelMetadataMapToCatalog(get(reelSeriesMetadata), get(seriesCatalog));
     reelSeriesMetadata.set(afterEdits);
     persistReelSeriesMetadataMap(afterEdits);
 
     seriesPersistenceMode.set('api');
+}
+
+/**
+ * Ensure Vic G package is present on the live catalog + reel metadata map.
+ * Safe for tests and local init before/without API hydrate.
+ */
+export function ensureVicGSeriesPackage() {
+    seriesCatalog.update((items) => mergeVicGSeriesIntoCatalog(items));
+    const catalog = get(seriesCatalog);
+    const packageMap = catalogToReelMetadataMap(
+        catalog.filter((s) => s && s.id === VIC_G_SERIES_ID)
+    );
+    const localMap = stripDemoReelMetadata(get(reelSeriesMetadata));
+    const merged = mergeMetadataMapsPreservingCreator(localMap, packageMap);
+    const aligned = alignReelMetadataMapToCatalog(merged, catalog);
+    reelSeriesMetadata.set(aligned);
+    persistReelSeriesMetadataMap(aligned);
+    return getSeriesById(VIC_G_SERIES_ID) || null;
 }
 
 /**
@@ -561,6 +592,8 @@ export function initSeriesMetadata() {
     applyAllMetadataToCatalog(map);
     rehydrateEpisodeVaultBindings();
     reapplyCreatorCatalogAuthorityToStore();
+    // Structural Vic G package (real vault reelIds) — always available for Theater family.
+    ensureVicGSeriesPackage();
 
     if (!apiHydrationStarted) {
         apiHydrationStarted = true;
