@@ -32,6 +32,7 @@
         buildHeroManagerPatchFromTitleIntel,
         UNTITLED_CREATOR_EXPERIENCE
     } from '../../lib/hero/heroTitleIntelligence.js';
+    import { resolveVaultCardProjection } from '../../lib/content/vaultCardProjection.js';
     import {
         approveIdentityProposal,
         getPendingStoryProposal,
@@ -3140,8 +3141,21 @@
             <div class="hero-vault__grid">
                 {#each $heroAssetRegistry as item (item.assetId)}
                     {@const isActive = String(item.assetId) === String(config.heroAssetId || '')}
-                    {@const displayTitle = getDisplayTitle(item)}
-                    {@const storyIntel = getStoryPreviewIntel(item)}
+                    {@const vaultCard = resolveVaultCardProjection(item.assetId, {
+                        reel: {
+                            id: item.assetId,
+                            title: item.title,
+                            name: item.name || item.title,
+                            url: item.mediaUrl,
+                            mediaUrl: item.mediaUrl,
+                            thumbnailUrl: item.posterUrl || item.thumbnailUrl,
+                            type: item.assetType
+                        },
+                        isActiveHero: isActive,
+                        heroAssetId: config.heroAssetId,
+                        heroDescription: isActive ? config.heroDescription : ''
+                    })}
+                    {@const displayTitle = vaultCard.title || getDisplayTitle(item)}
                     {@const videoLoaded = Boolean(vaultVideoLoadedByAsset[item.assetId])}
                     {@const videoErrored = Boolean(vaultVideoErrorByAsset[item.assetId])}
                     {@const vaultPreviewActive = String(activeHeroVaultPreviewId) === String(item.assetId)}
@@ -3171,7 +3185,7 @@
                         <div class="hero-vault__preview">
                             {#if isVideoHeroAssetType(item.assetType)}
                                 {@const previewUrl = resolveHeroVaultPreviewUrl(item)}
-                                {@const posterUrl = resolveHeroVaultPosterUrl(item)}
+                                {@const posterUrl = resolveHeroVaultPosterUrl(item) || vaultCard.posterUrl}
                                 {#if vaultPreviewActive && previewUrl && !videoErrored}
                                     {#key `${item.assetId}:${previewUrl}:live`}
                                         <MediaRenderer
@@ -3228,6 +3242,7 @@
                                 <img
                                     class="hero-vault__image"
                                     src={resolveHeroVaultPosterUrl(item) ||
+                                        vaultCard.posterUrl ||
                                         resolveMediaForRender(item.mediaUrl, 'thumbnail', 'HeroVaultImage') ||
                                         item.mediaUrl}
                                     alt={displayTitle}
@@ -3240,11 +3255,18 @@
                             {/if}
                         </div>
                         <div class="hero-vault__meta">
-                            <strong>{displayTitle}</strong>
+                            {#if vaultCard.title}
+                                <strong data-vault-card-title>{vaultCard.title}</strong>
+                            {/if}
                             <span>{isVideoHeroAssetType(item.assetType) ? 'Video vault pick' : 'Image vault pick'}</span>
-                            <span class="hero-vault__story-preview" data-hero-story-preview>
-                                Suggested: {storyIntel.heroDescription}
-                            </span>
+                            {#if vaultCard.description}
+                                <span
+                                    class="hero-vault__story-preview"
+                                    data-vault-card-description
+                                    data-hero-story-preview
+                                    >{vaultCard.description}</span
+                                >
+                            {/if}
                             <span>ID: {item.assetId}</span>
                         </div>
                         <div class="hero-vault__actions">

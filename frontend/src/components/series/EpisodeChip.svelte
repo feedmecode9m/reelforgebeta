@@ -1,6 +1,7 @@
 <script>
     import { createEventDispatcher } from 'svelte';
     import { resolveMediaForRender } from '../media/resolveDisplayUrl.js';
+    import { resolveVaultCardProjection } from '../../lib/content/vaultCardProjection.js';
 
     const dispatch = createEventDispatcher();
 
@@ -54,6 +55,10 @@
      */
     export let bindingLabel = '';
 
+    /** Optional creator description (admin may still pass; viewer prefers projection). */
+    /** @type {string} */
+    export let description = '';
+
     $: code = `S${seasonNumber}:E${episodeNumber}`;
     $: epPad = String(Math.max(0, episodeNumber || 0)).padStart(2, '0');
     $: labelRoot = String(seriesLabel || '').trim();
@@ -64,34 +69,65 @@
      */
     $: viewerIdentityLine = labelRoot
         ? `${epPad}  ${labelRoot} • S${seasonNumber} • E${episodeNumber}`
-        : `${epPad}  S${seasonNumber} • E${episodeNumber}`;
-    /** Prefer a human episode title without repeating the franchise alone. */
+        : seasonNumber && episodeNumber
+          ? `${epPad}  S${seasonNumber} • E${episodeNumber}`
+          : '';
+
+    /** @type {string} */
+    $: linkedReelId = String(mediaAssetId || '').trim();
+
+    $: vaultCard = linkedReelId
+        ? resolveVaultCardProjection(linkedReelId, {
+              episodeTitle: String(title || '').trim() || undefined,
+              seriesLabel: labelRoot || undefined,
+              seasonNumber,
+              episodeNumber,
+              reel: {
+                  id: linkedReelId,
+                  title: String(title || '').trim(),
+                  name: String(title || '').trim(),
+                  thumbnailUrl: String(thumbnailUrl || '').trim(),
+                  description: String(description || '').trim()
+              }
+          })
+        : null;
+
+    /**
+     * Viewer: canonical vault title only (blank stays blank — never "Episode N").
+     * Admin: preserve package title for creator tooling.
+     */
     $: displayTitle = (() => {
-        const t = String(title || '').trim();
-        if (!t) return labelRoot ? `Episode ${episodeNumber}` : `Episode ${episodeNumber}`;
-        if (labelRoot) {
-            const loose = (s) =>
-                String(s || '')
-                    .toLowerCase()
-                    .replace(/[^a-z0-9]+/g, ' ')
-                    .trim();
-            const lt = loose(t);
-            const ll = loose(labelRoot);
-            // "STIRRED 1" / "STIRRED S01E01" → let identity line carry S/E; hide redundant title
-            if (
-                lt === ll ||
-                lt === `${ll} ${episodeNumber}` ||
-                lt === `${ll} s${seasonNumber} e${episodeNumber}` ||
-                lt === `${ll} s0${seasonNumber} e0${episodeNumber}` ||
-                new RegExp(
-                    `^${ll.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*s0*${seasonNumber}\\s*e0*${episodeNumber}$`
-                ).test(lt)
-            ) {
-                return '';
+        if (viewerMode) {
+            const projected = String(vaultCard?.title || '').trim();
+            if (projected) return projected;
+            // no linked reel — structural package title only if non-manufactured
+            const t = String(title || '').trim();
+            if (!t || /^episode\s+\d+$/i.test(t) || /^untitled/i.test(t)) return '';
+            if (labelRoot) {
+                const loose = (s) =>
+                    String(s || '')
+                        .toLowerCase()
+                        .replace(/[^a-z0-9]+/g, ' ')
+                        .trim();
+                const lt = loose(t);
+                const ll = loose(labelRoot);
+                if (
+                    lt === ll ||
+                    lt === `${ll} ${episodeNumber}` ||
+                    lt === `${ll} s${seasonNumber} e${episodeNumber}`
+                ) {
+                    return '';
+                }
             }
+            return t;
         }
-        return t;
+        return String(title || '').trim();
     })();
+
+    $: viewerDescription = viewerMode
+        ? String(vaultCard?.description || '').trim()
+        : String(description || '').trim();
+
     /** Playability comes from parent presentation. */
     $: isPlayable = playable === true || (playable === undefined && Boolean(mediaAssetId));
     $: readyBound = isPlayable && Boolean(mediaAssetId && String(mediaAssetId).trim());
@@ -100,9 +136,11 @@
      * Final <img> URL through the same media/backend resolver as MediaRenderer/Theater posters.
      * Absolute URLs passthrough; relative `/thumbs/*` join configured media origin.
      */
-    $: resolvedPosterUrl = String(thumbnailUrl || '').trim()
-        ? resolveMediaForRender(thumbnailUrl, 'poster', 'EpisodeChip:viewerPoster') ||
-          String(thumbnailUrl || '').trim()
+    $: posterSource = String(
+        (viewerMode && vaultCard?.posterUrl) || thumbnailUrl || ''
+    ).trim();
+    $: resolvedPosterUrl = posterSource
+        ? resolveMediaForRender(posterSource, 'poster', 'EpisodeChip:viewerPoster') || posterSource
         : '';
     $: hasPoster = Boolean(resolvedPosterUrl);
     $: displayBindingLabel = bindingLabel
@@ -134,7 +172,7 @@
     aria-disabled={!isPlayable}
     disabled={!isPlayable}
     aria-label={viewerMode
-        ? `${viewerIdentityLine}${selected ? ' — now playing' : readyBound ? ' — play' : ' — unavailable'}`
+        ? `${viewerIdentityLine || 'Episode'}${displayTitle ? ` — ${displayTitle}` : ''}${selected ? ' — now playing' : readyBound ? ' — play' : ' — unavailable'}`
         : `${code} ${title} — ${displayBindingLabel}${readyBound ? ' — Enter Theater' : ''}`}
     on:click={() => {
         if (!isPlayable) return;
@@ -142,7 +180,7 @@
             episodeId,
             seasonNumber,
             episodeNumber,
-            title,
+            title: displayTitle || title,
             mediaAssetId,
             thumbnailAssetId,
             reelId: mediaAssetId || null
@@ -166,16 +204,29 @@
                 {/if}
             </div>
             <div class="episode-card__copy">
-                <span class="episode-card__identity" data-viewer-episode-identity>{viewerIdentityLine}</span>
+                {#if viewerIdentityLine}
+                    <span class="episode-card__identity" data-viewer-episode-identity
+                        >{viewerIdentityLine}</span
+                    >
+                {/if}
                 {#if displayTitle}
-                    <span class="episode-card__title">{displayTitle}</span>
+                    <span class="episode-card__title" data-vault-card-title>{displayTitle}</span>
+                {/if}
+                {#if viewerDescription}
+                    <span class="episode-card__description" data-vault-card-description
+                        >{viewerDescription.length > 90
+                            ? `${viewerDescription.slice(0, 90)}…`
+                            : viewerDescription}</span
+                    >
                 {/if}
             </div>
         </div>
     {:else}
         <div class="episode-chip__header">
             <p class="episode-chip__code">{code}</p>
-            <p class="episode-chip__title">{title}</p>
+            {#if title}
+                <p class="episode-chip__title">{title}</p>
+            {/if}
         </div>
 
         {#if hasPoster && readyBound}
@@ -414,6 +465,17 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+    .episode-card__description {
+        display: block;
+        margin-top: 0.15rem;
+        font-size: 0.68rem;
+        line-height: 1.3;
+        color: rgba(255, 255, 255, 0.4);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
     }
     .episode-card__series {
         font-size: 0.7rem;

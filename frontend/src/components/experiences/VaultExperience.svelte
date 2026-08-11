@@ -71,6 +71,7 @@
     isThumbnailImageReel,
     thumbnailEntryFileKey
   } from '../../lib/viewer/thumbnailCanonicalization.js';
+  import { resolveVaultCardProjection } from '../../lib/content/vaultCardProjection.js';
   import {
     reconcileThumbnailVault,
     deleteThumbnailVaultEntries,
@@ -3402,6 +3403,9 @@
           })}
           {@const isGhostCard =
             isStubPurgeCard || isFailedCard || isPendingCard}
+          {@const vaultCard = resolveVaultCardProjection(cardMediaAssetId || video?.id || reel?.id, {
+            reel: { ...reel, ...(video || {}) }
+          })}
           {@const _vaultRenderGateBranch = logVaultRenderGate(video, reel, vi, { isVideo, isVideoReel })}
           <div
             class="vault-card thumbnail-item video-vault-item video"
@@ -3511,7 +3515,16 @@
               <div class="placeholder" aria-hidden="true">▶</div>
             {/if}
             <div class="vault-grid-chrome">
-              <span class="thumbnail-label">🎬 {reel.name?.substring(0, 12)}...</span>
+              {#if vaultCard.title}
+                <span class="thumbnail-label" data-vault-card-title>{vaultCard.title}</span>
+              {/if}
+              {#if vaultCard.description}
+                <span class="vault-card-description" data-vault-card-description
+                  >{vaultCard.description.length > 80
+                    ? `${vaultCard.description.slice(0, 80)}…`
+                    : vaultCard.description}</span
+                >
+              {/if}
               <span class="video-size-badge">{formatVaultVideoSizeLabel(video)}</span>
               {#if video.uploadState === 'pending_accept'}
                 <span class="upload-state-badge" title="Waiting for Accept">🎬 Pending Accept</span>

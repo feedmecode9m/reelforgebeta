@@ -95,11 +95,13 @@
                 <EpisodeChip
                     seasonNumber={seasonNumber ?? 1}
                     episodeNumber={episodeNumber ?? 1}
-                    title={episodeTitle || 'Episode'}
+                    title={episodeTitle || ''}
                     episodeId={seriesContext.episode.episodeId}
+                    mediaAssetId={seriesContext.episode.reelId || null}
                     status={seriesContext.episode.status || 'published'}
                     selected={true}
                     playable={true}
+                    viewerMode={true}
                 />
             </div>
         </div>

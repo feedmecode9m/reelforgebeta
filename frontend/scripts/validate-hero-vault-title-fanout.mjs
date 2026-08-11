@@ -257,8 +257,9 @@ assert(
     'dispatch/registry fan-out before backend await'
 );
 assert(
-    panelSrc.includes('{@const displayTitle = getDisplayTitle(item)}'),
-    'Hero Vault card uses getDisplayTitle (not stale item.title first)'
+    panelSrc.includes('resolveVaultCardProjection(item.assetId') &&
+        (panelSrc.includes('vaultCard.title') || panelSrc.includes('data-vault-card-title')),
+    'Hero Vault card uses vault projection for viewer title (not stale item.title first)'
 );
 
 assert(

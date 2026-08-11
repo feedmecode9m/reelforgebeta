@@ -140,6 +140,7 @@
     } from '../../lib/diagnostics/bg7nPipelineTrace.js';
     import { logBg7pShelfDistribution, shelfCountsFromFeed } from '../../lib/diagnostics/bg7pShelfDistribution.js';
     import { fillShelfPresentation } from '../../lib/feed/fillShelfPresentation.js';
+    import { resolveVaultCardProjection } from '../../lib/content/vaultCardProjection.js';
 
     /** @type {'feed' | 'theater-ambient' | 'theater-chrome'} */
     export let section = 'feed';
@@ -358,6 +359,9 @@
                                 <h3 class="reel-title presentation-title-label">Coming Soon</h3>
                             </div>
                         {:else}
+                        {@const cardProjection = resolveVaultCardProjection(String(reel?.id || ''), {
+                            reel: /** @type {Record<string, unknown>} */ (reel)
+                        })}
                         <button
                             class="reel-card"
                             class:is-ghost={reel.isPlaceholder}
@@ -376,7 +380,9 @@
                                     onOpenTheater(reel);
                                 }
                             }}
-                            aria-label="Play {reel.title}"
+                            aria-label={cardProjection.title
+                                ? `Play ${cardProjection.title}`
+                                : 'Play media'}
                         >
                             <div
                                 class="card-inner vault-card"
@@ -389,10 +395,10 @@
                             >
                                 {#if hasPlayableVideo(reel) && reel.url}
                                     {#if $feedCardVideoFallbacks.has(reel.id)}
-                                        {traceFeedCardRender(reel, category, 'video_fallback_thumbnail', reel.thumbnailUrl || getImg(reel, category, i))}
+                                        {traceFeedCardRender(reel, category, 'video_fallback_thumbnail', cardProjection.posterUrl || reel.thumbnailUrl || getImg(reel, category, i))}
                                         <MediaThumbnail
-                                            url={reel.thumbnailUrl || getImg(reel, category, i)}
-                                            alt={reel.title || reel.name || 'Video poster'}
+                                            url={cardProjection.posterUrl || reel.thumbnailUrl || getImg(reel, category, i)}
+                                            alt={cardProjection.title || 'Video'}
                                             lazyLoad
                                             className="card-visual card-video-fallback"
                                         />
@@ -401,7 +407,7 @@
                                         <MediaRenderer
                                             type="video"
                                             url={reel.url}
-                                            poster={reel.thumbnailUrl || getImg(reel, category, i)}
+                                            poster={cardProjection.posterUrl || reel.thumbnailUrl || getImg(reel, category, i)}
                                             validateVideo={true}
                                             useSourceElement={true}
                                             captionsTrack={true}
@@ -416,10 +422,10 @@
                                             on:error={(e) => onCardVideoError(e, reel)}
                                         />
                                     {:else}
-                                        {traceFeedCardRender(reel, category, 'video_poster', reel.thumbnailUrl || getImg(reel, category, i))}
+                                        {traceFeedCardRender(reel, category, 'video_poster', cardProjection.posterUrl || reel.thumbnailUrl || getImg(reel, category, i))}
                                         <MediaThumbnail
-                                            url={reel.thumbnailUrl || getImg(reel, category, i)}
-                                            alt={reel.title || reel.name || 'Video poster'}
+                                            url={cardProjection.posterUrl || reel.thumbnailUrl || getImg(reel, category, i)}
+                                            alt={cardProjection.title || 'Video'}
                                             lazyLoad
                                             className="card-visual card-video-poster"
                                         />
@@ -427,8 +433,8 @@
                                 {:else if reel.url}
                                     {traceFeedCardRender(reel, category, 'image', $feedCardImageFallbacks[reel.id] || reel.url)}
                                     <MediaThumbnail
-                                        url={$feedCardImageFallbacks[reel.id] || reel.url}
-                                        alt="{reel.name || reel.title} - {category} production"
+                                        url={$feedCardImageFallbacks[reel.id] || cardProjection.posterUrl || reel.url}
+                                        alt={cardProjection.title || 'Image'}
                                         lazyLoad
                                         className="card-visual"
                                         raw={Boolean($feedCardImageFallbacks[reel.id])}
@@ -440,7 +446,9 @@
                                 {/if}
                                 <div class="savvy-hover">
                                     <div class="play-btn">▶</div>
-                                    <div class="stats">{reel.match || 'ENHANCED BLACK STORIES'}</div>
+                                    {#if reel.match && !/^enhanced black stories$/i.test(String(reel.match))}
+                                        <div class="stats">{reel.match}</div>
+                                    {/if}
                                     {#if reel.faces?.length > 0}<div class="face-count">🎭 {reel.faces.length} BLACK FACES</div>{/if}
                                     {#if reel.black_stories_theme}<div class="black-stories-badge">🎬 {reel.black_stories_theme}</div>{/if}
                                     {#if reel.ai_tags}<div class="ai-tags">🤖 {reel.ai_tags.slice(0, 2).join(', ')}</div>{/if}
@@ -451,7 +459,19 @@
                                     {#if reel.auto_detected}<div class="auto-detected-badge">🤖 AI-PLACED</div>{/if}
                                 </div>
                             </div>
-                            <h3 class="reel-title">{reel.title}</h3>
+                            {#if cardProjection.title}
+                                <h3 class="reel-title" data-vault-card-title>{cardProjection.title}</h3>
+                            {/if}
+                            {#if cardProjection.seriesLine}
+                                <div class="reel-series-line" data-vault-card-series>{cardProjection.seriesLine}</div>
+                            {/if}
+                            {#if cardProjection.description}
+                                <p class="reel-description" data-vault-card-description>
+                                    {cardProjection.description.length > 120
+                                        ? `${cardProjection.description.slice(0, 120)}…`
+                                        : cardProjection.description}
+                                </p>
+                            {/if}
                             {#if reel.views}<div class="reel-meta">👁️ {reel.views}k • ❤️ {reel.likes}</div>{/if}
                         </button>
                         {/if}
@@ -728,11 +748,30 @@
         display: inline-block;
     }
     .reel-title {
-        font-size: 0.875rem;
-        margin: 0.75rem 0 0.25rem;
+        font-size: 0.85rem;
+        margin: 0.4rem 0 0;
+        color: inherit;
+        font-weight: 600;
+        line-height: 1.25;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+    .reel-series-line {
+        font-size: 0.72rem;
+        margin: 0.2rem 0 0;
+        opacity: 0.75;
+        line-height: 1.2;
+    }
+    .reel-description {
+        font-size: 0.72rem;
+        margin: 0.25rem 0 0;
+        opacity: 0.8;
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
     }
     .reel-meta {
         font-size: 0.75rem;
