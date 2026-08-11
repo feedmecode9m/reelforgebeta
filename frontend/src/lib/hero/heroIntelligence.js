@@ -40,6 +40,11 @@ import {
     resolveHeroAssetById
 } from './heroAssetBridge.js';
 import {
+    canonicalThumbnailAssetId,
+    isSyntheticPersonalThumbnailFeedCard,
+    stripPersonalThumbPrefix
+} from '../viewer/thumbnailDestinationIdentity.js';
+import {
     buildViewerCopyPatchFromTruth,
     resolveHeroAssetTruth
 } from './heroViewerTruth.js';
@@ -1817,9 +1822,21 @@ export function loadHeroVaultItems(extraItems = null) {
          */
         const push = (entry, source) => {
             if (!isEligibleHeroVaultPick(entry)) return;
+            // Synthetic personal-thumb feed cards are derived mirrors of thumbnail vault rows.
+            // Harvesting them again after personal_thumbnails → double Hero Vault tiles for one asset.
+            if (
+                (source === 'feed' || source === 'live_store') &&
+                isSyntheticPersonalThumbnailFeedCard(entry)
+            ) {
+                return;
+            }
             const entryId = String(entry.id || entry.assetId || entry.personal_video_id || '').trim();
-            if (!entryId || seen.has(entryId)) return;
+            if (!entryId) return;
+            const canonicalId = canonicalThumbnailAssetId(entry) || stripPersonalThumbPrefix(entryId) || entryId;
+            // Dedupe by both raw and canonical ids so personal-thumb-{uuid} collides with {uuid}.
+            if (seen.has(entryId) || seen.has(canonicalId)) return;
             seen.add(entryId);
+            if (canonicalId) seen.add(canonicalId);
             collected.push({
                 ...entry,
                 id: entryId,

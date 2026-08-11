@@ -2615,7 +2615,7 @@
 
       appendThumbnailVaultEntry(entry, CONFIG.THUMBNAIL_STORAGE_KEY);
       syncCollectionStore(personalThumbnailCollection, CONFIG.THUMBNAIL_STORAGE_KEY);
-      AI_CLEANUP_AGENT.distributeThumbnailAcrossCategories(entryName, thumbPath);
+      AI_CLEANUP_AGENT.distributeThumbnailAcrossCategories(entryName, thumbPath, id);
       console.info('[PLACEHOLDER_INSERT]', {
         source: 'VaultExperience.acceptPendingThumbnail',
         trigger: 'AI_CLEANUP_AGENT.distributeThumbnailAcrossCategories',

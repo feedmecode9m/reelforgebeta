@@ -22,6 +22,7 @@ import {
   syncCollectionStore
 } from './thumbnailVault.js';
 import { isThumbnailImageReel } from './thumbnailCanonicalization.js';
+import { shouldSynthesizePersonalThumbnailFeedCard } from './thumbnailDestinationIdentity.js';
 import { traceThumbStoreWrite } from './thumbStoreWriteTrace.js';
 import { pipelineCheckpoint } from '../diagnostics/pipelineDiag.js';
 import { vaultForensic } from '../diagnostics/vaultForensics.js';
@@ -383,20 +384,31 @@ export function createAiCleanupAgent(deps) {
   nonHeroVideos.forEach((v) => this.distributeVideoToFeed(v));
   this.applyPersistedTitlesOverlay();
   },
-  distributeThumbnailAcrossCategories(thumbnailName, base64Data) {
-  if (isHeroAsset({ id: thumbnailName, name: thumbnailName, url: base64Data, thumbnail: base64Data })) return;
+  distributeThumbnailAcrossCategories(thumbnailName, base64Data, reelId = '') {
+  if (isHeroAsset({ id: reelId || thumbnailName, name: thumbnailName, url: base64Data, thumbnail: base64Data })) return;
   const categoriesList = ['Trending', 'Romance', 'Cyber-Action', 'Suspense'];
   const detectedCategory = CATEGORY_DETECTOR.detectFromTitle(String(thumbnailName || '').replace(/\.[^/.]+$/, ''));
   const primaryCategory = categoriesList.includes(detectedCategory) ? detectedCategory : 'Trending';
+  const canonicalId = String(reelId || '').trim();
   feed.update((currentFeed) => {
   const newFeed = { ...currentFeed };
   categoriesList.forEach((cat) => {
   if (!newFeed[cat]) newFeed[cat] = [];
   // Keep a single source card per thumbnail across the full feed.
   newFeed[cat] = newFeed[cat].filter((r) => !(r.isPersonalThumbnail && r.personal_thumbnail === thumbnailName));
+  if (canonicalId) {
+    newFeed[cat] = newFeed[cat].filter(
+      (r) => !(r.isPersonalThumbnail && (String(r.id || '') === `personal-thumb-${canonicalId}` || String(r.id || '') === canonicalId))
+    );
+  }
   });
+  // Catalog image cards (buildHomeFeed + vault membership) own the reel id path.
+  const thumbProbe = { id: canonicalId, fileName: thumbnailName, url: base64Data };
+  if (!shouldSynthesizePersonalThumbnailFeedCard(thumbProbe, newFeed)) {
+    return newFeed;
+  }
   const placeholder = createLocalReel({
-  id: `personal-thumb-${thumbnailName}`,
+  id: canonicalId ? `personal-thumb-${canonicalId}` : `personal-thumb-${thumbnailName}`,
   name: `Personal Content - ${primaryCategory}`,
   category: primaryCategory,
   type: 'image',
@@ -405,6 +417,7 @@ export function createAiCleanupAgent(deps) {
   isPlaceholder: false,
   isPersonalThumbnail: true,
   personal_thumbnail: thumbnailName,
+  ...(canonicalId ? { assetId: canonicalId } : {}),
   likes: Math.floor(Math.random() * 100) + 50,
   views: Math.floor(Math.random() * 500) + 100,
   match: 'PERSONAL THUMBNAIL',
@@ -414,6 +427,7 @@ export function createAiCleanupAgent(deps) {
   stage: 'AI_CLEANUP_AGENT.distributeThumbnailAcrossCategories',
   placeholderId: placeholder.id,
   thumbnailName: String(thumbnailName || ''),
+  reelId: canonicalId || null,
   destination: `feed:${primaryCategory}`,
   ts: new Date().toISOString()
   });
@@ -470,6 +484,18 @@ export function createAiCleanupAgent(deps) {
     thumbUrl = `/thumbs/${fileKey}`;
   }
   if (!thumbUrl) return;
+  // Prefer catalog-owned image card (same reel id) when present — do not inject a second
+  // synthetic personal-thumb-* representation for the same canonical asset.
+  if (!shouldSynthesizePersonalThumbnailFeedCard(thumb, newFeed)) {
+    console.info('[PERSONAL_THUMBNAIL_SKIP_DUAL]', {
+      stage: 'AI_CLEANUP_AGENT.syncThumbnailsToFeed',
+      reason: 'catalog_card_owns_canonical_id',
+      reelId: typeof thumb === 'object' ? String(thumb.id || '') : '',
+      thumbnailName: fileKey,
+      ts: new Date().toISOString()
+    });
+    return;
+  }
   const displayLabel = typeof thumb === 'string' ? thumb : String(thumb.title || thumb.name || fileKey);
   const detectedCategory = CATEGORY_DETECTOR.detectFromTitle(String(displayLabel).replace(/\.[^/.]+$/, ''));
   const primaryCategory = categoriesList.includes(detectedCategory) ? detectedCategory : 'Trending';
