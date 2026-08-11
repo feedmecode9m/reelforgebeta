@@ -215,6 +215,11 @@ async function main() {
         assert(/viewerMode=\{true\}/.test(theater), 'Theater drawer viewerMode');
         assert(/seriesDrawerDocked|docked=\{seriesDrawerDocked\}/.test(theater), 'Landscape dock wiring');
         assert(
+            /\$activeReel && hasSeriesDrawer/.test(theater) &&
+                /seriesDrawerOpen\s*=\s*true/.test(theater),
+            'Theater auto-opens series episode shelf when series episodes exist'
+        );
+        assert(
             /resolvePlayableMediaUrl\(\$activeReel,\s*['"]theater['"]\)/.test(theater),
             'playbackUrl selection preserved on theater video'
         );

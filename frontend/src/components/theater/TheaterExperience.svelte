@@ -611,6 +611,16 @@
         episodeNavNotice = '';
         theaterBgPosterFailed = false;
     }
+    /**
+     * Mount the existing SeriesDrawer shelf when Theater has series episodes so
+     * episode posters are discoverable without requiring ALL EPISODES first.
+     * Uses the same SeriesDrawer + SeasonAccordion + EpisodeChip path (no second list).
+     * ALL EPISODES control remains for re-open after dismiss. Does not change selection/playback.
+     * Only re-runs when $activeReel / hasSeriesDrawer change — manual close is respected until then.
+     */
+    $: if ($activeReel && hasSeriesDrawer) {
+        seriesDrawerOpen = true;
+    }
 
     let lastTheaterVideoKey = '';
     $: if (theaterVideoKey && theaterVideoKey !== lastTheaterVideoKey) {
