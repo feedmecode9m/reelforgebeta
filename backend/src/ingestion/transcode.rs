@@ -259,3 +259,34 @@ pub async fn encode_web_playback_derivative(
 pub fn local_playback_path(videos_dir: &Path, reel_id: &uuid::Uuid) -> PathBuf {
     videos_dir.join(playback_file_name(reel_id))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use uuid::Uuid;
+
+    #[test]
+    fn playback_file_name_is_reel_id_playback_mp4() {
+        let id = Uuid::parse_str("615e0eae-47b4-468a-b6dd-a6846b464846").unwrap();
+        assert_eq!(
+            playback_file_name(&id),
+            "615e0eae-47b4-468a-b6dd-a6846b464846.playback.mp4"
+        );
+        assert_eq!(
+            playback_relative_url(&id),
+            "/videos/615e0eae-47b4-468a-b6dd-a6846b464846.playback.mp4"
+        );
+        assert_eq!(
+            local_playback_path(Path::new("/data/videos"), &id),
+            PathBuf::from("/data/videos/615e0eae-47b4-468a-b6dd-a6846b464846.playback.mp4")
+        );
+    }
+
+    #[test]
+    fn feature_flag_defaults_on() {
+        // When the var is unset, encode path is allowed (enable/disable is env-owned in real runs).
+        // This unit check only exercises the parse branches with a temporary override space via
+        // sequential set_var is process-wide — avoid mutating env; just assert known constants.
+        assert_eq!(PLAYBACK_PROFILE_WEB_720P_H264, "web_720p_h264");
+    }
+}

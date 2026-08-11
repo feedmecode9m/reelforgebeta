@@ -62,16 +62,19 @@ assert(
 
 // --- Worker integration ---
 const worker = read('backend/src/ingestion/worker.rs');
-assert(/attempt_playback_derivative/.test(worker), 'worker calls attempt_playback_derivative');
+assert(/attempt_playback_derivative|materialize_playback_derivative/.test(worker), 'worker calls playback derivative materialize');
 assert(/mark_ready/.test(worker), 'worker still mark_ready');
 assert(
-    /attempt_playback_derivative[\s\S]*mark_ready|playback[\s\S]*mark_ready/.test(worker),
-    'derivative attempted around ready path'
-);
-assert(
-    /master remains playable|playback_status.*failed|set_playback_derivative[\s\S]*failed/.test(
+    /attempt_playback_derivative[\s\S]*mark_ready|materialize_playback_derivative[\s\S]*mark_ready|playback[\s\S]*mark_ready/.test(
         worker
     ),
+    'derivative attempted around ready path'
+);
+const playbackDerivSrc = read('backend/src/ingestion/playback_derivative.rs');
+assert(
+    /master remains playable|STATUS_FAILED|set_playback_derivative[\s\S]*STATUS_FAILED/.test(
+        playbackDerivSrc
+    ) || /master remains playable|STATUS_FAILED/.test(worker),
     'transcode failure records failed without failing ready path'
 );
 assert(/extract_thumbnail_at_1s|ffmpeg_thumb/.test(worker), 'thumbnail generation retained');
@@ -147,6 +150,25 @@ assert(
 // --- module export ---
 const ingestMod = read('backend/src/ingestion/mod.rs');
 assert(/mod transcode/.test(ingestMod), 'ingestion module exports transcode');
+assert(/mod playback_derivative/.test(ingestMod), 'ingestion module exports playback_derivative');
+assert(/mod playback_repair/.test(ingestMod), 'ingestion module exports playback_repair');
+
+const shared = read('backend/src/ingestion/playback_derivative.rs');
+assert(/materialize_playback_derivative/.test(shared), 'shared materialize for encode+store');
+assert(
+    /r2_upload failed[\s\S]*STATUS_FAILED|not marking ready/.test(shared),
+    'shared path refuses ready on R2 failure'
+);
+
+const repair = read('backend/src/ingestion/playback_repair.rs');
+assert(/--dry-run/.test(repair), 'playback-repair dry-run default path documented');
+assert(/REELFORGE_PLAYBACK_REPAIR_APPLY/.test(repair), 'apply requires explicit env gate');
+
+const workerShared = read('backend/src/ingestion/worker.rs');
+assert(
+    /playback_derivative::materialize_playback_derivative/.test(workerShared),
+    'worker uses shared materialize (no dual pipeline)'
+);
 
 if (failures.length) {
     console.error('FAIL validate-playback-derivative');

@@ -165,6 +165,15 @@ async fn main() -> std::io::Result<()> {
         }
     }));
 
+    // Offline CLI: `cargo run -- playback-repair --dry-run` (default no mutations).
+    {
+        let mut argv = env::args().skip(1).collect::<Vec<_>>();
+        if argv.first().map(|s| s.as_str()) == Some("playback-repair") {
+            argv.remove(0);
+            return ingestion::playback_repair::run(argv).await;
+        }
+    }
+
     let mode = if is_production_env() {
         "production"
     } else {

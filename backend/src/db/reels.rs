@@ -83,6 +83,20 @@ pub async fn list_ready_reels(pool: &PgPool) -> Result<Vec<ReelRow>, sqlx::Error
     sqlx::query_as::<_, ReelRow>(&q).fetch_all(pool).await
 }
 
+/// Full-table snapshot for playback-derivative inventory / repair dry-run.
+/// Includes non-ready rows so incomplete/failure statuses are not invisible.
+pub async fn list_all_reels_for_playback_inventory(pool: &PgPool) -> Result<Vec<ReelRow>, sqlx::Error> {
+    let q = format!(
+        r#"
+        SELECT {cols}
+        FROM reels
+        ORDER BY created_at DESC
+        "#,
+        cols = REEL_SELECT
+    );
+    sqlx::query_as::<_, ReelRow>(&q).fetch_all(pool).await
+}
+
 pub async fn get_reel_by_id(pool: &PgPool, id: Uuid) -> Result<Option<ReelRow>, sqlx::Error> {
     let q = format!(
         r#"

@@ -1,4 +1,6 @@
 pub mod ffmpeg;
+pub mod playback_derivative;
+pub mod playback_repair;
 pub mod reconcile;
 pub mod transcode;
 pub mod upload;

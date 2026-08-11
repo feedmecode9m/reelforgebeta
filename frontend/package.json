@@ -51,6 +51,7 @@
     "validate:playback-stability": "node scripts/validate-playback-stability.mjs",
     "validate:playback-derivative": "node scripts/validate-playback-derivative.mjs",
     "validate:playback-selection": "node scripts/validate-playback-selection.mjs",
+    "validate:theater-derivative-contract": "node scripts/validate-theater-derivative-contract.mjs",
     "validate:series-related-episodes": "node scripts/validate-series-related-episodes.mjs",
     "validate:vault-series-identity": "node scripts/validate-vault-series-identity.mjs",
     "validate:hero-vault-series-identity": "node scripts/validate-hero-vault-series-identity.mjs",

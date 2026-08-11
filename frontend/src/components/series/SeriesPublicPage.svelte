@@ -73,12 +73,38 @@
   const personalVideos = writable(/** @type {Record<string, unknown>[]} */ ([]));
   /** @type {Record<string, unknown>[]} */
   let heroVaultAssets = [];
+  /**
+   * Public /api/reels rows flattened for bound-id resolve on cold viewers
+   * (empty personal vault). Not passed into vault membership inference —
+   * presentation / playback registry only.
+   * @type {Record<string, unknown>[]}
+   */
+  let publicApiReadyAssets = [];
 
   let selectedEpisodeId = '';
   let playNotice = '';
   let bootstrapped = false;
   /** True while vault inference + binding restore runs on cold load. */
   let hydrating = true;
+
+  /**
+   * Vault ready rows ∪ public API reels (deduped by id).
+   * Lets resolveEpisodeMedia honor catalog reelId without requiring Hero Vault LS.
+   * @returns {Record<string, unknown>[]}
+   */
+  function mergeReadyMediaAssets() {
+    /** @type {Map<string, Record<string, unknown>>} */
+    const byId = new Map();
+    for (const item of [...heroVaultAssets, ...publicApiReadyAssets]) {
+      if (!item || typeof item !== 'object') continue;
+      const id = String(item.id || item.mediaAssetId || item.assetId || '').trim();
+      if (!id || byId.has(id)) continue;
+      byId.set(id, item);
+    }
+    return [...byId.values()];
+  }
+
+  $: effectiveReadyAssets = mergeReadyMediaAssets();
 
   /**
    * Resolve series from catalog by id convention, then title slug.
@@ -131,7 +157,54 @@
       /* ignore */
     }
 
+    // Catalog-bound reels on public pages (cold vault) for resolveReelForEpisode.
+    for (const reel of publicApiReadyAssets) {
+      push(reel);
+    }
+
     return entries;
+  }
+
+  /**
+   * Map GET /api/reels rows into the vault-shaped ready asset shape expected by
+   * resolveEpisodeMedia / isReadyVaultAsset (id + url + ready status).
+   * @param {unknown} reels
+   * @returns {Record<string, unknown>[]}
+   */
+  function mapApiReelsToReadyAssets(reels) {
+    if (!Array.isArray(reels)) return [];
+    /** @type {Record<string, unknown>[]} */
+    const out = [];
+    for (const r of reels) {
+      if (!r || typeof r !== 'object') continue;
+      const id = String(/** @type {Record<string, unknown>} */ (r).id || '').trim();
+      if (!id) continue;
+      const row = /** @type {Record<string, unknown>} */ (r);
+      const url = String(row.url || row.videoUrl || row.video_url || row.mediaUrl || '').trim();
+      if (!url) continue;
+      // Pass through derivative fields so Theater prefers ready playbackUrl (master stays on `url`).
+      const playbackUrl = String(row.playbackUrl || row.playback_url || '').trim();
+      const playbackStatus = String(row.playbackStatus || row.playback_status || '')
+        .trim()
+        .toLowerCase();
+      out.push({
+        id,
+        mediaAssetId: id,
+        assetId: id,
+        name: row.name || row.title || id,
+        title: row.name || row.title || id,
+        fileName: row.fileName || row.filename || '',
+        url,
+        videoUrl: url,
+        thumbnailUrl: row.thumbnailUrl || row.thumbnail_url || '',
+        status: row.status || 'ready',
+        type: row.type || 'video',
+        validated: row.validated,
+        ...(playbackUrl ? { playbackUrl } : {}),
+        ...(playbackStatus ? { playbackStatus } : {})
+      });
+    }
+    return out;
   }
 
   $: series = resolveSeriesFromSlug(slug, $seriesCatalog);
@@ -156,12 +229,18 @@
       }
       // Viewer: published discovery only; still require media match
       if (!episodeIsViewerDiscoverable(episode)) return false;
-      const resolved = resolveEpisodeMedia({ episode, readyVaultAssets: heroVaultAssets });
+      const resolved = resolveEpisodeMedia({
+        episode,
+        readyVaultAssets: effectiveReadyAssets
+      });
       return resolved.matched || episodeIsPubliclyPlayable(episode);
     }) || null;
   $: playableCount = allEpisodes.filter(({ episode }) => {
     if (!episodeIsViewerDiscoverable(episode)) return false;
-    const resolved = resolveEpisodeMedia({ episode, readyVaultAssets: heroVaultAssets });
+    const resolved = resolveEpisodeMedia({
+      episode,
+      readyVaultAssets: effectiveReadyAssets
+    });
     return resolved.matched || episodeIsPubliclyPlayable(episode);
   }).length;
   // Counts only from series.seasons[].episodes[] (+ real vault playability).
@@ -173,7 +252,10 @@
         },
         (episode) => {
           if (!episodeIsViewerDiscoverable(episode)) return false;
-          const resolved = resolveEpisodeMedia({ episode, readyVaultAssets: heroVaultAssets });
+          const resolved = resolveEpisodeMedia({
+            episode,
+            readyVaultAssets: effectiveReadyAssets
+          });
           return resolved.matched || episodeIsPubliclyPlayable(episode);
         }
       )
@@ -212,7 +294,10 @@
   $: seriesPosterSrc = resolveSeriesPosterSrc({
     seriesPoster: series?.poster,
     episodeThumbnails: allEpisodes.map(({ episode }) => {
-      const resolved = resolveEpisodeMedia({ episode, readyVaultAssets: heroVaultAssets });
+      const resolved = resolveEpisodeMedia({
+        episode,
+        readyVaultAssets: effectiveReadyAssets
+      });
       if (!resolved.matched) return null;
       return resolved.thumbnail || resolved.mediaUrl || null;
     }),
@@ -280,9 +365,10 @@
 
     refreshHeroVaultAssets();
     // Manual binding override → keyword resolve (unchanged algorithm) → unavailable.
+    // Uses vault ∪ public API reels so cold viewers resolve catalog reelId binds.
     const resolved = resolveEpisodeMedia({
       episode: ctx.episode,
-      readyVaultAssets: heroVaultAssets
+      readyVaultAssets: mergeReadyMediaAssets()
     });
     logEpisodeVaultResolve({
       episodeId,
@@ -349,6 +435,7 @@
     }
 
     // Cold load: same Hero Vault ready source → inference → bindings (id refs only).
+    // Do not feed public /api/reels into inference — catalog membership stays API-authoritative.
     try {
       const live = get(personalVideos);
       const result = hydratePublicSeriesFromVault({
@@ -361,6 +448,19 @@
       console.warn('[SeriesPublicPage] vault hydration failed', err);
       refreshHeroVaultAssets();
     }
+
+    // Public reel registry for bound catalog reelId → guide/playback resolve without personal vault.
+    (async () => {
+      try {
+        const res = await fetch('/api/reels');
+        if (!res.ok) return;
+        const reels = await res.json();
+        publicApiReadyAssets = mapApiReelsToReadyAssets(reels);
+      } catch (err) {
+        console.warn('[SeriesPublicPage] public /api/reels load failed', err);
+      }
+    })();
+
     hydrating = false;
 
     configureEpisodeNavigation({
@@ -484,7 +584,7 @@
             <SeasonAccordion
               seriesId={series.id}
               {season}
-              heroVaultAssets={heroVaultAssets}
+              heroVaultAssets={effectiveReadyAssets}
               seriesLabel={series.title || ''}
               viewerMode={true}
               flat={sortedSeasons.length === 1}
@@ -567,19 +667,28 @@
           {#each allEpisodes as row (row.episode.episodeId)}
             {@const resolved = resolveEpisodeMedia({
               episode: row.episode,
-              readyVaultAssets: heroVaultAssets
+              readyVaultAssets: effectiveReadyAssets
             })}
             {@const chip = episodeChipPresentation(row.episode, resolved)}
+            {@const catalogPublic = episodeIsPubliclyPlayable(row.episode)}
+            {@const guidePlayable = Boolean(chip.playable || catalogPublic)}
+            {@const guideMediaId =
+              chip.mediaAssetId || row.episode.mediaAssetId || row.episode.reelId || null}
+            {@const guideLabel = chip.playable
+              ? chip.bindingLabel
+              : catalogPublic
+                ? ''
+                : chip.bindingLabel}
             {@const progressPct = getStoredWatchPercent(
               row.episode.episodeId,
               row.episode.reelId || row.episode.mediaAssetId
             )}
             <li
               class="series-public__status-row"
-              class:playable={chip.playable && episodeIsPubliclyPlayable(row.episode)}
-              class:unavailable={!chip.playable || !episodeIsPubliclyPlayable(row.episode)}
+              class:playable={guidePlayable && catalogPublic}
+              class:unavailable={!guidePlayable || !catalogPublic}
               data-episode-id={row.episode.episodeId}
-              data-media-asset-id={chip.mediaAssetId || undefined}
+              data-media-asset-id={guideMediaId || undefined}
               data-binding-mode={chip.bindingMode || undefined}
               data-display-order={row.episode.displayOrder ?? undefined}
             >
@@ -590,11 +699,13 @@
               {#if chip.thumbnailUrl}
                 <img class="series-public__status-thumb" src={chip.thumbnailUrl} alt="" />
               {/if}
-              <span class="series-public__status-badge">{chip.bindingLabel}</span>
+              {#if guideLabel}
+                <span class="series-public__status-badge">{guideLabel}</span>
+              {/if}
               {#if progressPct != null && progressPct > 0 && progressPct < 100}
                 <ContinueWatchingBadge percent={progressPct} />
               {/if}
-              {#if chip.playable && episodeIsPubliclyPlayable(row.episode)}
+              {#if guidePlayable && catalogPublic}
                 <button
                   type="button"
                   class="series-public__row-play"
