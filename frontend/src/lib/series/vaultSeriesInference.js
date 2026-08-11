@@ -10,6 +10,7 @@ import { get } from 'svelte/store';
 import {
     attachEpisodeReel,
     bindEpisodeToFeedReel,
+    detachEpisodeReel,
     getEpisodeById,
     getEpisodeByReelId,
     getReelSeriesMetadata,
@@ -855,6 +856,673 @@ export function isReelAlreadySeriesBound(reelId) {
 }
 
 /**
+ * Normalize franchise label for agreement checks (not display).
+ * @param {unknown} value
+ */
+export function normalizeFranchiseKey(value) {
+    return String(value || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+/**
+ * Creator-confirmed bindings must not be re-homed by NLP.
+ *
+ * Checks vault asset identity flags, catalog episode/series markers, and reel metadata.
+ *
+ * @param {Record<string, unknown> | null | undefined} asset
+ * @param {{
+ *   series?: import('./seriesTypes.js').Series | null;
+ *   episode?: import('./seriesTypes.js').Episode | null;
+ * } | null | undefined} [bindingCtx]
+ */
+export function isCatalogBindingCreatorConfirmed(asset, bindingCtx = null) {
+    const nested =
+        asset?.seriesIdentity && typeof asset.seriesIdentity === 'object'
+            ? /** @type {Record<string, unknown>} */ (asset.seriesIdentity)
+            : null;
+    if (
+        nested?.confirmedByCreator === true ||
+        nested?.identitySource === 'creator' ||
+        asset?.confirmedByCreator === true ||
+        asset?.identitySource === 'creator'
+    ) {
+        return true;
+    }
+
+    const ep = bindingCtx?.episode;
+    if (
+        ep &&
+        (/** @type {Record<string, unknown>} */ (ep).confirmedByCreator === true ||
+            /** @type {Record<string, unknown>} */ (ep).identitySource === 'creator' ||
+            /** @type {Record<string, unknown>} */ (ep).bindingAuthority === 'creator' ||
+            /** @type {Record<string, unknown>} */ (ep).heroVaultBindingMode === 'manual')
+    ) {
+        return true;
+    }
+
+    const series = bindingCtx?.series;
+    if (series) {
+        const tags = Array.isArray(series.tags) ? series.tags.map(String) : [];
+        if (
+            /** @type {Record<string, unknown>} */ (series).confirmedByCreator === true ||
+            tags.includes('creator-confirmed')
+        ) {
+            return true;
+        }
+    }
+
+    const reelId = String(asset?.id || asset?.mediaAssetId || asset?.assetId || '').trim();
+    if (reelId) {
+        const meta = getReelSeriesMetadata(reelId);
+        if (
+            meta &&
+            (/** @type {Record<string, unknown>} */ (meta).confirmedByCreator === true ||
+                /** @type {Record<string, unknown>} */ (meta).identitySource === 'creator' ||
+                /** @type {Record<string, unknown>} */ (meta).bindingAuthority === 'creator' ||
+                /** @type {Record<string, unknown>} */ (meta).sourceType === 'creator')
+        ) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Whether catalog series identity matches NLP / vault identity franchise label.
+ * Exact title or slug match only — not loose token overlap across unrelated packages.
+ *
+ * @param {import('./seriesTypes.js').Series | null | undefined} series
+ * @param {string | null | undefined} seriesLabel
+ */
+export function catalogSeriesAgreesWithIdentity(series, seriesLabel) {
+    if (!series || !seriesLabel) return false;
+    const a = normalizeFranchiseKey(series.title);
+    const b = normalizeFranchiseKey(seriesLabel);
+    if (!a || !b) return false;
+    if (a === b) return true;
+    return slugifySeriesKey(series.title) === slugifySeriesKey(seriesLabel);
+}
+
+/**
+ * Soft match for low/null NLP: reel title contains catalog series title keywords (or vice versa).
+ * Used only to avoid detaching free-form titles that clearly name the series.
+ *
+ * @param {import('./seriesTypes.js').Series | null | undefined} series
+ * @param {string} reelTitle
+ */
+export function softSeriesTitleInReel(series, reelTitle) {
+    if (!series) return false;
+    const seriesKey = normalizeFranchiseKey(series.title);
+    const titleKey = normalizeFranchiseKey(reelTitle);
+    if (!seriesKey || !titleKey) return false;
+    if (titleKey.includes(seriesKey) || seriesKey.includes(titleKey)) return true;
+    // Single significant franchise token (≥5 chars) from series title present in reel
+    const tokens = seriesKey.split(' ').filter((t) => t.length >= 5);
+    return tokens.some((t) => titleKey.includes(t));
+}
+
+/**
+ * High-confidence vault identity only (for re-home create path).
+ * @param {Record<string, unknown> | string | null | undefined} assetOrTitle
+ * @returns {VaultSeriesIdentity | null}
+ */
+export function getHighConfidenceVaultIdentity(assetOrTitle) {
+    const identity = buildVaultSeriesIdentity(assetOrTitle);
+    if (!identity || identity.confidence !== 'high') return null;
+    return identity;
+}
+
+/**
+ * Bind reel onto target episode after corrective membership move.
+ * Preserves prior publish status when provided (does not invent numbers from vault order).
+ *
+ * @param {string} reelId
+ * @param {import('./seriesTypes.js').Series} series
+ * @param {import('./seriesTypes.js').Episode} episode
+ * @param {VaultSeriesIdentity} identity
+ * @param {{ priorStatus?: string; source?: string }} [opts]
+ */
+function bindReelToEpisodeAfterRehome(reelId, series, episode, identity, opts = {}) {
+    const episodeId = String(episode.episodeId || '');
+    if (!episodeId) return false;
+
+    const prior = String(opts.priorStatus || '').toLowerCase();
+    const statusForMeta =
+        prior === 'draft' ||
+        prior === 'ready' ||
+        prior === 'published' ||
+        prior === 'archived'
+            ? /** @type {'draft' | 'ready' | 'published' | 'archived'} */ (prior)
+            : episode.status === 'draft' ||
+                episode.status === 'ready' ||
+                episode.status === 'published' ||
+                episode.status === 'archived'
+              ? episode.status
+              : 'ready';
+
+    const seasonNumber = Math.max(1, Number(identity.seasonNumber) || 1);
+    const episodeNumber = Math.max(1, Number(identity.episodeNumber) || 1);
+    const bindTitle =
+        String(identity.episodeTitle || episode.title || identity.seriesLabel || '').trim() ||
+        identity.seriesLabel;
+
+    // Keep catalog S/E when target already exists with numbers; otherwise use NLP identity.
+    const catalogEp = getEpisodeById(episodeId)?.episode;
+    const finalEn =
+        catalogEp && Number(catalogEp.episodeNumber) >= 1
+            ? Number(catalogEp.episodeNumber)
+            : episodeNumber;
+    const finalSn =
+        getEpisodeById(episodeId)?.season?.seasonNumber != null
+            ? Number(getEpisodeById(episodeId)?.season?.seasonNumber)
+            : seasonNumber;
+    const finalTitle =
+        catalogEp && String(catalogEp.title || '').trim()
+            ? String(catalogEp.title)
+            : bindTitle;
+
+    // Stamp media + optional prior status without inventing displayOrder
+    seriesCatalog.update((items) =>
+        items.map((s) => {
+            if (s.id !== series.id) return s;
+            return {
+                ...s,
+                seasons: s.seasons.map((season) => ({
+                    ...season,
+                    episodes: season.episodes.map((ep) => {
+                        if (ep.episodeId !== episodeId) return ep;
+                        return {
+                            ...ep,
+                            reelId,
+                            mediaAssetId: reelId,
+                            status: statusForMeta,
+                            tags: Array.from(
+                                new Set([...(ep.tags || []), 'vault-inferred', 'nlp-rehomed'])
+                            )
+                        };
+                    })
+                }))
+            };
+        })
+    );
+
+    const boundOk = bindEpisodeToFeedReel(
+        reelId,
+        episodeId,
+        {
+            seriesId: series.id,
+            seriesName: series.title,
+            seasonNumber: finalSn,
+            episodeNumber: finalEn,
+            episodeTitle: finalTitle,
+            episodeStatus: statusForMeta
+        },
+        { sourceType: 'vault', context: 'nlp-membership-rehome' }
+    );
+
+    saveReelSeriesMetadata(
+        reelId,
+        {
+            reelId,
+            seriesId: series.id,
+            seriesName: series.title,
+            seasonNumber: finalSn,
+            episodeNumber: finalEn,
+            episodeTitle: finalTitle,
+            episodeId,
+            episodeStatus: statusForMeta
+        },
+        { sourceType: 'vault', context: 'nlp-membership-rehome' }
+    );
+
+    return Boolean(boundOk || getEpisodeByReelId(reelId)?.episode);
+}
+
+/**
+ * Phase 1: correct non-creator package membership using vault NLP identity.
+ *
+ * Policy:
+ *   1) creator-confirmed bindings are never re-homed
+ *   2–3) auto/inferred package membership that conflicts with high-confidence NLP may re-home
+ *   4) medium/weak titles may detach from wrong package but never invent catalog series
+ *   5) bindings that already agree with NLP identity are preserved
+ *
+ * @param {Record<string, unknown>[]} reels
+ * @param {{ source?: string }} [options]
+ * @returns {{
+ *   rehomed: number;
+ *   detached: number;
+ *   preserved: number;
+ *   skipped: number;
+ *   actions: Array<Record<string, unknown>>;
+ * }}
+ */
+export function reconcileCatalogMembershipFromVault(reels = [], options = {}) {
+    const source = options.source || 'membership-reconcile';
+    let rehomed = 0;
+    let detached = 0;
+    let preserved = 0;
+    let skipped = 0;
+    /** @type {Array<Record<string, unknown>>} */
+    const actions = [];
+
+    for (const reel of Array.isArray(reels) ? reels : []) {
+        if (!reel || typeof reel !== 'object') {
+            skipped += 1;
+            continue;
+        }
+        const reelId = String(reel.id || reel.mediaAssetId || '').trim();
+        if (!reelId || !isRealVaultUuid(reelId)) {
+            skipped += 1;
+            continue;
+        }
+        if (!hasPlayableMedia(reel)) {
+            skipped += 1;
+            continue;
+        }
+
+        const ctx = getEpisodeByReelId(reelId);
+        if (!ctx?.series || !ctx.episode) {
+            // Unbound — normal infer path may create; membership correction has nothing to fix
+            skipped += 1;
+            continue;
+        }
+
+        if (isCatalogBindingCreatorConfirmed(reel, ctx)) {
+            preserved += 1;
+            actions.push({
+                phase: 'preserved-creator-confirmed',
+                mediaId: reelId,
+                seriesId: ctx.series.id,
+                episodeId: ctx.episode.episodeId
+            });
+            continue;
+        }
+
+        const identity = buildVaultSeriesIdentity(reel);
+        const reelTitle = reelDisplayTitle(reel);
+
+        if (identity && catalogSeriesAgreesWithIdentity(ctx.series, identity.seriesLabel)) {
+            preserved += 1;
+            actions.push({
+                phase: 'preserved-identity-agrees',
+                mediaId: reelId,
+                seriesId: ctx.series.id,
+                seriesLabel: identity.seriesLabel,
+                confidence: identity.confidence
+            });
+            continue;
+        }
+
+        const priorStatus = String(ctx.episode.status || 'draft');
+        const priorEpisodeId = String(ctx.episode.episodeId || '');
+        const priorSeriesId = String(ctx.series.id || '');
+
+        // Medium / high identity that conflicts with package → drop synthetic membership
+        if (identity && (identity.confidence === 'high' || identity.confidence === 'medium')) {
+            detachEpisodeReel(priorEpisodeId, {
+                demotePublished: true,
+                clearMatchingMediaAsset: true
+            });
+
+            if (identity.confidence === 'high') {
+                // Re-home only on high confidence — never invent series from medium/weak titles
+                const series = ensureSeriesInCatalog(identity.seriesLabel);
+                if (!series?.id) {
+                    detached += 1;
+                    actions.push({
+                        phase: 'detached-rehome-failed-no-series',
+                        mediaId: reelId,
+                        priorSeriesId,
+                        priorEpisodeId,
+                        seriesLabel: identity.seriesLabel
+                    });
+                    continue;
+                }
+                const episodeTitle =
+                    identity.episodeTitle || reelTitle || identity.seriesLabel;
+                const episode = ensureEpisodeInCatalog(
+                    series.id,
+                    identity.seasonNumber,
+                    identity.episodeNumber,
+                    episodeTitle
+                );
+                if (!episode?.episodeId) {
+                    detached += 1;
+                    actions.push({
+                        phase: 'detached-rehome-failed-no-episode',
+                        mediaId: reelId,
+                        priorSeriesId,
+                        seriesId: series.id
+                    });
+                    continue;
+                }
+                const ok = bindReelToEpisodeAfterRehome(reelId, series, episode, identity, {
+                    priorStatus,
+                    source
+                });
+                if (ok) {
+                    rehomed += 1;
+                    actions.push({
+                        phase: 'rehomed',
+                        mediaId: reelId,
+                        priorSeriesId,
+                        priorEpisodeId,
+                        seriesId: series.id,
+                        episodeId: episode.episodeId,
+                        seriesLabel: identity.seriesLabel,
+                        seasonNumber: identity.seasonNumber,
+                        episodeNumber: identity.episodeNumber,
+                        confidence: identity.confidence
+                    });
+                } else {
+                    detached += 1;
+                    actions.push({
+                        phase: 'detached-rehome-bind-failed',
+                        mediaId: reelId,
+                        priorSeriesId,
+                        seriesId: series.id,
+                        episodeId: episode.episodeId
+                    });
+                }
+            } else {
+                // medium: unbind only — no synthetic catalog series/episode
+                detached += 1;
+                actions.push({
+                    phase: 'detached-medium-no-create',
+                    mediaId: reelId,
+                    priorSeriesId,
+                    priorEpisodeId,
+                    seriesLabel: identity.seriesLabel,
+                    confidence: identity.confidence
+                });
+            }
+            continue;
+        }
+
+        // Low / null NLP: detach only when package title is clearly not named by the reel
+        if (!softSeriesTitleInReel(ctx.series, reelTitle)) {
+            detachEpisodeReel(priorEpisodeId, {
+                demotePublished: true,
+                clearMatchingMediaAsset: true
+            });
+            detached += 1;
+            actions.push({
+                phase: 'detached-weak-package-mismatch',
+                mediaId: reelId,
+                priorSeriesId,
+                priorEpisodeId,
+                reelTitle
+            });
+            continue;
+        }
+
+        preserved += 1;
+        actions.push({
+            phase: 'preserved-soft-title-match',
+            mediaId: reelId,
+            seriesId: ctx.series.id
+        });
+    }
+
+    logVaultSeriesInference({
+        phase: 'membership-reconcile-complete',
+        source,
+        rehomed,
+        detached,
+        preserved,
+        skipped,
+        actionCount: actions.length
+    });
+
+    return { rehomed, detached, preserved, skipped, actions };
+}
+
+/**
+ * Synthetic package presentation titles (test gates / non-creator placeholders).
+ * @param {unknown} title
+ */
+export function isSyntheticPackageTitle(title) {
+    const t = String(title || '').trim();
+    if (!t) return false;
+    return /^(GATE_TITLE_[A-Z0-9]+|JV2_TITLE_[A-Z0-9]+)$/i.test(t);
+}
+
+/**
+ * Episode metadata creator lock (same hybrid signals as membership confirmation).
+ *
+ * @param {Record<string, unknown> | null | undefined} asset
+ * @param {{
+ *   series?: import('./seriesTypes.js').Series | null;
+ *   episode?: import('./seriesTypes.js').Episode | null;
+ * } | null | undefined} bindingCtx
+ */
+export function isEpisodeMetadataCreatorConfirmed(asset, bindingCtx = null) {
+    return isCatalogBindingCreatorConfirmed(asset, bindingCtx);
+}
+
+/**
+ * Resolve authoritative episodeNumber for a vault-bound catalog episode.
+ * Policy: creator-confirmed → high-confidence NLP → existing catalog (if valid) → omit (no fabrications).
+ *
+ * Does not use vault array index.
+ *
+ * @param {{
+ *   identity?: VaultSeriesIdentity | null;
+ *   catalogEpisodeNumber?: number | null;
+ *   creatorConfirmed?: boolean;
+ * }} input
+ * @returns {{ episodeNumber: number | null; source: 'creator' | 'nlp-high' | 'catalog' | 'none' }}
+ */
+export function resolveAuthoritativeEpisodeNumber(input = {}) {
+    const creatorConfirmed = input.creatorConfirmed === true;
+    const catEn = Number(input.catalogEpisodeNumber);
+    const hasCat = Number.isFinite(catEn) && catEn >= 1;
+    const identity = input.identity || null;
+    const nlpEn = identity ? Number(identity.episodeNumber) : NaN;
+    const hasNlp = Number.isFinite(nlpEn) && nlpEn >= 1;
+    const high = identity?.confidence === 'high';
+
+    if (creatorConfirmed && hasCat) {
+        return { episodeNumber: Math.floor(catEn), source: 'creator' };
+    }
+    if (creatorConfirmed && hasNlp && identity?.confidence) {
+        // Creator locked nested identity without catalog number yet
+        return { episodeNumber: Math.floor(nlpEn), source: 'creator' };
+    }
+    if (!creatorConfirmed && high && hasNlp) {
+        return { episodeNumber: Math.floor(nlpEn), source: 'nlp-high' };
+    }
+    if (hasCat) {
+        return { episodeNumber: Math.floor(catEn), source: 'catalog' };
+    }
+    // Weak / free-form / medium without catalog: do not invent a number for catalog write
+    return { episodeNumber: null, source: 'none' };
+}
+
+/**
+ * Resolve authoritative viewer/catalog episode title.
+ * creator confirmed → keep catalog/package; else vault/NLP over synthetic GATE/JV2 labels.
+ *
+ * @param {{
+ *   vaultTitle?: string;
+ *   identityTitle?: string;
+ *   catalogTitle?: string;
+ *   creatorConfirmed?: boolean;
+ * }} input
+ */
+export function resolveAuthoritativeEpisodeTitle(input = {}) {
+    const catalogTitle = String(input.catalogTitle || '').trim();
+    const vaultTitle = String(input.vaultTitle || '').trim();
+    const identityTitle = String(input.identityTitle || '').trim();
+    const creatorConfirmed = input.creatorConfirmed === true;
+
+    if (creatorConfirmed && catalogTitle) return catalogTitle;
+    if (creatorConfirmed && (identityTitle || vaultTitle)) return identityTitle || vaultTitle;
+
+    const preferred = identityTitle || vaultTitle;
+    if (preferred && (!catalogTitle || isSyntheticPackageTitle(catalogTitle))) {
+        return preferred;
+    }
+    if (preferred) return preferred;
+    return catalogTitle || '';
+}
+
+/**
+ * Phase 2: stamp canonical episodeNumber + viewer title onto catalog rows bound to vault media.
+ *
+ * Never writes displayOrder. Never fabricates en from vault index or weak NLP.
+ * Creator-confirmed bindings keep package numbers/titles.
+ *
+ * @param {Record<string, unknown>[]} reels
+ * @param {{ source?: string }} [options]
+ */
+export function applyCanonicalEpisodeMetadataFromVault(reels = [], options = {}) {
+    const source = options.source || 'metadata-authority';
+    let corrected = 0;
+    let preserved = 0;
+    let skipped = 0;
+    /** @type {Array<Record<string, unknown>>} */
+    const actions = [];
+
+    for (const reel of Array.isArray(reels) ? reels : []) {
+        if (!reel || typeof reel !== 'object') {
+            skipped += 1;
+            continue;
+        }
+        const reelId = String(reel.id || reel.mediaAssetId || '').trim();
+        if (!reelId || !isRealVaultUuid(reelId)) {
+            skipped += 1;
+            continue;
+        }
+
+        const ctx = getEpisodeByReelId(reelId);
+        if (!ctx?.series || !ctx.episode) {
+            skipped += 1;
+            continue;
+        }
+
+        const seriesId = String(ctx.series.id || '');
+        const episodeId = String(ctx.episode.episodeId || '');
+        const creatorConfirmed = isEpisodeMetadataCreatorConfirmed(reel, ctx);
+        const identity = buildVaultSeriesIdentity(reel);
+        const vaultTitle = reelDisplayTitle(reel);
+        const catalogEn = Number(ctx.episode.episodeNumber);
+        const catalogTitle = String(ctx.episode.title || '');
+
+        if (creatorConfirmed) {
+            preserved += 1;
+            actions.push({
+                phase: 'metadata-preserved-creator',
+                mediaId: reelId,
+                seriesId,
+                episodeId,
+                episodeNumber: catalogEn,
+                title: catalogTitle
+            });
+            continue;
+        }
+
+        const enRes = resolveAuthoritativeEpisodeNumber({
+            identity,
+            catalogEpisodeNumber: catalogEn,
+            creatorConfirmed: false
+        });
+        const nextTitle = resolveAuthoritativeEpisodeTitle({
+            vaultTitle,
+            identityTitle: identity?.episodeTitle || '',
+            catalogTitle,
+            creatorConfirmed: false
+        });
+
+        let nextEn = Number.isFinite(catalogEn) && catalogEn >= 1 ? Math.floor(catalogEn) : null;
+        if (enRes.source === 'nlp-high' && enRes.episodeNumber != null) {
+            nextEn = enRes.episodeNumber;
+        }
+        // Weak identity: leave catalog en only if already present; do not invent
+        if (enRes.source === 'none' && !Number.isFinite(nextEn)) {
+            nextEn = null;
+        }
+
+        const titleChanged =
+            nextTitle &&
+            nextTitle !== catalogTitle &&
+            (isSyntheticPackageTitle(catalogTitle) || !catalogTitle);
+        const enChanged =
+            nextEn != null &&
+            Number.isFinite(nextEn) &&
+            (!Number.isFinite(catalogEn) || Math.floor(catalogEn) !== nextEn);
+
+        if (!titleChanged && !enChanged) {
+            preserved += 1;
+            actions.push({
+                phase: 'metadata-unchanged',
+                mediaId: reelId,
+                seriesId,
+                episodeId
+            });
+            continue;
+        }
+
+        // Never touch displayOrder / status / reelId / mediaAssetId
+        seriesCatalog.update((items) =>
+            items.map((s) => {
+                if (s.id !== seriesId) return s;
+                return {
+                    ...s,
+                    seasons: s.seasons.map((season) => ({
+                        ...season,
+                        episodes: season.episodes.map((ep) => {
+                            if (String(ep.episodeId) !== episodeId) return ep;
+                            /** @type {import('./seriesTypes.js').Episode} */
+                            const next = { ...ep };
+                            if (enChanged && nextEn != null) {
+                                next.episodeNumber = nextEn;
+                            }
+                            if (titleChanged && nextTitle) {
+                                next.title = nextTitle;
+                            }
+                            const tags = Array.isArray(next.tags) ? [...next.tags] : [];
+                            if (!tags.includes('nlp-metadata')) tags.push('nlp-metadata');
+                            next.tags = tags;
+                            return next;
+                        })
+                    }))
+                };
+            })
+        );
+
+        corrected += 1;
+        actions.push({
+            phase: 'metadata-corrected',
+            mediaId: reelId,
+            seriesId,
+            episodeId,
+            priorEn: catalogEn,
+            nextEn,
+            priorTitle: catalogTitle,
+            nextTitle: titleChanged ? nextTitle : catalogTitle,
+            enSource: enRes.source
+        });
+    }
+
+    logVaultSeriesInference({
+        phase: 'metadata-authority-complete',
+        source,
+        corrected,
+        preserved,
+        skipped,
+        actionCount: actions.length
+    });
+
+    return { corrected, preserved, skipped, actions };
+}
+
+/**
  * @param {string} seriesTitle
  */
 function ensureSeriesInCatalog(seriesTitle) {
@@ -1082,6 +1750,14 @@ export function inferAndBindVaultSeries(reels = [], options = {}) {
     const bindOnly =
         options.bindOnly === true ||
         /public-series|after-api-catalog/i.test(String(source));
+
+    // Phase 1 membership: strip synthetic packages / re-home high-confidence NLP before group bind.
+    // Safe under bindOnly — re-home creates only when high-confidence identity conflicts and is not creator-confirmed.
+    const membership =
+        options.skipMembershipReconcile === true
+            ? { rehomed: 0, detached: 0, preserved: 0, skipped: 0, actions: [] }
+            : reconcileCatalogMembershipFromVault(reels, { source: `${source}:membership` });
+
     const groups = buildHighConfidenceTitleGroups(reels);
 
     logVaultSeriesInference({
@@ -1089,7 +1765,10 @@ export function inferAndBindVaultSeries(reels = [], options = {}) {
         source,
         bindOnly,
         reelCount: reels.filter((r) => r?.id).length,
-        groupCount: groups.length
+        groupCount: groups.length,
+        membershipRehomed: membership.rehomed,
+        membershipDetached: membership.detached,
+        membershipPreserved: membership.preserved
     });
 
     let bound = 0;
@@ -1381,13 +2060,30 @@ export function inferAndBindVaultSeries(reels = [], options = {}) {
         }
     }
 
+    // Phase 2: canonical episodeNumber + labels after structural bind (never displayOrder).
+    const metadata =
+        options.skipMetadataReconcile === true
+            ? { corrected: 0, preserved: 0, skipped: 0, actions: [] }
+            : applyCanonicalEpisodeMetadataFromVault(reels, { source: `${source}:metadata` });
+
     logVaultSeriesInference({
         phase: 'complete',
         source,
         bound,
         skipped,
-        groups: groups.length
+        groups: groups.length,
+        membershipRehomed: membership.rehomed,
+        membershipDetached: membership.detached,
+        metadataCorrected: metadata.corrected
     });
 
-    return { bound, skipped, groups: groups.length, seriesIds, bindings };
+    return {
+        bound,
+        skipped,
+        groups: groups.length,
+        seriesIds,
+        bindings,
+        membership,
+        metadata
+    };
 }

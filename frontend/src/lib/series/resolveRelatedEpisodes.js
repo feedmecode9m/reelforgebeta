@@ -23,7 +23,11 @@ import {
     parseHighConfidenceEpisodeTitle,
     slugifySeriesKey,
     stripProductionTitlePrefixes,
-    buildVaultSeriesIdentity
+    buildVaultSeriesIdentity,
+    isCatalogBindingCreatorConfirmed,
+    resolveAuthoritativeEpisodeNumber,
+    resolveAuthoritativeEpisodeTitle,
+    isSyntheticPackageTitle
 } from './vaultSeriesInference.js';
 import { viewerFieldsFromVaultEnrichment } from './vaultEpisodeEnrichment.js';
 import { sortEpisodesForDisplay } from './seriesCatalogEdits.js';
@@ -412,6 +416,12 @@ function membersFromCatalog(seriesId) {
     for (const season of series.seasons || []) {
         for (const ep of season.episodes || []) {
             const reelId = ep.reelId ? String(ep.reelId) : null;
+            const mediaOnly =
+                ep.mediaAssetId != null && String(ep.mediaAssetId).trim()
+                    ? String(ep.mediaAssetId).trim()
+                    : '';
+            // Membership is media-backed: package shells with no reel/media are not siblings
+            if (!reelId && !mediaOnly) continue;
             const assetId = String(ep.mediaAssetId || ep.heroVaultAssetId || reelId || ep.episodeId || '');
             out.push({
                 assetId: assetId || String(ep.episodeId || ''),
@@ -544,19 +554,43 @@ export function buildSeriesViewFromRelated(related, catalogSeries = null, option
         }
         // Keep vault media/reel; catalog fields enrich metadata only.
         // Catalog status + displayOrder win when present (publishing + creator order).
-        // Vault presentation package (title/description/artwork) wins when already set.
+        // Vault presentation package (title/description/artwork) wins when already set
+        // unless catalog title is creator package and non-synthetic.
         const nextDisplay =
             Number.isFinite(Number(ep.displayOrder))
                 ? Number(ep.displayOrder)
                 : Number.isFinite(Number(prev.displayOrder))
                   ? Number(prev.displayOrder)
                   : undefined;
+
+        const prevEn = Number(prev.episodeNumber);
+        const epEn = Number(ep.episodeNumber);
+        // Prefer earlier vault high identity when present; catalog en only when vault missing
+        // (catalog may have been pre-stamped by applyCanonicalEpisodeMetadataFromVault).
+        let nextEn = prev.episodeNumber;
+        if (Number.isFinite(prevEn) && prevEn >= 1) {
+            nextEn = prevEn;
+        } else if (Number.isFinite(epEn) && epEn >= 1) {
+            nextEn = epEn;
+        }
+
+        const catTitle = String(ep.title || '').trim();
+        const prevTitle = String(prev.title || '').trim();
+        let nextTitle = prevTitle || catTitle;
+        if (prevTitle && isSyntheticPackageTitle(prevTitle) && catTitle && !isSyntheticPackageTitle(catTitle)) {
+            nextTitle = catTitle;
+        } else if (catTitle && isSyntheticPackageTitle(catTitle) && prevTitle) {
+            nextTitle = prevTitle;
+        } else if (!prevTitle && catTitle) {
+            nextTitle = catTitle;
+        }
+
         episodeMap.set(key, {
             ...prev,
             ...ep,
             reelId: prev.reelId || ep.reelId,
             mediaAssetId: prev.mediaAssetId || ep.mediaAssetId || null,
-            title: prev.title || ep.title,
+            title: nextTitle,
             description: prev.description || ep.description,
             genre: ep.genre || prev.genre,
             tags: [...new Set([...(prev.tags || []), ...(ep.tags || [])])],
@@ -565,11 +599,7 @@ export function buildSeriesViewFromRelated(related, catalogSeries = null, option
             status: ep.status || prev.status,
             displayOrder: nextDisplay,
             thumbnailUrl: prev.thumbnailUrl || ep.thumbnailUrl,
-            // S/E identity labels: prefer vault (seriesIdentity) over catalog renumbering
-            episodeNumber:
-                Number.isFinite(Number(prev.episodeNumber)) && prev.episodeNumber != null
-                    ? prev.episodeNumber
-                    : ep.episodeNumber,
+            episodeNumber: nextEn,
             vaultIndex:
                 Number.isFinite(prev.vaultIndex) && prev.vaultIndex != null
                     ? prev.vaultIndex
@@ -905,17 +935,50 @@ export function resolveRelatedEpisodes(assetOrReel, options = {}) {
     /** @type {RelatedEpisodeMember[]} */
     const vaultMembers = poolMeta.map(({ asset, title }, vaultIndex) => {
         const id = resolveSeedId(asset) || assetIdOf(asset);
+        const identity = buildVaultSeriesIdentity(asset);
         const label = normalizeHeroVaultSeriesLabel(asset);
         const enrich = viewerFieldsFromVaultEnrichment(asset);
         const reelId = UUID_RE.test(String(id)) ? String(id) : null;
+        const ctx = reelId ? getEpisodeByReelId(reelId) : null;
+        const creatorConfirmed = isCatalogBindingCreatorConfirmed(asset, ctx);
+        const enRes = resolveAuthoritativeEpisodeNumber({
+            identity,
+            catalogEpisodeNumber: ctx?.episode?.episodeNumber,
+            creatorConfirmed
+        });
+        // Viewer en: never invent from vaultIndex. Use high NLP / creator / catalog only.
+        // Free-form low-identity vault en (default 1) only for unbound viewer spine when label set.
+        let episodeNumber =
+            enRes.episodeNumber != null
+                ? enRes.episodeNumber
+                : identity?.confidence === 'medium' && Number(identity.episodeNumber) >= 1
+                  ? Number(identity.episodeNumber)
+                  : Number(label.episodeNumber) >= 1
+                    ? Number(label.episodeNumber)
+                    : 1;
+        if (enRes.source === 'none' && identity?.confidence === 'low') {
+            // Keep a display placeholder of 1 for free-form pilots only — not written to catalog
+            episodeNumber = Number(label.episodeNumber) >= 1 ? Number(label.episodeNumber) : 1;
+        }
+
+        const titleRes = resolveAuthoritativeEpisodeTitle({
+            vaultTitle: title,
+            identityTitle: identity?.episodeTitle || label.episodeTitle || '',
+            catalogTitle: ctx?.episode?.title || '',
+            creatorConfirmed
+        });
+
         return {
             assetId: String(assetIdOf(asset) || id || label.assetId || ''),
             reelId,
-            // Creator presentation package wins over raw file/episode title when set
-            title: enrich.title || label.episodeTitle || title,
+            // Creator package enrichment wins for presentation titles
+            title: enrich.title || titleRes || label.episodeTitle || title,
             description: enrich.description || descriptionOf(asset) || '',
-            episodeNumber: label.episodeNumber,
-            seasonNumber: label.seasonNumber,
+            episodeNumber,
+            seasonNumber:
+                Number(identity?.seasonNumber) >= 1
+                    ? Number(identity.seasonNumber)
+                    : Number(label.seasonNumber) || 1,
             seriesLabel: label.seriesLabel,
             mediaUrl: mediaUrlOf(asset),
             thumbnailUrl: enrich.artworkUrl || thumbnailUrlOf(asset),
@@ -926,7 +989,7 @@ export function resolveRelatedEpisodes(assetOrReel, options = {}) {
         };
     });
 
-    // Enrich vault members with catalog binding (status + displayOrder; preserve S/E labels)
+    // Enrich vault members with catalog binding (status + displayOrder; S/E from authority helpers)
     for (const m of vaultMembers) {
         if (!m.reelId) continue;
         const ctx = getEpisodeByReelId(m.reelId);
@@ -934,10 +997,32 @@ export function resolveRelatedEpisodes(assetOrReel, options = {}) {
             m.episodeId = String(ctx.episode.episodeId);
             m.source = 'catalog';
             if (ctx.episode.status) m.status = ctx.episode.status;
+            // Creator displayOrder always wins when present
             if (Number.isFinite(Number(ctx.episode.displayOrder))) {
                 m.displayOrder = Number(ctx.episode.displayOrder);
             }
-            // Do not rewrite vault seriesIdentity episode numbers from catalog
+            // Creator-confirmed catalog number wins over vault NLP defaults
+            const asset = poolMeta.find(
+                (p) =>
+                    resolveSeedId(p.asset) === m.reelId ||
+                    assetIdOf(p.asset) === m.reelId
+            )?.asset;
+            if (asset && isCatalogBindingCreatorConfirmed(asset, ctx)) {
+                if (Number(ctx.episode.episodeNumber) >= 1) {
+                    m.episodeNumber = Number(ctx.episode.episodeNumber);
+                }
+                if (String(ctx.episode.title || '').trim()) {
+                    m.title = String(ctx.episode.title).trim();
+                }
+            } else if (Number(ctx.episode.episodeNumber) >= 1) {
+                // Catalog already NLP-corrected — prefer it when vault conf wasn't high
+                const id = buildVaultSeriesIdentity(asset || {});
+                if (!id || id.confidence !== 'high') {
+                    m.episodeNumber = Number(ctx.episode.episodeNumber);
+                } else if (Number(id.episodeNumber) >= 1) {
+                    m.episodeNumber = Number(id.episodeNumber);
+                }
+            }
         }
     }
 

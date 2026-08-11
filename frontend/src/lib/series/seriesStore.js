@@ -792,13 +792,21 @@ export function attachEpisodeReel(episodeId, feedReelId) {
 
 /**
  * Detach reel from a catalog episode.
+ * Clears reelId and any mediaAssetId that points at the same reel.
+ * Optional demotePublished → draft so empty package shells do not stay viewer-discoverable.
+ *
  * @param {string} episodeId
+ * @param {{ demotePublished?: boolean; clearMatchingMediaAsset?: boolean }} [options]
  */
-export function detachEpisodeReel(episodeId) {
+export function detachEpisodeReel(episodeId, options = {}) {
     const ctx = getEpisodeById(episodeId);
     if (!ctx) return false;
 
+    const demotePublished = options.demotePublished === true;
+    const clearMatchingMedia = options.clearMatchingMediaAsset !== false;
     const oldReelId = ctx.episode.reelId || null;
+    const oldMedia =
+        ctx.episode.mediaAssetId != null ? String(ctx.episode.mediaAssetId).trim() : '';
     let changed = false;
 
     seriesCatalog.update((catalogItems) => {
@@ -809,21 +817,42 @@ export function detachEpisodeReel(episodeId) {
                 episodes: season.episodes.map((episode) => {
                     if (episode.episodeId !== episodeId) return episode;
                     changed = true;
-                    return { ...episode, reelId: null };
+                    const mediaId =
+                        episode.mediaAssetId != null ? String(episode.mediaAssetId).trim() : '';
+                    const dropMedia =
+                        clearMatchingMedia &&
+                        mediaId &&
+                        (mediaId === String(oldReelId || '') ||
+                            (oldMedia && mediaId === oldMedia));
+                    return {
+                        ...episode,
+                        reelId: null,
+                        mediaAssetId: dropMedia ? null : episode.mediaAssetId,
+                        ...(demotePublished && episode.status === 'published'
+                            ? { status: /** @type {const} */ ('draft') }
+                            : {})
+                    };
                 })
             }))
         }));
         return changed ? next : catalogItems;
     });
 
-    if (oldReelId) {
+    const metaKeys = [oldReelId, oldMedia].filter(Boolean);
+    if (metaKeys.length) {
         const map = loadReelSeriesMetadataMap();
-        if (map[oldReelId]?.episodeId === episodeId) {
-            delete map[oldReelId];
+        let mapChanged = false;
+        for (const key of metaKeys) {
+            if (map[key]?.episodeId === episodeId) {
+                delete map[key];
+                mapChanged = true;
+            }
+        }
+        if (mapChanged) {
             persistReelSeriesMetadataMap(map);
             reelSeriesMetadata.update((current) => {
                 const next = { ...current };
-                delete next[oldReelId];
+                for (const key of metaKeys) delete next[key];
                 return next;
             });
         }
@@ -835,7 +864,7 @@ export function detachEpisodeReel(episodeId) {
             seasonId: ctx.season.seasonId || `season-${ctx.series.id}-${ctx.season.seasonNumber}`,
             episodeId,
             reelId: oldReelId,
-            status: 'Missing Asset'
+            status: demotePublished ? 'Missing Asset (demoted)' : 'Missing Asset'
         });
     }
 

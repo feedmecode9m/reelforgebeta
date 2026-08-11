@@ -20,6 +20,7 @@ import { get } from 'svelte/store';
 import { getReadyHeroVaultAssets } from './heroVaultAssetSource.js';
 import {
     inferAndBindVaultSeries,
+    applyCanonicalEpisodeMetadataFromVault,
     slugifySeriesKey
 } from './vaultSeriesInference.js';
 import {
@@ -84,9 +85,11 @@ export function publicSeriesPath(series) {
  *   - Vault supplies mediaAssetId / seriesIdentity / enrichment for bound reels.
  *   - Vault inference may bind media for unbound reels, but must not invent publication state
  *     or renumber/replace catalog identity.
+ *   - Non-creator package membership that conflicts with high-confidence NLP is re-homed
+ *     (or detached for medium/weak) via reconcileCatalogMembershipFromVault before bind-only attach.
  *
  * Flow:
- *   ready vault assets → bind-only inference → restore episode vault bindings → creator catalog authority
+ *   ready vault assets → membership reconcile → bind-only inference → restore episode vault bindings → creator catalog authority
  *
  * @param {{
  *   extraItems?: Record<string, unknown>[] | null;
@@ -150,6 +153,17 @@ export function hydratePublicSeriesFromVault(options = {}) {
         }
     }
 
+    // Phase 2: after reassert, re-apply high-confidence NLP over non-creator synthetic package en/titles.
+    // Creator displayOrder / confirmed package identity remain locked; status was reasserted above.
+    try {
+        applyCanonicalEpisodeMetadataFromVault(readyAssets, {
+            source: `${options.source || 'public-series-vault-hydration'}:metadata-after-reassert`
+        });
+        reapplyCreatorCatalogAuthorityToStore();
+    } catch {
+        /* non-fatal */
+    }
+
     console.info('[PUBLIC_SERIES_VAULT_HYDRATION]', {
         readyCount: readyAssets.length,
         bound: inference.bound,
@@ -193,6 +207,10 @@ function snapshotCatalogEpisodeAuthority(catalog) {
 
 /**
  * Re-apply known catalog identity / publish fields after vault media bind.
+ * Restores package status / S/E numbers / titles only.
+ * Does NOT re-attach reelId/mediaAssetId from the pre-bind snapshot — membership
+ * after NLP reconcile is the live store authority.
+ *
  * @param {import('./seriesTypes.js').Series[]} catalog
  * @param {Map<string, { status: string; episodeNumber: number; title: string; reelId: string | null }>} snap
  */
@@ -212,8 +230,8 @@ function reassertCatalogEpisodeAuthority(catalog, snap) {
                         Number.isFinite(prev.episodeNumber) && prev.episodeNumber >= 1
                             ? prev.episodeNumber
                             : ep.episodeNumber,
-                    title: prev.title !== '' && prev.title != null ? prev.title : ep.title,
-                    reelId: ep.reelId || prev.reelId
+                    title: prev.title !== '' && prev.title != null ? prev.title : ep.title
+                    // membership (reelId / mediaAssetId) stays live — snapshot must not re-bind media
                 };
             })
         }))
