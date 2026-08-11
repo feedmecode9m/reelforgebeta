@@ -586,10 +586,13 @@ export let sanitizeViewer = false;
     : looksLikeRawMediaFilename(activeHeroSlide?.detail || heroSelection?.insight)
       ? ''
       : activeHeroSlide?.detail || heroSelection?.insight || '';
-$: heroBadgeLabel = sanitizeViewer
-  ? heroStoryLabel || 'Look@Zakanda Presents'
-  : heroStoryPublished
-    ? heroStoryLabel || 'Look@Zakanda Presents'
+// Published / sanitized: only show badge when creator set a non-empty Viewer Label.
+// Cleared server heroLabel (null/"" → empty heroStoryLabel) must not resurrect brand text.
+// Draft/unpublished carousel can still surface slide/mode chips when no label is set.
+$: heroBadgeLabel = sanitizeViewer || heroStoryPublished
+  ? heroStoryLabel
+  : heroStoryLabel
+    ? heroStoryLabel
     : activeHeroSlide?.type
       ? activeHeroSlide.type.replace(/_/g, ' ')
       : heroSelection?.mode
@@ -2349,9 +2352,11 @@ $: heroBadgeLabel = sanitizeViewer
       {/if}
     </div>
     <div class="hero-wrap {heroTypographyClass}">
-      <span class="premium-tag" data-hero-badge>
-        {heroBadgeLabel}
-      </span>
+      {#if heroBadgeLabel}
+        <span class="premium-tag" data-hero-badge>
+          {heroBadgeLabel}
+        </span>
+      {/if}
       {#if heroSlideDetail && !sanitizeViewer}
         <p class="hero-insight" data-hero-insight>{heroSlideDetail}</p>
       {/if}

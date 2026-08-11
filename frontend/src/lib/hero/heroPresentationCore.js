@@ -205,12 +205,16 @@ export function mapServerPresentationToManagerPatch(remote) {
         backgroundMediaUrl: String(
             remote.mediaUrl || presentation.backgroundMediaUrl || presentation.mediaUrl || ''
         ).trim(),
-        heroLabel:
-            remote.heroLabel != null
-                ? String(remote.heroLabel)
-                : presentation.heroLabel != null
-                  ? String(presentation.heroLabel)
-                  : undefined,
+        // Server column is authoritative for clear: null → explicit "".
+        // Do not omit null (that would leave default local manager brand intact).
+        // Only fall back to presentation.heroLabel when the top-level key is absent.
+        heroLabel: Object.prototype.hasOwnProperty.call(remote, 'heroLabel')
+            ? remote.heroLabel == null
+                ? ''
+                : String(remote.heroLabel)
+            : presentation.heroLabel != null
+              ? String(presentation.heroLabel)
+              : undefined,
         heroTitle:
             remote.heroTitle != null
                 ? String(remote.heroTitle)

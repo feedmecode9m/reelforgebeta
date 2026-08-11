@@ -113,6 +113,38 @@ assertEq('resolved heroAssetId', String(patch.heroAssetId), EXPECTED_HERO_ASSET_
 assertEq('resolved title', String(patch.heroTitle), 'Vic G LA Story');
 assertEq('resolved location', patch.heroTitleIntelligence?.location, 'Los Angeles');
 assertEq('resolved mediaUrl from server', String(patch.mediaUrl || ''), mediaFixture);
+assertEq('resolved heroLabel from server text', String(patch.heroLabel), 'LOOK@ZAKANDA PRESENTS');
+
+console.log('\n[server heroLabel null → manager clears label, not defaults]');
+const clearedLabelBody = {
+    ...serverBody,
+    heroLabel: null
+};
+const clearedPatch = mapServerPresentationToManagerPatch(clearedLabelBody);
+assert(Boolean(clearedPatch), 'null-label map returns patch');
+assertEq('null server heroLabel maps to empty string', clearedPatch.heroLabel, '');
+assert(
+    'null-label patch keeps key (does not omit)',
+    Object.prototype.hasOwnProperty.call(clearedPatch, 'heroLabel')
+);
+// Simulate hydrate over existing default brand so null cannot resurrect LOOK@ZAKANDA.
+let labelCache = { heroLabel: 'LOOK@ZAKANDA PRESENTS', heroTitle: 'prior' };
+labelCache = { ...labelCache, ...clearedPatch };
+assertEq(
+    'hydrate overwrite clears local brand label',
+    String(labelCache.heroLabel || ''),
+    ''
+);
+
+const customLabelPatch = mapServerPresentationToManagerPatch({
+    ...serverBody,
+    heroLabel: 'A ZAKANDA ORIGINAL'
+});
+assertEq(
+    'custom server heroLabel preserved',
+    String(customLabelPatch?.heroLabel || ''),
+    'A ZAKANDA ORIGINAL'
+);
 
 // Fresh browser simulation: empty cache, backend hydrates
 /** @type {Record<string, unknown> | null} */
