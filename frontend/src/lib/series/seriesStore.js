@@ -5,6 +5,11 @@ import {
     isSeries
 } from './seriesTypes.js';
 import {
+    lookupPersistentHeroTitle,
+    resolveLinkedAssetDisplayTitle,
+    UNTITLED_CREATOR_EXPERIENCE
+} from '../hero/heroTitleIntelligence.js';
+import {
     loadReelSeriesMetadataMap,
     persistReelSeriesMetadataMap,
     upsertStoredReelSeriesMetadata,
@@ -185,8 +190,12 @@ function mergeMetadataMapsPreservingCreator(localMap, apiMap) {
                 apiRow.seasonNumber != null ? apiRow.seasonNumber : local.seasonNumber,
             episodeNumber:
                 apiRow.episodeNumber != null ? apiRow.episodeNumber : local.episodeNumber,
-            // Presentation title: catalog package wins over vault filename inference
-            episodeTitle: apiRow.episodeTitle || local.episodeTitle,
+            // Master Edit (reel_titles_persistent) outranks stale API/package episode labels.
+            // Otherwise catalog package fills, then local gaps — never invent a new title key.
+            episodeTitle:
+                lookupPersistentHeroTitle(reelId) ||
+                apiRow.episodeTitle ||
+                local.episodeTitle,
             description:
                 apiRow.description != null && String(apiRow.description).trim() !== ''
                     ? apiRow.description
@@ -1694,9 +1703,24 @@ export function resolveSeriesContextForReel(reel) {
     else ctx = catalogCtx;
 
     if (ctx && reelId) {
+        // Bound episode display title follows the linked reel's canonical title.
+        // Episode package fields stay for structure; title is media-projection when reel-bound.
+        const displayTitle = resolveLinkedAssetDisplayTitle(reelId, {
+            episodeTitle: ctx.episode?.title || stored?.episodeTitle || '',
+            assetTitle: String(reel?.title || reel?.name || ''),
+            fileName: String(reel?.fileName || reel?.file_name || '')
+        });
+        const nextEpisodeTitle =
+            displayTitle && displayTitle !== UNTITLED_CREATOR_EXPERIENCE
+                ? displayTitle
+                : String(ctx.episode?.title || '').trim();
         ctx = {
             ...ctx,
-            episode: { ...ctx.episode, reelId }
+            episode: {
+                ...ctx.episode,
+                reelId,
+                title: nextEpisodeTitle || ctx.episode.title
+            }
         };
     }
     return ctx;

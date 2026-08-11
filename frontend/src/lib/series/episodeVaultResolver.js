@@ -460,10 +460,13 @@ export function theaterReelFromVaultResolve(episodeTitle, resolved, ctx = null) 
     const mime = isImage ? 'image/jpeg' : 'video/mp4';
     const src = resolved.mediaUrl;
     const thumbnailUrl = resolved.thumbnail || (isImage ? src : '');
+    // Prefer linked asset id identity; Theater open path stamps reel_titles_persistent.
+    // Episode package title is a fallback only when media has no other title signal.
+    const fallbackTitle = String(resolved.title || episodeTitle || '').trim();
     return {
         id: resolved.assetId,
-        name: episodeTitle || resolved.title,
-        title: episodeTitle || resolved.title,
+        name: fallbackTitle,
+        title: fallbackTitle,
         url: src,
         src,
         video_url: isImage ? '' : src,
@@ -481,7 +484,9 @@ export function theaterReelFromVaultResolve(episodeTitle, resolved, ctx = null) 
         isPersonalVideo: true,
         isPersonalThumbnail: isImage,
         mediaAssetId: resolved.assetId,
-        vaultMatchTier: resolved.matchTier
+        vaultMatchTier: resolved.matchTier,
+        // Package snapshot for openTheaterReel merge — not a second title authority
+        _episodePackageTitle: String(episodeTitle || '').trim() || null
     };
 }
 

@@ -16,6 +16,10 @@
     } from '../../lib/series/resolveRelatedEpisodes.js';
     import { getReadyHeroVaultAssets } from '../../lib/series/heroVaultAssetSource.js';
     import {
+        resolveLinkedAssetDisplayTitle,
+        UNTITLED_CREATOR_EXPERIENCE
+    } from '../../lib/hero/heroTitleIntelligence.js';
+    import {
         activePublishingProfile,
         episodeNavigationFlags,
         metadataDisplayFlags,
@@ -48,6 +52,28 @@
     export const activeReel = writable(null);
     export const theaterPlaybackError = writable(false);
     export const theaterRetryNonce = writable(0);
+
+    /** Live Master Edit bus → open Theater must not keep a stale title snapshot. */
+    let vaultTitleTheaterHooked = false;
+    function ensureVaultTitleTheaterHook() {
+        if (vaultTitleTheaterHooked || typeof window === 'undefined') return;
+        vaultTitleTheaterHooked = true;
+        window.addEventListener('reelforge:vault-title-updated', (event) => {
+            const detail = /** @type {CustomEvent} */ (event)?.detail || {};
+            const reelId = String(detail.reelId || '').trim();
+            const nextTitle = String(detail.newTitle || detail.title || '').trim();
+            if (!reelId || !nextTitle) return;
+            const current = get(activeReel);
+            if (!current || String(current.id || '').trim() !== reelId) return;
+            activeReel.set({
+                ...current,
+                title: nextTitle,
+                name: nextTitle,
+                title_original: nextTitle
+            });
+        });
+    }
+    ensureVaultTitleTheaterHook();
 
     export const DEBUG_THEATER =
         typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === 'theater';
@@ -166,6 +192,27 @@
         const seriesCtx = resolveSeriesContextForReel(fresh);
         if (seriesCtx) {
             fresh = applyEpisodeFieldsToReel(fresh, seriesCtx);
+        }
+        // Master Edit: Theater must not keep snapshot titles from package/feed/vault harvest.
+        const reelId = String(fresh?.id || reel?.id || '').trim();
+        if (reelId) {
+            const canonical = resolveLinkedAssetDisplayTitle(reelId, {
+                episodeTitle: String(
+                    seriesCtx?.episode?.title ||
+                        /** @type {{ _episodePackageTitle?: string }} */ (reel)._episodePackageTitle ||
+                        ''
+                ),
+                assetTitle: String(fresh?.title || fresh?.name || reel?.title || reel?.name || ''),
+                fileName: String(fresh?.fileName || fresh?.file_name || '')
+            });
+            if (canonical && canonical !== UNTITLED_CREATOR_EXPERIENCE) {
+                fresh = {
+                    ...fresh,
+                    title: canonical,
+                    name: canonical,
+                    title_original: canonical
+                };
+            }
         }
         theaterPlaybackError.set(false);
         theaterRetryNonce.set(0);
@@ -348,7 +395,7 @@
     import SeriesDrawer from '../series/SeriesDrawer.svelte';
     import TheaterSeriesPanel from '../series/TheaterSeriesPanel.svelte';
     import TheaterSeriesMetadata from '../publishing/TheaterSeriesMetadata.svelte';
-    import { reelSeriesMetadata, getSeriesById, getEpisodeByReelId } from '../../lib/series/seriesStore.js';
+    import { reelSeriesMetadata, getSeriesById, getEpisodeByReelId, seriesCatalog } from '../../lib/series/seriesStore.js';
     import {
         resolveContentIdentity,
         applyContentIdentityToSeriesContext
@@ -543,6 +590,7 @@
     $: seriesContext = (() => {
         if (!$activeReel) return null;
         void $reelSeriesMetadata;
+        void $seriesCatalog;
         const base = resolveSeriesContextForReel($activeReel);
         const identity =
             contentIdentity ||

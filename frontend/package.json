@@ -61,6 +61,7 @@
     "validate:hero-vault-production-persistence": "node scripts/validate-hero-vault-production-persistence.mjs",
     "validate:hero-vault-card-targeting": "node scripts/validate-hero-vault-card-targeting.mjs",
     "validate:hero-vault-title-refresh": "node scripts/validate-hero-vault-title-refresh.mjs",
+    "validate:hero-vault-title-fanout": "node scripts/validate-hero-vault-title-fanout.mjs",
     "validate:master-edit-realtime": "node scripts/validate-master-edit-realtime.mjs",
     "validate:video-vault-soft-remove": "node scripts/validate-video-vault-soft-remove.mjs",
     "validate:series-assembly-workflow": "node scripts/validate-series-assembly-workflow.mjs",

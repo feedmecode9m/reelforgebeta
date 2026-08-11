@@ -257,6 +257,28 @@ export function resolveActiveHeroCanonicalTitle(sources = {}) {
 }
 
 /**
+ * Same durable resolver for any linked reel/asset projection (Video Vault, Series/Episode,
+ * Theater, Studio). Never invents storage — uses reel_titles_persistent first.
+ * @param {string} assetId
+ * @param {{
+ *   editedTitle?: string;
+ *   persistentTitle?: string;
+ *   episodeTitle?: string;
+ *   assetTitle?: string;
+ *   fileName?: string;
+ *   managerHeroTitle?: string;
+ *   titlesStorageKey?: string;
+ * }} [sources]
+ * @returns {string}
+ */
+export function resolveLinkedAssetDisplayTitle(assetId, sources = {}) {
+    return resolveActiveHeroCanonicalTitle({
+        ...sources,
+        assetId: String(assetId || sources.assetId || '').trim()
+    });
+}
+
+/**
  * Reconcile presentation/manager heroTitle to vault-canonical resolve for the active assetId.
  * Does not rewrite heroDescription. Does not invent title storage.
  *

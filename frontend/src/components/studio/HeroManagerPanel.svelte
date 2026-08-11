@@ -1951,6 +1951,35 @@
             /* ignore */
         }
 
+        try {
+            const reelsForBridge = Array.isArray(feedReels) ? feedReels : [];
+            const withTitles = reelsForBridge.map((reel) =>
+                String(reel?.id || '') === assetId
+                    ? { ...reel, title: durableTitle, name: durableTitle, title_original: durableTitle }
+                    : reel
+            );
+            bridgeFeedReelsToCatalog(
+                withTitles.length
+                    ? withTitles
+                    : [{ id: assetId, title: durableTitle, name: durableTitle }]
+            );
+        } catch {
+            /* ignore */
+        }
+
+        dispatchVaultTitleUpdated({
+            reelId: assetId,
+            oldTitle: current,
+            newTitle: durableTitle,
+            heroBound,
+            episodeId: episodeUpdate?.episodeId || episodeCtx?.episode?.episodeId || null,
+            intelligence,
+            source: 'hero-manager-edit-title'
+        });
+
+        // Registry stamp before backend — UI must not wait on PATCH/PUT.
+        refreshHeroAssetRegistry();
+
         let backendSynced = false;
         if (typeof updateReelTitle === 'function') {
             try {
@@ -1986,32 +2015,7 @@
             queuePendingTitlePatch(assetId, durableTitle);
         }
 
-        try {
-            const reelsForBridge = Array.isArray(feedReels) ? feedReels : [];
-            const withTitles = reelsForBridge.map((reel) =>
-                String(reel?.id || '') === assetId
-                    ? { ...reel, title: durableTitle, name: durableTitle, title_original: durableTitle }
-                    : reel
-            );
-            bridgeFeedReelsToCatalog(
-                withTitles.length
-                    ? withTitles
-                    : [{ id: assetId, title: durableTitle, name: durableTitle }]
-            );
-        } catch {
-            /* ignore */
-        }
-
-        dispatchVaultTitleUpdated({
-            reelId: assetId,
-            oldTitle: current,
-            newTitle: durableTitle,
-            heroBound,
-            episodeId: episodeUpdate?.episodeId || episodeCtx?.episode?.episodeId || null,
-            intelligence,
-            source: 'hero-manager-edit-title'
-        });
-
+        // Re-stamp after optional Studio fan-out (idempotent when titles already match).
         refreshHeroAssetRegistry();
         const episodeLabel = episodeCtx
             ? ` · Ep S${episodeCtx.season.seasonNumber}E${episodeCtx.episode.episodeNumber}`
@@ -3136,7 +3140,7 @@
             <div class="hero-vault__grid">
                 {#each $heroAssetRegistry as item (item.assetId)}
                     {@const isActive = String(item.assetId) === String(config.heroAssetId || '')}
-                    {@const displayTitle = item.title || getDisplayTitle(item)}
+                    {@const displayTitle = getDisplayTitle(item)}
                     {@const storyIntel = getStoryPreviewIntel(item)}
                     {@const videoLoaded = Boolean(vaultVideoLoadedByAsset[item.assetId])}
                     {@const videoErrored = Boolean(vaultVideoErrorByAsset[item.assetId])}

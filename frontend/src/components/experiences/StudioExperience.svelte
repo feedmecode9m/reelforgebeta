@@ -1119,11 +1119,27 @@
       });
       if (res.ok) {
         const updated = await res.json();
-        reel.title = updated.title || trimmed;
-        reel._syncedWithBackend = true;
-        syncedWithBackend = true;
-        setRenameRowFeedback(reelId, 'saved', 'Synced');
-        uploadStatus.set(`✅ SYNCED: "${reel.title}"`);
+        // Race: ignore late A/B responses when durable map already holds a newer title.
+        const latestPersistent = String(
+          persistentTitles?.getTitle?.(reelId)?.title ||
+            persistentTitles?.getTitle?.(reelId)?.title_original ||
+            ''
+        ).trim();
+        const responseTitle = String(updated?.title || trimmed).trim();
+        if (latestPersistent && latestPersistent !== responseTitle && latestPersistent !== trimmed) {
+          reel.title = latestPersistent;
+          reel.title_original = latestPersistent;
+          reel._syncedWithBackend = false;
+          syncedWithBackend = false;
+          setRenameRowFeedback(reelId, 'local', 'Saved locally');
+          uploadStatus.set(`✅ SAVED LOCALLY: "${latestPersistent}"`);
+        } else {
+          reel.title = responseTitle || trimmed;
+          reel._syncedWithBackend = true;
+          syncedWithBackend = true;
+          setRenameRowFeedback(reelId, 'saved', 'Synced');
+          uploadStatus.set(`✅ SYNCED: "${reel.title}"`);
+        }
       } else {
         throw new Error(`Backend error ${res.status}`);
       }

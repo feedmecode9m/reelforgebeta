@@ -228,18 +228,22 @@ export function resolveContentIdentity(reelId, options = {}) {
     const intelKeywords = asStringList(intelligence.storyKeywords || intelligence.keywords);
     const aiOnlyKeywords = asStringList(intelligence.discoveryTags);
 
-    /** Creator title always wins for display identity. */
+    /**
+     * Master Edit durable authority: reel_titles_persistent outranks sticky
+     * contentIdentity / package episode snapshots for the same reel id.
+     * Creator truth remains preferred when no persistent Master Edit exists.
+     */
     const title =
-        creatorTitle ||
         persistentTitle ||
+        creatorTitle ||
         text(seriesMeta?.episodeTitle) ||
         text(reel?.title) ||
         text(reel?.name) ||
         '';
 
     const episodeTitle =
-        creatorTitle ||
         persistentTitle ||
+        creatorTitle ||
         text(seriesMeta?.episodeTitle) ||
         text(reel?.episodeTitle) ||
         title;
