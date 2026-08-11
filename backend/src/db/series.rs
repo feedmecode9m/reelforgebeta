@@ -172,6 +172,13 @@ pub struct CreateEpisodeInput {
     pub tags: Option<Vec<String>>,
 }
 
+/// PATCH semantics for `reelId` on episode update:
+/// - field **omitted** → leave existing `reel_id` unchanged
+/// - `"reelId": null` → set SQL `reel_id = NULL`
+/// - `"reelId": "<id>"` → set `reel_id` to that id
+///
+/// Outer None = field omitted; `Some(None)` = JSON null; `Some(Some(id))` = set.
+/// Serde's plain `Option` collapses JSON null to None, so a custom deserializer is required.
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateEpisodeInput {
@@ -182,11 +189,34 @@ pub struct UpdateEpisodeInput {
     pub description: Option<String>,
     pub runtime_seconds: Option<i32>,
     pub thumbnail_url: Option<String>,
-    pub reel_id: Option<String>,
+    /// Tri-state reel binding (see type docs). Not a plain Option — null must clear.
+    #[serde(default, deserialize_with = "deserialize_optional_nullable_string")]
+    pub reel_id: Option<Option<String>>,
     pub release_date: Option<String>,
     pub status: Option<String>,
     pub genre: Option<String>,
     pub tags: Option<Vec<String>>,
+}
+
+/// Deserialize a present JSON field into outer Some(...); JSON null → inner None.
+/// Absent fields use `#[serde(default)]` → outer None (leave column unchanged).
+fn deserialize_optional_nullable_string<'de, D>(
+    deserializer: D,
+) -> Result<Option<Option<String>>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    Ok(Some(Option::<String>::deserialize(deserializer)?))
+}
+
+/// Resolve whether an episode update should touch `reel_id`.
+/// Returns `(apply, next_value)`. When `apply` is false, SQL must preserve existing.
+pub fn resolve_reel_id_patch(input: &Option<Option<String>>) -> (bool, Option<String>) {
+    match input {
+        None => (false, None),
+        Some(None) => (true, None),
+        Some(Some(id)) => (true, Some(id.clone())),
+    }
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -765,6 +795,8 @@ pub async fn update_episode(
         .clone()
         .unwrap_or(existing.status);
     let release_date = parse_release_date(input.release_date.as_deref());
+    // Tri-state: omit / null-clear / set. Must not use COALESCE (null cannot clear).
+    let (apply_reel_id, next_reel_id) = resolve_reel_id_patch(&input.reel_id);
 
     if let Some(tags) = &input.tags {
         sqlx::query(
@@ -779,11 +811,11 @@ pub async fn update_episode(
                 runtime = COALESCE($8, runtime),
                 runtime_seconds = COALESCE($8, runtime_seconds),
                 status = $9,
-                reel_id = COALESCE($10, reel_id),
-                thumbnail_url = COALESCE($11, thumbnail_url),
-                release_date = COALESCE($12, release_date),
-                genre = COALESCE($13, genre),
-                tags = $14,
+                reel_id = CASE WHEN $10 THEN $11 ELSE reel_id END,
+                thumbnail_url = COALESCE($12, thumbnail_url),
+                release_date = COALESCE($13, release_date),
+                genre = COALESCE($14, genre),
+                tags = $15,
                 updated_at = now()
             WHERE id = $1
             "#,
@@ -797,7 +829,8 @@ pub async fn update_episode(
         .bind(input.description.as_deref())
         .bind(input.runtime_seconds)
         .bind(&status)
-        .bind(input.reel_id.as_deref())
+        .bind(apply_reel_id)
+        .bind(next_reel_id.as_deref())
         .bind(input.thumbnail_url.as_deref())
         .bind(release_date)
         .bind(input.genre.as_deref())
@@ -817,10 +850,10 @@ pub async fn update_episode(
                 runtime = COALESCE($8, runtime),
                 runtime_seconds = COALESCE($8, runtime_seconds),
                 status = $9,
-                reel_id = COALESCE($10, reel_id),
-                thumbnail_url = COALESCE($11, thumbnail_url),
-                release_date = COALESCE($12, release_date),
-                genre = COALESCE($13, genre),
+                reel_id = CASE WHEN $10 THEN $11 ELSE reel_id END,
+                thumbnail_url = COALESCE($12, thumbnail_url),
+                release_date = COALESCE($13, release_date),
+                genre = COALESCE($14, genre),
                 updated_at = now()
             WHERE id = $1
             "#,
@@ -834,7 +867,8 @@ pub async fn update_episode(
         .bind(input.description.as_deref())
         .bind(input.runtime_seconds)
         .bind(&status)
-        .bind(input.reel_id.as_deref())
+        .bind(apply_reel_id)
+        .bind(next_reel_id.as_deref())
         .bind(input.thumbnail_url.as_deref())
         .bind(release_date)
         .bind(input.genre.as_deref())
@@ -851,4 +885,84 @@ pub async fn delete_episode(pool: &PgPool, id: &str) -> Result<bool, sqlx::Error
         .execute(pool)
         .await?;
     Ok(result.rows_affected() > 0)
+}
+
+#[cfg(test)]
+mod reel_id_patch_tests {
+    use super::{resolve_reel_id_patch, UpdateEpisodeInput};
+
+    /// Apply patch on top of an existing reel_id (mirrors CASE WHEN apply logic).
+    fn next_reel(existing: Option<&str>, input: &Option<Option<String>>) -> Option<String> {
+        let (apply, next) = resolve_reel_id_patch(input);
+        if apply {
+            next
+        } else {
+            existing.map(|s| s.to_string())
+        }
+    }
+
+    #[test]
+    fn omitted_reel_id_preserves_existing() {
+        let json = r#"{"title":"Keep","status":"draft"}"#;
+        let input: UpdateEpisodeInput = serde_json::from_str(json).unwrap();
+        assert!(input.reel_id.is_none());
+        let (apply, next) = resolve_reel_id_patch(&input.reel_id);
+        assert!(!apply);
+        assert!(next.is_none());
+        assert_eq!(
+            next_reel(Some("reel-aaa"), &input.reel_id).as_deref(),
+            Some("reel-aaa")
+        );
+    }
+
+    #[test]
+    fn explicit_null_clears_reel_id() {
+        let json = r#"{"reelId":null,"status":"draft"}"#;
+        let input: UpdateEpisodeInput = serde_json::from_str(json).unwrap();
+        assert_eq!(input.reel_id, Some(None));
+        let (apply, next) = resolve_reel_id_patch(&input.reel_id);
+        assert!(apply);
+        assert!(next.is_none());
+        assert_eq!(next_reel(Some("reel-aaa"), &input.reel_id), None);
+    }
+
+    #[test]
+    fn non_null_reel_id_sets_value() {
+        let json = r#"{"reelId":"reel-bbb","status":"published"}"#;
+        let input: UpdateEpisodeInput = serde_json::from_str(json).unwrap();
+        assert_eq!(input.reel_id, Some(Some("reel-bbb".to_string())));
+        let (apply, next) = resolve_reel_id_patch(&input.reel_id);
+        assert!(apply);
+        assert_eq!(next.as_deref(), Some("reel-bbb"));
+        assert_eq!(
+            next_reel(Some("reel-aaa"), &input.reel_id).as_deref(),
+            Some("reel-bbb")
+        );
+    }
+
+    #[test]
+    fn metadata_only_patch_does_not_touch_reel() {
+        let json = r#"{"title":"MICROS STIRRED V1","episodeNumber":1,"status":"published"}"#;
+        let input: UpdateEpisodeInput = serde_json::from_str(json).unwrap();
+        assert!(input.reel_id.is_none());
+        assert_eq!(input.episode_number, Some(1));
+        assert_eq!(input.title.as_deref(), Some("MICROS STIRRED V1"));
+        assert_eq!(input.status.as_deref(), Some("published"));
+        assert_eq!(
+            next_reel(Some("615e0eae-47b4-468a-b6dd-a6846b464846"), &input.reel_id).as_deref(),
+            Some("615e0eae-47b4-468a-b6dd-a6846b464846")
+        );
+    }
+
+    #[test]
+    fn empty_string_is_set_not_clear_null() {
+        // Documented: "" is a non-null set value (unique index), not SQL NULL clear.
+        // Clients must send JSON null to clear.
+        let json = r#"{"reelId":""}"#;
+        let input: UpdateEpisodeInput = serde_json::from_str(json).unwrap();
+        assert_eq!(input.reel_id, Some(Some(String::new())));
+        let (apply, next) = resolve_reel_id_patch(&input.reel_id);
+        assert!(apply);
+        assert_eq!(next.as_deref(), Some(""));
+    }
 }
