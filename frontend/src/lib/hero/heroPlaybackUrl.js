@@ -56,6 +56,24 @@ export function resolveHeroPlaybackUrl(url, options = {}) {
         return finish(inputUrl, `${sourceTag}:blob_or_data`, false);
     }
 
+    // Peel `/thumbs/https://host/...` or `/thumbs/http://host/thumbs/file` before path join.
+    const nakedAbs = inputUrl.match(/^\/(?:thumbs|videos)\/(https?:\/\/.+)$/i);
+    if (nakedAbs) {
+        return resolveHeroPlaybackUrl(nakedAbs[1], {
+            ...options,
+            source: `${sourceTag}:repair_double_prefix_abs`
+        });
+    }
+    const embedded = inputUrl.match(
+        /^\/(thumbs|videos)\/https?:\/\/[^/]+\/(thumbs|videos)\/(.+)$/i
+    );
+    if (embedded) {
+        return resolveHeroPlaybackUrl(`/${embedded[2]}/${embedded[3]}`, {
+            ...options,
+            source: `${sourceTag}:repair_double_prefix_path`
+        });
+    }
+
     // Absolute — return unchanged (Railway, R2, CDN, any HTTPS host).
     if (/^https?:\/\//i.test(inputUrl)) {
         return finish(inputUrl, `${sourceTag}:absolute`, false);

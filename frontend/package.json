@@ -17,6 +17,7 @@
     "validate:auth-1": "node scripts/validate-auth-1.mjs",
     "validate:hero-presentation-api": "bash ../scripts/validate-hero-presentation-api.sh",
     "validate:hero-background": "node scripts/validate-hero-background-pipeline.mjs",
+    "validate:hero-poster-url": "node scripts/validate-hero-poster-url.mjs",
     "validate:hero-certification": "node scripts/validate-hero-intelligence-certification.mjs",
     "validate:pipeline": "node scripts/validate-pipeline.mjs",
     "validate:studio-audio": "node scripts/validate-studio-audio.mjs",

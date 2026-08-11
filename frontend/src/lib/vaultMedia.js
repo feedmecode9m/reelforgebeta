@@ -35,7 +35,41 @@ export function filenameFromMediaRef(ref) {
 export function resolveUserPosterUrl(thumb) {
     if (!thumb || isFakeThumbUrl(thumb)) return null;
     if (/\.(mp4|mov|webm|m4v|avi|mkv)(\?|$)/i.test(thumb)) return null;
-    const relative = toRelativeMediaPath(thumb);
+    let trimmed = String(thumb).trim();
+    if (!trimmed) return null;
+
+    // Peel accidental `/thumbs/https://host/...` corruption before any join.
+    const nakedAbs = trimmed.match(/^\/(?:thumbs|videos)\/(https?:\/\/.+)$/i);
+    if (nakedAbs) {
+        return resolveUserPosterUrl(nakedAbs[1]);
+    }
+    const embedded = trimmed.match(/^\/(thumbs|videos)\/https?:\/\/[^/]+\/(thumbs|videos)\/(.+)$/i);
+    if (embedded) {
+        return resolveUserPosterUrl(`/${embedded[2]}/${embedded[3]}`);
+    }
+
+    // Absolute production thumbs must stay absolute — never prepend `/thumbs/`.
+    // toRelativeMediaPath may also return absolute media hosts; treat the same.
+    if (/^https?:\/\//i.test(trimmed)) {
+        try {
+            const u = new URL(trimmed);
+            const path = u.pathname || '';
+            if (
+                !/\.(jpe?g|png|gif|webp)(\?|$)/i.test(path) &&
+                !path.includes('/thumbs/')
+            ) {
+                return null;
+            }
+        } catch {
+            return null;
+        }
+        return trimmed;
+    }
+
+    const relative = toRelativeMediaPath(trimmed);
+    if (/^https?:\/\//i.test(relative)) {
+        return resolveUserPosterUrl(relative);
+    }
     if (!/\.(jpe?g|png|gif|webp)$/i.test(relative) && !relative.includes('/thumbs/')) {
         return null;
     }
