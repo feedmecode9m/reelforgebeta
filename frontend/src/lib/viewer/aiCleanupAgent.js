@@ -26,6 +26,11 @@ import { shouldSynthesizePersonalThumbnailFeedCard } from './thumbnailDestinatio
 import { traceThumbStoreWrite } from './thumbStoreWriteTrace.js';
 import { pipelineCheckpoint } from '../diagnostics/pipelineDiag.js';
 import { vaultForensic } from '../diagnostics/vaultForensics.js';
+import {
+  hydrateCatalogItemWithCreatorMetadata
+} from '../feed/creatorCatalogMetadata.js';
+import { classifyContent } from '../feed/contentClassifier.js';
+import { applyCatalogMetadata, resolveCatalogMetadata } from '../feed/catalogMetadata.js';
 
 export function createAiCleanupAgent(deps) {
   const {
@@ -237,7 +242,22 @@ export function createAiCleanupAgent(deps) {
     return;
   }
   const categoriesList = ['Trending', 'Romance', 'Cyber-Action', 'Suspense'];
-  const detectedCategory = CATEGORY_DETECTOR.detectFromTitle(videoData.name.replace(/\.[^/.]+$/, ''));
+  const stem = String(videoData.name || videoData.title || '').replace(/\.[^/.]+$/, '');
+  const hydrated = hydrateCatalogItemWithCreatorMetadata({
+    id: String(videoData.id || ''),
+    title: stem,
+    name: stem,
+    fileName: videoData.fileName || videoData.name || '',
+    description: videoData.description || '',
+    tags: videoData.tags || [],
+    category: videoData.category || 'Trending',
+    type: 'video',
+    url: videoData.url
+  });
+  const classified = classifyContent(
+    applyCatalogMetadata(hydrated, resolveCatalogMetadata(hydrated))
+  );
+  const detectedCategory = classified.primaryCategory || CATEGORY_DETECTOR.detectFromTitle(stem);
   const primaryCategory = categoriesList.includes(detectedCategory) ? detectedCategory : 'Trending';
   feed.update((currentFeed) => {
   const newFeed = { ...currentFeed };
@@ -341,30 +361,79 @@ export function createAiCleanupAgent(deps) {
   feed.update(f => ({ ...f }));
   storageSet(CONFIG.FEED_STORAGE_KEY, get(feed));
   },
-  /** Re-apply reel_titles_persistent onto feed cards by canonical id. */
+  /** Re-apply reel_titles_persistent (+ Phase 17 creator catalog fields) onto feed cards. */
   applyPersistedTitlesOverlay() {
     try {
       const titles = JSON.parse(
         (typeof window !== 'undefined' ? localStorage.getItem(CONFIG.TITLES_STORAGE_KEY) : null) || '{}'
       );
       if (!titles || typeof titles !== 'object') return;
-      const ids = Object.keys(titles).filter((id) => titles[id]?.title);
+      const ids = Object.keys(titles).filter(
+        (id) =>
+          titles[id]?.title ||
+          titles[id]?.description ||
+          titles[id]?.category ||
+          titles[id]?.creatorCategory ||
+          (Array.isArray(titles[id]?.tags) && titles[id].tags.length)
+      );
       if (!ids.length) return;
+      const shelves = ['Trending', 'Romance', 'Cyber-Action', 'Suspense'];
       feed.update((current) => {
-        const next = { ...current };
-        Object.keys(next).forEach((cat) => {
-          next[cat] = (next[cat] || []).map((item) => {
-            const saved = titles[String(item?.id || '')];
-            if (!saved?.title) return item;
-            return {
-              ...item,
-              title: saved.title,
-              name: saved.title,
-              title_original: saved.title_original || saved.title,
-              _localModified: true
-            };
-          });
-        });
+        /** @type {Map<string, Record<string, unknown>>} */
+        const byId = new Map();
+        for (const cat of Object.keys(current || {})) {
+          for (const item of current[cat] || []) {
+            if (!item || item.isPlaceholder) continue;
+            const id = String(item.id || item.personal_video_id || '').trim();
+            if (!id || byId.has(id)) continue;
+            byId.set(id, item);
+          }
+        }
+        /** @type {Record<string, Array<Record<string, unknown>>>} */
+        const next = { Trending: [], Romance: [], 'Cyber-Action': [], Suspense: [] };
+        for (const cat of Object.keys(current || {})) {
+          if (!next[cat]) next[cat] = [];
+        }
+        for (const item of byId.values()) {
+          const id = String(item.id || item.personal_video_id || '').trim();
+          const saved = id ? titles[id] : null;
+          let card = { ...item };
+          if (saved?.title) {
+            card.title = saved.title;
+            card.name = saved.title;
+            card.title_original = saved.title_original || saved.title;
+            card._localModified = true;
+          }
+          if (saved?.description) {
+            card.description = saved.description;
+            card.enrichmentDescription = saved.description;
+          }
+          if (Array.isArray(saved?.tags) && saved.tags.length) {
+            card.tags = saved.tags;
+          }
+          card = hydrateCatalogItemWithCreatorMetadata(card);
+          const meta = resolveCatalogMetadata(card);
+          const enriched = applyCatalogMetadata(card, meta);
+          const classification = classifyContent(enriched);
+          const primary = shelves.includes(classification.primaryCategory)
+            ? classification.primaryCategory
+            : 'Trending';
+          card = {
+            ...enriched,
+            category: primary,
+            categories: classification.categories,
+            categoryConfidence: classification.confidence,
+            classificationSource: classification.classificationSource,
+            classificationSignals: classification.signals
+          };
+          if (!next[primary]) next[primary] = [];
+          next[primary].push(card);
+          // Discovery: also keep a reference on Trending when primary is a genre shelf.
+          if (primary !== 'Trending') {
+            const already = next.Trending.some((c) => String(c.id) === String(card.id));
+            if (!already) next.Trending.push(card);
+          }
+        }
         return next;
       });
       storageSet(CONFIG.FEED_STORAGE_KEY, get(feed));
@@ -375,14 +444,22 @@ export function createAiCleanupAgent(deps) {
         const next = list.map((item) => {
           const id = String(item?.id || item?.personal_video_id || '').trim();
           const saved = id ? titles[id] : null;
-          if (!saved?.title) return item;
+          if (!saved?.title && !saved?.description && !(Array.isArray(saved?.tags) && saved.tags.length)) {
+            return item;
+          }
           changed = true;
           return {
             ...item,
-            title: saved.title,
-            name: saved.title,
-            title_original: saved.title_original || saved.title,
-            _localModified: true
+            ...(saved?.title
+              ? {
+                  title: saved.title,
+                  name: saved.title,
+                  title_original: saved.title_original || saved.title,
+                  _localModified: true
+                }
+              : {}),
+            ...(saved?.description ? { description: saved.description } : {}),
+            ...(Array.isArray(saved?.tags) && saved.tags.length ? { tags: saved.tags } : {})
           };
         });
         if (!changed) return list;
@@ -553,6 +630,7 @@ export function createAiCleanupAgent(deps) {
   uploadStatus.set('Storage full, clear data to continue');
   return false;
   }
+  this.applyPersistedTitlesOverlay();
   return true;
   },
   async handleThumbnailRemove(index) {

@@ -350,7 +350,9 @@ export function normalizeClassificationMetadata(content) {
     const description = text(row.description || row.heroDescription || '');
     const fileName = text(row.fileName || row.file_name || '');
     const fileNameStem = (fileName.split(/[/\\]/).pop() || fileName).replace(/\.[a-z0-9]{2,5}$/i, '');
-    const rawCategory = text(row.category || row.shelfCategory || '');
+    const rawCategory = text(
+        row.creatorCategory || row.studioCategory || row.category || row.shelfCategory || ''
+    );
     const seriesTitle = text(row.seriesName || row.seriesTitle || '');
     const episodeTitle = text(row.episodeTitle || '');
     const tags = [

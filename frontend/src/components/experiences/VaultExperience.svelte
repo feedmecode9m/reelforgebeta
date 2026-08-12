@@ -52,6 +52,7 @@
     assertNoCrossWrite,
     resolveMediaAssetId
   } from '../../lib/vault/vaultCreatorCardTargeting.js';
+  import { saveCreatorCatalogMetadata } from '../../lib/feed/creatorCatalogMetadata.js';
   import VaultEpisodeCreatorStatus from '../series/VaultEpisodeCreatorStatus.svelte';
   import { validateVideoFile } from '../../lib/runtime-guards.js';
   import { API_BASE_URL, toRelativeMediaPath, SIGNED_UPLOADS_MIN_BYTES } from '../../lib/config.js';
@@ -1939,10 +1940,11 @@
   }
 
   /**
-   * Creator episode package (title / description / artwork) → vault enrichment only.
+   * Creator episode package (title / description / artwork / tags / category).
    * Target is always event.detail.mediaAssetId (never display index / S/E / filename).
-   * Preserves identity + mediaAssetId; does not touch catalog order or publish state.
-   * @param {{ title?: string; description?: string; artworkUrl?: string; mediaAssetId?: string }} detail
+   * Vault enrichment preserves presentation; creatorCatalogMetadata writes feed authority
+   * into existing reel_titles_persistent + reelforge_series_metadata (+ category PATCH).
+   * @param {{ title?: string; description?: string; artworkUrl?: string; mediaAssetId?: string; tags?: string; category?: string }} detail
    * @param {string} [cardMediaAssetId]
    */
   function saveVaultEpisodeEnrichment(detail, cardMediaAssetId = '') {
@@ -1990,6 +1992,34 @@
         return list;
       }
     });
+    // Phase 17 — durable catalog metadata for Smart Catalog (existing stores only).
+    try {
+      const savedMeta = saveCreatorCatalogMetadata(id, {
+        title: detail?.title,
+        description: detail?.description,
+        tags: detail?.tags,
+        category: detail?.category
+      });
+      console.info('[CREATOR_CATALOG_METADATA]', {
+        mediaAssetId: id,
+        hasTitle: Boolean(String(detail?.title || '').trim()),
+        hasDescription: Boolean(String(detail?.description || '').trim()),
+        hasTags: Boolean(String(detail?.tags || '').trim()),
+        category: String(detail?.category || 'Trending')
+      });
+      // Immediate live-feed reshelf from reel_titles_persistent (no reload).
+      // Mirror/PATCH failures inside saveCreatorCatalogMetadata must not block this —
+      // primary local metadata remains authoritative when savedMeta is returned.
+      if (savedMeta) {
+        try {
+          AI_CLEANUP_AGENT?.applyPersistedTitlesOverlay?.();
+        } catch (overlayErr) {
+          console.warn('[CREATOR_CATALOG_METADATA] post-save overlay', overlayErr);
+        }
+      }
+    } catch (err) {
+      console.warn('[CREATOR_CATALOG_METADATA]', err);
+    }
   }
 
   function isVaultVideoFileCandidate(f) {

@@ -109,9 +109,25 @@ export function upsertStoredReelSeriesMetadata(reelId, patch) {
     return next;
 }
 
-/** @param {string[] | string | undefined} tags */
+/**
+ * Deterministic tag normalization: trim, drop empties, case-insensitive dedupe.
+ * Preserves first-seen human casing for display.
+ * @param {string[] | string | undefined} tags
+ */
 export function normalizeTags(tags) {
     if (!tags) return [];
-    const list = Array.isArray(tags) ? tags : String(tags).split(',');
-    return list.map((t) => String(t).trim()).filter(Boolean);
+    const list = Array.isArray(tags) ? tags : String(tags).split(/[,|]/);
+    /** @type {Set<string>} */
+    const seen = new Set();
+    /** @type {string[]} */
+    const out = [];
+    for (const raw of list) {
+        const t = String(raw || '').trim();
+        if (!t) continue;
+        const key = t.toLowerCase();
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push(t);
+    }
+    return out;
 }

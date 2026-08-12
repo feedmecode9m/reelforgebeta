@@ -2,9 +2,15 @@
   /**
    * Unified Hero Vault creator completeness card.
    * Clarity for identity + package + media + publish — no parser/confidence language.
+   * Phase 17: package editor also authors title/description/tags/category for Smart Catalog.
    */
   import { createEventDispatcher } from 'svelte';
   import { presentVaultEpisodeCompleteness } from '../../lib/series/creatorExperiencePresentation.js';
+  import {
+    CREATOR_SHELF_OPTIONS,
+    loadCreatorCatalogMetadata,
+    previewCreatorShelfClassification
+  } from '../../lib/feed/creatorCatalogMetadata.js';
 
   /** @type {Record<string, unknown> | null} */
   export let asset = null;
@@ -25,10 +31,23 @@
   let draftTitle = '';
   let draftDescription = '';
   let draftArtwork = '';
+  let draftTags = '';
+  let draftCategory = 'Trending';
   let formError = '';
   let lastEditSignal = 0;
 
   $: model = active && asset ? presentVaultEpisodeCompleteness(asset) : null;
+
+  $: shelfPreview =
+    editing === 'package'
+      ? previewCreatorShelfClassification({
+          title: draftTitle,
+          description: draftDescription,
+          tags: draftTags,
+          category: draftCategory,
+          fileName: String(asset?.fileName || asset?.name || '')
+        })
+      : null;
 
   $: if (active && model && editSignal !== lastEditSignal) {
     lastEditSignal = editSignal;
@@ -56,6 +75,20 @@
     draftTitle = model.presentation.title || '';
     draftDescription = model.presentation.description || '';
     draftArtwork = model.presentation.artworkUrl || '';
+    draftTags = '';
+    draftCategory = 'Trending';
+    try {
+      const id = String(model.mediaAssetId || '').trim();
+      if (id) {
+        const meta = loadCreatorCatalogMetadata(id);
+        if (meta.title) draftTitle = meta.title;
+        if (meta.description) draftDescription = meta.description;
+        if (meta.tags?.length) draftTags = meta.tags.join(', ');
+        draftCategory = meta.category || 'Trending';
+      }
+    } catch {
+      /* keep presentation defaults */
+    }
     formError = '';
     editing = 'package';
   }
@@ -97,7 +130,9 @@
       mediaAssetId: model?.mediaAssetId || '',
       title: String(draftTitle || '').trim(),
       description: String(draftDescription || '').trim(),
-      artworkUrl: String(draftArtwork || '').trim()
+      artworkUrl: String(draftArtwork || '').trim(),
+      tags: String(draftTags || '').trim(),
+      category: String(draftCategory || 'Trending').trim() || 'Trending'
     });
     editing = null;
   }
@@ -158,12 +193,45 @@
       <p class="vault-creator-card__lead">Complete this episode package:</p>
       <label class="vault-creator-card__field">
         <span>Title</span>
-        <input type="text" bind:value={draftTitle} maxlength="200" placeholder="Episode title" />
+        <input type="text" bind:value={draftTitle} maxlength="200" placeholder="Episode title" data-creator-meta-title />
       </label>
       <label class="vault-creator-card__field">
         <span>Description</span>
-        <textarea rows="2" bind:value={draftDescription} maxlength="4000" placeholder="Short description"></textarea>
+        <textarea
+          rows="2"
+          bind:value={draftDescription}
+          maxlength="4000"
+          placeholder="Short description"
+          data-creator-meta-description
+        ></textarea>
       </label>
+      <label class="vault-creator-card__field">
+        <span>Tags</span>
+        <input
+          type="text"
+          bind:value={draftTags}
+          maxlength="500"
+          placeholder="comma-separated, e.g. romance, kiss, soulmate"
+          data-creator-meta-tags
+        />
+      </label>
+      <label class="vault-creator-card__field">
+        <span>Shelf category</span>
+        <select bind:value={draftCategory} aria-label="Creator shelf category" data-creator-meta-category>
+          {#each CREATOR_SHELF_OPTIONS as option}
+            <option value={option}>{option}</option>
+          {/each}
+        </select>
+      </label>
+      {#if shelfPreview}
+        <p class="vault-creator-card__axis-hint" data-creator-shelf-preview>
+          {#if shelfPreview.explicit}
+            Shelf: {shelfPreview.primaryCategory} · creator selection
+          {:else}
+            Detected shelf: {shelfPreview.primaryCategory} · {shelfPreview.confidenceLabel}
+          {/if}
+        </p>
+      {/if}
       <label class="vault-creator-card__field">
         <span>Artwork</span>
         <input type="url" bind:value={draftArtwork} placeholder="Image URL or /thumbs/…" />

@@ -18,6 +18,7 @@ import {
 import { mergeMediaInventory, projectCatalogCard } from './catalogInventory.js';
 import { classifyContent } from './contentClassifier.js';
 import { applyCatalogMetadata, resolveCatalogMetadata } from './catalogMetadata.js';
+import { hydrateCatalogItemWithCreatorMetadata } from './creatorCatalogMetadata.js';
 import { distributeToShelves } from './categoryDistribution.js';
 import { applyShelfRotation } from './shelfRotation.js';
 
@@ -281,8 +282,10 @@ export function buildHomeFeed(catalog, options = {}) {
     if (smartPopulation) {
         const merged = mergeMediaInventory([], eligiblePrepared);
         const projected = merged.map((item) => {
-            const meta = resolveCatalogMetadata(item);
-            const enriched = applyCatalogMetadata(item, meta);
+            // Phase 17: stamp creator-authored title/description/tags/category before classify.
+            const withCreator = hydrateCatalogItemWithCreatorMetadata(item);
+            const meta = resolveCatalogMetadata(withCreator);
+            const enriched = applyCatalogMetadata(withCreator, meta);
             const classification = classifyContent(enriched);
             const card = projectCatalogCard(enriched, { classification });
             // Keep alias normalization for shelf labels.

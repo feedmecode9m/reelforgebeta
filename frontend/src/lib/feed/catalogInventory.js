@@ -11,6 +11,7 @@
 import { resolveVaultCardProjection } from '../content/vaultCardProjection.js';
 import { classifyContent, normalizeDiscoveryShelf } from './contentClassifier.js';
 import { applyCatalogMetadata, resolveCatalogMetadata, isMeaningfulTitle } from './catalogMetadata.js';
+import { hydrateCatalogItemWithCreatorMetadata } from './creatorCatalogMetadata.js';
 
 /**
  * @param {unknown} value
@@ -479,8 +480,10 @@ export function mergeMediaInventory(existing = [], incoming = []) {
  */
 export function projectCatalogCard(item, options = {}) {
     const base = item && typeof item === 'object' ? { ...item } : {};
-    const catalogMeta = resolveCatalogMetadata(base);
-    const row = applyCatalogMetadata(base, catalogMeta);
+    // Phase 17: creator-authored metadata (existing LS stores) before classify/project.
+    const withCreator = hydrateCatalogItemWithCreatorMetadata(base);
+    const catalogMeta = resolveCatalogMetadata(withCreator);
+    const row = applyCatalogMetadata(withCreator, catalogMeta);
     const classification = options.classification || classifyContent(row);
     const primary = normalizeDiscoveryShelf(classification.primaryCategory);
     const id = text(row.id) || text(row._catalogTempKey) || '';
