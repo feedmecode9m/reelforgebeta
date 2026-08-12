@@ -17,6 +17,7 @@ import {
 } from '../diagnostics/bg7pShelfDistribution.js';
 import { mergeMediaInventory, projectCatalogCard } from './catalogInventory.js';
 import { classifyContent } from './contentClassifier.js';
+import { applyCatalogMetadata, resolveCatalogMetadata } from './catalogMetadata.js';
 import { distributeToShelves } from './categoryDistribution.js';
 import { applyShelfRotation } from './shelfRotation.js';
 
@@ -280,8 +281,10 @@ export function buildHomeFeed(catalog, options = {}) {
     if (smartPopulation) {
         const merged = mergeMediaInventory([], eligiblePrepared);
         const projected = merged.map((item) => {
-            const classification = classifyContent(item);
-            const card = projectCatalogCard(item, { classification });
+            const meta = resolveCatalogMetadata(item);
+            const enriched = applyCatalogMetadata(item, meta);
+            const classification = classifyContent(enriched);
+            const card = projectCatalogCard(enriched, { classification });
             // Keep alias normalization for shelf labels.
             card.category = mapFeedCategory(String(card.category || 'Trending'));
             return card;

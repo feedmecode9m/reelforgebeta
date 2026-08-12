@@ -65,6 +65,7 @@
     "validate:vault-card-projection": "node scripts/validate-vault-card-projection.mjs",
     "validate:catalog-smart-population": "node scripts/validate-catalog-smart-population.mjs",
     "validate:catalog-semantic-classification": "node scripts/validate-catalog-semantic-classification.mjs",
+    "validate:catalog-metadata-enrichment": "node scripts/validate-catalog-metadata-enrichment.mjs",
     "validate:vic-g-series-package": "node scripts/validate-vic-g-series-package.mjs",
     "validate:master-edit-realtime": "node scripts/validate-master-edit-realtime.mjs",
     "validate:video-vault-soft-remove": "node scripts/validate-video-vault-soft-remove.mjs",

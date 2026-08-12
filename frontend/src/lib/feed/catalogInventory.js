@@ -10,6 +10,7 @@
 
 import { resolveVaultCardProjection } from '../content/vaultCardProjection.js';
 import { classifyContent, normalizeDiscoveryShelf } from './contentClassifier.js';
+import { applyCatalogMetadata, resolveCatalogMetadata, isMeaningfulTitle } from './catalogMetadata.js';
 
 /**
  * @param {unknown} value
@@ -246,19 +247,67 @@ export function enrichCatalogCard(base, incoming) {
               ? a.ai_tags
               : b.ai_tags;
 
+    // Title: prefer meaningful over generic; never let filename overwrite creator title.
+    const titleSourceRank = (src) => {
+        const s = text(src);
+        if (s === 'creator' || s === 'studio') return 5;
+        if (s === 'upload') return 4;
+        if (s === 'derived') return 3;
+        if (s === 'filename') return 1;
+        return 2;
+    };
+    let mergedTitle = title;
+    let mergedTitleSource = text(a.titleSource) || text(b.titleSource) || '';
+    if (isMeaningfulTitle(titleB) && !isMeaningfulTitle(titleA)) {
+        mergedTitle = titleB;
+        mergedTitleSource = text(b.titleSource) || 'upload';
+    } else if (isMeaningfulTitle(titleA) && !isMeaningfulTitle(titleB)) {
+        mergedTitle = titleA;
+        mergedTitleSource = text(a.titleSource) || 'upload';
+    } else if (isMeaningfulTitle(titleA) && isMeaningfulTitle(titleB)) {
+        if (titleSourceRank(b.titleSource) > titleSourceRank(a.titleSource)) {
+            mergedTitle = titleB;
+            mergedTitleSource = text(b.titleSource) || mergedTitleSource;
+        } else {
+            mergedTitle = titleA;
+            mergedTitleSource = text(a.titleSource) || mergedTitleSource;
+        }
+    }
+
+    const metaSourceRank = (src) => {
+        const s = text(src);
+        if (s === 'creator') return 6;
+        if (s === 'studio') return 5;
+        if (s === 'existing-category') return 4;
+        if (s === 'upload') return 3;
+        if (s === 'derived') return 2;
+        if (s === 'filename') return 1;
+        return 0;
+    };
+    const metadataSource =
+        metaSourceRank(b.metadataSource) >= metaSourceRank(a.metadataSource)
+            ? text(b.metadataSource) || text(a.metadataSource)
+            : text(a.metadataSource) || text(b.metadataSource);
+
     /** @type {Record<string, unknown>} */
     const out = {
         ...a,
         ...b,
         id: text(a.id) && isDurableMediaId(text(a.id)) ? text(a.id) : text(b.id) || text(a.id),
-        title: title || text(a.title) || text(b.title),
-        name: name || title,
+        title: mergedTitle || text(a.title) || text(b.title),
+        name: name || mergedTitle || title,
         description,
         category,
         seriesName: text(b.seriesName || b.seriesTitle) || text(a.seriesName || a.seriesTitle),
         episodeTitle: text(b.episodeTitle) || text(a.episodeTitle),
         tags,
-        ai_tags
+        ai_tags,
+        titleSource: mergedTitleSource || undefined,
+        metadataSource: metadataSource || undefined,
+        metadataConfidence:
+            Number(b.metadataConfidence) >= Number(a.metadataConfidence)
+                ? b.metadataConfidence ?? a.metadataConfidence
+                : a.metadataConfidence ?? b.metadataConfidence
     };
 
     if (mergedVideo) {
@@ -429,10 +478,12 @@ export function mergeMediaInventory(existing = [], incoming = []) {
  * @returns {Record<string, unknown>}
  */
 export function projectCatalogCard(item, options = {}) {
-    const row = item && typeof item === 'object' ? { ...item } : {};
-    const id = text(row.id) || text(row._catalogTempKey) || '';
+    const base = item && typeof item === 'object' ? { ...item } : {};
+    const catalogMeta = resolveCatalogMetadata(base);
+    const row = applyCatalogMetadata(base, catalogMeta);
     const classification = options.classification || classifyContent(row);
     const primary = normalizeDiscoveryShelf(classification.primaryCategory);
+    const id = text(row.id) || text(row._catalogTempKey) || '';
 
     let projection = {
         title: text(row.title || row.name),
@@ -445,13 +496,24 @@ export function projectCatalogCard(item, options = {}) {
     try {
         if (id && isDurableMediaId(id) && !id.startsWith('url:') && !id.startsWith('temp:')) {
             const vault = resolveVaultCardProjection(id, { reel: row });
+            // Vault/creator title wins when meaningful; never replace with generic dump.
+            const vaultTitle = text(vault.title);
             projection = {
-                title: vault.title || projection.title,
+                title:
+                    isMeaningfulTitle(vaultTitle)
+                        ? vaultTitle
+                        : isMeaningfulTitle(projection.title)
+                          ? projection.title
+                          : vaultTitle || projection.title,
                 description: vault.description || projection.description,
                 posterUrl: vault.posterUrl || projection.posterUrl,
                 mediaUrl: vault.mediaUrl || projection.mediaUrl,
                 seriesLine: vault.seriesLine || ''
             };
+            if (isMeaningfulTitle(vaultTitle)) {
+                row.titleSource = 'creator';
+                row.metadataSource = row.metadataSource === 'studio' ? 'studio' : 'creator';
+            }
         }
     } catch {
         /* keep lightweight projection */
@@ -481,7 +543,11 @@ export function projectCatalogCard(item, options = {}) {
     const posterUrl =
         projection.posterUrl ||
         text(row.posterUrl || row.thumbnailUrl || row.thumbnail_url) ||
+        catalogMeta.posterUrl ||
         (mediaKind === 'image' ? text(row.url) : '');
+
+    /** Prefer real poster/thumbnail over empty; generic fallback only when nothing else exists. */
+    const thumbnailUrl = preferUrl(text(row.thumbnailUrl), posterUrl) || posterUrl;
 
     /** @type {Record<string, unknown>} */
     const card = {
@@ -491,16 +557,19 @@ export function projectCatalogCard(item, options = {}) {
         name: text(row.name) || projection.title || text(row.title),
         description: projection.description || text(row.description),
         posterUrl,
-        thumbnailUrl: preferUrl(text(row.thumbnailUrl), posterUrl) || posterUrl,
+        thumbnailUrl,
         mediaUrl: projection.mediaUrl || text(row.mediaUrl || row.video_url || ''),
         seriesLine: projection.seriesLine,
         category: primary,
         categories: classification.categories?.length
             ? classification.categories
-            : [primary],
+            : catalogMeta.categories,
         categoryConfidence: classification.confidence,
         classificationSource: classification.classificationSource,
         classificationSignals: classification.signals,
+        metadataSource: row.metadataSource || catalogMeta.metadataSource,
+        metadataConfidence: Number(row.metadataConfidence) || catalogMeta.metadataConfidence,
+        titleSource: row.titleSource || catalogMeta.titleSource,
         mediaKind,
         playable,
         ranking: Number(row.ranking) || 0,
