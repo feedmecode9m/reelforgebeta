@@ -211,7 +211,7 @@ console.log('\n[F — neutral UUID asset → Trending]');
     assert(classification.primaryCategory === 'Trending', 'neutral generic → Trending only');
 }
 
-console.log('\n[F2 — clear description/tags after semantic evidence → Trending]');
+console.log('\n[F2 — clear description/tags on ALREADY-ENRICHED live card → Trending]');
 {
     saveCreatorCatalogMetadata(
         GENERIC_ID,
@@ -227,6 +227,21 @@ console.log('\n[F2 — clear description/tags after semantic evidence → Trendi
         classifyHydrated(genericRow(), storage).classification.primaryCategory === 'Suspense',
         'precondition: Suspense from description/tags'
     );
+    // Simulate live card that already carries stamped Suspense evidence (blocking prod case).
+    const liveEnriched = {
+        ...genericRow(),
+        description: 'haunted mystery suspense thriller pursuit',
+        enrichmentDescription: 'haunted mystery suspense thriller pursuit',
+        tags: ['suspense', 'thriller'],
+        category: 'Suspense',
+        shelfCategory: 'Suspense',
+        explicitCategory: 'Suspense',
+        categorySource: 'existing-category'
+    };
+    assert(
+        classifyHydrated(liveEnriched, storage).classification.primaryCategory === 'Suspense',
+        'precondition: already-enriched live card is Suspense'
+    );
     saveCreatorCatalogMetadata(
         GENERIC_ID,
         {
@@ -240,10 +255,15 @@ console.log('\n[F2 — clear description/tags after semantic evidence → Trendi
     const cleared = loadCreatorCatalogMetadata(GENERIC_ID, { storage });
     assert(cleared.description === '', 'cleared description stays empty');
     assert(cleared.tags.length === 0, 'cleared tags stay empty');
+    assert(cleared.primaryDescriptionAuthority === true, 'description clear is authored-empty authority');
+    assert(cleared.primaryTagsAuthority === true, 'tags clear is authored-empty authority');
+    const after = classifyHydrated(liveEnriched, storage);
+    assert(after.hydrated.description === '', 'live description cleared before classify');
     assert(
-        classifyHydrated(genericRow(), storage).classification.primaryCategory === 'Trending',
-        'cleared evidence → Trending (series mirror must not revive)'
+        !after.hydrated.tags || after.hydrated.tags.length === 0,
+        'live tags cleared before classify'
     );
+    assert(after.classification.primaryCategory === 'Trending', 'enriched live card → Trending after clear');
 }
 
 console.log('\n[G — persistence round-trip]');

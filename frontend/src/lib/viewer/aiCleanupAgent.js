@@ -368,14 +368,22 @@ export function createAiCleanupAgent(deps) {
         (typeof window !== 'undefined' ? localStorage.getItem(CONFIG.TITLES_STORAGE_KEY) : null) || '{}'
       );
       if (!titles || typeof titles !== 'object') return;
-      const ids = Object.keys(titles).filter(
-        (id) =>
-          titles[id]?.title ||
-          titles[id]?.description ||
-          titles[id]?.category ||
-          titles[id]?.creatorCategory ||
-          (Array.isArray(titles[id]?.tags) && titles[id].tags.length)
-      );
+      const ids = Object.keys(titles).filter((id) => {
+        const entry = titles[id];
+        if (!entry || typeof entry !== 'object') return false;
+        return Boolean(
+          entry.title ||
+            entry.description ||
+            entry.category ||
+            entry.creatorCategory ||
+            (Array.isArray(entry.tags) && entry.tags.length) ||
+            // Phase 19: authored-empty description/tags/category still require overlay
+            Object.prototype.hasOwnProperty.call(entry, 'description') ||
+            Object.prototype.hasOwnProperty.call(entry, 'tags') ||
+            Object.prototype.hasOwnProperty.call(entry, 'category') ||
+            Object.prototype.hasOwnProperty.call(entry, 'creatorCategory')
+        );
+      });
       if (!ids.length) return;
       const shelves = ['Trending', 'Romance', 'Cyber-Action', 'Suspense'];
       feed.update((current) => {
@@ -404,12 +412,32 @@ export function createAiCleanupAgent(deps) {
             card.title_original = saved.title_original || saved.title;
             card._localModified = true;
           }
-          if (saved?.description) {
-            card.description = saved.description;
-            card.enrichmentDescription = saved.description;
+          // Phase 19: authored-empty description clears stale live evidence (not "no update").
+          if (saved && Object.prototype.hasOwnProperty.call(saved, 'description')) {
+            const desc = String(saved.description || '').trim();
+            card.description = desc;
+            if (desc) {
+              card.enrichmentDescription = desc;
+            } else {
+              delete card.enrichmentDescription;
+              delete card.heroDescription;
+              delete card.episodeDescription;
+            }
           }
-          if (Array.isArray(saved?.tags) && saved.tags.length) {
-            card.tags = saved.tags;
+          // Phase 19: authored-empty tags clear stale live evidence.
+          if (saved && Object.prototype.hasOwnProperty.call(saved, 'tags')) {
+            const tags = Array.isArray(saved.tags)
+              ? saved.tags.map((t) => String(t || '').trim()).filter(Boolean)
+              : String(saved.tags || '')
+                  .split(/[,|]/)
+                  .map((t) => t.trim())
+                  .filter(Boolean);
+            card.tags = tags;
+            if (!tags.length) {
+              delete card.ai_tags;
+              delete card.keywords;
+              delete card.discoveryTags;
+            }
           }
           // Phase 18: if primary titles map has no explicit creator shelf, drop stale
           // creatorCategory from the live card before hydrate/classify.

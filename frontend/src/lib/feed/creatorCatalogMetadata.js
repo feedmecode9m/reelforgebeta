@@ -144,8 +144,23 @@ function asSeriesMap(parsed) {
  */
 export function loadCreatorCatalogMetadata(assetId, options = {}) {
     const id = text(assetId);
-    /** @type {CreatorCatalogMetadata} */
-    const empty = { assetId: id, title: '', description: '', tags: [], category: '' };
+    /** @type {CreatorCatalogMetadata & {
+     *   primaryTitleAuthority?: boolean;
+     *   primaryDescriptionAuthority?: boolean;
+     *   primaryTagsAuthority?: boolean;
+     *   primaryCategoryAuthority?: boolean;
+     * }} */
+    const empty = {
+        assetId: id,
+        title: '',
+        description: '',
+        tags: [],
+        category: '',
+        primaryTitleAuthority: false,
+        primaryDescriptionAuthority: false,
+        primaryTagsAuthority: false,
+        primaryCategoryAuthority: false
+    };
     if (!id) return empty;
     const storage = resolveStorage(options);
 
@@ -211,7 +226,22 @@ export function loadCreatorCatalogMetadata(assetId, options = {}) {
         /* ignore */
     }
 
-    return { assetId: id, title, description, tags, category, updatedAt };
+    return {
+        assetId: id,
+        title,
+        description,
+        tags,
+        category,
+        updatedAt,
+        /** @type {boolean} */
+        primaryTitleAuthority,
+        /** @type {boolean} */
+        primaryDescriptionAuthority,
+        /** @type {boolean} */
+        primaryTagsAuthority,
+        /** @type {boolean} */
+        primaryCategoryAuthority
+    };
 }
 
 /**
@@ -306,6 +336,9 @@ export function saveCreatorCatalogMetadata(assetId, fields = {}, options = {}) {
  * Stamp creator-authored fields onto a catalog/inventory row before classification.
  * Same durable id — no merge by filename.
  *
+ * Phase 18/19: authored-empty primary fields are authoritative clears — they must
+ * erase previously projected live evidence (not skip as "no update").
+ *
  * @param {Record<string, unknown> | null | undefined} item
  * @param {{ storage?: ReturnType<typeof createMemoryStorage> }} [options]
  * @returns {Record<string, unknown>}
@@ -316,7 +349,17 @@ export function hydrateCatalogItemWithCreatorMetadata(item, options = {}) {
     if (!id) return row;
 
     const meta = loadCreatorCatalogMetadata(id, options);
-    if (!meta.title && !meta.description && !meta.tags.length && !meta.category) {
+    const hasPrimaryClear =
+        Boolean(meta.primaryDescriptionAuthority && !meta.description) ||
+        Boolean(meta.primaryTagsAuthority && !meta.tags.length) ||
+        Boolean(meta.primaryCategoryAuthority && !meta.category);
+    if (
+        !meta.title &&
+        !meta.description &&
+        !meta.tags.length &&
+        !meta.category &&
+        !hasPrimaryClear
+    ) {
         return row;
     }
 
@@ -332,9 +375,23 @@ export function hydrateCatalogItemWithCreatorMetadata(item, options = {}) {
     if (meta.description) {
         row.description = meta.description;
         row.enrichmentDescription = meta.description;
+    } else if (meta.primaryDescriptionAuthority) {
+        // Phase 19: authored-empty description clears stale live projection evidence.
+        row.description = '';
+        if ('enrichmentDescription' in row) delete row.enrichmentDescription;
+        if ('heroDescription' in row) delete row.heroDescription;
+        if ('episodeDescription' in row) delete row.episodeDescription;
     }
     if (meta.tags.length) {
         row.tags = meta.tags;
+    } else if (meta.primaryTagsAuthority) {
+        // Phase 19: authored-empty tags clear stale live projection evidence.
+        row.tags = [];
+        // Classifier also reads these bags — drop only when primary tags were cleared,
+        // so prior creator stamps cannot keep scoring shelves.
+        if ('ai_tags' in row) delete row.ai_tags;
+        if ('keywords' in row) delete row.keywords;
+        if ('discoveryTags' in row) delete row.discoveryTags;
     }
     if (meta.category) {
         row.creatorCategory = meta.category;
@@ -351,6 +408,21 @@ export function hydrateCatalogItemWithCreatorMetadata(item, options = {}) {
             delete row.categorySource;
         }
         if (!text(row.studioCategory)) {
+            const existing = normalizeDiscoveryShelf(text(row.category) || text(row.shelfCategory));
+            if (EXPLICIT_SHELF_CATEGORIES.has(existing)) {
+                row.category = 'Trending';
+                if ('shelfCategory' in row) delete row.shelfCategory;
+            }
+        }
+    }
+    // After authored-empty description/tags clear, soft-reset prior classifier shelf
+    // so existing-category cannot keep Suspense/Romance from the cleared evidence.
+    if (
+        (meta.primaryDescriptionAuthority && !meta.description) ||
+        (meta.primaryTagsAuthority && !meta.tags.length)
+    ) {
+        if ('explicitCategory' in row) delete row.explicitCategory;
+        if (!meta.category && !text(row.studioCategory)) {
             const existing = normalizeDiscoveryShelf(text(row.category) || text(row.shelfCategory));
             if (EXPLICIT_SHELF_CATEGORIES.has(existing)) {
                 row.category = 'Trending';
