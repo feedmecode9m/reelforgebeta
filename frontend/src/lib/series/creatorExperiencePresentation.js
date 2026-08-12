@@ -110,13 +110,16 @@ export function presentVaultEpisodeCompleteness(asset) {
     const artOk = Boolean(enrich.artworkUrl);
     const tagsOk = discoveryTags.length > 0;
     const categoryOk = Boolean(discoveryCategory);
-    const presentationReady = titleOk && descOk && artOk;
+    // Phase 25: intentionally cleared fields are addressed — never reported as Missing.
+    const descriptionAddressed = descOk || descriptionFieldState === 'cleared';
+    const tagsAddressed = tagsOk || tagsFieldState === 'cleared';
+    const presentationReady = titleOk && descriptionAddressed && artOk;
 
-    /** Presentation-package gaps only (Title / Description / Artwork). */
+    /** Presentation-package gaps only (Title / Description / Artwork). Cleared ≠ Missing. */
     /** @type {string[]} */
     const presentationMissing = [];
     if (!titleOk) presentationMissing.push('Title');
-    if (!descOk) presentationMissing.push('Description');
+    if (!descriptionAddressed) presentationMissing.push('Description');
     if (!artOk) presentationMissing.push('Artwork');
 
     /** Aggregated gaps for compatibility with existing consumers (lowercase). */
@@ -124,7 +127,7 @@ export function presentVaultEpisodeCompleteness(asset) {
     const missing = [];
     if (!identityReady) missing.push('identity');
     if (!titleOk) missing.push('title');
-    if (!descOk) missing.push('description');
+    if (!descriptionAddressed) missing.push('description');
     if (!artOk) missing.push('artwork');
     if (media.state === 'missing') missing.push('media');
 
@@ -176,16 +179,19 @@ export function presentVaultEpisodeCompleteness(asset) {
             },
             marks: {
                 title: titleOk,
-                description: descOk,
+                /** Addressed = populated or intentionally cleared (not the same as Set). */
+                description: descriptionAddressed,
                 artwork: artOk,
-                tags: tagsOk,
+                tags: tagsAddressed,
                 category: categoryOk
             },
             missing: presentationMissing,
             /** Package editing is available even when identity is incomplete (Phase 19). */
             canEditWithoutIdentity: true,
             hint: presentationReady
-                ? 'Package fields are set. Tags and shelf category improve discovery; this is not catalog publication.'
+                ? descriptionFieldState === 'cleared'
+                    ? 'Package ready. Description is cleared on purpose — not missing. Tags and shelf improve discovery.'
+                    : 'Package fields are set. Tags and shelf category improve discovery; this is not catalog publication.'
                 : 'Add title, description, and artwork anytime — series identity is optional for discovery metadata.'
         },
         media: {

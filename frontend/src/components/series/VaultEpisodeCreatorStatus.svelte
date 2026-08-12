@@ -299,7 +299,7 @@
           type="text"
           bind:value={draftTags}
           maxlength="500"
-          placeholder="comma-separated, e.g. romance, kiss, soulmate"
+          placeholder="comma-separated, e.g. romance, kiss (leave empty to clear)"
           data-creator-meta-tags
           disabled={packageSaveState === 'saving'}
         />
@@ -469,7 +469,7 @@
                 ? model.presentation.description.length > 48
                   ? `${model.presentation.description.slice(0, 48)}…`
                   : model.presentation.description
-                : fieldStateLabel(model.presentation.descriptionFieldState, 'Missing')}</span
+                : fieldStateLabel(model.presentation.descriptionFieldState, 'Not set')}</span
             >
           </li>
           <li
@@ -482,7 +482,7 @@
             <span class="vault-creator-card__v" data-tags-value
               >{model.presentation.tags?.length
                 ? model.presentation.tags.join(', ')
-                : fieldStateLabel(model.presentation.tagsFieldState, 'Optional')}</span
+                : fieldStateLabel(model.presentation.tagsFieldState, 'Not set')}</span
             >
           </li>
           <li
