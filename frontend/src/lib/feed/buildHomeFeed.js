@@ -1,6 +1,10 @@
 /**
  * Canonical homepage feed builder — single authority for feed eligibility and card assembly.
  * Feed eligibility ≠ playback eligibility (hero videos may appear as cards; playback routes separately).
+ *
+ * Smart catalog population (presentation layer):
+ *   eligible catalog → mergeMediaInventory → projectCatalogCard → classifyContent
+ *   → distributeToShelves → applyShelfRotation → feed map
  */
 import { isVideoReel, isImageReel, ensurePrimaryMediaType } from '../api/reelContract.js';
 import { isHeroAsset } from '../hero/heroDomainGuard.js';
@@ -11,6 +15,10 @@ import {
     logBg7pShelfDistribution,
     logBg7pCatalogToShelfMapping
 } from '../diagnostics/bg7pShelfDistribution.js';
+import { mergeMediaInventory, projectCatalogCard } from './catalogInventory.js';
+import { classifyContent } from './contentClassifier.js';
+import { distributeToShelves } from './categoryDistribution.js';
+import { applyShelfRotation } from './shelfRotation.js';
 
 export const FEED_SHELVES = ['Trending', 'Romance', 'Cyber-Action', 'Suspense'];
 
@@ -201,16 +209,26 @@ function prepareFeedCard(reel, eligibility, options) {
  *   localTitles?: Record<string, { title?: string, title_original?: string }>,
  *   thumbnailStorageKey?: string,
  *   dedupeVideos?: boolean,
- *   personalThumbnailReelIds?: Iterable<string> | Set<string>
+ *   personalThumbnailReelIds?: Iterable<string> | Set<string>,
+ *   sessionSeed?: string | number | null,
+ *   smartPopulation?: boolean
  * }} [options]
  */
 export function buildHomeFeed(catalog, options = {}) {
-    const { dedupeVideos = true, thumbnailStorageKey = 'personal_thumbnails' } = options;
+    const {
+        dedupeVideos = true,
+        thumbnailStorageKey = 'personal_thumbnails',
+        smartPopulation = true,
+        sessionSeed = null
+    } = options;
     const personalThumbnailReelIds = resolvePersonalThumbnailReelIds(options);
-    const hydratedFeed = emptyFeedMap();
+    /** @type {Record<string, unknown[]>} */
+    let hydratedFeed = emptyFeedMap();
     /** @type {Array<Record<string, unknown>>} */
     const decisions = [];
     const seenVideoUrls = new Set();
+    /** @type {Array<Record<string, unknown>>} */
+    const eligiblePrepared = [];
 
     for (const reel of catalog || []) {
         const eligibility = evaluateFeedEligibility(reel, { personalThumbnailReelIds });
@@ -255,10 +273,38 @@ export function buildHomeFeed(catalog, options = {}) {
         }
 
         const card = prepareFeedCard(reel, eligibility, { ...options, thumbnailStorageKey });
-        const shelf = mapFeedCategory(String(card.category || 'Trending'));
-        if (!hydratedFeed[shelf]) hydratedFeed[shelf] = [];
-        hydratedFeed[shelf].unshift(card);
+        eligiblePrepared.push(card);
         decisions.push(baseDecision);
+    }
+
+    if (smartPopulation) {
+        const merged = mergeMediaInventory([], eligiblePrepared);
+        const projected = merged.map((item) => {
+            const classification = classifyContent(item);
+            const card = projectCatalogCard(item, { classification });
+            // Keep alias normalization for shelf labels.
+            card.category = mapFeedCategory(String(card.category || 'Trending'));
+            return card;
+        });
+        const distributed = distributeToShelves(projected, {
+            shelves: FEED_SHELVES,
+            allowSoftFallback: false
+        });
+        hydratedFeed = applyShelfRotation(distributed.shelves, {
+            sessionSeed,
+            shelfOrder: FEED_SHELVES,
+            limitRepetition: true
+        });
+        // Ensure all FEED_SHELVES keys exist.
+        for (const shelf of FEED_SHELVES) {
+            if (!hydratedFeed[shelf]) hydratedFeed[shelf] = [];
+        }
+    } else {
+        for (const card of eligiblePrepared) {
+            const shelf = mapFeedCategory(String(card.category || 'Trending'));
+            if (!hydratedFeed[shelf]) hydratedFeed[shelf] = [];
+            hydratedFeed[shelf].unshift(card);
+        }
     }
 
     const cards = Object.values(hydratedFeed).flat().filter((r) => r && !r.isPlaceholder);

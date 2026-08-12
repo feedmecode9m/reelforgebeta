@@ -63,6 +63,7 @@
     "validate:hero-vault-title-refresh": "node scripts/validate-hero-vault-title-refresh.mjs",
     "validate:hero-vault-title-fanout": "node scripts/validate-hero-vault-title-fanout.mjs",
     "validate:vault-card-projection": "node scripts/validate-vault-card-projection.mjs",
+    "validate:catalog-smart-population": "node scripts/validate-catalog-smart-population.mjs",
     "validate:vic-g-series-package": "node scripts/validate-vic-g-series-package.mjs",
     "validate:master-edit-realtime": "node scripts/validate-master-edit-realtime.mjs",
     "validate:video-vault-soft-remove": "node scripts/validate-video-vault-soft-remove.mjs",

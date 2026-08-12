@@ -2,6 +2,10 @@ import { get } from 'svelte/store';
 import { deleteReelById } from '../api/media.js';
 import { filenameFromMediaRef } from '../vaultMedia.js';
 import { logDeletionPropagation, applyCanonicalDeleteClientEffects } from '../deletionSync.js';
+import {
+  DISCOVERY_SHELF_KEYWORDS,
+  detectShelfFromTitle
+} from '../feed/contentClassifier.js';
 
 export function createContentAgents(deps) {
   const {
@@ -102,34 +106,17 @@ export function createContentAgents(deps) {
   // These labels are NOT series genre truth and MUST NOT create Series/Episode
   // public catalog entries or overwrite creator series metadata.
   // @see ../architecture/creatorTruthLayers.js
+  // Keywords + title detect live in contentClassifier.js (shared with feed smart population).
+  // CATEGORY_DETECTOR remains discovery/shelf only — never series genre truth.
   const CATEGORY_DETECTOR = {
-  keywords: {
-  'Cyber-Action': ['cyber', 'hack', 'action', 'fight', 'chase', 'shoot', 'explosion', 'thriller', 'adventure', 'secret', 'agent', 'mission', 'combat', 'gun', 'weapon', 'war', 'battle', 'revenge', 'justice', 'crime', 'detective', 'investigation', 'spy', 'espionage', 'danger'],
-  Romance: ['love', 'romance', 'heart', 'kiss', 'relationship', 'dating', 'couple', 'marriage', 'wedding', 'passion', 'desire', 'affair', 'sweet', 'tender', 'emotional', 'feelings', 'together', 'forever', 'soulmate', 'destiny', 'chemistry', 'attraction', 'connection'],
-  Suspense: ['suspense', 'mystery', 'thriller', 'horror', 'fear', 'scary', 'dark', 'secret', 'hidden', 'danger', 'unknown', 'haunted', 'ghost', 'paranormal', 'psychological', 'twist', 'cliffhanger', 'tension', 'anxiety', 'dread', 'ominous', 'sinister', 'creepy'],
-  Trending: ['viral', 'trending', 'popular', 'hot', 'latest', 'new', 'must watch', 'breaking', 'exclusive', 'premiere', 'special', 'barbershop', 'barber', 'haircut', 'micro', 'stirred']
+  get keywords() {
+    return DISCOVERY_SHELF_KEYWORDS;
   },
   detectFromTitle(title) {
-  if (!title) return 'Trending';
-  const titleLower = title.toLowerCase();
-  if (titleLower.includes('barbershop') || titleLower.includes('barber') || titleLower.includes('haircut')) return 'Trending';
-  if (titleLower.includes('viral') || titleLower.includes('trending') || titleLower.includes('popular') || titleLower.includes('hot') || titleLower.includes('latest') || titleLower.includes('breaking')) return 'Trending';
-  const scores = {};
-  Object.keys(this.keywords).forEach((category) => {
-  scores[category] = this.keywords[category].filter((kw) => titleLower.includes(kw.toLowerCase())).length;
-  });
-  const maxCategory = Object.entries(scores).reduce((a, b) => a[1] > b[1] ? a : b);
-  return maxCategory[1] > 1 ? maxCategory[0] : this.aiAssistCategory(titleLower);
+  return detectShelfFromTitle(title);
   },
   aiAssistCategory(titleLower) {
-  if (titleLower.length < 20) return 'Trending';
-  const words = titleLower.split(/\s+/);
-  if (words.length > 8) return 'Suspense';
-  const emotionalWords = ['heart', 'soul', 'tears', 'pain', 'joy', 'fear'];
-  if (emotionalWords.some((w) => titleLower.includes(w))) return 'Romance';
-  const actionWords = ['run', 'fight', 'chase', 'escape', 'survive'];
-  if (actionWords.some((w) => titleLower.includes(w))) return 'Cyber-Action';
-  return 'Trending';
+  return detectShelfFromTitle(titleLower);
   },
   async analyzeVideoMetadata(videoFile) {
   return new Promise((resolve) => {

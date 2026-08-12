@@ -139,7 +139,7 @@
         resetBg7nMediaRendererCards
     } from '../../lib/diagnostics/bg7nPipelineTrace.js';
     import { logBg7pShelfDistribution, shelfCountsFromFeed } from '../../lib/diagnostics/bg7pShelfDistribution.js';
-    import { fillShelfPresentation } from '../../lib/feed/fillShelfPresentation.js';
+    import { fillShelfPresentation, isRealShelfCard } from '../../lib/feed/fillShelfPresentation.js';
     import { resolveVaultCardProjection } from '../../lib/content/vaultCardProjection.js';
 
     /** @type {'feed' | 'theater-ambient' | 'theater-chrome'} */
@@ -253,10 +253,23 @@
             claimPlaybackOwner('hero', 'feed-return');
         }
     }
+    function countGlobalRealFeedCards() {
+        const map = $normalizedFeed || $feed || {};
+        return Object.values(map)
+            .flat()
+            .filter((item) => isRealShelfCard(item)).length;
+    }
+
     function getShelfDisplayItems(category) {
         const source = $normalizedFeed[category] || $feed[category] || [];
         const real = UIAgent.fillLandscape ? UIAgent.fillLandscape(source, category) : source;
-        return fillShelfPresentation(real, category);
+        return fillShelfPresentation(real, category, undefined, {
+            globalRealCount: countGlobalRealFeedCards()
+        });
+    }
+
+    function shouldRenderShelf(category) {
+        return getShelfDisplayItems(category).length > 0;
     }
 
     function getRowStep(row) {
@@ -323,6 +336,7 @@
         {@const config = UIAgent.getStudioConfigs(category)}
         {@const displayName = categoryNames.getName(category)}
         {@const headingLabel = String(displayName || config.label || category)}
+        {#if shouldRenderShelf(category)}
         <section class="shelf">
             <h2 style="border-left: 4px solid {config.color}; color: {config.color};">{headingLabel}</h2>
             <div class="row-shell">
@@ -485,6 +499,7 @@
                 >›</button>
             </div>
         </section>
+        {/if}
     {/each}
     </div>
 {:else if section === 'theater-ambient' && $theaterChromeFlags.ambientBlur && theaterVideoSrc}
