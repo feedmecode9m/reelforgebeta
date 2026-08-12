@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { get, writable } from 'svelte/store';
   import { createVaultUtils } from '../../lib/viewer/vaultUtils.js';
   import { isImage, isVideo } from '../../lib/vaultMedia.js';
@@ -165,6 +165,15 @@
   let videoFileInputEl;
   /** Local pending MP4 preview (Accept/Reject) — mirrors thumbnail vault. */
   const pendingVaultVideo = writable(null);
+  /** Prevents double-ACCEPT / duplicate uploadMedia. */
+  let vaultAcceptInFlight = false;
+  /** Near-miss drag hint when pointer is over Studio but outside the upload zone. */
+  let vaultNearMissHint = '';
+  let vaultNearMissClearTimer = null;
+  /** @type {((event: DragEvent) => void) | null} */
+  let vaultDocDragOverHandler = null;
+  /** @type {((event: DragEvent) => void) | null} */
+  let vaultDocDropHandler = null;
   /**
    * Soft-hide revision — bump when workspace hide set changes so vaultDisplayVideos re-filters.
    * Persisted separately under VIDEO_VAULT_HIDDEN_STORAGE_KEY (not durable media delete).
@@ -428,6 +437,60 @@
 
   onMount(async () => {
     refreshAdminSessionReady();
+    // Near-miss feedback: Studio open + video file dragged outside upload zone.
+    vaultDocDragOverHandler = (event) => {
+      const types = Array.from(event?.dataTransfer?.types || []);
+      if (!types.includes('Files')) return;
+      const path = event.composedPath?.() || [];
+      const overUpload = path.some(
+        (n) =>
+          n?.classList?.contains?.('video-vault-drop') &&
+          !String(n?.getAttribute?.('aria-label') || '')
+            .toLowerCase()
+            .includes('delete')
+      );
+      const overDelete = path.some(
+        (n) => n?.getAttribute?.('aria-label') === 'Delete drop zone'
+      );
+      if (overUpload || overDelete) {
+        vaultNearMissHint = '';
+        return;
+      }
+      event.preventDefault();
+      vaultNearMissHint = 'Drop on UPLOAD VIDEO zone — not here';
+      if (vaultNearMissClearTimer) clearTimeout(vaultNearMissClearTimer);
+      vaultNearMissClearTimer = setTimeout(() => {
+        vaultNearMissHint = '';
+      }, 1200);
+    };
+    vaultDocDropHandler = (event) => {
+      const path = event.composedPath?.() || [];
+      const overVault = path.some(
+        (n) =>
+          n?.classList?.contains?.('video-vault-drop') ||
+          n?.classList?.contains?.('personal-media-grid')
+      );
+      if (overVault) return;
+      const files = Array.from(event?.dataTransfer?.files || []);
+      const looksVideo = files.some((f) => {
+        const name = String(f?.name || '').toLowerCase();
+        const type = String(f?.type || '').toLowerCase();
+        return type.startsWith('video/') || /\.(mp4|mov|webm|m4v)$/.test(name);
+      });
+      if (!looksVideo) return;
+      event.preventDefault();
+      vaultNearMissHint = 'Missed upload zone — drop on UPLOAD VIDEO (MP4/MOV)';
+      uploadStatus.set('⚠️ Drop on the UPLOAD VIDEO zone to stage your MP4');
+      if (vaultNearMissClearTimer) clearTimeout(vaultNearMissClearTimer);
+      vaultNearMissClearTimer = setTimeout(() => {
+        vaultNearMissHint = '';
+        uploadStatus.set('Standby');
+      }, 4000);
+    };
+    if (typeof document !== 'undefined') {
+      document.addEventListener('dragover', vaultDocDragOverHandler, true);
+      document.addEventListener('drop', vaultDocDropHandler, true);
+    }
     // Repair failed/interrupted stubs that still hold dead blob URLs (blocks ⚠ placeholder).
     personalVideos.update((videos) => {
       let changed = false;
@@ -540,7 +603,30 @@
       window.removeEventListener('AUTH_SESSION_EXPIRED', onSessionChange);
       window.removeEventListener('storage', onStorage);
       window.removeEventListener('reelforge:upload-progress', onVaultUploadProgress);
+      if (typeof document !== 'undefined') {
+        if (vaultDocDragOverHandler) {
+          document.removeEventListener('dragover', vaultDocDragOverHandler, true);
+        }
+        if (vaultDocDropHandler) {
+          document.removeEventListener('drop', vaultDocDropHandler, true);
+        }
+      }
+      if (vaultNearMissClearTimer) clearTimeout(vaultNearMissClearTimer);
     };
+  });
+
+  onDestroy(() => {
+    if (typeof document !== 'undefined') {
+      if (vaultDocDragOverHandler) {
+        document.removeEventListener('dragover', vaultDocDragOverHandler, true);
+        vaultDocDragOverHandler = null;
+      }
+      if (vaultDocDropHandler) {
+        document.removeEventListener('drop', vaultDocDropHandler, true);
+        vaultDocDropHandler = null;
+      }
+    }
+    if (vaultNearMissClearTimer) clearTimeout(vaultNearMissClearTimer);
   });
 
   $: thumbVaultSize = ($personalThumbnailCollection ?? []).filter(Boolean).length;
@@ -1588,12 +1674,24 @@
 
   function stagePendingVaultVideo(file, source = 'drop') {
     if (!file) return;
+    if (Number(file.size || 0) <= 0) {
+      console.info('[MP4_DROP_REJECTED]', {
+        reason: 'zero_byte_file',
+        fileName: file.name || null,
+        fileSize: file.size,
+        source
+      });
+      uploadStatus.set('⚠️ Empty file rejected — choose a real MP4/MOV');
+      resourceManager.setTimeout(() => uploadStatus.set('Standby'), 4000);
+      return;
+    }
     if (file.size > CONFIG.MAX_VIDEO_SIZE) {
       uploadStatus.set(`⚠️ Video too large. Max ${CONFIG.MAX_VIDEO_SIZE / 1024 / 1024}MB`);
       resourceManager.setTimeout(() => uploadStatus.set('Standby'), 3000);
       return;
     }
     clearPendingVaultVideo();
+    vaultAcceptInFlight = false;
     const skipBlobPreview = Number(file.size || 0) > VAULT_BLOB_PREVIEW_MAX_BYTES;
     let preview = '';
     if (!skipBlobPreview) {
@@ -1664,10 +1762,11 @@
       fileName: pending.name,
       result: skipBlobPreview ? 'pending_accept_no_blob_preview' : 'preview_pending_accept'
     });
+    const sizeMb = (Number(file.size || 0) / (1024 * 1024)).toFixed(1);
     uploadStatus.set(
       skipBlobPreview
-        ? `🎬 ${file.name} ready — preview skipped (large file). Click ACCEPT to upload.`
-        : `🎬 Preview: ${file.name} — Accept or Reject`
+        ? `🎬 ${file.name} (${sizeMb} MB) staged — preview skipped for large files. Ready to upload — click ACCEPT`
+        : `🎬 ${file.name} (${sizeMb} MB) staged. Ready to upload — click ACCEPT`
     );
   }
 
@@ -1675,12 +1774,22 @@
     console.info('[MP4_PENDING_ACCEPT_CLICK]', {
       hasPending: Boolean(get(pendingVaultVideo)?.file),
       adminSessionReady,
+      acceptInFlight: vaultAcceptInFlight,
       ts: new Date().toISOString()
     });
+    if (vaultAcceptInFlight) {
+      uploadStatus.set('⏳ Upload already in progress');
+      return;
+    }
     const pending = get(pendingVaultVideo);
     if (!pending?.file) {
       uploadStatus.set('⚠️ No pending video to accept');
       resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
+      return;
+    }
+    if (Number(pending.size || pending.file?.size || 0) <= 0) {
+      uploadStatus.set('⚠️ Empty file rejected — choose a real MP4/MOV');
+      clearPendingVaultVideo();
       return;
     }
     if (!getAdminToken()) {
@@ -1689,6 +1798,7 @@
       resourceManager.setTimeout(() => uploadStatus.set('Standby'), 5000);
       return;
     }
+    vaultAcceptInFlight = true;
     console.info('[MP4_PENDING_ACCEPT]', {
       fileName: pending.name,
       fileSize: pending.size,
@@ -1738,7 +1848,9 @@
       uploadState: 'uploading',
       ts: new Date().toISOString()
     });
-    uploadStatus.set(`🎬 Uploading ${file.name} (${(file.size / (1024 * 1024)).toFixed(0)} MB) — keep this tab open`);
+    uploadStatus.set(
+      `⬆️ Uploading ${file.name} (${(file.size / (1024 * 1024)).toFixed(1)} MB) — keep this tab open`
+    );
     try {
       await processVaultVideoFile(file, 'pending_accept', {
         optimisticId,
@@ -1750,7 +1862,9 @@
         ts: new Date().toISOString()
       });
       markOptimisticVaultUploadFailed(optimisticId, err?.message || 'accept_threw');
-      uploadStatus.set(`❌ Upload failed: ${err?.message || 'unknown error'}`);
+      uploadStatus.set(`❌ Failed: ${err?.message || 'unknown error'} — tap Retry upload`);
+    } finally {
+      vaultAcceptInFlight = false;
     }
   }
 
@@ -3301,7 +3415,7 @@
 >
   <h4>Video Vault ({vaultDisplayVideos.length})</h4>
   <div class="vault-batch-toolbar">
-    <p class="thumbnail-hint">Drop MP4/MOV • Auto-categorizes into feed</p>
+    <p class="thumbnail-hint">UPLOAD: drop MP4/MOV → ACCEPT → upload into catalog/feed</p>
     <div class="vault-batch-actions">
       <button
         type="button"
@@ -3346,8 +3460,13 @@
       </button>
     </div>
   {/if}
+  {#if vaultNearMissHint}
+    <div class="vault-near-miss-hint" role="status" aria-live="polite" data-vault-near-miss>
+      {vaultNearMissHint}
+    </div>
+  {/if}
   <div
-    class="drop-zone video-vault-drop"
+    class="drop-zone video-vault-drop video-vault-drop--upload"
     class:active={$videoDragActive}
     class:has-pending={Boolean($pendingVaultVideo)}
     on:dragenter={handleVaultVideoDragEnter}
@@ -3355,10 +3474,10 @@
     on:dragleave={handleVaultVideoDragLeave}
     on:drop={handleVaultVideoDrop}
     on:click={() => {
-      if (!$pendingVaultVideo) openVaultVideoFilePicker();
+      if (!$pendingVaultVideo && !vaultAcceptInFlight) openVaultVideoFilePicker();
     }}
     on:keydown={(event) => {
-      if ($pendingVaultVideo) return;
+      if ($pendingVaultVideo || vaultAcceptInFlight) return;
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
         openVaultVideoFilePicker();
@@ -3366,7 +3485,8 @@
     }}
     role="button"
     tabindex="0"
-    aria-label="Video drop zone — drop or click to choose MP4/MOV"
+    aria-label="Upload video drop zone — drop or click to choose MP4/MOV, then ACCEPT to upload"
+    data-vault-drop="upload"
   >
     <input
       bind:this={videoFileInputEl}
@@ -3386,7 +3506,7 @@
             <strong>{$pendingVaultVideo.name}</strong>
             <small>
               {(($pendingVaultVideo.size || 0) / (1024 * 1024)).toFixed(1)} MB — preview skipped for large
-              files so upload can start
+              files (intentional). Ready to upload — click ACCEPT.
             </small>
           </div>
         {:else}
@@ -3399,18 +3519,23 @@
             preload="metadata"
           ></video>
         {/if}
+        <p class="pending-ready-banner" data-vault-pending-ready>
+          Ready to upload — click ACCEPT
+        </p>
         <div class="pending-actions">
           <button
             type="button"
             class="accept-btn"
-            class:is-disabled={!adminSessionReady}
+            class:is-disabled={!adminSessionReady || vaultAcceptInFlight}
+            disabled={!adminSessionReady || vaultAcceptInFlight}
             on:click|stopPropagation={acceptPendingVideo}
           >
-            ✅ ACCEPT
+            {vaultAcceptInFlight ? '⬆️ UPLOADING…' : '✅ ACCEPT'}
           </button>
           <button
             type="button"
             class="reject-btn"
+            disabled={vaultAcceptInFlight}
             on:click|stopPropagation={rejectPendingVideo}
           >
             ❌ REJECT
@@ -3422,18 +3547,20 @@
         <p class="pending-info">
           {$pendingVaultVideo.name} • {(($pendingVaultVideo.size || 0) / (1024 * 1024)).toFixed(1)} MB
         </p>
+        <p class="pending-flow-hint">Flow: DROP → PENDING → ACCEPT → UPLOADING → READY</p>
       </div>
     {:else}
       <div class="drop-placeholder">
         <span class="drop-icon">🎬</span>
-        <span>DROP VIDEO HERE (MP4/MOV)</span>
-        <small>Max {CONFIG.MAX_VIDEO_SIZE / 1024 / 1024}MB • Signed upload for large files</small>
+        <span>UPLOAD VIDEO (MP4/MOV)</span>
+        <small>DROP → ACCEPT → UPLOAD · Max {CONFIG.MAX_VIDEO_SIZE / 1024 / 1024}MB</small>
+        <small>Large files skip preview on purpose — ACCEPT still required</small>
         <span class="vault-file-picker-hint">or click to choose a file</span>
       </div>
     {/if}
   </div>
   <div
-    class="drop-zone video-vault-drop"
+    class="drop-zone video-vault-drop video-vault-drop--delete"
     class:active={vaultDeleteDragActive}
     on:dragenter={handleVaultDeleteDragEnter}
     on:dragover={handleVaultDeleteDragOver}
@@ -3441,11 +3568,12 @@
     on:drop={handleVaultDeleteDrop}
     role="group"
     aria-label="Delete drop zone"
+    data-vault-drop="delete"
   >
     <div class="drop-placeholder">
       <span class="drop-icon">🗑️</span>
-      <span>DROP VAULT ITEM HERE TO DELETE</span>
-      <small>Supports dragged thumbnail/video cards</small>
+      <span>DELETE ZONE — vault cards only</span>
+      <small>Not for file upload — drag existing vault cards here to remove</small>
     </div>
   </div>
   {#if vaultDisplayVideos.length > 0}

@@ -111,6 +111,27 @@ export function normalizeCreatorCategory(category) {
 }
 
 /**
+ * Series-mirror shelf fill-hole — promote ONLY already-explicit discovery shelves.
+ * Narrative series.genre values (e.g. Drama, Action, Love) must NOT be aliased into
+ * Romance / Cyber-Action via normalizeDiscoveryShelf; that collapses inventory into
+ * the wrong rail. Love/Drama→Romance remains valid for authored API/upload category
+ * fields via normalizeCreatorCategory, not for series narrative genre.
+ *
+ * @param {Record<string, unknown> | null | undefined} row
+ * @returns {string}
+ */
+export function seriesMirrorShelfCategory(row) {
+    if (!row || typeof row !== 'object') return '';
+    for (const key of ['creatorCategory', 'category', 'shelfCategory', 'genre']) {
+        const raw = text(row[key]);
+        if (!raw || SOFT_DEFAULT_CATEGORIES.has(raw)) continue;
+        // Explicit shelf label only — no Love/Drama/Action aliasing.
+        if (EXPLICIT_SHELF_CATEGORIES.has(raw)) return raw;
+    }
+    return '';
+}
+
+/**
  * @param {{ storage?: ReturnType<typeof createMemoryStorage> }} [options]
  */
 function resolveStorage(options = {}) {
@@ -193,8 +214,9 @@ export function loadCreatorCatalogMetadata(assetId, options = {}) {
             primaryCategoryAuthority =
                 Object.prototype.hasOwnProperty.call(entry, 'category') ||
                 Object.prototype.hasOwnProperty.call(entry, 'creatorCategory');
+            // Shelf authority from authored category fields only — not narrative genre.
             category = normalizeCreatorCategory(
-                text(entry.category) || text(entry.creatorCategory) || text(entry.genre)
+                text(entry.category) || text(entry.creatorCategory)
             );
             if (entry.savedAt != null) updatedAt = Number(entry.savedAt) || undefined;
         }
@@ -215,8 +237,9 @@ export function loadCreatorCatalogMetadata(assetId, options = {}) {
                 tags = normalizeCreatorTags(/** @type {string[] | string} */ (row.tags));
             }
             // Phase 18: cleared primary category stays absent — series mirror must not revive it.
+            // Only promote already-explicit shelves from the mirror (never Drama→Romance alias).
             if (!category && !primaryCategoryAuthority) {
-                category = normalizeCreatorCategory(text(row.genre) || text(row.creatorCategory));
+                category = seriesMirrorShelfCategory(row);
             }
             if (updatedAt == null && row.updatedAt != null) {
                 updatedAt = Number(row.updatedAt) || undefined;

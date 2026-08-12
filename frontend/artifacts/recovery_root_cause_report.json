@@ -1,0 +1,60 @@
+{
+  "mission": "TRUE_ROOT_CAUSE_RECOVERY — Catalog Distribution + Media Vault DnD UX",
+  "generatedAt": "2026-08-12T19:55:00.000Z",
+  "baseline": {
+    "productionCommit": "45c400c",
+    "deployId": "6a7cc6d48b118e273309647c",
+    "note": "Implementation complete locally; STOP before commit/push/deploy"
+  },
+  "rootCauses": {
+    "trendingRomanceCollapse": {
+      "classification": "CLASSIFICATION/DISTRIBUTION defect (series narrative genre pollution)",
+      "mechanism": "reelforge_series_metadata.genre='Drama' → normalizeCreatorCategory → Romance via Love/Drama alias intended for upload categories, not series narrative genre",
+      "fix": "seriesMirrorShelfCategory() promotes only EXPLICIT_SHELF_CATEGORIES; stop using entry.genre for primary shelf authority"
+    },
+    "mp4TypeImage": {
+      "classification": "BACKEND list projection defect (not DB column; not FE silent rewrite)",
+      "mechanism": "media_type_from_url only treated /videos/ as video; R2 finalize stores absolute /prod/*.mp4 URLs → projected as image",
+      "fix": "media_type_from_parts(url, file_name, mime) recognizes .mp4 and /prod/",
+      "dataRepair": "NOT REQUIRED once backend deployed — type is computed at list time. Six IDs will self-heal: 03ef898a, 201ec6ee, 615e0eae, 9a1251a2, d2aafde7, 3894107e"
+    },
+    "perceivedDeadDrop": {
+      "classification": "UX DEFECT",
+      "mechanism": "DROP only stages; ACCEPT required; large files skip blob preview; copy did not say DROP→ACCEPT→UPLOAD; zero-byte reached ACCEPT; near-miss silent",
+      "fix": "zero-byte reject; Ready to upload banner; upload vs delete zones; near-miss hints; acceptInFlight guard; clearer status"
+    }
+  },
+  "filesChanged": [
+    "frontend/src/lib/feed/creatorCatalogMetadata.js",
+    "frontend/src/components/experiences/VaultExperience.svelte",
+    "frontend/src/viewer/viewer.css",
+    "frontend/package.json",
+    "frontend/scripts/validate-recovery-catalog-vault.mjs",
+    "backend/src/reel_contract.rs"
+  ],
+  "dataChangesRequired": {
+    "productionSql": "none — projection fix heals R2 mp4 type without rewriting rows",
+    "note": "Backend must be deployed for live /api/reels type=video; frontend shelf fix is client-side"
+  },
+  "beforeAfter": {
+    "shelvesBefore": { "Trending": "populated", "Romance": "2 (Drama pollution)", "Cyber-Action": "hidden empty", "Suspense": "hidden empty" },
+    "shelvesAfterClientFix": { "Trending": "populated soft inventory", "Romance": "empty/omitted unless authored Romance", "Cyber-Action": "empty/omitted until explicit eligible inventory", "Suspense": "empty/omitted until explicit eligible inventory" },
+    "mediaTypeBefore": "6 R2 mp4 rows type=image on API",
+    "mediaTypeAfterBackendDeploy": "same IDs project type=video via media_type_from_parts"
+  },
+  "validation": {
+    "validate:recovery-catalog-vault": "PASS",
+    "phase17_25_suite": "PASS",
+    "validate:phase26-2-workflow-stability": "PASS on containment; FAIL only on frozen-vault empty-diff (expected — this mission intentionally edits Vault UX)",
+    "cargo_test_media_type": "PASS (4/4)",
+    "build": "PASS index-D6Zyj0T4.js",
+    "git_diff_check": "PASS",
+    "frozen_boundaries": "PASS (no Theater/HeroRecord/workflow/CC/deploy config)"
+  },
+  "remainingDefects": [
+    "Live production API still returns type=image for 6 R2 mp4s until backend deploy",
+    "Cyber-Action/Suspense will remain empty until real authored/explicit shelf inventory exists (correct — do not manufacture)",
+    "Full browser DROP→ACCEPT→UPLOAD→FEED→RELOAD against production requires deploy of this build"
+  ],
+  "commitPushDeploy": "STOPPED per mission — ready for review"
+}

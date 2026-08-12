@@ -1,0 +1,19 @@
+{
+  "mission": "TRUE_ROOT_CAUSE_RECOVERY_catalog_vault",
+  "generatedAt": "2026-08-12T20:00:32.942Z",
+  "failures": [],
+  "pass": true,
+  "liveApi": {
+    "count": 26,
+    "mp4TypedImageCount": 6,
+    "mp4TypedImageIds": [
+      "03ef898a-989f-42c3-bdbb-67f37338df65",
+      "201ec6ee-6822-4bda-9295-080beb6f4e35",
+      "615e0eae-47b4-468a-b6dd-a6846b464846",
+      "9a1251a2-d6a6-42e5-9fcd-4eca17dcd6ef",
+      "d2aafde7-d7ba-492c-a860-20b51f7f4033",
+      "3894107e-ae44-43c5-af72-b3f5d5e0ad90"
+    ],
+    "note": "DATA/APP: production API still projects R2 mp4 as image until backend deploy of media_type_from_parts"
+  }
+}

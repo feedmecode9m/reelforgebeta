@@ -88,12 +88,51 @@ pub fn ws_full_payload_enabled() -> bool {
         .unwrap_or(true)
 }
 
-pub fn media_type_from_url(url: &str) -> &'static str {
+fn looks_like_video_filename(name: &str) -> bool {
+    let lower = name.to_ascii_lowercase();
+    lower.ends_with(".mp4")
+        || lower.ends_with(".mov")
+        || lower.ends_with(".webm")
+        || lower.ends_with(".m4v")
+        || lower.ends_with(".mkv")
+        || lower.ends_with(".avi")
+}
+
+fn looks_like_video_url(url: &str) -> bool {
     if url.contains("/videos/") {
-        "video"
-    } else {
-        "image"
+        return true;
     }
+    // R2 masters are stored as absolute …/prod/{id}.mp4 (no /videos/ segment).
+    if url.contains("/prod/") && looks_like_video_filename(url) {
+        return true;
+    }
+    looks_like_video_filename(url)
+}
+
+/// Derive reel media kind for API projection.
+/// Prefer filename + mime when present; fall back to URL shape.
+/// Historical R2 finalize rows store absolute /prod/*.mp4 URLs — those must be video.
+pub fn media_type_from_url(url: &str) -> &'static str {
+    media_type_from_parts(url, "", None)
+}
+
+pub fn media_type_from_parts(url: &str, file_name: &str, mime_type: Option<&str>) -> &'static str {
+    if let Some(mime) = mime_type {
+        let m = mime.trim().to_ascii_lowercase();
+        if m.starts_with("video/") {
+            return "video";
+        }
+        if m.starts_with("image/")
+            && !looks_like_video_filename(file_name)
+            && !looks_like_video_url(url)
+        {
+            return "image";
+        }
+    }
+    if looks_like_video_filename(file_name) || looks_like_video_url(url) {
+        return "video";
+    }
+    "image"
 }
 
 pub fn display_name_from_filename(filename: &str) -> String {
@@ -129,7 +168,12 @@ pub fn row_to_reel_v1(row: &ReelRow) -> ReelV1 {
             row.title.clone()
         },
         file_name: row.file_name.clone(),
-        media_type: media_type_from_url(&video_url).to_string(),
+        media_type: media_type_from_parts(
+            &video_url,
+            &row.file_name,
+            row.mime_type.as_deref(),
+        )
+        .to_string(),
         url: db::canonical_media_url(&video_url),
         thumbnail_url: thumb_abs,
         thumbnail_path: thumb_rel,
@@ -203,5 +247,43 @@ pub fn upload_video(filename: &str, url: &str, size: u64) -> UploadResponse {
         media_type: "video".to_string(),
         url: url.to_string(),
         size,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn media_type_local_videos_path() {
+        assert_eq!(media_type_from_url("/videos/abc.mp4"), "video");
+    }
+
+    #[test]
+    fn media_type_r2_prod_mp4_is_video() {
+        assert_eq!(
+            media_type_from_url("https://pub-example.r2.dev/prod/abc.mp4"),
+            "video"
+        );
+    }
+
+    #[test]
+    fn media_type_filename_overrides_thumbs_shaped_url() {
+        assert_eq!(
+            media_type_from_parts(
+                "https://example.com/thumbs/abc.jpg",
+                "abc.mp4",
+                Some("video/mp4")
+            ),
+            "video"
+        );
+    }
+
+    #[test]
+    fn media_type_true_image_stays_image() {
+        assert_eq!(
+            media_type_from_parts("/thumbs/abc.jpeg", "abc.jpeg", Some("image/jpeg")),
+            "image"
+        );
     }
 }

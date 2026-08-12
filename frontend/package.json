@@ -73,6 +73,7 @@
     "validate:creator-metadata-readiness": "node scripts/validate-creator-metadata-readiness.mjs",
     "validate:title-map-merge": "node scripts/validate-title-map-merge.mjs",
     "validate:phase26-2-workflow-stability": "node scripts/validate-phase26-2-workflow-stability.mjs",
+    "validate:recovery-catalog-vault": "node scripts/validate-recovery-catalog-vault.mjs",
     "validate:creator-category-clear": "node scripts/validate-creator-category-clear.mjs",
     "validate:vic-g-series-package": "node scripts/validate-vic-g-series-package.mjs",
     "validate:master-edit-realtime": "node scripts/validate-master-edit-realtime.mjs",
