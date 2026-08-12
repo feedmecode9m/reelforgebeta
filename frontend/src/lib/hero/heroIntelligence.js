@@ -65,6 +65,7 @@ import {
 } from './heroReelIdentity.js';
 import {
     loadHeroRecord,
+    loadHeroRecordUnverified,
     applyHeroRecordToStores,
     applyHeroRecordBackground,
     selectHeroAsset,
@@ -84,7 +85,8 @@ import {
     sanitizeHeroConfigLocationIntelligence,
     setLastHeroConfigSource,
     enrichPresentationConfigFromLocalIdentity,
-    buildServerPresentationPayload
+    buildServerPresentationPayload,
+    shouldApplySuccessfulPresentationConfirm
 } from './heroPresentationSync.js';
 
 export const HERO_MODES = /** @type {const} */ ([
@@ -1508,18 +1510,41 @@ export async function persistHeroPresentationToServer(patch = {}) {
                 payload: pushResult?.payload || previewPayload
             };
         }
+        const confirmedRemote = {
+            ...publishable,
+            ...pushResult.data,
+            heroAssetId: pushResult.data.heroAssetId || publishable.heroAssetId,
+            mediaUrl: pushResult.data.mediaUrl || publishable.mediaUrl || '',
+            posterUrl: pushResult.data.posterUrl || publishable.posterUrl || '',
+            backgroundSource:
+                pushResult.data.backgroundSource || publishable.backgroundSource,
+            backgroundStyle:
+                pushResult.data.backgroundStyle || publishable.backgroundStyle
+        };
+        // In-flight PUT A must not clobber a newer local commit B / none that landed
+        // after this persist started. Canonical confirm remains applyServerPresentation
+        // → source=server_presentation only when live identity still matches.
+        const liveAfterPush =
+            typeof window !== 'undefined' ? loadHeroRecordUnverified() : null;
+        if (!shouldApplySuccessfulPresentationConfirm(liveAfterPush, confirmedRemote)) {
+            return {
+                ok: true,
+                config: publishable,
+                server: pushResult.data,
+                status: pushResult.status,
+                payload: pushResult.payload || previewPayload,
+                deferredConfirm: true
+            };
+        }
         // Mirror authoritative server row into local cache (no second PUT).
         saveHeroManagerConfig(
             {
-                heroAssetId: pushResult.data.heroAssetId || publishable.heroAssetId,
-                backgroundSource:
-                    pushResult.data.backgroundSource || publishable.backgroundSource,
-                backgroundStyle:
-                    pushResult.data.backgroundStyle || publishable.backgroundStyle,
-                mediaUrl: pushResult.data.mediaUrl || publishable.mediaUrl || '',
-                posterUrl: pushResult.data.posterUrl || publishable.posterUrl || '',
-                backgroundMediaUrl:
-                    pushResult.data.mediaUrl || publishable.mediaUrl || '',
+                heroAssetId: confirmedRemote.heroAssetId,
+                backgroundSource: confirmedRemote.backgroundSource,
+                backgroundStyle: confirmedRemote.backgroundStyle,
+                mediaUrl: confirmedRemote.mediaUrl || '',
+                posterUrl: confirmedRemote.posterUrl || '',
+                backgroundMediaUrl: confirmedRemote.mediaUrl || '',
                 heroLabel: pushResult.data.heroLabel ?? publishable.heroLabel,
                 heroTitle: pushResult.data.heroTitle ?? publishable.heroTitle,
                 heroSubtitle: pushResult.data.heroSubtitle ?? publishable.heroSubtitle,
@@ -1531,17 +1556,7 @@ export async function persistHeroPresentationToServer(patch = {}) {
         // Stamp HeroRecord as server_presentation so later hydrate prefers published remote
         // over the pre-PUT client commit source (cross-device / reload authority).
         try {
-            applyServerPresentationToHeroRecord({
-                ...publishable,
-                ...pushResult.data,
-                heroAssetId: pushResult.data.heroAssetId || publishable.heroAssetId,
-                mediaUrl: pushResult.data.mediaUrl || publishable.mediaUrl || '',
-                posterUrl: pushResult.data.posterUrl || publishable.posterUrl || '',
-                backgroundSource:
-                    pushResult.data.backgroundSource || publishable.backgroundSource,
-                backgroundStyle:
-                    pushResult.data.backgroundStyle || publishable.backgroundStyle
-            });
+            applyServerPresentationToHeroRecord(confirmedRemote);
         } catch {
             /* non-fatal: manager cache already mirrored */
         }

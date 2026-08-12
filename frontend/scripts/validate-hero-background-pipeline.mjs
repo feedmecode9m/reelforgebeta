@@ -179,7 +179,8 @@ async function main() {
             applyServerPresentationToHeroRecord,
             hydrateHeroPresentationFromServer,
             enrichPresentationConfigFromLocalIdentity,
-            isServerOriginHeroSource
+            isServerOriginHeroSource,
+            shouldApplySuccessfulPresentationConfirm
         } = await server.ssrLoadModule('/src/lib/hero/heroPresentationSync.js');
         const { hydrateHeroAuthorityRuntime } = await server.ssrLoadModule(
             '/src/lib/hero/heroAuthorityRuntime.js'
@@ -1119,6 +1120,133 @@ async function main() {
                 { heroAssetId: '', mediaUrl: '', backgroundSource: 'none' }
             );
             assert(noneVsLegacy.preserve === false, 'P9-10 confirmed none remote wins over stale server A');
+
+            assert(
+                shouldApplySuccessfulPresentationConfirm(
+                    {
+                        mode: 'asset',
+                        assetId: JPG.id,
+                        source: 'commit_hero_asset_selection',
+                        mediaUrl: JPG.url
+                    },
+                    { heroAssetId: JPG.id, backgroundSource: 'custom_image', mediaUrl: JPG.url }
+                ) === true,
+                'P12 same-id confirm still stamps server_presentation'
+            );
+            assert(
+                shouldApplySuccessfulPresentationConfirm(
+                    {
+                        mode: 'asset',
+                        assetId: MP4.id,
+                        source: 'commit_hero_asset_selection',
+                        mediaUrl: MP4.url
+                    },
+                    { heroAssetId: JPG.id, backgroundSource: 'custom_image', mediaUrl: JPG.url }
+                ) === false,
+                'P12 in-flight A confirm cannot clobber live B commit'
+            );
+            assert(
+                shouldApplySuccessfulPresentationConfirm(
+                    { mode: 'none', assetId: '', source: 'commit_hero_asset_clear' },
+                    { heroAssetId: JPG.id, backgroundSource: 'custom_image', mediaUrl: JPG.url }
+                ) === false,
+                'P12 in-flight A confirm cannot clobber live none'
+            );
+
+            clearHero();
+            seedVault();
+            commitHeroAssetSelection(JPG.id, [JPG, MP4, OTHER_JPG]);
+            let releaseAPut;
+            const aPutGate = new Promise((resolve) => {
+                releaseAPut = resolve;
+            });
+            let aPutReleased = false;
+            globalThis.fetch = async (url, init = {}) => {
+                const href = String(url || '');
+                const method = String(init.method || 'GET').toUpperCase();
+                if (href.includes('/api/hero/presentation')) {
+                    if (method === 'PUT') {
+                        let body = {};
+                        try {
+                            body = JSON.parse(String(init.body || '{}'));
+                        } catch {
+                            body = {};
+                        }
+                        if (String(body.heroAssetId || '') === JPG.id && !aPutReleased) {
+                            await aPutGate;
+                            aPutReleased = true;
+                            return {
+                                ok: true,
+                                status: 200,
+                                json: async () => ({ ...body, updatedAt: Date.now() })
+                            };
+                        }
+                        if (String(body.heroAssetId || '') === MP4.id) {
+                            return {
+                                ok: false,
+                                status: 500,
+                                json: async () => ({ error: 'p12_forced_put_failure' })
+                            };
+                        }
+                        return {
+                            ok: true,
+                            status: 200,
+                            json: async () => ({ ...body, updatedAt: Date.now() })
+                        };
+                    }
+                    return {
+                        ok: true,
+                        status: 200,
+                        json: async () => ({
+                            heroAssetId: JPG.id,
+                            backgroundSource: 'custom_image',
+                            mediaUrl: JPG.url,
+                            posterUrl: JPG.url
+                        })
+                    };
+                }
+                return { ok: false, status: 404, json: async () => ({}) };
+            };
+            const persistAPromise = persistHeroPresentationToServer(loadHeroManagerConfig());
+            commitHeroAssetSelection(MP4.id, [JPG, MP4, OTHER_JPG]);
+            assert(
+                loadHeroRecordUnverified()?.assetId === MP4.id,
+                'P12 B committed locally while A PUT in flight'
+            );
+            assert(
+                loadHeroRecordUnverified()?.source === 'commit_hero_asset_selection',
+                'P12 B source is unconfirmed commit before A confirm returns'
+            );
+            releaseAPut();
+            const persistA = await persistAPromise;
+            assert(persistA?.ok === true, 'P12 delayed A PUT still succeeds on the wire');
+            assert(
+                persistA?.deferredConfirm === true,
+                'P12 A confirm is deferred because live identity moved to B'
+            );
+            const afterStaleA = loadHeroRecordUnverified();
+            assert(afterStaleA?.assetId === MP4.id, 'P12 stale A confirm does not restore A');
+            assert(
+                afterStaleA?.source === 'commit_hero_asset_selection',
+                `P12 B remains commit_hero_asset_selection (got ${afterStaleA?.source})`
+            );
+            const failB = await persistHeroPresentationToServer(loadHeroManagerConfig());
+            assert(failB?.ok !== true, 'P12 subsequent B PUT fails');
+            const afterFailB = loadHeroRecordUnverified();
+            assert(afterFailB?.assetId === MP4.id, 'P12 failed B PUT keeps local B');
+            assert(
+                afterFailB?.source === 'commit_hero_asset_selection',
+                `P12 failed B PUT source stays commit (got ${afterFailB?.source})`
+            );
+            const preserveAfterRace = shouldPreserveLocalHeroPresentationOverRemote(afterFailB, {
+                heroAssetId: JPG.id,
+                backgroundSource: 'custom_image',
+                mediaUrl: JPG.url
+            });
+            assert(
+                preserveAfterRace.preserve === true,
+                'P12 hydrate still preserves unconfirmed B over stale server A'
+            );
         } finally {
             globalThis.fetch = origFetch;
         }

@@ -48,6 +48,51 @@ const LOCAL_CLIENT_IDENTITY_SOURCES = new Set([
 ]);
 
 /**
+ * @param {unknown} source
+ * @returns {boolean}
+ */
+export function isUnconfirmedLocalHeroCommitSource(source) {
+    const s = String(source || '').trim();
+    if (!s) return false;
+    if (LOCAL_CLIENT_IDENTITY_SOURCES.has(s)) return true;
+    return s.includes('commit_hero') || s.includes('select_hero');
+}
+
+/**
+ * After a successful PUT /api/hero/presentation, stamp server_presentation only
+ * when the live HeroRecord is still the identity that was just persisted.
+ * A newer unconfirmed local commit (select B while A's PUT is in flight) must
+ * not be overwritten by the stale confirm.
+ *
+ * @param {import('./heroRecord.js').HeroRecord | Record<string, unknown> | null | undefined} liveRecord
+ * @param {Record<string, unknown> | null | undefined} confirmedRemote
+ * @returns {boolean}
+ */
+export function shouldApplySuccessfulPresentationConfirm(liveRecord, confirmedRemote) {
+    if (!liveRecord || typeof liveRecord !== 'object') return true;
+    if (!isUnconfirmedLocalHeroCommitSource(liveRecord.source)) return true;
+
+    const liveMode = String(liveRecord.mode || '').trim();
+    const liveId = String(liveRecord.assetId || '').trim();
+    const confirmedId = String(
+        confirmedRemote?.heroAssetId || confirmedRemote?.assetId || ''
+    ).trim();
+    const confirmedBg = String(confirmedRemote?.backgroundSource || '').trim();
+    const confirmedMedia = String(confirmedRemote?.mediaUrl || '').trim();
+    const confirmedIsNone =
+        confirmedBg === 'none' || (!confirmedId && !confirmedMedia && confirmedBg !== 'selection');
+
+    if (liveMode === 'none') {
+        return confirmedIsNone;
+    }
+    if (liveMode === 'asset' && liveId) {
+        if (confirmedIsNone) return false;
+        if (confirmedId && confirmedId !== liveId) return false;
+    }
+    return true;
+}
+
+/**
  * Prior server / migrate caches — never treated as "newer than" a live published remote row.
  * Failed rehydrate is diagnostic only, not a confirmed server presentation.
  * @param {unknown} source
