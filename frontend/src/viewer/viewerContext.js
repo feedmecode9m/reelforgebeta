@@ -42,6 +42,7 @@ import {
 import { loadHeroReel, resolveActiveHeroVideoReel, heroReelToVaultItem } from '../lib/hero/heroReelIdentity.js';
 import { isHeroAsset, filterNonHeroAssets } from '../lib/hero/heroDomainGuard.js';
 import { sealVaultAssetsWithEnrichment } from '../lib/series/vaultEpisodeEnrichment.js';
+import { mergeTitleIntoPersistentMap } from '../lib/content/persistentTitleMap.js';
 import {
     PERSONAL_VIDEO_VAULT_MINIMAL_FIELDS,
     overlayLocalCreatorVaultAuthority,
@@ -734,12 +735,11 @@ set: store.set,
 update: store.update,
 saveTitle: (reelId, titleData) => {
 if (!reelId || !titleData?.title) return;
-store.update((current) => ({
-...current,
-[reelId]: {
-...titleData,
+// Phase 22: merge-on-write — title-only edits must not wipe description/tags/category.
+store.update((current) => mergeTitleIntoPersistentMap(current, reelId, {
+title: titleData.title,
+title_original: titleData.title_original ?? titleData.title,
 savedAt: new Date().toISOString()
-}
 }));
 },
 getTitle: (reelId) => {

@@ -33,6 +33,7 @@
         UNTITLED_CREATOR_EXPERIENCE
     } from '../../lib/hero/heroTitleIntelligence.js';
     import { resolveVaultCardProjection } from '../../lib/content/vaultCardProjection.js';
+    import { mergeTitleIntoPersistentMap } from '../../lib/content/persistentTitleMap.js';
     import {
         approveIdentityProposal,
         getPendingStoryProposal,
@@ -897,21 +898,23 @@
     function writePersistentTitle(reelId, title) {
         if (!reelId || !title) return;
         if (persistentTitles?.saveTitle) {
+            // Shared store path — Phase 22 merge lives in persistentTitles.saveTitle.
             persistentTitles.saveTitle(reelId, { title, title_original: title });
             return;
         }
+        // Fallback when store not injected: merge-on-write into reel_titles_persistent.
         const map = readPersistentTitleMap();
-        map[reelId] = {
+        const next = mergeTitleIntoPersistentMap(map, reelId, {
             title,
             title_original: title,
             savedAt: new Date().toISOString()
-        };
+        });
         try {
-            localStorage.setItem(TITLES_KEY(), JSON.stringify(map));
+            localStorage.setItem(TITLES_KEY(), JSON.stringify(next));
         } catch {
             /* ignore */
         }
-        storageSet(TITLES_KEY(), map);
+        storageSet(TITLES_KEY(), next);
     }
 
     function lookupPersistentTitle(reelId) {
