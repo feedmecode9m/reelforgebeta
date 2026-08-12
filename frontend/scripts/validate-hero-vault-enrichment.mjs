@@ -150,11 +150,26 @@ async function main() {
         assert(String(asset.url || '').includes(R2), 'playback URL preserved pre-enrich');
 
         const presentationBefore = enrichMod.presentVaultEpisodeEnrichmentForCreator(asset);
-        assert(presentationBefore.identityConfirmed === true, 'enrichment UI only for confirmed identity');
+        assert(presentationBefore.identityConfirmed === true, 'confirmed identity reflected in enrichment presentation');
+        assert(presentationBefore.canEdit === true, 'package enrichment editable when identity confirmed');
         assert(
             presentationBefore.episodeLine === 'STIRRED • S1 • E2',
             `episode line: ${presentationBefore.episodeLine}`
         );
+
+        // Phase 19: package/catalog fields remain editable without series identity.
+        // identityConfirmed may still be true for high-confidence filename parses — that is
+        // orthogonal to package editability.
+        const genericDump = reelToVaultEntry({
+            id: 'e1f08f0f-954f-4c39-848b-9f3fc72b5d02',
+            name: '94E28916-619A-4356-88E7-90D1C71CAC2D.PNG',
+            fileName: '94E28916-619A-4356-88E7-90D1C71CAC2D.PNG',
+            url: 'https://cdn.example/thumbs/e1f08f0f-954f-4c39-848b-9f3fc72b5d02.png',
+            type: 'image',
+            createdAt: '2026-01-02T00:00:00.000Z'
+        });
+        const unconfirmed = enrichMod.presentVaultEpisodeEnrichmentForCreator(genericDump);
+        assert(unconfirmed.canEdit === true, 'package enrichment editable without identity (Phase 19)');
 
         asset = enrichMod.applyCreatorVaultEpisodeEnrichment(asset, {
             title: 'Motherland',

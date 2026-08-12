@@ -155,8 +155,11 @@ export function loadCreatorCatalogMetadata(assetId, options = {}) {
     let tags = [];
     let category = '';
     let updatedAt;
-    /** Primary titles map authored category keys (incl. empty clear) — do not revive from series. */
+    /** Primary titles map authored keys (incl. empty clear) — do not revive from series. */
     let primaryCategoryAuthority = false;
+    let primaryDescriptionAuthority = false;
+    let primaryTagsAuthority = false;
+    let primaryTitleAuthority = false;
 
     // PRIMARY: reel_titles_persistent (survives series/Vic G metadata sync)
     try {
@@ -164,6 +167,11 @@ export function loadCreatorCatalogMetadata(assetId, options = {}) {
         const titles = titlesRaw ? JSON.parse(titlesRaw) : {};
         const entry = titles && typeof titles === 'object' ? titles[id] : null;
         if (entry && typeof entry === 'object') {
+            primaryTitleAuthority =
+                Object.prototype.hasOwnProperty.call(entry, 'title') ||
+                Object.prototype.hasOwnProperty.call(entry, 'title_original');
+            primaryDescriptionAuthority = Object.prototype.hasOwnProperty.call(entry, 'description');
+            primaryTagsAuthority = Object.prototype.hasOwnProperty.call(entry, 'tags');
             title = text(entry.title || entry.title_original);
             description = text(entry.description);
             tags = normalizeCreatorTags(/** @type {string[] | string} */ (entry.tags));
@@ -185,9 +193,12 @@ export function loadCreatorCatalogMetadata(assetId, options = {}) {
         const map = asSeriesMap(metaRaw ? JSON.parse(metaRaw) : {});
         const row = map[id];
         if (row) {
-            if (!title) title = text(row.episodeTitle);
-            if (!description) description = text(row.description);
-            if (!tags.length) tags = normalizeCreatorTags(/** @type {string[] | string} */ (row.tags));
+            if (!title && !primaryTitleAuthority) title = text(row.episodeTitle);
+            // Phase 19: cleared primary description/tags stay absent — series must not revive them.
+            if (!description && !primaryDescriptionAuthority) description = text(row.description);
+            if (!tags.length && !primaryTagsAuthority) {
+                tags = normalizeCreatorTags(/** @type {string[] | string} */ (row.tags));
+            }
             // Phase 18: cleared primary category stays absent — series mirror must not revive it.
             if (!category && !primaryCategoryAuthority) {
                 category = normalizeCreatorCategory(text(row.genre) || text(row.creatorCategory));
@@ -264,8 +275,9 @@ export function saveCreatorCatalogMetadata(assetId, fields = {}, options = {}) {
             episodeNumber: Number(prior.episodeNumber ?? 1) || 1,
             seriesName: text(prior.seriesName),
             episodeTitle: title || text(prior.episodeTitle),
-            description: description || text(prior.description),
-            tags: tags.length ? tags : normalizeCreatorTags(/** @type {string[] | string} */ (prior.tags)),
+            // Phase 19: explicit empty description/tags clear the mirror (same authority as category).
+            description,
+            tags,
             // Phase 18: cleared category must clear mirror genre — never preserve stale shelf.
             genre: category || '',
             creatorCategory: category || '',

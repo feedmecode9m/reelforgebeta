@@ -190,7 +190,11 @@
       {#if model.identityLine}
         <p class="vault-creator-card__identity-line" data-creator-identity-line>{model.identityLine}</p>
       {/if}
-      <p class="vault-creator-card__lead">Complete this episode package:</p>
+      <p class="vault-creator-card__lead">
+        {model.identity.ready
+          ? 'Complete this episode package:'
+          : 'Add discovery metadata (series identity optional):'}
+      </p>
       <label class="vault-creator-card__field">
         <span>Title</span>
         <input type="text" bind:value={draftTitle} maxlength="200" placeholder="Episode title" data-creator-meta-title />
@@ -323,7 +327,7 @@
         </div>
         <p class="vault-creator-card__axis-hint" data-presentation-hint>
           {model.presentation.hint ||
-            'Package readiness for Title, Description, and Artwork.'}
+            'Package readiness for Title, Description, and Artwork. Tags and shelf improve discovery.'}
         </p>
         <ul class="vault-creator-card__checks">
           <li class:missing={!model.presentation.marks.title} data-check="title">
@@ -344,6 +348,22 @@
                 : 'Missing'}</span
             >
           </li>
+          <li class:missing={!model.presentation.marks.tags} data-check="tags">
+            <span class="vault-creator-card__mark">{mark(model.presentation.marks.tags)}</span>
+            <span class="vault-creator-card__k">Tags</span>
+            <span class="vault-creator-card__v" data-tags-value
+              >{model.presentation.tags?.length
+                ? model.presentation.tags.join(', ')
+                : 'Optional'}</span
+            >
+          </li>
+          <li class:missing={!model.presentation.marks.category} data-check="category">
+            <span class="vault-creator-card__mark">{mark(model.presentation.marks.category)}</span>
+            <span class="vault-creator-card__k">Shelf</span>
+            <span class="vault-creator-card__v" data-category-value
+              >{model.presentation.category || 'Auto / Trending'}</span
+            >
+          </li>
           <li class:missing={!model.presentation.marks.artwork} data-check="artwork">
             <span class="vault-creator-card__mark">{mark(model.presentation.marks.artwork)}</span>
             <span class="vault-creator-card__k">Artwork</span>
@@ -362,16 +382,16 @@
             <img src={model.presentation.artworkUrl} alt="" loading="lazy" />
           </div>
         {/if}
-        {#if model.identity.ready}
-          <button
-            type="button"
-            class="vault-creator-card__btn"
-            data-edit-package
-            on:click|stopPropagation|preventDefault={openPackage}
-          >
-            {model.presentation.ready ? 'Edit package' : 'Add package'}
-          </button>
-        {/if}
+        <!-- Phase 19: package/catalog metadata editable without series identity confirmation -->
+        <button
+          type="button"
+          class="vault-creator-card__btn"
+          data-edit-package
+          data-package-requires-identity="false"
+          on:click|stopPropagation|preventDefault={openPackage}
+        >
+          {model.presentation.ready ? 'Edit package' : 'Add package'}
+        </button>
       </div>
 
       <!-- Episode publication: catalog enum — not Hero PUBLIC APPROVED. -->

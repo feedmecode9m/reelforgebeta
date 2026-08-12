@@ -164,7 +164,10 @@ export function presentVaultEpisodeEnrichmentForCreator(asset) {
         description: enrichment.description || '',
         artworkUrl: enrichment.artworkUrl || '',
         hasEnrichment: hasVaultEpisodeEnrichment(enrichment),
-        canEdit: confirmed
+        // Phase 19: package/catalog metadata is independent of series identity.
+        // Generic UUID/camera assets must be able to author title/description/tags/category
+        // without confirming Series/Season/Episode first.
+        canEdit: true
     };
 }
 

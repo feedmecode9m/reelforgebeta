@@ -67,6 +67,7 @@
     "validate:catalog-semantic-classification": "node scripts/validate-catalog-semantic-classification.mjs",
     "validate:catalog-metadata-enrichment": "node scripts/validate-catalog-metadata-enrichment.mjs",
     "validate:creator-metadata-authoring": "node scripts/validate-creator-metadata-authoring.mjs",
+    "validate:creator-metadata-coverage": "node scripts/validate-creator-metadata-coverage.mjs",
     "validate:creator-category-clear": "node scripts/validate-creator-category-clear.mjs",
     "validate:vic-g-series-package": "node scripts/validate-vic-g-series-package.mjs",
     "validate:master-edit-realtime": "node scripts/validate-master-edit-realtime.mjs",

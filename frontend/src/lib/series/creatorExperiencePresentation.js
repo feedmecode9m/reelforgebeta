@@ -14,6 +14,7 @@ import {
     vaultIdentityIsConfirmed
 } from './seriesAssemblyWorkflow.js';
 import { getEpisodeByReelId } from './seriesStore.js';
+import { loadCreatorCatalogMetadata } from '../feed/creatorCatalogMetadata.js';
 
 /**
  * Creator-safe media availability for a vault asset.
@@ -68,11 +69,21 @@ export function presentVaultEpisodeCompleteness(asset) {
     const enrich = readVaultEpisodeEnrichment(asset);
     const media = presentVaultMediaAvailability(asset);
     const publishing = presentVaultPublishingStatus(asset);
+    const mediaAssetId = identity.mediaAssetId || packagePres.mediaAssetId || '';
+    // Primary catalog authority (reel_titles_persistent) — fill presentation display holes
+    // without requiring series identity. Does not invent titles from UUID/camera dumps.
+    const catalog = mediaAssetId ? loadCreatorCatalogMetadata(mediaAssetId) : null;
+    const displayTitle = enrich.title || catalog?.title || '';
+    const displayDescription = enrich.description || catalog?.description || '';
+    const discoveryTags = Array.isArray(catalog?.tags) ? catalog.tags : [];
+    const discoveryCategory = catalog?.category || '';
 
     const identityReady = !identity.needsConfirmation;
-    const titleOk = Boolean(enrich.title);
-    const descOk = Boolean(enrich.description);
+    const titleOk = Boolean(displayTitle);
+    const descOk = Boolean(displayDescription);
     const artOk = Boolean(enrich.artworkUrl);
+    const tagsOk = discoveryTags.length > 0;
+    const categoryOk = Boolean(discoveryCategory);
     const presentationReady = titleOk && descOk && artOk;
 
     /** Presentation-package gaps only (Title / Description / Artwork). */
@@ -92,7 +103,7 @@ export function presentVaultEpisodeCompleteness(asset) {
     if (media.state === 'missing') missing.push('media');
 
     return {
-        mediaAssetId: identity.mediaAssetId || packagePres.mediaAssetId || '',
+        mediaAssetId,
         /** Clear Series / Season / Episode values for creator (no parser language). */
         series: identity.seriesLabel || '',
         season: identity.seasonNumber,
@@ -121,18 +132,25 @@ export function presentVaultEpisodeCompleteness(asset) {
             /** Episode package readiness (title / description / artwork) — not publication. */
             axisLabel: 'Presentation',
             statusLabel: presentationReady ? 'Ready' : 'Incomplete',
-            title: enrich.title || '',
-            description: enrich.description || '',
+            title: displayTitle,
+            description: displayDescription,
             artworkUrl: enrich.artworkUrl || '',
+            /** Optional discovery fields from primary catalog metadata (not required for ready). */
+            tags: discoveryTags,
+            category: discoveryCategory,
             marks: {
                 title: titleOk,
                 description: descOk,
-                artwork: artOk
+                artwork: artOk,
+                tags: tagsOk,
+                category: categoryOk
             },
             missing: presentationMissing,
+            /** Package editing is available even when identity is incomplete (Phase 19). */
+            canEditWithoutIdentity: true,
             hint: presentationReady
-                ? 'Package fields are set. This is not the same as catalog publication.'
-                : 'Package fields for audiences. Incomplete does not mean the video is missing or unpublished.'
+                ? 'Package fields are set. Tags and shelf category improve discovery; this is not catalog publication.'
+                : 'Add title, description, and artwork anytime — series identity is optional for discovery metadata.'
         },
         media: {
             ...media,
