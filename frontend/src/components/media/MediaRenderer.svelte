@@ -9,6 +9,7 @@
         getPlaybackOwnerSnapshot,
         tagVideoPlaybackRole,
         canAttachMediaForRole,
+        isTheaterProtectedMasterUrl,
         playbackOwner
     } from '../../lib/media/playbackOwnership.js';
 
@@ -98,13 +99,11 @@
     $: activePlaybackOwner = $playbackOwner;
 
     $: resolvedSrc = (() => {
-        // While Theater owns playback, block Hero/Vault/preview from attaching masters.
-        if (
-            mediaType === 'video' &&
-            !canAttachMediaForRole(playbackRole) &&
-            activePlaybackOwner === 'theater'
-        ) {
-            return '';
+        // While Theater owns playback, block Hero/Vault/preview (and any protected master URL).
+        if (mediaType === 'video' && activePlaybackOwner === 'theater' && playbackRole !== 'theater') {
+            if (!canAttachMediaForRole(playbackRole) || isTheaterProtectedMasterUrl(url)) {
+                return '';
+            }
         }
         if (raw) return url || '';
         if (mediaType === 'video' && validateVideo) {

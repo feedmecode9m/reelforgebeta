@@ -6,7 +6,9 @@
 import {
     claimPlaybackOwner,
     releasePlaybackOwner,
-    getPlaybackOwner
+    getPlaybackOwner,
+    isTheaterProtectedMasterUrl,
+    clearTheaterProtectedMaster
 } from '../media/playbackOwnership.js';
 
 /**
@@ -127,7 +129,16 @@ export function pauseCompetingPageVideos() {
         if (already.has(v)) {
             // Re-assert unload if Svelte rebound src while Theater is open.
             try {
-                if (v.getAttribute('src') || v.querySelector('source') || (v.currentSrc && !v.ended)) {
+                const liveSrc = String(v.getAttribute('src') || v.currentSrc || '').trim();
+                const sourceSrc = String(v.querySelector('source')?.getAttribute('src') || '').trim();
+                const reboundProtected =
+                    isTheaterProtectedMasterUrl(liveSrc) || isTheaterProtectedMasterUrl(sourceSrc);
+                if (
+                    reboundProtected ||
+                    v.getAttribute('src') ||
+                    v.querySelector('source') ||
+                    (v.currentSrc && !v.ended)
+                ) {
                     const had = suspendedByTheater.find((s) => s.el === v);
                     const snap = snapshotAndUnloadVideo(v);
                     if (snap && had) {
@@ -172,6 +183,7 @@ export function pauseCompetingPageVideos() {
 export function resumeCompetingPageVideos() {
     const list = suspendedByTheater;
     suspendedByTheater = [];
+    clearTheaterProtectedMaster();
     releasePlaybackOwner('theater', 'theater-close');
 
     for (const item of list) {

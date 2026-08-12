@@ -94,7 +94,8 @@ function readRepo(rel) {
 // Wiring: TheaterExperience still selects via theater context
 const theaterExp = readRepo('frontend/src/components/theater/TheaterExperience.svelte');
 assert(
-    /resolvePlayableMediaUrl\(\$activeReel,\s*['"]theater['"]\)/.test(theaterExp),
+    /resolvePlayableMediaUrl\(\$activeReel,\s*['"]theater['"]\)/.test(theaterExp) ||
+        /resolveTheaterAttachUrl\(\$activeReel\)/.test(theaterExp),
     'TheaterExperience primary URL uses resolvePlayableMediaUrl(..., theater)'
 );
 // Phase 4: preload remains metadata until derivative path proven live

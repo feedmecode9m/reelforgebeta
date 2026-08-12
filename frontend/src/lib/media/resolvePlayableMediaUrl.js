@@ -139,6 +139,98 @@ export function isPlaybackDerivativeReady(reel) {
     return Boolean(getPlaybackDerivativeUrl(reel)) && getPlaybackStatus(reel) === 'ready';
 }
 
+/** @type {Map<string, { playbackUrl: string, playbackStatus: 'ready' }>} */
+const readyPlaybackByReelId = new Map();
+
+/**
+ * Test helper — do not use in product close paths (remount must still recall ready pairs).
+ */
+export function resetReadyPlaybackDerivativeMemory() {
+    readyPlaybackByReelId.clear();
+}
+
+/**
+ * @param {string} reelId
+ * @returns {{ playbackUrl: string, playbackStatus: 'ready' } | null}
+ */
+export function recallReadyPlaybackDerivative(reelId) {
+    const id = String(reelId || '').trim();
+    if (!id) return null;
+    return readyPlaybackByReelId.get(id) || null;
+}
+
+/**
+ * Remember a verified ready playback pair for later remounts (E3→E1, chip reconstruct).
+ * @param {Record<string, unknown> | null | undefined} reel
+ */
+export function rememberReadyPlaybackDerivative(reel) {
+    if (!isPlaybackDerivativeReady(reel)) return;
+    const id = reel?.id != null ? String(reel.id).trim() : '';
+    const url = getPlaybackDerivativeUrl(reel);
+    if (!id || !url) return;
+    readyPlaybackByReelId.set(id, { playbackUrl: url, playbackStatus: 'ready' });
+}
+
+/**
+ * If authoritative ready metadata exists, stamp playbackUrl/playbackStatus onto the reel.
+ * Does not invent a derivative from filename heuristics.
+ *
+ * @param {Record<string, unknown> | null | undefined} reel
+ * @returns {Record<string, unknown> | null | undefined}
+ */
+export function stampReadyPlaybackDerivative(reel) {
+    if (!reel || typeof reel !== 'object') return reel;
+    const id = reel.id != null ? String(reel.id).trim() : '';
+    const recalled = id ? recallReadyPlaybackDerivative(id) : null;
+    const meta = mergePlaybackDerivativeFields(reel, recalled);
+    const candidate = { ...reel, ...meta };
+    if (!isPlaybackDerivativeReady(candidate)) return candidate;
+    const url = getPlaybackDerivativeUrl(candidate);
+    const stamped = {
+        ...candidate,
+        playbackUrl: url,
+        playback_url: url,
+        playbackStatus: 'ready',
+        playback_status: 'ready'
+    };
+    rememberReadyPlaybackDerivative(stamped);
+    return stamped;
+}
+
+/**
+ * Merge feed/vault/seed + recalled ready metadata, then stamp before Theater attach.
+ *
+ * @param {Record<string, unknown> | null | undefined} reel
+ * @param {Array<Record<string, unknown> | null | undefined>} [extraSources]
+ * @returns {Record<string, unknown> | null}
+ */
+export function enrichReelForTheaterPlayback(reel, extraSources = []) {
+    if (!reel || typeof reel !== 'object') return null;
+    const id = reel.id != null ? String(reel.id).trim() : '';
+    const extras = (Array.isArray(extraSources) ? extraSources : []).filter(
+        (s) => s && typeof s === 'object'
+    );
+    const recalled = id ? recallReadyPlaybackDerivative(id) : null;
+    const playbackMeta = mergePlaybackDerivativeFields(reel, ...extras, recalled);
+    /** @type {Record<string, unknown>} */
+    const merged = Object.assign({}, ...extras, reel, playbackMeta);
+    return stampReadyPlaybackDerivative(merged);
+}
+
+/**
+ * Theater attach URL: ready derivative wins; otherwise existing resolver (master fallback).
+ *
+ * @param {Record<string, unknown> | null | undefined} reel
+ * @param {{ silent?: boolean }} [options]
+ * @returns {string}
+ */
+export function resolveTheaterAttachUrl(reel, options = {}) {
+    if (isPlaybackDerivativeReady(reel)) {
+        return getPlaybackDerivativeUrl(reel);
+    }
+    return resolvePlayableMediaUrl(reel, 'theater', options);
+}
+
 /**
  * Resolve the browser-playable media URL for a given surface.
  *
@@ -174,6 +266,7 @@ export function resolvePlayableMediaUrl(reel, context = 'theater', options = {})
     const derivative = getPlaybackDerivativeUrl(reel);
     const status = getPlaybackStatus(reel);
 
+    // Invariant: ready + playbackUrl must never resolve to the master (any derivative context).
     if (derivative && status === 'ready') {
         if (!silent) logDerivative(ctx, 'playback_url');
         return derivative;

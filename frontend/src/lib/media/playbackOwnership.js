@@ -158,3 +158,47 @@ export function canAttachMediaForRole(role) {
     }
     return canStartPlayback(r);
 }
+
+/** @type {string} */
+let theaterProtectedReelId = '';
+/** @type {string} */
+let theaterProtectedMasterUrl = '';
+
+/**
+ * Record the Theater-owned reel master so Hero/preview cannot reattach it mid-session.
+ * @param {string} reelId
+ * @param {string} masterUrl
+ */
+export function setTheaterProtectedMaster(reelId, masterUrl) {
+    theaterProtectedReelId = String(reelId || '').trim();
+    theaterProtectedMasterUrl = String(masterUrl || '').trim();
+}
+
+export function clearTheaterProtectedMaster() {
+    theaterProtectedReelId = '';
+    theaterProtectedMasterUrl = '';
+}
+
+export function getTheaterProtectedReelId() {
+    return theaterProtectedReelId;
+}
+
+/**
+ * True when `url` is the Theater-owned reel's bare master (not `.playback.mp4`).
+ * Only active while playback owner is theater.
+ *
+ * @param {string | null | undefined} url
+ * @returns {boolean}
+ */
+export function isTheaterProtectedMasterUrl(url) {
+    if (getPlaybackOwner() !== 'theater') return false;
+    const u = String(url || '')
+        .split('?')[0]
+        .trim();
+    if (!u) return false;
+    if (u.includes('.playback.mp4')) return false;
+    const master = theaterProtectedMasterUrl.split('?')[0].trim();
+    if (master && u === master) return true;
+    if (theaterProtectedReelId && u.includes(`${theaterProtectedReelId}.mp4`)) return true;
+    return false;
+}

@@ -44,9 +44,11 @@
         resumeCompetingPageVideos
     } from '../../lib/theater/theaterExclusivePlayback.js';
     import {
-        mergePlaybackDerivativeFields,
-        resolvePlayableMediaUrl as resolvePlayableMediaUrlForTheater
+        enrichReelForTheaterPlayback,
+        stampReadyPlaybackDerivative,
+        getMasterMediaUrl
     } from '../../lib/media/resolvePlayableMediaUrl.js';
+    import { setTheaterProtectedMaster } from '../../lib/media/playbackOwnership.js';
 
     export {
         activePublishingProfile,
@@ -188,15 +190,7 @@
         const vaultHit = reelId
             ? vaultList.find((v) => String(v?.id || '') === reelId)
             : null;
-        // Prefer ready derivative from any source before first Theater media attachment.
-        const playbackMeta = mergePlaybackDerivativeFields(reel, fromFeed, vaultHit);
-        let fresh = {
-            ...(fromFeed && typeof fromFeed === 'object' ? fromFeed : {}),
-            ...(vaultHit && typeof vaultHit === 'object' ? vaultHit : {}),
-            ...reel,
-            ...playbackMeta
-        };
-        return fresh;
+        return enrichReelForTheaterPlayback(reel, [fromFeed, vaultHit]);
     }
 
     /** @param {unknown} reel */
@@ -239,23 +233,11 @@
                 };
             }
         }
-        // Defensive: stamp the resolved theater playable url so intermediate objects can't lose ready derivative.
-        const preferred = resolvePlayableMediaUrlForTheater(fresh, 'theater', { silent: true });
-        if (preferred) {
-            const master = String(fresh.url || fresh.video_url || '').trim();
-            // When ready derivative wins, expose it explicitly alongside master.
-            if (
-                preferred !== master &&
-                (preferred.includes('.playback.') || preferred.endsWith('.playback.mp4'))
-            ) {
-                fresh = {
-                    ...fresh,
-                    playbackUrl: preferred,
-                    playback_url: preferred,
-                    playbackStatus: String(fresh.playbackStatus || fresh.playback_status || 'ready')
-                };
-            }
-        }
+        // Re-stamp after episode/title overlays so remount cannot drop a known ready pair.
+        fresh = stampReadyPlaybackDerivative(fresh);
+        setTheaterProtectedMaster(String(fresh?.id || ''), getMasterMediaUrl(fresh));
+        // Re-assert exclusive unload now that the owned master identity is known.
+        pauseCompetingPageVideos();
         theaterPlaybackError.set(false);
         theaterRetryNonce.set(0);
         activeReel.set(fresh);
@@ -413,7 +395,10 @@
     import { logFinalMediaUrl, videoMimeForPath } from '../../lib/config.js';
     import { isVideoReel, isImageReel } from '../../lib/api/reelContract.js';
     import { resolveTheaterPlayback } from '../../lib/media/theaterPlayback.js';
-    import { resolvePlayableMediaUrl } from '../../lib/media/resolvePlayableMediaUrl.js';
+    import {
+        resolvePlayableMediaUrl,
+        resolveTheaterAttachUrl
+    } from '../../lib/media/resolvePlayableMediaUrl.js';
     import SeriesDrawer from '../series/SeriesDrawer.svelte';
     import TheaterSeriesPanel from '../series/TheaterSeriesPanel.svelte';
     import TheaterSeriesMetadata from '../publishing/TheaterSeriesMetadata.svelte';
@@ -771,7 +756,7 @@
             : null;
     $: theaterVideoSrc =
         $activeReel && isVideoReel($activeReel) && !$activeReel.isPlaceholder && !$activeReel.isBlackStoriesPlaceholder
-            ? resolvePlayableMediaUrl($activeReel, 'theater')
+            ? resolveTheaterAttachUrl($activeReel) || resolvePlayableMediaUrl($activeReel, 'theater')
             : theaterPlayback?.mode === 'video'
               ? theaterPlayback.url
               : null;

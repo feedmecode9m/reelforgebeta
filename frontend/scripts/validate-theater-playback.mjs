@@ -81,6 +81,10 @@ assert(
     /claimPlaybackOwner\('theater'/.test(exclusive) || /claimPlaybackOwner/.test(exclusive),
     'exclusive helpers claim theater ownership'
 );
+assert(
+    /isTheaterProtectedMasterUrl/.test(exclusive) && /clearTheaterProtectedMaster/.test(exclusive),
+    'exclusive helpers re-assert protected master unload and clear on close'
+);
 // Phase 1: no redundant play() after mount/tick (autoplay only)
 assert(
     !/tick\(\)\.then\([\s\S]{0,500}node\.play\?\./.test(theater),
