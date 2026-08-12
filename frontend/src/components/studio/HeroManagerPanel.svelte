@@ -1368,11 +1368,13 @@
             refreshHeroAssetRegistry();
             const picked = get(heroAssetRegistry).find((a) => a.assetId === selectedId);
             const truthTitle = String(config.heroTitle || getDisplayTitle(picked || { assetId: selectedId })).trim();
-            statusMessage = `Hero background set · viewer title “${truthTitle}” (matches live landscape)`;
+            statusMessage = `Hero background set locally · “${truthTitle}” — publishing site-wide…`;
             // Awaitable site-wide publish with the saved manager config (keeps mediaUrl).
             confirmServerPresentation('asset_select', saved).then((ok) => {
                 if (ok) {
                     statusMessage = `Hero published site-wide · “${truthTitle}” (visible on all devices after refresh)`;
+                } else if (!String(statusMessage || '').includes('publish failed') && !String(statusMessage || '').includes('publish error')) {
+                    statusMessage = `Hero background set locally · site publish failed for “${truthTitle}”. Re-login to Studio and re-select.`;
                 }
             });
         } finally {
@@ -2066,10 +2068,12 @@
                 title: config.heroTitle || getDisplayTitle(item)
             });
             const liveTitle = String(config.heroTitle || intel.normalizedTitle).trim();
-            statusMessage = `Hero background · “${liveTitle}” · ${intel.category}/${intel.mood} story bound`;
+            statusMessage = `Hero background set locally · “${liveTitle}” · ${intel.category}/${intel.mood} — publishing site-wide…`;
             confirmServerPresentation('vault_card_select', saved).then((ok) => {
                 if (ok) {
                     statusMessage = `Hero published site-wide · “${liveTitle}”`;
+                } else if (!String(statusMessage || '').includes('publish failed') && !String(statusMessage || '').includes('publish error')) {
+                    statusMessage = `Hero background set locally · site publish failed for “${liveTitle}”. Re-login to Studio and re-select.`;
                 }
             });
             dispatchVaultTitleUpdated({
@@ -2175,13 +2179,23 @@
         if (isVideo) {
             localStorage.removeItem(HERO_IMAGE_STORAGE_KEY);
         }
+        let activeHeroCleared = false;
         if (String(config.heroAssetId || '') === String(item.assetId || '')) {
-            config = {
-                ...config,
-                heroAssetId: '',
-                backgroundSource: 'selection'
-            };
-            saveHeroManagerConfig({ heroAssetId: '', backgroundSource: 'selection' });
+            // Active Hero delete must clear HeroRecord authority, not only the manager pointer.
+            const cleared = commitHeroAssetSelection('');
+            applyLocalConfigFromSources(cleared || loadHeroManagerConfig());
+            activeHeroCleared = true;
+            statusMessage = `Deleted ${displayName} · clearing site-wide Hero…`;
+            confirmServerPresentation('clear_background', cleared).then((ok) => {
+                if (ok) {
+                    statusMessage = `Deleted ${displayName} · Hero background cleared site-wide`;
+                } else if (
+                    !String(statusMessage || '').includes('publish failed') &&
+                    !String(statusMessage || '').includes('publish error')
+                ) {
+                    statusMessage = `Deleted ${displayName} locally · site Hero clear failed. Re-login to Studio if it returns after refresh.`;
+                }
+            });
         }
         refreshHeroAssetRegistry();
         const afterCount = get(heroAssetRegistry).length;
@@ -2203,7 +2217,9 @@
             newCount: afterCount,
             timestamp: Date.now()
         });
-        statusMessage = `Deleted ${displayName}`;
+        if (!activeHeroCleared) {
+            statusMessage = `Deleted ${displayName}`;
+        }
         console.info('[HERO_VAULT_DELETE]', {
             assetId: item.assetId
         });

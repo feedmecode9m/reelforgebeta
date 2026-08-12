@@ -14,7 +14,9 @@ import {
 } from '../api/heroPresentation.js';
 import { getAdminToken } from '../adminSession.js';
 import {
+    isDurableHeroMediaUrl,
     loadHeroRecord,
+    loadHeroRecordUnverified,
     selectHeroAsset,
     setHeroMode,
     updateHeroPresentation as updateHeroRecordPresentation
@@ -23,6 +25,7 @@ import {
     buildHeroAssetRegistry,
     resolveHeroAssetById
 } from './heroAssetBridge.js';
+import { reconcileActivePresentationHeroTitle } from './heroTitleIntelligence.js';
 
 export {
     getLastHeroConfigSource,
@@ -32,6 +35,120 @@ export {
     buildServerPresentationPayload,
     mapServerPresentationToManagerPatch
 } from './heroPresentationCore.js';
+
+/**
+ * Client identity commits that may not yet have landed on the server presentation row.
+ * After a successful PUT we rewrite source to server_presentation — thereafter remote wins.
+ */
+const LOCAL_CLIENT_IDENTITY_SOURCES = new Set([
+    'commit_hero_asset_selection',
+    'commit_hero_video_identity',
+    'select_hero_asset',
+    'commit_hero_asset_clear'
+]);
+
+/**
+ * Prior server / migrate caches — never treated as "newer than" a live published remote row.
+ * Failed rehydrate is diagnostic only, not a confirmed server presentation.
+ * @param {unknown} source
+ * @returns {boolean}
+ */
+export function isServerOriginHeroSource(source) {
+    const s = String(source || '').trim();
+    if (!s) return false;
+    if (s === 'hero_authority_rehydrate_fail_closed' || s.endsWith('_fail_closed')) {
+        return false;
+    }
+    if (s === 'server_presentation' || s === 'hero_authority_rehydrate') {
+        return true;
+    }
+    if (s.startsWith('server_') || s.startsWith('migrate_') || s.startsWith('hero_authority_')) {
+        return true;
+    }
+    return false;
+}
+
+/**
+ * True when local HeroRecord is a durable asset identity ready to defend during hydrate.
+ * @param {import('./heroRecord.js').HeroRecord | Record<string, unknown> | null | undefined} record
+ */
+export function hasDurableLocalHeroAsset(record) {
+    if (!record || typeof record !== 'object') return false;
+    if (String(record.mode || '').trim() !== 'asset') return false;
+    const assetId = String(record.assetId || '').trim();
+    if (!assetId) return false;
+    const mediaUrl = String(record.mediaUrl || record.videoUrl || '').trim();
+    return Boolean(mediaUrl && isDurableHeroMediaUrl(mediaUrl));
+}
+
+/**
+ * Gate for hydrateHeroPresentationFromServer: keep a durable local client selection
+ * when remote is a different (stale) presentation row.
+ *
+ * Cross-device published state still wins when local source is server-origin or the ids match
+ * (heal media from server). Client commits that never confirmed on the wire keep local until
+ * a successful PUT rewrites source to server_presentation.
+ *
+ * @param {import('./heroRecord.js').HeroRecord | Record<string, unknown> | null | undefined} localRecord
+ * @param {Record<string, unknown> | null | undefined} remote
+ * @returns {{ preserve: boolean; reason: string }}
+ */
+export function shouldPreserveLocalHeroPresentationOverRemote(localRecord, remote) {
+    if (!hasDurableLocalHeroAsset(localRecord)) {
+        return { preserve: false, reason: 'local_not_durable_asset' };
+    }
+
+    const localId = String(localRecord.assetId || '').trim();
+    const remoteId = String(remote?.heroAssetId || '').trim();
+    const remoteMedia = String(remote?.mediaUrl || '').trim();
+    const presentation =
+        remote?.presentation && typeof remote.presentation === 'object'
+            ? /** @type {Record<string, unknown>} */ (remote.presentation)
+            : {};
+    const remotePresentationId = String(presentation.heroAssetId || '').trim();
+    const effectiveRemoteId = remoteId || remotePresentationId;
+    const effectiveRemoteMedia =
+        remoteMedia || String(presentation.mediaUrl || presentation.backgroundMediaUrl || '').trim();
+
+    if (!effectiveRemoteId && !effectiveRemoteMedia) {
+        return { preserve: true, reason: 'remote_empty' };
+    }
+
+    if (effectiveRemoteId && effectiveRemoteId === localId) {
+        // Same identity — allow server heal of media/poster/copy.
+        return { preserve: false, reason: 'same_asset_id_heal' };
+    }
+
+    const source = String(localRecord.source || '').trim();
+    // Fail-closed rehydrate is not server confirmation. Durable local A must survive stale remote B/C.
+    if (source === 'hero_authority_rehydrate_fail_closed') {
+        return { preserve: true, reason: 'local_unconfirmed_fail_closed' };
+    }
+    if (isServerOriginHeroSource(source) || source === 'default') {
+        return { preserve: false, reason: 'local_server_origin_source' };
+    }
+
+    const localTs = Number(localRecord.updatedAt) || 0;
+    const remoteTs =
+        Number(remote?.updatedAt) ||
+        Number(presentation.updatedAt) ||
+        Number(remote?.serverTimestamp) ||
+        0;
+    if (remoteTs > 0 && localTs > 0 && remoteTs > localTs) {
+        return { preserve: false, reason: 'remote_timestamp_newer' };
+    }
+
+    if (
+        LOCAL_CLIENT_IDENTITY_SOURCES.has(source) ||
+        source.includes('commit_hero') ||
+        source.includes('select_hero')
+    ) {
+        return { preserve: true, reason: 'local_client_identity_commit' };
+    }
+
+    // Unknown source + different remote identity: prefer published remote (cross-device safe).
+    return { preserve: false, reason: 'unknown_source_prefer_remote' };
+}
 
 /**
  * True when the host is a public deploy where dev_local_session is rejected.
@@ -77,7 +194,14 @@ export function validateAdminTokenForHeroPublish(token) {
 export function enrichPresentationConfigFromLocalIdentity(config) {
     const next = config && typeof config === 'object' ? { ...config } : {};
     const record = typeof window !== 'undefined' ? loadHeroRecord() : null;
-    let heroAssetId = String(next.heroAssetId || record?.assetId || '').trim();
+    const managerId = String(next.heroAssetId || '').trim();
+    const recordId = record ? String(record.assetId || '').trim() : '';
+    const managerEmpty = !managerId;
+    const idsMatch = Boolean(managerId && recordId && managerId === recordId);
+    // Copy HeroRecord identity/media ONLY when manager id is empty or exactly matches.
+    // Never use record.mode === 'asset' to bridge A(manager) + B(record).
+    const mayProjectRecord = Boolean(record) && (managerEmpty || idsMatch);
+    let heroAssetId = managerId || (mayProjectRecord ? recordId : '');
 
     let mediaUrl = String(
         next.mediaUrl ||
@@ -91,40 +215,36 @@ export function enrichPresentationConfigFromLocalIdentity(config) {
         next.posterUrl || next.backgroundPoster || next.thumbnailUrl || next.thumbnail || ''
     ).trim();
 
-    if (record) {
-        const recordId = String(record.assetId || '').trim();
-        const idsMatch = !heroAssetId || !recordId || recordId === heroAssetId;
-        if (idsMatch || record.mode === 'asset') {
-            if (!heroAssetId && record.mode === 'asset' && recordId) {
-                heroAssetId = recordId;
+    if (mayProjectRecord && record) {
+        if (!heroAssetId && record.mode === 'asset' && recordId) {
+            heroAssetId = recordId;
+        }
+        if (!mediaUrl) {
+            mediaUrl = String(record.mediaUrl || record.videoUrl || '').trim();
+        }
+        if (!posterUrl) {
+            posterUrl = String(record.posterUrl || '').trim();
+        }
+        if (!next.backgroundSource || next.backgroundSource === 'selection') {
+            if (record.mode === 'asset') {
+                next.backgroundSource =
+                    record.mediaKind === 'image' ? 'custom_image' : 'custom_video';
+                next.backgroundStyle = record.mediaKind === 'image' ? 'image' : 'video';
+            } else if (record.mode === 'none') {
+                next.backgroundSource = 'none';
             }
-            if (!mediaUrl) {
-                mediaUrl = String(record.mediaUrl || record.videoUrl || '').trim();
-            }
-            if (!posterUrl) {
-                posterUrl = String(record.posterUrl || '').trim();
-            }
-            if (!next.backgroundSource || next.backgroundSource === 'selection') {
-                if (record.mode === 'asset') {
-                    next.backgroundSource =
-                        record.mediaKind === 'image' ? 'custom_image' : 'custom_video';
-                    next.backgroundStyle = record.mediaKind === 'image' ? 'image' : 'video';
-                } else if (record.mode === 'none') {
-                    next.backgroundSource = 'none';
-                }
-            }
-            if (!String(next.heroTitle || '').trim() && record.heroTitle) {
-                next.heroTitle = String(record.heroTitle);
-            }
-            if (!String(next.heroSubtitle || '').trim() && record.heroSubtitle) {
-                next.heroSubtitle = String(record.heroSubtitle);
-            }
-            if (!String(next.heroDescription || '').trim() && record.heroDescription) {
-                next.heroDescription = String(record.heroDescription);
-            }
-            if (!String(next.heroLabel || '').trim() && record.title) {
-                // leave label alone
-            }
+        }
+        if (!String(next.heroTitle || '').trim() && record.heroTitle) {
+            next.heroTitle = String(record.heroTitle);
+        }
+        if (!String(next.heroSubtitle || '').trim() && record.heroSubtitle) {
+            next.heroSubtitle = String(record.heroSubtitle);
+        }
+        if (!String(next.heroDescription || '').trim() && record.heroDescription) {
+            next.heroDescription = String(record.heroDescription);
+        }
+        if (!String(next.heroLabel || '').trim() && record.title) {
+            // leave label alone
         }
     }
 
@@ -282,9 +402,11 @@ export function applyServerPresentationToHeroRecord(remote) {
 
 /**
  * Server → localStorage cache. Does not re-POST.
+ * Does not blindly overwrite a durable local client identity commit with a different remote row.
+ *
  * @param {(patch: Record<string, unknown>, options?: { skipServer?: boolean; source?: string }) => Record<string, unknown>} saveFn
  * @param {() => Record<string, unknown>} loadFn
- * @returns {Promise<{ hydrated: boolean; config: Record<string, unknown> | null; source: string }>}
+ * @returns {Promise<{ hydrated: boolean; config: Record<string, unknown> | null; source: string; preservedLocal?: boolean; preserveReason?: string }>}
  */
 export async function hydrateHeroPresentationFromServer(saveFn, loadFn) {
     const remote = await fetchHeroPresentation();
@@ -294,7 +416,56 @@ export async function hydrateHeroPresentationFromServer(saveFn, loadFn) {
     const remoteId = String(patch?.heroAssetId || remote?.heroAssetId || '').trim();
     const remoteMedia = String(remote?.mediaUrl || patch?.mediaUrl || '').trim();
 
+    // Prefer unverified storage so public-scrub load does not drop durable mediaUrl.
+    const localRecord =
+        typeof window !== 'undefined' ? loadHeroRecordUnverified() || loadHeroRecord() : null;
+    const preserveDecision = shouldPreserveLocalHeroPresentationOverRemote(localRecord, remote);
+
     if (patch && (remoteId || String(patch.heroTitle || '').trim() || remoteMedia)) {
+        if (preserveDecision.preserve) {
+            console.info('[HERO_PRESENTATION] preserve local durable asset over remote hydrate', {
+                localAssetId: String(localRecord?.assetId || localId || ''),
+                remoteAssetId: remoteId || null,
+                reason: preserveDecision.reason,
+                localSource: String(localRecord?.source || ''),
+                localUpdatedAt: Number(localRecord?.updatedAt) || 0,
+                ts: new Date().toISOString()
+            });
+            // Still reconcile title to vault-canonical (persistent) without inventing media identity.
+            const reconciledLocal =
+                /** @type {Record<string, unknown>} */ (
+                    reconcileActivePresentationHeroTitle(local || {}) || local
+                ) || local;
+            const titleNow = String(reconciledLocal?.heroTitle || '').trim();
+            const localTitle = String(local?.heroTitle || '').trim();
+            let configOut = reconciledLocal;
+            if (titleNow && titleNow !== localTitle) {
+                configOut = saveFn(
+                    {
+                        heroTitle: titleNow,
+                        heroAssetTitle: titleNow
+                    },
+                    { skipServer: true, source: 'localStorage' }
+                );
+            }
+            logHeroSource({
+                source: 'localStorage',
+                heroAssetId: String(localRecord?.assetId || localId || ''),
+                title: String(configOut?.heroTitle || localRecord?.heroTitle || ''),
+                backgroundUrl: String(
+                    localRecord?.mediaUrl || local?.mediaUrl || local?.backgroundMediaUrl || ''
+                )
+            });
+            setLastHeroConfigSource('localStorage');
+            return {
+                hydrated: false,
+                config: configOut,
+                source: 'localStorage',
+                preservedLocal: true,
+                preserveReason: preserveDecision.reason
+            };
+        }
+
         const next = saveFn(patch, { skipServer: true, source: 'backend' });
         applyServerPresentationToHeroRecord(remote || patch);
         const title = String(next?.heroTitle || patch.heroTitle || '').trim();
@@ -305,7 +476,13 @@ export async function hydrateHeroPresentationFromServer(saveFn, loadFn) {
             title,
             backgroundUrl: bg
         });
-        return { hydrated: true, config: next, source: 'backend' };
+        return {
+            hydrated: true,
+            config: next,
+            source: 'backend',
+            preservedLocal: false,
+            preserveReason: preserveDecision.reason
+        };
     }
 
     // One-time migrate: admin browser has local SoT that never hit server.
@@ -315,6 +492,7 @@ export async function hydrateHeroPresentationFromServer(saveFn, loadFn) {
         });
         const pushed = await pushHeroPresentationToServer(local);
         if (pushed?.ok && pushed.data) {
+            applyServerPresentationToHeroRecord(pushed.data);
             logHeroSource({
                 source: 'backend',
                 heroAssetId: localId,
@@ -325,12 +503,12 @@ export async function hydrateHeroPresentationFromServer(saveFn, loadFn) {
         }
     }
 
-    const source = localId ? 'localStorage' : 'default';
+    const source = localId || hasDurableLocalHeroAsset(localRecord) ? 'localStorage' : 'default';
     logHeroSource({
         source,
-        heroAssetId: localId,
+        heroAssetId: localId || String(localRecord?.assetId || ''),
         title: String(local?.heroTitle || ''),
-        backgroundUrl: String(local?.backgroundMediaUrl || local?.mediaUrl || '')
+        backgroundUrl: String(local?.backgroundMediaUrl || local?.mediaUrl || localRecord?.mediaUrl || '')
     });
     setLastHeroConfigSource(source);
     return { hydrated: false, config: local, source };

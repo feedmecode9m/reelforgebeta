@@ -76,6 +76,7 @@ import {
     migrateLegacyHeroRecordIfNeeded
 } from './heroRecord.js';
 import {
+    applyServerPresentationToHeroRecord,
     getLastHeroConfigSource,
     hydrateHeroPresentationFromServer,
     logHeroSource,
@@ -1527,6 +1528,23 @@ export async function persistHeroPresentationToServer(patch = {}) {
             },
             { skipServer: true, source: 'backend' }
         );
+        // Stamp HeroRecord as server_presentation so later hydrate prefers published remote
+        // over the pre-PUT client commit source (cross-device / reload authority).
+        try {
+            applyServerPresentationToHeroRecord({
+                ...publishable,
+                ...pushResult.data,
+                heroAssetId: pushResult.data.heroAssetId || publishable.heroAssetId,
+                mediaUrl: pushResult.data.mediaUrl || publishable.mediaUrl || '',
+                posterUrl: pushResult.data.posterUrl || publishable.posterUrl || '',
+                backgroundSource:
+                    pushResult.data.backgroundSource || publishable.backgroundSource,
+                backgroundStyle:
+                    pushResult.data.backgroundStyle || publishable.backgroundStyle
+            });
+        } catch {
+            /* non-fatal: manager cache already mirrored */
+        }
         return {
             ok: true,
             config: publishable,
@@ -1985,6 +2003,19 @@ function finalizeHeroPlaybackUrl(url, source = 'resolve') {
 }
 
 /**
+ * True when HeroRecord is a complete committed asset and must win runtime resolution.
+ * @param {import('./heroRecord.js').HeroRecord | null | undefined} record
+ */
+function isAuthoritativeHeroRecordAsset(record) {
+    if (!record || typeof record !== 'object') return false;
+    if (String(record.mode || '').trim() !== 'asset') return false;
+    const assetId = String(record.assetId || '').trim();
+    const mediaKind = record.mediaKind === 'image' || record.mediaKind === 'video' ? record.mediaKind : '';
+    const mediaUrl = String(record.mediaUrl || record.videoUrl || '').trim();
+    return Boolean(assetId && mediaKind && mediaUrl);
+}
+
+/**
  * @param {HeroManagerConfig} [config]
  * @param {Record<string, unknown>[] | null} [vaultItems]
  * @param {{ log?: boolean }} [options]
@@ -2007,6 +2038,83 @@ export function resolveHeroBackgroundAsset(config = loadHeroManagerConfig(), vau
         typeof window !== 'undefined'
             ? /** @type {ReturnType<typeof loadHeroRecord> | null} */ (loadHeroRecord())
             : null;
+
+    // HeroRecord mode=none: blank runtime. Do not resurrect manager/server/legacy media.
+    if (record && String(record.mode || '').trim() === 'none') {
+        const blank = {
+            assetId: '',
+            vaultMatch: false,
+            mediaUrl: '',
+            assetType: 'none',
+            videoUrl: '',
+            imageUrl: ''
+        };
+        if (options.log !== false) {
+            console.info('[HERO_BACKGROUND_RESOLVE]', {
+                heroAssetId: null,
+                backgroundSource: 'none',
+                mediaUrl: null,
+                recordMediaUrl: null,
+                catalogMediaUrl: null,
+                resolvedUrl: null,
+                videoUrl: null,
+                imageUrl: null,
+                source: 'hero_record_none',
+                vaultMatch: false,
+                ts: new Date().toISOString()
+            });
+        }
+        return blank;
+    }
+
+    // Committed HeroRecord asset is authoritative — never replace with manager/server/catalog media.
+    if (isAuthoritativeHeroRecordAsset(record)) {
+        const assetId = String(record.assetId || '').trim();
+        const mediaKind = /** @type {'image' | 'video'} */ (record.mediaKind);
+        const isVideo = mediaKind === 'video';
+        const recordMedia = String(record.mediaUrl || record.videoUrl || '').trim();
+        const recordPoster = String(record.posterUrl || '').trim();
+        const mediaUrl = finalizeHeroPlaybackUrl(recordMedia, 'hero_record');
+        const posterUrl = finalizeHeroPlaybackUrl(
+            recordPoster || (!isVideo ? recordMedia : ''),
+            'hero_record_poster'
+        );
+        let vaultMatch = false;
+        try {
+            const vaultAsset = resolveHeroAssetById(assetId, items);
+            vaultMatch = Boolean(vaultAsset?.assetId);
+        } catch {
+            vaultMatch = false;
+        }
+        const assetType = isVideo ? 'mp4' : 'image';
+        const videoUrl = isVideo ? mediaUrl : '';
+        const imageUrl = isVideo ? (recordPoster ? posterUrl : '') : posterUrl || mediaUrl;
+        const resolved = {
+            assetId,
+            vaultMatch,
+            mediaUrl,
+            assetType,
+            videoUrl,
+            imageUrl
+        };
+        if (options.log !== false) {
+            console.info('[HERO_BACKGROUND_RESOLVE]', {
+                heroAssetId: assetId,
+                backgroundSource: isVideo ? 'custom_video' : 'custom_image',
+                mediaUrl: recordMedia,
+                recordMediaUrl: recordMedia,
+                catalogMediaUrl: null,
+                resolvedUrl: mediaUrl,
+                videoUrl: videoUrl || null,
+                imageUrl: imageUrl || null,
+                source: 'hero_record',
+                vaultMatch,
+                ts: new Date().toISOString()
+            });
+        }
+        return resolved;
+    }
+
     const recordMedia =
         record && record.mode === 'asset'
             ? String(record.mediaUrl || record.videoUrl || '').trim()

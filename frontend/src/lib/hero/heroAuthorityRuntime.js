@@ -84,11 +84,19 @@ export async function hydrateHeroAuthorityRuntime(record, options = {}) {
 
             if (options.persist !== false && typeof window !== 'undefined') {
                 try {
+                    const existingSource = text(local.source);
+                    const keepClientCommit =
+                        existingSource === 'commit_hero_asset_selection' ||
+                        existingSource === 'commit_hero_video_identity' ||
+                        existingSource === 'select_hero_asset' ||
+                        existingSource === 'commit_hero_asset_clear' ||
+                        existingSource.includes('commit_hero') ||
+                        existingSource.includes('select_hero');
                     saveHeroRecord({
                         heroPresentation: next.heroPresentation,
                         serverAuthorityReceipt: next.serverAuthorityReceipt,
                         serverAuthorityState: next.serverAuthorityState,
-                        source: 'hero_authority_rehydrate_fail_closed'
+                        ...(keepClientCommit ? {} : { source: 'hero_authority_rehydrate_fail_closed' })
                     });
                 } catch {
                     /* ignore */
