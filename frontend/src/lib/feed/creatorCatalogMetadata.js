@@ -155,6 +155,8 @@ export function loadCreatorCatalogMetadata(assetId, options = {}) {
     let tags = [];
     let category = '';
     let updatedAt;
+    /** Primary titles map authored category keys (incl. empty clear) — do not revive from series. */
+    let primaryCategoryAuthority = false;
 
     // PRIMARY: reel_titles_persistent (survives series/Vic G metadata sync)
     try {
@@ -165,6 +167,9 @@ export function loadCreatorCatalogMetadata(assetId, options = {}) {
             title = text(entry.title || entry.title_original);
             description = text(entry.description);
             tags = normalizeCreatorTags(/** @type {string[] | string} */ (entry.tags));
+            primaryCategoryAuthority =
+                Object.prototype.hasOwnProperty.call(entry, 'category') ||
+                Object.prototype.hasOwnProperty.call(entry, 'creatorCategory');
             category = normalizeCreatorCategory(
                 text(entry.category) || text(entry.creatorCategory) || text(entry.genre)
             );
@@ -183,7 +188,8 @@ export function loadCreatorCatalogMetadata(assetId, options = {}) {
             if (!title) title = text(row.episodeTitle);
             if (!description) description = text(row.description);
             if (!tags.length) tags = normalizeCreatorTags(/** @type {string[] | string} */ (row.tags));
-            if (!category) {
+            // Phase 18: cleared primary category stays absent — series mirror must not revive it.
+            if (!category && !primaryCategoryAuthority) {
                 category = normalizeCreatorCategory(text(row.genre) || text(row.creatorCategory));
             }
             if (updatedAt == null && row.updatedAt != null) {
@@ -260,8 +266,9 @@ export function saveCreatorCatalogMetadata(assetId, fields = {}, options = {}) {
             episodeTitle: title || text(prior.episodeTitle),
             description: description || text(prior.description),
             tags: tags.length ? tags : normalizeCreatorTags(/** @type {string[] | string} */ (prior.tags)),
-            genre: category || text(prior.genre),
-            creatorCategory: category || text(prior.creatorCategory),
+            // Phase 18: cleared category must clear mirror genre — never preserve stale shelf.
+            genre: category || '',
+            creatorCategory: category || '',
             updatedAt
         };
         storage.setItem(SERIES_METADATA_STORAGE_KEY, JSON.stringify(map));
@@ -322,6 +329,21 @@ export function hydrateCatalogItemWithCreatorMetadata(item, options = {}) {
         row.categorySource = 'creator';
         if (!text(row.studioCategory)) {
             row.category = meta.category;
+        }
+    } else {
+        // Phase 18: absence of explicit creator category must clear stale projection fields
+        // so classifyContent re-evaluates remaining metadata (not old Romance/etc.).
+        if ('creatorCategory' in row) delete row.creatorCategory;
+        if ('explicitCategory' in row) delete row.explicitCategory;
+        if (text(row.categorySource) === 'creator' || text(row.categorySource) === 'existing-category') {
+            delete row.categorySource;
+        }
+        if (!text(row.studioCategory)) {
+            const existing = normalizeDiscoveryShelf(text(row.category) || text(row.shelfCategory));
+            if (EXPLICIT_SHELF_CATEGORIES.has(existing)) {
+                row.category = 'Trending';
+                if ('shelfCategory' in row) delete row.shelfCategory;
+            }
         }
     }
     row.metadataSource = 'creator';

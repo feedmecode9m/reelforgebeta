@@ -411,6 +411,28 @@ export function createAiCleanupAgent(deps) {
           if (Array.isArray(saved?.tags) && saved.tags.length) {
             card.tags = saved.tags;
           }
+          // Phase 18: if primary titles map has no explicit creator shelf, drop stale
+          // creatorCategory from the live card before hydrate/classify.
+          if (
+            saved &&
+            (Object.prototype.hasOwnProperty.call(saved, 'category') ||
+              Object.prototype.hasOwnProperty.call(saved, 'creatorCategory')) &&
+            !String(saved.category || saved.creatorCategory || '').trim()
+          ) {
+            delete card.creatorCategory;
+            delete card.explicitCategory;
+            if (
+              String(card.categorySource || '') === 'creator' ||
+              String(card.categorySource || '') === 'existing-category'
+            ) {
+              delete card.categorySource;
+            }
+            const soft = String(card.category || card.shelfCategory || '').trim();
+            if (soft === 'Romance' || soft === 'Suspense' || soft === 'Cyber-Action') {
+              card.category = 'Trending';
+              delete card.shelfCategory;
+            }
+          }
           card = hydrateCatalogItemWithCreatorMetadata(card);
           const meta = resolveCatalogMetadata(card);
           const enriched = applyCatalogMetadata(card, meta);
