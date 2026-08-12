@@ -59,10 +59,14 @@ export function isServerOriginHeroSource(source) {
     if (s === 'hero_authority_rehydrate_fail_closed' || s.endsWith('_fail_closed')) {
         return false;
     }
-    if (s === 'server_presentation' || s === 'hero_authority_rehydrate') {
+    // Lifecycle rehydrate is not a confirmed GET/PUT /api/hero/presentation.
+    if (s === 'hero_authority_rehydrate' || s.startsWith('hero_authority_')) {
+        return false;
+    }
+    if (s === 'server_presentation') {
         return true;
     }
-    if (s.startsWith('server_') || s.startsWith('migrate_') || s.startsWith('hero_authority_')) {
+    if (s.startsWith('server_') || s.startsWith('migrate_')) {
         return true;
     }
     return false;
@@ -110,8 +114,34 @@ export function shouldPreserveLocalHeroPresentationOverRemote(localRecord, remot
     const effectiveRemoteMedia =
         remoteMedia || String(presentation.mediaUrl || presentation.backgroundMediaUrl || '').trim();
 
+    const source = String(localRecord.source || '').trim();
+    const remoteBg = String(
+        remote?.backgroundSource || presentation.backgroundSource || ''
+    ).trim();
+    const isUnconfirmedClient =
+        source === 'hero_authority_rehydrate_fail_closed' ||
+        LOCAL_CLIENT_IDENTITY_SOURCES.has(source) ||
+        source.includes('commit_hero') ||
+        source.includes('select_hero');
+
+    if (remoteBg === 'none') {
+        if (source === 'commit_hero_asset_clear') {
+            return { preserve: false, reason: 'local_clear_matches_remote_none' };
+        }
+        if (isUnconfirmedClient) {
+            return { preserve: true, reason: 'local_unconfirmed_over_remote_none' };
+        }
+        return { preserve: false, reason: 'remote_confirmed_none' };
+    }
+
     if (!effectiveRemoteId && !effectiveRemoteMedia) {
-        return { preserve: true, reason: 'remote_empty' };
+        if (source === 'hero_authority_rehydrate_fail_closed') {
+            return { preserve: true, reason: 'local_unconfirmed_fail_closed' };
+        }
+        if (isUnconfirmedClient) {
+            return { preserve: true, reason: 'remote_empty' };
+        }
+        return { preserve: false, reason: 'remote_empty_no_unconfirmed_local' };
     }
 
     if (effectiveRemoteId && effectiveRemoteId === localId) {
@@ -119,7 +149,6 @@ export function shouldPreserveLocalHeroPresentationOverRemote(localRecord, remot
         return { preserve: false, reason: 'same_asset_id_heal' };
     }
 
-    const source = String(localRecord.source || '').trim();
     // Fail-closed rehydrate is not server confirmation. Durable local A must survive stale remote B/C.
     if (source === 'hero_authority_rehydrate_fail_closed') {
         return { preserve: true, reason: 'local_unconfirmed_fail_closed' };

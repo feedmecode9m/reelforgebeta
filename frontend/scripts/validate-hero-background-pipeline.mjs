@@ -70,8 +70,14 @@ assert(existsSync(authRuntimePath), 'heroAuthorityRuntime.js exists');
 const authRuntimeSrc = readFileSync(authRuntimePath, 'utf8');
 assert(
     authRuntimeSrc.includes('commit_hero_asset_selection') &&
-        authRuntimeSrc.includes('keepClientCommit'),
+        (authRuntimeSrc.includes('keepClientCommit') ||
+            authRuntimeSrc.includes('isProtectedPresentationSource') ||
+            authRuntimeSrc.includes('keepPresentationIdentity')),
     'fail-closed persist does not overwrite client asset commit source'
+);
+assert(
+    !/source:\s*['"]hero_authority_rehydrate['"]\s*[,}]/.test(authRuntimeSrc),
+    'authority runtime does not stamp presentation source=hero_authority_rehydrate'
 );
 
 /** In-memory localStorage for SSR */
@@ -360,8 +366,8 @@ async function main() {
         );
         assert(isServerOriginHeroSource('server_presentation') === true, 'server_presentation is server-origin');
         assert(
-            isServerOriginHeroSource('hero_authority_rehydrate') === true,
-            'successful rehydrate remains server-origin'
+            isServerOriginHeroSource('hero_authority_rehydrate') === false,
+            'hero_authority_rehydrate is not canonical server_presentation'
         );
         const failClosedLocal = {
             ...localMp4Record,
@@ -912,6 +918,207 @@ async function main() {
                 loadHeroRecordUnverified()?.source === 'server_presentation',
                 'J-Bug2 successful none PUT → source=server_presentation'
             );
+
+            // ---------- Phase 9: authority runtime vs canonical presentation ----------
+            const successEngine = { rehydrate: () => ({ events: [] }) };
+            const failEngine = { rehydrate: () => null };
+
+            clearHero();
+            seedVault();
+            commitHeroAssetSelection(JPG.id, [JPG, MP4, OTHER_JPG]);
+            const putA9 = await persistHeroPresentationToServer(loadHeroManagerConfig());
+            assert(putA9?.ok === true, 'P9-1 confirmed A PUT succeeds');
+            await hydrateHeroAuthorityRuntime(loadHeroRecordUnverified(), {
+                persist: true,
+                engine: successEngine
+            });
+            const afterAHydrate = loadHeroRecordUnverified();
+            assert(afterAHydrate?.assetId === JPG.id, 'P9-1 rehydrate keeps confirmed A');
+            assert(afterAHydrate?.mode === 'asset', 'P9-1 rehydrate mode=asset A');
+            assert(afterAHydrate?.mediaKind === 'image', 'P9-1 JPG kind remains image');
+            assert(
+                afterAHydrate?.source === 'server_presentation',
+                `P9-1 successful PUT+rehydrate source=server_presentation (got ${afterAHydrate?.source})`
+            );
+
+            clearHero();
+            seedVault();
+            commitHeroAssetSelection(MP4.id, [JPG, MP4, OTHER_JPG]);
+            const putMp4 = await persistHeroPresentationToServer(loadHeroManagerConfig());
+            assert(putMp4?.ok === true, 'P9-9 MP4 PUT succeeds');
+            await hydrateHeroAuthorityRuntime(loadHeroRecordUnverified(), {
+                persist: true,
+                engine: successEngine
+            });
+            const afterMp4Hydrate = loadHeroRecordUnverified();
+            assert(afterMp4Hydrate?.assetId === MP4.id, 'P9-9 MP4 remains after rehydrate');
+            assert(afterMp4Hydrate?.mediaKind === 'video', 'P9-9 MP4 kind remains video');
+            assert(
+                afterMp4Hydrate?.source === 'server_presentation',
+                'P9-9 MP4 source stays server_presentation (JPG/MP4 symmetric)'
+            );
+
+            clearHero();
+            seedVault();
+            commitHeroAssetSelection(JPG.id, [JPG, MP4, OTHER_JPG]);
+            await persistHeroPresentationToServer(loadHeroManagerConfig());
+            const cleared9 = commitHeroAssetSelection('');
+            const putNone9 = await persistHeroPresentationToServer(cleared9 || loadHeroManagerConfig());
+            assert(putNone9?.ok === true, 'P9-2/3 none PUT succeeds');
+            assert(loadHeroRecordUnverified()?.mode === 'none', 'P9-2 confirmed none mode=none');
+            await hydrateHeroAuthorityRuntime(loadHeroRecordUnverified(), {
+                persist: true,
+                engine: successEngine
+            });
+            const afterNoneHydrate = loadHeroRecordUnverified();
+            assert(afterNoneHydrate?.mode === 'none', 'P9-2 rehydrate keeps mode=none');
+            assert(!String(afterNoneHydrate?.assetId || '').trim(), 'P9-2 rehydrate assetId empty');
+            assert(!String(afterNoneHydrate?.mediaUrl || '').trim(), 'P9-2 rehydrate mediaUrl empty');
+            assert(
+                afterNoneHydrate?.source === 'server_presentation',
+                `P9-2 none source stays server_presentation (got ${afterNoneHydrate?.source})`
+            );
+
+            clearHero();
+            seedVault();
+            commitHeroAssetSelection(JPG.id, [JPG, MP4, OTHER_JPG]);
+            await persistHeroPresentationToServer(loadHeroManagerConfig());
+            const racingEngine = {
+                rehydrate: () => {
+                    commitHeroAssetSelection('');
+                    return { events: [] };
+                }
+            };
+            await hydrateHeroAuthorityRuntime(loadHeroRecordUnverified(), {
+                persist: true,
+                engine: racingEngine
+            });
+            const afterRace = loadHeroRecordUnverified();
+            assert(afterRace?.mode === 'none', 'P9-3 in-flight rehydrate cannot resurrect A over none');
+            assert(!String(afterRace?.assetId || '').trim(), 'P9-3 raced none keeps empty assetId');
+
+            clearHero();
+            seedVault();
+            commitHeroAssetSelection(JPG.id, [JPG, MP4, OTHER_JPG]);
+            await persistHeroPresentationToServer(loadHeroManagerConfig());
+            commitHeroAssetSelection(MP4.id, [JPG, MP4, OTHER_JPG]);
+            const failFetch = globalThis.fetch;
+            globalThis.fetch = async (url, init = {}) => {
+                const href = String(url || '');
+                const method = String(init.method || 'GET').toUpperCase();
+                if (href.includes('/api/hero/presentation') && method === 'PUT') {
+                    return {
+                        ok: false,
+                        status: 500,
+                        json: async () => ({ error: 'phase9_forced_put_failure' })
+                    };
+                }
+                if (typeof failFetch === 'function') return failFetch(url, init);
+                return { ok: false, status: 404, json: async () => ({}) };
+            };
+            const failedPutB = await persistHeroPresentationToServer(loadHeroManagerConfig());
+            assert(failedPutB?.ok !== true, 'P9-4 PUT B fails');
+            assert(
+                loadHeroRecordUnverified()?.assetId === MP4.id,
+                'P9-4 local B remains after failed PUT'
+            );
+            assert(
+                loadHeroRecordUnverified()?.source === 'commit_hero_asset_selection',
+                `P9-4 failed PUT keeps commit source (got ${loadHeroRecordUnverified()?.source})`
+            );
+            await hydrateHeroAuthorityRuntime(loadHeroRecordUnverified(), {
+                persist: true,
+                engine: successEngine
+            });
+            const afterFailPutHydrate = loadHeroRecordUnverified();
+            assert(afterFailPutHydrate?.assetId === MP4.id, 'P9-4 rehydrate after failed PUT keeps B');
+            assert(afterFailPutHydrate?.mediaKind === 'video', 'P9-4 B kind remains video');
+            assert(
+                afterFailPutHydrate?.source === 'commit_hero_asset_selection',
+                `P9-4 rehydrate does not convert B to server-origin (got ${afterFailPutHydrate?.source})`
+            );
+            const preserveB = shouldPreserveLocalHeroPresentationOverRemote(afterFailPutHydrate, {
+                heroAssetId: JPG.id,
+                backgroundSource: 'custom_image',
+                mediaUrl: JPG.url
+            });
+            assert(preserveB.preserve === true, 'P9-4 stale confirmed server A cannot overwrite unconfirmed B');
+            globalThis.fetch = failFetch;
+
+            clearHero();
+            seedVault();
+            commitHeroAssetSelection(JPG.id, [JPG, MP4, OTHER_JPG]);
+            await persistHeroPresentationToServer(loadHeroManagerConfig());
+            commitHeroAssetSelection(MP4.id, [JPG, MP4, OTHER_JPG]);
+            await hydrateHeroAuthorityRuntime(loadHeroRecordUnverified(), {
+                persist: true,
+                engine: failEngine
+            });
+            const afterAuthFail = loadHeroRecordUnverified();
+            assert(afterAuthFail?.assetId === MP4.id, 'P9-5 failed authority rehydrate keeps B');
+            assert(
+                afterAuthFail?.source === 'commit_hero_asset_selection',
+                `P9-5 fail-closed does not overwrite commit B (got ${afterAuthFail?.source})`
+            );
+            assert(
+                isServerOriginHeroSource(afterAuthFail?.source) === false,
+                'P9-5 B is not server-origin after failed rehydrate'
+            );
+
+            writeStaleManager(staleJpgMgr);
+            assertApplyResolveConverge('P9-6/7 JPG vs stale manager B', staleJpgMgr);
+            clearHero();
+            seedVault();
+            commitHeroAssetSelection(MP4.id, [JPG, MP4, OTHER_JPG]);
+            writeStaleManager(staleMp4Mgr);
+            assertApplyResolveConverge('P9-6/7 MP4 vs stale manager A', staleMp4Mgr);
+
+            clearHero();
+            seedVault();
+            commitHeroAssetSelection(JPG.id, [JPG, MP4, OTHER_JPG]);
+            await persistHeroPresentationToServer(loadHeroManagerConfig());
+            const beforeInactive = loadHeroRecordUnverified();
+            localStorage.setItem(
+                'personal_video_vault',
+                JSON.stringify([JPG])
+            );
+            const afterInactive = loadHeroRecordUnverified();
+            assert(afterInactive?.assetId === JPG.id, 'P9-8 inactive vault drop keeps A');
+            assert(afterInactive?.mode === beforeInactive?.mode, 'P9-8 inactive delete does not mutate mode');
+
+            clearHero();
+            seedVault();
+            commitHeroAssetSelection('');
+            await persistHeroPresentationToServer(loadHeroManagerConfig());
+            localStorage.setItem(
+                'reelforge_hero_manager_config',
+                JSON.stringify({
+                    ...JSON.parse(localStorage.getItem('reelforge_hero_manager_config') || '{}'),
+                    backgroundAsset: OTHER_JPG.id,
+                    backgroundVideo: MP4.url,
+                    backgroundImage: OTHER_JPG.url
+                })
+            );
+            const noneRec = loadHeroRecordUnverified();
+            const rrLegacy = resolveHeroBackgroundAsset(
+                JSON.parse(localStorage.getItem('reelforge_hero_manager_config') || '{}'),
+                null,
+                { log: false }
+            );
+            assert(noneRec?.mode === 'none', 'P9-10 cleared HeroRecord mode=none');
+            assert(!String(rrLegacy.mediaUrl || rrLegacy.imageUrl || rrLegacy.videoUrl || '').trim(), 'P9-10 legacy cannot resurrect cleared Hero');
+            const noneVsLegacy = shouldPreserveLocalHeroPresentationOverRemote(
+                {
+                    mode: 'asset',
+                    assetId: JPG.id,
+                    mediaUrl: JPG.url,
+                    mediaKind: 'image',
+                    source: 'server_presentation',
+                    updatedAt: Date.now()
+                },
+                { heroAssetId: '', mediaUrl: '', backgroundSource: 'none' }
+            );
+            assert(noneVsLegacy.preserve === false, 'P9-10 confirmed none remote wins over stale server A');
         } finally {
             globalThis.fetch = origFetch;
         }

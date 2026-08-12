@@ -46,6 +46,31 @@ function text(value) {
  *   persist?: boolean;
  * }} [options]
  */
+/**
+ * Presentation identity (mode / assetId / media / source) is owned by HeroRecord
+ * commits + GET/PUT /api/hero/presentation. /api/hero/authority/events is lifecycle
+ * grant history only — never a second presentation persistence authority.
+ */
+function isProtectedPresentationSource(source, mode) {
+    const s = text(source);
+    const m = text(mode);
+    if (m === 'none') return true;
+    if (s === 'server_presentation') return true;
+    if (s === 'commit_hero_asset_selection' || s === 'commit_hero_video_identity') return true;
+    if (s === 'select_hero_asset' || s === 'commit_hero_asset_clear') return true;
+    if (s.includes('commit_hero') || s.includes('select_hero')) return true;
+    return false;
+}
+
+function lifecycleGrantPatch(from) {
+    if (!from || typeof from !== 'object') return {};
+    return {
+        heroPresentation: from.heroPresentation,
+        serverAuthorityReceipt: from.serverAuthorityReceipt,
+        serverAuthorityState: from.serverAuthorityState
+    };
+}
+
 export async function hydrateHeroAuthorityRuntime(record, options = {}) {
     const local =
         record && typeof record === 'object'
@@ -58,11 +83,20 @@ export async function hydrateHeroAuthorityRuntime(record, options = {}) {
             fetchFn: options.fetchFn
         });
 
+        // Re-read live HeroRecord only when persisting — a concurrent none/select/PUT
+        // may have landed while /api/hero/authority/events was in flight.
+        // persist:false callers pass an explicit snapshot and must not pick up storage.
+        const live =
+            options.persist !== false && typeof window !== 'undefined'
+                ? loadHeroRecordUnverified() || local
+                : local;
+        const keepPresentationIdentity = isProtectedPresentationSource(live?.source, live?.mode);
+
         if (!result.ok || !result.record) {
             // No server history / unreachable: wipe local-only published claims.
-            const presentation = normalizeHeroPresentation(local.heroPresentation);
-            let next = { ...local };
-            if (presentation.status === 'published' && !isServerGrantedPublished(local)) {
+            const presentation = normalizeHeroPresentation(live.heroPresentation || local.heroPresentation);
+            let next = { ...live };
+            if (presentation.status === 'published' && !isServerGrantedPublished(live)) {
                 next = {
                     ...next,
                     heroPresentation: {
@@ -84,30 +118,26 @@ export async function hydrateHeroAuthorityRuntime(record, options = {}) {
 
             if (options.persist !== false && typeof window !== 'undefined') {
                 try {
-                    const existingSource = text(local.source);
-                    const keepClientCommit =
-                        existingSource === 'commit_hero_asset_selection' ||
-                        existingSource === 'commit_hero_video_identity' ||
-                        existingSource === 'select_hero_asset' ||
-                        existingSource === 'commit_hero_asset_clear' ||
-                        existingSource.includes('commit_hero') ||
-                        existingSource.includes('select_hero');
                     saveHeroRecord({
-                        heroPresentation: next.heroPresentation,
-                        serverAuthorityReceipt: next.serverAuthorityReceipt,
-                        serverAuthorityState: next.serverAuthorityState,
-                        ...(keepClientCommit ? {} : { source: 'hero_authority_rehydrate_fail_closed' })
+                        ...lifecycleGrantPatch(next),
+                        ...(keepPresentationIdentity
+                            ? {}
+                            : { source: 'hero_authority_rehydrate_fail_closed' })
                     });
                 } catch {
                     /* ignore */
                 }
             }
 
+            const persisted =
+                options.persist !== false && typeof window !== 'undefined'
+                    ? loadHeroRecordUnverified() || next
+                    : next;
             return {
                 ok: false,
                 reason,
-                record: next,
-                ui: resolveHeroAuthorityUiState(next, {
+                record: persisted,
+                ui: resolveHeroAuthorityUiState(persisted, {
                     lastError: reason,
                     serverReachable: !serverUnavailable
                 }),
@@ -115,24 +145,31 @@ export async function hydrateHeroAuthorityRuntime(record, options = {}) {
             };
         }
 
-        const merged = result.record;
+        // Success: merge grant/lifecycle only onto LIVE identity. Never stamp
+        // source=hero_authority_rehydrate over server_presentation or a client commit,
+        // and never resurrect a stale in-flight asset over confirmed none.
+        const mergedView = {
+            ...live,
+            ...lifecycleGrantPatch(result.record)
+        };
         if (options.persist !== false && typeof window !== 'undefined') {
             try {
-                saveHeroRecord({
-                    ...merged,
-                    source: 'hero_authority_rehydrate'
-                });
+                saveHeroRecord(lifecycleGrantPatch(result.record));
             } catch {
                 /* ignore */
             }
         }
 
+        const persisted =
+            options.persist !== false && typeof window !== 'undefined'
+                ? loadHeroRecordUnverified() || mergedView
+                : mergedView;
         return {
             ok: true,
             reason: '',
-            record: merged,
-            ui: resolveHeroAuthorityUiState(merged, { serverReachable: true }),
-            isPublished: isServerGrantedPublished(merged)
+            record: persisted,
+            ui: resolveHeroAuthorityUiState(persisted, { serverReachable: true }),
+            isPublished: isServerGrantedPublished(persisted)
         };
     } catch (err) {
         const reason = text(/** @type {any} */ (err)?.message) || 'server_unavailable';
