@@ -223,16 +223,28 @@ export function enrichCatalogCard(base, incoming) {
 
     const categoryA = text(a.category);
     const categoryB = text(b.category);
-    // Preserve prior category unless incoming brings an explicit non-soft shelf.
+    // Soft categories stay soft so classifyContent can progressively reclassify
+    // when stronger metadata arrives. Explicit Studio shelves win.
     const soft = new Set(['Trending', 'HERO', 'Network', 'Auto-Detect', '']);
-    let category = categoryA || categoryB || 'Trending';
-    if (categoryA && soft.has(categoryA) && categoryB && !soft.has(categoryB)) {
-        category = categoryB;
-    } else if (categoryA) {
-        category = categoryA;
-    } else if (categoryB) {
-        category = categoryB;
-    }
+    let category = 'Trending';
+    if (categoryA && !soft.has(categoryA)) category = categoryA;
+    else if (categoryB && !soft.has(categoryB)) category = categoryB;
+    else category = categoryA || categoryB || 'Trending';
+
+    // Prefer richer textual metadata for later classification evidence.
+    const description = text(b.description) || text(a.description);
+    const tags =
+        Array.isArray(b.tags) && b.tags.length
+            ? b.tags
+            : Array.isArray(a.tags) && a.tags.length
+              ? a.tags
+              : b.tags;
+    const ai_tags =
+        Array.isArray(b.ai_tags) && b.ai_tags.length
+            ? b.ai_tags
+            : Array.isArray(a.ai_tags) && a.ai_tags.length
+              ? a.ai_tags
+              : b.ai_tags;
 
     /** @type {Record<string, unknown>} */
     const out = {
@@ -241,12 +253,12 @@ export function enrichCatalogCard(base, incoming) {
         id: text(a.id) && isDurableMediaId(text(a.id)) ? text(a.id) : text(b.id) || text(a.id),
         title: title || text(a.title) || text(b.title),
         name: name || title,
-        description: text(a.description) || text(b.description),
+        description,
         category,
-        seriesName: text(a.seriesName || a.seriesTitle) || text(b.seriesName || b.seriesTitle),
-        episodeTitle: text(a.episodeTitle) || text(b.episodeTitle),
-        tags: Array.isArray(a.tags) && a.tags.length ? a.tags : b.tags,
-        ai_tags: Array.isArray(a.ai_tags) && a.ai_tags.length ? a.ai_tags : b.ai_tags
+        seriesName: text(b.seriesName || b.seriesTitle) || text(a.seriesName || a.seriesTitle),
+        episodeTitle: text(b.episodeTitle) || text(a.episodeTitle),
+        tags,
+        ai_tags
     };
 
     if (mergedVideo) {
