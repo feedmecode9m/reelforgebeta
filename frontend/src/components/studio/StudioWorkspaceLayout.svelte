@@ -13,6 +13,11 @@
         buildCommandCenterSnapshot,
         logCommandCenterDiag
     } from '../../lib/command/commandCenter.js';
+    import {
+        registerCommandCenterRefreshListener,
+        scheduleCommandCenterRefresh,
+        startCommandCenterRefreshInterval
+    } from '../../lib/command/commandCenterRefresh.js';
     import { evaluateNotificationTriggers } from '../../lib/notifications/notificationCenter.js';
     import { auditStudioHelpRegistry } from '../../lib/studio/studioHelpRegistry.js';
     import {
@@ -72,7 +77,8 @@
     let activeTab = loadWorkspaceTab();
 
     let refreshKey = 0;
-    let refreshTimer = null;
+    let stopSharedInterval = () => {};
+    let unregisterSharedRefresh = () => {};
     let guideMeMode = isGuideMeModeEnabled();
 
     /** @type {ReturnType<typeof buildCommandCenterSnapshot> | null} */
@@ -121,19 +127,21 @@
             action: 'mount',
             activeTab
         });
-        refreshSnapshot('load');
-        refreshTimer = window.setInterval(() => {
+        unregisterSharedRefresh = registerCommandCenterRefreshListener(() => {
             refreshKey += 1;
             refreshSnapshot('refresh');
-        }, 5000);
+        });
+        // Nested under ProductionCommandCenter: parent owns the shared 5s interval.
+        if (!embeddedInCommandCenter) {
+            stopSharedInterval = startCommandCenterRefreshInterval('studio-workspace');
+        }
+        refreshSnapshot('load');
 
         const onUpdate = () => {
-            refreshKey += 1;
-            refreshSnapshot('refresh');
+            scheduleCommandCenterRefresh('workspace-domain-event');
         };
         const onProductionUpdated = () => {
-            refreshKey += 1;
-            refreshSnapshot('refresh');
+            scheduleCommandCenterRefresh('creator-production-updated');
             dispatch('changed');
         };
         window.addEventListener('reelforge:workflow-tasks-updated', onUpdate);
@@ -153,11 +161,14 @@
             window.removeEventListener(CREATOR_PRODUCTION_UPDATED, onProductionUpdated);
             window.removeEventListener('reelforge:search-navigate', handleSearchNavigate);
             window.removeEventListener(STUDIO_SELECT_CONTENT_TAB_EVENT, handleSelectContentTab);
+            unregisterSharedRefresh();
+            stopSharedInterval();
         };
     });
 
     onDestroy(() => {
-        if (refreshTimer) window.clearInterval(refreshTimer);
+        unregisterSharedRefresh();
+        stopSharedInterval();
     });
 
     $: health = computeSeriesHealth(feedReels, selectedSeriesId);
@@ -167,7 +178,7 @@
     $: actionPlan = buildStudioActionPlan(selectedSeriesId, feedReels);
     $: refreshKey, auditProductionOperations(feedReels, selectedSeriesId, true);
     $: refreshKey, selectedSeriesId, feedReels, evaluateNotificationTriggers(selectedSeriesId, feedReels);
-    $: selectedSeriesId, feedReels, refreshSnapshot('refresh');
+    $: selectedSeriesId, feedReels, scheduleCommandCenterRefresh('workspace-reactive');
 
     /** @param {typeof WORKSPACE_TABS[number]} tab */
     function selectTab(tab) {
@@ -176,7 +187,7 @@
         logStudioWorkspaceDiag('WORKSPACE_TAB', { tab, seriesId: selectedSeriesId });
         emitGuideMePanelContext(selectedSeriesId, feedReels, tab);
         guideMeMode = isGuideMeModeEnabled();
-        refreshSnapshot('refresh');
+        scheduleCommandCenterRefresh('workspace-tab');
         emitAccessibilityAudit('StudioWorkspaceLayout', {
             action: 'tab_change',
             activeTab: tab
@@ -213,19 +224,18 @@
     }
 
     function handleManualRefresh() {
-        refreshKey += 1;
-        refreshSnapshot('refresh');
+        scheduleCommandCenterRefresh('workspace-manual-refresh');
         logStudioWorkspaceDiag('STUDIO_REFRESH', { phase: 'manual', tab: activeTab });
     }
 
     function handleQueueAttached(event) {
         auditEpisodeAssets(feedReels, true);
-        refreshKey += 1;
+        scheduleCommandCenterRefresh('workspace-queue-attached');
         dispatch('changed');
     }
 
     function handleReleaseScheduled() {
-        refreshKey += 1;
+        scheduleCommandCenterRefresh('workspace-release-scheduled');
         dispatch('changed');
     }
 
@@ -239,7 +249,7 @@
     }
 
     function handleRepaired() {
-        refreshKey += 1;
+        scheduleCommandCenterRefresh('workspace-repaired');
         dispatch('changed');
     }
 

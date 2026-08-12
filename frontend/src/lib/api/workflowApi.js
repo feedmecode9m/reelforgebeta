@@ -1,4 +1,5 @@
 import { API_BASE_URL, fetchWithRetry } from '../api.js';
+import { getAdminAuthHeaders, getAdminToken } from '../adminSession.js';
 import { enforceWorkflowPolicy } from '../security/securityPolicyEngine.js';
 
 /**
@@ -19,20 +20,74 @@ export function logWorkflowDbWrite(detail = {}) {
     logWorkflowDbDiag('WORKFLOW_DB_WRITE', detail);
 }
 
+/**
+ * Client-side gate for workflow mutations — token present only.
+ * Does NOT call GET /api/workflow/status (read ≠ write authorization).
+ * @returns {boolean}
+ */
+export function canAttemptWorkflowWrites() {
+    return Boolean(getAdminToken());
+}
+
+/**
+ * @param {unknown} errorOrMessage
+ * @returns {boolean}
+ */
+export function isWorkflowWriteAuthError(errorOrMessage) {
+    const message = String(
+        typeof errorOrMessage === 'string'
+            ? errorOrMessage
+            : errorOrMessage?.message || errorOrMessage?.error || errorOrMessage || ''
+    );
+    return (
+        message === 'missing_authorization' ||
+        /missing_authorization/i.test(message) ||
+        /invalid_session/i.test(message) ||
+        /\b401\b/.test(message)
+    );
+}
+
+/**
+ * @param {string} path
+ * @param {RequestInit} [options]
+ * @param {Record<string, unknown>} [meta]
+ */
 async function workflowFetch(path, options = {}, meta = {}) {
-    const method = options.method || 'GET';
+    const method = String(options.method || 'GET').toUpperCase();
     const isWrite = method !== 'GET' && method !== 'HEAD';
 
-    const res = await fetchWithRetry(`${API_BASE_URL}${path}`, options, {
-        retries: 1,
-        notifyReconnectOnFailure: false
-    });
+    /** @type {Record<string, string>} */
+    const headers = {
+        ...(options.headers && typeof options.headers === 'object' && !(options.headers instanceof Headers)
+            ? /** @type {Record<string, string>} */ (options.headers)
+            : {})
+    };
+
+    if (isWrite) {
+        Object.assign(headers, getAdminAuthHeaders());
+        if (!headers.Authorization) {
+            throw new Error('missing_authorization');
+        }
+    }
+
+    const res = await fetchWithRetry(
+        `${API_BASE_URL}${path}`,
+        { ...options, method, headers },
+        {
+            // Auth failures must not be retried — they amplify Command Center storms.
+            retries: isWrite ? 0 : 1,
+            notifyReconnectOnFailure: false
+        }
+    );
     if (res.status === 404) {
         const body = await res.json().catch(() => ({}));
         return { disabled: true, error: body.error || 'Workflow API disabled' };
     }
     if (!res.ok) {
         const body = await res.json().catch(() => ({}));
+        if (res.status === 401) {
+            throw new Error(body.error || 'missing_authorization');
+        }
         throw new Error(body.error || `Workflow API failed (${res.status})`);
     }
 
@@ -45,7 +100,11 @@ async function workflowFetch(path, options = {}, meta = {}) {
     return body;
 }
 
-/** @returns {Promise<{ enabled?: boolean; count?: number; disabled?: boolean; error?: string }>} */
+/**
+ * READ availability only — public GET /api/workflow/status.
+ * Must NOT be used to authorize POST/PUT/DELETE.
+ * @returns {Promise<{ enabled?: boolean; count?: number; disabled?: boolean; error?: string }>}
+ */
 export async function fetchWorkflowApiStatus() {
     try {
         const res = await fetchWithRetry(
@@ -68,7 +127,10 @@ export async function fetchWorkflowApiStatus() {
     }
 }
 
-/** @returns {Promise<boolean>} */
+/**
+ * READ availability only. Does not imply write authorization.
+ * @returns {Promise<boolean>}
+ */
 export async function isWorkflowApiAvailable() {
     const status = await fetchWorkflowApiStatus();
     return !status.disabled && status.enabled !== false;

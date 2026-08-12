@@ -19,14 +19,70 @@ import {
     createWorkflowTask,
     updateWorkflowTask,
     isWorkflowApiAvailable,
+    canAttemptWorkflowWrites,
+    isWorkflowWriteAuthError,
     apiTaskToOperational,
     operationalTaskToApi,
     logWorkflowDbRead,
     logWorkflowDbWrite
 } from '../api/workflowApi.js';
+import { getAdminToken } from '../adminSession.js';
 import { enforceWorkflowPolicy } from '../security/securityPolicyEngine.js';
 
 export const WORKFLOW_TASK_STORAGE_KEY = 'reelforge_workflow_tasks';
+
+/**
+ * Session-scoped write circuit — opens on definitive 401 / missing_authorization.
+ * Clears when a different/non-empty admin token appears (fresh login).
+ */
+let workflowWriteCircuitOpen = false;
+/** @type {string | null} */
+let workflowWriteCircuitTokenFingerprint = null;
+let workflowWriteCircuitListenerBound = false;
+
+function workflowWriteTokenFingerprint() {
+    return String(getAdminToken() || '');
+}
+
+/** @returns {boolean} */
+export function isWorkflowWriteCircuitOpen() {
+    if (!workflowWriteCircuitOpen) return false;
+    const current = workflowWriteTokenFingerprint();
+    // Fresh login / token change re-enables legitimate authenticated writes.
+    if (current && current !== String(workflowWriteCircuitTokenFingerprint || '')) {
+        clearWorkflowWriteCircuit('token-changed');
+        return false;
+    }
+    return true;
+}
+
+/** @param {string} [reason] */
+export function clearWorkflowWriteCircuit(reason = 'manual') {
+    if (!workflowWriteCircuitOpen) return;
+    workflowWriteCircuitOpen = false;
+    workflowWriteCircuitTokenFingerprint = null;
+    logWorkflowDbWrite({ source: 'circuit', reason: `cleared:${reason}` });
+}
+
+/** @param {string} reason */
+export function openWorkflowWriteCircuit(reason) {
+    workflowWriteCircuitOpen = true;
+    workflowWriteCircuitTokenFingerprint = workflowWriteTokenFingerprint();
+    logWorkflowDbWrite({
+        source: 'fallback',
+        reason,
+        circuit: 'open',
+        tokenPresent: Boolean(workflowWriteCircuitTokenFingerprint)
+    });
+}
+
+function bindWorkflowWriteCircuitSessionListener() {
+    if (typeof window === 'undefined' || workflowWriteCircuitListenerBound) return;
+    workflowWriteCircuitListenerBound = true;
+    window.addEventListener('reelforge:admin-session-changed', () => {
+        clearWorkflowWriteCircuit('admin-session-changed');
+    });
+}
 
 /** @typedef {'PENDING' | 'IN_PROGRESS' | 'COMPLETE'} WorkflowTaskStatus */
 
@@ -159,23 +215,32 @@ export function persistWorkflowTaskStore(store) {
 
 /** @param {{ version: number; tasks: WorkflowOperationalTask[] }} store */
 async function pushStoreToApi(store) {
-    try {
-        const available = await isWorkflowApiAvailable();
-        if (!available) {
-            logWorkflowDbWrite({ source: 'fallback', reason: 'api-unavailable' });
-            workflowPersistenceMode.set('local');
-            return;
-        }
+    // Local store already persisted by caller — never discard it on write failure.
+    if (isWorkflowWriteCircuitOpen()) {
+        logWorkflowDbWrite({ source: 'fallback', reason: 'write-circuit-open' });
+        workflowPersistenceMode.set('local');
+        return;
+    }
 
+    // READ status must not gate WRITE attempts (Phase 26.1 root cause).
+    if (!canAttemptWorkflowWrites()) {
+        openWorkflowWriteCircuit('missing_authorization');
+        workflowPersistenceMode.set('local');
+        return;
+    }
+
+    try {
         for (const task of store.tasks) {
             await createWorkflowTask(operationalTaskToApi(task));
         }
         workflowPersistenceMode.set('api');
     } catch (err) {
-        logWorkflowDbWrite({
-            source: 'fallback',
-            reason: err?.message || 'api-push-failed'
-        });
+        const reason = err?.message || 'api-push-failed';
+        if (isWorkflowWriteAuthError(err)) {
+            openWorkflowWriteCircuit(reason);
+        } else {
+            logWorkflowDbWrite({ source: 'fallback', reason });
+        }
         workflowPersistenceMode.set('local');
     }
 }
@@ -250,20 +315,32 @@ function createOperationalTask(candidate, seriesId) {
  * @param {WorkflowOperationalTask} task
  */
 async function persistTaskMutation(task) {
-    try {
-        const available = await isWorkflowApiAvailable();
-        if (!available) {
-            logWorkflowDbWrite({ source: 'fallback', taskId: task.id, reason: 'api-unavailable' });
-            return;
-        }
-        await updateWorkflowTask(task.id, operationalTaskToApi(task));
-        workflowPersistenceMode.set('api');
-    } catch (err) {
+    if (isWorkflowWriteCircuitOpen()) {
         logWorkflowDbWrite({
             source: 'fallback',
             taskId: task.id,
-            reason: err?.message || 'api-update-failed'
+            reason: 'write-circuit-open'
         });
+        return;
+    }
+    if (!canAttemptWorkflowWrites()) {
+        openWorkflowWriteCircuit('missing_authorization');
+        return;
+    }
+    try {
+        await updateWorkflowTask(task.id, operationalTaskToApi(task));
+        workflowPersistenceMode.set('api');
+    } catch (err) {
+        const reason = err?.message || 'api-update-failed';
+        if (isWorkflowWriteAuthError(err)) {
+            openWorkflowWriteCircuit(reason);
+        } else {
+            logWorkflowDbWrite({
+                source: 'fallback',
+                taskId: task.id,
+                reason
+            });
+        }
     }
 }
 
@@ -493,6 +570,8 @@ export function resetWorkflowTasks() {
 export function initWorkflowEngine() {
     if (typeof window === 'undefined') return;
 
+    bindWorkflowWriteCircuitSessionListener();
+
     if (!apiHydrationStarted) {
         apiHydrationStarted = true;
         void hydrateWorkflowTasksFromApi();
@@ -505,10 +584,19 @@ export function initWorkflowEngine() {
         getWorkflowTasksForSeries,
         resetWorkflowTasks,
         hydrateWorkflowTasksFromApi,
+        isWorkflowWriteCircuitOpen,
+        clearWorkflowWriteCircuit,
+        openWorkflowWriteCircuit,
         buildWorkflowTasks,
         projectReadinessFromWorkflow,
         WORKFLOW_NAV_TARGETS,
         WORKFLOW_TASK_TYPES,
         WORKFLOW_TASK_STATUSES
     };
+}
+
+/** Test helper — reset write-circuit state between assertions. */
+export function resetWorkflowWriteCircuitForTests() {
+    workflowWriteCircuitOpen = false;
+    workflowWriteCircuitTokenFingerprint = null;
 }

@@ -22,6 +22,16 @@ import { buildReleaseCenterSnapshot } from '../release/releaseCenter.js';
 export const NOTIFICATION_STORAGE_KEY = 'reelforge_notifications';
 const TRIGGER_STATE_KEY = 'reelforge_notification_triggers';
 
+/** Phase 26.2 — coalesce workflow-tasks-updated hydrate storms. */
+export const NOTIFICATION_HYDRATE_DEBOUNCE_MS = 2500;
+
+/** @type {ReturnType<typeof setTimeout> | null} */
+let hydrateDebounceTimer = null;
+/** @type {number} */
+let hydrateScheduleCount = 0;
+/** @type {number} */
+let hydrateRunCount = 0;
+
 /** @typedef {typeof NOTIFICATION_TYPES[number]} NotificationType */
 
 /**
@@ -129,6 +139,7 @@ export async function createNotification(type, message, payload = {}) {
 
 /** @param {string} [userId] */
 export async function hydrateNotifications(userId = getNotificationUserId()) {
+    hydrateRunCount += 1;
     const store = loadNotificationStore();
     if (!(await isNotificationApiAvailable())) {
         return store.items.filter((item) => item.userId === userId);
@@ -148,6 +159,45 @@ export async function hydrateNotifications(userId = getNotificationUserId()) {
     store.items = Array.from(merged.values()).sort((a, b) => b.createdAt - a.createdAt);
     persistNotificationStore(store, { notify: false });
     return store.items.filter((item) => item.userId === userId);
+}
+
+/**
+ * Debounced hydrate — many workflow persist events → one network pull.
+ * @param {string} [reason]
+ */
+export function scheduleHydrateNotifications(reason = 'event') {
+    hydrateScheduleCount += 1;
+    if (typeof window === 'undefined') {
+        void hydrateNotifications();
+        return;
+    }
+    if (hydrateDebounceTimer) {
+        clearTimeout(hydrateDebounceTimer);
+    }
+    hydrateDebounceTimer = setTimeout(() => {
+        hydrateDebounceTimer = null;
+        void hydrateNotifications();
+    }, NOTIFICATION_HYDRATE_DEBOUNCE_MS);
+}
+
+/** @returns {{ scheduleCount: number; runCount: number; debounceMs: number; pending: boolean }} */
+export function getNotificationHydrateStats() {
+    return {
+        scheduleCount: hydrateScheduleCount,
+        runCount: hydrateRunCount,
+        debounceMs: NOTIFICATION_HYDRATE_DEBOUNCE_MS,
+        pending: Boolean(hydrateDebounceTimer)
+    };
+}
+
+/** Test helper */
+export function resetNotificationHydrateForTests() {
+    if (hydrateDebounceTimer) {
+        clearTimeout(hydrateDebounceTimer);
+        hydrateDebounceTimer = null;
+    }
+    hydrateScheduleCount = 0;
+    hydrateRunCount = 0;
 }
 
 /** @param {string} [userId] */
@@ -316,17 +366,17 @@ export function initNotificationCenter() {
     void hydrateNotifications();
 
     window.addEventListener('reelforge:workflow-tasks-updated', () => {
-        void hydrateNotifications();
+        scheduleHydrateNotifications('workflow-tasks-updated');
     });
     window.addEventListener('reelforge:teams-updated', () => {
-        void hydrateNotifications();
+        scheduleHydrateNotifications('teams-updated');
     });
     window.addEventListener('reelforge:release-updated', (event) => {
         const detail = /** @type {CustomEvent} */ (event).detail || {};
         if (detail.seriesId) {
             void evaluateNotificationTriggers(detail.seriesId, detail.feedReels || []);
         }
-        void hydrateNotifications();
+        scheduleHydrateNotifications('release-updated');
     });
 
     window.addEventListener('reelforge:task-assigned', (event) => {
@@ -391,6 +441,8 @@ export function initNotificationCenter() {
         notifyPipelineApproval,
         evaluateNotificationTriggers,
         hydrateNotifications,
+        scheduleHydrateNotifications,
+        getNotificationHydrateStats,
         resetNotifications,
         getNotificationUserId
     };

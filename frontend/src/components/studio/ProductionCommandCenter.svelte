@@ -5,6 +5,11 @@
         emitCommandCenterDiagnostics,
         initCommandCenter
     } from '../../lib/command/commandCenter.js';
+    import {
+        registerCommandCenterRefreshListener,
+        scheduleCommandCenterRefresh,
+        startCommandCenterRefreshInterval
+    } from '../../lib/command/commandCenterRefresh.js';
     import StudioWorkspaceLayout from './StudioWorkspaceLayout.svelte';
     import RevenueDashboard from '../revenue/RevenueDashboard.svelte';
     import MarketplaceDashboard from '../marketplace/MarketplaceDashboard.svelte';
@@ -25,8 +30,8 @@ import GlobalSearchBar from '../discovery/GlobalSearchBar.svelte';
     let brief = null;
 
     let activeDashboardSection = 'executive-overview';
-    let refreshKey = 0;
-    let refreshTimer = null;
+    let stopSharedInterval = () => {};
+    let unregisterSharedRefresh = () => {};
     let initialized = false;
 
     function refreshBrief(phase = 'refresh') {
@@ -43,13 +48,11 @@ import GlobalSearchBar from '../discovery/GlobalSearchBar.svelte';
     }
 
     function handleManualRefresh() {
-        refreshKey += 1;
-        refreshBrief('refresh');
+        scheduleCommandCenterRefresh('pcc-manual-refresh');
     }
 
     function handleChanged() {
-        refreshKey += 1;
-        refreshBrief('refresh');
+        scheduleCommandCenterRefresh('pcc-changed');
         dispatch('changed');
     }
 
@@ -92,16 +95,16 @@ import GlobalSearchBar from '../discovery/GlobalSearchBar.svelte';
 
     onMount(() => {
         initCommandCenter();
+        unregisterSharedRefresh = registerCommandCenterRefreshListener(() => {
+            refreshBrief('refresh');
+        });
+        // Prefer PCC as the shared interval owner when Workspace is embedded.
+        stopSharedInterval = startCommandCenterRefreshInterval('production-command-center');
         refreshBrief('load');
         initialized = true;
-        refreshTimer = window.setInterval(() => {
-            refreshKey += 1;
-            refreshBrief('refresh');
-        }, 5000);
 
         const onUpdate = () => {
-            refreshKey += 1;
-            refreshBrief('refresh');
+            scheduleCommandCenterRefresh('pcc-domain-event');
         };
         window.addEventListener('reelforge:workflow-tasks-updated', onUpdate);
         window.addEventListener('reelforge:teams-updated', onUpdate);
@@ -116,14 +119,18 @@ import GlobalSearchBar from '../discovery/GlobalSearchBar.svelte';
             window.removeEventListener('reelforge:pipeline-updated', onUpdate);
             window.removeEventListener('reelforge:release-schedule-updated', onUpdate);
             window.removeEventListener('reelforge:search-navigate', handleSearchNavigate);
+            unregisterSharedRefresh();
+            stopSharedInterval();
         };
     });
 
     onDestroy(() => {
-        if (refreshTimer) window.clearInterval(refreshTimer);
+        unregisterSharedRefresh();
+        stopSharedInterval();
     });
 
-    $: refreshKey, selectedSeriesId, feedReels, initialized && refreshBrief('refresh');
+    // Do not key off refreshKey — shared listener already refreshes; avoid schedule↔key loops.
+    $: selectedSeriesId, feedReels, initialized && scheduleCommandCenterRefresh('pcc-reactive');
 </script>
 
 <div
