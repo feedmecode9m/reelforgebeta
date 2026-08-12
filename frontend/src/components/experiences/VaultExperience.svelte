@@ -52,7 +52,7 @@
     assertNoCrossWrite,
     resolveMediaAssetId
   } from '../../lib/vault/vaultCreatorCardTargeting.js';
-  import { saveCreatorCatalogMetadata } from '../../lib/feed/creatorCatalogMetadata.js';
+  import { saveCreatorCatalogMetadata, previewCreatorShelfClassification } from '../../lib/feed/creatorCatalogMetadata.js';
   import VaultEpisodeCreatorStatus from '../series/VaultEpisodeCreatorStatus.svelte';
   import { validateVideoFile } from '../../lib/runtime-guards.js';
   import { API_BASE_URL, toRelativeMediaPath, SIGNED_UPLOADS_MIN_BYTES } from '../../lib/config.js';
@@ -177,6 +177,11 @@
   let lastSoftRemoved = null;
   /** Per-asset edit signal for VaultEpisodeCreatorStatus (no media re-upload). */
   let vaultEditSignals = /** @type {Record<string, number>} */ ({});
+  /**
+   * Phase 20: per-asset package save ack for VaultEpisodeCreatorStatus feedback.
+   * @type {Record<string, { saveToken?: number; ok?: boolean; shelf?: string; explicit?: boolean; error?: string; savedAt?: number }>}
+   */
+  let vaultPackageSaveFeedback = {};
   $: vaultShelfCategories = (CONFIG?.CATEGORIES ?? []).filter((c) => c !== 'Auto-Detect');
   let deleteAuditLogged = false;
   let selectedThumbnailIds = [];
@@ -1944,15 +1949,34 @@
    * Target is always event.detail.mediaAssetId (never display index / S/E / filename).
    * Vault enrichment preserves presentation; creatorCatalogMetadata writes feed authority
    * into existing reel_titles_persistent + reelforge_series_metadata (+ category PATCH).
-   * @param {{ title?: string; description?: string; artworkUrl?: string; mediaAssetId?: string; tags?: string; category?: string }} detail
+   * Phase 20: returns save feedback for VaultEpisodeCreatorStatus (saving → saved/error).
+   * @param {{ title?: string; description?: string; artworkUrl?: string; mediaAssetId?: string; tags?: string; category?: string; saveToken?: number }} detail
    * @param {string} [cardMediaAssetId]
    */
   function saveVaultEpisodeEnrichment(detail, cardMediaAssetId = '') {
     const target = resolveCreatorCardMutationTarget(detail, cardMediaAssetId);
     const id = target.mediaAssetId;
+    const saveToken = Number(detail?.saveToken) || 0;
+    const feedbackKey = id || String(cardMediaAssetId || '').trim() || '_unknown';
+    /** @type {{ saveToken: number; ok: boolean; shelf: string; explicit: boolean; error: string; savedAt: number }} */
+    const feedback = {
+      saveToken,
+      ok: false,
+      shelf: 'Trending',
+      explicit: false,
+      error: '',
+      savedAt: Date.now()
+    };
+
+    const publishFeedback = () => {
+      vaultPackageSaveFeedback = { ...vaultPackageSaveFeedback, [feedbackKey]: feedback };
+    };
+
     if (!id) {
       console.warn('[VAULT_EPISODE_ENRICH]', target.reason || 'missing mediaAssetId');
-      return;
+      feedback.error = 'Missing media asset id';
+      publishFeedback();
+      return feedback;
     }
     if (!target.ok) {
       console.warn('[VAULT_CARD_TARGET_MISMATCH]', {
@@ -2016,10 +2040,28 @@
         } catch (overlayErr) {
           console.warn('[CREATOR_CATALOG_METADATA] post-save overlay', overlayErr);
         }
+        const vaultList = Array.isArray(get(personalVideos)) ? get(personalVideos) : [];
+        const matched = vaultList.find((v) => String(v?.id || '').trim() === id);
+        const preview = previewCreatorShelfClassification({
+          title: detail?.title,
+          description: detail?.description,
+          tags: detail?.tags,
+          category: detail?.category,
+          fileName: String(matched?.fileName || matched?.name || '')
+        });
+        feedback.ok = true;
+        feedback.shelf = preview.primaryCategory || 'Trending';
+        feedback.explicit = Boolean(preview.explicit);
+        feedback.error = '';
+      } else {
+        feedback.error = 'Metadata could not be saved';
       }
     } catch (err) {
       console.warn('[CREATOR_CATALOG_METADATA]', err);
+      feedback.error = err instanceof Error ? err.message : 'Metadata save failed';
     }
+    publishFeedback();
+    return feedback;
   }
 
   function isVaultVideoFileCandidate(f) {
@@ -3682,6 +3724,7 @@
                 asset={video}
                 active={true}
                 editSignal={vaultEditSignals[cardMediaAssetId] || 0}
+                packageSaveFeedback={vaultPackageSaveFeedback[cardMediaAssetId] || null}
                 on:confirmIdentity={(event) =>
                   confirmVaultVideoIdentity(event.detail || {}, cardMediaAssetId)}
                 on:savePackage={(event) =>

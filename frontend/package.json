@@ -69,6 +69,7 @@
     "validate:creator-metadata-authoring": "node scripts/validate-creator-metadata-authoring.mjs",
     "validate:creator-metadata-coverage": "node scripts/validate-creator-metadata-coverage.mjs",
     "validate:creator-metadata-clear": "node scripts/validate-creator-metadata-clear.mjs",
+    "validate:creator-metadata-ux": "node scripts/validate-creator-metadata-ux.mjs",
     "validate:creator-category-clear": "node scripts/validate-creator-category-clear.mjs",
     "validate:vic-g-series-package": "node scripts/validate-vic-g-series-package.mjs",
     "validate:master-edit-realtime": "node scripts/validate-master-edit-realtime.mjs",

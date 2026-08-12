@@ -14,7 +14,10 @@ import {
     vaultIdentityIsConfirmed
 } from './seriesAssemblyWorkflow.js';
 import { getEpisodeByReelId } from './seriesStore.js';
-import { loadCreatorCatalogMetadata } from '../feed/creatorCatalogMetadata.js';
+import {
+    loadCreatorCatalogMetadata,
+    previewCreatorShelfClassification
+} from '../feed/creatorCatalogMetadata.js';
 
 /**
  * Creator-safe media availability for a vault asset.
@@ -77,6 +80,29 @@ export function presentVaultEpisodeCompleteness(asset) {
     const displayDescription = enrich.description || catalog?.description || '';
     const discoveryTags = Array.isArray(catalog?.tags) ? catalog.tags : [];
     const discoveryCategory = catalog?.category || '';
+    /** Phase 20: distinguish missing vs intentionally cleared primary fields. */
+    const descriptionFieldState = displayDescription
+        ? 'set'
+        : catalog?.primaryDescriptionAuthority
+          ? 'cleared'
+          : 'missing';
+    const tagsFieldState = discoveryTags.length
+        ? 'set'
+        : catalog?.primaryTagsAuthority
+          ? 'cleared'
+          : 'missing';
+    const categoryFieldState = discoveryCategory
+        ? 'set'
+        : catalog?.primaryCategoryAuthority
+          ? 'cleared'
+          : 'missing';
+    const shelfPreview = previewCreatorShelfClassification({
+        title: displayTitle,
+        description: displayDescription,
+        tags: discoveryTags,
+        category: discoveryCategory || 'Trending',
+        fileName: String(asset?.fileName || asset?.name || '')
+    });
 
     const identityReady = !identity.needsConfirmation;
     const titleOk = Boolean(displayTitle);
@@ -138,6 +164,16 @@ export function presentVaultEpisodeCompleteness(asset) {
             /** Optional discovery fields from primary catalog metadata (not required for ready). */
             tags: discoveryTags,
             category: discoveryCategory,
+            descriptionFieldState,
+            tagsFieldState,
+            categoryFieldState,
+            /** Same classifier path as feed — not a second classifier. */
+            shelfPreview: {
+                primaryCategory: shelfPreview.primaryCategory,
+                explicit: shelfPreview.explicit,
+                confidenceLabel: shelfPreview.confidenceLabel,
+                source: shelfPreview.source
+            },
             marks: {
                 title: titleOk,
                 description: descOk,

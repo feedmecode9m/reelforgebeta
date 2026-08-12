@@ -2,7 +2,8 @@
   /**
    * Unified Hero Vault creator completeness card.
    * Clarity for identity + package + media + publish — no parser/confidence language.
-   * Phase 17: package editor also authors title/description/tags/category for Smart Catalog.
+   * Phase 17–20: package editor authors title/description/tags/category for Smart Catalog
+   * with save-state feedback and classification result (same classifier path as feed).
    */
   import { createEventDispatcher } from 'svelte';
   import { presentVaultEpisodeCompleteness } from '../../lib/series/creatorExperiencePresentation.js';
@@ -20,6 +21,11 @@
    * @type {number}
    */
   export let editSignal = 0;
+  /**
+   * Phase 20: parent ack after savePackage (matched by saveToken).
+   * @type {{ saveToken?: number; ok?: boolean; shelf?: string; explicit?: boolean; error?: string; savedAt?: number } | null}
+   */
+  export let packageSaveFeedback = null;
 
   const dispatch = createEventDispatcher();
 
@@ -35,6 +41,12 @@
   let draftCategory = 'Trending';
   let formError = '';
   let lastEditSignal = 0;
+  /** @type {'idle' | 'saving' | 'saved' | 'error'} */
+  let packageSaveState = 'idle';
+  let packageSaveToken = 0;
+  /** @type {{ shelf: string; explicit: boolean } | null} */
+  let lastSavedShelf = null;
+  let lastHandledFeedbackToken = 0;
 
   $: model = active && asset ? presentVaultEpisodeCompleteness(asset) : null;
 
@@ -48,6 +60,27 @@
           fileName: String(asset?.fileName || asset?.name || '')
         })
       : null;
+
+  $: if (
+    packageSaveFeedback &&
+    Number(packageSaveFeedback.saveToken) === packageSaveToken &&
+    packageSaveToken > 0 &&
+    packageSaveToken !== lastHandledFeedbackToken
+  ) {
+    lastHandledFeedbackToken = packageSaveToken;
+    if (packageSaveFeedback.ok) {
+      packageSaveState = 'saved';
+      formError = '';
+      lastSavedShelf = {
+        shelf: String(packageSaveFeedback.shelf || 'Trending'),
+        explicit: Boolean(packageSaveFeedback.explicit)
+      };
+    } else {
+      packageSaveState = 'error';
+      formError = String(packageSaveFeedback.error || 'Could not save package metadata');
+      // Keep drafts + editor open — do not report success.
+    }
+  }
 
   $: if (active && model && editSignal !== lastEditSignal) {
     lastEditSignal = editSignal;
@@ -67,6 +100,8 @@
     draftSeason = String(model.season || 1);
     draftEpisode = String(model.episode || 1);
     formError = '';
+    packageSaveState = 'idle';
+    lastSavedShelf = null;
     editing = 'identity';
   }
 
@@ -82,20 +117,32 @@
       if (id) {
         const meta = loadCreatorCatalogMetadata(id);
         if (meta.title) draftTitle = meta.title;
-        if (meta.description) draftDescription = meta.description;
-        if (meta.tags?.length) draftTags = meta.tags.join(', ');
+        // Authored-empty description/tags stay empty drafts (Phase 19 clear semantics).
+        if (meta.primaryDescriptionAuthority) {
+          draftDescription = meta.description || '';
+        } else if (meta.description) {
+          draftDescription = meta.description;
+        }
+        if (meta.primaryTagsAuthority) {
+          draftTags = meta.tags?.length ? meta.tags.join(', ') : '';
+        } else if (meta.tags?.length) {
+          draftTags = meta.tags.join(', ');
+        }
         draftCategory = meta.category || 'Trending';
       }
     } catch {
       /* keep presentation defaults */
     }
     formError = '';
+    packageSaveState = 'idle';
+    lastSavedShelf = null;
     editing = 'package';
   }
 
   function cancelEdit() {
     editing = null;
     formError = '';
+    packageSaveState = 'idle';
   }
 
   function submitIdentity() {
@@ -126,20 +173,48 @@
 
   function submitPackage() {
     formError = '';
+    packageSaveState = 'saving';
+    lastSavedShelf = null;
+    packageSaveToken += 1;
     dispatch('savePackage', {
       mediaAssetId: model?.mediaAssetId || '',
       title: String(draftTitle || '').trim(),
       description: String(draftDescription || '').trim(),
       artworkUrl: String(draftArtwork || '').trim(),
       tags: String(draftTags || '').trim(),
-      category: String(draftCategory || 'Trending').trim() || 'Trending'
+      category: String(draftCategory || 'Trending').trim() || 'Trending',
+      saveToken: packageSaveToken
     });
-    editing = null;
+    // Stay in package editor so save/result feedback is visible (Phase 20).
   }
 
   /** @param {boolean} ok */
   function mark(ok) {
     return ok ? '✓' : '○';
+  }
+
+  /**
+   * @param {{ primaryCategory?: string; explicit?: boolean } | null | undefined} preview
+   */
+  function shelfFeedbackCopy(preview) {
+    if (!preview?.primaryCategory) return '';
+    if (preview.explicit) {
+      return `Shelf: ${preview.primaryCategory} · creator selection`;
+    }
+    if (preview.primaryCategory === 'Trending') {
+      return `Current shelf: Trending · no strong genre evidence`;
+    }
+    return `Detected shelf: ${preview.primaryCategory} · from title/description/tags`;
+  }
+
+  /**
+   * @param {'set' | 'cleared' | 'missing' | string | undefined} state
+   * @param {string} setLabel
+   */
+  function fieldStateLabel(state, setLabel) {
+    if (state === 'cleared') return 'Cleared';
+    if (state === 'missing') return 'Not set';
+    return setLabel || 'Set';
   }
 </script>
 
@@ -154,6 +229,7 @@
     data-media-asset-id={model.mediaAssetId || undefined}
     data-identity-ready={model.identity.ready ? 'true' : 'false'}
     data-presentation-ready={model.presentation.ready ? 'true' : 'false'}
+    data-package-save-state={packageSaveState}
     data-media={model.media.state}
     data-publishing={model.publishing.status}
     on:pointerdown={stopDrag}
@@ -197,7 +273,14 @@
       </p>
       <label class="vault-creator-card__field">
         <span>Title</span>
-        <input type="text" bind:value={draftTitle} maxlength="200" placeholder="Episode title" data-creator-meta-title />
+        <input
+          type="text"
+          bind:value={draftTitle}
+          maxlength="200"
+          placeholder="Episode title"
+          data-creator-meta-title
+          disabled={packageSaveState === 'saving'}
+        />
       </label>
       <label class="vault-creator-card__field">
         <span>Description</span>
@@ -205,8 +288,9 @@
           rows="2"
           bind:value={draftDescription}
           maxlength="4000"
-          placeholder="Short description"
+          placeholder="Short description (leave empty to clear)"
           data-creator-meta-description
+          disabled={packageSaveState === 'saving'}
         ></textarea>
       </label>
       <label class="vault-creator-card__field">
@@ -217,11 +301,17 @@
           maxlength="500"
           placeholder="comma-separated, e.g. romance, kiss, soulmate"
           data-creator-meta-tags
+          disabled={packageSaveState === 'saving'}
         />
       </label>
       <label class="vault-creator-card__field">
         <span>Shelf category</span>
-        <select bind:value={draftCategory} aria-label="Creator shelf category" data-creator-meta-category>
+        <select
+          bind:value={draftCategory}
+          aria-label="Creator shelf category"
+          data-creator-meta-category
+          disabled={packageSaveState === 'saving'}
+        >
           {#each CREATOR_SHELF_OPTIONS as option}
             <option value={option}>{option}</option>
           {/each}
@@ -229,25 +319,50 @@
       </label>
       {#if shelfPreview}
         <p class="vault-creator-card__axis-hint" data-creator-shelf-preview>
-          {#if shelfPreview.explicit}
-            Shelf: {shelfPreview.primaryCategory} · creator selection
-          {:else}
-            Detected shelf: {shelfPreview.primaryCategory} · {shelfPreview.confidenceLabel}
-          {/if}
+          {shelfFeedbackCopy(shelfPreview)}
         </p>
       {/if}
       <label class="vault-creator-card__field">
         <span>Artwork</span>
-        <input type="url" bind:value={draftArtwork} placeholder="Image URL or /thumbs/…" />
+        <input
+          type="url"
+          bind:value={draftArtwork}
+          placeholder="Image URL or /thumbs/…"
+          disabled={packageSaveState === 'saving'}
+        />
       </label>
-      {#if formError}<p class="vault-creator-card__error">{formError}</p>{/if}
+      {#if packageSaveState === 'saving'}
+        <p class="vault-creator-card__save-status" data-creator-save-status="saving" aria-live="polite">
+          Saving metadata…
+        </p>
+      {:else if packageSaveState === 'saved' && lastSavedShelf}
+        <p class="vault-creator-card__save-status vault-creator-card__save-status--ok" data-creator-save-status="saved" aria-live="polite">
+          Saved · shelf {lastSavedShelf.shelf}{lastSavedShelf.explicit ? ' · creator selection' : ''}
+        </p>
+      {:else if packageSaveState === 'error'}
+        <p class="vault-creator-card__save-status vault-creator-card__save-status--err" data-creator-save-status="error" aria-live="assertive">
+          Save failed — your edits are still here. Try again.
+        </p>
+      {/if}
+      {#if formError}<p class="vault-creator-card__error" data-creator-save-error>{formError}</p>{/if}
       <div class="vault-creator-card__actions">
-        <button type="button" class="vault-creator-card__btn vault-creator-card__btn--primary" on:click|stopPropagation|preventDefault={submitPackage}
-          >Save package</button
+        <button
+          type="button"
+          class="vault-creator-card__btn vault-creator-card__btn--primary"
+          data-creator-save-package
+          disabled={packageSaveState === 'saving'}
+          on:click|stopPropagation|preventDefault={submitPackage}
         >
-        <button type="button" class="vault-creator-card__btn vault-creator-card__btn--ghost" on:click|stopPropagation|preventDefault={cancelEdit}
-          >Cancel</button
+          {packageSaveState === 'saving' ? 'Saving…' : packageSaveState === 'saved' ? 'Save again' : 'Save package'}
+        </button>
+        <button
+          type="button"
+          class="vault-creator-card__btn vault-creator-card__btn--ghost"
+          disabled={packageSaveState === 'saving'}
+          on:click|stopPropagation|preventDefault={cancelEdit}
         >
+          {packageSaveState === 'saved' ? 'Done' : 'Cancel'}
+        </button>
       </div>
     {:else}
       <!-- Identity: what this video is (Series / Season / Episode). -->
@@ -329,6 +444,11 @@
           {model.presentation.hint ||
             'Package readiness for Title, Description, and Artwork. Tags and shelf improve discovery.'}
         </p>
+        {#if model.presentation.shelfPreview}
+          <p class="vault-creator-card__axis-hint" data-creator-current-shelf>
+            {shelfFeedbackCopy(model.presentation.shelfPreview)}
+          </p>
+        {/if}
         <ul class="vault-creator-card__checks">
           <li class:missing={!model.presentation.marks.title} data-check="title">
             <span class="vault-creator-card__mark">{mark(model.presentation.marks.title)}</span>
@@ -337,7 +457,11 @@
               >{model.presentation.title || 'Missing'}</span
             >
           </li>
-          <li class:missing={!model.presentation.marks.description} data-check="description">
+          <li
+            class:missing={model.presentation.descriptionFieldState === 'missing'}
+            data-check="description"
+            data-field-state={model.presentation.descriptionFieldState || 'missing'}
+          >
             <span class="vault-creator-card__mark">{mark(model.presentation.marks.description)}</span>
             <span class="vault-creator-card__k">Description</span>
             <span class="vault-creator-card__v"
@@ -345,23 +469,34 @@
                 ? model.presentation.description.length > 48
                   ? `${model.presentation.description.slice(0, 48)}…`
                   : model.presentation.description
-                : 'Missing'}</span
+                : fieldStateLabel(model.presentation.descriptionFieldState, 'Missing')}</span
             >
           </li>
-          <li class:missing={!model.presentation.marks.tags} data-check="tags">
+          <li
+            class:missing={model.presentation.tagsFieldState === 'missing'}
+            data-check="tags"
+            data-field-state={model.presentation.tagsFieldState || 'missing'}
+          >
             <span class="vault-creator-card__mark">{mark(model.presentation.marks.tags)}</span>
             <span class="vault-creator-card__k">Tags</span>
             <span class="vault-creator-card__v" data-tags-value
               >{model.presentation.tags?.length
                 ? model.presentation.tags.join(', ')
-                : 'Optional'}</span
+                : fieldStateLabel(model.presentation.tagsFieldState, 'Optional')}</span
             >
           </li>
-          <li class:missing={!model.presentation.marks.category} data-check="category">
+          <li
+            class:missing={model.presentation.categoryFieldState === 'missing'}
+            data-check="category"
+            data-field-state={model.presentation.categoryFieldState || 'missing'}
+          >
             <span class="vault-creator-card__mark">{mark(model.presentation.marks.category)}</span>
             <span class="vault-creator-card__k">Shelf</span>
             <span class="vault-creator-card__v" data-category-value
-              >{model.presentation.category || 'Auto / Trending'}</span
+              >{model.presentation.category ||
+                (model.presentation.categoryFieldState === 'cleared'
+                  ? 'Cleared · auto'
+                  : 'Auto / Trending')}</span
             >
           </li>
           <li class:missing={!model.presentation.marks.artwork} data-check="artwork">
@@ -429,7 +564,7 @@
         </div>
         <p class="vault-creator-card__axis-hint" data-hero-hint>
           {model.hero?.hint ||
-            'PUBLIC APPROVED is server-authoritative Hero grant — independent of episode publication.'}
+            'PUBLIC APPROVED is server-authoritative Hero presentation grant — independent of episode publication.'}
         </p>
       </div>
     {/if}
