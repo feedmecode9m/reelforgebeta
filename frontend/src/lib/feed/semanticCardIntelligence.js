@@ -17,6 +17,7 @@ import {
     formatDurationLabel
 } from './semanticCardProfile.js';
 import { normalizeActiveShelf } from './discoveryTaxonomy.js';
+import { resolveSafeViewerCardTitle } from './viewerMediaIdentity.js';
 
 /**
  * @param {unknown} value
@@ -115,12 +116,8 @@ export function enrichSemanticCard(asset = {}, projection = {}) {
     const row = asset && typeof asset === 'object' ? asset : {};
     const assetId = text(row.id || row.mediaAssetId || row.assetId || row.reelId);
 
-    const title =
-        text(projection.title) ||
-        text(row.title) ||
-        text(row.name) ||
-        text(row.persistentTitle) ||
-        '';
+    // Phase 6.5 — never show UUID / IMG_#### / raw filenames on audience cards.
+    const title = resolveSafeViewerCardTitle(row, projection);
 
     const filename =
         text(row.fileName || row.file_name || row.filename) ||

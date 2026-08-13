@@ -11,6 +11,12 @@
   export let reel = null;
   /** Optional vault/title projection — pass-through only */
   export let projection = null;
+  /**
+   * Phase 6.4 — one resolved media object:
+   * { mediaSource, poster, title, shelf, themes, metadata }
+   * @type {Record<string, unknown> | null}
+   */
+  export let resolvedMedia = null;
   /** Prebuilt shell; if omitted, derived from reel */
   export let shell = null;
   /** @type {'featured' | 'row' | 'grid'} */
@@ -29,7 +35,8 @@
     (reel
       ? buildViewerSemanticShell(
           /** @type {Record<string, unknown>} */ (reel),
-          projection || {}
+          projection || {},
+          resolvedMedia
         )
       : null);
   $: themeClass = resolvedShell?.presentationCssClass || 'sem-card--theme-neutral';
@@ -43,6 +50,12 @@
   $: themeList = Array.isArray(resolvedShell?.themes)
     ? resolvedShell.themes.map(String).filter(Boolean).slice(0, 3)
     : [];
+  $: mediaSource = String(
+    resolvedMedia?.mediaSource || resolvedShell?.resolvedMedia?.mediaSource || resolvedShell?.mediaType || ''
+  );
+  $: posterUrl = String(
+    resolvedMedia?.poster || resolvedShell?.resolvedMedia?.poster || resolvedShell?.artworkUrl || ''
+  );
 </script>
 
 {#if resolvedShell}
@@ -59,6 +72,9 @@
     data-asset-id={resolvedShell.assetId || ''}
     data-reel-id={resolvedShell.assetId || ''}
     data-media-type={resolvedShell.mediaType || ''}
+    data-media-source={mediaSource}
+    data-poster-url={posterUrl}
+    data-identity-deduped={resolvedMedia || resolvedShell?.resolvedMedia ? '1' : '0'}
     aria-label={hasTitle ? `Play ${resolvedShell.title}` : 'Play media'}
     on:click={() => {
       if (interactive && reel) onActivate(/** @type {Record<string, unknown>} */ (reel));

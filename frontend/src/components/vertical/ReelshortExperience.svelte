@@ -144,8 +144,11 @@
     import ViewerSemanticCard from '../viewer/ViewerSemanticCard.svelte';
     import {
         buildViewerSemanticShell,
+        collectIdentityDedupedFeedMap,
         collectRealViewerReels
     } from '../../lib/feed/viewerSemanticShell.js';
+    import { resolveViewerAssetId } from '../../lib/feed/viewerIdentityDedupe.js';
+    import { logViewerMediaIdentityDiagnostics } from '../../lib/feed/viewerMediaIdentity.js';
     import '../../viewer/cinematicCardTokens.css';
 
     /** @type {'feed' | 'theater-ambient' | 'theater-chrome'} */
@@ -264,18 +267,37 @@
         }
     }
     function countGlobalRealFeedCards() {
-        const map = $normalizedFeed || $feed || {};
+        const map = identityFeedMap || $normalizedFeed || $feed || {};
         return Object.values(map)
             .flat()
             .filter((item) => isRealShelfCard(item)).length;
     }
 
     function getShelfDisplayItems(category) {
-        const source = $normalizedFeed[category] || $feed[category] || [];
+        const source = identityFeedMap?.[category] || $normalizedFeed[category] || $feed[category] || [];
         const real = UIAgent.fillLandscape ? UIAgent.fillLandscape(source, category) : source;
         return fillShelfPresentation(real, category, undefined, {
             globalRealCount: countGlobalRealFeedCards()
         });
+    }
+
+    /**
+     * @param {Record<string, unknown>} reel
+     * @param {string} category
+     */
+    function resolveCardMedia(reel, category) {
+        const id = resolveViewerAssetId(reel);
+        const fromMap = id ? identityResolvedById.get(id) : null;
+        if (fromMap) return fromMap;
+        const projection = resolveVaultCardProjection(String(reel?.id || ''), { reel });
+        return {
+            mediaSource: hasPlayableVideo(reel) ? 'video' : 'image',
+            poster: projection.posterUrl || reel.thumbnailUrl || '',
+            title: projection.title || reel.title || reel.name || '',
+            shelf: category,
+            themes: [],
+            metadata: { invented: false }
+        };
     }
 
     function shouldRenderShelf(category) {
@@ -320,9 +342,26 @@
         ].join('::');
     }
 
-    /** Featured + browse layouts from current feed (presentation only). */
+    /** Phase 6.4/6.5 — identity-first card resolution (video canonical; thumb → poster). */
+    /** @type {Record<string, unknown[]>} */
+    let identityFeedMap = {};
+    /** @type {Map<string, Record<string, unknown>>} */
+    let identityResolvedById = new Map();
+    $: identityDedupe = collectIdentityDedupedFeedMap($normalizedFeed || $feed || {});
+    $: identityFeedMap = identityDedupe.feedMap;
+    $: identityResolvedById = identityDedupe.resolvedById;
+    /** Featured + browse layouts from identity-deduped feed (presentation only). */
     $: realViewerItems = collectRealViewerReels($normalizedFeed || $feed || {});
     $: featuredItem = realViewerItems[0] || null;
+    $: if (section === 'feed') {
+        const flat = Object.values($normalizedFeed || $feed || {})
+            .flat()
+            .filter((r) => r && !r.isPresentationOnly && !r.isPlaceholder);
+        logViewerMediaIdentityDiagnostics(
+            /** @type {Record<string, unknown>[]} */ (flat),
+            'ReelshortExperience:feed'
+        );
+    }
 
     function activateReel(reel, category) {
         logTheaterOpen(reel, { source: 'feed-card-click', category });
@@ -356,6 +395,10 @@
     {#if featuredItem}
         {@const featuredReel = featuredItem.reel}
         {@const featuredCategory = featuredItem.shelf}
+        {@const featuredResolved = featuredItem.resolvedMedia || resolveCardMedia(
+            /** @type {Record<string, unknown>} */ (featuredReel),
+            featuredCategory
+        )}
         {@const featuredProjection = resolveVaultCardProjection(String(featuredReel?.id || ''), {
             reel: /** @type {Record<string, unknown>} */ (featuredReel)
         })}
@@ -364,15 +407,17 @@
             {
                 title: featuredProjection.title,
                 category: featuredCategory,
-                posterUrl: featuredProjection.posterUrl,
+                posterUrl: featuredResolved.poster || featuredProjection.posterUrl,
                 description: featuredProjection.description
-            }
+            },
+            featuredResolved
         )}
         <section class="viewer-featured" data-viewer-featured-card aria-label="Featured">
             <h2 class="viewer-featured__heading">Featured</h2>
             <ViewerSemanticCard
                 reel={/** @type {Record<string, unknown>} */ (featuredReel)}
                 shell={featuredShell}
+                resolvedMedia={featuredResolved}
                 variant="featured"
                 previewActive={String(feedHoverPreviewId) === String(featuredReel.id)}
                 onActivate={(r) => activateReel(r, featuredCategory)}
@@ -386,9 +431,9 @@
                 <svelte:fragment slot="media">
                     {#if hasPlayableVideo(featuredReel) && featuredReel.url}
                         {#if $feedCardVideoFallbacks.has(featuredReel.id)}
-                            {traceFeedCardRender(featuredReel, featuredCategory, 'video_fallback_thumbnail', featuredProjection.posterUrl || featuredReel.thumbnailUrl || getImg(featuredReel, featuredCategory, 0))}
+                            {traceFeedCardRender(featuredReel, featuredCategory, 'video_fallback_thumbnail', featuredResolved.poster || featuredProjection.posterUrl || featuredReel.thumbnailUrl || getImg(featuredReel, featuredCategory, 0))}
                             <MediaThumbnail
-                                url={featuredProjection.posterUrl || featuredReel.thumbnailUrl || getImg(featuredReel, featuredCategory, 0)}
+                                url={featuredResolved.poster || featuredProjection.posterUrl || featuredReel.thumbnailUrl || getImg(featuredReel, featuredCategory, 0)}
                                 alt={featuredProjection.title || 'Video'}
                                 lazyLoad
                                 className="card-visual card-video-fallback"
@@ -398,7 +443,7 @@
                             <MediaRenderer
                                 type="video"
                                 url={featuredReel.url}
-                                poster={featuredProjection.posterUrl || featuredReel.thumbnailUrl || getImg(featuredReel, featuredCategory, 0)}
+                                poster={featuredResolved.poster || featuredProjection.posterUrl || featuredReel.thumbnailUrl || getImg(featuredReel, featuredCategory, 0)}
                                 validateVideo={true}
                                 useSourceElement={true}
                                 captionsTrack={true}
@@ -412,9 +457,9 @@
                                 on:error={(e) => onCardVideoError(e, featuredReel)}
                             />
                         {:else}
-                            {traceFeedCardRender(featuredReel, featuredCategory, 'video_poster', featuredProjection.posterUrl || featuredReel.thumbnailUrl || getImg(featuredReel, featuredCategory, 0))}
+                            {traceFeedCardRender(featuredReel, featuredCategory, 'video_poster', featuredResolved.poster || featuredProjection.posterUrl || featuredReel.thumbnailUrl || getImg(featuredReel, featuredCategory, 0))}
                             <MediaThumbnail
-                                url={featuredProjection.posterUrl || featuredReel.thumbnailUrl || getImg(featuredReel, featuredCategory, 0)}
+                                url={featuredResolved.poster || featuredProjection.posterUrl || featuredReel.thumbnailUrl || getImg(featuredReel, featuredCategory, 0)}
                                 alt={featuredProjection.title || 'Video'}
                                 lazyLoad
                                 className="card-visual card-video-poster"
@@ -422,7 +467,7 @@
                         {/if}
                     {:else if featuredReel.url}
                         <MediaThumbnail
-                            url={$feedCardImageFallbacks[featuredReel.id] || featuredProjection.posterUrl || featuredReel.url}
+                            url={$feedCardImageFallbacks[featuredReel.id] || featuredResolved.poster || featuredProjection.posterUrl || featuredReel.url}
                             alt={featuredProjection.title || 'Image'}
                             lazyLoad
                             className="card-visual"
@@ -480,18 +525,24 @@
                         {@const cardProjection = resolveVaultCardProjection(String(reel?.id || ''), {
                             reel: /** @type {Record<string, unknown>} */ (reel)
                         })}
+                        {@const cardResolved = resolveCardMedia(
+                            /** @type {Record<string, unknown>} */ (reel),
+                            category
+                        )}
                         {@const rowShell = buildViewerSemanticShell(
                             /** @type {Record<string, unknown>} */ (reel),
                             {
                                 title: cardProjection.title,
                                 category,
-                                posterUrl: cardProjection.posterUrl,
+                                posterUrl: cardResolved.poster || cardProjection.posterUrl,
                                 description: cardProjection.description
-                            }
+                            },
+                            cardResolved
                         )}
                         <ViewerSemanticCard
                             reel={/** @type {Record<string, unknown>} */ (reel)}
                             shell={rowShell}
+                            resolvedMedia={cardResolved}
                             variant="row"
                             previewActive={String(feedHoverPreviewId) === String(reel.id)}
                             onActivate={(r) => activateReel(r, category)}
@@ -505,9 +556,9 @@
                             <svelte:fragment slot="media">
                                 {#if hasPlayableVideo(reel) && reel.url}
                                     {#if $feedCardVideoFallbacks.has(reel.id)}
-                                        {traceFeedCardRender(reel, category, 'video_fallback_thumbnail', cardProjection.posterUrl || reel.thumbnailUrl || getImg(reel, category, i))}
+                                        {traceFeedCardRender(reel, category, 'video_fallback_thumbnail', cardResolved.poster || cardProjection.posterUrl || reel.thumbnailUrl || getImg(reel, category, i))}
                                         <MediaThumbnail
-                                            url={cardProjection.posterUrl || reel.thumbnailUrl || getImg(reel, category, i)}
+                                            url={cardResolved.poster || cardProjection.posterUrl || reel.thumbnailUrl || getImg(reel, category, i)}
                                             alt={cardProjection.title || 'Video'}
                                             lazyLoad
                                             className="card-visual card-video-fallback"
@@ -517,7 +568,7 @@
                                         <MediaRenderer
                                             type="video"
                                             url={reel.url}
-                                            poster={cardProjection.posterUrl || reel.thumbnailUrl || getImg(reel, category, i)}
+                                            poster={cardResolved.poster || cardProjection.posterUrl || reel.thumbnailUrl || getImg(reel, category, i)}
                                             validateVideo={true}
                                             useSourceElement={true}
                                             captionsTrack={true}
@@ -532,9 +583,9 @@
                                             on:error={(e) => onCardVideoError(e, reel)}
                                         />
                                     {:else}
-                                        {traceFeedCardRender(reel, category, 'video_poster', cardProjection.posterUrl || reel.thumbnailUrl || getImg(reel, category, i))}
+                                        {traceFeedCardRender(reel, category, 'video_poster', cardResolved.poster || cardProjection.posterUrl || reel.thumbnailUrl || getImg(reel, category, i))}
                                         <MediaThumbnail
-                                            url={cardProjection.posterUrl || reel.thumbnailUrl || getImg(reel, category, i)}
+                                            url={cardResolved.poster || cardProjection.posterUrl || reel.thumbnailUrl || getImg(reel, category, i)}
                                             alt={cardProjection.title || 'Video'}
                                             lazyLoad
                                             className="card-visual card-video-poster"
@@ -543,7 +594,7 @@
                                 {:else if reel.url}
                                     {traceFeedCardRender(reel, category, 'image', $feedCardImageFallbacks[reel.id] || reel.url)}
                                     <MediaThumbnail
-                                        url={$feedCardImageFallbacks[reel.id] || cardProjection.posterUrl || reel.url}
+                                        url={$feedCardImageFallbacks[reel.id] || cardResolved.poster || cardProjection.posterUrl || reel.url}
                                         alt={cardProjection.title || 'Image'}
                                         lazyLoad
                                         className="card-visual"
@@ -577,6 +628,10 @@
                 {#each realViewerItems as item (item.reel.id)}
                     {@const gridReel = item.reel}
                     {@const gridCategory = item.shelf}
+                    {@const gridResolved = item.resolvedMedia || resolveCardMedia(
+                        /** @type {Record<string, unknown>} */ (gridReel),
+                        gridCategory
+                    )}
                     {@const gridProjection = resolveVaultCardProjection(String(gridReel?.id || ''), {
                         reel: /** @type {Record<string, unknown>} */ (gridReel)
                     })}
@@ -585,13 +640,15 @@
                         {
                             title: gridProjection.title,
                             category: gridCategory,
-                            posterUrl: gridProjection.posterUrl,
+                            posterUrl: gridResolved.poster || gridProjection.posterUrl,
                             description: gridProjection.description
-                        }
+                        },
+                        gridResolved
                     )}
                     <ViewerSemanticCard
                         reel={/** @type {Record<string, unknown>} */ (gridReel)}
                         shell={gridShell}
+                        resolvedMedia={gridResolved}
                         variant="grid"
                         previewActive={String(feedHoverPreviewId) === String(gridReel.id)}
                         onActivate={(r) => activateReel(r, gridCategory)}
@@ -606,7 +663,7 @@
                             {#if hasPlayableVideo(gridReel) && gridReel.url}
                                 {#if $feedCardVideoFallbacks.has(gridReel.id)}
                                     <MediaThumbnail
-                                        url={gridProjection.posterUrl || gridReel.thumbnailUrl || getImg(gridReel, gridCategory, 0)}
+                                        url={gridResolved.poster || gridProjection.posterUrl || gridReel.thumbnailUrl || getImg(gridReel, gridCategory, 0)}
                                         alt={gridProjection.title || 'Video'}
                                         lazyLoad
                                         className="card-visual card-video-fallback"
@@ -615,7 +672,7 @@
                                     <MediaRenderer
                                         type="video"
                                         url={gridReel.url}
-                                        poster={gridProjection.posterUrl || gridReel.thumbnailUrl || getImg(gridReel, gridCategory, 0)}
+                                        poster={gridResolved.poster || gridProjection.posterUrl || gridReel.thumbnailUrl || getImg(gridReel, gridCategory, 0)}
                                         validateVideo={true}
                                         useSourceElement={true}
                                         captionsTrack={true}
@@ -630,7 +687,7 @@
                                     />
                                 {:else}
                                     <MediaThumbnail
-                                        url={gridProjection.posterUrl || gridReel.thumbnailUrl || getImg(gridReel, gridCategory, 0)}
+                                        url={gridResolved.poster || gridProjection.posterUrl || gridReel.thumbnailUrl || getImg(gridReel, gridCategory, 0)}
                                         alt={gridProjection.title || 'Video'}
                                         lazyLoad
                                         className="card-visual card-video-poster"
@@ -638,7 +695,7 @@
                                 {/if}
                             {:else if gridReel.url}
                                 <MediaThumbnail
-                                    url={$feedCardImageFallbacks[gridReel.id] || gridProjection.posterUrl || gridReel.url}
+                                    url={$feedCardImageFallbacks[gridReel.id] || gridResolved.poster || gridProjection.posterUrl || gridReel.url}
                                     alt={gridProjection.title || 'Image'}
                                     lazyLoad
                                     className="card-visual"

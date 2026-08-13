@@ -1,0 +1,12 @@
+{
+  "phase": "PHASE-6-5-VIEWER-MEDIA-IDENTITY",
+  "status": "IMPLEMENTATION_COMPLETE_NO_DEPLOY",
+  "expected": "one premium card; thumbnail as artwork only",
+  "arrivalId": "03ef898a-989f-42c3-bdbb-67f37338df65",
+  "img0121Id": "caa1a16f-be03-4c2b-9840-9fce9a809c00",
+  "categoryPatchCount": 0,
+  "titleWrites": 0,
+  "descriptionWrites": 0,
+  "fetchMutations": 0,
+  "deploy": 0
+}

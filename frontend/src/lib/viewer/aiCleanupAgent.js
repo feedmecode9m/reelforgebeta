@@ -23,6 +23,7 @@ import {
 } from './thumbnailVault.js';
 import { isThumbnailImageReel } from './thumbnailCanonicalization.js';
 import { shouldSynthesizePersonalThumbnailFeedCard } from './thumbnailDestinationIdentity.js';
+import { evaluateViewerImageDiscoveryEligibility } from '../feed/viewerMediaIdentity.js';
 import { traceThumbStoreWrite } from './thumbStoreWriteTrace.js';
 import { pipelineCheckpoint } from '../diagnostics/pipelineDiag.js';
 import { vaultForensic } from '../diagnostics/vaultForensics.js';
@@ -555,8 +556,45 @@ export function createAiCleanupAgent(deps) {
   }
   });
   // Catalog image cards (buildHomeFeed + vault membership) own the reel id path.
-  const thumbProbe = { id: canonicalId, fileName: thumbnailName, url: base64Data };
+  const thumbProbe = {
+    id: canonicalId,
+    fileName: thumbnailName,
+    title: thumbnailName,
+    name: thumbnailName,
+    url: base64Data,
+    type: 'image',
+    isPersonalThumbnail: true
+  };
   if (!shouldSynthesizePersonalThumbnailFeedCard(thumbProbe, newFeed)) {
+    return newFeed;
+  }
+  // Phase 6.5 — personal thumbnails are poster artwork, not discovery cards.
+  const discovery = evaluateViewerImageDiscoveryEligibility(thumbProbe);
+  if (!discovery.allow) {
+    console.info('[PERSONAL_THUMBNAIL_SKIP_DISCOVERY]', {
+      stage: 'AI_CLEANUP_AGENT.distributeThumbnailAcrossCategories',
+      reason: discovery.reason,
+      thumbnailName,
+      reelId: canonicalId,
+      ts: new Date().toISOString()
+    });
+    if (canonicalId && base64Data) {
+      categoriesList.forEach((cat) => {
+        newFeed[cat] = (newFeed[cat] || []).map((r) => {
+          if (!r || typeof r !== 'object') return r;
+          const id = String(r.id || r.personal_video_id || '').trim();
+          if (id !== canonicalId) return r;
+          if (String(r.type || '').startsWith('video') || r.isPersonalVideo) {
+            return {
+              ...r,
+              thumbnailUrl: r.thumbnailUrl || base64Data,
+              posterUrl: r.posterUrl || base64Data
+            };
+          }
+          return r;
+        });
+      });
+    }
     return newFeed;
   }
   const placeholder = createLocalReel({
@@ -569,6 +607,7 @@ export function createAiCleanupAgent(deps) {
   isPlaceholder: false,
   isPersonalThumbnail: true,
   personal_thumbnail: thumbnailName,
+  publishableImage: true,
   ...(canonicalId ? { assetId: canonicalId } : {}),
   likes: Math.floor(Math.random() * 100) + 50,
   views: Math.floor(Math.random() * 500) + 100,
@@ -649,10 +688,49 @@ export function createAiCleanupAgent(deps) {
     return;
   }
   const displayLabel = typeof thumb === 'string' ? thumb : String(thumb.title || thumb.name || fileKey);
+  const heroVideo = resolveActiveHeroVideoReel();
+  const thumbProbe = {
+    id: typeof thumb === 'object' ? String(thumb.id || '') : '',
+    title: displayLabel,
+    name: displayLabel,
+    fileName: fileKey,
+    url: thumbUrl,
+    type: 'image',
+    isPersonalThumbnail: true,
+    personal_video_id: typeof thumb === 'object' ? thumb.personal_video_id : undefined
+  };
+  // Phase 6.5 — do not inject IMG_/UUID/personal thumb cards into discovery shelves.
+  const discovery = evaluateViewerImageDiscoveryEligibility(thumbProbe);
+  if (!discovery.allow) {
+    const linkedId =
+      String(thumbProbe.personal_video_id || '').trim() ||
+      String(heroVideo?.id || '').trim();
+    if (linkedId && thumbUrl) {
+      categoriesList.forEach((cat) => {
+        newFeed[cat] = (newFeed[cat] || []).map((r) => {
+          if (!r || typeof r !== 'object') return r;
+          const id = String(r.id || r.personal_video_id || '').trim();
+          if (id !== linkedId) return r;
+          return {
+            ...r,
+            thumbnailUrl: r.thumbnailUrl || thumbUrl,
+            posterUrl: r.posterUrl || thumbUrl
+          };
+        });
+      });
+    }
+    console.info('[PERSONAL_THUMBNAIL_SKIP_DISCOVERY]', {
+      stage: 'AI_CLEANUP_AGENT.syncThumbnailsToFeed',
+      reason: discovery.reason,
+      thumbnailName: fileKey,
+      linkedId,
+      ts: new Date().toISOString()
+    });
+    return;
+  }
   const detectedCategory = CATEGORY_DETECTOR.detectFromTitle(String(displayLabel).replace(/\.[^/.]+$/, ''));
   const primaryCategory = categoriesList.includes(detectedCategory) ? detectedCategory : 'Trending';
-  const heroVideo = resolveActiveHeroVideoReel();
-  const placeholder = createLocalReel({ id: thumb.id ? `personal-thumb-${thumb.id}` : `personal-thumb-${fileKey}`, name: `Personal Content ${thumbIndex + 1} - ${primaryCategory}`, category: primaryCategory, type: 'image', url: thumbUrl, thumbnailUrl: thumbUrl, isPlaceholder: false, isPersonalThumbnail: true, personal_thumbnail: fileKey, ...(heroVideo ? { personal_video_id: heroVideo.id } : {}), likes: Math.floor(Math.random() * 100) + 50, views: Math.floor(Math.random() * 500) + 100, match: 'PERSONAL THUMBNAIL', ai_tags: ['personal-thumbnail', 'user-uploaded'], createdAt: thumbAddedAt || new Date().toISOString() });
+  const placeholder = createLocalReel({ id: thumb.id ? `personal-thumb-${thumb.id}` : `personal-thumb-${fileKey}`, name: `Personal Content ${thumbIndex + 1} - ${primaryCategory}`, category: primaryCategory, type: 'image', url: thumbUrl, thumbnailUrl: thumbUrl, isPlaceholder: false, isPersonalThumbnail: true, personal_thumbnail: fileKey, publishableImage: true, ...(heroVideo ? { personal_video_id: heroVideo.id } : {}), likes: Math.floor(Math.random() * 100) + 50, views: Math.floor(Math.random() * 500) + 100, match: 'PERSONAL THUMBNAIL', ai_tags: ['personal-thumbnail', 'user-uploaded'], createdAt: thumbAddedAt || new Date().toISOString() });
   console.info('[PERSONAL_THUMBNAIL_INSERT]', {
   stage: 'AI_CLEANUP_AGENT.syncThumbnailsToFeed',
   placeholderId: placeholder.id,

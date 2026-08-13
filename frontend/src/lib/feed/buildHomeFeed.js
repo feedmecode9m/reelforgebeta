@@ -21,6 +21,7 @@ import { applyCatalogMetadata, resolveCatalogMetadata } from './catalogMetadata.
 import { hydrateCatalogItemWithCreatorMetadata } from './creatorCatalogMetadata.js';
 import { distributeToShelves } from './categoryDistribution.js';
 import { applyShelfRotation } from './shelfRotation.js';
+import { evaluateViewerImageDiscoveryEligibility } from './viewerMediaIdentity.js';
 
 export const FEED_SHELVES = ['Trending', 'Romance', 'Cyber-Action', 'Suspense'];
 
@@ -77,6 +78,9 @@ export function isDeletedReel(reel) {
 }
 
 /**
+ * Phase 6.5 — discovery prefers video + publishable images only.
+ * Vault-owned IMG_/UUID/upload artifacts are not discovery cards.
+ *
  * @param {Record<string, unknown>} reel
  * @param {{ personalThumbnailReelIds?: Set<string> }} [context]
  * @returns {{ eligible: boolean, rejectionReason: string, cardType: 'video' | 'image' | null, isHeroFeedCard?: boolean }}
@@ -86,6 +90,14 @@ export function evaluateFeedEligibility(reel, context = {}) {
         return { eligible: false, rejectionReason: 'deleted', cardType: null };
     }
     if (isImageReel(reel)) {
+        const discovery = evaluateViewerImageDiscoveryEligibility(reel);
+        if (!discovery.allow) {
+            return {
+                eligible: false,
+                rejectionReason: discovery.reason,
+                cardType: null
+            };
+        }
         const reelId = String(reel?.id || '').trim();
         const memberIds = context.personalThumbnailReelIds ?? new Set();
         if (!reelId || !memberIds.has(reelId)) {
@@ -95,7 +107,7 @@ export function evaluateFeedEligibility(reel, context = {}) {
                 cardType: null
             };
         }
-        return { eligible: true, rejectionReason: 'thumbnail_card', cardType: 'image' };
+        return { eligible: true, rejectionReason: 'publishable_image_card', cardType: 'image' };
     }
     if (isVideoReel(reel)) {
         const hero = isHeroAsset(reel);

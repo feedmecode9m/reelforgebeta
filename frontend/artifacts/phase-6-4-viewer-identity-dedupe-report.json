@@ -1,0 +1,13 @@
+{
+  "phase": "PHASE-6-4-VIEWER-IDENTITY-DEDUPE",
+  "status": "IMPLEMENTATION_COMPLETE_NO_DEPLOY",
+  "before": "MP4 card + thumbnail card = duplicate",
+  "after": "one cinematic card with MP4 + thumbnail artwork",
+  "arrivalId": "03ef898a-989f-42c3-bdbb-67f37338df65",
+  "img0121Id": "img-0121-asset",
+  "categoryPatchCount": 0,
+  "titleWrites": 0,
+  "descriptionWrites": 0,
+  "fetchMutations": 0,
+  "deploy": 0
+}

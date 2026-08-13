@@ -12,6 +12,8 @@ Single source of truth for implementation vs release state. Update when a milest
 
 | Area | Status |
 |------|--------|
+| **Phase 6.5 Viewer Media Identity + Card Intelligence** | ✅ **Implementation Complete** — video-canonical discovery; IMG_/UUID artifacts suppressed; no deploy |
+| **Phase 6.4 Viewer Semantic Identity Deduplication** | ✅ **Implementation Complete** — video-canonical viewer cards; thumbnails as poster only; no deploy |
 | **Phase 6.3 MP4 Vault Full Lifecycle** | ✅ **Release Approved** — `3221dda` / Netlify `6a7d618448653896010455fe` / `index-Ck1tRQou.js` |
 | **Phase 6.3 MP4 Vault Progress Restoration** | ✅ **Release Approved** (shipped inside lifecycle release) |
 | **Smart Category NLP Phase 6 — Viewer Cinematic Card Shell** | ✅ **Implementation Complete** — audience landscape shell; no deploy; no production mutations |
@@ -205,6 +207,37 @@ Category PATCH: 0
 ```
 
 Break: `buildHomeFeed` excluded Trending videos when they were also the active hero background (`isHeroFeedCard`), emptying discovery. Fix: exclude only `category === HERO`. Vault drop of `01_ARRIVAL_OPEN_v1.mp4` → pending_accept PASS. Arrival remains in `/api/reels` as Trending video. Production smoke: Arrival featured/row ViewerSemanticCard with enrichment; hero binding preserved. Validator: `validate:phase-6-3-media-reality`.
+
+## Phase 6.5 — Viewer Media Identity + Premium Card Intelligence Repair
+
+```
+PHASE-6-5-VIEWER-MEDIA-IDENTITY
+Implementation: COMPLETE
+Release: NOT STARTED (RC PASS — stop before deploy)
+Release Process: v1.0
+Production mutations: 0
+Category PATCH: 0
+Title writes: 0
+Description writes: 0
+RC: PASS (validate:phase-6-5-release-candidate-browser + lifecycle)
+```
+
+Feed eligibility rejects IMG_/UUID/upload-artifact images unless `publishableImage` (or equivalent). Viewer title safety blanks unsafe labels. Personal thumbnail sync attaches artwork to videos instead of injecting discovery cards. Diagnostics: `[VIEWER_MEDIA_IDENTITY]`. Validator: `validate:phase-6-5-viewer-media-identity`.
+
+## Phase 6.4 — Viewer Semantic Identity Deduplication
+
+```
+PHASE-6-4-VIEWER-IDENTITY-DEDUPE
+Implementation: COMPLETE
+Release: NOT STARTED (implementation only; no deploy)
+Release Process: v1.0
+Production mutations: 0
+Category PATCH: 0
+Title writes: 0
+Description writes: 0
+```
+
+Identity-first viewer card resolution: prefer playable MP4 as canonical card; matching thumbnail/image assets become poster/fallback artwork only. Match priority: asset ID → source filename → canonical title → linked thumbnail metadata. `01 ARRIVAL OPEN v1` renders once; `Img 0121` does not create a second card. Placeholders unchanged. Validator: `validate:phase-6-4-viewer-identity-dedupe`.
 
 ---
 

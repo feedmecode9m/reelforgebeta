@@ -102,6 +102,7 @@ import {
 logDeletionPropagation,
 purgeMediaFromClientState,
 pruneFeedAgainstBackendVideos,
+videoInventoryKey,
 diagnoseStalePlaceholders,
 applyCanonicalDeleteClientEffects,
 filterOutDeletedMedia,
@@ -143,6 +144,7 @@ import {
     countRealFeedCards,
     emptyFeedMap
 } from '../lib/feed/buildHomeFeed.js';
+import { logViewerMediaIdentityDiagnostics } from '../lib/feed/viewerMediaIdentity.js';
 import {
 ALLOW_UI_PLACEHOLDERS,
 bootstrapMediaFromBackend,
@@ -1356,10 +1358,15 @@ cardCount: catalogCardCount,
 source: backendReachable ? 'syncFromVault:backend' : 'syncFromVault:localStorage',
 ts: new Date().toISOString()
 });
+logViewerMediaIdentityDiagnostics(rawData, 'syncFromVault:catalog');
+logViewerMediaIdentityDiagnostics(
+  Object.values(catalogFeed).flat().filter(Boolean),
+  'syncFromVault:buildHomeFeed'
+);
 const backendVideoUrls = new Set(
 rawData
 .filter((r) => isVideoReel(r))
-.map((r) => toRelativeMediaPath(String(r.url || r.video_url || '').split('?')[0]))
+.map((r) => videoInventoryKey(String(r.url || r.video_url || '')))
 .filter((url) => url.startsWith('/videos/'))
 );
 const { feed: prunedFeed, removed: pruneRemoved } = pruneFeedAgainstBackendVideos(catalogFeed, backendVideoUrls);

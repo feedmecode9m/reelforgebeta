@@ -1,0 +1,136 @@
+{
+  "phase": "PHASE-6-5-RELEASE-CANDIDATE",
+  "status": "PASS",
+  "frontendUrl": "http://127.0.0.1:5199",
+  "cardCount": 5,
+  "uniqueAssetIds": [
+    "03ef898a-989f-42c3-bdbb-67f37338df65",
+    "23ff2e1d-be6f-4490-aba8-1ebedd0ffb29"
+  ],
+  "cards": [
+    {
+      "assetId": "03ef898a-989f-42c3-bdbb-67f37338df65",
+      "mediaType": "video",
+      "mediaSource": "video",
+      "posterUrl": "https://strong-lolly-a9fcb4.netlify.app/thumbs/03ef898a-989f-42c3-bdbb-67f37338df65.jpg",
+      "title": "01 ARRIVAL OPEN v1",
+      "aria": "Play 01 ARRIVAL OPEN v1"
+    },
+    {
+      "assetId": "03ef898a-989f-42c3-bdbb-67f37338df65",
+      "mediaType": "video",
+      "mediaSource": "video",
+      "posterUrl": "https://strong-lolly-a9fcb4.netlify.app/thumbs/03ef898a-989f-42c3-bdbb-67f37338df65.jpg",
+      "title": "01 ARRIVAL OPEN v1",
+      "aria": "Play 01 ARRIVAL OPEN v1"
+    },
+    {
+      "assetId": "23ff2e1d-be6f-4490-aba8-1ebedd0ffb29",
+      "mediaType": "video",
+      "mediaSource": "video",
+      "posterUrl": "https://strong-lolly-a9fcb4.netlify.app/thumbs/23ff2e1d-be6f-4490-aba8-1ebedd0ffb29.jpg",
+      "title": "02 ARRIVAL THE PROJECT INTRO v1",
+      "aria": "Play 02 ARRIVAL THE PROJECT INTRO v1"
+    },
+    {
+      "assetId": "03ef898a-989f-42c3-bdbb-67f37338df65",
+      "mediaType": "video",
+      "mediaSource": "video",
+      "posterUrl": "https://strong-lolly-a9fcb4.netlify.app/thumbs/03ef898a-989f-42c3-bdbb-67f37338df65.jpg",
+      "title": "01 ARRIVAL OPEN v1",
+      "aria": "Play 01 ARRIVAL OPEN v1"
+    },
+    {
+      "assetId": "23ff2e1d-be6f-4490-aba8-1ebedd0ffb29",
+      "mediaType": "video",
+      "mediaSource": "video",
+      "posterUrl": "https://strong-lolly-a9fcb4.netlify.app/thumbs/23ff2e1d-be6f-4490-aba8-1ebedd0ffb29.jpg",
+      "title": "02 ARRIVAL THE PROJECT INTRO v1",
+      "aria": "Play 02 ARRIVAL THE PROJECT INTRO v1"
+    }
+  ],
+  "arrivalOpenDomInstances": 3,
+  "arrivalOpenUniqueIdentities": 1,
+  "img0121Cards": 0,
+  "suppressedArtifacts": [
+    {
+      "assetId": "caa1a16f-be03-4c2b-9840-9fce9a809c00",
+      "title": "IMG_0121.JPEG",
+      "reason": "suppressed_artifact:camera_img_name",
+      "mediaUrl": "https://strong-lolly-a9fcb4.netlify.app/thumbs/caa1a16f-be03-4c2b-9840-9fce9a809c00.jpeg"
+    },
+    {
+      "assetId": "e1f08f0f-954f-4c39-848b-9f3fc72b5d02",
+      "title": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+      "reason": "suppressed_artifact:uuid_filename",
+      "mediaUrl": "https://strong-lolly-a9fcb4.netlify.app/thumbs/e1f08f0f-954f-4c39-848b-9f3fc72b5d02.png"
+    }
+  ],
+  "diagnostics": {
+    "canonicalVideos": 2,
+    "publishableImages": 0,
+    "suppressedImageArtifacts": 2,
+    "missingIdentityLinks": 2,
+    "attachedPosters": 0,
+    "rows": [
+      {
+        "role": "canonical",
+        "kind": "video",
+        "assetId": "23ff2e1d-be6f-4490-aba8-1ebedd0ffb29",
+        "title": "02 ARRIVAL THE PROJECT INTRO v1",
+        "posterUrl": "https://strong-lolly-a9fcb4.netlify.app/thumbs/23ff2e1d-be6f-4490-aba8-1ebedd0ffb29.jpg",
+        "attachedPosterId": ""
+      },
+      {
+        "role": "canonical",
+        "kind": "video",
+        "assetId": "03ef898a-989f-42c3-bdbb-67f37338df65",
+        "title": "01 ARRIVAL OPEN v1",
+        "posterUrl": "https://strong-lolly-a9fcb4.netlify.app/thumbs/03ef898a-989f-42c3-bdbb-67f37338df65.jpg",
+        "attachedPosterId": ""
+      },
+      {
+        "role": "suppressed",
+        "kind": "image",
+        "assetId": "caa1a16f-be03-4c2b-9840-9fce9a809c00",
+        "title": "IMG_0121.JPEG",
+        "reason": "suppressed_artifact:camera_img_name",
+        "mediaUrl": "https://strong-lolly-a9fcb4.netlify.app/thumbs/caa1a16f-be03-4c2b-9840-9fce9a809c00.jpeg"
+      },
+      {
+        "role": "suppressed",
+        "kind": "image",
+        "assetId": "e1f08f0f-954f-4c39-848b-9f3fc72b5d02",
+        "title": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+        "reason": "suppressed_artifact:uuid_filename",
+        "mediaUrl": "https://strong-lolly-a9fcb4.netlify.app/thumbs/e1f08f0f-954f-4c39-848b-9f3fc72b5d02.png"
+      }
+    ]
+  },
+  "identityLogs": [
+    "[VIEWER_MEDIA_IDENTITY] {stage: syncFromVault:catalog, canonicalVideos: 2, publishableImages: 0, suppressedImageArtifacts: 2, missingIdentityLinks: 2}",
+    "[VIEWER_MEDIA_IDENTITY] {stage: syncFromVault:buildHomeFeed, canonicalVideos: 2, publishableImages: 0, suppressedImageArtifacts: 0, missingIdentityLinks: 0}",
+    "[VIEWER_MEDIA_IDENTITY] {stage: ReelshortExperience:feed, canonicalVideos: 2, publishableImages: 0, suppressedImageArtifacts: 0, missingIdentityLinks: 0}",
+    "[VIEWER_MEDIA_IDENTITY] {stage: ReelshortExperience:feed, canonicalVideos: 2, publishableImages: 0, suppressedImageArtifacts: 0, missingIdentityLinks: 0}",
+    "[VIEWER_MEDIA_IDENTITY] {stage: ReelshortExperience:feed, canonicalVideos: 2, publishableImages: 0, suppressedImageArtifacts: 0, missingIdentityLinks: 0}"
+  ],
+  "mutations": {
+    "categoryPatch": 0,
+    "titleWrites": 0,
+    "descriptionWrites": 0,
+    "catalogWrites": 0
+  },
+  "screenshot": "frontend/artifacts/phase-6-5-rc-viewer.png",
+  "uploadLifecycle": "PASS",
+  "deploy": 0,
+  "uploadLifecycleProof": "validate:phase-6-3-mp4-vault-lifecycle-browser → PHASE-6.3 VERIFIED",
+  "gates": {
+    "build": "PASS",
+    "validate:phase-6-5-viewer-media-identity": "PASS",
+    "validate:phase-6-4-viewer-identity-dedupe": "PASS",
+    "validate:phase-6-viewer-cinematic-cards": "PASS",
+    "validate:phase-6-5-release-candidate-browser": "PASS",
+    "validate:phase-6-3-mp4-vault-lifecycle-browser": "PASS"
+  },
+  "verdict": "PHASE-6.5 RC PASS — STOP BEFORE DEPLOY"
+}
