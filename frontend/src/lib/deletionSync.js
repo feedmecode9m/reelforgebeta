@@ -3,7 +3,7 @@ import { toRelativeMediaPath } from './config.js';
 import { filenameFromMediaRef } from './vaultMedia.js';
 
 /** Canonical `/videos/...` key for backend/feed URL comparison. */
-function videoInventoryKey(url) {
+export function videoInventoryKey(url) {
     const relative = toRelativeMediaPath(String(url || '').split('?')[0]);
     if (!relative.startsWith('/videos/')) return relative;
     return relative;
