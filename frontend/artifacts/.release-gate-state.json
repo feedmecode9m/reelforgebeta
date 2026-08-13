@@ -1,0 +1,53 @@
+{
+  "milestone": "PHASE-6-3-MEDIA-REALITY",
+  "started_at": "2026-08-13T05:26:19Z",
+  "netlify_url": "https://strong-lolly-a9fcb4.netlify.app",
+  "railway_url": "https://reelforge-deploy-production.up.railway.app",
+  "gates": {
+    "1_build": {
+      "status": "PASS",
+      "at": "2026-08-13T05:26:27.524Z",
+      "bundle_hash": "index-Bqpzdk75.js"
+    },
+    "2_credentials": {
+      "status": "PASS",
+      "at": "2026-08-13T05:26:28.175Z"
+    },
+    "3_deploy": {
+      "status": "PASS",
+      "at": "2026-08-13T05:26:47.772Z",
+      "deployment_id": ""
+    },
+    "4_bundle_verification": {
+      "status": "PASS",
+      "at": "2026-08-13T05:26:48.376Z",
+      "bundle_hash": "index-Bqpzdk75.js",
+      "previous_bundle": "index-B_skNQ2_.js"
+    },
+    "5_production_smoke": {
+      "status": "PASS",
+      "at": "2026-08-13T05:27:50.794Z"
+    },
+    "6_regression": {
+      "status": "PASS",
+      "at": "2026-08-13T05:30:56.330Z"
+    },
+    "7_release_signoff": {
+      "status": "PASS",
+      "at": "2026-08-13T05:30:56.373Z",
+      "report_expected": "frontend/PHASE-6-3-MEDIA-REALITY_DEPLOYMENT_SIGNOFF.md"
+    }
+  },
+  "verdict": "RELEASE APPROVED",
+  "rollback": {
+    "required": false,
+    "frontend_bundle": "index-DTJehS3d.js",
+    "backend_commit": "c2dcc5dc439145bbf2a3a27375916902ab027616",
+    "backend_commit_short": "1094823",
+    "railway_deployment_id": null,
+    "netlify_deploy": null,
+    "netlify_url": "https://strong-lolly-a9fcb4.netlify.app",
+    "captured_at": "2026-08-13T05:26:27.914Z",
+    "notes": "Documentation only — not an automatic rollback. Redeploy previous bundle via Netlify if required."
+  }
+}

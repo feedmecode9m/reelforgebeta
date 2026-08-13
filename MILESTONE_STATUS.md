@@ -192,13 +192,17 @@ Sync enrichment via `semanticCardIntelligence.enrichSemanticCard` → `viewerSem
 ```
 SMART-CATEGORY-NLP-P6-3-MEDIA-REALITY
 Implementation: COMPLETE
-Release: N/A (no deploy; local validators + browser evidence)
+Release: APPROVED
 Release Process: v1.0
+Commit: c2dcc5dc439145bbf2a3a27375916902ab027616
+Manifest: release-manifest-phase-6-3-media-reality-1786599057646.json
+Netlify deploy: 6a7d558fe1840b22b3b03f77
+Bundle: index-Bqpzdk75.js
 Production mutations: 0
 Category PATCH: 0
 ```
 
-Break: `buildHomeFeed` excluded Trending videos when they were also the active hero background (`isHeroFeedCard`), emptying discovery. Fix: exclude only `category === HERO`. Vault drop of `01_ARRIVAL_OPEN_v1.mp4` → pending_accept PASS. Arrival remains in `/api/reels` as Trending video. Validator: `validate:phase-6-3-media-reality`.
+Break: `buildHomeFeed` excluded Trending videos when they were also the active hero background (`isHeroFeedCard`), emptying discovery. Fix: exclude only `category === HERO`. Vault drop of `01_ARRIVAL_OPEN_v1.mp4` → pending_accept PASS. Arrival remains in `/api/reels` as Trending video. Production smoke: Arrival featured/row ViewerSemanticCard with enrichment; hero binding preserved. Validator: `validate:phase-6-3-media-reality`.
 
 ---
 

@@ -1,0 +1,230 @@
+{
+  "site": "https://strong-lolly-a9fcb4.netlify.app",
+  "steps": [
+    {
+      "s": "production bundle is Phase 6.3",
+      "ok": true,
+      "bundle": "https://strong-lolly-a9fcb4.netlify.app/assets/index-Bqpzdk75.js"
+    },
+    {
+      "s": "Arrival still in catalog as video/Trending",
+      "ok": true,
+      "id": "03ef898a-989f-42c3-bdbb-67f37338df65",
+      "type": "video",
+      "category": "Trending",
+      "url": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb-67f37338df65.mp4",
+      "thumb": "https://strong-lolly-a9fcb4.netlify.app/thumbs/03ef898a-989f-42c3-bdbb-67f37338df65.jpg"
+    },
+    {
+      "s": "cinematic feed marker present",
+      "ok": true
+    },
+    {
+      "s": "ViewerSemanticCard renders",
+      "ok": true,
+      "cardCount": 2
+    },
+    {
+      "s": "Arrival on Trending shelf/feed",
+      "ok": true,
+      "trending": [
+        {
+          "id": "03ef898a-989f-42c3-bdbb-67f37338df65",
+          "type": "video",
+          "title": "01 ARRIVAL OPEN v1"
+        }
+      ]
+    },
+    {
+      "s": "Arrival ViewerSemanticCard present",
+      "ok": true,
+      "arrivalCards": [
+        {
+          "id": "03ef898a-989f-42c3-bdbb-67f37338df65",
+          "variant": "featured",
+          "mediaType": "video",
+          "title": "01 ARRIVAL OPEN v1",
+          "shelf": "Trending",
+          "mood": "studio",
+          "badges": [
+            "Production",
+            "Widescreen"
+          ],
+          "themes": [
+            "production"
+          ],
+          "hasImg": true,
+          "hasVideo": false
+        },
+        {
+          "id": "03ef898a-989f-42c3-bdbb-67f37338df65",
+          "variant": "row",
+          "mediaType": "video",
+          "title": "01 ARRIVAL OPEN v1",
+          "shelf": "Trending",
+          "mood": "studio",
+          "badges": [
+            "Production",
+            "Widescreen"
+          ],
+          "themes": [
+            "production"
+          ],
+          "hasImg": true,
+          "hasVideo": false
+        }
+      ]
+    },
+    {
+      "s": "semantic enrichment visible (mood/badges/themes)",
+      "ok": true,
+      "id": "03ef898a-989f-42c3-bdbb-67f37338df65",
+      "variant": "featured",
+      "mediaType": "video",
+      "title": "01 ARRIVAL OPEN v1",
+      "shelf": "Trending",
+      "mood": "studio",
+      "badges": [
+        "Production",
+        "Widescreen"
+      ],
+      "themes": [
+        "production"
+      ],
+      "hasImg": true,
+      "hasVideo": false
+    },
+    {
+      "s": "hero still bound to Arrival",
+      "ok": true,
+      "heroAssetId": "03ef898a-989f-42c3-bdbb-67f37338df65",
+      "backgroundSource": "custom_video"
+    },
+    {
+      "s": "no fatal page errors",
+      "ok": true,
+      "errors": [
+        "WebSocket connection to 'wss://strong-lolly-a9fcb4.netlify.app/ws/control-center' failed: Error during WebSocket handshake: Unexpected response code: 400"
+      ],
+      "note": "ignored anonymous 401 + control-center WS noise on public viewer"
+    }
+  ],
+  "failures": [],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 401 ()",
+    "Failed to load resource: the server responded with a status of 401 ()",
+    "WebSocket connection to 'wss://strong-lolly-a9fcb4.netlify.app/ws/control-center' failed: Error during WebSocket handshake: Unexpected response code: 400",
+    "Failed to load resource: the server responded with a status of 401 ()",
+    "Failed to load resource: the server responded with a status of 401 ()",
+    "Failed to load resource: the server responded with a status of 401 ()",
+    "Failed to load resource: the server responded with a status of 401 ()",
+    "Failed to load resource: the server responded with a status of 401 ()"
+  ],
+  "result": "PASS",
+  "snap": {
+    "bundle": "https://strong-lolly-a9fcb4.netlify.app/assets/index-Bqpzdk75.js",
+    "arrivalCatalog": {
+      "id": "03ef898a-989f-42c3-bdbb-67f37338df65",
+      "type": "video",
+      "category": "Trending",
+      "url": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb-67f37338df65.mp4",
+      "thumb": "https://strong-lolly-a9fcb4.netlify.app/thumbs/03ef898a-989f-42c3-bdbb-67f37338df65.jpg"
+    },
+    "trending": [
+      {
+        "id": "03ef898a-989f-42c3-bdbb-67f37338df65",
+        "type": "video",
+        "title": "01 ARRIVAL OPEN v1"
+      }
+    ],
+    "arrivalInTrending": true,
+    "cards": [
+      {
+        "id": "03ef898a-989f-42c3-bdbb-67f37338df65",
+        "variant": "featured",
+        "mediaType": "video",
+        "title": "01 ARRIVAL OPEN v1",
+        "shelf": "Trending",
+        "mood": "studio",
+        "badges": [
+          "Production",
+          "Widescreen"
+        ],
+        "themes": [
+          "production"
+        ],
+        "hasImg": true,
+        "hasVideo": false
+      },
+      {
+        "id": "03ef898a-989f-42c3-bdbb-67f37338df65",
+        "variant": "row",
+        "mediaType": "video",
+        "title": "01 ARRIVAL OPEN v1",
+        "shelf": "Trending",
+        "mood": "studio",
+        "badges": [
+          "Production",
+          "Widescreen"
+        ],
+        "themes": [
+          "production"
+        ],
+        "hasImg": true,
+        "hasVideo": false
+      }
+    ],
+    "arrivalCards": [
+      {
+        "id": "03ef898a-989f-42c3-bdbb-67f37338df65",
+        "variant": "featured",
+        "mediaType": "video",
+        "title": "01 ARRIVAL OPEN v1",
+        "shelf": "Trending",
+        "mood": "studio",
+        "badges": [
+          "Production",
+          "Widescreen"
+        ],
+        "themes": [
+          "production"
+        ],
+        "hasImg": true,
+        "hasVideo": false
+      },
+      {
+        "id": "03ef898a-989f-42c3-bdbb-67f37338df65",
+        "variant": "row",
+        "mediaType": "video",
+        "title": "01 ARRIVAL OPEN v1",
+        "shelf": "Trending",
+        "mood": "studio",
+        "badges": [
+          "Production",
+          "Widescreen"
+        ],
+        "themes": [
+          "production"
+        ],
+        "hasImg": true,
+        "hasVideo": false
+      }
+    ],
+    "cinematic": true,
+    "heroAssetId": "03ef898a-989f-42c3-bdbb-67f37338df65",
+    "heroBackgroundSource": "custom_video",
+    "heroVideoSrc": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb-67f37338df65.mp4"
+  },
+  "screenshot": "frontend/artifacts/phase-6-3-production-smoke.png",
+  "consoleErrorsBlocking": [],
+  "consoleErrorsKnownNoise": [
+    "Failed to load resource: the server responded with a status of 401 ()",
+    "Failed to load resource: the server responded with a status of 401 ()",
+    "WebSocket connection to 'wss://strong-lolly-a9fcb4.netlify.app/ws/control-center' failed: Error during WebSocket handshake: Unexpected response code: 400",
+    "Failed to load resource: the server responded with a status of 401 ()",
+    "Failed to load resource: the server responded with a status of 401 ()",
+    "Failed to load resource: the server responded with a status of 401 ()",
+    "Failed to load resource: the server responded with a status of 401 ()",
+    "Failed to load resource: the server responded with a status of 401 ()"
+  ]
+}
