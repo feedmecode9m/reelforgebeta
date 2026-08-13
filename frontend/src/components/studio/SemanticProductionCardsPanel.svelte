@@ -9,16 +9,18 @@
   import {
     PHASE4_EXACT_MEDIA_IDENTITY
   } from '../../lib/feed/identityBackedEditorialReview.js';
-  import {
-    persistCreatorCategoryChoice,
-    CREATOR_SHELF_OPTIONS
-  } from '../../lib/feed/categorySuggestionReview.js';
+  import { persistCreatorCategoryChoice } from '../../lib/feed/categorySuggestionReview.js';
+  import { creatorShelfChoices } from '../../lib/feed/creatorPresentationControl.js';
+  import { describeDiscoveryTaxonomy } from '../../lib/feed/discoveryTaxonomy.js';
   import SemanticProductionCard from './SemanticProductionCard.svelte';
 
   export let authHeaders = () => ({});
   export let onCategoryPersisted = () => {};
   /** Safety: default false — panel may opt in after explicit creator action */
   export let allowPersist = false;
+
+  const shelfOptions = [...creatorShelfChoices()];
+  const taxonomy = describeDiscoveryTaxonomy();
 
   let busy = false;
   let error = '';
@@ -108,16 +110,20 @@
 >
   <div class="sem-panel__header">
     <div>
-      <p class="sem-panel__eyebrow">ReelForge intelligence</p>
-      <h4 class="sem-panel__title">Semantic production cards</h4>
+      <p class="sem-panel__eyebrow">ReelForge premium media</p>
+      <h4 class="sem-panel__title">Semantic production experience</h4>
     </div>
     <button type="button" class="sem-panel__refresh" disabled={busy} on:click|stopPropagation={() => load()}>
       {busy ? 'Loading…' : 'Refresh'}
     </button>
   </div>
   <p class="sem-panel__note">
-    NLP recommends. Human decides. Cards use ReelForge metadata only — no external platform branding,
-    no invented titles, no automatic category writes.
+    NLP recommends. Human decides. Cinematic cards use ReelForge identity + metadata only —
+    themes shape presentation, never shelves. No invented titles, no automatic category writes.
+  </p>
+  <p class="sem-panel__meta" data-sem-taxonomy>
+    Active shelves {taxonomy.active.join(' · ')}
+    · Future taxonomy reserved ({taxonomy.future.length})
   </p>
 
   {#if error}
@@ -142,7 +148,8 @@
     {#each profiles as profile (profile.identity)}
       <SemanticProductionCard
         {profile}
-        shelfOptions={CREATOR_SHELF_OPTIONS}
+        {shelfOptions}
+        showCreatorControl={true}
         onManualCategory={(category) => applyManual(profile, category)}
       />
     {/each}
@@ -210,8 +217,13 @@
   }
   .sem-panel__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 0.85rem;
-    margin-top: 0.75rem;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+    margin-top: 0.85rem;
+  }
+  @media (max-width: 640px) {
+    .sem-panel__grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

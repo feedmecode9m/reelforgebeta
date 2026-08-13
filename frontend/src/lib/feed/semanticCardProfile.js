@@ -1,8 +1,8 @@
 /**
- * Semantic Card Profile — presentation derivation from existing ReelForge data.
+ * Premium Semantic Media Profile — presentation derivation from ReelForge data.
  *
- * Separates shelf category from semantic identity (themes / contentType).
- * Does NOT invent titles, descriptions, or categories.
+ * Separates shelf category from semantic identity (themes / mood / contentType).
+ * Does NOT invent titles, descriptions, genres, creators, or categories.
  * Does NOT persist — in-memory / derived only.
  */
 
@@ -21,6 +21,9 @@ import {
 import { hydrateCatalogItemWithCreatorMetadata } from './creatorCatalogMetadata.js';
 import { extractSemanticThemes } from './semanticThemeSignals.js';
 import { getExactMediaIdentity } from './identityBackedEditorialReview.js';
+import { derivePresentationTheme } from './presentationThemeSystem.js';
+import { normalizeActiveShelf } from './discoveryTaxonomy.js';
+import { buildCreatorPresentationDraft } from './creatorPresentationControl.js';
 
 /**
  * Lightweight media-kind checks — avoid reelContract/config so profile
@@ -61,6 +64,20 @@ function text(value) {
 function numOrNull(value) {
     const n = Number(value);
     return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+/**
+ * @param {unknown} value
+ * @returns {string[]}
+ */
+function stringList(value) {
+    if (Array.isArray(value)) return value.map((v) => text(v)).filter(Boolean);
+    const raw = text(value);
+    if (!raw) return [];
+    return raw
+        .split(/[,|;]/)
+        .map((s) => s.trim())
+        .filter(Boolean);
 }
 
 /**
@@ -153,10 +170,10 @@ export function humanHandoffLabel(mode) {
 }
 
 /**
- * Build a Semantic Card Profile from an existing catalog/feed asset.
+ * Build a Premium Semantic Media Profile from an existing catalog/feed asset.
  *
  * @param {Record<string, unknown>} asset
- * @param {{ storage?: unknown; nlpProvider?: Function }} [options]
+ * @param {{ storage?: unknown; nlpProvider?: Function; allowPersist?: boolean }} [options]
  */
 export async function buildSemanticCardProfile(asset, options = {}) {
     const row = asset && typeof asset === 'object' ? { ...asset } : {};
@@ -210,7 +227,9 @@ export async function buildSemanticCardProfile(asset, options = {}) {
         ? text(forClassify.url || forClassify.video_url)
         : '';
     const mediaStatus = text(forClassify.status) || (id ? 'unknown' : 'missing');
-    const category = text(forClassify.category || classification.primaryCategory || 'Trending') || 'Trending';
+    const rawCategory =
+        text(forClassify.category || classification.primaryCategory || 'Trending') || 'Trending';
+    const category = normalizeActiveShelf(rawCategory) || rawCategory;
     const handoffMode = deriveHumanHandoffMode(
         statePack.classificationState,
         classification.confidenceBand || ''
@@ -232,39 +251,86 @@ export async function buildSemanticCardProfile(asset, options = {}) {
         (isVideoAsset(forClassify) || /\.mp4($|\?)/i.test(mediaUrl)) &&
         persistGate.ok;
 
-    return {
-        identity: id,
-        canonicalTitle,
-        description: text(gathered.description),
-        category,
-        contentType: themePack.contentType,
-        series: text(gathered.seriesTitle || gathered.seriesName),
-        episode: text(gathered.episodeTitle),
+    const description = text(gathered.description);
+    const tagline = text(
+        forClassify.tagline || forClassify.subtitle || forClassify.hook || ''
+    );
+    const keywords = stringList(
+        gathered.tags?.length ? gathered.tags : forClassify.keywords || forClassify.tags
+    );
+    const creatorNotes = text(
+        forClassify.creatorNotes || forClassify.notes || forClassify.productionNotes || ''
+    );
+    const productionContext = text(
+        forClassify.productionContext ||
+            [themePack.locationHints.join(', '), themePack.contentType !== 'unknown' ? themePack.contentType : '']
+                .filter(Boolean)
+                .join(' · ')
+    );
+    const creator = text(
+        forClassify.creator ||
+            forClassify.creatorName ||
+            forClassify.author ||
+            forClassify.ownerName ||
+            ''
+    );
+
+    const presentation = derivePresentationTheme({
         themes: themePack.themes,
-        locationHints: themePack.locationHints,
+        contentType: themePack.contentType,
+        suggestedCategory: text(classification.suggestedCategory || ''),
+        aspectRatio: mediaFields.aspectRatio,
+        hasDescription: Boolean(description),
+        identityConfidence: identity?.identityConfidence || ''
+    });
+
+    const semanticConfidence = Number(
+        classification.suggestedConfidence != null
+            ? classification.suggestedConfidence
+            : classification.confidence
+    );
+
+    const profile = {
+        // ── Identity ──────────────────────────────────────────
+        identity: id,
+        assetId: id,
+        canonicalTitle,
+        title: canonicalTitle,
+        episode: text(gathered.episodeTitle),
+        series: text(gathered.seriesTitle || gathered.seriesName),
+        creator,
+
+        // ── Media ─────────────────────────────────────────────
         duration: mediaFields.durationSec,
         durationLabel: formatDurationLabel(mediaFields.durationSec),
         aspectRatio: mediaFields.aspectRatio,
         resolution: mediaFields.resolution,
-        mediaStatus,
         artworkUrl: artwork,
+        thumbnail: artwork,
         mediaUrl,
-        editorialSignals: [
-            ...themePack.editorialSignals,
-            ...(Array.isArray(classification.signals)
-                ? classification.signals.map(String).slice(0, 8)
-                : [])
-        ],
-        semanticConfidence: Number(
-            classification.suggestedConfidence != null
-                ? classification.suggestedConfidence
-                : classification.confidence
-        ),
+        mediaStatus,
+        playbackState: text(forClassify.playbackState || forClassify.playState || '') || mediaStatus,
+
+        // ── Editorial (empty when missing — never invented) ───
+        description,
+        tagline,
+        keywords,
+        creatorNotes,
+        productionContext,
+
+        // ── Classification ────────────────────────────────────
+        category,
+        shelfCategory: category,
+        shelf: category,
+        themes: themePack.themes,
+        contentType: themePack.contentType,
+        mood: themePack.mood,
+        audience: themePack.audience,
+        locationHints: themePack.locationHints,
+        semanticConfidence,
         confidenceBand: String(classification.confidenceBand || ''),
         confidenceLabel: formatSuggestionConfidence(
-            classification.suggestedConfidence != null
-                ? classification.suggestedConfidence
-                : classification.confidence,
+            semanticConfidence,
             classification.confidenceBand
         ),
         suggestedCategory: text(classification.suggestedCategory || ''),
@@ -274,28 +340,58 @@ export async function buildSemanticCardProfile(asset, options = {}) {
         shelfFitReason: statePack.shelfFitReason,
         handoffMode,
         handoffLabel: humanHandoffLabel(handoffMode),
+        humanDecisionState: handoffMode,
+
+        // ── Presentation ──────────────────────────────────────
+        presentation,
+        cardVariant: presentation.cardVariant,
+        cinematicTreatment: presentation.family,
+        badges: presentation.badges,
+        visualEmphasis: presentation.visualEmphasis,
+        animationBehavior: presentation.animation,
+        presentationFamily: presentation.family,
+        presentationCssClass: presentation.cssClass,
+
+        // ── Safety / provenance ───────────────────────────────
+        editorialSignals: [
+            ...themePack.editorialSignals,
+            ...(Array.isArray(classification.signals)
+                ? classification.signals.map(String).slice(0, 8)
+                : [])
+        ],
         creatorLocked,
         isPlaceholder,
         isRealProductionVideo,
         identityConfidence: identity?.identityConfidence || '',
         matchedLocalFile: identity?.matchedLocalFiles?.[0] || '',
-        canAppearAsCard: isRealProductionVideo || (!isPlaceholder && Boolean(id)),
-        // Shelf category stays independent from semantic themes
-        shelfCategory: category
+        canAppearAsCard: isRealProductionVideo || (!isPlaceholder && Boolean(id))
     };
+
+    profile.creatorControl = buildCreatorPresentationDraft(profile, {
+        allowPersist: Boolean(options.allowPersist)
+    });
+
+    return profile;
 }
 
 /**
  * Build profiles for a catalog list (presentation only).
+ * Dedupes by identity — no duplicate cards.
  * @param {Array<Record<string, unknown>>} catalog
- * @param {{ storage?: unknown }} [options]
+ * @param {{ storage?: unknown; allowPersist?: boolean }} [options]
  */
 export async function buildSemanticCardProfiles(catalog, options = {}) {
     const rows = Array.isArray(catalog) ? catalog : [];
     /** @type {Awaited<ReturnType<typeof buildSemanticCardProfile>>[]} */
     const profiles = [];
+    /** @type {Set<string>} */
+    const seen = new Set();
     for (const row of rows) {
-        profiles.push(await buildSemanticCardProfile(row, options));
+        const profile = await buildSemanticCardProfile(row, options);
+        const key = String(profile.identity || '');
+        if (key && seen.has(key)) continue;
+        if (key) seen.add(key);
+        profiles.push(profile);
     }
     return profiles;
 }

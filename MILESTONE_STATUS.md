@@ -12,7 +12,8 @@ Single source of truth for implementation vs release state. Update when a milest
 
 | Area | Status |
 |------|--------|
-| **Smart Category NLP Phase 4 — Semantic Card System** | ✅ **Implementation Complete** — premium cards + human handoff; no deploy; no production mutations |
+| **Smart Category NLP Phase 5 — Premium Semantic Media** | ✅ **Implementation Complete** — cinematic cards + expandable taxonomy; no deploy; no production mutations |
+| **Smart Category NLP Phase 4 — Semantic Card System** | ✅ **Release Approved** — `881c428` / Netlify `6a7d3d5d254af585dddec345` / `index-GHjzxDYw.js` |
 | **Smart Category NLP Phase 4 (real editorial verification)** | 🚧 **Blocked** — EXACT identity ready; waiting for coworker authoritative title/description; no production edits |
 | **Smart Category NLP Phase 3C (canonical title → NLP re-eval)** | ✅ **Implementation Complete** — creator workflow; Case F UI; no auto-PATCH; no deploy |
 | **Smart Category NLP Phase 3B (editorial context eval)** | ✅ **Implementation Complete** — read-only; Case F documented; no deploy/PATCH |
@@ -132,19 +133,29 @@ Identity-backed review layer: `identityBackedEditorialReview.js` + Studio `Ident
 ```
 SMART-CATEGORY-NLP-P4-SEMANTIC-CARDS
 Implementation: COMPLETE
-Release: N/A (no deploy; local validators + Chromium smoke only)
+Release: APPROVED
 Release Process: v1.0
+Commit: 881c4289dc42180a0d0283d17789ab288ec2f693
+Manifest: release-manifest-phase-4-semantic-cards-1786592923180.json
+Netlify deploy: 6a7d3d5d254af585dddec345
+Bundle: index-GHjzxDYw.js
 Production mutations: 0 (category PATCH / title / description / backfill / rename = 0)
+Live cards at release: 1 (Arrival); identity registry gaps reported: 5 (no invented cards)
 ```
 
-Principle: NLP recommends · Human decides · Ecosystem metadata drives the card. Coworker editorial list is **not** an architectural prerequisite.
+Principle: NLP recommends · Human decides · Ecosystem metadata drives the card. HERO excluded from discovery shelves. Validators: `validate:phase-4-semantic-cards`, `validate:phase-4-semantic-cards-browser`.
 
-- `semanticThemeSignals.js` + `semanticCardProfile.js` — shelf category separate from themes/contentType; derived presentation only
-- `SemanticProductionCard.svelte` + `SemanticProductionCardsPanel.svelte` — ReelForge-owned premium cards; `allowPersist={false}` in Studio
-- `buildHomeFeed.js` — HERO stage assets excluded from discovery shelves (`hero_stage_not_discovery_shelf`)
-- Validators: `validate:phase-4-semantic-cards`, `validate:phase-4-semantic-cards-browser`
+## Smart Category NLP — Phase 5 Premium Semantic Media Experience
 
-**Card-population root cause:** (1) live `/api/reels` may omit a subset of the six EXACT identities (catalog gap — reported, not invented); (2) HERO test videos previously inflated Trending; (3) Studio inventory was list-row, not a semantic card layer. Fixture/browser path proves all six reach card render when present in catalog.
+```
+SMART-CATEGORY-NLP-P5-PREMIUM-MEDIA
+Implementation: COMPLETE
+Release: N/A (no deploy; local validators + architecture only)
+Release Process: v1.0
+Production mutations: 0
+```
+
+Premium Semantic Media Profile expands Phase 4 cards with identity/media/editorial/classification/presentation sections. Presentation themes (production/drama/action/technology) are visual-only. `discoveryTaxonomy` registers future shelves without activating them. Creator control draft is AI-suggested / human-gated (`allowPersist=false`). Architecture: `frontend/artifacts/PHASE_5_PREMIUM_SEMANTIC_MEDIA_ARCHITECTURE.md`. Validator: `validate:phase-5-premium-semantic-media`.
 
 ---
 

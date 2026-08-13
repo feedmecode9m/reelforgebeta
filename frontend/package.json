@@ -79,6 +79,7 @@
     "validate:phase-4-identity-backed-browser": "node scripts/validate-phase-4-identity-backed-browser.mjs",
     "validate:phase-4-semantic-cards": "node scripts/validate-phase-4-semantic-cards.mjs",
     "validate:phase-4-semantic-cards-browser": "node scripts/validate-phase-4-semantic-cards-browser.mjs",
+    "validate:phase-5-premium-semantic-media": "node scripts/validate-phase-5-premium-semantic-media.mjs",
     "mission:phase-3a-production-audit": "node scripts/mission-phase-3a-production-audit.mjs",
     "validate:catalog-metadata-enrichment": "node scripts/validate-catalog-metadata-enrichment.mjs",
     "validate:creator-metadata-authoring": "node scripts/validate-creator-metadata-authoring.mjs",
