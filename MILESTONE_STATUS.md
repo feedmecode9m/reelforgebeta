@@ -12,7 +12,8 @@ Single source of truth for implementation vs release state. Update when a milest
 
 | Area | Status |
 |------|--------|
-| **Smart Category NLP Phase 5 — Premium Semantic Media** | ✅ **Implementation Complete** — cinematic cards + expandable taxonomy; no deploy; no production mutations |
+| **Smart Category NLP Phase 6 — Viewer Cinematic Card Shell** | ✅ **Implementation Complete** — audience landscape shell; no deploy; no production mutations |
+| **Smart Category NLP Phase 5 — Premium Semantic Media** | ✅ **Preview Released** — `1094823` / Netlify `6a7d447faa2fdce73c4c1e79` / `index-DTJehS3d.js` (persist gated; future shelves reserved) |
 | **Smart Category NLP Phase 4 — Semantic Card System** | ✅ **Release Approved** — `881c428` / Netlify `6a7d3d5d254af585dddec345` / `index-GHjzxDYw.js` |
 | **Smart Category NLP Phase 4 (real editorial verification)** | 🚧 **Blocked** — EXACT identity ready; waiting for coworker authoritative title/description; no production edits |
 | **Smart Category NLP Phase 3C (canonical title → NLP re-eval)** | ✅ **Implementation Complete** — creator workflow; Case F UI; no auto-PATCH; no deploy |
@@ -150,12 +151,54 @@ Principle: NLP recommends · Human decides · Ecosystem metadata drives the card
 ```
 SMART-CATEGORY-NLP-P5-PREMIUM-MEDIA
 Implementation: COMPLETE
-Release: N/A (no deploy; local validators + architecture only)
+Release: PREVIEW APPROVED
+Release Process: v1.0
+Commit: 109482312b36c77a3bfa8828ca6593d7215e0d31
+Manifest: release-manifest-phase-5-premium-media-preview-1786594708098.json
+Netlify deploy: 6a7d447faa2fdce73c4c1e79
+Bundle: index-DTJehS3d.js
+Production mutations: 0
+Persist: gated (allowPersist=false)
+Future shelves: reserved only (not activated)
+```
+
+## Smart Category NLP — Phase 6 Viewer Cinematic Card Shell
+
+```
+SMART-CATEGORY-NLP-P6-VIEWER-CINEMATIC
+Implementation: COMPLETE
+Release: N/A (no deploy; local validators + browser preview only)
 Release Process: v1.0
 Production mutations: 0
 ```
 
-Premium Semantic Media Profile expands Phase 4 cards with identity/media/editorial/classification/presentation sections. Presentation themes (production/drama/action/technology) are visual-only. `discoveryTaxonomy` registers future shelves without activating them. Creator control draft is AI-suggested / human-gated (`allowPersist=false`). Architecture: `frontend/artifacts/PHASE_5_PREMIUM_SEMANTIC_MEDIA_ARCHITECTURE.md`. Validator: `validate:phase-5-premium-semantic-media`.
+Audience-facing `ViewerSemanticCard` + shared cinematic tokens. Featured / discovery-row / browse-grid layouts in `ReelshortExperience`. Reuses `viewerSemanticShell` → themes + presentationThemeSystem (presentation only). Landscape 16:9 media centerpiece. Validators: `validate:phase-6-viewer-cinematic-cards`, `validate:phase-6-viewer-cinematic-cards-browser`.
+
+## Smart Category NLP — Phase 6.2 Semantic Premium Card Intelligence
+
+```
+SMART-CATEGORY-NLP-P6-2-CARD-INTELLIGENCE
+Implementation: COMPLETE
+Release: N/A (no deploy; local validators only)
+Release Process: v1.0
+Production mutations: 0
+Category PATCH: 0
+```
+
+Sync enrichment via `semanticCardIntelligence.enrichSemanticCard` → `viewerSemanticShell` → `ViewerSemanticCard` (badges, title overlay, hierarchy, empty states). Themes/mood/audience/presentation only — never invents copy or writes shelves. Studio persist remains gated. Validator: `validate:phase-6-2-semantic-card-intelligence`.
+
+## Smart Category NLP — Phase 6.3 Real Media Card Pipeline
+
+```
+SMART-CATEGORY-NLP-P6-3-MEDIA-REALITY
+Implementation: COMPLETE
+Release: N/A (no deploy; local validators + browser evidence)
+Release Process: v1.0
+Production mutations: 0
+Category PATCH: 0
+```
+
+Break: `buildHomeFeed` excluded Trending videos when they were also the active hero background (`isHeroFeedCard`), emptying discovery. Fix: exclude only `category === HERO`. Vault drop of `01_ARRIVAL_OPEN_v1.mp4` → pending_accept PASS. Arrival remains in `/api/reels` as Trending video. Validator: `validate:phase-6-3-media-reality`.
 
 ---
 

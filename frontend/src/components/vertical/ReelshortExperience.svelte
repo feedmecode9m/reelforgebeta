@@ -141,6 +141,12 @@
     import { logBg7pShelfDistribution, shelfCountsFromFeed } from '../../lib/diagnostics/bg7pShelfDistribution.js';
     import { fillShelfPresentation, isRealShelfCard } from '../../lib/feed/fillShelfPresentation.js';
     import { resolveVaultCardProjection } from '../../lib/content/vaultCardProjection.js';
+    import ViewerSemanticCard from '../viewer/ViewerSemanticCard.svelte';
+    import {
+        buildViewerSemanticShell,
+        collectRealViewerReels
+    } from '../../lib/feed/viewerSemanticShell.js';
+    import '../../viewer/cinematicCardTokens.css';
 
     /** @type {'feed' | 'theater-ambient' | 'theater-chrome'} */
     export let section = 'feed';
@@ -202,9 +208,13 @@
         const shelfRealDomCounts = {};
         for (const cat of Object.keys($feed || {}).filter((c) => c !== 'Auto-Detect')) {
             const row = feedSectionRoot?.querySelector(`[aria-label="${cat} content row"]`);
-            shelfDomCounts[cat] = row ? row.querySelectorAll('.reel-card').length : 0;
+            shelfDomCounts[cat] = row
+                ? row.querySelectorAll('.reel-card, [data-viewer-semantic-card]').length
+                : 0;
             shelfRealDomCounts[cat] = row
-                ? row.querySelectorAll('.reel-card:not(.presentation-slot)').length
+                ? row.querySelectorAll(
+                      '.reel-card:not(.presentation-slot), [data-viewer-semantic-card]'
+                  ).length
                 : 0;
         }
         console.info('[BG7P_SHELF_DOM]', {
@@ -274,7 +284,7 @@
 
     function getRowStep(row) {
         if (!row) return 360;
-        const firstCard = row.querySelector('.reel-card');
+        const firstCard = row.querySelector('.reel-card, [data-viewer-semantic-card]');
         const cardWidth = firstCard?.getBoundingClientRect?.().width || 320;
         const styles = window.getComputedStyle(row);
         const gap = Number.parseFloat(styles.columnGap || styles.gap || '16') || 16;
@@ -310,6 +320,16 @@
         ].join('::');
     }
 
+    /** Featured + browse layouts from current feed (presentation only). */
+    $: realViewerItems = collectRealViewerReels($normalizedFeed || $feed || {});
+    $: featuredItem = realViewerItems[0] || null;
+
+    function activateReel(reel, category) {
+        logTheaterOpen(reel, { source: 'feed-card-click', category });
+        onRecordAccess(reel.id);
+        onOpenTheater(reel);
+    }
+
     function traceFeedCardRender(reel, category, branch, mediaSrc) {
         noteBg7nMediaRendererCard(reel?.id);
         if (reel?.isPlaceholder) {
@@ -326,18 +346,102 @@
             branch,
             isPlaceholder: Boolean(reel?.isPlaceholder)
         });
+        return '';
     }
 
 </script>
 
 {#if section === 'feed'}
-    <div class="reelshort-feed-root" bind:this={feedSectionRoot}>
+    <div class="reelshort-feed-root" bind:this={feedSectionRoot} data-viewer-cinematic-feed>
+    {#if featuredItem}
+        {@const featuredReel = featuredItem.reel}
+        {@const featuredCategory = featuredItem.shelf}
+        {@const featuredProjection = resolveVaultCardProjection(String(featuredReel?.id || ''), {
+            reel: /** @type {Record<string, unknown>} */ (featuredReel)
+        })}
+        {@const featuredShell = buildViewerSemanticShell(
+            /** @type {Record<string, unknown>} */ (featuredReel),
+            {
+                title: featuredProjection.title,
+                category: featuredCategory,
+                posterUrl: featuredProjection.posterUrl,
+                description: featuredProjection.description
+            }
+        )}
+        <section class="viewer-featured" data-viewer-featured-card aria-label="Featured">
+            <h2 class="viewer-featured__heading">Featured</h2>
+            <ViewerSemanticCard
+                reel={/** @type {Record<string, unknown>} */ (featuredReel)}
+                shell={featuredShell}
+                variant="featured"
+                previewActive={String(feedHoverPreviewId) === String(featuredReel.id)}
+                onActivate={(r) => activateReel(r, featuredCategory)}
+                onMediaPointerEnter={() => {
+                    if (hasPlayableVideo(featuredReel) && featuredReel.url && !$feedCardVideoFallbacks.has(featuredReel.id)) {
+                        startFeedCardPreview(featuredReel.id);
+                    }
+                }}
+                onMediaPointerLeave={() => stopFeedCardPreview(featuredReel.id)}
+            >
+                <svelte:fragment slot="media">
+                    {#if hasPlayableVideo(featuredReel) && featuredReel.url}
+                        {#if $feedCardVideoFallbacks.has(featuredReel.id)}
+                            {traceFeedCardRender(featuredReel, featuredCategory, 'video_fallback_thumbnail', featuredProjection.posterUrl || featuredReel.thumbnailUrl || getImg(featuredReel, featuredCategory, 0))}
+                            <MediaThumbnail
+                                url={featuredProjection.posterUrl || featuredReel.thumbnailUrl || getImg(featuredReel, featuredCategory, 0)}
+                                alt={featuredProjection.title || 'Video'}
+                                lazyLoad
+                                className="card-visual card-video-fallback"
+                            />
+                        {:else if prefersHoverPreview() && String(feedHoverPreviewId) === String(featuredReel.id)}
+                            {traceFeedCardRender(featuredReel, featuredCategory, 'video', featuredReel.url)}
+                            <MediaRenderer
+                                type="video"
+                                url={featuredReel.url}
+                                poster={featuredProjection.posterUrl || featuredReel.thumbnailUrl || getImg(featuredReel, featuredCategory, 0)}
+                                validateVideo={true}
+                                useSourceElement={true}
+                                captionsTrack={true}
+                                muted
+                                playsinline
+                                loop
+                                autoplay={true}
+                                preload="metadata"
+                                playbackRole="preview"
+                                className="card-visual"
+                                on:error={(e) => onCardVideoError(e, featuredReel)}
+                            />
+                        {:else}
+                            {traceFeedCardRender(featuredReel, featuredCategory, 'video_poster', featuredProjection.posterUrl || featuredReel.thumbnailUrl || getImg(featuredReel, featuredCategory, 0))}
+                            <MediaThumbnail
+                                url={featuredProjection.posterUrl || featuredReel.thumbnailUrl || getImg(featuredReel, featuredCategory, 0)}
+                                alt={featuredProjection.title || 'Video'}
+                                lazyLoad
+                                className="card-visual card-video-poster"
+                            />
+                        {/if}
+                    {:else if featuredReel.url}
+                        <MediaThumbnail
+                            url={$feedCardImageFallbacks[featuredReel.id] || featuredProjection.posterUrl || featuredReel.url}
+                            alt={featuredProjection.title || 'Image'}
+                            lazyLoad
+                            className="card-visual"
+                            raw={Boolean($feedCardImageFallbacks[featuredReel.id])}
+                        />
+                    {:else}
+                        <div class="vault-card-empty" aria-label="Media unavailable">⚠️</div>
+                    {/if}
+                </svelte:fragment>
+            </ViewerSemanticCard>
+        </section>
+    {/if}
+
     {#each Object.keys($feed).filter((cat) => cat !== 'Auto-Detect') as category}
         {@const config = UIAgent.getStudioConfigs(category)}
         {@const displayName = categoryNames.getName(category)}
         {@const headingLabel = String(displayName || config.label || category)}
         {#if shouldRenderShelf(category)}
-        <section class="shelf">
+        <section class="shelf" data-viewer-discovery-row={category}>
             <h2 style="border-left: 4px solid {config.color}; color: {config.color};">{headingLabel}</h2>
             <div class="row-shell">
                 <button
@@ -358,12 +462,12 @@
                     {#each getShelfDisplayItems(category) as reel, i (reelListKey(reel, category, i))}
                         {#if reel.isPresentationOnly}
                             <div
-                                class="reel-card presentation-slot"
+                                class="reel-card presentation-slot viewer-sem-card--row"
                                 data-reel-id={reel.id}
                                 role="presentation"
                                 aria-hidden="true"
                             >
-                                <div class="card-inner vault-card presentation-card-inner">
+                                <div class="card-inner vault-card presentation-card-inner viewer-presentation-shell">
                                     <div class="presentation-frame" style="--shelf-accent: {config.color}">
                                         <span class="presentation-badge">{headingLabel}</span>
                                         <span class="presentation-lock" aria-hidden="true">🔒</span>
@@ -376,37 +480,29 @@
                         {@const cardProjection = resolveVaultCardProjection(String(reel?.id || ''), {
                             reel: /** @type {Record<string, unknown>} */ (reel)
                         })}
-                        <button
-                            class="reel-card"
-                            class:is-ghost={reel.isPlaceholder}
-                            class:is-personal={reel.isPersonalThumbnail || reel.isPersonalVideo}
-                            data-reel-id={reel.id}
-                            on:click={() => {
-                                logTheaterOpen(reel, { source: 'feed-card-click', category });
-                                onRecordAccess(reel.id);
-                                onOpenTheater(reel);
-                            }}
-                            on:keydown={(e) => {
-                                if (e.key === 'Enter' || e.key === ' ') {
-                                    e.preventDefault();
-                                    logTheaterOpen(reel, { source: 'feed-card-keydown', category });
-                                    onRecordAccess(reel.id);
-                                    onOpenTheater(reel);
+                        {@const rowShell = buildViewerSemanticShell(
+                            /** @type {Record<string, unknown>} */ (reel),
+                            {
+                                title: cardProjection.title,
+                                category,
+                                posterUrl: cardProjection.posterUrl,
+                                description: cardProjection.description
+                            }
+                        )}
+                        <ViewerSemanticCard
+                            reel={/** @type {Record<string, unknown>} */ (reel)}
+                            shell={rowShell}
+                            variant="row"
+                            previewActive={String(feedHoverPreviewId) === String(reel.id)}
+                            onActivate={(r) => activateReel(r, category)}
+                            onMediaPointerEnter={() => {
+                                if (hasPlayableVideo(reel) && reel.url && !$feedCardVideoFallbacks.has(reel.id)) {
+                                    startFeedCardPreview(reel.id);
                                 }
                             }}
-                            aria-label={cardProjection.title
-                                ? `Play ${cardProjection.title}`
-                                : 'Play media'}
+                            onMediaPointerLeave={() => stopFeedCardPreview(reel.id)}
                         >
-                            <div
-                                class="card-inner vault-card"
-                                on:pointerenter={() => {
-                                    if (hasPlayableVideo(reel) && reel.url && !$feedCardVideoFallbacks.has(reel.id)) {
-                                        startFeedCardPreview(reel.id);
-                                    }
-                                }}
-                                on:pointerleave={() => stopFeedCardPreview(reel.id)}
-                            >
+                            <svelte:fragment slot="media">
                                 {#if hasPlayableVideo(reel) && reel.url}
                                     {#if $feedCardVideoFallbacks.has(reel.id)}
                                         {traceFeedCardRender(reel, category, 'video_fallback_thumbnail', cardProjection.posterUrl || reel.thumbnailUrl || getImg(reel, category, i))}
@@ -458,36 +554,8 @@
                                     {traceFeedCardRender(reel, category, 'empty', '')}
                                     <div class="vault-card-empty" aria-label="Media unavailable">⚠️</div>
                                 {/if}
-                                <div class="savvy-hover">
-                                    <div class="play-btn">▶</div>
-                                    {#if reel.match && !/^enhanced black stories$/i.test(String(reel.match))}
-                                        <div class="stats">{reel.match}</div>
-                                    {/if}
-                                    {#if reel.faces?.length > 0}<div class="face-count">🎭 {reel.faces.length} BLACK FACES</div>{/if}
-                                    {#if reel.black_stories_theme}<div class="black-stories-badge">🎬 {reel.black_stories_theme}</div>{/if}
-                                    {#if reel.ai_tags}<div class="ai-tags">🤖 {reel.ai_tags.slice(0, 2).join(', ')}</div>{/if}
-                                    {#if reel.user_image_used}<div class="user-image-badge">🖼️ USER IMAGE</div>{/if}
-                                    {#if reel.isAIGenerated}<div class="ai-generated-badge">✨ AI-GENERATED</div>{/if}
-                                    {#if reel.isPersonalThumbnail}<div class="personal-thumbnail-badge">🖼️ PERSONAL</div>{/if}
-                                    {#if reel.isPersonalVideo}<div class="personal-video-badge">🎬 PERSONAL VIDEO</div>{/if}
-                                    {#if reel.auto_detected}<div class="auto-detected-badge">🤖 AI-PLACED</div>{/if}
-                                </div>
-                            </div>
-                            {#if cardProjection.title}
-                                <h3 class="reel-title" data-vault-card-title>{cardProjection.title}</h3>
-                            {/if}
-                            {#if cardProjection.seriesLine}
-                                <div class="reel-series-line" data-vault-card-series>{cardProjection.seriesLine}</div>
-                            {/if}
-                            {#if cardProjection.description}
-                                <p class="reel-description" data-vault-card-description>
-                                    {cardProjection.description.length > 120
-                                        ? `${cardProjection.description.slice(0, 120)}…`
-                                        : cardProjection.description}
-                                </p>
-                            {/if}
-                            {#if reel.views}<div class="reel-meta">👁️ {reel.views}k • ❤️ {reel.likes}</div>{/if}
-                        </button>
+                            </svelte:fragment>
+                        </ViewerSemanticCard>
                         {/if}
                     {/each}
                 </div>
@@ -501,6 +569,90 @@
         </section>
         {/if}
     {/each}
+
+    {#if realViewerItems.length > 1}
+        <section class="viewer-browse" data-viewer-browse-grid aria-label="Browse">
+            <h2 class="viewer-browse__heading">Browse</h2>
+            <div class="viewer-browse__grid">
+                {#each realViewerItems as item (item.reel.id)}
+                    {@const gridReel = item.reel}
+                    {@const gridCategory = item.shelf}
+                    {@const gridProjection = resolveVaultCardProjection(String(gridReel?.id || ''), {
+                        reel: /** @type {Record<string, unknown>} */ (gridReel)
+                    })}
+                    {@const gridShell = buildViewerSemanticShell(
+                        /** @type {Record<string, unknown>} */ (gridReel),
+                        {
+                            title: gridProjection.title,
+                            category: gridCategory,
+                            posterUrl: gridProjection.posterUrl,
+                            description: gridProjection.description
+                        }
+                    )}
+                    <ViewerSemanticCard
+                        reel={/** @type {Record<string, unknown>} */ (gridReel)}
+                        shell={gridShell}
+                        variant="grid"
+                        previewActive={String(feedHoverPreviewId) === String(gridReel.id)}
+                        onActivate={(r) => activateReel(r, gridCategory)}
+                        onMediaPointerEnter={() => {
+                            if (hasPlayableVideo(gridReel) && gridReel.url && !$feedCardVideoFallbacks.has(gridReel.id)) {
+                                startFeedCardPreview(gridReel.id);
+                            }
+                        }}
+                        onMediaPointerLeave={() => stopFeedCardPreview(gridReel.id)}
+                    >
+                        <svelte:fragment slot="media">
+                            {#if hasPlayableVideo(gridReel) && gridReel.url}
+                                {#if $feedCardVideoFallbacks.has(gridReel.id)}
+                                    <MediaThumbnail
+                                        url={gridProjection.posterUrl || gridReel.thumbnailUrl || getImg(gridReel, gridCategory, 0)}
+                                        alt={gridProjection.title || 'Video'}
+                                        lazyLoad
+                                        className="card-visual card-video-fallback"
+                                    />
+                                {:else if prefersHoverPreview() && String(feedHoverPreviewId) === String(gridReel.id)}
+                                    <MediaRenderer
+                                        type="video"
+                                        url={gridReel.url}
+                                        poster={gridProjection.posterUrl || gridReel.thumbnailUrl || getImg(gridReel, gridCategory, 0)}
+                                        validateVideo={true}
+                                        useSourceElement={true}
+                                        captionsTrack={true}
+                                        muted
+                                        playsinline
+                                        loop
+                                        autoplay={true}
+                                        preload="metadata"
+                                        playbackRole="preview"
+                                        className="card-visual"
+                                        on:error={(e) => onCardVideoError(e, gridReel)}
+                                    />
+                                {:else}
+                                    <MediaThumbnail
+                                        url={gridProjection.posterUrl || gridReel.thumbnailUrl || getImg(gridReel, gridCategory, 0)}
+                                        alt={gridProjection.title || 'Video'}
+                                        lazyLoad
+                                        className="card-visual card-video-poster"
+                                    />
+                                {/if}
+                            {:else if gridReel.url}
+                                <MediaThumbnail
+                                    url={$feedCardImageFallbacks[gridReel.id] || gridProjection.posterUrl || gridReel.url}
+                                    alt={gridProjection.title || 'Image'}
+                                    lazyLoad
+                                    className="card-visual"
+                                    raw={Boolean($feedCardImageFallbacks[gridReel.id])}
+                                />
+                            {:else}
+                                <div class="vault-card-empty" aria-label="Media unavailable">⚠️</div>
+                            {/if}
+                        </svelte:fragment>
+                    </ViewerSemanticCard>
+                {/each}
+            </div>
+        </section>
+    {/if}
     </div>
 {:else if section === 'theater-ambient' && $theaterChromeFlags.ambientBlur && theaterVideoSrc}
     <MediaPoster
@@ -535,6 +687,30 @@
         margin-bottom: 3rem;
         padding: 0 2rem;
     }
+    .viewer-featured {
+        padding: 1.25rem 2rem 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .viewer-featured__heading,
+    .viewer-browse__heading {
+        margin: 0 0 0.85rem;
+        font-size: 0.78rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: rgba(244, 241, 234, 0.72);
+    }
+    .viewer-browse {
+        padding: 0.5rem 2rem 3rem;
+    }
+    .viewer-browse__grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1.1rem;
+    }
+    .viewer-presentation-shell {
+        border-radius: var(--rf-cine-radius, 28px) !important;
+        box-shadow: var(--rf-cine-shadow, 0 22px 48px rgba(0, 0, 0, 0.45));
+    }
     .shelf h2 {
         font-size: 1rem;
         text-transform: uppercase;
@@ -544,7 +720,7 @@
     }
     .row {
         display: flex;
-        gap: 1rem;
+        gap: 1.1rem;
         overflow-x: auto;
         padding: 1rem 0;
         scroll-snap-type: x proximity;
@@ -609,6 +785,7 @@
     }
     button.reel-card {
         cursor: pointer;
+        color: #f4f4f5;
     }
     .reel-card.presentation-slot {
         cursor: default;
@@ -618,6 +795,7 @@
     .presentation-card-inner {
         aspect-ratio: 16 / 9;
         min-height: 160px;
+        border-radius: var(--rf-cine-radius, 28px);
         background: linear-gradient(145deg, rgba(12, 14, 22, 0.96), rgba(24, 26, 36, 0.88));
         border: 1px solid rgba(255, 255, 255, 0.08);
         overflow: hidden;

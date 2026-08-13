@@ -1622,7 +1622,9 @@
       console.info('[MP4_DROP_REJECTED]', {
         reason: 'no_valid_video_in_transfer',
         fileCount: dropFiles.length,
-        types: dropFiles.map((f) => f.type || 'unknown')
+        types: dropFiles.map((f) => f.type || 'unknown'),
+        names: dropFiles.map((f) => f.name || 'unknown'),
+        sizes: dropFiles.map((f) => f.size ?? null)
       });
       console.info('[BG7G_DROP]', {
         ts: new Date().toISOString(),

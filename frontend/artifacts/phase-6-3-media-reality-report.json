@@ -1,0 +1,133 @@
+{
+  "phase": "PHASE-6-3-MEDIA-REALITY-BROWSER",
+  "result": "PASS",
+  "snap": {
+    "byShelf": {
+      "Trending": 1,
+      "Romance": 0,
+      "Cyber-Action": 0,
+      "Suspense": 0
+    },
+    "trending": [
+      {
+        "id": "03ef898a-989f-42c3-bdbb-67f37338df65",
+        "type": "video",
+        "title": "01 ARRIVAL OPEN v1"
+      }
+    ],
+    "cards": [
+      {
+        "id": "03ef898a-989f-42c3-bdbb-67f37338df65",
+        "variant": "featured",
+        "mediaType": "video",
+        "title": "01 ARRIVAL OPEN v1",
+        "shelf": "Trending",
+        "duration": "",
+        "resolution": "",
+        "mood": "studio",
+        "badges": [
+          "Production",
+          "Widescreen"
+        ],
+        "themes": [
+          "production"
+        ],
+        "hasVideo": false,
+        "hasImg": true
+      },
+      {
+        "id": "03ef898a-989f-42c3-bdbb-67f37338df65",
+        "variant": "row",
+        "mediaType": "video",
+        "title": "01 ARRIVAL OPEN v1",
+        "shelf": "Trending",
+        "duration": "",
+        "resolution": "",
+        "mood": "studio",
+        "badges": [
+          "Production",
+          "Widescreen"
+        ],
+        "themes": [
+          "production"
+        ],
+        "hasVideo": false,
+        "hasImg": true
+      }
+    ],
+    "arrivalCards": [
+      {
+        "id": "03ef898a-989f-42c3-bdbb-67f37338df65",
+        "variant": "featured",
+        "mediaType": "video",
+        "title": "01 ARRIVAL OPEN v1",
+        "shelf": "Trending",
+        "duration": "",
+        "resolution": "",
+        "mood": "studio",
+        "badges": [
+          "Production",
+          "Widescreen"
+        ],
+        "themes": [
+          "production"
+        ],
+        "hasVideo": false,
+        "hasImg": true
+      },
+      {
+        "id": "03ef898a-989f-42c3-bdbb-67f37338df65",
+        "variant": "row",
+        "mediaType": "video",
+        "title": "01 ARRIVAL OPEN v1",
+        "shelf": "Trending",
+        "duration": "",
+        "resolution": "",
+        "mood": "studio",
+        "badges": [
+          "Production",
+          "Widescreen"
+        ],
+        "themes": [
+          "production"
+        ],
+        "hasVideo": false,
+        "hasImg": true
+      }
+    ],
+    "cinematic": true
+  },
+  "logs": [
+    "[CREATOR_FEED] {\"reason\":\"engine_initialized\",\"seriesId\":\"series-vic-g\",\"cardCount\":8,\"cardKinds\":[\"revenue_snapshot\",\"today_tasks\",\"daily_engagement\",\"trending_series\",\"upcoming_releases\",\"security_alerts\",\"marketplace_opportunities\",\"team_activity\"],\"topCard\":\"revenue_snapshot\"",
+    "[DISCOVERY_FEED] {\"reason\":\"engine_initialized\",\"seriesId\":\"series-vic-g\",\"cardCount\":10,\"sectionSizes\":{\"trendingCreators\":1,\"marketplaceOpportunities\":1,\"upcomingReleases\":1,\"revenueMilestones\":1,\"sentinelInsights\":2,\"teamHighlights\":1,\"productionWins\":1,\"dailyRecommendations\":",
+    "[DISCOVERY_REFRESH] {\"reason\":\"engine_initialized\",\"updatedAt\":1786598575316,\"cardCount\":10,\"timestamp\":1786598575317}",
+    "[CREATOR_FEED] {\"reason\":\"daily_engagement_updated\",\"seriesId\":\"series-vic-g\",\"cardCount\":8,\"cardKinds\":[\"revenue_snapshot\",\"today_tasks\",\"marketplace_opportunities\",\"daily_engagement\",\"trending_series\",\"upcoming_releases\",\"security_alerts\",\"team_activity\"],\"topCard\":\"revenue_sna",
+    "[HERO_ASSET_ID_TRACE] {stage: saveHeroManagerConfig:write, assetId: 03ef898a-989f-42c3-bdbb-67f37338df65, heroAssetId: 03ef898a-989f-42c3-bdbb-67f37338df65, source: reelforge_hero_manager_config, timestamp: 1786598575628}",
+    "[HERO_SAVE] {key: reelforge_hero_manager_config, heroAssetId: 03ef898a-989f-42c3-bdbb-67f37338df65, backgroundSource: custom_video, mediaUrl: https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb, ts: 2026-08-13T05:22:55.628Z}",
+    "[HERO_STORE_WRITE] {key: reelforge_hero_manager_config, heroAssetId: 03ef898a-989f-42c3-bdbb-67f37338df65, backgroundSource: custom_video, ts: 2026-08-13T05:22:55.628Z}",
+    "[HERO_VAULT_INSERT] {source: hero-manager-config, heroAssetId: 03ef898a-989f-42c3-bdbb-67f37338df65, backgroundSource: custom_video, ts: 2026-08-13T05:22:55.628Z}",
+    "[HERO_BACKGROUND_SAVE] {\"storageKey\":\"reelforge_hero_manager_config\",\"backgroundSource\":\"custom_video\",\"heroAssetId\":\"03ef898a-989f-42c3-bdbb-67f37338df65\",\"timestamp\":1786598575628}",
+    "[HERO_RECORD_SAVE] {mode: asset, status: ready, assetId: 03ef898a-989f-42c3-bdbb-67f37338df65, revision: 2, source: server_presentation}",
+    "[HERO_BACKGROUND_RESOLVE] {stage: applyServerPresentationToHeroRecord, heroAssetId: 03ef898a-989f-42c3-bdbb-67f37338df65, backgroundSource: custom_video, mediaUrl: https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb-67f37338df65.mp4, resolvedUrl: http",
+    "[HERO_SOURCE] {source: backend, heroAssetId: 03ef898a-989f-42c3-bdbb-67f37338df65, resolvedTitle: Vic G 01_ARRIVAL_OPEN_v1, resolvedBackgroundUrl: https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb-67f37338df65.mp4, ts: 2026-08-13T05:22:55.629Z}",
+    "[HERO_CLASSIFY] {stage: heroAssetBridge.normalizeHeroAssetRecord, assetId: 03ef898a-989f-42c3-bdbb-67f37338df65, assetType: mp4, mime: video/mp4, mediaUrl: https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb-67f37338df65.mp4}",
+    "[HERO_MEDIA_MODE_RESOLUTION] {heroAssetId: 03ef898a-989f-42c3-bdbb-67f37338df65, backgroundStyle: video, backgroundSource: none, heroStylePrefersVideo: true, heroRenderVideoPresent: false}",
+    "[HERO_LOAD] {key: reelforge_hero_manager_config, backgroundSource: custom_video, heroAssetId: 03ef898a-989f-42c3-bdbb-67f37338df65, ts: 2026-08-13T05:22:55.632Z}",
+    "[HERO_CONFIG_BOOT_TRACE] {ts: 2026-08-13T05:22:55.632Z, site: loadHeroManagerConfig, caller: at ji (http://127.0.0.1:4178/assets/index-Bqpzdk75.js:9:2700), storageRawBeforeParse: {\"heroType\":\"CONTINUE_WATCHING\",\"backgroundSource\"…bdbb-67f37338df65.jpg\",\"updatedAt\":1786598575628},",
+    "[HERO_LOAD] {key: reelforge_hero_manager_config, backgroundSource: custom_video, heroAssetId: 03ef898a-989f-42c3-bdbb-67f37338df65, ts: 2026-08-13T05:22:55.633Z}",
+    "[HERO_CONFIG_BOOT_TRACE] {ts: 2026-08-13T05:22:55.633Z, site: loadHeroManagerConfig, caller: at ji (http://127.0.0.1:4178/assets/index-Bqpzdk75.js:9:2700), storageRawBeforeParse: {\"heroType\":\"CONTINUE_WATCHING\",\"backgroundSource\"…bdbb-67f37338df65.jpg\",\"updatedAt\":1786598575628},",
+    "[HERO_LOAD] {key: reelforge_hero_manager_config, backgroundSource: custom_video, heroAssetId: 03ef898a-989f-42c3-bdbb-67f37338df65, ts: 2026-08-13T05:22:55.634Z}",
+    "[HERO_CONFIG_BOOT_TRACE] {ts: 2026-08-13T05:22:55.634Z, site: loadHeroManagerConfig, caller: at ji (http://127.0.0.1:4178/assets/index-Bqpzdk75.js:9:2700), storageRawBeforeParse: {\"heroType\":\"CONTINUE_WATCHING\",\"backgroundSource\"…bdbb-67f37338df65.jpg\",\"updatedAt\":1786598575628},",
+    "[HERO_RECORD_SAVE] {mode: asset, status: ready, assetId: 03ef898a-989f-42c3-bdbb-67f37338df65, revision: 3, source: server_presentation}",
+    "[HERO_LOAD] {key: reelforge_hero_manager_config, backgroundSource: custom_video, heroAssetId: 03ef898a-989f-42c3-bdbb-67f37338df65, ts: 2026-08-13T05:22:55.636Z}",
+    "[HERO_CONFIG_BOOT_TRACE] {ts: 2026-08-13T05:22:55.636Z, site: loadHeroManagerConfig, caller: at ji (http://127.0.0.1:4178/assets/index-Bqpzdk75.js:9:2700), storageRawBeforeParse: {\"heroType\":\"CONTINUE_WATCHING\",\"backgroundSource\"…bdbb-67f37338df65.jpg\",\"updatedAt\":1786598575628},",
+    "[HERO_CONFIG_BOOT_TRACE] {ts: 2026-08-13T05:22:55.637Z, site: mediaBootstrap:bootstrapMediaFromBackend:start, caller: mediaBootstrap.js:bootstrapMediaFromBackend, storageRawBeforeParse: {\"heroType\":\"CONTINUE_WATCHING\",\"backgroundSource\"…bdbb-67f37338df65.jpg\",\"updatedAt\":17865985",
+    "[SYNC_CONFLICT] {\"deviceId\":\"b3f2f9fc-e72b-48a4-8f39-4e89fbf780e7\",\"status\":\"syncing\",\"domain\":\"seriesMetadata\",\"key\":\"03ef898a-989f-42c3-bdbb-67f37338df65\",\"localUpdatedAt\":1786598575282,\"remoteUpdatedAt\":1786598339858,\"winner\":\"local\",\"timestamp\":1786598575693}"
+  ],
+  "screenshot": "frontend/artifacts/phase-6-3-local-viewer.png",
+  "notes": [
+    "Vault drop of 01_ARRIVAL_OPEN_v1.mp4 → pending_accept PASS (earlier probe)",
+    "Minimal fix: buildHomeFeed hero exclusion = category HERO only",
+    "Catalog duration/width/height still null — duration/resolution chips correctly empty"
+  ]
+}

@@ -251,10 +251,11 @@ export function buildHomeFeed(catalog, options = {}) {
             continue;
         }
 
-        // HERO-category / hero-stage assets are presentation-stage media, not discovery shelf cards.
-        // Mapping them into Trending inflated Smart Category Distribution and crowded inventory.
+        // Only catalog category HERO is presentation-stage (excluded from discovery shelves).
+        // A Trending/Romance/… video may also be the active hero *background* without losing
+        // discovery eligibility — otherwise the sole content MP4 vanishes from Viewer cards.
         const rawCategory = String(reel?.category || '').trim().toUpperCase();
-        if (eligibility.isHeroFeedCard || rawCategory === 'HERO') {
+        if (rawCategory === 'HERO') {
             decisions.push({
                 ...baseDecision,
                 eligible: false,
