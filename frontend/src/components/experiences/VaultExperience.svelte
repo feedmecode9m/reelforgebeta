@@ -198,6 +198,11 @@
   let thumbnailCanonicalizationDone = false;
   /** @type {Record<string, number>} fileName → put percent */
   let vaultUploadPercents = {};
+  /**
+   * Lifecycle stage for vault upload UX (presentation only).
+   * @type {Record<string, 'ACCEPTED' | 'VALIDATING' | 'UPLOADING' | 'FINALIZING' | 'COMPLETE'>}
+   */
+  let vaultUploadStages = {};
   /** Single content-vault card allowed to mount a live <video> (hover). */
   let activeVaultVideoPreviewId = '';
   let thumbnailCanonInFlight = false;
@@ -272,6 +277,115 @@
     void vaultHideRevision;
     const merged = mergeHeroVideoIntoVaultDisplay($personalVideos);
     return filterVideoVaultVisible(merged, readVideoVaultHiddenIds());
+  })();
+
+  /**
+   * Sticky drop-zone upload chrome — survives optimistic→catalog card replace
+   * so COMPLETE / FINALIZING remain visible after Accept.
+   * @type {{ name: string; size: number } | null}
+   */
+  let vaultUploadUi = null;
+
+  /**
+   * Resolve put % for a vault card (filename keys from progress events).
+   * @param {Record<string, unknown> | null | undefined} video
+   * @returns {number | null}
+   */
+  function lookupVaultUploadPercent(video) {
+    const keys = [
+      String(video?.fileName || '').trim(),
+      String(video?.name || '').trim(),
+      String(video?.title || '').trim()
+    ].filter(Boolean);
+    for (const key of keys) {
+      if (vaultUploadPercents[key] != null) return vaultUploadPercents[key];
+      const lower = key.toLowerCase();
+      for (const [pk, pv] of Object.entries(vaultUploadPercents)) {
+        if (String(pk).toLowerCase() === lower) return pv;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * @param {string} fileName
+   * @param {'ACCEPTED' | 'VALIDATING' | 'UPLOADING' | 'FINALIZING' | 'COMPLETE'} stage
+   */
+  function setVaultUploadStage(fileName, stage) {
+    const key = String(fileName || '').trim();
+    if (!key) return;
+    vaultUploadStages = { ...vaultUploadStages, [key]: stage };
+    console.info('[MP4_UPLOAD_STAGE]', { stage, fileName: key, ts: new Date().toISOString() });
+  }
+
+  /**
+   * @param {string} fileName
+   * @param {number} [percent]
+   */
+  function setVaultUploadPercent(fileName, percent) {
+    const key = String(fileName || '').trim();
+    if (!key || percent == null || Number.isNaN(Number(percent))) return;
+    const next = Math.max(0, Math.min(100, Number(percent)));
+    const prev = vaultUploadPercents[key];
+    vaultUploadPercents = {
+      ...vaultUploadPercents,
+      [key]: next
+    };
+    // Throttle progress logs (every 5% or endpoints) to keep diagnostics readable.
+    if (prev == null || next === 0 || next === 100 || Math.floor(next / 5) !== Math.floor(Number(prev) / 5)) {
+      console.info('[MP4_UPLOAD_PROGRESS]', {
+        fileName: key,
+        percent: next,
+        stage: vaultUploadStages[key] || 'UPLOADING',
+        ts: new Date().toISOString()
+      });
+    }
+  }
+
+  /** @param {string} fileName */
+  function clearVaultUploadProgress(fileName) {
+    const key = String(fileName || '').trim();
+    if (!key) return;
+    const nextPct = { ...vaultUploadPercents };
+    const nextStage = { ...vaultUploadStages };
+    delete nextPct[key];
+    delete nextStage[key];
+    const lower = key.toLowerCase();
+    for (const pk of Object.keys(nextPct)) {
+      if (String(pk).toLowerCase() === lower) delete nextPct[pk];
+    }
+    for (const pk of Object.keys(nextStage)) {
+      if (String(pk).toLowerCase() === lower) delete nextStage[pk];
+    }
+    vaultUploadPercents = nextPct;
+    vaultUploadStages = nextStage;
+  }
+
+  /** @param {{ name: string; size?: number }} fileLike */
+  function beginVaultUploadUi(fileLike) {
+    const name = String(fileLike?.name || '').trim();
+    if (!name) return;
+    vaultUploadUi = { name, size: Number(fileLike?.size || 0) };
+  }
+
+  /** @param {string} fileName @param {number} [holdMs] */
+  function endVaultUploadUi(fileName, holdMs = 2400) {
+    const key = String(fileName || '').trim();
+    resourceManager.setTimeout(() => {
+      if (vaultUploadUi && String(vaultUploadUi.name) === key) {
+        vaultUploadUi = null;
+      }
+      clearVaultUploadProgress(key);
+    }, Math.max(0, Number(holdMs) || 0));
+  }
+
+  /** Primary in-flight vault upload for drop-zone progress panel. */
+  $: vaultLiveUpload = (() => {
+    if (!vaultUploadUi?.name) return null;
+    const name = vaultUploadUi.name;
+    const percent = vaultUploadPercents[name] ?? lookupVaultUploadPercent({ fileName: name, name });
+    const stage = vaultUploadStages[name] || (percent != null ? 'UPLOADING' : 'ACCEPTED');
+    return { name, percent, stage, size: Number(vaultUploadUi.size || 0) };
   })();
 
   $: console.info('[VAULT_ITEM_COUNT]', {
@@ -590,10 +704,24 @@
     const onVaultUploadProgress = (event) => {
       const detail = event?.detail || {};
       const fileName = String(detail.fileName || '').trim();
+      if (!fileName) return;
+      const phase = String(detail.phase || '');
+      if (phase === 'finalize' || phase === 'ingest') {
+        setVaultUploadStage(fileName, 'FINALIZING');
+        setVaultUploadPercent(fileName, 100);
+        console.info(phase === 'finalize' ? '[MP4_FINALIZE]' : '[MP4_FINALIZE]', {
+          fileName,
+          phase,
+          stage: detail.stage || null,
+          ts: new Date().toISOString()
+        });
+        return;
+      }
+      if (phase !== 'put') return;
       const percent = Number(detail.percent);
-      if (!fileName || Number.isNaN(percent)) return;
-      if (String(detail.phase || '') !== 'put') return;
-      vaultUploadPercents = { ...vaultUploadPercents, [fileName]: Math.max(0, Math.min(100, percent)) };
+      if (Number.isNaN(percent)) return;
+      setVaultUploadStage(fileName, 'UPLOADING');
+      setVaultUploadPercent(fileName, percent);
     };
     window.addEventListener('reelforge:upload-progress', onVaultUploadProgress);
     await ensureThumbnailCanonicalization();
@@ -1597,6 +1725,11 @@
       fileCount: event.dataTransfer?.files?.length || 0,
       ts: new Date().toISOString()
     });
+    console.info('[MP4_DROP]', {
+      fileName: event.dataTransfer?.files?.[0]?.name || null,
+      fileCount: event.dataTransfer?.files?.length || 0,
+      ts: new Date().toISOString()
+    });
     vaultForensic('VAULT_DROP', {
       vaultType: 'video',
       fileName: event.dataTransfer?.files?.[0]?.name || null,
@@ -1801,6 +1934,11 @@
       return;
     }
     vaultAcceptInFlight = true;
+    console.info('[MP4_ACCEPT]', {
+      fileName: pending.name,
+      fileSize: pending.size,
+      ts: new Date().toISOString()
+    });
     console.info('[MP4_PENDING_ACCEPT]', {
       fileName: pending.name,
       fileSize: pending.size,
@@ -1813,6 +1951,9 @@
     const optimisticId = pendingId.startsWith('local-pending-')
       ? `local-upload-${Date.now()}`
       : pendingId || `local-upload-${Date.now()}`;
+    setVaultUploadStage(file.name, 'ACCEPTED');
+    setVaultUploadPercent(file.name, 0);
+    beginVaultUploadUi(file);
     // Clear pending UI without revoking blob until processVaultVideoFile finishes replace.
     pendingVaultVideo.set(null);
     const optimisticEntry = {
@@ -1864,6 +2005,7 @@
         ts: new Date().toISOString()
       });
       markOptimisticVaultUploadFailed(optimisticId, err?.message || 'accept_threw');
+      endVaultUploadUi(file.name, 1800);
       uploadStatus.set(`❌ Failed: ${err?.message || 'unknown error'} — tap Retry upload`);
     } finally {
       vaultAcceptInFlight = false;
@@ -1884,9 +2026,11 @@
   function markOptimisticVaultUploadFailed(optimisticId, detail = '') {
     const id = String(optimisticId || '').trim();
     if (!id) return;
+    let failedName = '';
     personalVideos.update((videos) => {
       const next = (Array.isArray(videos) ? videos : []).map((item) => {
         if (String(item?.id || '').trim() !== id) return item;
+        failedName = String(item?.fileName || item?.name || '').trim();
         const deadUrl = String(item?.url || '').trim();
         if (deadUrl.startsWith('blob:')) {
           try {
@@ -1915,6 +2059,10 @@
       }
       return next;
     });
+    if (failedName) {
+      // Keep sticky progress chrome briefly so failure is visible after Accept.
+      endVaultUploadUi(failedName, 1800);
+    }
     // Remove any feed cards that pointed at this unfinished upload.
     try {
       feed.update((currentFeed) => {
@@ -1993,10 +2141,13 @@
   function removeOptimisticVaultEntry(optimisticId) {
     const id = String(optimisticId || '').trim();
     if (!id) return;
+    let removedName = '';
     personalVideos.update((videos) => {
-      const next = (Array.isArray(videos) ? videos : []).filter(
-        (item) => String(item?.id || '').trim() !== id
-      );
+      const next = (Array.isArray(videos) ? videos : []).filter((item) => {
+        if (String(item?.id || '').trim() !== id) return true;
+        removedName = String(item?.fileName || item?.name || '').trim();
+        return false;
+      });
       try {
         persistPersonalVault(next);
       } catch {
@@ -2004,6 +2155,12 @@
       }
       return next;
     });
+    if (removedName) {
+      clearVaultUploadProgress(removedName);
+      if (vaultUploadUi && String(vaultUploadUi.name) === removedName) {
+        vaultUploadUi = null;
+      }
+    }
   }
 
   /**
@@ -2414,10 +2571,24 @@
     trackUploadLockRegister(uploadKey, { reason: 'upload_reserved' });
     setPendingUploads(getActiveUploadLockCount());
 
+    setVaultUploadStage(file.name, 'VALIDATING');
+    uploadStatus.set(`🔍 Validating ${file.name}…`);
+    console.info('[MP4_VALIDATION]', {
+      fileName: file.name,
+      fileSize: file.size,
+      stage: 'begin',
+      ts: new Date().toISOString()
+    });
     const validation = await validateVideoFile(file);
     if (!validation.valid) {
       trackUploadLockRemove(uploadKey, { reason: 'validation_failed' });
       setPendingUploads(getActiveUploadLockCount());
+      console.info('[MP4_VALIDATION]', {
+        fileName: file.name,
+        valid: false,
+        reason: validation.reason || 'Invalid video file',
+        ts: new Date().toISOString()
+      });
       console.info('[MP4_UPLOAD_ERROR]', {
         stage: 'validateVideoFile',
         error: validation.reason || 'Invalid video file'
@@ -2437,6 +2608,17 @@
       markOptimisticVaultUploadFailed(optimisticId, validation.reason || 'validation_failed');
       return;
     }
+    console.info('[MP4_VALIDATION]', {
+      fileName: file.name,
+      valid: true,
+      ts: new Date().toISOString()
+    });
+
+    setVaultUploadStage(file.name, 'UPLOADING');
+    setVaultUploadPercent(file.name, 0);
+    uploadStatus.set(
+      `⬆️ Uploading ${file.name} (${(file.size / (1024 * 1024)).toFixed(1)} MB) — keep this tab open`
+    );
 
     const uploadDiagCtx = createUploadAttemptContext({
       uploadKey,
@@ -2655,6 +2837,21 @@
         });
         return next;
       });
+      setVaultUploadStage(file.name, 'COMPLETE');
+      setVaultUploadPercent(file.name, 100);
+      endVaultUploadUi(file.name, 2400);
+      console.info('[MP4_UPLOAD_COMPLETE]', {
+        fileName: file.name,
+        reelId: entry?.id || null,
+        url: entry?.url || null,
+        ts: new Date().toISOString()
+      });
+      console.info('[MP4_CATALOG]', {
+        reelId: entry?.id || null,
+        category: entry?.category || vaultUploadCategory || 'Trending',
+        fileName: entry?.fileName || file.name,
+        ts: new Date().toISOString()
+      });
       if (previewUrl && previewUrl.startsWith('blob:')) {
         try {
           URL.revokeObjectURL(previewUrl);
@@ -2680,6 +2877,11 @@
       });
       persistPersonalVault(get(personalVideos));
       AI_CLEANUP_AGENT.distributeVideoToFeed(entry);
+      console.info('[MP4_FEED]', {
+        reelId: entry?.id || null,
+        category: entry?.category || vaultUploadCategory || 'Trending',
+        ts: new Date().toISOString()
+      });
       pipelineDiag('VIEWER', 'handleVaultVideoDrop', 'VaultExperience.svelte', {
         assetId: entry.id,
         fileName: file.name,
@@ -3476,10 +3678,10 @@
     on:dragleave={handleVaultVideoDragLeave}
     on:drop={handleVaultVideoDrop}
     on:click={() => {
-      if (!$pendingVaultVideo && !vaultAcceptInFlight) openVaultVideoFilePicker();
+      if (!$pendingVaultVideo && !vaultAcceptInFlight && !vaultLiveUpload) openVaultVideoFilePicker();
     }}
     on:keydown={(event) => {
-      if ($pendingVaultVideo || vaultAcceptInFlight) return;
+      if ($pendingVaultVideo || vaultAcceptInFlight || vaultLiveUpload) return;
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
         openVaultVideoFilePicker();
@@ -3551,6 +3753,52 @@
         </p>
         <p class="pending-flow-hint">Flow: DROP → PENDING → ACCEPT → UPLOADING → READY</p>
       </div>
+    {:else if vaultLiveUpload}
+      <div
+        class="vault-upload-live"
+        data-vault-upload-progress
+        data-vault-upload-stage={vaultLiveUpload.stage}
+        role="status"
+        aria-live="polite"
+        on:click|stopPropagation
+      >
+        <p class="vault-upload-live__label">Uploading:</p>
+        <strong class="vault-upload-live__name">{vaultLiveUpload.name}</strong>
+        <div class="vault-upload-track vault-upload-track--live" aria-hidden="true">
+          <div
+            class="vault-upload-bar"
+            style="width: {vaultLiveUpload.percent != null ? vaultLiveUpload.percent : 8}%"
+          ></div>
+        </div>
+        <span class="vault-upload-live__percent" data-vault-upload-percent>
+          {#if vaultLiveUpload.stage === 'ACCEPTED'}
+            Accepted…
+          {:else if vaultLiveUpload.stage === 'VALIDATING'}
+            Validating…
+          {:else if vaultLiveUpload.stage === 'FINALIZING'}
+            Finalizing… 100%
+          {:else if vaultLiveUpload.stage === 'COMPLETE'}
+            Complete 100%
+          {:else if vaultLiveUpload.percent != null}
+            {vaultLiveUpload.percent}%
+          {:else}
+            Starting…
+          {/if}
+        </span>
+        <small class="vault-upload-live__hint" data-vault-upload-stage-label>
+          {#if vaultLiveUpload.stage === 'ACCEPTED'}
+            Accepted — preparing upload…
+          {:else if vaultLiveUpload.stage === 'VALIDATING'}
+            Validating container/header…
+          {:else if vaultLiveUpload.stage === 'FINALIZING'}
+            Finalizing to storage…
+          {:else if vaultLiveUpload.stage === 'COMPLETE'}
+            Upload complete — syncing catalog…
+          {:else}
+            Uploading to vault…
+          {/if}
+        </small>
+      </div>
     {:else}
       <div class="drop-placeholder">
         <span class="drop-icon">🎬</span>
@@ -3591,10 +3839,10 @@
             video.uploadState === 'failed' || video.uploadState === 'interrupted'}
           {@const isPendingCard =
             video.uploadState === 'pending_accept' || String(video?.id || '').startsWith('local-pending-')}
-          {@const uploadPct =
-            vaultUploadPercents[String(video?.fileName || video?.name || '').trim()] ??
-            vaultUploadPercents[String(video?.name || '').trim()] ??
-            null}
+          {@const uploadPct = lookupVaultUploadPercent(video)}
+          {@const uploadStage =
+            vaultUploadStages[String(video?.fileName || video?.name || '').trim()] ||
+            (isUploadingCard ? (uploadPct != null ? 'UPLOADING' : 'VALIDATING') : '')}
           {@const isGhostOnly =
             isGhostVideoVaultEntry(video) && !isDurableVideoVaultWorkspaceAsset(video)}
           {@const isStubPurgeCard = isVideoVaultStubPurgeTarget(video, {
@@ -3616,6 +3864,13 @@
             class:vault-card--uploading={isUploadingCard}
             class:vault-card--failed={isFailedCard}
             class:vault-card--pending={isPendingCard}
+            data-vault-card-state={isPendingCard
+              ? 'pending_accept'
+              : isUploadingCard
+                ? 'uploading'
+                : isFailedCard
+                  ? 'failed'
+                  : 'ready'}
             use:vaultCardDiagnostics={`video-${vi}`}
             draggable={!isGhostCard && !isUploadingCard}
             on:dragstart={(event) => handleVaultVideoDragStart(event, video)}
@@ -3640,17 +3895,28 @@
                 <small>Pending Accept</small>
               </div>
             {:else if isUploadingCard}
-              <div class="placeholder vault-uploading-preview vault-pending-face" aria-hidden="true">
+              <div
+                class="placeholder vault-uploading-preview vault-pending-face"
+                aria-hidden="true"
+                data-vault-card-upload-progress
+                data-vault-upload-percent={uploadPct != null ? String(uploadPct) : ''}
+              >
                 <span>⬆</span>
                 <small>
-                  {uploadPct != null
-                    ? `Uploading ${uploadPct}%`
-                    : `Uploading ${(Number(video.size || 0) / (1024 * 1024)).toFixed(0)} MB`}
+                  {#if uploadStage === 'VALIDATING'}
+                    Validating…
+                  {:else if uploadStage === 'FINALIZING'}
+                    Finalizing…
+                  {:else if uploadPct != null}
+                    Uploading {uploadPct}%
+                  {:else}
+                    Uploading {(Number(video.size || 0) / (1024 * 1024)).toFixed(0)} MB
+                  {/if}
                 </small>
                 <div class="vault-upload-track" aria-hidden="true">
                   <div
                     class="vault-upload-bar"
-                    style="width: {uploadPct != null ? uploadPct : 8}%"
+                    style="width: {uploadPct != null ? uploadPct : uploadStage === 'FINALIZING' ? 100 : 8}%"
                   ></div>
                 </div>
               </div>
@@ -3731,7 +3997,21 @@
               {#if video.uploadState === 'pending_accept'}
                 <span class="upload-state-badge" title="Waiting for Accept">🎬 Pending Accept</span>
               {:else if video.uploadState === 'uploading'}
-                <span class="upload-state-badge" title="Upload in progress">⬆ Uploading</span>
+                <span
+                  class="upload-state-badge"
+                  title="Upload in progress"
+                  data-vault-upload-badge-percent={uploadPct != null ? String(uploadPct) : ''}
+                >
+                  {#if uploadStage === 'VALIDATING'}
+                    🔍 Validating
+                  {:else if uploadStage === 'FINALIZING'}
+                    🎬 Finalizing
+                  {:else if uploadPct != null}
+                    ⬆ Uploading {uploadPct}%
+                  {:else}
+                    ⬆ Uploading
+                  {/if}
+                </span>
               {:else if video.uploadState === 'interrupted'}
                 <span
                   class="upload-state-badge upload-state-badge--interrupted"

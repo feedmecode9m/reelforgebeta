@@ -419,6 +419,16 @@ min-height: 0;
   font-size: 2.25rem;
   background: linear-gradient(145deg, #121820 0%, #1c2838 55%, #15202b 100%);
   animation: vault-upload-pulse 1.6s ease-in-out infinite;
+  /* Keep face under chrome controls; pad so bar clears title strip */
+  z-index: 15;
+  padding: 0.75rem 0.5rem 2.75rem;
+  box-sizing: border-box;
+}
+.vault-card.vault-card--pending .vault-pending-face,
+.vault-card.vault-card--failed .vault-pending-face {
+  z-index: 15;
+  padding-bottom: 2.75rem;
+  box-sizing: border-box;
 }
 .vault-card .vault-pending-face {
   display: grid;
@@ -555,6 +565,47 @@ margin: 0;
   border-radius: 999px;
   background: linear-gradient(90deg, #00f2ff, #38bdf8);
   transition: width 0.25s ease;
+}
+.vault-upload-track--live {
+  width: min(100%, 22rem);
+  height: 10px;
+  margin: 0.55rem auto 0.35rem;
+}
+.vault-upload-live {
+  width: 100%;
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 0.35rem;
+  padding: 1rem 1.25rem;
+  border-radius: 8px;
+  border: 2px solid rgba(0, 242, 255, 0.55);
+  background: linear-gradient(145deg, #121820 0%, #1c2838 55%, #15202b 100%);
+  color: #fff;
+  text-align: center;
+}
+.vault-upload-live__label {
+  margin: 0;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+}
+.vault-upload-live__name {
+  font-size: 0.95rem;
+  word-break: break-all;
+  max-width: 28rem;
+}
+.vault-upload-live__percent {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--neon-cyan, #00f2ff);
+  font-variant-numeric: tabular-nums;
+}
+.vault-upload-live__hint {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.65);
 }
 .video-vault-drop { min-height: 200px; }
 .video-vault-item { position: relative; }
@@ -872,6 +923,44 @@ margin: 0;
   box-sizing: border-box;
   font-family: inherit;
   resize: vertical;
+}
+.vault-creator-card__nlp-review {
+  margin: 0.35rem 0 0.45rem;
+  padding: 0.4rem 0.45rem;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 6px;
+  background: rgba(8, 47, 73, 0.35);
+}
+.vault-creator-card__nlp-review-title {
+  margin: 0 0 0.25rem;
+  color: #e0f2fe;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.vault-creator-card__nlp-review-facts {
+  margin: 0 0 0.35rem;
+  padding-left: 1rem;
+  color: #cbd5e1;
+  font-size: 0.68rem;
+  text-transform: none;
+  letter-spacing: normal;
+}
+.vault-creator-card__nlp-review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: flex-end;
+}
+.vault-creator-card__nlp-override {
+  margin-bottom: 0;
+  min-width: 7rem;
+}
+.vault-creator-card__manual-category {
+  margin-top: 0.4rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.25);
 }
 .vault-creator-card__pair {
   display: grid;

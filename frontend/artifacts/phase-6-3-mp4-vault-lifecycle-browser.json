@@ -1,0 +1,656 @@
+{
+  "phase": "PHASE-6-3-MP4-VAULT-LIFECYCLE",
+  "timestamp": "2026-08-13T06:08:23.685Z",
+  "fixture": {
+    "path": "/tmp/phase63-lifecycle/01_ARRIVAL_OPEN_v1.mp4",
+    "size": 8982104,
+    "name": "01_ARRIVAL_OPEN_v1.mp4"
+  },
+  "boundaries": {
+    "DROP": "PASS",
+    "ACCEPT": "PASS",
+    "UPLOAD": "PASS",
+    "FINALIZE": "PASS",
+    "CATALOG": "PASS",
+    "SYNC": "PASS",
+    "FEED": "PASS",
+    "CARD": "PASS",
+    "PLAYBACK": "PASS"
+  },
+  "mutations": {
+    "categoryPatch": 0,
+    "titleWrites": 0,
+    "descriptionWrites": 0,
+    "productionCatalogWrites": 0,
+    "localCatalogWrites": 3,
+    "deploy": 0
+  },
+  "proof": {
+    "drop": "PASS",
+    "pendingAccept": "PASS",
+    "accept": "PASS",
+    "progress": {
+      "stagesSeen": [
+        "FINALIZING",
+        "COMPLETE",
+        "ACCEPTED",
+        "VALIDATING",
+        "UPLOADING"
+      ],
+      "percentsSeen": [
+        0,
+        100
+      ],
+      "completeVisible": true
+    },
+    "catalog": {
+      "reelId": "b3376547-7a10-41d9-b7a3-25c1aa343ff7",
+      "category": "Trending",
+      "url": "http://localhost:8080/videos/b3376547-7a10-41d9-b7a3-25c1aa343ff7.mp4"
+    },
+    "trendingCard": {
+      "variant": "row",
+      "mediaType": "video",
+      "reelId": "b3376547-7a10-41d9-b7a3-25c1aa343ff7",
+      "aspect": 1.7777777777777777,
+      "hasVideo": false,
+      "hasImg": true,
+      "className": "viewer-sem-card viewer-sem-card--row sem-card--theme-production viewer-sem-card--anim-parallax s-yTTZwgg0Qunr"
+    },
+    "hoverPlay": {
+      "hasVideo": true,
+      "readyState": 4,
+      "currentSrc": "http://localhost:8080/videos/b3376547-7a10-41d9-b7a3-25c1aa343ff7.mp4",
+      "paused": false,
+      "previewClass": true
+    }
+  },
+  "markers": [
+    {
+      "ts": "2026-08-13T06:08:31.402Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:31.394Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 1008}"
+    },
+    {
+      "ts": "2026-08-13T06:08:31.442Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:31.441Z, component: persistPersonalVault, file: viewerContext.js, fileName: a4089ca0-c5a7-493b-8db6-9a0d354dbec4.mp4, fileSize: null}"
+    },
+    {
+      "ts": "2026-08-13T06:08:31.442Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:31.441Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 1074}"
+    },
+    {
+      "ts": "2026-08-13T06:08:31.444Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:31.443Z, component: persistPersonalVault, file: viewerContext.js, fileName: a4089ca0-c5a7-493b-8db6-9a0d354dbec4.mp4, fileSize: null}"
+    },
+    {
+      "ts": "2026-08-13T06:08:31.444Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:31.444Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 1074}"
+    },
+    {
+      "ts": "2026-08-13T06:08:31.476Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:31.475Z, component: persistPersonalVault, file: viewerContext.js, fileName: a4089ca0-c5a7-493b-8db6-9a0d354dbec4.mp4, fileSize: null}"
+    },
+    {
+      "ts": "2026-08-13T06:08:31.476Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:31.475Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 1074}"
+    },
+    {
+      "ts": "2026-08-13T06:08:31.504Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:31.504Z, component: persistPersonalVault, file: viewerContext.js, fileName: a4089ca0-c5a7-493b-8db6-9a0d354dbec4.mp4, fileSize: null}"
+    },
+    {
+      "ts": "2026-08-13T06:08:31.505Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:31.504Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 1074}"
+    },
+    {
+      "ts": "2026-08-13T06:08:31.505Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:31.505Z, component: persistPersonalVault, file: viewerContext.js, fileName: a4089ca0-c5a7-493b-8db6-9a0d354dbec4.mp4, fileSize: null}"
+    },
+    {
+      "ts": "2026-08-13T06:08:31.506Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:31.505Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 1074}"
+    },
+    {
+      "ts": "2026-08-13T06:08:36.099Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:36.098Z, component: persistPersonalVault, file: viewerContext.js, fileName: a4089ca0-c5a7-493b-8db6-9a0d354dbec4.mp4, fileSize: null}"
+    },
+    {
+      "ts": "2026-08-13T06:08:36.099Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:36.098Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 1074}"
+    },
+    {
+      "ts": "2026-08-13T06:08:39.131Z",
+      "text": "[MP4_DROP_START] {fileName: not-a-video.txt, fileSize: 3, fileType: text/plain, eventType: dragenter}"
+    },
+    {
+      "ts": "2026-08-13T06:08:39.131Z",
+      "text": "[BG7G_DROP] {ts: 2026-08-13T06:08:39.131Z, component: handleVaultVideoDragEnter, file: VaultExperience.svelte, fileName: null, fileSize: null}"
+    },
+    {
+      "ts": "2026-08-13T06:08:39.132Z",
+      "text": "[MP4_DROP_START] {fileName: not-a-video.txt, fileSize: 3, fileType: text/plain, eventType: drop, fileCount: 1}"
+    },
+    {
+      "ts": "2026-08-13T06:08:39.132Z",
+      "text": "[BG7G_DROP] {ts: 2026-08-13T06:08:39.132Z, component: handleVaultVideoDrop, file: VaultExperience.svelte, fileName: null, fileSize: null}"
+    },
+    {
+      "ts": "2026-08-13T06:08:39.133Z",
+      "text": "[MP4_DROP] {fileName: not-a-video.txt, fileCount: 1, ts: 2026-08-13T06:08:39.132Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:39.133Z",
+      "text": "[MP4_DROP_REJECTED] {reason: no_valid_video_in_transfer, fileCount: 1, types: Array(1), names: Array(1), sizes: Array(1)}"
+    },
+    {
+      "ts": "2026-08-13T06:08:39.133Z",
+      "text": "[BG7G_DROP] {ts: 2026-08-13T06:08:39.132Z, component: handleVaultVideoDrop, file: VaultExperience.svelte, fileName: null, fileSize: null}"
+    },
+    {
+      "ts": "2026-08-13T06:08:39.748Z",
+      "text": "[MP4_FILE_PICKER] {action: selected, fileName: 01_ARRIVAL_OPEN_v1.mp4, fileSize: 8982104, fileCount: 1, ts: 2026-08-13T06:08:39.748Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:39.750Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:39.749Z, component: persistPersonalVault, file: viewerContext.js, fileName: 01_ARRIVAL_OPEN_v1.mp4, fileSize: 8982104}"
+    },
+    {
+      "ts": "2026-08-13T06:08:39.750Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:39.750Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 1928}"
+    },
+    {
+      "ts": "2026-08-13T06:08:39.751Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:39.750Z, component: persistPersonalVault, file: viewerContext.js, fileName: 01_ARRIVAL_OPEN_v1.mp4, fileSize: 8982104}"
+    },
+    {
+      "ts": "2026-08-13T06:08:39.751Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:39.751Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 1928}"
+    },
+    {
+      "ts": "2026-08-13T06:08:39.751Z",
+      "text": "[MP4_PENDING_PREVIEW] {source: file_picker, fileName: 01_ARRIVAL_OPEN_v1.mp4, fileSize: 8982104, fileType: video/mp4, pendingId: local-pending-1786601319749}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.021Z",
+      "text": "[MP4_PENDING_ACCEPT_CLICK] {hasPending: true, adminSessionReady: true, acceptInFlight: false, ts: 2026-08-13T06:08:40.017Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.021Z",
+      "text": "[MP4_ACCEPT] {fileName: 01_ARRIVAL_OPEN_v1.mp4, fileSize: 8982104, ts: 2026-08-13T06:08:40.017Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.021Z",
+      "text": "[MP4_PENDING_ACCEPT] {fileName: 01_ARRIVAL_OPEN_v1.mp4, fileSize: 8982104, skipBlobPreview: false, ts: 2026-08-13T06:08:40.018Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.021Z",
+      "text": "[MP4_UPLOAD_STAGE] {stage: ACCEPTED, fileName: 01_ARRIVAL_OPEN_v1.mp4, ts: 2026-08-13T06:08:40.018Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.021Z",
+      "text": "[MP4_UPLOAD_PROGRESS] {fileName: 01_ARRIVAL_OPEN_v1.mp4, percent: 0, stage: ACCEPTED, ts: 2026-08-13T06:08:40.018Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.022Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:40.018Z, component: persistPersonalVault, file: viewerContext.js, fileName: 01_ARRIVAL_OPEN_v1.mp4, fileSize: 8982104}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.022Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:40.019Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 1916}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.022Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:40.019Z, component: persistPersonalVault, file: viewerContext.js, fileName: 01_ARRIVAL_OPEN_v1.mp4, fileSize: 8982104}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.022Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:40.019Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 1916}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.024Z",
+      "text": "[MP4_UPLOAD_SOURCE] {source: pending_accept, fileName: 01_ARRIVAL_OPEN_v1.mp4, fileSize: 8982104, fileType: video/mp4, optimisticId: local-upload-1786601320018}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.024Z",
+      "text": "[MP4_DROP_ACCEPTED] {fileName: 01_ARRIVAL_OPEN_v1.mp4, uploadPath: processVaultVideoFile→uploadMedia}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.024Z",
+      "text": "[BG7G_DROP] {ts: 2026-08-13T06:08:40.023Z, component: handleVaultVideoDrop, file: VaultExperience.svelte, fileName: 01_ARRIVAL_OPEN_v1.mp4, fileSize: 8982104}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.024Z",
+      "text": "[UPLOAD_LOCK] {key: 01_arrival_open_v1.mp4|8982104, existingId: , state: registered, createdAt: 2026-08-13T06:08:40.024Z, removedAt: null}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.024Z",
+      "text": "[MP4_UPLOAD_STAGE] {stage: VALIDATING, fileName: 01_ARRIVAL_OPEN_v1.mp4, ts: 2026-08-13T06:08:40.024Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.025Z",
+      "text": "[MP4_VALIDATION] {fileName: 01_ARRIVAL_OPEN_v1.mp4, fileSize: 8982104, stage: begin, ts: 2026-08-13T06:08:40.024Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.201Z",
+      "text": "[MP4_VALIDATION] {fileName: 01_ARRIVAL_OPEN_v1.mp4, valid: true, ts: 2026-08-13T06:08:40.196Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.201Z",
+      "text": "[MP4_UPLOAD_STAGE] {stage: UPLOADING, fileName: 01_ARRIVAL_OPEN_v1.mp4, ts: 2026-08-13T06:08:40.196Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.201Z",
+      "text": "[MP4_UPLOAD_PROGRESS] {fileName: 01_ARRIVAL_OPEN_v1.mp4, percent: 0, stage: UPLOADING, ts: 2026-08-13T06:08:40.196Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.201Z",
+      "text": "[UPLOAD_STAGE] {uploadAttemptId: ua-msr4apdx-1, uploadKey: 01_arrival_open_v1.mp4|8982104, stage: LOCK_ACQUIRED, elapsedMs: 0, fileName: 01_ARRIVAL_OPEN_v1.mp4}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.201Z",
+      "text": "[BG7G_UPLOAD] {ts: 2026-08-13T06:08:40.197Z, component: handleVaultVideoDrop, file: VaultExperience.svelte, fileName: 01_ARRIVAL_OPEN_v1.mp4, fileSize: 8982104}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.201Z",
+      "text": "[MP4_UPLOAD_BEGIN] {fileName: 01_ARRIVAL_OPEN_v1.mp4, size: 8982104}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.201Z",
+      "text": "[UPLOAD_STARTED] {vault: video, name: 01_ARRIVAL_OPEN_v1.mp4, type: video/mp4, size: 8982104, ts: 2026-08-13T06:08:40.198Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.201Z",
+      "text": "[UPLOAD_STAGE] {uploadAttemptId: ua-msr4apdx-1, uploadKey: 01_arrival_open_v1.mp4|8982104, stage: UPLOAD_MEDIA_BEGIN, elapsedMs: 2, fileName: 01_ARRIVAL_OPEN_v1.mp4}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.202Z",
+      "text": "[UPLOAD_STAGE] {uploadAttemptId: ua-msr4apdx-1, uploadKey: 01_arrival_open_v1.mp4|8982104, stage: UPLOAD_MEDIA_ENTER, elapsedMs: 3, fileName: 01_ARRIVAL_OPEN_v1.mp4}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.202Z",
+      "text": "[UPLOAD_STAGE] {uploadAttemptId: ua-msr4apdx-1, uploadKey: 01_arrival_open_v1.mp4|8982104, stage: SIGNED_UPLOAD_PATH, elapsedMs: 3, fileName: 01_ARRIVAL_OPEN_v1.mp4}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.204Z",
+      "text": "[BG7G_SIGNED_UPLOAD] {stage: sign:request, fileName: 01_ARRIVAL_OPEN_v1.mp4, fileSize: 8982104, minBytes: 4194304, ts: 2026-08-13T06:08:40.202Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.204Z",
+      "text": "[UPLOAD_STAGE] {uploadAttemptId: ua-msr4apdx-1, uploadKey: 01_arrival_open_v1.mp4|8982104, stage: SIGN_BEGIN, elapsedMs: 6, fileName: 01_ARRIVAL_OPEN_v1.mp4}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.314Z",
+      "text": "[UPLOAD_STAGE] {uploadAttemptId: ua-msr4apdx-1, uploadKey: 01_arrival_open_v1.mp4|8982104, stage: SIGN_COMPLETE, elapsedMs: 116, fileName: 01_ARRIVAL_OPEN_v1.mp4}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.315Z",
+      "text": "[UPLOAD_CHECKPOINT] {uploadKey: 01_arrival_open_v1.mp4|8982104, fileName: 01_ARRIVAL_OPEN_v1.mp4, fileSize: 8982104, reelId: b3376547-7a10-41d9-b7a3-25c1aa343ff7, uploadId: 52e97ff4-0837-42fd-866b-f36449f49498}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.315Z",
+      "text": "[BG7G_SIGNED_UPLOAD] {stage: direct:put, uploadId: 52e97ff4-0837-42fd-866b-f36449f49498, reelId: b3376547-7a10-41d9-b7a3-25c1aa343ff7, uploadUrl: http://localhost:8080/api/uploads/direct/52e97ff4-0837-42fd-866b-f36449f49498, ts: 2026-08-13T06:08:40.314Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.315Z",
+      "text": "[UPLOAD_STAGE] {uploadAttemptId: ua-msr4apdx-1, uploadKey: 01_arrival_open_v1.mp4|8982104, stage: PUT_BEGIN, elapsedMs: 117, fileName: 01_ARRIVAL_OPEN_v1.mp4}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.315Z",
+      "text": "[UPLOAD_SIZE_TRACE] {fileName: 01_ARRIVAL_OPEN_v1.mp4, browserFileSize: 8982104, uploadBytesSent: 0, uploadComplete: false, uploadStatus: put_begin}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.317Z",
+      "text": "[MP4_UPLOAD_STAGE] {stage: UPLOADING, fileName: 01_ARRIVAL_OPEN_v1.mp4, ts: 2026-08-13T06:08:40.316Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.317Z",
+      "text": "[MP4_UPLOAD_PROGRESS] {fileName: 01_ARRIVAL_OPEN_v1.mp4, percent: 0, stage: UPLOADING, ts: 2026-08-13T06:08:40.317Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.400Z",
+      "text": "[MP4_UPLOAD_STAGE] {stage: UPLOADING, fileName: 01_ARRIVAL_OPEN_v1.mp4, ts: 2026-08-13T06:08:40.399Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.400Z",
+      "text": "[MP4_UPLOAD_PROGRESS] {fileName: 01_ARRIVAL_OPEN_v1.mp4, percent: 100, stage: UPLOADING, ts: 2026-08-13T06:08:40.400Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.403Z",
+      "text": "[UPLOAD_SIZE_TRACE] {fileName: 01_ARRIVAL_OPEN_v1.mp4, browserFileSize: 8982104, uploadBytesSent: 8982104, uploadComplete: true, uploadStatus: 200}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.403Z",
+      "text": "[UPLOAD_STAGE] {uploadAttemptId: ua-msr4apdx-1, uploadKey: 01_arrival_open_v1.mp4|8982104, stage: PUT_COMPLETE, elapsedMs: 205, fileName: 01_ARRIVAL_OPEN_v1.mp4}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.403Z",
+      "text": "[UPLOAD_CHECKPOINT] {uploadKey: 01_arrival_open_v1.mp4|8982104, fileName: 01_ARRIVAL_OPEN_v1.mp4, fileSize: 8982104, reelId: b3376547-7a10-41d9-b7a3-25c1aa343ff7, uploadId: 52e97ff4-0837-42fd-866b-f36449f49498}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.403Z",
+      "text": "[BG7G_SIGNED_UPLOAD] {stage: finalize:request, uploadId: 52e97ff4-0837-42fd-866b-f36449f49498, endpoint: /api/reels/finalize, browserFileSize: 8982104, uploadBytesSent: 8982104}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.403Z",
+      "text": "[UPLOAD_STAGE] {uploadAttemptId: ua-msr4apdx-1, uploadKey: 01_arrival_open_v1.mp4|8982104, stage: FINALIZE_BEGIN, elapsedMs: 205, fileName: 01_ARRIVAL_OPEN_v1.mp4}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.403Z",
+      "text": "[MP4_UPLOAD_STAGE] {stage: FINALIZING, fileName: 01_ARRIVAL_OPEN_v1.mp4, ts: 2026-08-13T06:08:40.402Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.403Z",
+      "text": "[MP4_UPLOAD_PROGRESS] {fileName: 01_ARRIVAL_OPEN_v1.mp4, percent: 100, stage: FINALIZING, ts: 2026-08-13T06:08:40.402Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.403Z",
+      "text": "[MP4_FINALIZE] {fileName: 01_ARRIVAL_OPEN_v1.mp4, phase: finalize, stage: request, ts: 2026-08-13T06:08:40.402Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.792Z",
+      "text": "[UPLOAD_STAGE] {uploadAttemptId: ua-msr4apdx-1, uploadKey: 01_arrival_open_v1.mp4|8982104, stage: FINALIZE_COMPLETE, elapsedMs: 595, fileName: 01_ARRIVAL_OPEN_v1.mp4}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.794Z",
+      "text": "[UPLOAD_CHECKPOINT] {cleared: 01_arrival_open_v1.mp4|8982104}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.794Z",
+      "text": "[UPLOAD_STAGE] {uploadAttemptId: ua-msr4apdx-1, uploadKey: 01_arrival_open_v1.mp4|8982104, stage: POLL_BEGIN, elapsedMs: 596, fileName: 01_ARRIVAL_OPEN_v1.mp4}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.794Z",
+      "text": "[MP4_UPLOAD_STAGE] {stage: FINALIZING, fileName: 01_ARRIVAL_OPEN_v1.mp4, ts: 2026-08-13T06:08:40.793Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.794Z",
+      "text": "[MP4_UPLOAD_PROGRESS] {fileName: 01_ARRIVAL_OPEN_v1.mp4, percent: 100, stage: FINALIZING, ts: 2026-08-13T06:08:40.793Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.794Z",
+      "text": "[MP4_FINALIZE] {fileName: 01_ARRIVAL_OPEN_v1.mp4, phase: ingest, stage: pending, ts: 2026-08-13T06:08:40.793Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.795Z",
+      "text": "[UPLOAD_STAGE] {uploadAttemptId: ua-msr4apdx-1, uploadKey: 01_arrival_open_v1.mp4|8982104, stage: POLL_ENTER, elapsedMs: 597, fileName: 01_ARRIVAL_OPEN_v1.mp4}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.803Z",
+      "text": "[UPLOAD_STAGE] {uploadAttemptId: ua-msr4apdx-1, uploadKey: 01_arrival_open_v1.mp4|8982104, stage: POLL_ITERATION, elapsedMs: 604, fileName: 01_ARRIVAL_OPEN_v1.mp4}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.803Z",
+      "text": "[MP4_UPLOAD_STAGE] {stage: FINALIZING, fileName: 01_ARRIVAL_OPEN_v1.mp4, ts: 2026-08-13T06:08:40.801Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.803Z",
+      "text": "[MP4_UPLOAD_PROGRESS] {fileName: 01_ARRIVAL_OPEN_v1.mp4, percent: 100, stage: FINALIZING, ts: 2026-08-13T06:08:40.802Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:40.803Z",
+      "text": "[MP4_FINALIZE] {fileName: 01_ARRIVAL_OPEN_v1.mp4, phase: ingest, stage: pending, ts: 2026-08-13T06:08:40.802Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:41.624Z",
+      "text": "[UPLOAD_STAGE] {uploadAttemptId: ua-msr4apdx-1, uploadKey: 01_arrival_open_v1.mp4|8982104, stage: POLL_ITERATION, elapsedMs: 1422, fileName: 01_ARRIVAL_OPEN_v1.mp4}"
+    },
+    {
+      "ts": "2026-08-13T06:08:41.624Z",
+      "text": "[MP4_UPLOAD_STAGE] {stage: FINALIZING, fileName: 01_ARRIVAL_OPEN_v1.mp4, ts: 2026-08-13T06:08:41.620Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:41.624Z",
+      "text": "[MP4_UPLOAD_PROGRESS] {fileName: 01_ARRIVAL_OPEN_v1.mp4, percent: 100, stage: FINALIZING, ts: 2026-08-13T06:08:41.620Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:41.624Z",
+      "text": "[MP4_FINALIZE] {fileName: 01_ARRIVAL_OPEN_v1.mp4, phase: ingest, stage: processing, ts: 2026-08-13T06:08:41.620Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:42.578Z",
+      "text": "[UPLOAD_STAGE] {uploadAttemptId: ua-msr4apdx-1, uploadKey: 01_arrival_open_v1.mp4|8982104, stage: POLL_ITERATION, elapsedMs: 2380, fileName: 01_ARRIVAL_OPEN_v1.mp4}"
+    },
+    {
+      "ts": "2026-08-13T06:08:42.578Z",
+      "text": "[MP4_UPLOAD_STAGE] {stage: FINALIZING, fileName: 01_ARRIVAL_OPEN_v1.mp4, ts: 2026-08-13T06:08:42.577Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:42.579Z",
+      "text": "[MP4_UPLOAD_PROGRESS] {fileName: 01_ARRIVAL_OPEN_v1.mp4, percent: 100, stage: FINALIZING, ts: 2026-08-13T06:08:42.577Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:42.579Z",
+      "text": "[MP4_FINALIZE] {fileName: 01_ARRIVAL_OPEN_v1.mp4, phase: ingest, stage: processing, ts: 2026-08-13T06:08:42.577Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:43.579Z",
+      "text": "[UPLOAD_STAGE] {uploadAttemptId: ua-msr4apdx-1, uploadKey: 01_arrival_open_v1.mp4|8982104, stage: POLL_ITERATION, elapsedMs: 3371, fileName: 01_ARRIVAL_OPEN_v1.mp4}"
+    },
+    {
+      "ts": "2026-08-13T06:08:43.579Z",
+      "text": "[MP4_UPLOAD_STAGE] {stage: FINALIZING, fileName: 01_ARRIVAL_OPEN_v1.mp4, ts: 2026-08-13T06:08:43.568Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:43.579Z",
+      "text": "[MP4_UPLOAD_PROGRESS] {fileName: 01_ARRIVAL_OPEN_v1.mp4, percent: 100, stage: FINALIZING, ts: 2026-08-13T06:08:43.568Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:43.579Z",
+      "text": "[MP4_FINALIZE] {fileName: 01_ARRIVAL_OPEN_v1.mp4, phase: ingest, stage: processing, ts: 2026-08-13T06:08:43.568Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:44.387Z",
+      "text": "[UPLOAD_STAGE] {uploadAttemptId: ua-msr4apdx-1, uploadKey: 01_arrival_open_v1.mp4|8982104, stage: POLL_ITERATION, elapsedMs: 4189, fileName: 01_ARRIVAL_OPEN_v1.mp4}"
+    },
+    {
+      "ts": "2026-08-13T06:08:44.388Z",
+      "text": "[MP4_UPLOAD_STAGE] {stage: FINALIZING, fileName: 01_ARRIVAL_OPEN_v1.mp4, ts: 2026-08-13T06:08:44.386Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:44.388Z",
+      "text": "[MP4_UPLOAD_PROGRESS] {fileName: 01_ARRIVAL_OPEN_v1.mp4, percent: 100, stage: FINALIZING, ts: 2026-08-13T06:08:44.386Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:44.388Z",
+      "text": "[MP4_FINALIZE] {fileName: 01_ARRIVAL_OPEN_v1.mp4, phase: ingest, stage: processing, ts: 2026-08-13T06:08:44.386Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:45.196Z",
+      "text": "[UPLOAD_STAGE] {uploadAttemptId: ua-msr4apdx-1, uploadKey: 01_arrival_open_v1.mp4|8982104, stage: POLL_ITERATION, elapsedMs: 4999, fileName: 01_ARRIVAL_OPEN_v1.mp4}"
+    },
+    {
+      "ts": "2026-08-13T06:08:45.197Z",
+      "text": "[MP4_UPLOAD_STAGE] {stage: FINALIZING, fileName: 01_ARRIVAL_OPEN_v1.mp4, ts: 2026-08-13T06:08:45.196Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:45.197Z",
+      "text": "[MP4_UPLOAD_PROGRESS] {fileName: 01_ARRIVAL_OPEN_v1.mp4, percent: 100, stage: FINALIZING, ts: 2026-08-13T06:08:45.197Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:45.197Z",
+      "text": "[MP4_FINALIZE] {fileName: 01_ARRIVAL_OPEN_v1.mp4, phase: ingest, stage: processing, ts: 2026-08-13T06:08:45.197Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:45.295Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:45.286Z, component: persistPersonalVault, file: viewerContext.js, fileName: 01_ARRIVAL_OPEN_v1.mp4, fileSize: 8982104}"
+    },
+    {
+      "ts": "2026-08-13T06:08:45.295Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:45.287Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 1946}"
+    },
+    {
+      "ts": "2026-08-13T06:08:45.319Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:45.318Z, component: persistPersonalVault, file: viewerContext.js, fileName: b3376547-7a10-41d9-b7a3-25c1aa343ff7.mp4, fileSize: null}"
+    },
+    {
+      "ts": "2026-08-13T06:08:45.319Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:45.319Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 3094}"
+    },
+    {
+      "ts": "2026-08-13T06:08:45.320Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:45.319Z, component: persistPersonalVault, file: viewerContext.js, fileName: b3376547-7a10-41d9-b7a3-25c1aa343ff7.mp4, fileSize: null}"
+    },
+    {
+      "ts": "2026-08-13T06:08:45.320Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:45.320Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 3094}"
+    },
+    {
+      "ts": "2026-08-13T06:08:48.065Z",
+      "text": "[UPLOAD_STAGE] {uploadAttemptId: ua-msr4apdx-1, uploadKey: 01_arrival_open_v1.mp4|8982104, stage: POLL_ITERATION, elapsedMs: 7868, fileName: 01_ARRIVAL_OPEN_v1.mp4}"
+    },
+    {
+      "ts": "2026-08-13T06:08:48.067Z",
+      "text": "[MP4_UPLOAD_STAGE] {stage: FINALIZING, fileName: 01_ARRIVAL_OPEN_v1.mp4, ts: 2026-08-13T06:08:48.065Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:48.067Z",
+      "text": "[MP4_UPLOAD_PROGRESS] {fileName: 01_ARRIVAL_OPEN_v1.mp4, percent: 100, stage: FINALIZING, ts: 2026-08-13T06:08:48.065Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:48.067Z",
+      "text": "[MP4_FINALIZE] {fileName: 01_ARRIVAL_OPEN_v1.mp4, phase: ingest, stage: ready, ts: 2026-08-13T06:08:48.066Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:48.069Z",
+      "text": "[UPLOAD_STAGE] {uploadAttemptId: ua-msr4apdx-1, uploadKey: 01_arrival_open_v1.mp4|8982104, stage: POLL_READY, elapsedMs: 7870, fileName: 01_ARRIVAL_OPEN_v1.mp4}"
+    },
+    {
+      "ts": "2026-08-13T06:08:48.073Z",
+      "text": "[UPLOAD_SUCCESS] {id: b3376547-7a10-41d9-b7a3-25c1aa343ff7, status: ready, url: http://localhost:8080/videos/b3376547-7a10-41d9-b7a3-25c1aa343ff7.mp4, thumbnailUrl: http://localhost:8080/thumbs/b3376547-7a10-41d9-b7a3-25c1aa343ff7.jpg, ts: 2026-08-13T06:08:48.071Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:48.073Z",
+      "text": "[BG7G_API] {ts: 2026-08-13T06:08:48.071Z, component: createReel, file: media.js, fileName: 01_ARRIVAL_OPEN_v1.mp4, uploadUrl: http://localhost:8080/videos/b3376547-7a10-41d9-b7a3-25c1aa343ff7.mp4}"
+    },
+    {
+      "ts": "2026-08-13T06:08:48.073Z",
+      "text": "[UPLOAD_STAGE] {uploadAttemptId: ua-msr4apdx-1, uploadKey: 01_arrival_open_v1.mp4|8982104, stage: UPLOAD_SIGNED_RETURN, elapsedMs: 7874, fileName: 01_ARRIVAL_OPEN_v1.mp4}"
+    },
+    {
+      "ts": "2026-08-13T06:08:48.073Z",
+      "text": "[UPLOAD_STAGE] {uploadAttemptId: ua-msr4apdx-1, uploadKey: 01_arrival_open_v1.mp4|8982104, stage: UPLOAD_MEDIA_RETURNED, elapsedMs: 7874, fileName: 01_ARRIVAL_OPEN_v1.mp4}"
+    },
+    {
+      "ts": "2026-08-13T06:08:48.074Z",
+      "text": "[BG7G_UPLOAD] {ts: 2026-08-13T06:08:48.071Z, component: handleVaultVideoDrop, file: VaultExperience.svelte, fileName: 01_ARRIVAL_OPEN_v1.mp4, fileSize: 8982104}"
+    },
+    {
+      "ts": "2026-08-13T06:08:48.078Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:48.077Z, component: personalVideos.update, file: VaultExperience.svelte, fileName: b3376547-7a10-41d9-b7a3-25c1aa343ff7.mp4, fileSize: 8982104}"
+    },
+    {
+      "ts": "2026-08-13T06:08:48.083Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:48.079Z, component: persistPersonalVault, file: viewerContext.js, fileName: b3376547-7a10-41d9-b7a3-25c1aa343ff7.mp4, fileSize: 8982104}"
+    },
+    {
+      "ts": "2026-08-13T06:08:48.083Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:48.079Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 2236}"
+    },
+    {
+      "ts": "2026-08-13T06:08:48.083Z",
+      "text": "[MP4_UPLOAD_STAGE] {stage: COMPLETE, fileName: 01_ARRIVAL_OPEN_v1.mp4, ts: 2026-08-13T06:08:48.080Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:48.083Z",
+      "text": "[MP4_UPLOAD_PROGRESS] {fileName: 01_ARRIVAL_OPEN_v1.mp4, percent: 100, stage: COMPLETE, ts: 2026-08-13T06:08:48.080Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:48.083Z",
+      "text": "[MP4_UPLOAD_COMPLETE] {fileName: 01_ARRIVAL_OPEN_v1.mp4, reelId: b3376547-7a10-41d9-b7a3-25c1aa343ff7, url: http://localhost:8080/videos/b3376547-7a10-41d9-b7a3-25c1aa343ff7.mp4, ts: 2026-08-13T06:08:48.080Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:48.084Z",
+      "text": "[MP4_CATALOG] {reelId: b3376547-7a10-41d9-b7a3-25c1aa343ff7, category: Trending, fileName: b3376547-7a10-41d9-b7a3-25c1aa343ff7.mp4, ts: 2026-08-13T06:08:48.080Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:48.084Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:48.082Z, component: persistPersonalVault, file: viewerContext.js, fileName: b3376547-7a10-41d9-b7a3-25c1aa343ff7.mp4, fileSize: 8982104}"
+    },
+    {
+      "ts": "2026-08-13T06:08:48.084Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:48.082Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 2236}"
+    },
+    {
+      "ts": "2026-08-13T06:08:48.094Z",
+      "text": "[MP4_FEED] {reelId: b3376547-7a10-41d9-b7a3-25c1aa343ff7, category: Trending, ts: 2026-08-13T06:08:48.093Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:48.097Z",
+      "text": "[BG7G_RENDER] {ts: 2026-08-13T06:08:48.096Z, component: handleVaultVideoDrop, file: VaultExperience.svelte, fileName: b3376547-7a10-41d9-b7a3-25c1aa343ff7.mp4, fileSize: 8982104}"
+    },
+    {
+      "ts": "2026-08-13T06:08:48.097Z",
+      "text": "[UPLOAD_SUCCESS] {vault: video, id: b3376547-7a10-41d9-b7a3-25c1aa343ff7, url: http://localhost:8080/videos/b3376547-7a10-41d9-b7a3-25c1aa343ff7.mp4, thumbnail: http://localhost:8080/thumbs/b3376547-7a10-41d9-b7a3-25c1aa343ff7.jpg, ts: 2026-08-13T06:08:48.096Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:48.097Z",
+      "text": "[UPLOAD_STAGE] {uploadAttemptId: ua-msr4apdx-1, uploadKey: 01_arrival_open_v1.mp4|8982104, stage: FINALLY_ENTERED, elapsedMs: 7900, fileName: 01_ARRIVAL_OPEN_v1.mp4}"
+    },
+    {
+      "ts": "2026-08-13T06:08:48.098Z",
+      "text": "[UPLOAD_LOCK] {key: 01_arrival_open_v1.mp4|8982104, existingId: b3376547-7a10-41d9-b7a3-25c1aa343ff7, state: removed, createdAt: 2026-08-13T06:08:40.024Z, removedAt: 2026-08-13T06:08:48.097Z}"
+    },
+    {
+      "ts": "2026-08-13T06:08:48.098Z",
+      "text": "[UPLOAD_STAGE] {uploadAttemptId: ua-msr4apdx-1, uploadKey: 01_arrival_open_v1.mp4|8982104, stage: LOCK_RELEASED, elapsedMs: 7901, fileName: 01_ARRIVAL_OPEN_v1.mp4}"
+    },
+    {
+      "ts": "2026-08-13T06:08:50.181Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:50.181Z, component: persistPersonalVault, file: viewerContext.js, fileName: b3376547-7a10-41d9-b7a3-25c1aa343ff7.mp4, fileSize: 8982104}"
+    },
+    {
+      "ts": "2026-08-13T06:08:50.182Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:08:50.181Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 2236}"
+    },
+    {
+      "ts": "2026-08-13T06:09:21.072Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:09:21.068Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 2014}"
+    },
+    {
+      "ts": "2026-08-13T06:09:21.110Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:09:21.105Z, component: persistPersonalVault, file: viewerContext.js, fileName: b3376547-7a10-41d9-b7a3-25c1aa343ff7.mp4, fileSize: null}"
+    },
+    {
+      "ts": "2026-08-13T06:09:21.110Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:09:21.105Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 2146}"
+    },
+    {
+      "ts": "2026-08-13T06:09:21.112Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:09:21.107Z, component: persistPersonalVault, file: viewerContext.js, fileName: b3376547-7a10-41d9-b7a3-25c1aa343ff7.mp4, fileSize: null}"
+    },
+    {
+      "ts": "2026-08-13T06:09:21.112Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:09:21.107Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 2146}"
+    },
+    {
+      "ts": "2026-08-13T06:09:21.139Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:09:21.139Z, component: persistPersonalVault, file: viewerContext.js, fileName: b3376547-7a10-41d9-b7a3-25c1aa343ff7.mp4, fileSize: null}"
+    },
+    {
+      "ts": "2026-08-13T06:09:21.140Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:09:21.139Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 2146}"
+    },
+    {
+      "ts": "2026-08-13T06:09:21.165Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:09:21.165Z, component: persistPersonalVault, file: viewerContext.js, fileName: b3376547-7a10-41d9-b7a3-25c1aa343ff7.mp4, fileSize: null}"
+    },
+    {
+      "ts": "2026-08-13T06:09:21.165Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:09:21.165Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 2146}"
+    },
+    {
+      "ts": "2026-08-13T06:09:21.166Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:09:21.166Z, component: persistPersonalVault, file: viewerContext.js, fileName: b3376547-7a10-41d9-b7a3-25c1aa343ff7.mp4, fileSize: null}"
+    },
+    {
+      "ts": "2026-08-13T06:09:21.166Z",
+      "text": "[BG7G_STORE] {ts: 2026-08-13T06:09:21.166Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 2146}"
+    },
+    {
+      "ts": "2026-08-13T06:10:00.912Z",
+      "text": "[VIEWER_SEMANTIC_CARD] reelId=b3376547-7a10-41d9-b7a3-25c1aa343ff7"
+    }
+  ],
+  "blockedBoundary": null,
+  "status": "VERIFIED"
+}

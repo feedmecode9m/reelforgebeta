@@ -126,7 +126,9 @@ export const USE_SIGNED_UPLOADS =
     import.meta.env.VITE_USE_SIGNED_UPLOADS === 'true' ||
     (import.meta.env.PROD &&
         isNetlifyStaticHost() &&
-        import.meta.env.VITE_USE_SIGNED_UPLOADS !== 'false');
+        import.meta.env.VITE_USE_SIGNED_UPLOADS !== 'false') ||
+    // Local Studio: large MP4s require signed PUT + progress events (multipart is capped).
+    (import.meta.env.DEV && import.meta.env.VITE_USE_SIGNED_UPLOADS !== 'false');
 
 /**
  * Netlify same-origin proxy truncates multipart bodies at exactly 5 MiB

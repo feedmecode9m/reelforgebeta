@@ -84,6 +84,7 @@
     "validate:phase-6-viewer-cinematic-cards-browser": "node scripts/validate-phase-6-viewer-cinematic-cards-browser.mjs",
     "validate:phase-6-2-semantic-card-intelligence": "node scripts/validate-phase-6-2-semantic-card-intelligence.mjs",
     "validate:phase-6-3-media-reality": "node scripts/validate-phase-6-3-media-reality.mjs",
+    "validate:phase-6-3-mp4-vault-lifecycle-browser": "node scripts/validate-phase-6-3-mp4-vault-lifecycle-browser.mjs",
     "mission:phase-3a-production-audit": "node scripts/mission-phase-3a-production-audit.mjs",
     "validate:catalog-metadata-enrichment": "node scripts/validate-catalog-metadata-enrichment.mjs",
     "validate:creator-metadata-authoring": "node scripts/validate-creator-metadata-authoring.mjs",

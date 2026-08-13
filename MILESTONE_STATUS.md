@@ -12,6 +12,8 @@ Single source of truth for implementation vs release state. Update when a milest
 
 | Area | Status |
 |------|--------|
+| **Phase 6.3 MP4 Vault Full Lifecycle** | ✅ **Implementation Complete** — browser lifecycle VERIFIED locally; Release not started (do not deploy) |
+| **Phase 6.3 MP4 Vault Progress Restoration** | ✅ **Implementation Complete** — UX-only progress bar/% restore; Release not started (do not deploy) |
 | **Smart Category NLP Phase 6 — Viewer Cinematic Card Shell** | ✅ **Implementation Complete** — audience landscape shell; no deploy; no production mutations |
 | **Smart Category NLP Phase 5 — Premium Semantic Media** | ✅ **Preview Released** — `1094823` / Netlify `6a7d447faa2fdce73c4c1e79` / `index-DTJehS3d.js` (persist gated; future shelves reserved) |
 | **Smart Category NLP Phase 4 — Semantic Card System** | ✅ **Release Approved** — `881c428` / Netlify `6a7d3d5d254af585dddec345` / `index-GHjzxDYw.js` |
@@ -203,6 +205,34 @@ Category PATCH: 0
 ```
 
 Break: `buildHomeFeed` excluded Trending videos when they were also the active hero background (`isHeroFeedCard`), emptying discovery. Fix: exclude only `category === HERO`. Vault drop of `01_ARRIVAL_OPEN_v1.mp4` → pending_accept PASS. Arrival remains in `/api/reels` as Trending video. Production smoke: Arrival featured/row ViewerSemanticCard with enrichment; hero binding preserved. Validator: `validate:phase-6-3-media-reality`.
+
+---
+
+## Phase 6.3 MP4 Vault Progress Restoration
+
+```
+PHASE-6-3-MP4-VAULT-PROGRESS-RESTORATION
+Implementation: COMPLETE
+Release: NOT STARTED (do not deploy — vault UX gate before further Phase 6.3 release work)
+Release Process: v1.0
+```
+
+UX-only regression repair: restore drop-zone live progress (filename + bar + %), card % badge, and VALIDATING → UPLOADING → FINALIZING stage labels. No category/title/description writes, no feed mutation changes, ViewerSemanticCard untouched. Validators: `validate:phase-6*`, `validate:phase-4-semantic-cards-browser`.
+
+---
+
+## Phase 6.3 MP4 Vault Full Lifecycle Verification
+
+```
+PHASE-6-3-MP4-VAULT-LIFECYCLE
+Implementation: COMPLETE
+Release: NOT STARTED (browser VERIFIED locally — await explicit release mission)
+Release Process: v1.0
+Browser smoke: validate:phase-6-3-mp4-vault-lifecycle-browser → PHASE-6.3 VERIFIED — READY FOR RELEASE
+Artifact: frontend/artifacts/phase-6-3-mp4-vault-lifecycle-browser.json
+```
+
+Sticky upload chrome (`vaultUploadUi`) keeps progress visible through COMPLETE. Local DEV enables signed uploads so large MP4s use PUT progress path. Validation pipeline preserved. Production mutations: 0. Deploy: 0.
 
 ---
 

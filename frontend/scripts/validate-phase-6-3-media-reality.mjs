@@ -26,7 +26,19 @@ function assert(cond, label) {
 
 console.log('\n[phase-6-3-media-reality]');
 
-const catalog = await fetch('https://strong-lolly-a9fcb4.netlify.app/api/reels').then((r) => r.json());
+const CATALOG_URL =
+    process.env.PHASE63_CATALOG_URL || 'https://strong-lolly-a9fcb4.netlify.app/api/reels';
+let catalog;
+try {
+    catalog = await fetch(CATALOG_URL, { signal: AbortSignal.timeout(20000) }).then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+    });
+} catch (err) {
+    console.error(`  · catalog fetch failed (${CATALOG_URL}): ${err?.cause?.code || err?.message || err}`);
+    console.error('\nFAIL — phase-6-3-media-reality (catalog unreachable — network)');
+    process.exit(1);
+}
 const arrival = (Array.isArray(catalog) ? catalog : []).find((r) => String(r.id) === ARRIVAL);
 
 console.log('\n[catalog]');
