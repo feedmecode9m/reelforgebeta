@@ -12,6 +12,7 @@ Single source of truth for implementation vs release state. Update when a milest
 
 | Area | Status |
 |------|--------|
+| **Smart Category NLP Phase 4 — Semantic Card System** | ✅ **Implementation Complete** — premium cards + human handoff; no deploy; no production mutations |
 | **Smart Category NLP Phase 4 (real editorial verification)** | 🚧 **Blocked** — EXACT identity ready; waiting for coworker authoritative title/description; no production edits |
 | **Smart Category NLP Phase 3C (canonical title → NLP re-eval)** | ✅ **Implementation Complete** — creator workflow; Case F UI; no auto-PATCH; no deploy |
 | **Smart Category NLP Phase 3B (editorial context eval)** | ✅ **Implementation Complete** — read-only; Case F documented; no deploy/PATCH |
@@ -115,15 +116,35 @@ After Master/Hero canonical title save → `reevaluateAfterCanonicalTitleSave` g
 ```
 SMART-CATEGORY-NLP-P4
 Implementation: PREP_COMPLETE (identity-backed review layer); BLOCKED on coworker editorial list
-Release: N/A
+Release: DEPLOYED (Netlify 6a7d30a88d7247ff3e67c7e9 / bundle index-CZtO-gw1.js / commit e1e73f3); Gate 5 legacy BG-7A1 smoke FAIL; Phase 4 identity production smoke PASS
 Release Process: v1.0
 Blocker: WAITING_FOR_AUTHORITATIVE_METADATA (coworker final title/description list)
-Production mutations: 0 (no PATCH / title / description / deploy)
+Production mutations: 0 (no PATCH / title / description / backfill)
+State: READY_FOR_AUTHORITATIVE_METADATA
 ```
 
 Readiness gate: `validate:phase-4-editorial-workflow` refuses to invent titles/descriptions or mutate production until `artifacts/phase-4-authoritative-editorial.json` is supplied with high-confidence asset mappings. Phase 3B episode guide remains provisional only.
 
 Identity-backed review layer: `identityBackedEditorialReview.js` + Studio `IdentityBackedEditorialReviewPanel`. Separates media identity / editorial authority / NLP confidence. Six EXACT media matches from forensics. Accept/Override/Manual disabled until `AUTHORITATIVE` coworker metadata. Validators: `validate:phase-4-identity-backed-editorial`, `validate:phase-4-identity-backed-browser` (local Chromium Studio smoke; zero mutations).
+
+## Smart Category NLP — Phase 4 Semantic Card System
+
+```
+SMART-CATEGORY-NLP-P4-SEMANTIC-CARDS
+Implementation: COMPLETE
+Release: N/A (no deploy; local validators + Chromium smoke only)
+Release Process: v1.0
+Production mutations: 0 (category PATCH / title / description / backfill / rename = 0)
+```
+
+Principle: NLP recommends · Human decides · Ecosystem metadata drives the card. Coworker editorial list is **not** an architectural prerequisite.
+
+- `semanticThemeSignals.js` + `semanticCardProfile.js` — shelf category separate from themes/contentType; derived presentation only
+- `SemanticProductionCard.svelte` + `SemanticProductionCardsPanel.svelte` — ReelForge-owned premium cards; `allowPersist={false}` in Studio
+- `buildHomeFeed.js` — HERO stage assets excluded from discovery shelves (`hero_stage_not_discovery_shelf`)
+- Validators: `validate:phase-4-semantic-cards`, `validate:phase-4-semantic-cards-browser`
+
+**Card-population root cause:** (1) live `/api/reels` may omit a subset of the six EXACT identities (catalog gap — reported, not invented); (2) HERO test videos previously inflated Trending; (3) Studio inventory was list-row, not a semantic card layer. Fixture/browser path proves all six reach card render when present in catalog.
 
 ---
 

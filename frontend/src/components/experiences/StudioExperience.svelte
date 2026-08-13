@@ -39,6 +39,7 @@
   import ProductionCommandCenter from '../studio/ProductionCommandCenter.svelte';
   import SmartCategoryAuditPanel from '../studio/SmartCategoryAuditPanel.svelte';
   import IdentityBackedEditorialReviewPanel from '../studio/IdentityBackedEditorialReviewPanel.svelte';
+  import SemanticProductionCardsPanel from '../studio/SemanticProductionCardsPanel.svelte';
   import DeveloperDiagnosticsCenter from '../diagnostics/DeveloperDiagnosticsCenter.svelte';
   import EpisodeReelAttachmentPanel from '../studio/EpisodeReelAttachmentPanel.svelte';
   import { emitCreatorProductionUpdated } from '../../lib/studio/creatorActionRouter.js';
@@ -1711,6 +1712,17 @@
             />
             <IdentityBackedEditorialReviewPanel
               authHeaders={() => getAdminAuthHeaders()}
+              onCategoryPersisted={() => {
+                try {
+                  AI_CLEANUP_AGENT?.applyPersistedTitlesOverlay?.();
+                } catch {
+                  /* optional */
+                }
+              }}
+            />
+            <SemanticProductionCardsPanel
+              authHeaders={() => getAdminAuthHeaders()}
+              allowPersist={false}
               onCategoryPersisted={() => {
                 try {
                   AI_CLEANUP_AGENT?.applyPersistedTitlesOverlay?.();

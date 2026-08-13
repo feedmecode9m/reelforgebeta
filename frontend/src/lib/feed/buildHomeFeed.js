@@ -251,6 +251,19 @@ export function buildHomeFeed(catalog, options = {}) {
             continue;
         }
 
+        // HERO-category / hero-stage assets are presentation-stage media, not discovery shelf cards.
+        // Mapping them into Trending inflated Smart Category Distribution and crowded inventory.
+        const rawCategory = String(reel?.category || '').trim().toUpperCase();
+        if (eligibility.isHeroFeedCard || rawCategory === 'HERO') {
+            decisions.push({
+                ...baseDecision,
+                eligible: false,
+                rejectionReason: 'hero_stage_not_discovery_shelf',
+                gate: 'buildHomeFeed:heroShelfExclusion'
+            });
+            continue;
+        }
+
         if (eligibility.cardType === 'video' && dedupeVideos) {
             const videoKey = String(reel.url || reel.video_url || '').trim();
             if (!videoKey) {
