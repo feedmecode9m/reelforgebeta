@@ -12,7 +12,7 @@ Single source of truth for implementation vs release state. Update when a milest
 
 | Area | Status |
 |------|--------|
-| **Phase 6.5 Viewer Media Identity + Card Intelligence** | ✅ **Implementation Complete** — video-canonical discovery; IMG_/UUID artifacts suppressed; no deploy |
+| **Phase 6.5 Viewer Media Identity + Card Intelligence** | ✅ **Release Approved** — `525dff5` / Netlify `6a7de1f898c6f1662ec4711e` / `index-rpCBblmt.js` |
 | **Phase 6.4 Viewer Semantic Identity Deduplication** | ✅ **Implementation Complete** — video-canonical viewer cards; thumbnails as poster only; no deploy |
 | **Phase 6.3 MP4 Vault Full Lifecycle** | ✅ **Release Approved** — `3221dda` / Netlify `6a7d618448653896010455fe` / `index-Ck1tRQou.js` |
 | **Phase 6.3 MP4 Vault Progress Restoration** | ✅ **Release Approved** (shipped inside lifecycle release) |

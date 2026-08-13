@@ -1,0 +1,65 @@
+{
+  "phase": "PHASE-6-5-VIEWER-MEDIA-IDENTITY-PRODUCTION-SMOKE",
+  "timestamp": "2026-08-13T15:27:47.204Z",
+  "frontend": "https://strong-lolly-a9fcb4.netlify.app",
+  "mutations": {
+    "categoryPatch": 0,
+    "titleWrites": 0,
+    "descriptionWrites": 0,
+    "productionCatalogWrites": 0,
+    "deploy": 0
+  },
+  "proof": {
+    "bundle": "index-rpCBblmt.js",
+    "catalog": {
+      "arrivalId": "03ef898a-989f-42c3-bdbb-67f37338df65",
+      "arrivalCategory": "Trending",
+      "img0121StillInCatalog": true,
+      "note": "IMG may remain in catalog; must not render as discovery card"
+    },
+    "hoverPlay": {
+      "hasVideo": true,
+      "src": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb-67f37338df65.mp4",
+      "poster": "https://strong-lolly-a9fcb4.netlify.app/thumbs/03ef898a-989f-42c3-bdbb-67f37338df65.jpg"
+    },
+    "screenshot": "frontend/artifacts/phase-6-5-production-viewer.png",
+    "viewer": {
+      "cardCount": 2,
+      "uniqueAssetIds": [
+        "03ef898a-989f-42c3-bdbb-67f37338df65"
+      ],
+      "arrivalCount": 2,
+      "arrival": {
+        "assetId": "03ef898a-989f-42c3-bdbb-67f37338df65",
+        "mediaType": "video",
+        "mediaSource": "video",
+        "posterUrl": "https://strong-lolly-a9fcb4.netlify.app/thumbs/03ef898a-989f-42c3-bdbb-67f37338df65.jpg",
+        "title": "01 ARRIVAL OPEN v1",
+        "aria": "Play 01 ARRIVAL OPEN v1"
+      },
+      "imgOrUuidTitleLeak": 0,
+      "featured": true,
+      "trending": true,
+      "browse": false,
+      "cards": [
+        {
+          "assetId": "03ef898a-989f-42c3-bdbb-67f37338df65",
+          "mediaType": "video",
+          "mediaSource": "video",
+          "posterUrl": "https://strong-lolly-a9fcb4.netlify.app/thumbs/03ef898a-989f-42c3-bdbb-67f37338df65.jpg",
+          "title": "01 ARRIVAL OPEN v1",
+          "aria": "Play 01 ARRIVAL OPEN v1"
+        },
+        {
+          "assetId": "03ef898a-989f-42c3-bdbb-67f37338df65",
+          "mediaType": "video",
+          "mediaSource": "video",
+          "posterUrl": "https://strong-lolly-a9fcb4.netlify.app/thumbs/03ef898a-989f-42c3-bdbb-67f37338df65.jpg",
+          "title": "01 ARRIVAL OPEN v1",
+          "aria": "Play 01 ARRIVAL OPEN v1"
+        }
+      ]
+    }
+  },
+  "status": "PASS"
+}
