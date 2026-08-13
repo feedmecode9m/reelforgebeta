@@ -2,10 +2,13 @@
 /** BG-6A — Production UI Validation (forensics only, no fixes) */
 import fs from 'node:fs';
 import path from 'node:path';
+import dns from 'node:dns';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import { execSync } from 'node:child_process';
 import { openContentTab as openContentTabHelper } from '../tests/helpers/studio-navigation.mjs';
+
+dns.setDefaultResultOrder('ipv4first');
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FRONTEND = process.env.FRONTEND_URL || 'https://strong-lolly-a9fcb4.netlify.app';

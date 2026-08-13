@@ -1,0 +1,11 @@
+{
+  "generatedAt": "2026-08-13T06:38:53.450Z",
+  "frontend": "https://strong-lolly-a9fcb4.netlify.app",
+  "backend": "https://reelforge-deploy-production.up.railway.app",
+  "knownReel": "03f66631-6038-4ff3-8374-444f4c21eaf6",
+  "phases": {},
+  "network": [],
+  "console": [],
+  "classification": {},
+  "fatalError": "page.goto: net::ERR_TIMED_OUT at https://strong-lolly-a9fcb4.netlify.app/\nCall log:\n  - navigating to \"https://strong-lolly-a9fcb4.netlify.app/\", waiting until \"domcontentloaded\"\n\n    at /home/youloose2dafish/projects/reelforge/frontend/scripts/mission-bg-6a-production-ui-validate.mjs:147:10\n    at async phase1Feed (/home/youloose2dafish/projects/reelforge/frontend/scripts/mission-bg-6a-production-ui-validate.mjs:146:3)\n    at async main (/home/youloose2dafish/projects/reelforge/frontend/scripts/mission-bg-6a-production-ui-validate.mjs:577:5)"
+}

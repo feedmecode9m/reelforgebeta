@@ -2,6 +2,7 @@
 /** BG-7A.1 — Production release validation (deploy gate + Playwright) */
 import fs from 'node:fs';
 import path from 'node:path';
+import dns from 'node:dns';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
@@ -10,6 +11,9 @@ import {
   readHeroStorage,
   openContentTab
 } from '../tests/helpers/studio-navigation.mjs';
+
+// Netlify edge often hangs on IPv6 from this host; prefer IPv4 for Gate 5 fetches.
+dns.setDefaultResultOrder('ipv4first');
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FRONTEND = process.env.FRONTEND_URL || 'https://strong-lolly-a9fcb4.netlify.app';
@@ -65,9 +69,23 @@ function ensureInvalidMp4() {
 }
 
 async function fetchProductionBundleHash() {
-  const html = await fetch(FRONTEND, { signal: AbortSignal.timeout(20000) }).then((r) => r.text());
-  const match = html.match(/assets\/index-([A-Za-z0-9_-]+)\.js/);
-  return match ? { file: `index-${match[1]}.js`, hash: match[1] } : null;
+  try {
+    const html = await fetch(FRONTEND, { signal: AbortSignal.timeout(20000) }).then((r) => r.text());
+    const match = html.match(/assets\/index-([A-Za-z0-9_-]+)\.js/);
+    if (match) return { file: `index-${match[1]}.js`, hash: match[1] };
+  } catch {
+    /* fall through to curl -4 */
+  }
+  try {
+    const html = execSync(`curl -4 --connect-timeout 15 --max-time 30 -fsS "${FRONTEND}/"`, {
+      encoding: 'utf8'
+    });
+    const match = html.match(/assets\/index-([A-Za-z0-9_-]+)\.js/);
+    if (match) return { file: `index-${match[1]}.js`, hash: match[1] };
+  } catch (error) {
+    throw new Error(`production bundle fetch failed: ${error?.message || error}`);
+  }
+  return null;
 }
 
 function localBuildBundleHash() {
@@ -133,6 +151,17 @@ async function fetchReels() {
 }
 
 async function phase1Build() {
+  if (process.env.BG7A1_SKIP_BUILD === '1') {
+    const local = localBuildBundleHash();
+    step('phase1', 'build_succeeds', Boolean(local?.file), {
+      localBundle: local?.file,
+      skipped: true,
+      reason: 'BG7A1_SKIP_BUILD'
+    });
+    report.phase1.localBundle = local;
+    report.phase1.pass = Boolean(local?.file);
+    return;
+  }
   try {
     execSync('npm run build', {
       cwd: path.join(__dirname, '..'),
@@ -154,6 +183,7 @@ async function phase2DeployGate() {
   let production = null;
   try {
     production = await fetchProductionBundleHash();
+    step('phase2', 'fetch_production_bundle', true, { productionBundle: production?.file });
   } catch (error) {
     step('phase2', 'fetch_production_bundle', false, { error: String(error.message || error) });
   }
@@ -164,7 +194,17 @@ async function phase2DeployGate() {
   report.phase2.deployAttempted = false;
   report.phase2.deployBlocked = !process.env.NETLIFY_AUTH_TOKEN;
 
-  if (process.env.NETLIFY_AUTH_TOKEN) {
+  const alreadyLive =
+    Boolean(local?.hash && production?.hash) && local.hash === production.hash;
+
+  // Gate 5 often runs after Gate 3 already deployed — do not redeploy blindly.
+  if (alreadyLive || process.env.BG7A1_SKIP_DEPLOY === '1') {
+    step('phase2', 'netlify_deploy', true, {
+      skipped: true,
+      reason: alreadyLive ? 'production_already_matches_local' : 'BG7A1_SKIP_DEPLOY',
+      productionBundle: production?.file
+    });
+  } else if (process.env.NETLIFY_AUTH_TOKEN) {
     try {
       report.phase2.deployAttempted = true;
       execSync('bash scripts/deploy-netlify.sh "BG-7A.1 production release validation"', {
@@ -202,6 +242,19 @@ async function phase2DeployGate() {
 async function runBrowserPhases() {
   const launch = { headless: true };
   if (fs.existsSync(CHROMIUM)) launch.executablePath = CHROMIUM;
+  // Prefer IPv4 for Netlify from hosts that hang on AAAA.
+  try {
+    const ipv4 = execSync('getent ahostsv4 strong-lolly-a9fcb4.netlify.app | awk \'{print $1; exit}\'', {
+      encoding: 'utf8'
+    }).trim();
+    if (ipv4) {
+      launch.args = [
+        `--host-resolver-rules=MAP strong-lolly-a9fcb4.netlify.app ${ipv4}`
+      ];
+    }
+  } catch {
+    /* ignore */
+  }
 
   const browser = await chromium.launch(launch);
   const context = await browser.newContext();

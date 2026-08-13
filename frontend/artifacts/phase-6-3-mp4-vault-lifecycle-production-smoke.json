@@ -1,0 +1,35 @@
+{
+  "phase": "PHASE-6-3-MP4-VAULT-LIFECYCLE-PRODUCTION-SMOKE",
+  "timestamp": "2026-08-13T06:41:09.557Z",
+  "frontend": "https://strong-lolly-a9fcb4.netlify.app",
+  "mutations": {
+    "categoryPatch": 0,
+    "titleWrites": 0,
+    "descriptionWrites": 0,
+    "productionCatalogWrites": 0,
+    "deploy": 0
+  },
+  "proof": {
+    "bundle": "index-Ck1tRQou.js",
+    "catalog": {
+      "reelId": "03ef898a-989f-42c3-bdbb-67f37338df65",
+      "category": "Trending",
+      "url": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb-67f37338df65.mp4"
+    },
+    "card": {
+      "variant": "featured",
+      "mediaType": "video",
+      "aspect": 1.7777777777777777,
+      "className": "viewer-sem-card viewer-sem-card--featured sem-card--theme-production viewer-sem-card--anim-parallax svelte-168y6q",
+      "title": "Play 01 ARRIVAL OPEN v1"
+    },
+    "hoverPlay": {
+      "hasVideo": true,
+      "src": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb-67f37338df65.mp4",
+      "readyState": 3,
+      "paused": true,
+      "preview": true
+    }
+  },
+  "status": "PASS"
+}

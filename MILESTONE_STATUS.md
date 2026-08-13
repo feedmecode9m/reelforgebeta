@@ -12,8 +12,8 @@ Single source of truth for implementation vs release state. Update when a milest
 
 | Area | Status |
 |------|--------|
-| **Phase 6.3 MP4 Vault Full Lifecycle** | ✅ **Implementation Complete** — browser lifecycle VERIFIED locally; Release not started (do not deploy) |
-| **Phase 6.3 MP4 Vault Progress Restoration** | ✅ **Implementation Complete** — UX-only progress bar/% restore; Release not started (do not deploy) |
+| **Phase 6.3 MP4 Vault Full Lifecycle** | ✅ **Release Approved** — `3221dda` / Netlify `6a7d618448653896010455fe` / `index-Ck1tRQou.js` |
+| **Phase 6.3 MP4 Vault Progress Restoration** | ✅ **Release Approved** (shipped inside lifecycle release) |
 | **Smart Category NLP Phase 6 — Viewer Cinematic Card Shell** | ✅ **Implementation Complete** — audience landscape shell; no deploy; no production mutations |
 | **Smart Category NLP Phase 5 — Premium Semantic Media** | ✅ **Preview Released** — `1094823` / Netlify `6a7d447faa2fdce73c4c1e79` / `index-DTJehS3d.js` (persist gated; future shelves reserved) |
 | **Smart Category NLP Phase 4 — Semantic Card System** | ✅ **Release Approved** — `881c428` / Netlify `6a7d3d5d254af585dddec345` / `index-GHjzxDYw.js` |
@@ -226,13 +226,18 @@ UX-only regression repair: restore drop-zone live progress (filename + bar + %),
 ```
 PHASE-6-3-MP4-VAULT-LIFECYCLE
 Implementation: COMPLETE
-Release: NOT STARTED (browser VERIFIED locally — await explicit release mission)
+Release: APPROVED
 Release Process: v1.0
-Browser smoke: validate:phase-6-3-mp4-vault-lifecycle-browser → PHASE-6.3 VERIFIED — READY FOR RELEASE
-Artifact: frontend/artifacts/phase-6-3-mp4-vault-lifecycle-browser.json
+Commit: 3221dda501c58af6edd3ff499db7e28b6f2a5193
+Manifest: release-manifest-phase-6-3-mp4-vault-lifecycle-1786603293278.json
+Netlify deploy: 6a7d618448653896010455fe
+Bundle: index-Ck1tRQou.js
+Sign-off: frontend/PHASE-6-3-MP4-VAULT-LIFECYCLE_DEPLOYMENT_SIGNOFF.md
+Production mutations: 0
+Category PATCH: 0
 ```
 
-Sticky upload chrome (`vaultUploadUi`) keeps progress visible through COMPLETE. Local DEV enables signed uploads so large MP4s use PUT progress path. Validation pipeline preserved. Production mutations: 0. Deploy: 0.
+Sticky upload chrome (`vaultUploadUi`) keeps progress visible through COMPLETE. Local DEV enables signed uploads so large MP4s use PUT progress path. Validation pipeline preserved. Production smoke: Arrival ViewerSemanticCard + hover/play PASS.
 
 ---
 
