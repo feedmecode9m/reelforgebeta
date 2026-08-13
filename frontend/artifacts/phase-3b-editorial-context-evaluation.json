@@ -1,0 +1,1067 @@
+{
+  "evaluatedAt": "2026-08-13T02:30:42.488Z",
+  "series": "Los Angeles Production",
+  "readOnly": true,
+  "episodeCount": 6,
+  "episodes": [
+    {
+      "episodeNumber": 1,
+      "currentAssetTitle": "01 ARRIVAL OPEN v1",
+      "editorialTitle": "ARRIVAL",
+      "seriesTitle": "Los Angeles Production",
+      "contexts": {
+        "asset_title_only": {
+          "mode": "asset_title_only",
+          "episodeNumber": 1,
+          "currentAssetTitle": "01 ARRIVAL OPEN v1",
+          "editorialTitle": "ARRIVAL",
+          "description": "Vic-G and the team arrive in Los Angeles, setting the stage for the production ahead. The episode captures the first moments in LA, the anticipation surrounding the project, and the beginning of the journey behind the music video.",
+          "payloadTitle": "01 ARRIVAL OPEN v1",
+          "signals": [
+            "nlp:insufficient-signals"
+          ],
+          "primaryRecommendation": "Trending",
+          "confidence": 0.18,
+          "confidenceBand": "manual",
+          "alternativeCategory": "",
+          "ambiguous": false,
+          "classificationSource": "nlp",
+          "scoreBreakdown": {
+            "Trending": 0,
+            "Romance": 0,
+            "Cyber-Action": 0,
+            "Suspense": 0
+          },
+          "taxonomyFit": "E",
+          "reason": "Insufficient title/metadata for genre assignment",
+          "manualHelperAvailable": true,
+          "manualOptions": [
+            "Trending",
+            "Romance",
+            "Suspense",
+            "Cyber-Action"
+          ]
+        },
+        "editorial_title_only": {
+          "mode": "editorial_title_only",
+          "episodeNumber": 1,
+          "currentAssetTitle": "01 ARRIVAL OPEN v1",
+          "editorialTitle": "ARRIVAL",
+          "description": "Vic-G and the team arrive in Los Angeles, setting the stage for the production ahead. The episode captures the first moments in LA, the anticipation surrounding the project, and the beginning of the journey behind the music video.",
+          "payloadTitle": "ARRIVAL",
+          "signals": [
+            "nlp:generic-title-penalty",
+            "nlp:title:ARRIVAL"
+          ],
+          "primaryRecommendation": "Trending",
+          "confidence": 0.15,
+          "confidenceBand": "manual",
+          "alternativeCategory": "",
+          "ambiguous": false,
+          "classificationSource": "nlp",
+          "taxonomyFit": "E",
+          "reason": "Insufficient title/metadata for genre assignment",
+          "manualHelperAvailable": true,
+          "manualOptions": [
+            "Trending",
+            "Romance",
+            "Suspense",
+            "Cyber-Action"
+          ]
+        },
+        "editorial_title_description": {
+          "mode": "editorial_title_description",
+          "episodeNumber": 1,
+          "currentAssetTitle": "01 ARRIVAL OPEN v1",
+          "editorialTitle": "ARRIVAL",
+          "description": "Vic-G and the team arrive in Los Angeles, setting the stage for the production ahead. The episode captures the first moments in LA, the anticipation surrounding the project, and the beginning of the journey behind the music video.",
+          "payloadTitle": "ARRIVAL",
+          "signals": [
+            "nlp:insufficient-signals",
+            "nlp:context-without-shelf-fit"
+          ],
+          "primaryRecommendation": "Trending",
+          "confidence": 0.2,
+          "confidenceBand": "manual",
+          "alternativeCategory": "",
+          "ambiguous": false,
+          "classificationSource": "nlp",
+          "scoreBreakdown": {
+            "Trending": 0,
+            "Romance": 0,
+            "Cyber-Action": 0,
+            "Suspense": 0
+          },
+          "taxonomyFit": "F",
+          "reason": "No valid Romance/Cyber-Action/Suspense semantic fit",
+          "manualHelperAvailable": true,
+          "manualOptions": [
+            "Trending",
+            "Romance",
+            "Suspense",
+            "Cyber-Action"
+          ]
+        },
+        "editorial_full_context": {
+          "mode": "editorial_full_context",
+          "episodeNumber": 1,
+          "currentAssetTitle": "01 ARRIVAL OPEN v1",
+          "editorialTitle": "ARRIVAL",
+          "description": "Vic-G and the team arrive in Los Angeles, setting the stage for the production ahead. The episode captures the first moments in LA, the anticipation surrounding the project, and the beginning of the journey behind the music video.",
+          "payloadTitle": "ARRIVAL",
+          "signals": [
+            "nlp:insufficient-signals",
+            "nlp:context-without-shelf-fit"
+          ],
+          "primaryRecommendation": "Trending",
+          "confidence": 0.2,
+          "confidenceBand": "manual",
+          "alternativeCategory": "",
+          "ambiguous": false,
+          "classificationSource": "nlp",
+          "scoreBreakdown": {
+            "Trending": 0,
+            "Romance": 0,
+            "Cyber-Action": 0,
+            "Suspense": 0
+          },
+          "taxonomyFit": "F",
+          "reason": "No valid Romance/Cyber-Action/Suspense semantic fit",
+          "manualHelperAvailable": true,
+          "manualOptions": [
+            "Trending",
+            "Romance",
+            "Suspense",
+            "Cyber-Action"
+          ]
+        }
+      },
+      "primary": {
+        "mode": "editorial_full_context",
+        "episodeNumber": 1,
+        "currentAssetTitle": "01 ARRIVAL OPEN v1",
+        "editorialTitle": "ARRIVAL",
+        "description": "Vic-G and the team arrive in Los Angeles, setting the stage for the production ahead. The episode captures the first moments in LA, the anticipation surrounding the project, and the beginning of the journey behind the music video.",
+        "payloadTitle": "ARRIVAL",
+        "signals": [
+          "nlp:insufficient-signals",
+          "nlp:context-without-shelf-fit"
+        ],
+        "primaryRecommendation": "Trending",
+        "confidence": 0.2,
+        "confidenceBand": "manual",
+        "alternativeCategory": "",
+        "ambiguous": false,
+        "classificationSource": "nlp",
+        "scoreBreakdown": {
+          "Trending": 0,
+          "Romance": 0,
+          "Cyber-Action": 0,
+          "Suspense": 0
+        },
+        "taxonomyFit": "F",
+        "reason": "No valid Romance/Cyber-Action/Suspense semantic fit",
+        "manualHelperAvailable": true,
+        "manualOptions": [
+          "Trending",
+          "Romance",
+          "Suspense",
+          "Cyber-Action"
+        ]
+      }
+    },
+    {
+      "episodeNumber": 2,
+      "currentAssetTitle": "03 CLUB POOM POOM V1",
+      "editorialTitle": "POOM POOM TUESDAY",
+      "seriesTitle": "Los Angeles Production",
+      "contexts": {
+        "asset_title_only": {
+          "mode": "asset_title_only",
+          "episodeNumber": 2,
+          "currentAssetTitle": "03 CLUB POOM POOM V1",
+          "editorialTitle": "POOM POOM TUESDAY",
+          "description": "The first official shoot day begins at Poom Poom Tuesday in Los Angeles. With part of the music video taking place inside the club, Vic-G and the production team step into the nightlife atmosphere to capture the first scenes of the project and establish the energy and visual tone for what is to come.",
+          "payloadTitle": "03 CLUB POOM POOM V1",
+          "signals": [
+            "nlp:insufficient-signals"
+          ],
+          "primaryRecommendation": "Trending",
+          "confidence": 0.18,
+          "confidenceBand": "manual",
+          "alternativeCategory": "",
+          "ambiguous": false,
+          "classificationSource": "nlp",
+          "scoreBreakdown": {
+            "Trending": 0,
+            "Romance": 0,
+            "Cyber-Action": 0,
+            "Suspense": 0
+          },
+          "taxonomyFit": "E",
+          "reason": "Insufficient title/metadata for genre assignment",
+          "manualHelperAvailable": true,
+          "manualOptions": [
+            "Trending",
+            "Romance",
+            "Suspense",
+            "Cyber-Action"
+          ]
+        },
+        "editorial_title_only": {
+          "mode": "editorial_title_only",
+          "episodeNumber": 2,
+          "currentAssetTitle": "03 CLUB POOM POOM V1",
+          "editorialTitle": "POOM POOM TUESDAY",
+          "description": "The first official shoot day begins at Poom Poom Tuesday in Los Angeles. With part of the music video taking place inside the club, Vic-G and the production team step into the nightlife atmosphere to capture the first scenes of the project and establish the energy and visual tone for what is to come.",
+          "payloadTitle": "POOM POOM TUESDAY",
+          "signals": [
+            "nlp:insufficient-signals"
+          ],
+          "primaryRecommendation": "Trending",
+          "confidence": 0.18,
+          "confidenceBand": "manual",
+          "alternativeCategory": "",
+          "ambiguous": false,
+          "classificationSource": "nlp",
+          "scoreBreakdown": {
+            "Trending": 0,
+            "Romance": 0,
+            "Cyber-Action": 0,
+            "Suspense": 0
+          },
+          "taxonomyFit": "E",
+          "reason": "Insufficient title/metadata for genre assignment",
+          "manualHelperAvailable": true,
+          "manualOptions": [
+            "Trending",
+            "Romance",
+            "Suspense",
+            "Cyber-Action"
+          ]
+        },
+        "editorial_title_description": {
+          "mode": "editorial_title_description",
+          "episodeNumber": 2,
+          "currentAssetTitle": "03 CLUB POOM POOM V1",
+          "editorialTitle": "POOM POOM TUESDAY",
+          "description": "The first official shoot day begins at Poom Poom Tuesday in Los Angeles. With part of the music video taking place inside the club, Vic-G and the production team step into the nightlife atmosphere to capture the first scenes of the project and establish the energy and visual tone for what is to come.",
+          "payloadTitle": "POOM POOM TUESDAY",
+          "signals": [
+            "nlp:insufficient-signals",
+            "nlp:context-without-shelf-fit"
+          ],
+          "primaryRecommendation": "Trending",
+          "confidence": 0.2,
+          "confidenceBand": "manual",
+          "alternativeCategory": "",
+          "ambiguous": false,
+          "classificationSource": "nlp",
+          "scoreBreakdown": {
+            "Trending": 0,
+            "Romance": 0,
+            "Cyber-Action": 0,
+            "Suspense": 0
+          },
+          "taxonomyFit": "F",
+          "reason": "No valid Romance/Cyber-Action/Suspense semantic fit",
+          "manualHelperAvailable": true,
+          "manualOptions": [
+            "Trending",
+            "Romance",
+            "Suspense",
+            "Cyber-Action"
+          ]
+        },
+        "editorial_full_context": {
+          "mode": "editorial_full_context",
+          "episodeNumber": 2,
+          "currentAssetTitle": "03 CLUB POOM POOM V1",
+          "editorialTitle": "POOM POOM TUESDAY",
+          "description": "The first official shoot day begins at Poom Poom Tuesday in Los Angeles. With part of the music video taking place inside the club, Vic-G and the production team step into the nightlife atmosphere to capture the first scenes of the project and establish the energy and visual tone for what is to come.",
+          "payloadTitle": "POOM POOM TUESDAY",
+          "signals": [
+            "nlp:insufficient-signals",
+            "nlp:context-without-shelf-fit"
+          ],
+          "primaryRecommendation": "Trending",
+          "confidence": 0.2,
+          "confidenceBand": "manual",
+          "alternativeCategory": "",
+          "ambiguous": false,
+          "classificationSource": "nlp",
+          "scoreBreakdown": {
+            "Trending": 0,
+            "Romance": 0,
+            "Cyber-Action": 0,
+            "Suspense": 0
+          },
+          "taxonomyFit": "F",
+          "reason": "No valid Romance/Cyber-Action/Suspense semantic fit",
+          "manualHelperAvailable": true,
+          "manualOptions": [
+            "Trending",
+            "Romance",
+            "Suspense",
+            "Cyber-Action"
+          ]
+        }
+      },
+      "primary": {
+        "mode": "editorial_full_context",
+        "episodeNumber": 2,
+        "currentAssetTitle": "03 CLUB POOM POOM V1",
+        "editorialTitle": "POOM POOM TUESDAY",
+        "description": "The first official shoot day begins at Poom Poom Tuesday in Los Angeles. With part of the music video taking place inside the club, Vic-G and the production team step into the nightlife atmosphere to capture the first scenes of the project and establish the energy and visual tone for what is to come.",
+        "payloadTitle": "POOM POOM TUESDAY",
+        "signals": [
+          "nlp:insufficient-signals",
+          "nlp:context-without-shelf-fit"
+        ],
+        "primaryRecommendation": "Trending",
+        "confidence": 0.2,
+        "confidenceBand": "manual",
+        "alternativeCategory": "",
+        "ambiguous": false,
+        "classificationSource": "nlp",
+        "scoreBreakdown": {
+          "Trending": 0,
+          "Romance": 0,
+          "Cyber-Action": 0,
+          "Suspense": 0
+        },
+        "taxonomyFit": "F",
+        "reason": "No valid Romance/Cyber-Action/Suspense semantic fit",
+        "manualHelperAvailable": true,
+        "manualOptions": [
+          "Trending",
+          "Romance",
+          "Suspense",
+          "Cyber-Action"
+        ]
+      }
+    },
+    {
+      "episodeNumber": 3,
+      "currentAssetTitle": "MICROS STIRRED V1",
+      "editorialTitle": "SOUNDSTAGE SHOOT: PART ONE",
+      "seriesTitle": "Los Angeles Production",
+      "contexts": {
+        "asset_title_only": {
+          "mode": "asset_title_only",
+          "episodeNumber": 3,
+          "currentAssetTitle": "MICROS STIRRED V1",
+          "editorialTitle": "SOUNDSTAGE SHOOT: PART ONE",
+          "description": "Production moves to the soundstage as the main studio shoot gets underway. The episode follows Vic-G and the team through the creative process as lighting, performance, camera setups, and production elements come together to bring the music video's vision to life.",
+          "payloadTitle": "MICROS STIRRED V1",
+          "signals": [
+            "nlp:insufficient-signals"
+          ],
+          "primaryRecommendation": "Trending",
+          "confidence": 0.18,
+          "confidenceBand": "manual",
+          "alternativeCategory": "",
+          "ambiguous": false,
+          "classificationSource": "nlp",
+          "scoreBreakdown": {
+            "Trending": 0,
+            "Romance": 0,
+            "Cyber-Action": 0,
+            "Suspense": 0
+          },
+          "taxonomyFit": "E",
+          "reason": "Insufficient title/metadata for genre assignment",
+          "manualHelperAvailable": true,
+          "manualOptions": [
+            "Trending",
+            "Romance",
+            "Suspense",
+            "Cyber-Action"
+          ]
+        },
+        "editorial_title_only": {
+          "mode": "editorial_title_only",
+          "episodeNumber": 3,
+          "currentAssetTitle": "MICROS STIRRED V1",
+          "editorialTitle": "SOUNDSTAGE SHOOT: PART ONE",
+          "description": "Production moves to the soundstage as the main studio shoot gets underway. The episode follows Vic-G and the team through the creative process as lighting, performance, camera setups, and production elements come together to bring the music video's vision to life.",
+          "payloadTitle": "SOUNDSTAGE SHOOT: PART ONE",
+          "signals": [
+            "nlp:insufficient-signals"
+          ],
+          "primaryRecommendation": "Trending",
+          "confidence": 0.18,
+          "confidenceBand": "manual",
+          "alternativeCategory": "",
+          "ambiguous": false,
+          "classificationSource": "nlp",
+          "scoreBreakdown": {
+            "Trending": 0,
+            "Romance": 0,
+            "Cyber-Action": 0,
+            "Suspense": 0
+          },
+          "taxonomyFit": "E",
+          "reason": "Insufficient title/metadata for genre assignment",
+          "manualHelperAvailable": true,
+          "manualOptions": [
+            "Trending",
+            "Romance",
+            "Suspense",
+            "Cyber-Action"
+          ]
+        },
+        "editorial_title_description": {
+          "mode": "editorial_title_description",
+          "episodeNumber": 3,
+          "currentAssetTitle": "MICROS STIRRED V1",
+          "editorialTitle": "SOUNDSTAGE SHOOT: PART ONE",
+          "description": "Production moves to the soundstage as the main studio shoot gets underway. The episode follows Vic-G and the team through the creative process as lighting, performance, camera setups, and production elements come together to bring the music video's vision to life.",
+          "payloadTitle": "SOUNDSTAGE SHOOT: PART ONE",
+          "signals": [
+            "nlp:insufficient-signals",
+            "nlp:context-without-shelf-fit",
+            "description:medium:together"
+          ],
+          "primaryRecommendation": "Trending",
+          "confidence": 0.2,
+          "confidenceBand": "manual",
+          "alternativeCategory": "",
+          "ambiguous": false,
+          "classificationSource": "nlp",
+          "scoreBreakdown": {
+            "Trending": 0,
+            "Romance": 1.2000000000000002,
+            "Cyber-Action": 0,
+            "Suspense": 0
+          },
+          "taxonomyFit": "F",
+          "reason": "No valid Romance/Cyber-Action/Suspense semantic fit",
+          "manualHelperAvailable": true,
+          "manualOptions": [
+            "Trending",
+            "Romance",
+            "Suspense",
+            "Cyber-Action"
+          ]
+        },
+        "editorial_full_context": {
+          "mode": "editorial_full_context",
+          "episodeNumber": 3,
+          "currentAssetTitle": "MICROS STIRRED V1",
+          "editorialTitle": "SOUNDSTAGE SHOOT: PART ONE",
+          "description": "Production moves to the soundstage as the main studio shoot gets underway. The episode follows Vic-G and the team through the creative process as lighting, performance, camera setups, and production elements come together to bring the music video's vision to life.",
+          "payloadTitle": "SOUNDSTAGE SHOOT: PART ONE",
+          "signals": [
+            "nlp:insufficient-signals",
+            "nlp:context-without-shelf-fit",
+            "description:medium:together"
+          ],
+          "primaryRecommendation": "Trending",
+          "confidence": 0.2,
+          "confidenceBand": "manual",
+          "alternativeCategory": "",
+          "ambiguous": false,
+          "classificationSource": "nlp",
+          "scoreBreakdown": {
+            "Trending": 0,
+            "Romance": 1.2000000000000002,
+            "Cyber-Action": 0,
+            "Suspense": 0
+          },
+          "taxonomyFit": "F",
+          "reason": "No valid Romance/Cyber-Action/Suspense semantic fit",
+          "manualHelperAvailable": true,
+          "manualOptions": [
+            "Trending",
+            "Romance",
+            "Suspense",
+            "Cyber-Action"
+          ]
+        }
+      },
+      "primary": {
+        "mode": "editorial_full_context",
+        "episodeNumber": 3,
+        "currentAssetTitle": "MICROS STIRRED V1",
+        "editorialTitle": "SOUNDSTAGE SHOOT: PART ONE",
+        "description": "Production moves to the soundstage as the main studio shoot gets underway. The episode follows Vic-G and the team through the creative process as lighting, performance, camera setups, and production elements come together to bring the music video's vision to life.",
+        "payloadTitle": "SOUNDSTAGE SHOOT: PART ONE",
+        "signals": [
+          "nlp:insufficient-signals",
+          "nlp:context-without-shelf-fit",
+          "description:medium:together"
+        ],
+        "primaryRecommendation": "Trending",
+        "confidence": 0.2,
+        "confidenceBand": "manual",
+        "alternativeCategory": "",
+        "ambiguous": false,
+        "classificationSource": "nlp",
+        "scoreBreakdown": {
+          "Trending": 0,
+          "Romance": 1.2000000000000002,
+          "Cyber-Action": 0,
+          "Suspense": 0
+        },
+        "taxonomyFit": "F",
+        "reason": "No valid Romance/Cyber-Action/Suspense semantic fit",
+        "manualHelperAvailable": true,
+        "manualOptions": [
+          "Trending",
+          "Romance",
+          "Suspense",
+          "Cyber-Action"
+        ]
+      }
+    },
+    {
+      "episodeNumber": 4,
+      "currentAssetTitle": "MICROS Motherland V1(1)",
+      "editorialTitle": "SOUNDSTAGE SHOOT: PART TWO",
+      "seriesTitle": "Los Angeles Production",
+      "contexts": {
+        "asset_title_only": {
+          "mode": "asset_title_only",
+          "episodeNumber": 4,
+          "currentAssetTitle": "MICROS Motherland V1(1)",
+          "editorialTitle": "SOUNDSTAGE SHOOT: PART TWO",
+          "description": "The soundstage experience continues with a closer look at NK and the dancers. Part Two goes beyond the performance itself, giving the dancers space to speak, share their perspectives, and become part of the story behind the production while the team completes the remaining soundstage work.",
+          "payloadTitle": "MICROS Motherland V1(1)",
+          "signals": [
+            "nlp:insufficient-signals"
+          ],
+          "primaryRecommendation": "Trending",
+          "confidence": 0.18,
+          "confidenceBand": "manual",
+          "alternativeCategory": "",
+          "ambiguous": false,
+          "classificationSource": "nlp",
+          "scoreBreakdown": {
+            "Trending": 0,
+            "Romance": 0,
+            "Cyber-Action": 0,
+            "Suspense": 0
+          },
+          "taxonomyFit": "E",
+          "reason": "Insufficient title/metadata for genre assignment",
+          "manualHelperAvailable": true,
+          "manualOptions": [
+            "Trending",
+            "Romance",
+            "Suspense",
+            "Cyber-Action"
+          ]
+        },
+        "editorial_title_only": {
+          "mode": "editorial_title_only",
+          "episodeNumber": 4,
+          "currentAssetTitle": "MICROS Motherland V1(1)",
+          "editorialTitle": "SOUNDSTAGE SHOOT: PART TWO",
+          "description": "The soundstage experience continues with a closer look at NK and the dancers. Part Two goes beyond the performance itself, giving the dancers space to speak, share their perspectives, and become part of the story behind the production while the team completes the remaining soundstage work.",
+          "payloadTitle": "SOUNDSTAGE SHOOT: PART TWO",
+          "signals": [
+            "nlp:insufficient-signals"
+          ],
+          "primaryRecommendation": "Trending",
+          "confidence": 0.18,
+          "confidenceBand": "manual",
+          "alternativeCategory": "",
+          "ambiguous": false,
+          "classificationSource": "nlp",
+          "scoreBreakdown": {
+            "Trending": 0,
+            "Romance": 0,
+            "Cyber-Action": 0,
+            "Suspense": 0
+          },
+          "taxonomyFit": "E",
+          "reason": "Insufficient title/metadata for genre assignment",
+          "manualHelperAvailable": true,
+          "manualOptions": [
+            "Trending",
+            "Romance",
+            "Suspense",
+            "Cyber-Action"
+          ]
+        },
+        "editorial_title_description": {
+          "mode": "editorial_title_description",
+          "episodeNumber": 4,
+          "currentAssetTitle": "MICROS Motherland V1(1)",
+          "editorialTitle": "SOUNDSTAGE SHOOT: PART TWO",
+          "description": "The soundstage experience continues with a closer look at NK and the dancers. Part Two goes beyond the performance itself, giving the dancers space to speak, share their perspectives, and become part of the story behind the production while the team completes the remaining soundstage work.",
+          "payloadTitle": "SOUNDSTAGE SHOOT: PART TWO",
+          "signals": [
+            "nlp:insufficient-signals",
+            "nlp:context-without-shelf-fit"
+          ],
+          "primaryRecommendation": "Trending",
+          "confidence": 0.2,
+          "confidenceBand": "manual",
+          "alternativeCategory": "",
+          "ambiguous": false,
+          "classificationSource": "nlp",
+          "scoreBreakdown": {
+            "Trending": 0,
+            "Romance": 0,
+            "Cyber-Action": 0,
+            "Suspense": 0
+          },
+          "taxonomyFit": "F",
+          "reason": "No valid Romance/Cyber-Action/Suspense semantic fit",
+          "manualHelperAvailable": true,
+          "manualOptions": [
+            "Trending",
+            "Romance",
+            "Suspense",
+            "Cyber-Action"
+          ]
+        },
+        "editorial_full_context": {
+          "mode": "editorial_full_context",
+          "episodeNumber": 4,
+          "currentAssetTitle": "MICROS Motherland V1(1)",
+          "editorialTitle": "SOUNDSTAGE SHOOT: PART TWO",
+          "description": "The soundstage experience continues with a closer look at NK and the dancers. Part Two goes beyond the performance itself, giving the dancers space to speak, share their perspectives, and become part of the story behind the production while the team completes the remaining soundstage work.",
+          "payloadTitle": "SOUNDSTAGE SHOOT: PART TWO",
+          "signals": [
+            "nlp:insufficient-signals",
+            "nlp:context-without-shelf-fit"
+          ],
+          "primaryRecommendation": "Trending",
+          "confidence": 0.2,
+          "confidenceBand": "manual",
+          "alternativeCategory": "",
+          "ambiguous": false,
+          "classificationSource": "nlp",
+          "scoreBreakdown": {
+            "Trending": 0,
+            "Romance": 0,
+            "Cyber-Action": 0,
+            "Suspense": 0
+          },
+          "taxonomyFit": "F",
+          "reason": "No valid Romance/Cyber-Action/Suspense semantic fit",
+          "manualHelperAvailable": true,
+          "manualOptions": [
+            "Trending",
+            "Romance",
+            "Suspense",
+            "Cyber-Action"
+          ]
+        }
+      },
+      "primary": {
+        "mode": "editorial_full_context",
+        "episodeNumber": 4,
+        "currentAssetTitle": "MICROS Motherland V1(1)",
+        "editorialTitle": "SOUNDSTAGE SHOOT: PART TWO",
+        "description": "The soundstage experience continues with a closer look at NK and the dancers. Part Two goes beyond the performance itself, giving the dancers space to speak, share their perspectives, and become part of the story behind the production while the team completes the remaining soundstage work.",
+        "payloadTitle": "SOUNDSTAGE SHOOT: PART TWO",
+        "signals": [
+          "nlp:insufficient-signals",
+          "nlp:context-without-shelf-fit"
+        ],
+        "primaryRecommendation": "Trending",
+        "confidence": 0.2,
+        "confidenceBand": "manual",
+        "alternativeCategory": "",
+        "ambiguous": false,
+        "classificationSource": "nlp",
+        "scoreBreakdown": {
+          "Trending": 0,
+          "Romance": 0,
+          "Cyber-Action": 0,
+          "Suspense": 0
+        },
+        "taxonomyFit": "F",
+        "reason": "No valid Romance/Cyber-Action/Suspense semantic fit",
+        "manualHelperAvailable": true,
+        "manualOptions": [
+          "Trending",
+          "Romance",
+          "Suspense",
+          "Cyber-Action"
+        ]
+      }
+    },
+    {
+      "episodeNumber": 5,
+      "currentAssetTitle": "condo v1 2",
+      "editorialTitle": "CONDO WIND DOWN",
+      "seriesTitle": "Los Angeles Production",
+      "contexts": {
+        "asset_title_only": {
+          "mode": "asset_title_only",
+          "episodeNumber": 5,
+          "currentAssetTitle": "condo v1 2",
+          "editorialTitle": "CONDO WIND DOWN",
+          "description": "After the soundstage shoot, the energy shifts from production mode to a more relaxed setting at the condo. The team unwinds after the day, sharing food, wine, conversation, and candid moments that offer a more personal look at the people behind the project.",
+          "payloadTitle": "condo v1 2",
+          "signals": [
+            "nlp:insufficient-signals"
+          ],
+          "primaryRecommendation": "Trending",
+          "confidence": 0.18,
+          "confidenceBand": "manual",
+          "alternativeCategory": "",
+          "ambiguous": false,
+          "classificationSource": "nlp",
+          "scoreBreakdown": {
+            "Trending": 0,
+            "Romance": 0,
+            "Cyber-Action": 0,
+            "Suspense": 0
+          },
+          "taxonomyFit": "E",
+          "reason": "Insufficient title/metadata for genre assignment",
+          "manualHelperAvailable": true,
+          "manualOptions": [
+            "Trending",
+            "Romance",
+            "Suspense",
+            "Cyber-Action"
+          ]
+        },
+        "editorial_title_only": {
+          "mode": "editorial_title_only",
+          "episodeNumber": 5,
+          "currentAssetTitle": "condo v1 2",
+          "editorialTitle": "CONDO WIND DOWN",
+          "description": "After the soundstage shoot, the energy shifts from production mode to a more relaxed setting at the condo. The team unwinds after the day, sharing food, wine, conversation, and candid moments that offer a more personal look at the people behind the project.",
+          "payloadTitle": "CONDO WIND DOWN",
+          "signals": [
+            "nlp:insufficient-signals"
+          ],
+          "primaryRecommendation": "Trending",
+          "confidence": 0.18,
+          "confidenceBand": "manual",
+          "alternativeCategory": "",
+          "ambiguous": false,
+          "classificationSource": "nlp",
+          "scoreBreakdown": {
+            "Trending": 0,
+            "Romance": 0,
+            "Cyber-Action": 0,
+            "Suspense": 0
+          },
+          "taxonomyFit": "E",
+          "reason": "Insufficient title/metadata for genre assignment",
+          "manualHelperAvailable": true,
+          "manualOptions": [
+            "Trending",
+            "Romance",
+            "Suspense",
+            "Cyber-Action"
+          ]
+        },
+        "editorial_title_description": {
+          "mode": "editorial_title_description",
+          "episodeNumber": 5,
+          "currentAssetTitle": "condo v1 2",
+          "editorialTitle": "CONDO WIND DOWN",
+          "description": "After the soundstage shoot, the energy shifts from production mode to a more relaxed setting at the condo. The team unwinds after the day, sharing food, wine, conversation, and candid moments that offer a more personal look at the people behind the project.",
+          "payloadTitle": "CONDO WIND DOWN",
+          "signals": [
+            "nlp:insufficient-signals",
+            "nlp:context-without-shelf-fit"
+          ],
+          "primaryRecommendation": "Trending",
+          "confidence": 0.2,
+          "confidenceBand": "manual",
+          "alternativeCategory": "",
+          "ambiguous": false,
+          "classificationSource": "nlp",
+          "scoreBreakdown": {
+            "Trending": 0,
+            "Romance": 0,
+            "Cyber-Action": 0,
+            "Suspense": 0
+          },
+          "taxonomyFit": "F",
+          "reason": "No valid Romance/Cyber-Action/Suspense semantic fit",
+          "manualHelperAvailable": true,
+          "manualOptions": [
+            "Trending",
+            "Romance",
+            "Suspense",
+            "Cyber-Action"
+          ]
+        },
+        "editorial_full_context": {
+          "mode": "editorial_full_context",
+          "episodeNumber": 5,
+          "currentAssetTitle": "condo v1 2",
+          "editorialTitle": "CONDO WIND DOWN",
+          "description": "After the soundstage shoot, the energy shifts from production mode to a more relaxed setting at the condo. The team unwinds after the day, sharing food, wine, conversation, and candid moments that offer a more personal look at the people behind the project.",
+          "payloadTitle": "CONDO WIND DOWN",
+          "signals": [
+            "nlp:insufficient-signals",
+            "nlp:context-without-shelf-fit"
+          ],
+          "primaryRecommendation": "Trending",
+          "confidence": 0.2,
+          "confidenceBand": "manual",
+          "alternativeCategory": "",
+          "ambiguous": false,
+          "classificationSource": "nlp",
+          "scoreBreakdown": {
+            "Trending": 0,
+            "Romance": 0,
+            "Cyber-Action": 0,
+            "Suspense": 0
+          },
+          "taxonomyFit": "F",
+          "reason": "No valid Romance/Cyber-Action/Suspense semantic fit",
+          "manualHelperAvailable": true,
+          "manualOptions": [
+            "Trending",
+            "Romance",
+            "Suspense",
+            "Cyber-Action"
+          ]
+        }
+      },
+      "primary": {
+        "mode": "editorial_full_context",
+        "episodeNumber": 5,
+        "currentAssetTitle": "condo v1 2",
+        "editorialTitle": "CONDO WIND DOWN",
+        "description": "After the soundstage shoot, the energy shifts from production mode to a more relaxed setting at the condo. The team unwinds after the day, sharing food, wine, conversation, and candid moments that offer a more personal look at the people behind the project.",
+        "payloadTitle": "CONDO WIND DOWN",
+        "signals": [
+          "nlp:insufficient-signals",
+          "nlp:context-without-shelf-fit"
+        ],
+        "primaryRecommendation": "Trending",
+        "confidence": 0.2,
+        "confidenceBand": "manual",
+        "alternativeCategory": "",
+        "ambiguous": false,
+        "classificationSource": "nlp",
+        "scoreBreakdown": {
+          "Trending": 0,
+          "Romance": 0,
+          "Cyber-Action": 0,
+          "Suspense": 0
+        },
+        "taxonomyFit": "F",
+        "reason": "No valid Romance/Cyber-Action/Suspense semantic fit",
+        "manualHelperAvailable": true,
+        "manualOptions": [
+          "Trending",
+          "Romance",
+          "Suspense",
+          "Cyber-Action"
+        ]
+      }
+    },
+    {
+      "episodeNumber": 6,
+      "currentAssetTitle": "07 AMP JAM V1",
+      "editorialTitle": "MY SOCIETY + AMP",
+      "seriesTitle": "Los Angeles Production",
+      "contexts": {
+        "asset_title_only": {
+          "mode": "asset_title_only",
+          "episodeNumber": 6,
+          "currentAssetTitle": "07 AMP JAM V1",
+          "editorialTitle": "MY SOCIETY + AMP",
+          "description": "Vic-G steps into another side of the creative experience through My Society and AMP. The episode brings together music, community, social connection, and culture as Vic-G gets the chance to meet, hang out with, and connect with the people surrounding these social music events. It expands the story beyond the video shoot and into the larger creative community around the project.",
+          "payloadTitle": "07 AMP JAM V1",
+          "signals": [
+            "nlp:insufficient-signals"
+          ],
+          "primaryRecommendation": "Trending",
+          "confidence": 0.18,
+          "confidenceBand": "manual",
+          "alternativeCategory": "",
+          "ambiguous": false,
+          "classificationSource": "nlp",
+          "scoreBreakdown": {
+            "Trending": 0,
+            "Romance": 0,
+            "Cyber-Action": 0,
+            "Suspense": 0
+          },
+          "taxonomyFit": "E",
+          "reason": "Insufficient title/metadata for genre assignment",
+          "manualHelperAvailable": true,
+          "manualOptions": [
+            "Trending",
+            "Romance",
+            "Suspense",
+            "Cyber-Action"
+          ]
+        },
+        "editorial_title_only": {
+          "mode": "editorial_title_only",
+          "episodeNumber": 6,
+          "currentAssetTitle": "07 AMP JAM V1",
+          "editorialTitle": "MY SOCIETY + AMP",
+          "description": "Vic-G steps into another side of the creative experience through My Society and AMP. The episode brings together music, community, social connection, and culture as Vic-G gets the chance to meet, hang out with, and connect with the people surrounding these social music events. It expands the story beyond the video shoot and into the larger creative community around the project.",
+          "payloadTitle": "MY SOCIETY + AMP",
+          "signals": [
+            "nlp:insufficient-signals"
+          ],
+          "primaryRecommendation": "Trending",
+          "confidence": 0.18,
+          "confidenceBand": "manual",
+          "alternativeCategory": "",
+          "ambiguous": false,
+          "classificationSource": "nlp",
+          "scoreBreakdown": {
+            "Trending": 0,
+            "Romance": 0,
+            "Cyber-Action": 0,
+            "Suspense": 0
+          },
+          "taxonomyFit": "E",
+          "reason": "Insufficient title/metadata for genre assignment",
+          "manualHelperAvailable": true,
+          "manualOptions": [
+            "Trending",
+            "Romance",
+            "Suspense",
+            "Cyber-Action"
+          ]
+        },
+        "editorial_title_description": {
+          "mode": "editorial_title_description",
+          "episodeNumber": 6,
+          "currentAssetTitle": "07 AMP JAM V1",
+          "editorialTitle": "MY SOCIETY + AMP",
+          "description": "Vic-G steps into another side of the creative experience through My Society and AMP. The episode brings together music, community, social connection, and culture as Vic-G gets the chance to meet, hang out with, and connect with the people surrounding these social music events. It expands the story beyond the video shoot and into the larger creative community around the project.",
+          "payloadTitle": "MY SOCIETY + AMP",
+          "signals": [
+            "nlp:insufficient-signals",
+            "nlp:context-without-shelf-fit",
+            "description:medium:together"
+          ],
+          "primaryRecommendation": "Trending",
+          "confidence": 0.2,
+          "confidenceBand": "manual",
+          "alternativeCategory": "",
+          "ambiguous": false,
+          "classificationSource": "nlp",
+          "scoreBreakdown": {
+            "Trending": 0,
+            "Romance": 1.2000000000000002,
+            "Cyber-Action": 0,
+            "Suspense": 0
+          },
+          "taxonomyFit": "F",
+          "reason": "No valid Romance/Cyber-Action/Suspense semantic fit",
+          "manualHelperAvailable": true,
+          "manualOptions": [
+            "Trending",
+            "Romance",
+            "Suspense",
+            "Cyber-Action"
+          ]
+        },
+        "editorial_full_context": {
+          "mode": "editorial_full_context",
+          "episodeNumber": 6,
+          "currentAssetTitle": "07 AMP JAM V1",
+          "editorialTitle": "MY SOCIETY + AMP",
+          "description": "Vic-G steps into another side of the creative experience through My Society and AMP. The episode brings together music, community, social connection, and culture as Vic-G gets the chance to meet, hang out with, and connect with the people surrounding these social music events. It expands the story beyond the video shoot and into the larger creative community around the project.",
+          "payloadTitle": "MY SOCIETY + AMP",
+          "signals": [
+            "nlp:insufficient-signals",
+            "nlp:context-without-shelf-fit",
+            "description:medium:together"
+          ],
+          "primaryRecommendation": "Trending",
+          "confidence": 0.2,
+          "confidenceBand": "manual",
+          "alternativeCategory": "",
+          "ambiguous": false,
+          "classificationSource": "nlp",
+          "scoreBreakdown": {
+            "Trending": 0,
+            "Romance": 1.2000000000000002,
+            "Cyber-Action": 0,
+            "Suspense": 0
+          },
+          "taxonomyFit": "F",
+          "reason": "No valid Romance/Cyber-Action/Suspense semantic fit",
+          "manualHelperAvailable": true,
+          "manualOptions": [
+            "Trending",
+            "Romance",
+            "Suspense",
+            "Cyber-Action"
+          ]
+        }
+      },
+      "primary": {
+        "mode": "editorial_full_context",
+        "episodeNumber": 6,
+        "currentAssetTitle": "07 AMP JAM V1",
+        "editorialTitle": "MY SOCIETY + AMP",
+        "description": "Vic-G steps into another side of the creative experience through My Society and AMP. The episode brings together music, community, social connection, and culture as Vic-G gets the chance to meet, hang out with, and connect with the people surrounding these social music events. It expands the story beyond the video shoot and into the larger creative community around the project.",
+        "payloadTitle": "MY SOCIETY + AMP",
+        "signals": [
+          "nlp:insufficient-signals",
+          "nlp:context-without-shelf-fit",
+          "description:medium:together"
+        ],
+        "primaryRecommendation": "Trending",
+        "confidence": 0.2,
+        "confidenceBand": "manual",
+        "alternativeCategory": "",
+        "ambiguous": false,
+        "classificationSource": "nlp",
+        "scoreBreakdown": {
+          "Trending": 0,
+          "Romance": 1.2000000000000002,
+          "Cyber-Action": 0,
+          "Suspense": 0
+        },
+        "taxonomyFit": "F",
+        "reason": "No valid Romance/Cyber-Action/Suspense semantic fit",
+        "manualHelperAvailable": true,
+        "manualOptions": [
+          "Trending",
+          "Romance",
+          "Suspense",
+          "Cyber-Action"
+        ]
+      }
+    }
+  ],
+  "summary": {
+    "romanceCount": 0,
+    "cyberActionCount": 0,
+    "suspenseCount": 0,
+    "trendingCount": 6,
+    "taxonomyFits": {
+      "F": 6
+    },
+    "contextImprovedCount": 6,
+    "improvedEpisodeNumbers": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "manualCategoryRecommended": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ]
+  },
+  "safety": {
+    "fetchMutations": 0,
+    "saveCreatorCatalogMetadataCalls": 0,
+    "patchCategory": 0,
+    "writePersistentTitle": 0
+  }
+}

@@ -12,7 +12,14 @@ Single source of truth for implementation vs release state. Update when a milest
 
 | Area | Status |
 |------|--------|
-| **TRUE ROOT-CAUSE RECOVERY (catalog + vault UX)** | 🚧 **Release in progress** — coordinated FE+BE recovery |
+| **Smart Category NLP Phase 4 (real editorial verification)** | 🚧 **Blocked** — EXACT identity ready; waiting for coworker authoritative title/description; no production edits |
+| **Smart Category NLP Phase 3C (canonical title → NLP re-eval)** | ✅ **Implementation Complete** — creator workflow; Case F UI; no auto-PATCH; no deploy |
+| **Smart Category NLP Phase 3B (editorial context eval)** | ✅ **Implementation Complete** — read-only; Case F documented; no deploy/PATCH |
+| **Smart Category NLP Phase 3A (production audit + approval queue)** | ✅ **Implementation Complete** — read-only audit; no auto-approve; Release N/A until deploy |
+| **Smart Category NLP Phase 2.5 (semantic + manual helper)** | ✅ **Implementation Complete** — no deploy; no auto-backfill |
+| **Smart Category NLP Phase 2 (creator review UI)** | ✅ **Implementation Complete** — no deploy; Accept/Override only |
+| **Smart Category NLP Phase 1 (suggestion-only)** | ✅ **Implementation Complete** — no deploy; suggestion API only |
+| **TRUE ROOT-CAUSE RECOVERY (catalog + vault UX)** | ✅ **Release Approved** — `117ca48` / FE `6a7cd28c` / BE `8ee10157` / `index-Cgpghqeg.js` |
 | **PHASE-26.3 Production Product Baseline Reconciliation** | ✅ **Implementation Complete** (audit only; no code/deploy) |
 | **PHASE-26.2 Workflow Auth/Retry Stabilization** | 🚧 **Release Blocked** — deployed `45c400c` / `index-4M0W7yoT.js`; Gate 5 smoke FAIL (local vs Netlify hash) |
 | **PHASE-26.1 Command Center API Auth/Retry Audit** | ✅ **Implementation Complete** (audit only) — FINDING/HIGH; superseded by Phase 26.2 deploy |
@@ -21,7 +28,7 @@ Single source of truth for implementation vs release state. Update when a milest
 | **PHASE-22 Title-Map Merge Hygiene** | ✅ **Release Approved** — `8804ffc` / `index-Cu_7jFHY.js` (prior baseline; superseded live) |
 | **PHASE-20 Creator Metadata UX** | ✅ **Release Approved** — `cd1ecfc` / `index-RqcfIi6Y.js` (superseded by Phase 22) |
 | **RELEASE-01 (PRODUCT Studio RC)** | ✅ **FROZEN / Release Approved** — tag `RELEASE-01` @ `7aacae7` |
-| Production URL | https://strong-lolly-a9fcb4.netlify.app (`index-4M0W7yoT.js` — Phase 26.2 live; release gates incomplete) |
+| Production URL | https://strong-lolly-a9fcb4.netlify.app (`index-Cgpghqeg.js` — recovery live) |
 | Release governance v1.0 | ✅ Complete and frozen |
 | Backend media durability | ✅ Operational |
 | Persistent Railway media storage | ✅ Verified |
@@ -37,24 +44,109 @@ Single source of truth for implementation vs release state. Update when a milest
 
 ---
 
+## Smart Category NLP — Phase 1 (suggestion-only)
+
+```
+SMART-CATEGORY-NLP-P1
+Implementation: COMPLETE
+Release: N/A (no deploy; classification infrastructure only)
+Release Process: v1.0
+```
+
+Canonical title → `classifyContentSemantic` + `defaultTitleNlpProvider` → suggestion/confidence. Does not PATCH categories, mutate creator locks, or change shelf rendering. Phase 2 = creator review UI.
+
+## Smart Category NLP — Phase 2 (creator review UI)
+
+```
+SMART-CATEGORY-NLP-P2
+Implementation: COMPLETE
+Release: N/A (no deploy; review UI only)
+Release Process: v1.0
+```
+
+Vault package editor + Hero title-edit show NLP suggestion with Accept / Override. Persist only on explicit action via `saveCreatorCatalogMetadata` / `patchReelCategory`.
+
+## Smart Category NLP — Phase 2.5 (semantic intelligence + manual helper)
+
+```
+SMART-CATEGORY-NLP-P2.5
+Implementation: COMPLETE
+Release: N/A (no deploy; no automatic production categorization)
+Release Process: v1.0
+```
+
+Multi-signal local scoring, confidence bands, ambiguity alternatives, Manual Category helper on Vault/Hero. Creator lock preserved. Phase 3 automatic/backfill untouched.
+
+## Smart Category NLP — Phase 3A (production audit + approval queue)
+
+```
+SMART-CATEGORY-NLP-P3A
+Implementation: COMPLETE
+Release: N/A (no deploy; read-only audit + Studio approval UI; no production mutations)
+Release Process: v1.0
+```
+
+Read-only `auditProductionCatalog` against live `/api/reels`. Studio shows CURRENT vs RECOMMENDED distribution + approval queue. Persist only via Accept / Override / Manual / Approve Selected → existing `persistCreatorCategoryChoice`. First production pass: 25/25 `FALLBACK_TRENDING` (verdict **C** — insufficient title/metadata); 0 approval-ready; 0 PATCH during audit. No automatic backfill.
+
+## Smart Category NLP — Phase 3B (editorial context evaluation)
+
+```
+SMART-CATEGORY-NLP-P3B
+Implementation: COMPLETE
+Release: N/A (no deploy; in-memory editorial eval only; zero production mutations)
+Release Process: v1.0
+```
+
+Los Angeles Production episode guide evaluated via existing `suggestShelfClassification`. Provider now scores description/series/episode when title is generic. All 6 episodes → taxonomy fit **F** (understood, no Romance/Cyber/Suspense shelf). Empty genre shelves remain correct. Manual Category remains creator authority.
+
+## Smart Category NLP — Phase 3C (canonical title → NLP re-evaluation)
+
+```
+SMART-CATEGORY-NLP-P3C
+Implementation: COMPLETE
+Release: N/A (no deploy; creator workflow only; no production backfill)
+Release Process: v1.0
+```
+
+After Master/Hero canonical title save → `reevaluateAfterCanonicalTitleSave` gathers durable `description` from `reel_titles_persistent` (+ series mirror) → suggestion review with Case F `UNDERSTOOD / NO SHELF FIT`. Persist only via Accept / Override / Manual. Creator locks preserved.
+
+## Smart Category NLP — Phase 4 (real editorial verification)
+
+```
+SMART-CATEGORY-NLP-P4
+Implementation: PREP_COMPLETE (identity-backed review layer); BLOCKED on coworker editorial list
+Release: N/A
+Release Process: v1.0
+Blocker: WAITING_FOR_AUTHORITATIVE_METADATA (coworker final title/description list)
+Production mutations: 0 (no PATCH / title / description / deploy)
+```
+
+Readiness gate: `validate:phase-4-editorial-workflow` refuses to invent titles/descriptions or mutate production until `artifacts/phase-4-authoritative-editorial.json` is supplied with high-confidence asset mappings. Phase 3B episode guide remains provisional only.
+
+Identity-backed review layer: `identityBackedEditorialReview.js` + Studio `IdentityBackedEditorialReviewPanel`. Separates media identity / editorial authority / NLP confidence. Six EXACT media matches from forensics. Accept/Override/Manual disabled until `AUTHORITATIVE` coworker metadata. Validators: `validate:phase-4-identity-backed-editorial`, `validate:phase-4-identity-backed-browser` (local Chromium Studio smoke; zero mutations).
+
+---
+
 ## TRUE ROOT-CAUSE RECOVERY — Catalog Distribution + Media Vault DnD UX
 
 ```
 TRUE-ROOT-CAUSE-RECOVERY
 Implementation: COMPLETE
-Release: IN PROGRESS (approved recovery release — coordinated FE+BE)
+Release: APPROVED
 Release Process: v1.0
+Commit: 117ca4849cb7866f89c1c23e28272c45d9dab6fd
+Frontend deploy: 6a7cd28c3cd1b61dc46e9e4f (index-Cgpghqeg.js)
+Backend deploy: 8ee10157-f7f6-453f-ab47-700d1a333de9
+Bundle SHA-256: 145c35997d70b1adfb878499e97b1272c0926635e4a644f73a3555237ae9edf7
 Root causes:
   1) Series narrative genre Drama aliased into Romance shelf (fill-hole) → FIXED seriesMirrorShelfCategory
   2) R2 /prod/*.mp4 projected as type=image via media_type_from_url(/videos/ only) → FIXED media_type_from_parts
   3) Vault DnD perceived dead = ACCEPT-gated UX / copy / zero-byte / near-miss → FIXED UX without changing uploadMedia
 Validators: recovery-catalog-vault PASS; Phase 17–25 PASS; 26.2 containment PASS (vault empty-diff expected N/A)
-Build: PASS (index-D6Zyj0T4.js)
-Data repair: none required (projection heals after backend deploy)
+Production acceptance: frontend/artifacts/recovery_production_acceptance.json — PASS
+Gate 5 BG-7A.1: FAIL (known false-negative hash compare; functional acceptance PASS)
+Data repair: none (six MP4 IDs self-healed to type=video after backend deploy)
 Push: NOT performed
-Commit: pending this release
-Deploy: pending coordinated FE+BE
-Artifact: frontend/artifacts/recovery_root_cause_report.json
 ```
 
 ---

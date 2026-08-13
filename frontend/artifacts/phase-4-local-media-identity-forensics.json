@@ -1,0 +1,734 @@
+{
+  "phase": "PHASE-4-PREP-LOCAL-MEDIA-IDENTITY-FORENSICS",
+  "readOnly": true,
+  "mutations": {
+    "patch": 0,
+    "titleWrites": 0,
+    "descriptionWrites": 0,
+    "deploy": 0
+  },
+  "method": [
+    "local ffprobe + SHA-256 + MD5",
+    "production GET /api/reels (read-only)",
+    "production R2 HEAD Content-Length + ETag",
+    "EXACT when ETag (object MD5) == local MD5 AND Content-Length == byteSize"
+  ],
+  "localInventory": [
+    {
+      "filename": "01_ARRIVAL_OPEN_v1.mp4",
+      "absolutePath": "/home/youloose2dafish/Downloads/01_ARRIVAL_OPEN_v1.mp4",
+      "byteSize": 215934975,
+      "sha256": "3aa2dc9af6fcfe4b394fac14917560ee4a83381c034c83edce4001d0a6bbb448",
+      "duration": 113.446667,
+      "width": 1080,
+      "height": 1920,
+      "codec": "h264",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "frameRate": 23.976,
+      "audio": true,
+      "audioCodec": "aac",
+      "md5": "4843a1959df25efe925cec9baeacb91e"
+    },
+    {
+      "filename": "02_ARRIVAL_THE PROJECT INTRO_v1.mp4",
+      "absolutePath": "/home/youloose2dafish/Downloads/02_ARRIVAL_THE PROJECT INTRO_v1.mp4",
+      "byteSize": 493554966,
+      "sha256": "8487e2a1f3986bad9759b0e9e1732a0aff65edc8c263c9a9a7577af07467f3dd",
+      "duration": 255.171583,
+      "width": 1080,
+      "height": 1920,
+      "codec": "h264",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "frameRate": 23.976,
+      "audio": true,
+      "audioCodec": "aac",
+      "md5": "3bfb5f995a788357c2f30b4165f3b329"
+    },
+    {
+      "filename": "03_CLUB POOM POOM_V1.mp4",
+      "absolutePath": "/home/youloose2dafish/Downloads/03_CLUB POOM POOM_V1.mp4",
+      "byteSize": 476595206,
+      "sha256": "cf585032bb4dd0283b985fd74bf2571decf09744651680cac97071c2a8dc0f98",
+      "duration": 247.580667,
+      "width": 1080,
+      "height": 1920,
+      "codec": "h264",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "frameRate": 23.976,
+      "audio": true,
+      "audioCodec": "aac",
+      "md5": "fc27f6322085c581888f9dbca4b0c02f"
+    },
+    {
+      "filename": "04_SET_SHOOTING_PT 1_V1.mp4",
+      "absolutePath": "/home/youloose2dafish/Downloads/04_SET_SHOOTING_PT 1_V1.mp4",
+      "byteSize": 852575217,
+      "sha256": "68e80d97f7aa5a814da9b6c297bcf9d365cb8dab0827f6e43de4cb1162efdb67",
+      "duration": 442.066625,
+      "width": 1080,
+      "height": 1920,
+      "codec": "h264",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "frameRate": 23.976,
+      "audio": true,
+      "audioCodec": "aac",
+      "md5": "5e09f082b6320901de4b824609db3857"
+    },
+    {
+      "filename": "05_SET_SHOOTING_PT 2_V1.mp4",
+      "absolutePath": "/home/youloose2dafish/Downloads/05_SET_SHOOTING_PT 2_V1.mp4",
+      "byteSize": 903238844,
+      "sha256": "021070ed774d8ab9dacc288243697d85b6a3a2fa227834d06b9bb2220451e13d",
+      "duration": 466.466,
+      "width": 1080,
+      "height": 1920,
+      "codec": "h264",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "frameRate": 23.976,
+      "audio": true,
+      "audioCodec": "aac",
+      "md5": "a7a3464850fc068a3cf965637b7d125f"
+    },
+    {
+      "filename": "06_CONDO_HIGH RISE_V1.mp4",
+      "absolutePath": "/home/youloose2dafish/Downloads/06_CONDO_HIGH RISE_V1.mp4",
+      "byteSize": 362155056,
+      "sha256": "ca2a256ef4e7799dc253cbba8484f3c075bb02c075e0a9d0d570d36fef96d377",
+      "duration": 187.770917,
+      "width": 1080,
+      "height": 1920,
+      "codec": "h264",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "frameRate": 23.976,
+      "audio": true,
+      "audioCodec": "aac",
+      "md5": "85a88d980ce1fb95027470588ca98879"
+    },
+    {
+      "filename": "07_AMP_JAM_V1.mp4",
+      "absolutePath": "/home/youloose2dafish/Downloads/07_AMP_JAM_V1.mp4",
+      "byteSize": 395703090,
+      "sha256": "e4d8a5806ebee240004f75db9b883711d8c36df5788b95c745779a31b40d2f23",
+      "duration": 203.411542,
+      "width": 1080,
+      "height": 1920,
+      "codec": "h264",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "frameRate": 23.976,
+      "audio": true,
+      "audioCodec": "aac",
+      "md5": "c9c4c8a64805fa9ad9405bbdc07a54ec"
+    },
+    {
+      "filename": "condo_v1_2.mp4",
+      "absolutePath": "/home/youloose2dafish/Downloads/condo_v1_2.mp4",
+      "byteSize": 362155056,
+      "sha256": "ca2a256ef4e7799dc253cbba8484f3c075bb02c075e0a9d0d570d36fef96d377",
+      "duration": 187.770917,
+      "width": 1080,
+      "height": 1920,
+      "codec": "h264",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "frameRate": 23.976,
+      "audio": true,
+      "audioCodec": "aac",
+      "md5": "85a88d980ce1fb95027470588ca98879"
+    },
+    {
+      "filename": "MICROS_STIRRED_V1.mp4",
+      "absolutePath": "/home/youloose2dafish/Downloads/MICROS_STIRRED_V1.mp4",
+      "byteSize": 204661178,
+      "sha256": "c1abb05b531bc797a62ca4f2fca7caa1bc80e211828a070bf8e4f328e726c847",
+      "duration": 165.582083,
+      "width": 1080,
+      "height": 1920,
+      "codec": "h264",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "frameRate": 23.976,
+      "audio": true,
+      "audioCodec": "aac",
+      "md5": "432cea4449c9a66acf2f92010965dd5a"
+    },
+    {
+      "filename": "MICROS_STIRRED_V3.mp4",
+      "absolutePath": "/home/youloose2dafish/Downloads/MICROS_STIRRED_V3.mp4",
+      "byteSize": 4855821,
+      "sha256": "58a1556a4ef94fb23da202135fcdaaa045971be39e4f0381db91a7b7762b645e",
+      "duration": 200.666667,
+      "width": 200,
+      "height": 352,
+      "codec": "h264",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "frameRate": 15.0,
+      "audio": true,
+      "audioCodec": "aac",
+      "md5": "794b111f4911fb0fa4ecab3ef64b69e9"
+    },
+    {
+      "filename": "MICROS_STIRRED_V3.MOV",
+      "absolutePath": "/home/youloose2dafish/Downloads/MICROS_STIRRED_V3.MOV",
+      "byteSize": 18886339,
+      "sha256": "81fd6ee6681dd0c9eadab8db4f76212148f5e150792ce8006ae11ee61e69a901",
+      "duration": 200.658333,
+      "width": 200,
+      "height": 352,
+      "codec": "h264",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "frameRate": 15.001,
+      "audio": true,
+      "audioCodec": "aac",
+      "md5": "1ad0baf06bfd4acb4f5a7b5a79cd4a72"
+    },
+    {
+      "filename": "MICROS_Motherland_EP 01_v2.mp4",
+      "absolutePath": "/home/youloose2dafish/Downloads/MICROS_Motherland_EP 01_v2.mp4",
+      "byteSize": 68391909,
+      "sha256": "2d552ff231d227b5506aa0fe500cf4335af4b25887665353fdd333e5998db60d",
+      "duration": 51.684967,
+      "width": 2160,
+      "height": 4096,
+      "codec": "h264",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "frameRate": 29.97,
+      "audio": true,
+      "audioCodec": "aac",
+      "md5": "95338d42ec96c806c94749a520511db3"
+    },
+    {
+      "filename": "MICROS_Motherland_EP 01_v2(1).mp4",
+      "absolutePath": "/home/youloose2dafish/Downloads/MICROS_Motherland_EP 01_v2(1).mp4",
+      "byteSize": 68391909,
+      "sha256": "2d552ff231d227b5506aa0fe500cf4335af4b25887665353fdd333e5998db60d",
+      "duration": 51.684967,
+      "width": 2160,
+      "height": 4096,
+      "codec": "h264",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "frameRate": 29.97,
+      "audio": true,
+      "audioCodec": "aac",
+      "md5": "95338d42ec96c806c94749a520511db3"
+    },
+    {
+      "filename": "MICROS_Motherland_V1_1.mp4",
+      "absolutePath": "/home/youloose2dafish/Downloads/MICROS_Motherland_V1_1.mp4",
+      "byteSize": 119460922,
+      "sha256": "c23bb21a577c08d296748ac4b38b928ffe4c5b245c3af28ffc342fb13d135314",
+      "duration": 93.259833,
+      "width": 2160,
+      "height": 4096,
+      "codec": "h264",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "frameRate": 29.97,
+      "audio": true,
+      "audioCodec": "aac",
+      "md5": "8b9bcbed8c23e8d82173d8a5c8c6da1a"
+    },
+    {
+      "filename": "MICROS_Motherland_V1_1(1).mp4",
+      "absolutePath": "/home/youloose2dafish/Downloads/MICROS_Motherland_V1_1(1).mp4",
+      "byteSize": 163876341,
+      "sha256": "f914ef36ad9cf0b473429535ae5f07ba2db8451a6e2f05d0558f203ad17d986d",
+      "duration": 93.269,
+      "width": 2026,
+      "height": 3840,
+      "codec": "h264",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "frameRate": 29.97,
+      "audio": true,
+      "audioCodec": "aac",
+      "md5": "f33ea2ac618e8a8205d392f836deb7b4"
+    },
+    {
+      "filename": "MICROS_Motherland_V1(1).mp4",
+      "absolutePath": "/home/youloose2dafish/Downloads/MICROS_Motherland_V1(1).mp4",
+      "byteSize": 76000493,
+      "sha256": "08f7dcf748f65467e05eac0b0b123e377fc8fa7715cdff64c1cb203726217dfc",
+      "duration": 58.491771,
+      "width": 2160,
+      "height": 4096,
+      "codec": "h264",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "frameRate": 29.97,
+      "audio": true,
+      "audioCodec": "aac",
+      "md5": "655e0db38ae337d9bf415303423ab647"
+    },
+    {
+      "filename": "MICROS_Motherland_V1_2.mp4",
+      "absolutePath": "/home/youloose2dafish/Downloads/MICROS_Motherland_V1_2.mp4",
+      "byteSize": 106584800,
+      "sha256": "d77e7257dc79ddbd5dacd0046d5d9ee2aaca55864f4c9ad11d5bf5ea2b1fa2f7",
+      "duration": 82.082,
+      "width": 2160,
+      "height": 4096,
+      "codec": "h264",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "frameRate": 29.97,
+      "audio": true,
+      "audioCodec": "aac",
+      "md5": "3092254c7e3a8bb16961594dee1444a5"
+    },
+    {
+      "filename": "MICROS_Motherland_V1.mp4",
+      "absolutePath": "/home/youloose2dafish/Downloads/MICROS_Motherland_V1.mp4",
+      "byteSize": 76000493,
+      "sha256": "08f7dcf748f65467e05eac0b0b123e377fc8fa7715cdff64c1cb203726217dfc",
+      "duration": 58.491771,
+      "width": 2160,
+      "height": 4096,
+      "codec": "h264",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "frameRate": 29.97,
+      "audio": true,
+      "audioCodec": "aac",
+      "md5": "655e0db38ae337d9bf415303423ab647"
+    }
+  ],
+  "productionInventory": [
+    {
+      "id": "03ef898a-989f-42c3-bdbb-67f37338df65",
+      "title": "01 ARRIVAL OPEN v1",
+      "url": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb-67f37338df65.mp4",
+      "contentLength": 215934975,
+      "etag": "4843a1959df25efe925cec9baeacb91e",
+      "lastModified": "Tue, 11 Aug 2026 19:02:46 GMT"
+    },
+    {
+      "id": "d2aafde7-d7ba-492c-a860-20b51f7f4033",
+      "title": "03 CLUB POOM POOM V1",
+      "url": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/d2aafde7-d7ba-492c-a860-20b51f7f4033.mp4",
+      "contentLength": 476595206,
+      "etag": "fc27f6322085c581888f9dbca4b0c02f",
+      "lastModified": "Thu, 06 Aug 2026 15:24:00 GMT"
+    },
+    {
+      "id": "615e0eae-47b4-468a-b6dd-a6846b464846",
+      "title": "MICROS STIRRED V1",
+      "url": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/615e0eae-47b4-468a-b6dd-a6846b464846.mp4",
+      "contentLength": 204661178,
+      "etag": "432cea4449c9a66acf2f92010965dd5a",
+      "lastModified": "Sat, 08 Aug 2026 15:15:55 GMT"
+    },
+    {
+      "id": "9a1251a2-d6a6-42e5-9fcd-4eca17dcd6ef",
+      "title": "MICROS Motherland V1(1)",
+      "url": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/9a1251a2-d6a6-42e5-9fcd-4eca17dcd6ef.mp4",
+      "contentLength": 76000493,
+      "etag": "655e0db38ae337d9bf415303423ab647",
+      "lastModified": "Fri, 07 Aug 2026 19:33:21 GMT"
+    },
+    {
+      "id": "3894107e-ae44-43c5-af72-b3f5d5e0ad90",
+      "title": "condo v1 2",
+      "url": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/3894107e-ae44-43c5-af72-b3f5d5e0ad90.mp4",
+      "contentLength": 362155056,
+      "etag": "85a88d980ce1fb95027470588ca98879",
+      "lastModified": "Thu, 30 Jul 2026 16:00:07 GMT"
+    },
+    {
+      "id": "201ec6ee-6822-4bda-9295-080beb6f4e35",
+      "title": "07 AMP JAM V1",
+      "url": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/201ec6ee-6822-4bda-9295-080beb6f4e35.mp4",
+      "contentLength": 395703090,
+      "etag": "c9c4c8a64805fa9ad9405bbdc07a54ec",
+      "lastModified": "Sat, 08 Aug 2026 15:20:25 GMT"
+    }
+  ],
+  "duplicateGroups": [
+    {
+      "sha256": "ca2a256ef4e7799dc253cbba8484f3c075bb02c075e0a9d0d570d36fef96d377",
+      "md5": "85a88d980ce1fb95027470588ca98879",
+      "byteSize": 362155056,
+      "duration": 187.770917,
+      "resolution": "1080x1920",
+      "files": [
+        "06_CONDO_HIGH RISE_V1.mp4",
+        "condo_v1_2.mp4"
+      ],
+      "identical": true
+    },
+    {
+      "sha256": "2d552ff231d227b5506aa0fe500cf4335af4b25887665353fdd333e5998db60d",
+      "md5": "95338d42ec96c806c94749a520511db3",
+      "byteSize": 68391909,
+      "duration": 51.684967,
+      "resolution": "2160x4096",
+      "files": [
+        "MICROS_Motherland_EP 01_v2.mp4",
+        "MICROS_Motherland_EP 01_v2(1).mp4"
+      ],
+      "identical": true
+    },
+    {
+      "sha256": "08f7dcf748f65467e05eac0b0b123e377fc8fa7715cdff64c1cb203726217dfc",
+      "md5": "655e0db38ae337d9bf415303423ab647",
+      "byteSize": 76000493,
+      "duration": 58.491771,
+      "resolution": "2160x4096",
+      "files": [
+        "MICROS_Motherland_V1(1).mp4",
+        "MICROS_Motherland_V1.mp4"
+      ],
+      "identical": true
+    }
+  ],
+  "nearDuplicatesNotIdentical": [
+    {
+      "group": "MICROS_Motherland_V1_1*",
+      "note": "same naming family but NOT byte-identical",
+      "files": [
+        {
+          "filename": "MICROS_Motherland_V1_1.mp4",
+          "byteSize": 119460922,
+          "sha256": "c23bb21a577c08d296748ac4b38b928ffe4c5b245c3af28ffc342fb13d135314",
+          "md5": "8b9bcbed8c23e8d82173d8a5c8c6da1a",
+          "duration": 93.259833
+        },
+        {
+          "filename": "MICROS_Motherland_V1_1(1).mp4",
+          "byteSize": 163876341,
+          "sha256": "f914ef36ad9cf0b473429535ae5f07ba2db8451a6e2f05d0558f203ad17d986d",
+          "md5": "f33ea2ac618e8a8205d392f836deb7b4",
+          "duration": 93.269
+        }
+      ]
+    },
+    {
+      "group": "MICROS_STIRRED_V3*",
+      "note": "mp4 vs MOV different encodings/sizes",
+      "files": [
+        {
+          "filename": "MICROS_STIRRED_V3.mp4",
+          "byteSize": 4855821,
+          "sha256": "58a1556a4ef94fb23da202135fcdaaa045971be39e4f0381db91a7b7762b645e",
+          "md5": "794b111f4911fb0fa4ecab3ef64b69e9",
+          "duration": 200.666667
+        },
+        {
+          "filename": "MICROS_STIRRED_V3.MOV",
+          "byteSize": 18886339,
+          "sha256": "81fd6ee6681dd0c9eadab8db4f76212148f5e150792ce8006ae11ee61e69a901",
+          "md5": "1ad0baf06bfd4acb4f5a7b5a79cd4a72",
+          "duration": 200.658333
+        }
+      ]
+    }
+  ],
+  "episodeSequence": [
+    {
+      "localNumber": "01",
+      "localFile": "01_ARRIVAL_OPEN_v1.mp4",
+      "status": "MATCHED",
+      "productionReelId": "03ef898a-989f-42c3-bdbb-67f37338df65"
+    },
+    {
+      "localNumber": "02",
+      "localFile": "02_ARRIVAL_THE PROJECT INTRO_v1.mp4",
+      "status": "LOCAL_ONLY",
+      "productionReelId": null
+    },
+    {
+      "localNumber": "03",
+      "localFile": "03_CLUB POOM POOM_V1.mp4",
+      "status": "MATCHED",
+      "productionReelId": "d2aafde7-d7ba-492c-a860-20b51f7f4033"
+    },
+    {
+      "localNumber": "04",
+      "localFile": "04_SET_SHOOTING_PT 1_V1.mp4",
+      "status": "LOCAL_ONLY",
+      "productionReelId": null
+    },
+    {
+      "localNumber": "05",
+      "localFile": "05_SET_SHOOTING_PT 2_V1.mp4",
+      "status": "LOCAL_ONLY",
+      "productionReelId": null
+    },
+    {
+      "localNumber": "06",
+      "localFile": "06_CONDO_HIGH RISE_V1.mp4",
+      "status": "MATCHED",
+      "productionReelId": "3894107e-ae44-43c5-af72-b3f5d5e0ad90"
+    },
+    {
+      "localNumber": "07",
+      "localFile": "07_AMP_JAM_V1.mp4",
+      "status": "MATCHED",
+      "productionReelId": "201ec6ee-6822-4bda-9295-080beb6f4e35"
+    }
+  ],
+  "editorialGuide": {
+    "source": "/home/youloose2dafish/Downloads/LA_Episode_Guide.pdf",
+    "status": "CONTEXT_ONLY_NOT_AUTHORITATIVE_FOR_WRITES",
+    "episodes": [
+      {
+        "n": 1,
+        "title": "ARRIVAL",
+        "likelyLocal": "01_ARRIVAL_OPEN_v1.mp4",
+        "note": "Guide Ep1; local also has 02 intro not in production"
+      },
+      {
+        "n": 2,
+        "title": "POOM POOM TUESDAY",
+        "likelyLocal": "03_CLUB POOM POOM_V1.mp4",
+        "note": "Guide Ep2 maps to local 03 club shoot, not local 02"
+      },
+      {
+        "n": 3,
+        "title": "SOUNDSTAGE SHOOT: PART ONE",
+        "likelyLocal": "04_SET_SHOOTING_PT 1_V1.mp4 OR MICROS_STIRRED_V1.mp4",
+        "note": "AMBIGUOUS contextual \u2014 production currently holds MICROS STIRRED not SET PT1"
+      },
+      {
+        "n": 4,
+        "title": "SOUNDSTAGE SHOOT: PART TWO",
+        "likelyLocal": "05_SET_SHOOTING_PT 2_V1.mp4 OR MICROS_Motherland_*",
+        "note": "AMBIGUOUS contextual"
+      },
+      {
+        "n": 5,
+        "title": "CONDO WIND DOWN",
+        "likelyLocal": "06_CONDO_HIGH RISE_V1.mp4 / condo_v1_2.mp4",
+        "note": "byte-identical pair"
+      },
+      {
+        "n": 6,
+        "title": "MY SOCIETY + AMP",
+        "likelyLocal": "07_AMP_JAM_V1.mp4",
+        "note": "strong filename+hash alignment with production 07"
+      }
+    ]
+  },
+  "forensicMappingTable": [
+    {
+      "productionId": "03ef898a-989f-42c3-bdbb-67f37338df65",
+      "productionTitle": "01 ARRIVAL OPEN v1",
+      "productionContentLength": 215934975,
+      "productionEtag": "4843a1959df25efe925cec9baeacb91e",
+      "bestLocalFile": "01_ARRIVAL_OPEN_v1.mp4",
+      "bestLocalPath": "/home/youloose2dafish/Downloads/01_ARRIVAL_OPEN_v1.mp4",
+      "matchConfidence": "EXACT",
+      "evidence": [
+        "R2 ETag MD5==local md5 (4843a1959df25efe925cec9baeacb91e)",
+        "Content-Length==byteSize (215934975)",
+        "SHA-256 3aa2dc9af6fcfe4b394fac14917560ee4a83381c034c83edce4001d0a6bbb448"
+      ],
+      "duration": 113.446667,
+      "resolution": "1080x1920",
+      "sha256": "3aa2dc9af6fcfe4b394fac14917560ee4a83381c034c83edce4001d0a6bbb448",
+      "md5": "4843a1959df25efe925cec9baeacb91e",
+      "codec": "h264",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "sizeHits": [
+        "01_ARRIVAL_OPEN_v1.mp4"
+      ],
+      "md5Hits": [
+        "01_ARRIVAL_OPEN_v1.mp4"
+      ],
+      "duplicateGroup": [
+        "01_ARRIVAL_OPEN_v1.mp4"
+      ],
+      "editorialContext": "Guide Ep1 ARRIVAL (context)",
+      "safeToUseForFutureMapping": true
+    },
+    {
+      "productionId": "d2aafde7-d7ba-492c-a860-20b51f7f4033",
+      "productionTitle": "03 CLUB POOM POOM V1",
+      "productionContentLength": 476595206,
+      "productionEtag": "fc27f6322085c581888f9dbca4b0c02f",
+      "bestLocalFile": "03_CLUB POOM POOM_V1.mp4",
+      "bestLocalPath": "/home/youloose2dafish/Downloads/03_CLUB POOM POOM_V1.mp4",
+      "matchConfidence": "EXACT",
+      "evidence": [
+        "R2 ETag MD5==local md5 (fc27f6322085c581888f9dbca4b0c02f)",
+        "Content-Length==byteSize (476595206)",
+        "SHA-256 cf585032bb4dd0283b985fd74bf2571decf09744651680cac97071c2a8dc0f98"
+      ],
+      "duration": 247.580667,
+      "resolution": "1080x1920",
+      "sha256": "cf585032bb4dd0283b985fd74bf2571decf09744651680cac97071c2a8dc0f98",
+      "md5": "fc27f6322085c581888f9dbca4b0c02f",
+      "codec": "h264",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "sizeHits": [
+        "03_CLUB POOM POOM_V1.mp4"
+      ],
+      "md5Hits": [
+        "03_CLUB POOM POOM_V1.mp4"
+      ],
+      "duplicateGroup": [
+        "03_CLUB POOM POOM_V1.mp4"
+      ],
+      "editorialContext": "Guide Ep2 POOM POOM TUESDAY (context)",
+      "safeToUseForFutureMapping": true
+    },
+    {
+      "productionId": "615e0eae-47b4-468a-b6dd-a6846b464846",
+      "productionTitle": "MICROS STIRRED V1",
+      "productionContentLength": 204661178,
+      "productionEtag": "432cea4449c9a66acf2f92010965dd5a",
+      "bestLocalFile": "MICROS_STIRRED_V1.mp4",
+      "bestLocalPath": "/home/youloose2dafish/Downloads/MICROS_STIRRED_V1.mp4",
+      "matchConfidence": "EXACT",
+      "evidence": [
+        "R2 ETag MD5==local md5 (432cea4449c9a66acf2f92010965dd5a)",
+        "Content-Length==byteSize (204661178)",
+        "SHA-256 c1abb05b531bc797a62ca4f2fca7caa1bc80e211828a070bf8e4f328e726c847"
+      ],
+      "duration": 165.582083,
+      "resolution": "1080x1920",
+      "sha256": "c1abb05b531bc797a62ca4f2fca7caa1bc80e211828a070bf8e4f328e726c847",
+      "md5": "432cea4449c9a66acf2f92010965dd5a",
+      "codec": "h264",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "sizeHits": [
+        "MICROS_STIRRED_V1.mp4"
+      ],
+      "md5Hits": [
+        "MICROS_STIRRED_V1.mp4"
+      ],
+      "duplicateGroup": [
+        "MICROS_STIRRED_V1.mp4"
+      ],
+      "editorialContext": "Guide Ep3 SOUNDSTAGE? or micros cut \u2014 contextual ambiguous vs local 04",
+      "safeToUseForFutureMapping": true
+    },
+    {
+      "productionId": "9a1251a2-d6a6-42e5-9fcd-4eca17dcd6ef",
+      "productionTitle": "MICROS Motherland V1(1)",
+      "productionContentLength": 76000493,
+      "productionEtag": "655e0db38ae337d9bf415303423ab647",
+      "bestLocalFile": "MICROS_Motherland_V1(1).mp4",
+      "bestLocalPath": "/home/youloose2dafish/Downloads/MICROS_Motherland_V1(1).mp4",
+      "matchConfidence": "EXACT",
+      "evidence": [
+        "R2 ETag MD5==local md5 (655e0db38ae337d9bf415303423ab647)",
+        "Content-Length==byteSize (76000493)",
+        "SHA-256 08f7dcf748f65467e05eac0b0b123e377fc8fa7715cdff64c1cb203726217dfc"
+      ],
+      "duration": 58.491771,
+      "resolution": "2160x4096",
+      "sha256": "08f7dcf748f65467e05eac0b0b123e377fc8fa7715cdff64c1cb203726217dfc",
+      "md5": "655e0db38ae337d9bf415303423ab647",
+      "codec": "h264",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "sizeHits": [
+        "MICROS_Motherland_V1(1).mp4",
+        "MICROS_Motherland_V1.mp4"
+      ],
+      "md5Hits": [
+        "MICROS_Motherland_V1(1).mp4",
+        "MICROS_Motherland_V1.mp4"
+      ],
+      "duplicateGroup": [
+        "MICROS_Motherland_V1(1).mp4",
+        "MICROS_Motherland_V1.mp4"
+      ],
+      "editorialContext": "Guide Ep4 SOUNDSTAGE PT2? or micros cut \u2014 contextual ambiguous vs local 05",
+      "safeToUseForFutureMapping": true
+    },
+    {
+      "productionId": "3894107e-ae44-43c5-af72-b3f5d5e0ad90",
+      "productionTitle": "condo v1 2",
+      "productionContentLength": 362155056,
+      "productionEtag": "85a88d980ce1fb95027470588ca98879",
+      "bestLocalFile": "06_CONDO_HIGH RISE_V1.mp4",
+      "bestLocalPath": "/home/youloose2dafish/Downloads/06_CONDO_HIGH RISE_V1.mp4",
+      "matchConfidence": "EXACT",
+      "evidence": [
+        "R2 ETag MD5==local md5 (85a88d980ce1fb95027470588ca98879)",
+        "Content-Length==byteSize (362155056)",
+        "SHA-256 ca2a256ef4e7799dc253cbba8484f3c075bb02c075e0a9d0d570d36fef96d377"
+      ],
+      "duration": 187.770917,
+      "resolution": "1080x1920",
+      "sha256": "ca2a256ef4e7799dc253cbba8484f3c075bb02c075e0a9d0d570d36fef96d377",
+      "md5": "85a88d980ce1fb95027470588ca98879",
+      "codec": "h264",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "sizeHits": [
+        "06_CONDO_HIGH RISE_V1.mp4",
+        "condo_v1_2.mp4"
+      ],
+      "md5Hits": [
+        "06_CONDO_HIGH RISE_V1.mp4",
+        "condo_v1_2.mp4"
+      ],
+      "duplicateGroup": [
+        "06_CONDO_HIGH RISE_V1.mp4",
+        "condo_v1_2.mp4"
+      ],
+      "editorialContext": "Guide Ep5 CONDO WIND DOWN (context)",
+      "safeToUseForFutureMapping": true
+    },
+    {
+      "productionId": "201ec6ee-6822-4bda-9295-080beb6f4e35",
+      "productionTitle": "07 AMP JAM V1",
+      "productionContentLength": 395703090,
+      "productionEtag": "c9c4c8a64805fa9ad9405bbdc07a54ec",
+      "bestLocalFile": "07_AMP_JAM_V1.mp4",
+      "bestLocalPath": "/home/youloose2dafish/Downloads/07_AMP_JAM_V1.mp4",
+      "matchConfidence": "EXACT",
+      "evidence": [
+        "R2 ETag MD5==local md5 (c9c4c8a64805fa9ad9405bbdc07a54ec)",
+        "Content-Length==byteSize (395703090)",
+        "SHA-256 e4d8a5806ebee240004f75db9b883711d8c36df5788b95c745779a31b40d2f23"
+      ],
+      "duration": 203.411542,
+      "resolution": "1080x1920",
+      "sha256": "e4d8a5806ebee240004f75db9b883711d8c36df5788b95c745779a31b40d2f23",
+      "md5": "c9c4c8a64805fa9ad9405bbdc07a54ec",
+      "codec": "h264",
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "sizeHits": [
+        "07_AMP_JAM_V1.mp4"
+      ],
+      "md5Hits": [
+        "07_AMP_JAM_V1.mp4"
+      ],
+      "duplicateGroup": [
+        "07_AMP_JAM_V1.mp4"
+      ],
+      "editorialContext": "Guide Ep6 MY SOCIETY + AMP (context)",
+      "safeToUseForFutureMapping": true
+    }
+  ],
+  "discrepancies": [
+    "Local 02_ARRIVAL_THE PROJECT INTRO_v1.mp4 exists but has NO production catalog match (LOCAL_ONLY).",
+    "Local 04_SET_SHOOTING_PT 1_V1.mp4 and 05_SET_SHOOTING_PT 2_V1.mp4 exist but are NOT in the six production videos (LOCAL_ONLY).",
+    "Production holds MICROS STIRRED V1 and MICROS Motherland V1(1) instead of SET_SHOOTING PT1/PT2 \u2014 episode-guide Ep3/Ep4 contextual mapping to SET files is NOT proven by identity.",
+    "condo_v1_2.mp4 is byte-identical to 06_CONDO_HIGH RISE_V1.mp4; production title is 'condo v1 2' while numbered sequence uses 06 CONDO HIGH RISE.",
+    "MICROS_Motherland_V1_1(1).mp4 is NOT a duplicate of MICROS_Motherland_V1_1.mp4 (different size/hash) despite (1) naming.",
+    "MICROS_STIRRED_V3.mp4 and .MOV are different encodings (~4.8MB vs ~18.9MB), neither matches production STIRRED V1.",
+    "playbackFileSize on API is transcoded derivative size \u2014 must not be used for source matching; used original R2 Content-Length + ETag MD5."
+  ],
+  "summary": {
+    "localMediaFiles": 18,
+    "productionVideos": 6,
+    "exactMatches": 6,
+    "ambiguousMatches": 0,
+    "allSixExact": true,
+    "localOnlyNumbered": [
+      {
+        "localNumber": "02",
+        "localFile": "02_ARRIVAL_THE PROJECT INTRO_v1.mp4",
+        "status": "LOCAL_ONLY",
+        "productionReelId": null
+      },
+      {
+        "localNumber": "04",
+        "localFile": "04_SET_SHOOTING_PT 1_V1.mp4",
+        "status": "LOCAL_ONLY",
+        "productionReelId": null
+      },
+      {
+        "localNumber": "05",
+        "localFile": "05_SET_SHOOTING_PT 2_V1.mp4",
+        "status": "LOCAL_ONLY",
+        "productionReelId": null
+      }
+    ]
+  }
+}

@@ -12,6 +12,10 @@
     loadCreatorCatalogMetadata,
     previewCreatorShelfClassification
   } from '../../lib/feed/creatorCatalogMetadata.js';
+  import {
+    evaluateCategorySuggestionReview,
+    formatSuggestionConfidence
+  } from '../../lib/feed/categorySuggestionReview.js';
 
   /** @type {Record<string, unknown> | null} */
   export let asset = null;
@@ -47,6 +51,13 @@
   /** @type {{ shelf: string; explicit: boolean } | null} */
   let lastSavedShelf = null;
   let lastHandledFeedbackToken = 0;
+  /** Phase 2 NLP review (suggestion-only until Accept/Override). */
+  let nlpReviewSeq = 0;
+  let nlpReviewBusy = false;
+  /** @type {import('../../lib/feed/categorySuggestionReview.js').CategorySuggestionReview | null} */
+  let nlpReview = null;
+  let nlpOverrideDraft = 'Romance';
+  let nlpPersistMessage = '';
 
   $: model = active && asset ? presentVaultEpisodeCompleteness(asset) : null;
 
@@ -60,6 +71,18 @@
           fileName: String(asset?.fileName || asset?.name || '')
         })
       : null;
+
+  $: if (editing === 'package') {
+    const title = draftTitle;
+    const category = draftCategory;
+    const description = draftDescription;
+    const tags = draftTags;
+    const assetId = String(model?.mediaAssetId || '').trim();
+    void refreshNlpReview({ title, category, description, tags, assetId });
+  } else {
+    nlpReview = null;
+    nlpPersistMessage = '';
+  }
 
   $: if (
     packageSaveFeedback &&
@@ -143,6 +166,80 @@
     editing = null;
     formError = '';
     packageSaveState = 'idle';
+    nlpReview = null;
+    nlpPersistMessage = '';
+  }
+
+  /**
+   * @param {{ title: string; category: string; description: string; tags: string; assetId: string }} input
+   */
+  async function refreshNlpReview(input) {
+    const seq = ++nlpReviewSeq;
+    nlpReviewBusy = true;
+    try {
+      const review = await evaluateCategorySuggestionReview({
+        title: input.title,
+        draftCategory: input.category,
+        description: input.description,
+        tags: input.tags,
+        mediaAssetId: input.assetId,
+        id: input.assetId,
+        fileName: String(asset?.fileName || asset?.name || '')
+      });
+      if (seq !== nlpReviewSeq) return;
+      nlpReview =
+        review.offer ||
+        review.showManualHelper ||
+        review.classificationState === 'UNDERSTOOD_NO_SHELF_FIT' ||
+        review.classificationState === 'CREATOR_LOCKED'
+          ? review
+          : null;
+      if (review.offer && review.suggestedCategory) {
+        nlpOverrideDraft = review.suggestedCategory;
+      } else if (review.showManualHelper || review.classificationState === 'UNDERSTOOD_NO_SHELF_FIT') {
+        nlpOverrideDraft = review.recommendedShelf || review.currentCategory || 'Trending';
+      }
+    } catch {
+      if (seq !== nlpReviewSeq) return;
+      nlpReview = null;
+    } finally {
+      if (seq === nlpReviewSeq) nlpReviewBusy = false;
+    }
+  }
+
+  function acceptNlpSuggestion() {
+    if (!nlpReview?.suggestedCategory || packageSaveState === 'saving') return;
+    const accepted = nlpReview.suggestedCategory;
+    draftCategory = accepted;
+    nlpPersistMessage = `Accepting · ${accepted}`;
+    nlpReview = null;
+    submitPackage();
+  }
+
+  function overrideNlpSuggestion() {
+    if (packageSaveState === 'saving') return;
+    const chosen = String(nlpOverrideDraft || draftCategory || 'Trending').trim() || 'Trending';
+    if (!CREATOR_SHELF_OPTIONS.includes(chosen)) {
+      formError = 'Choose a valid shelf category';
+      return;
+    }
+    draftCategory = chosen;
+    nlpPersistMessage = `Overriding · ${chosen}`;
+    nlpReview = null;
+    submitPackage();
+  }
+
+  function applyManualCategory() {
+    if (packageSaveState === 'saving') return;
+    const chosen = String(nlpOverrideDraft || draftCategory || 'Trending').trim() || 'Trending';
+    if (!CREATOR_SHELF_OPTIONS.includes(chosen)) {
+      formError = 'Choose a valid shelf category';
+      return;
+    }
+    draftCategory = chosen;
+    nlpPersistMessage = `Manual category · ${chosen}`;
+    nlpReview = null;
+    submitPackage();
   }
 
   function submitIdentity() {
@@ -321,6 +418,152 @@
         <p class="vault-creator-card__axis-hint" data-creator-shelf-preview>
           {shelfFeedbackCopy(shelfPreview)}
         </p>
+      {/if}
+      {#if nlpReviewBusy}
+        <p class="vault-creator-card__axis-hint" data-nlp-category-review-loading aria-live="polite">
+          Checking title suggestion…
+        </p>
+      {:else if nlpReview}
+        <div
+          class="vault-creator-card__nlp-review"
+          data-nlp-category-review
+          data-suggested-category={nlpReview.suggestedCategory || ''}
+          data-current-category={nlpReview.currentCategory}
+          data-suggestion-confidence={nlpReview.confidence}
+          data-confidence-band={nlpReview.confidenceBand}
+          data-ambiguous={nlpReview.ambiguous ? 'true' : 'false'}
+          data-manual-helper={nlpReview.showManualHelper ? 'true' : 'false'}
+          data-offer={nlpReview.offer ? 'true' : 'false'}
+          data-classification-state={nlpReview.classificationState || ''}
+          data-taxonomy-fit={nlpReview.taxonomyFit || ''}
+          data-creator-locked={nlpReview.creatorLocked ? 'true' : 'false'}
+        >
+          {#if nlpReview.creatorLocked}
+            <p class="vault-creator-card__nlp-review-title" data-nlp-creator-lock>CREATOR LOCKED</p>
+            <ul class="vault-creator-card__nlp-review-facts">
+              <li data-nlp-current-category>Creator decision: {nlpReview.currentCategory}</li>
+              {#if nlpReview.suggestedCategory}
+                <li data-nlp-suggested-category>
+                  NLP suggestion (non-binding): {nlpReview.suggestedCategory}
+                </li>
+              {/if}
+              <li data-nlp-shelf-fit-reason>{nlpReview.shelfFitReason}</li>
+            </ul>
+          {:else if nlpReview.classificationState === 'UNDERSTOOD_NO_SHELF_FIT'}
+            <p class="vault-creator-card__nlp-review-title" data-nlp-case-f>
+              UNDERSTOOD / NO SHELF FIT
+            </p>
+            <ul class="vault-creator-card__nlp-review-facts">
+              <li data-nlp-current-category>Current: {nlpReview.currentCategory}</li>
+              <li data-nlp-recommended-shelf>
+                Recommended shelf: {nlpReview.recommendedShelf || 'Trending'}
+              </li>
+              <li data-nlp-shelf-fit-reason>
+                Reason: {nlpReview.shelfFitReason ||
+                  'No valid Romance/Cyber-Action/Suspense semantic fit'}
+              </li>
+              <li data-nlp-suggestion-confidence>
+                Confidence: {formatSuggestionConfidence(nlpReview.confidence, nlpReview.confidenceBand)}
+              </li>
+            </ul>
+          {:else if nlpReview.offer}
+            <p class="vault-creator-card__nlp-review-title">Category suggestion</p>
+            <ul class="vault-creator-card__nlp-review-facts">
+              <li data-nlp-current-category>Current: {nlpReview.currentCategory}</li>
+              <li data-nlp-suggested-category>Suggested: {nlpReview.suggestedCategory}</li>
+              {#if nlpReview.alternativeCategory}
+                <li data-nlp-alternative-category>
+                  Alternative: {nlpReview.alternativeCategory}
+                </li>
+              {/if}
+              <li data-nlp-suggestion-confidence>
+                Confidence: {formatSuggestionConfidence(nlpReview.confidence, nlpReview.confidenceBand)}
+              </li>
+              {#if nlpReview.ambiguous}
+                <li data-nlp-ambiguous>Signals conflict — review before accepting.</li>
+              {/if}
+            </ul>
+            <div class="vault-creator-card__nlp-review-actions">
+              <button
+                type="button"
+                class="vault-creator-card__btn vault-creator-card__btn--primary"
+                data-nlp-accept-suggestion
+                disabled={packageSaveState === 'saving'}
+                on:click|stopPropagation|preventDefault={acceptNlpSuggestion}
+              >
+                Accept suggestion
+              </button>
+              <label class="vault-creator-card__field vault-creator-card__nlp-override">
+                <span>Override</span>
+                <select
+                  bind:value={nlpOverrideDraft}
+                  aria-label="Override shelf category"
+                  data-nlp-override-category
+                  disabled={packageSaveState === 'saving'}
+                >
+                  {#each CREATOR_SHELF_OPTIONS as option}
+                    <option value={option}>{option}</option>
+                  {/each}
+                </select>
+              </label>
+              <button
+                type="button"
+                class="vault-creator-card__btn"
+                data-nlp-apply-override
+                disabled={packageSaveState === 'saving'}
+                on:click|stopPropagation|preventDefault={overrideNlpSuggestion}
+              >
+                Apply override
+              </button>
+            </div>
+            <p class="vault-creator-card__axis-hint">
+              Suggestions are not saved until you Accept or Apply override.
+            </p>
+          {/if}
+          {#if nlpReview.showManualHelper && !nlpReview.creatorLocked}
+            <div class="vault-creator-card__manual-category" data-manual-category-helper>
+              <p class="vault-creator-card__nlp-review-title">
+                {nlpReview.offer ? 'Or choose category manually' : 'Choose category'}
+              </p>
+              {#if !nlpReview.offer}
+                <p class="vault-creator-card__axis-hint" data-manual-category-reason>
+                  {nlpReview.classificationState === 'UNDERSTOOD_NO_SHELF_FIT'
+                    ? 'Understood — no Romance/Cyber-Action/Suspense fit. Pick a shelf to lock, or leave Trending.'
+                    : nlpReview.confidenceBand === 'manual' || nlpReview.confidence < 0.5
+                      ? 'No strong genre signal — pick a shelf to lock classification.'
+                      : 'Review and lock a shelf category.'}
+                </p>
+              {/if}
+              <div class="vault-creator-card__nlp-review-actions">
+                <label class="vault-creator-card__field vault-creator-card__nlp-override">
+                  <span>Choose Category</span>
+                  <select
+                    bind:value={nlpOverrideDraft}
+                    aria-label="Manual shelf category"
+                    data-manual-category-select
+                    disabled={packageSaveState === 'saving'}
+                  >
+                    {#each CREATOR_SHELF_OPTIONS as option}
+                      <option value={option}>{option}</option>
+                    {/each}
+                  </select>
+                </label>
+                <button
+                  type="button"
+                  class="vault-creator-card__btn vault-creator-card__btn--primary"
+                  data-manual-category-apply
+                  disabled={packageSaveState === 'saving'}
+                  on:click|stopPropagation|preventDefault={applyManualCategory}
+                >
+                  Apply category
+                </button>
+              </div>
+            </div>
+          {/if}
+        </div>
+      {/if}
+      {#if nlpPersistMessage && packageSaveState === 'saving'}
+        <p class="vault-creator-card__axis-hint" data-nlp-persist-pending>{nlpPersistMessage}</p>
       {/if}
       <label class="vault-creator-card__field">
         <span>Artwork</span>

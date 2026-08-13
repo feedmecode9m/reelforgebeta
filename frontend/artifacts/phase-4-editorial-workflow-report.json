@@ -1,0 +1,18 @@
+{
+  "phase": "PHASE-4",
+  "status": "BLOCKED",
+  "reason": "WAITING_FOR_AUTHORITATIVE_METADATA",
+  "detail": "Coworker final title/description list not supplied. Phase 3B episode guide is provisional only and must not be written to production.",
+  "requiredFile": "frontend/artifacts/phase-4-authoritative-editorial.json",
+  "templateFile": "frontend/artifacts/phase-4-authoritative-editorial.template.json",
+  "productionMutations": 0,
+  "categoryPatchCount": 0,
+  "inventorySnapshot": "/home/youloose2dafish/projects/reelforge/frontend/artifacts/phase-4-production-inventory-snapshot.json",
+  "nextSteps": [
+    "Obtain coworker final editorial list",
+    "Fill phase-4-authoritative-editorial.json",
+    "Map each row to production asset IDs with high confidence",
+    "Re-run validate:phase-4-editorial-workflow",
+    "Only then exercise Master Vault / Hero Vault creator workflow"
+  ]
+}

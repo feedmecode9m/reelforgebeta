@@ -238,6 +238,28 @@ console.log('\n[NLP-ready contract]');
     assert(nlp.primaryCategory === 'Romance', 'nlp provider contract honored');
     assert(nlp.classificationSource === 'nlp', 'nlp source preserved');
     assert(typeof nlp.confidence === 'number' && Array.isArray(nlp.signals), 'nlp shape intact');
+    assert(nlp.suggestedCategory === 'Romance', 'suggestedCategory stamped on NLP path');
+
+    const locked = await classifyContentSemantic(
+        {
+            title: 'Whatever',
+            creatorCategory: 'Suspense',
+            categorySource: 'creator',
+            category: 'Suspense'
+        },
+        {
+            nlpProvider: async () => ({
+                primaryCategory: 'Romance',
+                categories: ['Romance', 'Trending'],
+                confidence: 0.88,
+                signals: ['nlp:demo'],
+                classificationSource: 'nlp'
+            })
+        }
+    );
+    assert(locked.primaryCategory === 'Suspense', 'creator lock retained under NLP provider');
+    assert(locked.suggestedCategory === 'Romance', 'NLP remains non-authoritative suggestion');
+    assert(locked.classificationSource === 'metadata', 'locked classificationSource stays metadata');
 }
 
 if (failed > 0) {

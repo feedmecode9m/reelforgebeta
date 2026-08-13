@@ -1,0 +1,69 @@
+{
+  "phase": "PHASE-4",
+  "status": "WAITING_FOR_AUTHORITATIVE_METADATA",
+  "instructions": [
+    "Copy this file to phase-4-authoritative-editorial.json",
+    "Fill every episode with the coworker's FINAL title and description",
+    "Set mappedAssetId only after human verification against production inventory",
+    "mappingConfidence must be high for every row or Phase 4 will STOP",
+    "Do not invent titles or descriptions"
+  ],
+  "series": "Los Angeles Production",
+  "source": "COWORKER_FINAL_LIST — not yet supplied",
+  "episodes": [
+    {
+      "episodeNumber": 1,
+      "authoritativeTitle": "",
+      "authoritativeDescription": "",
+      "mappedAssetId": "",
+      "currentProductionTitleHint": "01 ARRIVAL OPEN v1",
+      "mappingEvidence": "",
+      "mappingConfidence": ""
+    },
+    {
+      "episodeNumber": 2,
+      "authoritativeTitle": "",
+      "authoritativeDescription": "",
+      "mappedAssetId": "",
+      "currentProductionTitleHint": "03 CLUB POOM POOM V1",
+      "mappingEvidence": "",
+      "mappingConfidence": ""
+    },
+    {
+      "episodeNumber": 3,
+      "authoritativeTitle": "",
+      "authoritativeDescription": "",
+      "mappedAssetId": "",
+      "currentProductionTitleHint": "MICROS STIRRED V1",
+      "mappingEvidence": "",
+      "mappingConfidence": ""
+    },
+    {
+      "episodeNumber": 4,
+      "authoritativeTitle": "",
+      "authoritativeDescription": "",
+      "mappedAssetId": "",
+      "currentProductionTitleHint": "MICROS Motherland V1(1)",
+      "mappingEvidence": "",
+      "mappingConfidence": ""
+    },
+    {
+      "episodeNumber": 5,
+      "authoritativeTitle": "",
+      "authoritativeDescription": "",
+      "mappedAssetId": "",
+      "currentProductionTitleHint": "condo v1 2",
+      "mappingEvidence": "",
+      "mappingConfidence": ""
+    },
+    {
+      "episodeNumber": 6,
+      "authoritativeTitle": "",
+      "authoritativeDescription": "",
+      "mappedAssetId": "",
+      "currentProductionTitleHint": "07 AMP JAM V1",
+      "mappingEvidence": "",
+      "mappingConfidence": ""
+    }
+  ]
+}

@@ -13,7 +13,9 @@
  *   > Trending fallback
  *
  * NLP extension point: classifyContentSemantic() accepts an optional provider that
- * must return the same ContentClassification contract.
+ * must return the same ContentClassification contract (or compact
+ * { category, confidence, source }). Phase 1 ships a local title provider in
+ * titleNlpProvider.js — suggestion-only; never PATCHes or mutates creator locks.
  */
 
 /** @type {Readonly<Record<string, readonly string[]>>} */
@@ -256,6 +258,13 @@ export const SOFT_DEFAULT_CATEGORIES = Object.freeze(
  * @property {number} confidence 0..1
  * @property {string[]} signals
  * @property {'metadata' | 'existing-category' | 'keyword' | 'fallback' | 'filename' | 'series' | 'nlp'} classificationSource
+ * @property {string} [suggestedCategory] non-authoritative NLP/keyword suggestion
+ * @property {number} [suggestedConfidence] 0..1 confidence of suggestedCategory only
+ * @property {string} [titleSource] provenance of the title used for classification
+ * @property {string} [alternativeCategory] secondary shelf when signals conflict
+ * @property {boolean} [ambiguous] true when competing genre signals conflict
+ * @property {string} [confidenceBand] strong | good | weak | manual | none
+ * @property {Record<string, number>} [scoreBreakdown] debug shelf scores
  */
 
 /**
@@ -272,6 +281,7 @@ export const SOFT_DEFAULT_CATEGORIES = Object.freeze(
  * @property {string} mediaKind
  * @property {boolean} fileNameIsGeneric
  * @property {boolean} titleIsGeneric
+ * @property {string} [titleSource]
  */
 
 /**
@@ -340,13 +350,86 @@ export function isGenericMediaLabel(name) {
 }
 
 /**
+ * Resolve the title used for classification — mirrors catalog creator/persistent
+ * authority without importing catalogMetadata (avoids circular deps) and without
+ * writing reel_titles_persistent.
+ *
+ * Order: creator/studio/persistent → durable title → name → display/hero → empty.
+ *
+ * @param {Record<string, unknown> | null | undefined} content
+ * @returns {{ title: string; titleSource: string }}
+ */
+export function resolveClassificationTitle(content) {
+    const row = content && typeof content === 'object' ? content : {};
+    /** @type {Array<[string, string]>} */
+    const bands = [
+        [
+            text(row.creatorTitle || row.studioTitle || row.persistentTitle || row.enrichmentTitle),
+            'creator'
+        ],
+        [
+            text(row.title),
+            text(row.titleSource) === 'creator' || text(row.metadataSource) === 'creator'
+                ? 'creator'
+                : 'upload'
+        ],
+        [text(row.name), 'upload'],
+        [text(row.displayTitle || row.heroTitle), 'derived']
+    ];
+    for (const [candidate, source] of bands) {
+        if (candidate && !isGenericMediaLabel(candidate)) {
+            return { title: candidate, titleSource: source };
+        }
+    }
+    const fallback = text(
+        row.creatorTitle ||
+            row.persistentTitle ||
+            row.title ||
+            row.name ||
+            row.displayTitle ||
+            row.heroTitle ||
+            ''
+    );
+    return { title: fallback, titleSource: fallback ? 'upload' : 'unknown' };
+}
+
+/**
+ * True when the row already carries an explicit creator/studio shelf lock.
+ * NLP may still compute a suggestion, but must not replace this authority.
+ *
+ * @param {Record<string, unknown> | null | undefined} content
+ * @param {ContentClassification} [authored]
+ * @returns {boolean}
+ */
+export function hasExplicitCreatorCategoryLock(content, authored) {
+    const row = content && typeof content === 'object' ? content : {};
+    if (text(row.categorySource) === 'creator' || text(row.categorySource) === 'studio') {
+        const locked = normalizeDiscoveryShelf(
+            text(row.creatorCategory || row.studioCategory || row.category || '')
+        );
+        if (EXPLICIT_SHELF_CATEGORIES.has(locked)) return true;
+    }
+    if (EXPLICIT_SHELF_CATEGORIES.has(text(row.creatorCategory))) return true;
+    if (EXPLICIT_SHELF_CATEGORIES.has(text(row.studioCategory))) return true;
+    if (
+        authored &&
+        authored.classificationSource === 'metadata' &&
+        EXPLICIT_SHELF_CATEGORIES.has(authored.primaryCategory)
+    ) {
+        return true;
+    }
+    return false;
+}
+
+/**
  * Pure metadata normalization for classification (does not touch identity).
  * @param {Record<string, unknown> | null | undefined} content
  * @returns {NormalizedClassificationMetadata}
  */
 export function normalizeClassificationMetadata(content) {
     const row = content && typeof content === 'object' ? content : {};
-    const title = text(row.title || row.name || row.heroTitle || row.displayTitle || '');
+    const resolved = resolveClassificationTitle(row);
+    const title = resolved.title;
     const description = text(row.description || row.heroDescription || '');
     const fileName = text(row.fileName || row.file_name || '');
     const fileNameStem = (fileName.split(/[/\\]/).pop() || fileName).replace(/\.[a-z0-9]{2,5}$/i, '');
@@ -375,7 +458,8 @@ export function normalizeClassificationMetadata(content) {
         tags,
         mediaKind,
         fileNameIsGeneric: isGenericMediaLabel(fileName || fileNameStem),
-        titleIsGeneric: isGenericMediaLabel(title)
+        titleIsGeneric: isGenericMediaLabel(title),
+        titleSource: resolved.titleSource
     };
 }
 
@@ -593,13 +677,19 @@ export function classifyContent(content) {
             !SOFT_DEFAULT_CATEGORIES.has(rawCategory));
 
     if (isExplicit) {
-        return result(normalizedExisting, 1, [`existing:${rawCategory || normalizedExisting}`], 'metadata');
+        return {
+            ...result(normalizedExisting, 1, [`existing:${rawCategory || normalizedExisting}`], 'metadata'),
+            titleSource: meta.titleSource
+        };
     }
 
     // Durable existing metadata: non-soft aliases already normalized (e.g. Love→Romance handled above).
     // Soft defaults fall through to signal scoring.
     if (rawCategory && !SOFT_DEFAULT_CATEGORIES.has(rawCategory) && EXPLICIT_SHELF_CATEGORIES.has(normalizedExisting)) {
-        return result(normalizedExisting, 0.92, [`existing:${rawCategory}`], 'existing-category');
+        return {
+            ...result(normalizedExisting, 0.92, [`existing:${rawCategory}`], 'existing-category'),
+            titleSource: meta.titleSource
+        };
     }
 
     const scored = scoreEvidenceLayers(meta);
@@ -616,55 +706,164 @@ export function classifyContent(content) {
                 : scored.bestSource === 'series'
                   ? 'series'
                   : 'keyword';
-        return result(pick.category, confidence, scored.signals.slice(0, 12), source);
+        return {
+            ...result(pick.category, confidence, scored.signals.slice(0, 12), source),
+            titleSource: meta.titleSource
+        };
     }
 
     if (pick.eligible && pick.category === 'Trending' && pick.strongCount >= 1) {
-        return result('Trending', 0.7, scored.signals.slice(0, 8), 'keyword');
+        return {
+            ...result('Trending', 0.7, scored.signals.slice(0, 8), 'keyword'),
+            titleSource: meta.titleSource
+        };
     }
 
     if (normalizedExisting && !SOFT_DEFAULT_CATEGORIES.has(rawCategory)) {
-        return result(normalizedExisting, 0.55, [`existing:${rawCategory}`], 'existing-category');
+        return {
+            ...result(normalizedExisting, 0.55, [`existing:${rawCategory}`], 'existing-category'),
+            titleSource: meta.titleSource
+        };
     }
 
-    return result('Trending', 0.2, scored.signals.slice(0, 3), 'fallback');
+    return {
+        ...result('Trending', 0.2, scored.signals.slice(0, 3), 'fallback'),
+        titleSource: meta.titleSource
+    };
+}
+
+/**
+ * Normalize a provider payload into ContentClassification, or null if invalid.
+ *
+ * @param {unknown} out
+ * @returns {ContentClassification | null}
+ */
+function normalizeProviderClassification(out) {
+    if (!out || typeof out !== 'object') return null;
+    const row = /** @type {Record<string, unknown>} */ (out);
+    // Accept ContentClassification shape or compact { category, confidence, source }.
+    const primaryRaw =
+        typeof row.primaryCategory === 'string'
+            ? row.primaryCategory
+            : typeof row.category === 'string'
+              ? row.category
+              : '';
+    if (!primaryRaw) return null;
+    const confidence = Number(row.confidence);
+    if (!Number.isFinite(confidence)) return null;
+    const sourceRaw =
+        typeof row.classificationSource === 'string'
+            ? row.classificationSource
+            : typeof row.source === 'string'
+              ? row.source
+              : 'nlp';
+    /** @type {string[]} */
+    const categories = Array.isArray(row.categories)
+        ? row.categories.map((c) => normalizeDiscoveryShelf(String(c)))
+        : (() => {
+              const primary = normalizeDiscoveryShelf(primaryRaw);
+              return primary === 'Trending' ? [primary] : [primary, 'Trending'];
+          })();
+    /** @type {string[]} */
+    const signals = Array.isArray(row.signals) ? row.signals.map(String) : ['nlp:provider'];
+    /** @type {ContentClassification} */
+    const normalized = {
+        primaryCategory: normalizeDiscoveryShelf(primaryRaw),
+        categories,
+        confidence: Math.max(0, Math.min(1, confidence)),
+        signals,
+        classificationSource: /** @type {ContentClassification['classificationSource']} */ (
+            sourceRaw === 'nlp' ? 'nlp' : sourceRaw
+        )
+    };
+    if (typeof row.suggestedCategory === 'string') {
+        normalized.suggestedCategory = normalizeDiscoveryShelf(row.suggestedCategory);
+    }
+    if (typeof row.suggestedConfidence === 'number') {
+        normalized.suggestedConfidence = Math.max(0, Math.min(1, Number(row.suggestedConfidence)));
+    }
+    if (typeof row.alternativeCategory === 'string' && row.alternativeCategory) {
+        normalized.alternativeCategory = normalizeDiscoveryShelf(row.alternativeCategory);
+    }
+    if (typeof row.ambiguous === 'boolean') {
+        normalized.ambiguous = row.ambiguous;
+    }
+    if (typeof row.confidenceBand === 'string') {
+        normalized.confidenceBand = row.confidenceBand;
+    }
+    if (row.scoreBreakdown && typeof row.scoreBreakdown === 'object') {
+        normalized.scoreBreakdown = /** @type {Record<string, number>} */ (row.scoreBreakdown);
+    }
+    return normalized;
 }
 
 /**
  * NLP-ready wrapper — same contract as classifyContent.
- * Pass `nlpProvider` later to swap in a semantic model without changing callers.
+ * Pass `nlpProvider` to swap in a semantic model without changing callers.
+ *
+ * Suggestion-only: never mutates content, never PATCHes categories.
+ * When an explicit creator/studio shelf is locked, `primaryCategory` stays authored
+ * and the provider result is exposed as `suggestedCategory` only.
  *
  * @param {Record<string, unknown> | null | undefined} content
  * @param {{
  *   nlpProvider?: (meta: NormalizedClassificationMetadata, content: Record<string, unknown>) =>
- *     ContentClassification | Promise<ContentClassification>
+ *     ContentClassification | { category: string; confidence: number; source?: string } | Promise<
+ *       ContentClassification | { category: string; confidence: number; source?: string }
+ *     >
  * }} [options]
  * @returns {Promise<ContentClassification>}
  */
 export async function classifyContentSemantic(content, options = {}) {
     const row = content && typeof content === 'object' ? content : {};
-    const meta = normalizeClassificationMetadata(row);
-    if (typeof options.nlpProvider === 'function') {
-        const out = await options.nlpProvider(meta, /** @type {Record<string, unknown>} */ (row));
-        if (
-            out &&
-            typeof out === 'object' &&
-            typeof out.primaryCategory === 'string' &&
-            Array.isArray(out.categories) &&
-            typeof out.confidence === 'number' &&
-            Array.isArray(out.signals) &&
-            typeof out.classificationSource === 'string'
-        ) {
-            return {
-                primaryCategory: normalizeDiscoveryShelf(out.primaryCategory),
-                categories: out.categories.map((c) => normalizeDiscoveryShelf(String(c))),
-                confidence: Math.max(0, Math.min(1, Number(out.confidence) || 0)),
-                signals: out.signals.map(String),
-                classificationSource: /** @type {ContentClassification['classificationSource']} */ (
-                    out.classificationSource === 'nlp' ? 'nlp' : out.classificationSource
-                )
-            };
-        }
+    const titleResolved = resolveClassificationTitle(row);
+    /** @type {Record<string, unknown>} */
+    const rowForClass = {
+        ...row,
+        ...(titleResolved.title ? { title: titleResolved.title } : {})
+    };
+    const meta = normalizeClassificationMetadata(rowForClass);
+    const authored = classifyContent(rowForClass);
+
+    if (typeof options.nlpProvider !== 'function') {
+        return {
+            ...authored,
+            titleSource: titleResolved.titleSource || meta.titleSource
+        };
     }
-    return classifyContent(row);
+
+    const out = await options.nlpProvider(meta, rowForClass);
+    const suggestion = normalizeProviderClassification(out);
+    if (!suggestion) {
+        return {
+            ...authored,
+            titleSource: titleResolved.titleSource || meta.titleSource
+        };
+    }
+
+    const locked = hasExplicitCreatorCategoryLock(rowForClass, authored);
+    if (locked && EXPLICIT_SHELF_CATEGORIES.has(authored.primaryCategory)) {
+        return {
+            ...authored,
+            suggestedCategory: suggestion.suggestedCategory || suggestion.primaryCategory,
+            suggestedConfidence: suggestion.suggestedConfidence ?? suggestion.confidence,
+            alternativeCategory: suggestion.alternativeCategory,
+            ambiguous: suggestion.ambiguous,
+            confidenceBand: suggestion.confidenceBand,
+            scoreBreakdown: suggestion.scoreBreakdown,
+            titleSource: titleResolved.titleSource || meta.titleSource,
+            signals: [
+                ...authored.signals,
+                `nlp-suggest:${suggestion.primaryCategory}`,
+                ...suggestion.signals.map((s) => `nlp:${s}`)
+            ].slice(0, 16)
+        };
+    }
+
+    return {
+        ...suggestion,
+        suggestedCategory: suggestion.suggestedCategory || suggestion.primaryCategory,
+        suggestedConfidence: suggestion.suggestedConfidence ?? suggestion.confidence,
+        titleSource: titleResolved.titleSource || meta.titleSource
+    };
 }

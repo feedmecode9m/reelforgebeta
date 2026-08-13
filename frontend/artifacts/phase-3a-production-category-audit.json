@@ -1,0 +1,661 @@
+{
+  "auditedAt": "2026-08-13T01:41:35.774Z",
+  "source": "https://strong-lolly-a9fcb4.netlify.app/api/reels",
+  "readOnly": true,
+  "patchAttempts": 0,
+  "inventory": {
+    "totalInput": 25,
+    "eligibleCount": 25,
+    "excludedCount": 0,
+    "videoEligibleCount": 6,
+    "approvalEligibleCount": 0
+  },
+  "currentDistribution": {
+    "Trending": 24,
+    "Romance": 0,
+    "Cyber-Action": 0,
+    "Suspense": 0,
+    "HERO": 1
+  },
+  "recommendedDistribution": {
+    "Trending": 25,
+    "Romance": 0,
+    "Cyber-Action": 0,
+    "Suspense": 0
+  },
+  "byState": {
+    "MATCH": 0,
+    "RECOMMEND_CHANGE": 0,
+    "REVIEW": 0,
+    "AMBIGUOUS": 0,
+    "MANUAL": 0,
+    "CREATOR_LOCK": 0,
+    "FALLBACK_TRENDING": 25,
+    "EXCLUDED": 0
+  },
+  "verdictCounts": {
+    "A": 0,
+    "B": 0,
+    "C": 25,
+    "D": 0,
+    "other": 0
+  },
+  "videos": [
+    {
+      "id": "03ef898a-989f-42c3-bdbb-67f37338df65",
+      "canonicalTitle": "01 ARRIVAL OPEN v1",
+      "titleSource": "upload",
+      "currentCategory": "Trending",
+      "currentCategorySource": "catalog",
+      "suggestedCategory": "Trending",
+      "suggestedConfidence": 0.18,
+      "confidenceBand": "manual",
+      "alternativeCategory": "",
+      "ambiguous": false,
+      "signals": [
+        "nlp:insufficient-signals"
+      ],
+      "auditState": "FALLBACK_TRENDING",
+      "creatorLocked": false,
+      "eligibleForApproval": false,
+      "reason": "C — insufficient title/metadata for NLP genre assignment"
+    },
+    {
+      "id": "201ec6ee-6822-4bda-9295-080beb6f4e35",
+      "canonicalTitle": "07 AMP JAM V1",
+      "titleSource": "upload",
+      "currentCategory": "Trending",
+      "currentCategorySource": "catalog",
+      "suggestedCategory": "Trending",
+      "suggestedConfidence": 0.18,
+      "confidenceBand": "manual",
+      "alternativeCategory": "",
+      "ambiguous": false,
+      "signals": [
+        "nlp:insufficient-signals"
+      ],
+      "auditState": "FALLBACK_TRENDING",
+      "creatorLocked": false,
+      "eligibleForApproval": false,
+      "reason": "C — insufficient title/metadata for NLP genre assignment"
+    },
+    {
+      "id": "615e0eae-47b4-468a-b6dd-a6846b464846",
+      "canonicalTitle": "MICROS STIRRED V1",
+      "titleSource": "upload",
+      "currentCategory": "Trending",
+      "currentCategorySource": "catalog",
+      "suggestedCategory": "Trending",
+      "suggestedConfidence": 0.18,
+      "confidenceBand": "manual",
+      "alternativeCategory": "",
+      "ambiguous": false,
+      "signals": [
+        "nlp:insufficient-signals"
+      ],
+      "auditState": "FALLBACK_TRENDING",
+      "creatorLocked": false,
+      "eligibleForApproval": false,
+      "reason": "C — insufficient title/metadata for NLP genre assignment"
+    },
+    {
+      "id": "9a1251a2-d6a6-42e5-9fcd-4eca17dcd6ef",
+      "canonicalTitle": "MICROS Motherland V1(1)",
+      "titleSource": "upload",
+      "currentCategory": "Trending",
+      "currentCategorySource": "catalog",
+      "suggestedCategory": "Trending",
+      "suggestedConfidence": 0.18,
+      "confidenceBand": "manual",
+      "alternativeCategory": "",
+      "ambiguous": false,
+      "signals": [
+        "nlp:insufficient-signals"
+      ],
+      "auditState": "FALLBACK_TRENDING",
+      "creatorLocked": false,
+      "eligibleForApproval": false,
+      "reason": "C — insufficient title/metadata for NLP genre assignment"
+    },
+    {
+      "id": "d2aafde7-d7ba-492c-a860-20b51f7f4033",
+      "canonicalTitle": "03 CLUB POOM POOM V1",
+      "titleSource": "upload",
+      "currentCategory": "Trending",
+      "currentCategorySource": "catalog",
+      "suggestedCategory": "Trending",
+      "suggestedConfidence": 0.18,
+      "confidenceBand": "manual",
+      "alternativeCategory": "",
+      "ambiguous": false,
+      "signals": [
+        "nlp:insufficient-signals"
+      ],
+      "auditState": "FALLBACK_TRENDING",
+      "creatorLocked": false,
+      "eligibleForApproval": false,
+      "reason": "C — insufficient title/metadata for NLP genre assignment"
+    },
+    {
+      "id": "3894107e-ae44-43c5-af72-b3f5d5e0ad90",
+      "canonicalTitle": "condo v1 2",
+      "titleSource": "upload",
+      "currentCategory": "Trending",
+      "currentCategorySource": "catalog",
+      "suggestedCategory": "Trending",
+      "suggestedConfidence": 0.18,
+      "confidenceBand": "manual",
+      "alternativeCategory": "",
+      "ambiguous": false,
+      "signals": [
+        "nlp:insufficient-signals"
+      ],
+      "auditState": "FALLBACK_TRENDING",
+      "creatorLocked": false,
+      "eligibleForApproval": false,
+      "reason": "C — insufficient title/metadata for NLP genre assignment"
+    }
+  ],
+  "eligible": [
+    {
+      "id": "0856bd58-8925-4ac9-9f64-febafc196c12",
+      "canonicalTitle": "IMG_0122.JPEG",
+      "mediaKind": "image",
+      "currentCategory": "Trending",
+      "currentCategorySource": "catalog",
+      "suggestedCategory": "Trending",
+      "suggestedConfidence": 0.12,
+      "confidenceBand": "manual",
+      "alternativeCategory": "",
+      "ambiguous": false,
+      "signals": [
+        "nlp:empty-or-generic-title"
+      ],
+      "auditState": "FALLBACK_TRENDING",
+      "creatorLocked": false,
+      "eligibleForApproval": false,
+      "recommendedShelf": "Trending",
+      "reason": "C — insufficient title/metadata for NLP genre assignment"
+    },
+    {
+      "id": "03ef898a-989f-42c3-bdbb-67f37338df65",
+      "canonicalTitle": "01 ARRIVAL OPEN v1",
+      "mediaKind": "video",
+      "currentCategory": "Trending",
+      "currentCategorySource": "catalog",
+      "suggestedCategory": "Trending",
+      "suggestedConfidence": 0.18,
+      "confidenceBand": "manual",
+      "alternativeCategory": "",
+      "ambiguous": false,
+      "signals": [
+        "nlp:insufficient-signals"
+      ],
+      "auditState": "FALLBACK_TRENDING",
+      "creatorLocked": false,
+      "eligibleForApproval": false,
+      "recommendedShelf": "Trending",
+      "reason": "C — insufficient title/metadata for NLP genre assignment"
+    },
+    {
+      "id": "e1f08f0f-954f-4c39-848b-9f3fc72b5d02",
+      "canonicalTitle": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+      "mediaKind": "image",
+      "currentCategory": "Trending",
+      "currentCategorySource": "catalog",
+      "suggestedCategory": "Trending",
+      "suggestedConfidence": 0.12,
+      "confidenceBand": "manual",
+      "alternativeCategory": "",
+      "ambiguous": false,
+      "signals": [
+        "nlp:empty-or-generic-title"
+      ],
+      "auditState": "FALLBACK_TRENDING",
+      "creatorLocked": false,
+      "eligibleForApproval": false,
+      "recommendedShelf": "Trending",
+      "reason": "C — insufficient title/metadata for NLP genre assignment"
+    },
+    {
+      "id": "9cb18bee-c035-42e8-88ff-f3ab5bdc0e24",
+      "canonicalTitle": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+      "mediaKind": "image",
+      "currentCategory": "Trending",
+      "currentCategorySource": "catalog",
+      "suggestedCategory": "Trending",
+      "suggestedConfidence": 0.12,
+      "confidenceBand": "manual",
+      "alternativeCategory": "",
+      "ambiguous": false,
+      "signals": [
+        "nlp:empty-or-generic-title"
+      ],
+      "auditState": "FALLBACK_TRENDING",
+      "creatorLocked": false,
+      "eligibleForApproval": false,
+      "recommendedShelf": "Trending",
+      "reason": "C — insufficient title/metadata for NLP genre assignment"
+    },
+    {
+      "id": "d01cbfca-88f7-434f-a495-f39e8abfbe1a",
+      "canonicalTitle": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+      "mediaKind": "image",
+      "currentCategory": "Trending",
+      "currentCategorySource": "catalog",
+      "suggestedCategory": "Trending",
+      "suggestedConfidence": 0.12,
+      "confidenceBand": "manual",
+      "alternativeCategory": "",
+      "ambiguous": false,
+      "signals": [
+        "nlp:empty-or-generic-title"
+      ],
+      "auditState": "FALLBACK_TRENDING",
+      "creatorLocked": false,
+      "eligibleForApproval": false,
+      "recommendedShelf": "Trending",
+      "reason": "C — insufficient title/metadata for NLP genre assignment"
+    },
+    {
+      "id": "5db69d19-1592-4b2f-ba53-599fb6cb900d",
+      "canonicalTitle": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+      "mediaKind": "image",
+      "currentCategory": "Trending",
+      "currentCategorySource": "catalog",
+      "suggestedCategory": "Trending",
+      "suggestedConfidence": 0.12,
+      "confidenceBand": "manual",
+      "alternativeCategory": "",
+      "ambiguous": false,
+      "signals": [
+        "nlp:empty-or-generic-title"
+      ],
+      "auditState": "FALLBACK_TRENDING",
+      "creatorLocked": false,
+      "eligibleForApproval": false,
+      "recommendedShelf": "Trending",
+      "reason": "C — insufficient title/metadata for NLP genre assignment"
+    },
+    {
+      "id": "aa032c74-279f-4bb9-b5b2-747e06cf5c4e",
+      "canonicalTitle": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+      "mediaKind": "image",
+      "currentCategory": "Trending",
+      "currentCategorySource": "catalog",
+      "suggestedCategory": "Trending",
+      "suggestedConfidence": 0.12,
+      "confidenceBand": "manual",
+      "alternativeCategory": "",
+      "ambiguous": false,
+      "signals": [
+        "nlp:empty-or-generic-title"
+      ],
+      "auditState": "FALLBACK_TRENDING",
+      "creatorLocked": false,
+      "eligibleForApproval": false,
+      "recommendedShelf": "Trending",
+      "reason": "C — insufficient title/metadata for NLP genre assignment"
+    },
+    {
+      "id": "83f4c7ef-6f91-45a4-afe2-878f4833c9c3",
+      "canonicalTitle": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+      "mediaKind": "image",
+      "currentCategory": "Trending",
+      "currentCategorySource": "catalog",
+      "suggestedCategory": "Trending",
+      "suggestedConfidence": 0.12,
+      "confidenceBand": "manual",
+      "alternativeCategory": "",
+      "ambiguous": false,
+      "signals": [
+        "nlp:empty-or-generic-title"
+      ],
+      "auditState": "FALLBACK_TRENDING",
+      "creatorLocked": false,
+      "eligibleForApproval": false,
+      "recommendedShelf": "Trending",
+      "reason": "C — insufficient title/metadata for NLP genre assignment"
+    },
+    {
+      "id": "9437c739-9418-4347-a106-8d07c43ba2c2",
+      "canonicalTitle": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+      "mediaKind": "image",
+      "currentCategory": "Trending",
+      "currentCategorySource": "catalog",
+      "suggestedCategory": "Trending",
+      "suggestedConfidence": 0.12,
+      "confidenceBand": "manual",
+      "alternativeCategory": "",
+      "ambiguous": false,
+      "signals": [
+        "nlp:empty-or-generic-title"
+      ],
+      "auditState": "FALLBACK_TRENDING",
+      "creatorLocked": false,
+      "eligibleForApproval": false,
+      "recommendedShelf": "Trending",
+      "reason": "C — insufficient title/metadata for NLP genre assignment"
+    },
+    {
+      "id": "3d58f832-11ef-4a8a-9ca2-3f2fe8054956",
+      "canonicalTitle": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+      "mediaKind": "image",
+      "currentCategory": "Trending",
+      "currentCategorySource": "catalog",
+      "suggestedCategory": "Trending",
+      "suggestedConfidence": 0.12,
+      "confidenceBand": "manual",
+      "alternativeCategory": "",
+      "ambiguous": false,
+      "signals": [
+        "nlp:empty-or-generic-title"
+      ],
+      "auditState": "FALLBACK_TRENDING",
+      "creatorLocked": false,
+      "eligibleForApproval": false,
+      "recommendedShelf": "Trending",
+      "reason": "C — insufficient title/metadata for NLP genre assignment"
+    },
+    {
+      "id": "75e18a53-47a8-429f-bf92-3ea212e8305f",
+      "canonicalTitle": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+      "mediaKind": "image",
+      "currentCategory": "Trending",
+      "currentCategorySource": "catalog",
+      "suggestedCategory": "Trending",
+      "suggestedConfidence": 0.12,
+      "confidenceBand": "manual",
+      "alternativeCategory": "",
+      "ambiguous": false,
+      "signals": [
+        "nlp:empty-or-generic-title"
+      ],
+      "auditState": "FALLBACK_TRENDING",
+      "creatorLocked": false,
+      "eligibleForApproval": false,
+      "recommendedShelf": "Trending",
+      "reason": "C — insufficient title/metadata for NLP genre assignment"
+    },
+    {
+      "id": "5b6e7761-6b9f-4031-8adc-7afa2a42d180",
+      "canonicalTitle": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+      "mediaKind": "image",
+      "currentCategory": "Trending",
+      "currentCategorySource": "catalog",
+      "suggestedCategory": "Trending",
+      "suggestedConfidence": 0.12,
+      "confidenceBand": "manual",
+      "alternativeCategory": "",
+      "ambiguous": false,
+      "signals": [
+        "nlp:empty-or-generic-title"
+      ],
+      "auditState": "FALLBACK_TRENDING",
+      "creatorLocked": false,
+      "eligibleForApproval": false,
+      "recommendedShelf": "Trending",
+      "reason": "C — insufficient title/metadata for NLP genre assignment"
+    },
+    {
+      "id": "27fa1ac9-cf19-43c3-9e5a-7f373aac9f34",
+      "canonicalTitle": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+      "mediaKind": "image",
+      "currentCategory": "Trending",
+      "currentCategorySource": "catalog",
+      "suggestedCategory": "Trending",
+      "suggestedConfidence": 0.12,
+      "confidenceBand": "manual",
+      "alternativeCategory": "",
+      "ambiguous": false,
+      "signals": [
+        "nlp:empty-or-generic-title"
+      ],
+      "auditState": "FALLBACK_TRENDING",
+      "creatorLocked": false,
+      "eligibleForApproval": false,
+      "recommendedShelf": "Trending",
+      "reason": "C — insufficient title/metadata for NLP genre assignment"
+    },
+    {
+      "id": "d8343381-ecb9-460b-9694-7442e423df80",
+      "canonicalTitle": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+      "mediaKind": "image",
+      "currentCategory": "Trending",
+      "currentCategorySource": "catalog",
+      "suggestedCategory": "Trending",
+      "suggestedConfidence": 0.12,
+      "confidenceBand": "manual",
+      "alternativeCategory": "",
+      "ambiguous": false,
+      "signals": [
+        "nlp:empty-or-generic-title"
+      ],
+      "auditState": "FALLBACK_TRENDING",
+      "creatorLocked": false,
+      "eligibleForApproval": false,
+      "recommendedShelf": "Trending",
+      "reason": "C — insufficient title/metadata for NLP genre assignment"
+    },
+    {
+      "id": "ae81943b-0cae-479b-9c82-40d6ee4b5e7f",
+      "canonicalTitle": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+      "mediaKind": "image",
+      "currentCategory": "Trending",
+      "currentCategorySource": "catalog",
+      "suggestedCategory": "Trending",
+      "suggestedConfidence": 0.12,
+      "confidenceBand": "manual",
+      "alternativeCategory": "",
+      "ambiguous": false,
+      "signals": [
+        "nlp:empty-or-generic-title"
+      ],
+      "auditState": "FALLBACK_TRENDING",
+      "creatorLocked": false,
+      "eligibleForApproval": false,
+      "recommendedShelf": "Trending",
+      "reason": "C — insufficient title/metadata for NLP genre assignment"
+    },
+    {
+      "id": "ad192428-ca93-4915-be89-4e9aa5b806e1",
+      "canonicalTitle": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+      "mediaKind": "image",
+      "currentCategory": "Trending",
+      "currentCategorySource": "catalog",
+      "suggestedCategory": "Trending",
+      "suggestedConfidence": 0.12,
+      "confidenceBand": "manual",
+      "alternativeCategory": "",
+      "ambiguous": false,
+      "signals": [
+        "nlp:empty-or-generic-title"
+      ],
+      "auditState": "FALLBACK_TRENDING",
+      "creatorLocked": false,
+      "eligibleForApproval": false,
+      "recommendedShelf": "Trending",
+      "reason": "C — insufficient title/metadata for NLP genre assignment"
+    },
+    {
+      "id": "c1f90b7c-e5ed-476e-bcb5-021127ab0ee4",
+      "canonicalTitle": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+      "mediaKind": "image",
+      "currentCategory": "Trending",
+      "currentCategorySource": "catalog",
+      "suggestedCategory": "Trending",
+      "suggestedConfidence": 0.12,
+      "confidenceBand": "manual",
+      "alternativeCategory": "",
+      "ambiguous": false,
+      "signals": [
+        "nlp:empty-or-generic-title"
+      ],
+      "auditState": "FALLBACK_TRENDING",
+      "creatorLocked": false,
+      "eligibleForApproval": false,
+      "recommendedShelf": "Trending",
+      "reason": "C — insufficient title/metadata for NLP genre assignment"
+    },
+    {
+      "id": "201ec6ee-6822-4bda-9295-080beb6f4e35",
+      "canonicalTitle": "07 AMP JAM V1",
+      "mediaKind": "video",
+      "currentCategory": "Trending",
+      "currentCategorySource": "catalog",
+      "suggestedCategory": "Trending",
+      "suggestedConfidence": 0.18,
+      "confidenceBand": "manual",
+      "alternativeCategory": "",
+      "ambiguous": false,
+      "signals": [
+        "nlp:insufficient-signals"
+      ],
+      "auditState": "FALLBACK_TRENDING",
+      "creatorLocked": false,
+      "eligibleForApproval": false,
+      "recommendedShelf": "Trending",
+      "reason": "C — insufficient title/metadata for NLP genre assignment"
+    },
+    {
+      "id": "615e0eae-47b4-468a-b6dd-a6846b464846",
+      "canonicalTitle": "MICROS STIRRED V1",
+      "mediaKind": "video",
+      "currentCategory": "Trending",
+      "currentCategorySource": "catalog",
+      "suggestedCategory": "Trending",
+      "suggestedConfidence": 0.18,
+      "confidenceBand": "manual",
+      "alternativeCategory": "",
+      "ambiguous": false,
+      "signals": [
+        "nlp:insufficient-signals"
+      ],
+      "auditState": "FALLBACK_TRENDING",
+      "creatorLocked": false,
+      "eligibleForApproval": false,
+      "recommendedShelf": "Trending",
+      "reason": "C — insufficient title/metadata for NLP genre assignment"
+    },
+    {
+      "id": "9a1251a2-d6a6-42e5-9fcd-4eca17dcd6ef",
+      "canonicalTitle": "MICROS Motherland V1(1)",
+      "mediaKind": "video",
+      "currentCategory": "Trending",
+      "currentCategorySource": "catalog",
+      "suggestedCategory": "Trending",
+      "suggestedConfidence": 0.18,
+      "confidenceBand": "manual",
+      "alternativeCategory": "",
+      "ambiguous": false,
+      "signals": [
+        "nlp:insufficient-signals"
+      ],
+      "auditState": "FALLBACK_TRENDING",
+      "creatorLocked": false,
+      "eligibleForApproval": false,
+      "recommendedShelf": "Trending",
+      "reason": "C — insufficient title/metadata for NLP genre assignment"
+    },
+    {
+      "id": "d2aafde7-d7ba-492c-a860-20b51f7f4033",
+      "canonicalTitle": "03 CLUB POOM POOM V1",
+      "mediaKind": "video",
+      "currentCategory": "Trending",
+      "currentCategorySource": "catalog",
+      "suggestedCategory": "Trending",
+      "suggestedConfidence": 0.18,
+      "confidenceBand": "manual",
+      "alternativeCategory": "",
+      "ambiguous": false,
+      "signals": [
+        "nlp:insufficient-signals"
+      ],
+      "auditState": "FALLBACK_TRENDING",
+      "creatorLocked": false,
+      "eligibleForApproval": false,
+      "recommendedShelf": "Trending",
+      "reason": "C — insufficient title/metadata for NLP genre assignment"
+    },
+    {
+      "id": "1551c33d-a535-41c0-ac41-bf3dab0e63f2",
+      "canonicalTitle": "Img 0110",
+      "mediaKind": "image",
+      "currentCategory": "HERO",
+      "currentCategorySource": "catalog",
+      "suggestedCategory": "Trending",
+      "suggestedConfidence": 0.12,
+      "confidenceBand": "manual",
+      "alternativeCategory": "",
+      "ambiguous": false,
+      "signals": [
+        "nlp:empty-or-generic-title"
+      ],
+      "auditState": "FALLBACK_TRENDING",
+      "creatorLocked": false,
+      "eligibleForApproval": false,
+      "recommendedShelf": "Trending",
+      "reason": "C — insufficient title/metadata for NLP genre assignment"
+    },
+    {
+      "id": "3894107e-ae44-43c5-af72-b3f5d5e0ad90",
+      "canonicalTitle": "condo v1 2",
+      "mediaKind": "video",
+      "currentCategory": "Trending",
+      "currentCategorySource": "catalog",
+      "suggestedCategory": "Trending",
+      "suggestedConfidence": 0.18,
+      "confidenceBand": "manual",
+      "alternativeCategory": "",
+      "ambiguous": false,
+      "signals": [
+        "nlp:insufficient-signals"
+      ],
+      "auditState": "FALLBACK_TRENDING",
+      "creatorLocked": false,
+      "eligibleForApproval": false,
+      "recommendedShelf": "Trending",
+      "reason": "C — insufficient title/metadata for NLP genre assignment"
+    },
+    {
+      "id": "b82062ed-7be9-4e3a-8193-f5d66b98f237",
+      "canonicalTitle": "IMG_0113.JPEG",
+      "mediaKind": "image",
+      "currentCategory": "Trending",
+      "currentCategorySource": "catalog",
+      "suggestedCategory": "Trending",
+      "suggestedConfidence": 0.12,
+      "confidenceBand": "manual",
+      "alternativeCategory": "",
+      "ambiguous": false,
+      "signals": [
+        "nlp:empty-or-generic-title"
+      ],
+      "auditState": "FALLBACK_TRENDING",
+      "creatorLocked": false,
+      "eligibleForApproval": false,
+      "recommendedShelf": "Trending",
+      "reason": "C — insufficient title/metadata for NLP genre assignment"
+    },
+    {
+      "id": "caa1a16f-be03-4c2b-9840-9fce9a809c00",
+      "canonicalTitle": "IMG_0121.JPEG",
+      "mediaKind": "image",
+      "currentCategory": "Trending",
+      "currentCategorySource": "catalog",
+      "suggestedCategory": "Trending",
+      "suggestedConfidence": 0.12,
+      "confidenceBand": "manual",
+      "alternativeCategory": "",
+      "ambiguous": false,
+      "signals": [
+        "nlp:empty-or-generic-title"
+      ],
+      "auditState": "FALLBACK_TRENDING",
+      "creatorLocked": false,
+      "eligibleForApproval": false,
+      "recommendedShelf": "Trending",
+      "reason": "C — insufficient title/metadata for NLP genre assignment"
+    }
+  ]
+}

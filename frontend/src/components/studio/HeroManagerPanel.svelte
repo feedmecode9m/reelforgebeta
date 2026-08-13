@@ -35,6 +35,15 @@
     import { resolveVaultCardProjection } from '../../lib/content/vaultCardProjection.js';
     import { mergeTitleIntoPersistentMap } from '../../lib/content/persistentTitleMap.js';
     import {
+        CREATOR_SHELF_OPTIONS
+    } from '../../lib/feed/creatorCatalogMetadata.js';
+    import {
+        reevaluateAfterCanonicalTitleSave,
+        formatSuggestionConfidence,
+        persistCreatorCategoryChoice,
+        canPersistCategoryForAsset
+    } from '../../lib/feed/categorySuggestionReview.js';
+    import {
         approveIdentityProposal,
         getPendingStoryProposal,
         ignoreIdentityProposal
@@ -212,6 +221,20 @@
     let authorityUiId = 'draft_editing';
     let authorityPending = false;
     let statusMessage = '';
+    /** @type {null | {
+     *   assetId: string;
+     *   title: string;
+     *   currentCategory: string;
+     *   suggestedCategory: string;
+     *   alternativeCategory?: string;
+     *   confidence: number;
+     *   confidenceBand: string;
+     *   ambiguous: boolean;
+     *   offer: boolean;
+     *   showManualHelper: boolean;
+     *   overrideCategory: string;
+     * }} */
+    let categorySuggestionReview = null;
     let heroAssetSelect = null;
     let refreshAuditTimer = null;
     let renamedTitles = {};
@@ -2039,6 +2062,101 @@
             episodeId: episodeUpdate?.episodeId || null,
             ts: new Date().toISOString()
         });
+
+        // Phase 3C: title finalized → NLP re-evaluation with durable editorial metadata (no auto-PATCH).
+        try {
+            const review = await reevaluateAfterCanonicalTitleSave(assetId, durableTitle, {
+                heroDescription: String(config.heroDescription || '')
+            });
+            if (
+                review.offer ||
+                review.showManualHelper ||
+                review.classificationState === 'UNDERSTOOD_NO_SHELF_FIT' ||
+                review.classificationState === 'CREATOR_LOCKED'
+            ) {
+                categorySuggestionReview = {
+                    assetId,
+                    title: durableTitle,
+                    currentCategory: review.currentCategory,
+                    suggestedCategory: review.suggestedCategory || '',
+                    alternativeCategory: review.alternativeCategory,
+                    confidence: review.confidence,
+                    confidenceBand: review.confidenceBand,
+                    ambiguous: Boolean(review.ambiguous),
+                    offer: Boolean(review.offer),
+                    showManualHelper: Boolean(review.showManualHelper),
+                    taxonomyFit: review.taxonomyFit || '',
+                    classificationState: review.classificationState || '',
+                    recommendedShelf: review.recommendedShelf || 'Trending',
+                    shelfFitReason: review.shelfFitReason || '',
+                    creatorLocked: Boolean(review.creatorLocked),
+                    overrideCategory:
+                        review.suggestedCategory ||
+                        review.recommendedShelf ||
+                        review.currentCategory ||
+                        'Trending'
+                };
+                statusMessage = `${statusMessage} · category review ready`;
+            } else {
+                categorySuggestionReview = null;
+            }
+        } catch (reviewErr) {
+            categorySuggestionReview = null;
+            console.warn('[HERO_CATEGORY_SUGGESTION_REVIEW]', reviewErr);
+        }
+    }
+
+    function dismissCategorySuggestionReview() {
+        categorySuggestionReview = null;
+    }
+
+    function acceptHeroCategorySuggestion() {
+        const review = categorySuggestionReview;
+        if (!review?.assetId || !review.suggestedCategory) return;
+        const gate = canPersistCategoryForAsset({ id: review.assetId, assetId: review.assetId });
+        if (!gate.ok) {
+            statusMessage = `Cannot persist category (${gate.reason}).`;
+            return;
+        }
+        const saved = persistCreatorCategoryChoice(review.assetId, {
+            title: review.title,
+            category: review.suggestedCategory
+        });
+        if (!saved) {
+            statusMessage = 'Could not accept category suggestion.';
+            return;
+        }
+        categorySuggestionReview = null;
+        statusMessage = `Category accepted · ${review.suggestedCategory} (creator) for “${review.title}”`;
+    }
+
+    function applyHeroCategoryOverride() {
+        const review = categorySuggestionReview;
+        if (!review?.assetId) return;
+        const chosen = String(review.overrideCategory || 'Trending').trim() || 'Trending';
+        if (!CREATOR_SHELF_OPTIONS.includes(chosen)) {
+            statusMessage = 'Choose a valid shelf category to override.';
+            return;
+        }
+        const gate = canPersistCategoryForAsset({ id: review.assetId, assetId: review.assetId });
+        if (!gate.ok) {
+            statusMessage = `Cannot persist category (${gate.reason}).`;
+            return;
+        }
+        const saved = persistCreatorCategoryChoice(review.assetId, {
+            title: review.title,
+            category: chosen
+        });
+        if (!saved) {
+            statusMessage = 'Could not apply category override.';
+            return;
+        }
+        categorySuggestionReview = null;
+        statusMessage = `Category override · ${chosen} (creator) for “${review.title}”`;
+    }
+
+    function applyHeroManualCategory() {
+        applyHeroCategoryOverride();
     }
 
     /** Alias for existing call sites */
@@ -3426,6 +3544,148 @@
     <p class="hero-manager__status" data-hero-manager-status role="status" aria-live="polite">
         {statusMessage || 'Edit any field, then Save Draft / Publish / Apply. Status updates appear here.'}
     </p>
+    {#if categorySuggestionReview}
+        <div
+            class="hero-manager__nlp-review"
+            data-hero-nlp-category-review
+            data-suggested-category={categorySuggestionReview.suggestedCategory || ''}
+            data-current-category={categorySuggestionReview.currentCategory}
+            data-confidence-band={categorySuggestionReview.confidenceBand}
+            data-ambiguous={categorySuggestionReview.ambiguous ? 'true' : 'false'}
+            data-manual-helper={categorySuggestionReview.showManualHelper ? 'true' : 'false'}
+            data-offer={categorySuggestionReview.offer ? 'true' : 'false'}
+            data-classification-state={categorySuggestionReview.classificationState || ''}
+            data-taxonomy-fit={categorySuggestionReview.taxonomyFit || ''}
+            data-creator-locked={categorySuggestionReview.creatorLocked ? 'true' : 'false'}
+        >
+            {#if categorySuggestionReview.creatorLocked}
+                <p class="hero-manager__nlp-review-title" data-nlp-creator-lock>CREATOR LOCKED</p>
+                <ul class="hero-manager__nlp-review-facts">
+                    <li data-nlp-current-category>
+                        Creator decision: {categorySuggestionReview.currentCategory}
+                    </li>
+                    {#if categorySuggestionReview.suggestedCategory}
+                        <li data-nlp-suggested-category>
+                            NLP suggestion (non-binding): {categorySuggestionReview.suggestedCategory}
+                        </li>
+                    {/if}
+                    <li data-nlp-shelf-fit-reason>{categorySuggestionReview.shelfFitReason}</li>
+                </ul>
+            {:else if categorySuggestionReview.classificationState === 'UNDERSTOOD_NO_SHELF_FIT'}
+                <p class="hero-manager__nlp-review-title" data-nlp-case-f>
+                    UNDERSTOOD / NO SHELF FIT
+                </p>
+                <ul class="hero-manager__nlp-review-facts">
+                    <li data-nlp-current-category>Current: {categorySuggestionReview.currentCategory}</li>
+                    <li data-nlp-recommended-shelf>
+                        Recommended shelf: {categorySuggestionReview.recommendedShelf || 'Trending'}
+                    </li>
+                    <li data-nlp-shelf-fit-reason>
+                        Reason: {categorySuggestionReview.shelfFitReason ||
+                            'No valid Romance/Cyber-Action/Suspense semantic fit'}
+                    </li>
+                    <li data-nlp-suggestion-confidence>
+                        Confidence: {formatSuggestionConfidence(
+                            categorySuggestionReview.confidence,
+                            categorySuggestionReview.confidenceBand
+                        )}
+                    </li>
+                </ul>
+            {:else if categorySuggestionReview.offer}
+                <p class="hero-manager__nlp-review-title">Category suggestion after title save</p>
+                <ul class="hero-manager__nlp-review-facts">
+                    <li data-nlp-current-category>Current: {categorySuggestionReview.currentCategory}</li>
+                    <li data-nlp-suggested-category>
+                        Suggested: {categorySuggestionReview.suggestedCategory}
+                    </li>
+                    {#if categorySuggestionReview.alternativeCategory}
+                        <li data-nlp-alternative-category>
+                            Alternative: {categorySuggestionReview.alternativeCategory}
+                        </li>
+                    {/if}
+                    <li data-nlp-suggestion-confidence>
+                        Confidence: {formatSuggestionConfidence(
+                            categorySuggestionReview.confidence,
+                            categorySuggestionReview.confidenceBand
+                        )}
+                    </li>
+                    {#if categorySuggestionReview.ambiguous}
+                        <li data-nlp-ambiguous>Signals conflict — review before accepting.</li>
+                    {/if}
+                </ul>
+                <div class="hero-manager__nlp-review-actions">
+                    <button
+                        type="button"
+                        class="hero-manager__btn"
+                        data-nlp-accept-suggestion
+                        on:click|stopPropagation={acceptHeroCategorySuggestion}
+                    >
+                        Accept suggestion
+                    </button>
+                    <label>
+                        <span>Override</span>
+                        <select
+                            bind:value={categorySuggestionReview.overrideCategory}
+                            data-nlp-override-category
+                            aria-label="Override shelf category"
+                        >
+                            {#each CREATOR_SHELF_OPTIONS as option}
+                                <option value={option}>{option}</option>
+                            {/each}
+                        </select>
+                    </label>
+                    <button
+                        type="button"
+                        class="hero-manager__btn"
+                        data-nlp-apply-override
+                        on:click|stopPropagation={applyHeroCategoryOverride}
+                    >
+                        Apply override
+                    </button>
+                </div>
+            {/if}
+            {#if categorySuggestionReview.showManualHelper && !categorySuggestionReview.creatorLocked}
+                <div data-manual-category-helper class="hero-manager__manual-category">
+                    <p class="hero-manager__nlp-review-title">
+                        {categorySuggestionReview.offer ? 'Or choose category manually' : 'Choose category'}
+                    </p>
+                    <div class="hero-manager__nlp-review-actions">
+                        <label>
+                            <span>Choose Category</span>
+                            <select
+                                bind:value={categorySuggestionReview.overrideCategory}
+                                data-manual-category-select
+                                aria-label="Manual shelf category"
+                            >
+                                {#each CREATOR_SHELF_OPTIONS as option}
+                                    <option value={option}>{option}</option>
+                                {/each}
+                            </select>
+                        </label>
+                        <button
+                            type="button"
+                            class="hero-manager__btn"
+                            data-manual-category-apply
+                            on:click|stopPropagation={applyHeroManualCategory}
+                        >
+                            Apply category
+                        </button>
+                    </div>
+                </div>
+            {/if}
+            <button
+                type="button"
+                class="hero-manager__btn hero-manager__btn--ghost"
+                data-nlp-dismiss-suggestion
+                on:click|stopPropagation={dismissCategorySuggestionReview}
+            >
+                Dismiss
+            </button>
+            <p class="hero-manager__field-hint">
+                Title is saved. Category is not PATCHed until Accept, Override, or Manual Apply.
+            </p>
+        </div>
+    {/if}
 </section>
 
 <style>
@@ -4145,5 +4405,46 @@
         margin: 0.55rem 0 0;
         font-size: 0.6rem;
         color: var(--studio-text-muted, rgba(255, 255, 255, 0.55));
+    }
+    .hero-manager__nlp-review {
+        margin: 0.55rem 0 0;
+        padding: 0.55rem 0.65rem;
+        border-radius: 8px;
+        border: 1px solid rgba(56, 189, 248, 0.35);
+        background: rgba(8, 47, 73, 0.35);
+    }
+    .hero-manager__nlp-review-title {
+        margin: 0 0 0.35rem;
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        color: #e0f2fe;
+    }
+    .hero-manager__nlp-review-facts {
+        margin: 0 0 0.45rem;
+        padding-left: 1rem;
+        font-size: 0.62rem;
+        color: rgba(255, 255, 255, 0.75);
+    }
+    .hero-manager__nlp-review-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        align-items: center;
+    }
+    .hero-manager__nlp-review-actions label {
+        display: grid;
+        gap: 0.15rem;
+        font-size: 0.55rem;
+        color: rgba(255, 255, 255, 0.65);
+    }
+    .hero-manager__nlp-review-actions select {
+        padding: 0.3rem 0.4rem;
+        border-radius: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: rgba(255, 255, 255, 0.04);
+        color: #fff;
+        font-size: 0.58rem;
     }
 </style>

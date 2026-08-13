@@ -37,6 +37,8 @@
   import ContentIntelligencePanel from '../studio/ContentIntelligencePanel.svelte';
   import CollectionsManagerPanel from '../studio/CollectionsManagerPanel.svelte';
   import ProductionCommandCenter from '../studio/ProductionCommandCenter.svelte';
+  import SmartCategoryAuditPanel from '../studio/SmartCategoryAuditPanel.svelte';
+  import IdentityBackedEditorialReviewPanel from '../studio/IdentityBackedEditorialReviewPanel.svelte';
   import DeveloperDiagnosticsCenter from '../diagnostics/DeveloperDiagnosticsCenter.svelte';
   import EpisodeReelAttachmentPanel from '../studio/EpisodeReelAttachmentPanel.svelte';
   import { emitCreatorProductionUpdated } from '../../lib/studio/creatorActionRouter.js';
@@ -1696,7 +1698,28 @@
                 {/each}
               </div>
             </div>
-<HeroExperience
+            <SmartCategoryAuditPanel
+              {feed}
+              authHeaders={() => getAdminAuthHeaders()}
+              onCategoryPersisted={() => {
+                try {
+                  AI_CLEANUP_AGENT?.applyPersistedTitlesOverlay?.();
+                } catch {
+                  /* optional */
+                }
+              }}
+            />
+            <IdentityBackedEditorialReviewPanel
+              authHeaders={() => getAdminAuthHeaders()}
+              onCategoryPersisted={() => {
+                try {
+                  AI_CLEANUP_AGENT?.applyPersistedTitlesOverlay?.();
+                } catch {
+                  /* optional */
+                }
+              }}
+            />
+            <HeroExperience
               section="replace"
               {HERO_BACKGROUND_VIDEO}
               {HERO_POSTER_IMAGE}

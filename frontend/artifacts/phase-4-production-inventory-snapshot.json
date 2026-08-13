@@ -1,0 +1,50 @@
+{
+  "capturedAt": "2026-08-13T02:12:00.000Z",
+  "source": "https://strong-lolly-a9fcb4.netlify.app/api/reels",
+  "readOnly": true,
+  "mutations": 0,
+  "inventory": {
+    "total": 25,
+    "videos": 6
+  },
+  "currentCategoryDistribution": {
+    "Trending": 24,
+    "HERO": 1,
+    "Romance": 0,
+    "Cyber-Action": 0,
+    "Suspense": 0
+  },
+  "productionVideos": [
+    {
+      "id": "03ef898a-989f-42c3-bdbb-67f37338df65",
+      "currentTitle": "01 ARRIVAL OPEN v1",
+      "category": "Trending"
+    },
+    {
+      "id": "201ec6ee-6822-4bda-9295-080beb6f4e35",
+      "currentTitle": "07 AMP JAM V1",
+      "category": "Trending"
+    },
+    {
+      "id": "615e0eae-47b4-468a-b6dd-a6846b464846",
+      "currentTitle": "MICROS STIRRED V1",
+      "category": "Trending"
+    },
+    {
+      "id": "9a1251a2-d6a6-42e5-9fcd-4eca17dcd6ef",
+      "currentTitle": "MICROS Motherland V1(1)",
+      "category": "Trending"
+    },
+    {
+      "id": "d2aafde7-d7ba-492c-a860-20b51f7f4033",
+      "currentTitle": "03 CLUB POOM POOM V1",
+      "category": "Trending"
+    },
+    {
+      "id": "3894107e-ae44-43c5-af72-b3f5d5e0ad90",
+      "currentTitle": "condo v1 2",
+      "category": "Trending"
+    }
+  ],
+  "note": "Provisional Phase 3B episode-guide titles are NOT authoritative. Do not rename until coworker final list is mapped with high confidence."
+}

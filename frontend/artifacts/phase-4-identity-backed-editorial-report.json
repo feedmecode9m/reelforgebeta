@@ -1,0 +1,9 @@
+{
+  "phase": "PHASE-4-IDENTITY-BACKED-EDITORIAL",
+  "status": "PREP_COMPLETE_WAITING_FOR_AUTHORITATIVE_METADATA",
+  "exactIdentities": 6,
+  "categoryPatchCount": 0,
+  "titleWrites": 0,
+  "descriptionWrites": 0,
+  "deploy": 0
+}

@@ -1,0 +1,132 @@
+{
+  "phase": "PHASE-4-IDENTITY-BACKED-BROWSER-SMOKE",
+  "frontendUrl": "http://127.0.0.1:5194",
+  "ui": {
+    "panelRendered": true,
+    "auditRendered": true,
+    "currentDistribution": true,
+    "recommendedDistribution": true,
+    "rowCount": 6
+  },
+  "identityRows": [
+    {
+      "productionId": "03ef898a-989f-42c3-bdbb-67f37338df65",
+      "identityConfidence": "EXACT",
+      "metadataStatus": "PROVISIONAL",
+      "workflowState": "WAITING_FOR_AUTHORITATIVE_METADATA",
+      "actionsEnabled": "false",
+      "currentTitle": "01 ARRIVAL OPEN v1",
+      "matchedFile": "Matched source: 01_ARRIVAL_OPEN_v1.mp4",
+      "waitingVisible": true,
+      "nlpBlockVisible": false,
+      "acceptDisabled": true,
+      "overrideDisabled": true,
+      "manualDisabled": true,
+      "provisionalText": "Provisional (not authoritative): ARRIVAL",
+      "editorialTitle": ""
+    },
+    {
+      "productionId": "d2aafde7-d7ba-492c-a860-20b51f7f4033",
+      "identityConfidence": "EXACT",
+      "metadataStatus": "PROVISIONAL",
+      "workflowState": "WAITING_FOR_AUTHORITATIVE_METADATA",
+      "actionsEnabled": "false",
+      "currentTitle": "03 CLUB POOM POOM V1",
+      "matchedFile": "Matched source: 03_CLUB POOM POOM_V1.mp4",
+      "waitingVisible": true,
+      "nlpBlockVisible": false,
+      "acceptDisabled": true,
+      "overrideDisabled": true,
+      "manualDisabled": true,
+      "provisionalText": "Provisional (not authoritative): POOM POOM TUESDAY",
+      "editorialTitle": ""
+    },
+    {
+      "productionId": "615e0eae-47b4-468a-b6dd-a6846b464846",
+      "identityConfidence": "EXACT",
+      "metadataStatus": "PROVISIONAL",
+      "workflowState": "WAITING_FOR_AUTHORITATIVE_METADATA",
+      "actionsEnabled": "false",
+      "currentTitle": "MICROS STIRRED V1",
+      "matchedFile": "Matched source: MICROS_STIRRED_V1.mp4",
+      "waitingVisible": true,
+      "nlpBlockVisible": false,
+      "acceptDisabled": true,
+      "overrideDisabled": true,
+      "manualDisabled": true,
+      "provisionalText": "Provisional (not authoritative): SOUNDSTAGE SHOOT: PART ONE",
+      "editorialTitle": ""
+    },
+    {
+      "productionId": "9a1251a2-d6a6-42e5-9fcd-4eca17dcd6ef",
+      "identityConfidence": "EXACT",
+      "metadataStatus": "PROVISIONAL",
+      "workflowState": "WAITING_FOR_AUTHORITATIVE_METADATA",
+      "actionsEnabled": "false",
+      "currentTitle": "MICROS Motherland V1(1)",
+      "matchedFile": "Matched source: MICROS_Motherland_V1(1).mp4 ≡ MICROS_Motherland_V1.mp4",
+      "waitingVisible": true,
+      "nlpBlockVisible": false,
+      "acceptDisabled": true,
+      "overrideDisabled": true,
+      "manualDisabled": true,
+      "provisionalText": "Provisional (not authoritative): SOUNDSTAGE SHOOT: PART TWO",
+      "editorialTitle": ""
+    },
+    {
+      "productionId": "3894107e-ae44-43c5-af72-b3f5d5e0ad90",
+      "identityConfidence": "EXACT",
+      "metadataStatus": "PROVISIONAL",
+      "workflowState": "WAITING_FOR_AUTHORITATIVE_METADATA",
+      "actionsEnabled": "false",
+      "currentTitle": "condo v1 2",
+      "matchedFile": "Matched source: condo_v1_2.mp4 ≡ 06_CONDO_HIGH RISE_V1.mp4",
+      "waitingVisible": true,
+      "nlpBlockVisible": false,
+      "acceptDisabled": true,
+      "overrideDisabled": true,
+      "manualDisabled": true,
+      "provisionalText": "Provisional (not authoritative): CONDO WIND DOWN",
+      "editorialTitle": ""
+    },
+    {
+      "productionId": "201ec6ee-6822-4bda-9295-080beb6f4e35",
+      "identityConfidence": "EXACT",
+      "metadataStatus": "PROVISIONAL",
+      "workflowState": "WAITING_FOR_AUTHORITATIVE_METADATA",
+      "actionsEnabled": "false",
+      "currentTitle": "07 AMP JAM V1",
+      "matchedFile": "Matched source: 07_AMP_JAM_V1.mp4",
+      "waitingVisible": true,
+      "nlpBlockVisible": false,
+      "acceptDisabled": true,
+      "overrideDisabled": true,
+      "manualDisabled": true,
+      "provisionalText": "Provisional (not authoritative): MY SOCIETY + AMP",
+      "editorialTitle": ""
+    }
+  ],
+  "authorityGate": {
+    "waitingCount": 6,
+    "actionsDisabled": true,
+    "nlpDecisionHidden": true
+  },
+  "mutations": {
+    "categoryPatch": 0,
+    "titleWrites": 0,
+    "descriptionWrites": 0,
+    "productionCatalogWrites": 0,
+    "mutationRequests": [],
+    "localStorage": {
+      "categoryPatch": 0,
+      "titleWrites": 0,
+      "descriptionWrites": 0,
+      "catalogWrites": 0,
+      "saveCreatorCatalogMetadata": 0
+    }
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "validators": {},
+  "deploy": 0
+}
