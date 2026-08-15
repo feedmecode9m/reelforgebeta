@@ -1,0 +1,387 @@
+{
+  "mission": "PHASE-HERO-REPLACE-VALIDATION",
+  "ts": "2026-08-13T18:42:25.489Z",
+  "frontend": "http://127.0.0.1:5173",
+  "verdict": "PASS",
+  "tests": {
+    "currentHeroActive": {
+      "expected": {
+        "mode": "asset",
+        "locked": true
+      },
+      "actual": {
+        "mode": "asset",
+        "heroAssetId": "4bff26c9-29bb-4cd4-ac56-e5cc9b0d0590",
+        "backgroundSource": "custom_video",
+        "mediaUrl": "http://localhost:8080/videos/4bff26c9-29bb-4cd4-ac56-e5cc9b0d0590.mp4",
+        "title": "Black Warrior: Land, Legacy & Liberation",
+        "locked": true
+      },
+      "pass": true
+    },
+    "replaceHero": {
+      "expected": "old heroAssetId → new heroAssetId; mode asset; backgroundSource updates",
+      "oldHeroAssetId": "4bff26c9-29bb-4cd4-ac56-e5cc9b0d0590",
+      "newHeroAssetId": "b4398188-37b3-4ce5-b529-58f21430798a",
+      "mode": "asset",
+      "backgroundSource": "custom_video",
+      "replacePhase": "committed",
+      "replaceTitle": "Hero Updated Successfully",
+      "pass": true
+    },
+    "refreshPersists": {
+      "expected": "Hero remains replacement hero",
+      "heroAssetId": "b4398188-37b3-4ce5-b529-58f21430798a",
+      "pass": true
+    },
+    "vaultUploadDoesNotSwapHero": {
+      "expected": "Hero = replacement hero; Vault gets new MP4; no automatic hero swap",
+      "vaultUploadOk": true,
+      "vaultError": null,
+      "heroAssetId": "b4398188-37b3-4ce5-b529-58f21430798a",
+      "expectedHeroAssetId": "b4398188-37b3-4ce5-b529-58f21430798a",
+      "pass": true
+    },
+    "finalRefreshAfterVault": {
+      "heroAssetId": "b4398188-37b3-4ce5-b529-58f21430798a",
+      "expected": "b4398188-37b3-4ce5-b529-58f21430798a",
+      "pass": true
+    }
+  },
+  "timeline": [
+    {
+      "id": "STUDIO_UNLOCK_START",
+      "at": "2026-08-13T18:42:25.491Z"
+    },
+    {
+      "id": "STUDIO_UNLOCK_DONE",
+      "at": "2026-08-13T18:42:39.258Z"
+    },
+    {
+      "id": "HERO_STATE_BEFORE",
+      "at": "2026-08-13T18:42:39.263Z",
+      "record": {
+        "mode": "asset",
+        "assetId": "4bff26c9-29bb-4cd4-ac56-e5cc9b0d0590",
+        "mediaUrl": "http://localhost:8080/videos/4bff26c9-29bb-4cd4-ac56-e5cc9b0d0590.mp4",
+        "mediaKind": "video",
+        "title": "Black Warrior: Land, Legacy & Liberation",
+        "source": "server_presentation",
+        "revision": 7
+      },
+      "manager": {
+        "heroAssetId": "4bff26c9-29bb-4cd4-ac56-e5cc9b0d0590",
+        "backgroundSource": "custom_video",
+        "backgroundStyle": "video",
+        "mediaUrl": "http://localhost:8080/videos/4bff26c9-29bb-4cd4-ac56-e5cc9b0d0590.mp4",
+        "heroTitle": "Black Warrior: Land, Legacy & Liberation"
+      },
+      "reel": {
+        "id": "4bff26c9-29bb-4cd4-ac56-e5cc9b0d0590",
+        "url": "http://localhost:8080/videos/4bff26c9-29bb-4cd4-ac56-e5cc9b0d0590.mp4",
+        "name": "Black Warrior: Land, Legacy & Liberation"
+      },
+      "durableLock": true,
+      "replacePhase": "active",
+      "replaceTitle": "Current Hero Active"
+    },
+    {
+      "id": "REPLACE_HERO_START",
+      "at": "2026-08-13T18:42:39.263Z",
+      "oldHeroAssetId": "4bff26c9-29bb-4cd4-ac56-e5cc9b0d0590",
+      "file": "/tmp/bg7a1-valid.mp4"
+    },
+    {
+      "id": "FILE_SELECTED",
+      "at": "2026-08-13T18:42:39.314Z"
+    },
+    {
+      "id": "REPLACE_UI_SETTLED",
+      "at": "2026-08-13T18:42:45.547Z",
+      "phase": "committed",
+      "elapsedMs": 6233,
+      "assetId": "b4398188-37b3-4ce5-b529-58f21430798a"
+    },
+    {
+      "id": "UPLOAD_COMPLETE",
+      "at": "2026-08-13T18:42:45.549Z",
+      "status": 202,
+      "url": "http://127.0.0.1:5173/api/reels"
+    },
+    {
+      "id": "HERO_STATE_AFTER_REPLACE",
+      "at": "2026-08-13T18:42:47.555Z",
+      "record": {
+        "mode": "asset",
+        "assetId": "b4398188-37b3-4ce5-b529-58f21430798a",
+        "mediaUrl": "http://localhost:8080/videos/b4398188-37b3-4ce5-b529-58f21430798a.mp4",
+        "mediaKind": "video",
+        "title": "Bg7a1 Valid",
+        "source": "commit_hero_video_identity",
+        "revision": 12
+      },
+      "manager": {
+        "heroAssetId": "b4398188-37b3-4ce5-b529-58f21430798a",
+        "backgroundSource": "custom_video",
+        "backgroundStyle": "video",
+        "mediaUrl": "http://localhost:8080/videos/4bff26c9-29bb-4cd4-ac56-e5cc9b0d0590.mp4",
+        "heroTitle": "Black Warrior: Land, Legacy & Liberation"
+      },
+      "reel": {
+        "id": "b4398188-37b3-4ce5-b529-58f21430798a",
+        "url": "http://localhost:8080/videos/b4398188-37b3-4ce5-b529-58f21430798a.mp4",
+        "name": "Bg7a1 Valid"
+      },
+      "durableLock": true,
+      "replacePhase": "committed",
+      "replaceTitle": "Hero Updated Successfully"
+    },
+    {
+      "id": "REFRESH_START",
+      "at": "2026-08-13T18:42:47.557Z"
+    },
+    {
+      "id": "HERO_STATE_AFTER_REFRESH",
+      "at": "2026-08-13T18:42:54.238Z",
+      "record": {
+        "mode": "asset",
+        "assetId": "b4398188-37b3-4ce5-b529-58f21430798a",
+        "mediaUrl": "http://localhost:8080/videos/b4398188-37b3-4ce5-b529-58f21430798a.mp4",
+        "mediaKind": "video",
+        "title": "Bg7a1 Valid",
+        "source": "hero_reel_adapter",
+        "revision": 17
+      },
+      "manager": {
+        "heroAssetId": "b4398188-37b3-4ce5-b529-58f21430798a",
+        "backgroundSource": "custom_video",
+        "backgroundStyle": "video",
+        "mediaUrl": "http://localhost:8080/videos/b4398188-37b3-4ce5-b529-58f21430798a.mp4",
+        "heroTitle": "Black Warrior: Land, Legacy & Liberation"
+      },
+      "reel": {
+        "id": "b4398188-37b3-4ce5-b529-58f21430798a",
+        "url": "http://localhost:8080/videos/b4398188-37b3-4ce5-b529-58f21430798a.mp4",
+        "name": "Bg7a1 Valid"
+      },
+      "durableLock": true,
+      "replacePhase": null,
+      "replaceTitle": null
+    },
+    {
+      "id": "VAULT_UPLOAD_START",
+      "at": "2026-08-13T18:42:54.238Z"
+    },
+    {
+      "id": "VAULT_UPLOAD_COMPLETE",
+      "at": "2026-08-13T18:43:06.863Z",
+      "newCount": 4,
+      "before": 3
+    },
+    {
+      "id": "HERO_STATE_AFTER_VAULT",
+      "at": "2026-08-13T18:43:09.370Z",
+      "record": {
+        "mode": "asset",
+        "assetId": "b4398188-37b3-4ce5-b529-58f21430798a",
+        "mediaUrl": "http://localhost:8080/videos/b4398188-37b3-4ce5-b529-58f21430798a.mp4",
+        "mediaKind": "video",
+        "title": "Bg7a1 Valid",
+        "source": "hero_reel_adapter",
+        "revision": 24
+      },
+      "manager": {
+        "heroAssetId": "b4398188-37b3-4ce5-b529-58f21430798a",
+        "backgroundSource": "custom_video",
+        "backgroundStyle": "video",
+        "mediaUrl": "http://localhost:8080/videos/b4398188-37b3-4ce5-b529-58f21430798a.mp4",
+        "heroTitle": "Black Warrior: Land, Legacy & Liberation"
+      },
+      "reel": {
+        "id": "b4398188-37b3-4ce5-b529-58f21430798a",
+        "url": "http://localhost:8080/videos/b4398188-37b3-4ce5-b529-58f21430798a.mp4",
+        "name": "Bg7a1 Valid"
+      },
+      "durableLock": true,
+      "replacePhase": "active",
+      "replaceTitle": "Current Hero Active"
+    }
+  ],
+  "notes": [],
+  "heroBefore": {
+    "record": {
+      "mode": "asset",
+      "assetId": "4bff26c9-29bb-4cd4-ac56-e5cc9b0d0590",
+      "mediaUrl": "http://localhost:8080/videos/4bff26c9-29bb-4cd4-ac56-e5cc9b0d0590.mp4",
+      "mediaKind": "video",
+      "title": "Black Warrior: Land, Legacy & Liberation",
+      "source": "server_presentation",
+      "revision": 7
+    },
+    "manager": {
+      "heroAssetId": "4bff26c9-29bb-4cd4-ac56-e5cc9b0d0590",
+      "backgroundSource": "custom_video",
+      "backgroundStyle": "video",
+      "mediaUrl": "http://localhost:8080/videos/4bff26c9-29bb-4cd4-ac56-e5cc9b0d0590.mp4",
+      "heroTitle": "Black Warrior: Land, Legacy & Liberation"
+    },
+    "reel": {
+      "id": "4bff26c9-29bb-4cd4-ac56-e5cc9b0d0590",
+      "url": "http://localhost:8080/videos/4bff26c9-29bb-4cd4-ac56-e5cc9b0d0590.mp4",
+      "name": "Black Warrior: Land, Legacy & Liberation"
+    },
+    "durableLock": true,
+    "replacePhase": "active",
+    "replaceTitle": "Current Hero Active"
+  },
+  "heroAfterReplace": {
+    "record": {
+      "mode": "asset",
+      "assetId": "b4398188-37b3-4ce5-b529-58f21430798a",
+      "mediaUrl": "http://localhost:8080/videos/b4398188-37b3-4ce5-b529-58f21430798a.mp4",
+      "mediaKind": "video",
+      "title": "Bg7a1 Valid",
+      "source": "commit_hero_video_identity",
+      "revision": 12
+    },
+    "manager": {
+      "heroAssetId": "b4398188-37b3-4ce5-b529-58f21430798a",
+      "backgroundSource": "custom_video",
+      "backgroundStyle": "video",
+      "mediaUrl": "http://localhost:8080/videos/4bff26c9-29bb-4cd4-ac56-e5cc9b0d0590.mp4",
+      "heroTitle": "Black Warrior: Land, Legacy & Liberation"
+    },
+    "reel": {
+      "id": "b4398188-37b3-4ce5-b529-58f21430798a",
+      "url": "http://localhost:8080/videos/b4398188-37b3-4ce5-b529-58f21430798a.mp4",
+      "name": "Bg7a1 Valid"
+    },
+    "durableLock": true,
+    "replacePhase": "committed",
+    "replaceTitle": "Hero Updated Successfully"
+  },
+  "heroAfterRefresh": {
+    "record": {
+      "mode": "asset",
+      "assetId": "b4398188-37b3-4ce5-b529-58f21430798a",
+      "mediaUrl": "http://localhost:8080/videos/b4398188-37b3-4ce5-b529-58f21430798a.mp4",
+      "mediaKind": "video",
+      "title": "Bg7a1 Valid",
+      "source": "hero_reel_adapter",
+      "revision": 17
+    },
+    "manager": {
+      "heroAssetId": "b4398188-37b3-4ce5-b529-58f21430798a",
+      "backgroundSource": "custom_video",
+      "backgroundStyle": "video",
+      "mediaUrl": "http://localhost:8080/videos/b4398188-37b3-4ce5-b529-58f21430798a.mp4",
+      "heroTitle": "Black Warrior: Land, Legacy & Liberation"
+    },
+    "reel": {
+      "id": "b4398188-37b3-4ce5-b529-58f21430798a",
+      "url": "http://localhost:8080/videos/b4398188-37b3-4ce5-b529-58f21430798a.mp4",
+      "name": "Bg7a1 Valid"
+    },
+    "durableLock": true,
+    "replacePhase": null,
+    "replaceTitle": null
+  },
+  "heroAfterVault": {
+    "record": {
+      "mode": "asset",
+      "assetId": "b4398188-37b3-4ce5-b529-58f21430798a",
+      "mediaUrl": "http://localhost:8080/videos/b4398188-37b3-4ce5-b529-58f21430798a.mp4",
+      "mediaKind": "video",
+      "title": "Bg7a1 Valid",
+      "source": "hero_reel_adapter",
+      "revision": 24
+    },
+    "manager": {
+      "heroAssetId": "b4398188-37b3-4ce5-b529-58f21430798a",
+      "backgroundSource": "custom_video",
+      "backgroundStyle": "video",
+      "mediaUrl": "http://localhost:8080/videos/b4398188-37b3-4ce5-b529-58f21430798a.mp4",
+      "heroTitle": "Black Warrior: Land, Legacy & Liberation"
+    },
+    "reel": {
+      "id": "b4398188-37b3-4ce5-b529-58f21430798a",
+      "url": "http://localhost:8080/videos/b4398188-37b3-4ce5-b529-58f21430798a.mp4",
+      "name": "Bg7a1 Valid"
+    },
+    "durableLock": true,
+    "replacePhase": "active",
+    "replaceTitle": "Current Hero Active"
+  },
+  "heroFinal": {
+    "record": {
+      "mode": "asset",
+      "assetId": "b4398188-37b3-4ce5-b529-58f21430798a",
+      "mediaUrl": "http://localhost:8080/videos/b4398188-37b3-4ce5-b529-58f21430798a.mp4",
+      "mediaKind": "video",
+      "title": "Bg7a1 Valid",
+      "source": "hero_reel_adapter",
+      "revision": 29
+    },
+    "manager": {
+      "heroAssetId": "b4398188-37b3-4ce5-b529-58f21430798a",
+      "backgroundSource": "custom_video",
+      "backgroundStyle": "video",
+      "mediaUrl": "http://localhost:8080/videos/b4398188-37b3-4ce5-b529-58f21430798a.mp4",
+      "heroTitle": "Black Warrior: Land, Legacy & Liberation"
+    },
+    "reel": {
+      "id": "b4398188-37b3-4ce5-b529-58f21430798a",
+      "url": "http://localhost:8080/videos/b4398188-37b3-4ce5-b529-58f21430798a.mp4",
+      "name": "Bg7a1 Valid"
+    },
+    "durableLock": true,
+    "replacePhase": null,
+    "replaceTitle": null
+  },
+  "lockObservations": {
+    "durableSelectionBlocksDuringSession": false,
+    "note": "durable_hero_override on HERO_SELECTION is expected for intelligence; must NOT prevent commitHeroVideoIdentity"
+  },
+  "relevantConsole": [
+    {
+      "at": "2026-08-13T18:42:39.309Z",
+      "text": "[HERO_ACCEPT] {stage: start, pendingType: video, name: bg7a1-valid.mp4, ts: 2026-08-13T18:42:39.307Z}"
+    },
+    {
+      "at": "2026-08-13T18:42:44.706Z",
+      "text": "[HERO_IDENTITY_COMMIT] {stage: commitHeroVideoIdentity, reelId: b4398188-37b3-4ce5-b529-58f21430798a, url: http://localhost:8080/videos/b4398188-37b3-4ce5-b529-58f21430798a.mp4, revision: 8, ts: 2026-08-13T18:42:44.705Z}"
+    },
+    {
+      "at": "2026-08-13T18:42:44.744Z",
+      "text": "[HERO_UPLOAD_FLOW] {stage: identity_committed, reelId: b4398188-37b3-4ce5-b529-58f21430798a, reelUrl: http://localhost:8080/videos/b4398188-37b3-4ce5-b529-58f21430798a.mp4, heroAssetId: b4398188-37b3-4ce5-b529-58f21430798a, backgroundSource: custom_video}"
+    },
+    {
+      "at": "2026-08-13T18:42:44.744Z",
+      "text": "[HERO_ACCEPT] {stage: complete, id: b4398188-37b3-4ce5-b529-58f21430798a, fileName: b4398188-37b3-4ce5-b529-58f21430798a.mp4, url: http://localhost:8080/videos/b4398188-37b3-4ce5-b529-58f21430798a.mp4, backgroundSource: custom_video}"
+    }
+  ],
+  "acceptance": {
+    "replaceHeroUpload": true,
+    "refresh": true,
+    "newVaultMp4HeroUnchanged": true,
+    "viewerCards": "NOT_EXECUTED_UI_VISUAL",
+    "feedIdentity": "NOT_EXECUTED_UI_VISUAL",
+    "categories": "NOT_EXECUTED_UI_VISUAL"
+  },
+  "codePathAnalysis": {
+    "intentionalReplaceDoesNotUseApplyHeroSelection": true,
+    "commitPath": "acceptHeroFile → uploadMedia(category:HERO) → commitHeroVideoIdentity(selectHeroAsset/saveHeroRecord) → saveHeroManagerConfig → applyHeroManagerBackground → HERO_BACKGROUND_VIDEO.set",
+    "durableLockGates": [
+      "applyHeroSelection",
+      "viewerContext intelligence/rotation",
+      "recovery"
+    ],
+    "processingCopyMeaning": "heroReplaceUxPhase===processing while heroUploadProcessing; not a lock error",
+    "latentWatchdogRisk": "files ≤12MiB: accept watchdog 45s vs upload timeout up to 10–20min — can false-timeout medium uploads; not exercised by 3KB fixture"
+  },
+  "phaseHeroReplace1": {
+    "required": false,
+    "reason": "Local replace + vault regression PASS under durable lock"
+  },
+  "reportMarkdown": "frontend/artifacts/PHASE-HERO-REPLACE-VALIDATION.md"
+}

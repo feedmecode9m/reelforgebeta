@@ -1,0 +1,123 @@
+{
+  "mission": "PHASE-HERO-REPLACE-3",
+  "ts": "2026-08-15T02:03:57.964Z",
+  "frontend": "http://127.0.0.1:5173",
+  "verdict": "PHASE-HERO-REPLACE-3 LOCAL PASS",
+  "checks": {
+    "normal_replace": {
+      "pass": true,
+      "detail": "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee → 581c87b7-a499-4da4-a621-099bc5f939e4 phase=committed"
+    },
+    "refresh_keeps_replace": {
+      "pass": true,
+      "detail": "after refresh 581c87b7-a499-4da4-a621-099bc5f939e4"
+    },
+    "timeout_keeps_old_hero": {
+      "pass": true,
+      "detail": "asset=581c87b7-a499-4da4-a621-099bc5f939e4 phase=preview_pending"
+    },
+    "late_response_ignored": {
+      "pass": true,
+      "detail": "staleLog=true timeoutLog=true phase=preview_pending"
+    },
+    "retry_replace_works": {
+      "pass": true,
+      "detail": "581c87b7-a499-4da4-a621-099bc5f939e4 → dad00529-8854-407a-b0ab-4ecc7f9f0ce4"
+    },
+    "vault_does_not_change_hero": {
+      "pass": true,
+      "detail": "hero after vault dad00529-8854-407a-b0ab-4ecc7f9f0ce4 expected dad00529-8854-407a-b0ab-4ecc7f9f0ce4"
+    }
+  },
+  "findings": [],
+  "consoleHits": [
+    {
+      "at": "2026-08-15T02:04:10.531Z",
+      "text": "[HERO_UX_STATE_CHANGE] {fromState: idle, toState: previewing, pendingFileName: hero-replace-2-hero.mp4}"
+    },
+    {
+      "at": "2026-08-15T02:04:10.535Z",
+      "text": "[HERO_UX_STATE_CHANGE] {fromState: idle, toState: processing, pendingFileName: hero-replace-2-hero.mp4}"
+    },
+    {
+      "at": "2026-08-15T02:04:10.542Z",
+      "text": "[HERO_ACCEPT] {stage: start, pendingType: video, name: hero-replace-2-hero.mp4, ts: 2026-08-15T02:04:10.540Z}"
+    },
+    {
+      "at": "2026-08-15T02:04:14.669Z",
+      "text": "[HERO_IDENTITY_COMMIT] {stage: commitHeroVideoIdentity, reelId: 581c87b7-a499-4da4-a621-099bc5f939e4, url: http://localhost:8080/videos/581c87b7-a499-4da4-a621-099bc5f939e4.mp4, revision: 8, ts: 2026-08-15T02:04:14.669Z}"
+    },
+    {
+      "at": "2026-08-15T02:04:14.723Z",
+      "text": "[HERO_ACCEPT] {stage: complete, id: 581c87b7-a499-4da4-a621-099bc5f939e4, fileName: 581c87b7-a499-4da4-a621-099bc5f939e4.mp4, url: http://localhost:8080/videos/581c87b7-a499-4da4-a621-099bc5f939e4.mp4, backgroundSource: custom_video}"
+    },
+    {
+      "at": "2026-08-15T02:04:14.725Z",
+      "text": "[HERO_UX_STATE_CHANGE] {fromState: previewing, toState: idle, pendingFileName: }"
+    },
+    {
+      "at": "2026-08-15T02:04:14.733Z",
+      "text": "[HERO_UX_STATE_CHANGE] {fromState: processing, toState: idle, pendingFileName: }"
+    },
+    {
+      "at": "2026-08-15T02:04:32.739Z",
+      "text": "[HERO_UX_STATE_CHANGE] {fromState: idle, toState: previewing, pendingFileName: hero-replace-2-hero.mp4}"
+    },
+    {
+      "at": "2026-08-15T02:04:32.742Z",
+      "text": "[HERO_UX_STATE_CHANGE] {fromState: idle, toState: processing, pendingFileName: hero-replace-2-hero.mp4}"
+    },
+    {
+      "at": "2026-08-15T02:04:32.747Z",
+      "text": "[HERO_ACCEPT] {stage: start, pendingType: video, name: hero-replace-2-hero.mp4, ts: 2026-08-15T02:04:32.747Z}"
+    },
+    {
+      "at": "2026-08-15T02:05:17.748Z",
+      "text": "[HERO_ACCEPT_TIMEOUT] {timeoutMs: 45000, pendingType: video, fileName: hero-replace-2-hero.mp4, ts: 2026-08-15T02:05:17.746Z}"
+    },
+    {
+      "at": "2026-08-15T02:05:17.750Z",
+      "text": "[HERO_UX_STATE_CHANGE] {fromState: processing, toState: previewing, pendingFileName: hero-replace-2-hero.mp4}"
+    },
+    {
+      "at": "2026-08-15T02:05:21.066Z",
+      "text": "[HERO_ACCEPT_STALE_DISCARD] {stage: video_upload_complete, timedOut: true, ts: 2026-08-15T02:05:21.065Z, reelId: aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee}"
+    },
+    {
+      "at": "2026-08-15T02:05:38.176Z",
+      "text": "[HERO_UX_STATE_CHANGE] {fromState: previewing, toState: idle, pendingFileName: }"
+    },
+    {
+      "at": "2026-08-15T02:05:38.180Z",
+      "text": "[HERO_UX_STATE_CHANGE] {fromState: previewing, toState: idle, pendingFileName: }"
+    },
+    {
+      "at": "2026-08-15T02:05:39.031Z",
+      "text": "[HERO_UX_STATE_CHANGE] {fromState: idle, toState: previewing, pendingFileName: hero-replace-2-hero.mp4}"
+    },
+    {
+      "at": "2026-08-15T02:05:39.036Z",
+      "text": "[HERO_UX_STATE_CHANGE] {fromState: idle, toState: processing, pendingFileName: hero-replace-2-hero.mp4}"
+    },
+    {
+      "at": "2026-08-15T02:05:39.041Z",
+      "text": "[HERO_ACCEPT] {stage: start, pendingType: video, name: hero-replace-2-hero.mp4, ts: 2026-08-15T02:05:39.040Z}"
+    },
+    {
+      "at": "2026-08-15T02:05:43.288Z",
+      "text": "[HERO_IDENTITY_COMMIT] {stage: commitHeroVideoIdentity, reelId: dad00529-8854-407a-b0ab-4ecc7f9f0ce4, url: http://localhost:8080/videos/dad00529-8854-407a-b0ab-4ecc7f9f0ce4.mp4, revision: 25, ts: 2026-08-15T02:05:43.287Z}"
+    },
+    {
+      "at": "2026-08-15T02:05:43.359Z",
+      "text": "[HERO_ACCEPT] {stage: complete, id: dad00529-8854-407a-b0ab-4ecc7f9f0ce4, fileName: dad00529-8854-407a-b0ab-4ecc7f9f0ce4.mp4, url: http://localhost:8080/videos/dad00529-8854-407a-b0ab-4ecc7f9f0ce4.mp4, backgroundSource: custom_video}"
+    },
+    {
+      "at": "2026-08-15T02:05:43.361Z",
+      "text": "[HERO_UX_STATE_CHANGE] {fromState: previewing, toState: idle, pendingFileName: }"
+    },
+    {
+      "at": "2026-08-15T02:05:43.367Z",
+      "text": "[HERO_UX_STATE_CHANGE] {fromState: processing, toState: idle, pendingFileName: }"
+    }
+  ]
+}

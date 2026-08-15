@@ -324,6 +324,18 @@ function gatherHeroRecoveryCandidates() {
 function attemptHeroIdentityRecovery(baseConfig = null) {
     if (heroIdentityRecoveryInFlight || typeof window === 'undefined') return null;
 
+    // PHASE-HERO-LOCK-1 — never replace a durable user-selected Hero via recovery.
+    if (hasDurableHeroOverride()) {
+        console.info('[HERO_IDENTITY_RECOVERY]', {
+            source: 'skipped',
+            candidateCount: 0,
+            selectedId: '',
+            recovered: false,
+            reason: 'durable_hero_override'
+        });
+        return null;
+    }
+
     const source = String(baseConfig?.backgroundSource || '').trim();
     if (source !== 'custom_image' && source !== 'custom_video') {
         console.info('[HERO_IDENTITY_RECOVERY]', {
@@ -339,9 +351,22 @@ function attemptHeroIdentityRecovery(baseConfig = null) {
     heroIdentityRecoveryInFlight = true;
     try {
         const candidates = gatherHeroRecoveryCandidates();
-        // Prefer canonical hero reel only — do not promote personal_video_vault dumps to hero.
+        // Prefer canonical hero reel only — never promote personal_video_vault / feed dumps.
         const preferred = candidates.find((item) => item?.source === 'reelforge_hero_reel') || null;
         const selected = preferred;
+        if (
+            selected &&
+            (selected.source === 'personal_video_vault' || selected.source === 'reelforge_feed')
+        ) {
+            console.info('[HERO_IDENTITY_RECOVERY]', {
+                source: 'blocked',
+                candidateCount: candidates.length,
+                selectedId: selected?.reel?.id || '',
+                recovered: false,
+                reason: 'vault_or_feed_candidate_forbidden'
+            });
+            return null;
+        }
 
         console.info('[HERO_IDENTITY_RECOVERY]', {
             source: selected?.source || 'none',
@@ -3508,8 +3533,55 @@ export function selectHeroContent(mode = 'TRENDING', feed, options = {}) {
 }
 
 /**
- * True when the viewer has an explicit HeroRecord override (asset or intentional blank).
- * Selection mode is NOT an override — intelligence may choose the background.
+ * PHASE-HERO-LOCK-1 — durable user-selected Hero must never be auto-replaced.
+ *
+ * Lock when:
+ *   HeroRecord.mode === 'asset' AND assetId present
+ * OR manager backgroundSource is custom_video/custom_image AND heroAssetId present
+ *
+ * Selection-mode intelligence may still rank/suggest; it must not apply background.
+ * Reads manager fields from raw localStorage (no loadHeroManagerConfig) to avoid
+ * finalize → recovery → lock re-entry.
+ *
+ * @param {{ HERO_VIDEO_STORAGE_KEY?: string; HERO_IMAGE_STORAGE_KEY?: string; HERO_VIDEO_PATHS?: string[] }} [config]
+ * @returns {boolean}
+ */
+export function hasDurableHeroOverride(config = {}) {
+    if (typeof window === 'undefined') return false;
+    void config;
+    try {
+        const record = loadHeroRecord();
+        const assetId = String(record?.assetId || '').trim();
+        if (record?.mode === 'asset' && assetId) {
+            return true;
+        }
+
+        let backgroundSource = '';
+        let heroAssetId = '';
+        try {
+            const raw = localStorage.getItem(HERO_MANAGER_STORAGE_KEY);
+            const parsed = raw ? JSON.parse(raw) : {};
+            backgroundSource = String(parsed?.backgroundSource || '').trim();
+            heroAssetId = String(parsed?.heroAssetId || '').trim();
+        } catch {
+            backgroundSource = '';
+            heroAssetId = '';
+        }
+        if (
+            (backgroundSource === 'custom_video' || backgroundSource === 'custom_image') &&
+            heroAssetId
+        ) {
+            return true;
+        }
+    } catch {
+        return false;
+    }
+    return false;
+}
+
+/**
+ * True when the viewer has an explicit HeroRecord override (asset, durable custom, or intentional blank).
+ * Pure selection mode (no durable custom pointer) is NOT an override — intelligence may choose the background.
  * @param {{ HERO_VIDEO_STORAGE_KEY?: string; HERO_IMAGE_STORAGE_KEY?: string; HERO_VIDEO_PATHS?: string[] }} [config]
  */
 export function hasUserHeroOverride(config = {}) {
@@ -3517,9 +3589,7 @@ export function hasUserHeroOverride(config = {}) {
     void config;
     const record = loadHeroRecord();
     if (record.mode === 'none') return true;
-    if (record.mode === 'asset' && String(record.assetId || '').trim() && String(record.mediaUrl || '').trim()) {
-        return true;
-    }
+    if (hasDurableHeroOverride(config)) return true;
     return false;
 }
 
@@ -3663,8 +3733,28 @@ export function applyHeroSelection(selection, stores = {}, options = {}) {
     const respectOverride = options.respectUserOverride !== false;
     const applyBackground = options.applyBackground !== false;
     const clearVideoForPosterOnly = options.clearVideoForPosterOnly === true;
+    const cfg = options.config || {};
 
-    if (applyBackground && respectOverride && hasUserHeroOverride(options.config || {})) {
+    // PHASE-HERO-LOCK-1 — durable Hero blocks background application (ranking/suggestions still allowed upstream).
+    if (applyBackground && respectOverride && hasDurableHeroOverride(cfg)) {
+        const record = loadHeroRecord();
+        if (record.mode === 'asset') {
+            applyHeroRecordBackground(record, stores);
+        } else {
+            applyHeroManagerBackground(loadHeroManagerConfig(), stores, { log: false });
+        }
+        logHeroIntelligenceDiag('HERO_SELECTION', {
+            applied: false,
+            reason: 'durable_hero_override',
+            mode: selection?.mode,
+            source: selection?.source,
+            lockedAssetId:
+                String(record?.assetId || loadHeroManagerConfig()?.heroAssetId || '').trim() || null
+        });
+        return false;
+    }
+
+    if (applyBackground && respectOverride && hasUserHeroOverride(cfg)) {
         logHeroIntelligenceDiag('HERO_SELECTION', {
             applied: false,
             reason: 'user_override',
@@ -3961,6 +4051,7 @@ export function initHeroIntelligence() {
         selectHeroContent,
         applyHeroSelection,
         hasUserHeroOverride,
+        hasDurableHeroOverride,
         mapPlatformHeroMode,
         normalizeHeroMode,
         normalizeDiscoveryHeroType,

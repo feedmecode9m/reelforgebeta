@@ -1847,6 +1847,21 @@ $: heroBadgeLabel = sanitizeViewer || heroStoryPublished
       }
     };
     const isOperationActive = () => operationToken === heroAcceptOperationToken;
+    const discardStaleResult = (stage, extra = {}) => {
+      if (isOperationActive()) return false;
+      console.info('[HERO_ACCEPT_STALE_DISCARD]', {
+        stage,
+        timedOut: operationTimedOut,
+        ts: new Date().toISOString(),
+        ...extra
+      });
+      emitHeroDevLog('accept-stale-discard', {
+        stage,
+        timedOut: operationTimedOut,
+        ...extra
+      });
+      return true;
+    };
     heroUploadProcessing = true;
     await tick();
     pipelineCheckpoint('UPLOAD_STARTED', {
@@ -1950,6 +1965,13 @@ $: heroBadgeLabel = sanitizeViewer || heroStoryPublished
           heroUploadTimeoutMs,
           'Hero video upload'
         );
+        if (
+          discardStaleResult('video_upload_complete', {
+            reelId: created?.id || ''
+          })
+        ) {
+          return;
+        }
         logHeroUploadFlow('signed_upload_complete', {
           reelId: created?.id || '',
           signed: uploadTarget.signedUploadEnabled
@@ -1958,6 +1980,9 @@ $: heroBadgeLabel = sanitizeViewer || heroStoryPublished
         const reel = heroReelFromUploadResponse(created, 'video');
         if (!reel?.id || !reel?.url) {
           throw new Error('Hero upload completed without canonical reel identity');
+        }
+        if (discardStaleResult('video_before_commit', { reelId: reel.id })) {
+          return;
         }
         logHeroUploadFlow('finalize_complete', {
           reelId: reel.id,
@@ -2079,9 +2104,19 @@ $: heroBadgeLabel = sanitizeViewer || heroStoryPublished
           120000,
           'Hero image upload'
         );
+        if (
+          discardStaleResult('image_upload_complete', {
+            reelId: created?.id || ''
+          })
+        ) {
+          return;
+        }
         const reel = heroReelFromUploadResponse(created, 'image');
         if (!reel?.id || !reel?.url) {
           throw new Error('Hero upload completed without canonical reel identity');
+        }
+        if (discardStaleResult('image_before_commit', { reelId: reel.id })) {
+          return;
         }
         if (typeof window !== 'undefined') {
           window.dispatchEvent(
@@ -2149,7 +2184,7 @@ $: heroBadgeLabel = sanitizeViewer || heroStoryPublished
         resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
       }
     } catch (error) {
-      if (!isOperationActive() && operationTimedOut) return;
+      if (!isOperationActive()) return;
       const failUploadKind = pending?.type === 'image' ? 'image' : 'video';
       const failUploadTarget = resolveHeroUploadApiTarget(pending?.file, failUploadKind);
       console.info('[BG7G_UPLOAD]', {
@@ -2193,6 +2228,8 @@ $: heroBadgeLabel = sanitizeViewer || heroStoryPublished
   }
 
   export function rejectHeroFile() {
+    heroAcceptOperationToken += 1;
+    heroUploadProcessing = false;
     const pending = get(heroPendingFile);
     if (pending?.preview?.startsWith('blob:')) {
       resourceManager.revokeBlobUrl(pending.preview);

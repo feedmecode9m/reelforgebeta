@@ -1,0 +1,23 @@
+{
+  "mission": "PHASE-HERO-LOCK-1",
+  "generatedAt": "2026-08-15T02:34:12.179Z",
+  "pass": true,
+  "notes": [
+    "ok: hasDurableHeroOverride exported",
+    "ok: applyHeroSelection logs durable_hero_override",
+    "ok: recovery prefers canonical only",
+    "ok: recovery skips when durable lock set",
+    "ok: viewerContext imports durable lock",
+    "ok: heroIntelligence does not hardcode HERO category on vault",
+    "ok: durable lock true for asset+custom_video",
+    "ok: user override includes durable",
+    "ok: selection applyBackground blocked — NewMovie not written",
+    "ok: locked path keeps Arrival (or re-asserts without NewMovie)",
+    "ok: durable lock true for manager custom_video+heroAssetId even if record mode=selection",
+    "ok: applyHeroSelection returns false under durable lock",
+    "ok: NewMovie still not applied under manager lock",
+    "ok: durable lock false in pure selection mode",
+    "ok: unlocked selection still applies candidate video"
+  ],
+  "failures": []
+}

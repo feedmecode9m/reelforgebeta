@@ -12,6 +12,13 @@ Single source of truth for implementation vs release state. Update when a milest
 
 | Area | Status |
 |------|--------|
+| **PHASE-HERO-REPLACE-3 Late commit guard** | ✅ **Implementation Complete** — timeout invalidates accept token; late upload discarded; no deploy |
+| **PHASE-HERO-REPLACE-VALIDATION** | ✅ **Validation Complete (PASS local)** — explicit Replace works under durable lock; REPLACE-1 not opened; no deploy |
+| **PHASE-HERO-LOCK-1 Durable Hero Override** | ✅ **Implementation Complete** — selection cannot replace locked Hero; no deploy |
+| **Phase 6.6.3 Viewer Card Presentation Cleanup** | ✅ **Implementation Complete** — single title per card; no deploy |
+| **PHASE-STUDIO-1 Command Center Stability** | ✅ **Implementation Complete** — action ids + refresh storm stop; no deploy |
+| **Phase 6.6.2 Canonical Media Identity** | ✅ **Implementation Complete** — vault→feed upsert; validators A–E; no deploy |
+| **Phase 6.6 Viewer Shelf Diversity Policy** | ✅ **Implementation Complete** — Featured promo remount; Browse residual-only; no deploy |
 | **Phase 6.5 Viewer Media Identity + Card Intelligence** | ✅ **Release Approved** — `525dff5` / Netlify `6a7de1f898c6f1662ec4711e` / `index-rpCBblmt.js` |
 | **Phase 6.4 Viewer Semantic Identity Deduplication** | ✅ **Implementation Complete** — video-canonical viewer cards; thumbnails as poster only; no deploy |
 | **Phase 6.3 MP4 Vault Full Lifecycle** | ✅ **Release Approved** — `3221dda` / Netlify `6a7d618448653896010455fe` / `index-Ck1tRQou.js` |
@@ -208,18 +215,109 @@ Category PATCH: 0
 
 Break: `buildHomeFeed` excluded Trending videos when they were also the active hero background (`isHeroFeedCard`), emptying discovery. Fix: exclude only `category === HERO`. Vault drop of `01_ARRIVAL_OPEN_v1.mp4` → pending_accept PASS. Arrival remains in `/api/reels` as Trending video. Production smoke: Arrival featured/row ViewerSemanticCard with enrichment; hero binding preserved. Validator: `validate:phase-6-3-media-reality`.
 
-## Phase 6.5 — Viewer Media Identity + Premium Card Intelligence Repair
+## PHASE-HERO-REPLACE-3 — Late commit guard
 
 ```
-PHASE-6-5-VIEWER-MEDIA-IDENTITY
+PHASE-HERO-REPLACE-3
 Implementation: COMPLETE
-Release: NOT STARTED (RC PASS — stop before deploy)
+Release: NOT STARTED
+Release Process: v1.0
+Production mutations: 0
+```
+
+Watchdog already invalidated `heroAcceptOperationToken`; `commitHeroVideoIdentity` still ran after late `uploadMedia`. Guard: discard stale video/image results after await; reject also bumps token. Validator: `validate:phase-hero-replace-3`. Viewer/feed/Vault/Lock untouched.
+
+## PHASE-HERO-LOCK-1 — Durable Hero Override
+
+```
+PHASE-HERO-LOCK-1
+Implementation: COMPLETE
+Release: NOT STARTED
+Release Process: v1.0
+Production mutations: 0
+```
+
+`hasDurableHeroOverride()` locks `HeroRecord.mode=asset` or manager `custom_video|custom_image` + `heroAssetId`. `applyHeroSelection` cannot replace locked background; recovery never promotes vault/feed newest. Validator: `validate:phase-hero-lock-1`. Upload/feed/identity/ViewerSemanticCard untouched.
+
+## PHASE-HERO-REPLACE-VALIDATION — Explicit Replace under Lock
+
+```
+PHASE-HERO-REPLACE-VALIDATION
+Implementation: N/A (read-only validation)
+Validation: PASS (local)
+Release: N/A
+PHASE-HERO-REPLACE-1: NOT OPENED (no local defect)
+Release Process: v1.0
+```
+
+Studio → Content → Replace Background still commits via `acceptHeroFile` → `commitHeroVideoIdentity` while durable lock is true. Vault MP4 upload does not swap Hero. Artifacts: `frontend/artifacts/PHASE-HERO-REPLACE-VALIDATION.json`, `.md`. Keep separate from LOCK-1 release until both validated.
+
+## Phase 6.6.3 — Viewer Card Presentation Cleanup
+
+```
+PHASE-6-6-3-VIEWER-CARD-PRESENTATION
+Implementation: COMPLETE
+Release: NOT STARTED
+Release Process: v1.0
+Production mutations: 0
+```
+
+`ViewerSemanticCard` renders one title only: Featured = overlay; row/grid = info block. No identity/feed/upload changes. Local visual: Featured/Trending title count = 1. Artifact: `frontend/artifacts/phase-6-6-3-studio-1-local-validation.json`.
+
+## PHASE-STUDIO-1 — Smart Production Studio Stability
+
+```
+PHASE-STUDIO-1-COMMAND-CENTER-STABILITY
+Implementation: COMPLETE
+Release: NOT STARTED
+Release Process: v1.0
+Production mutations: 0
+```
+
+Stable `nextActions.id`, title-case dedupe in sentinel merge, PCC `{#each}` keys on `action.id`, removed `workspace-reactive` feedReels refresh storm. Separate from Phase 6.6.3 viewer release.
+
+## Phase 6.6.2 — Canonical Media Identity (audit)
+
+```
+PHASE-6-6-2-CANONICAL-MEDIA-IDENTITY
+Implementation: COMPLETE
+Release: NOT STARTED
+Release Process: v1.0
+Production mutations: 0
+```
+
+`distributeVideoToFeed` upserts by assetId → personal_video_id → normalizedMediaUrl; protected titles; no twin inserts. Validator: `validate:phase-6-6-2-canonical-media-identity`.
+
+## Phase 6.6 — Viewer Shelf Diversity Policy
+
+```
+PHASE-6-6-VIEWER-SHELF-DIVERSITY
+Implementation: COMPLETE
+Release: NOT STARTED
 Release Process: v1.0
 Production mutations: 0
 Category PATCH: 0
 Title writes: 0
 Description writes: 0
-RC: PASS (validate:phase-6-5-release-candidate-browser + lifecycle)
+```
+
+Presentation composition only: Featured may remount one priority identity; discovery shelves keep inventory; Browse excludes identities already consumed by Featured/shelf rows. Does not change Phase 6.5 identity/poster rules, upload lifecycle, or metadata. Validator: `validate:phase-6-6-viewer-shelf-diversity`.
+
+## Phase 6.5 — Viewer Media Identity + Premium Card Intelligence Repair
+
+```
+PHASE-6-5-VIEWER-MEDIA-IDENTITY
+Implementation: COMPLETE
+Release: APPROVED
+Release Process: v1.0
+Commit: 525dff50c6b496cbaf9b454271071275efd9a665
+Manifest: release-manifest-phase-6-5-viewer-media-identity-1786635026395.json
+Netlify deploy: 6a7de1f898c6f1662ec4711e
+Bundle: index-rpCBblmt.js
+Production mutations: 0
+Category PATCH: 0
+Title writes: 0
+Description writes: 0
 ```
 
 Feed eligibility rejects IMG_/UUID/upload-artifact images unless `publishableImage` (or equivalent). Viewer title safety blanks unsafe labels. Personal thumbnail sync attaches artwork to videos instead of injecting discovery cards. Diagnostics: `[VIEWER_MEDIA_IDENTITY]`. Validator: `validate:phase-6-5-viewer-media-identity`.

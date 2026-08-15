@@ -1,0 +1,120 @@
+{
+  "mission": "PHASE-HERO-LOCK-1 — Preserve Existing Hero Binding",
+  "mode": "INVESTIGATION_ONLY",
+  "codeChanges": "none",
+  "generatedAt": "2026-08-13T18:30:00.000Z",
+  "contract": {
+    "expected": "Vault MP4 upload → Media Vault + catalog/Trending only; Hero changes only via explicit Set as Hero / commitHeroAssetSelection",
+    "observedSymptom": "Newest Vault MP4 appears to become Hero background automatically"
+  },
+  "pipelineTrace": [
+    {
+      "stage": "Vault MP4 drop",
+      "file": "VaultExperience.svelte → processVaultVideoFile",
+      "finding": "Default category is Trending (vaultUploadCategory = 'Trending'). formData.append('category', vaultUploadCategory || 'Trending'). Does NOT call commitHeroAssetSelection / commitHeroVideoIdentity / selectHeroAsset / saveHeroReel."
+    },
+    {
+      "stage": "uploadMedia",
+      "file": "VaultExperience.svelte",
+      "finding": "Content vault path. HeroExperience alone appends category HERO for dedicated hero uploads."
+    },
+    {
+      "stage": "syncFromVault / feed rebuild",
+      "file": "viewerContext.js",
+      "finding": "After catalog sync / ws CREATED, feed updates. Mount always ends with applyHeroIntelligence(true)."
+    },
+    {
+      "stage": "Hero hydration / HeroRecord",
+      "file": "heroIntelligence.js hydrateHeroBackgroundStores*; heroRecord.js",
+      "finding": "Asset mode HeroRecord is authoritative in resolveHeroBackgroundAsset. Selection mode is NOT a user override (hasUserHeroOverride returns false for selection)."
+    },
+    {
+      "stage": "background video selection",
+      "file": "viewerContext.applyHeroIntelligence → applyHeroBackgroundFromIntelligence → applyHeroSelection; HeroExperience resolveHeroBackgroundPresentation",
+      "finding": "When HeroRecord.mode === 'selection' (or manager backgroundSource === 'selection'), intelligence/selection presentation may set HERO_BACKGROUND_VIDEO / heroRenderVideo from selectHeroContent(...).videoUrl — which can track a newly ingested feed reel."
+    }
+  ],
+  "checks": {
+    "defaultCategoryHERO_on_vault_upload": false,
+    "isHero_true_on_vault_upload": false,
+    "newestVideo_as_recovery_pick": {
+      "gatherHeroRecoveryCandidates_includes_personal_video_vault_sorted_by_addedAt_desc": true,
+      "attemptHeroIdentityRecovery_currently_selects_only_reelforge_hero_reel": true,
+      "note": "Vault newest is gathered but intentionally NOT selected in current recovery code. Residual risk if that guard regresses."
+    },
+    "heroPersistenceProtection": {
+      "asset_mode_blocks_intelligence_overwrite": true,
+      "selection_mode_allows_intelligence_overwrite": true,
+      "gap": "Manual UI that only sets manager fields / leaves mode=selection does not lock hero against feed-driven selection after vault ingest."
+    }
+  },
+  "exactAssignmentPath": {
+    "primaryRootCause": "SELECTION_MODE_HERO_INTELLIGENCE_REBIND",
+    "path": [
+      "Vault MP4 accepted → personalVideos + catalog/feed gain new reel",
+      "syncFromVault / mount / metrics|release events → applyHeroIntelligence(true|false)",
+      "selectHeroContent(mode, feed) builds candidates from feed/episode links (featured_series, studio_priority, trending, …)",
+      "If HeroRecord.mode !== 'asset' and !== 'none': applyHeroSelection writes selection.videoUrl into HERO_BACKGROUND_VIDEO",
+      "HeroExperience: backgroundSource==='selection' → resolveSelectionHeroBackgroundPresentation uses that selection video; OR store fallback $HERO_BACKGROUND_VIDEO"
+    ],
+    "secondaryRiskPaths": [
+      {
+        "id": "MANAGER_CUSTOM_WITHOUT_ASSET_RECORD",
+        "detail": "Manager heroAssetId/custom_video without durable HeroRecord.mode=asset → hasUserHeroOverride false → intelligence can still rebind runtime background."
+      },
+      {
+        "id": "EPISODE_BRIDGE_AFTER_VAULT_INFERENCE",
+        "detail": "sealVaultSeriesIdentityForStorage / vault series inference can bind new reelId onto episodes; candidateFromEpisode then surfaces that reel as selection.videoUrl."
+      },
+      {
+        "id": "SERVER_PRESENTATION_APPLY",
+        "detail": "applyServerPresentationToHeroRecord → selectHeroAsset can rewrite HeroRecord from remote; not vault-upload itself but can amplify post-sync churn."
+      }
+    ],
+    "notTheCause": [
+      "ViewerSemanticCard title polish",
+      "Phase 6.6.2 canonical feed upsert",
+      "Vault upload progress UI",
+      "Vault processVaultVideoFile writing category=HERO (it does not)"
+    ]
+  },
+  "smallestFixProposal": {
+    "doNotTouch": [
+      "upload pipeline",
+      "ViewerSemanticCard",
+      "canonicalMediaIdentity",
+      "buildHomeFeed",
+      "distributeVideoToFeed"
+    ],
+    "surgicalChanges": [
+      {
+        "priority": 1,
+        "file": "frontend/src/viewer/viewerContext.js",
+        "change": "In applyHeroIntelligence / applyHeroBackgroundFromIntelligence / rotation callback: if loadHeroRecord().mode === 'asset' OR durable manager custom_video+heroAssetId is locked, never call applyHeroSelection with applyBackground true. Treat durable custom hero like hasUserHeroOverride."
+      },
+      {
+        "priority": 2,
+        "file": "frontend/src/lib/hero/heroIntelligence.js",
+        "change": "Widen hasUserHeroOverride (or add hasLockedHeroBackground) to true when HeroRecord.mode==='asset' OR (backgroundSource in custom_video|custom_image AND non-empty heroAssetId). Selection mode remains free to rotate."
+      },
+      {
+        "priority": 3,
+        "file": "frontend/src/lib/hero/heroIntelligence.js attemptHeroIdentityRecovery",
+        "change": "Keep/strengthen: never select personal_video_vault / reelforge_feed candidates for recovery; only reelforge_hero_reel or explicit committed assetId."
+      },
+      {
+        "priority": 4,
+        "optional": true,
+        "file": "frontend/src/components/experiences/HeroExperience.svelte",
+        "change": "When locked custom hero exists, do not fall back heroRenderVideo to $HERO_BACKGROUND_VIDEO if that store was polluted by selection intelligence."
+      }
+    ],
+    "acceptance": [
+      "Set Hero via Use as Hero Background → HeroRecord.mode=asset + assetId X",
+      "Upload new Vault MP4 → refresh",
+      "Hero still assetId X / same mediaUrl",
+      "New MP4 only in Media Vault + Trending",
+      "Only another Use as Hero / Set as Hero changes HeroRecord.assetId"
+    ]
+  }
+}

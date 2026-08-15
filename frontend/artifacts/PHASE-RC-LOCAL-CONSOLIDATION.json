@@ -1,0 +1,2269 @@
+{
+  "mission": "PHASE-RC-LOCAL-CONSOLIDATION",
+  "ts": "2026-08-15T02:27:24.561Z",
+  "frontend": "http://127.0.0.1:5173",
+  "gates": {
+    "1": {
+      "pass": true,
+      "detail": {
+        "http": 200,
+        "bundle": "http://127.0.0.1:5173/src/main.js",
+        "pageErrors": 0,
+        "consoleErrors": 11,
+        "failedRequests": 19,
+        "blocking": 0
+      }
+    },
+    "2": {
+      "pass": true,
+      "detail": {
+        "featuredCount": 1,
+        "featuredTitles": [
+          [
+            "01 ARRIVAL OPEN v1"
+          ]
+        ],
+        "trendingCount": 7,
+        "trendingDupes": [],
+        "trendingUnsafe": [],
+        "browseCount": 0,
+        "browseDupes": [],
+        "browseLeakCount": 0,
+        "note": "Featured/Trending may share one identity (promo remount). Browse residual-only; leak listed for evidence."
+      }
+    },
+    "3": {
+      "pass": true,
+      "detail": {
+        "vaultBefore": 7,
+        "vaultAfter": 8,
+        "newId": "local-upload-1786760876666",
+        "viewerHitsForNewId": 0,
+        "heroBefore": "fdc0295a-7a6e-4a91-a3ee-4a64216e7d99",
+        "heroAfter": "fdc0295a-7a6e-4a91-a3ee-4a64216e7d99",
+        "filenameLeak": []
+      }
+    },
+    "4": {
+      "pass": true,
+      "detail": {
+        "currentHeroBeforeTests": {
+          "assetId": "fdc0295a-7a6e-4a91-a3ee-4a64216e7d99",
+          "mode": "asset",
+          "backgroundSource": "custom_video",
+          "phase": "active"
+        },
+        "vaultDidNotChangeHero": true,
+        "replace": {
+          "from": "fdc0295a-7a6e-4a91-a3ee-4a64216e7d99",
+          "to": "f33e55ff-7fe4-4b01-a0e2-de4be8a8dd4c",
+          "persisted": true
+        },
+        "timeout": {
+          "baseline": "f33e55ff-7fe4-4b01-a0e2-de4be8a8dd4c",
+          "afterLate": "f33e55ff-7fe4-4b01-a0e2-de4be8a8dd4c",
+          "phase": "preview_pending",
+          "sawAttention": true
+        }
+      }
+    },
+    "5": {
+      "pass": true,
+      "detail": {
+        "studioVisible": true,
+        "vaultDrop": true,
+        "heroReplace": true,
+        "svelteEachDupes": [],
+        "studioPageErrors": 0,
+        "getReelsDuringStudioWindow": 10
+      }
+    },
+    "6": {
+      "pass": true,
+      "detail": {
+        "category": 0,
+        "title": 0,
+        "description": 0,
+        "reel_metadata": 0,
+        "reel_create_expected_from_tests": 3,
+        "hero_presentation_expected_from_replace": 3
+      }
+    },
+    "viewerSnapshot": {
+      "featured": [
+        {
+          "id": "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee",
+          "variant": "featured",
+          "mediaType": "video",
+          "titles": [
+            "01 ARRIVAL OPEN v1"
+          ],
+          "titleCount": 1,
+          "poster": "http://localhost:8080/thumbs/73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee.jpg"
+        }
+      ],
+      "trending": [
+        {
+          "id": "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee",
+          "variant": "row",
+          "mediaType": "video",
+          "titles": [
+            "01 ARRIVAL OPEN v1"
+          ],
+          "titleCount": 1,
+          "poster": "http://localhost:8080/thumbs/73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee.jpg"
+        },
+        {
+          "id": "6582dac2-1476-497f-84e6-40547a9b1eba",
+          "variant": "row",
+          "mediaType": "video",
+          "titles": [
+            "02 ARRIVAL THE PROJECT INTRO v1"
+          ],
+          "titleCount": 1,
+          "poster": "http://localhost:8080/thumbs/6582dac2-1476-497f-84e6-40547a9b1eba.jpg"
+        },
+        {
+          "id": "65934555-716d-4d7d-97d7-bcd884cbb72c",
+          "variant": "row",
+          "mediaType": "video",
+          "titles": [
+            "MICROS Motherland V1(1)"
+          ],
+          "titleCount": 1,
+          "poster": "http://localhost:8080/thumbs/65934555-716d-4d7d-97d7-bcd884cbb72c.jpg"
+        },
+        {
+          "id": "9d043773-3f19-4ee4-adbd-df3c2979dd64",
+          "variant": "row",
+          "mediaType": "video",
+          "titles": [],
+          "titleCount": 0,
+          "poster": "http://localhost:8080/thumbs/9d043773-3f19-4ee4-adbd-df3c2979dd64.jpg"
+        },
+        {
+          "id": "bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17",
+          "variant": "row",
+          "mediaType": "video",
+          "titles": [],
+          "titleCount": 0,
+          "poster": "http://localhost:8080/thumbs/bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17.jpg"
+        },
+        {
+          "id": "2cea618f-d182-46a5-9510-a96207460257",
+          "variant": "row",
+          "mediaType": "video",
+          "titles": [],
+          "titleCount": 0,
+          "poster": "http://localhost:8080/thumbs/2cea618f-d182-46a5-9510-a96207460257.jpg"
+        },
+        {
+          "id": "ec6a3655-7865-4e5e-b0a5-549d2f5b2dd7",
+          "variant": "row",
+          "mediaType": "video",
+          "titles": [],
+          "titleCount": 0,
+          "poster": "http://localhost:8080/thumbs/ec6a3655-7865-4e5e-b0a5-549d2f5b2dd7.jpg"
+        }
+      ],
+      "browse": [],
+      "featuredDupes": [],
+      "trendingDupes": [],
+      "browseDupes": []
+    }
+  },
+  "mutations": {
+    "category": 0,
+    "title": 0,
+    "description": 0,
+    "hero_presentation": 3,
+    "reel_create": 3,
+    "reel_metadata": 0
+  },
+  "observedMutations": [
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+      "kind": "series_ambient"
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+      "kind": "series_ambient"
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+      "kind": "series_ambient"
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+      "kind": "series_ambient"
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+      "kind": "series_ambient"
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+      "kind": "series_ambient"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:5173/api/reels",
+      "kind": "reel_create"
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+      "kind": "series_ambient"
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+      "kind": "series_ambient"
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+      "kind": "series_ambient"
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+      "kind": "series_ambient"
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+      "kind": "series_ambient"
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+      "kind": "series_ambient"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:5173/api/reels",
+      "kind": "reel_create"
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+      "kind": "series_ambient"
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+      "kind": "series_ambient"
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+      "kind": "series_ambient"
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:5173/api/hero/presentation",
+      "kind": "hero_presentation"
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:5173/api/hero/presentation",
+      "kind": "hero_presentation"
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+      "kind": "series_ambient"
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+      "kind": "series_ambient"
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+      "kind": "series_ambient"
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+      "kind": "series_ambient"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:5173/api/reels",
+      "kind": "reel_create"
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+      "kind": "series_ambient"
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+      "kind": "series_ambient"
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:5173/api/hero/presentation",
+      "kind": "hero_presentation"
+    }
+  ],
+  "consoleErrors": [
+    "WebSocket connection to 'wss://127.0.0.1/?token=-Mp-kd72D1O1' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "WebSocket connection to 'wss://127.0.0.1/?token=-Mp-kd72D1O1' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "WebSocket connection to 'wss://127.0.0.1/?token=-Mp-kd72D1O1' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "WebSocket connection to 'wss://127.0.0.1/?token=-Mp-kd72D1O1' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "WebSocket connection to 'wss://127.0.0.1/?token=-Mp-kd72D1O1' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to process video: TypeError: Failed to fetch\n    at window.fetch (http://127.0.0.1:5173/src/lib/diagnostics/pipelineSnapshot.js:777:29)\n    at window.fetch (http://127.0.0.1:5173/src/lib/observability/observabilityCenter.js:365:36)\n    at window.fetch (http://127.0.0.1:5173/src/lib/security/threatDetectionEngine.js:543:36)\n    at pollIngestionUntilReady (http://127.0.0.1:5173/src/lib/api/in",
+    "[UPLOAD_FAILED] {vault: video, name: rc-consol-vault.mp4, error: Failed to fetch, ts: 2026-08-15T02:28:01.559Z}",
+    "WebSocket connection to 'wss://127.0.0.1/?token=-Mp-kd72D1O1' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "WebSocket connection to 'wss://127.0.0.1/?token=-Mp-kd72D1O1' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "WebSocket connection to 'wss://127.0.0.1/?token=-Mp-kd72D1O1' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "WebSocket connection to 'wss://127.0.0.1/?token=-Mp-kd72D1O1' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "WebSocket connection to 'wss://127.0.0.1/?token=-Mp-kd72D1O1' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "WebSocket connection to 'wss://127.0.0.1/?token=-Mp-kd72D1O1' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "WebSocket connection to 'wss://127.0.0.1/?token=-Mp-kd72D1O1' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "WebSocket connection to 'wss://127.0.0.1/?token=-Mp-kd72D1O1' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "WebSocket connection to 'wss://127.0.0.1/?token=-Mp-kd72D1O1' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED"
+  ],
+  "pageErrors": [],
+  "failedRequests": [
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/ingest/80f69eaf-aa36-4951-9685-b8b1d86a3356",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/ingest/80f69eaf-aa36-4951-9685-b8b1d86a3356",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/9d043773-3f19-4ee4-adbd-df3c2979dd64.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/2cea618f-d182-46a5-9510-a96207460257.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/ec6a3655-7865-4e5e-b0a5-549d2f5b2dd7.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://localhost:8080/videos/fdc0295a-7a6e-4a91-a3ee-4a64216e7d99.mp4",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/ingest/80f69eaf-aa36-4951-9685-b8b1d86a3356",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/ingest/80f69eaf-aa36-4951-9685-b8b1d86a3356",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/9d043773-3f19-4ee4-adbd-df3c2979dd64.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/2cea618f-d182-46a5-9510-a96207460257.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/ec6a3655-7865-4e5e-b0a5-549d2f5b2dd7.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://localhost:8080/videos/fdc0295a-7a6e-4a91-a3ee-4a64216e7d99.mp4",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://localhost:8080/videos/fdc0295a-7a6e-4a91-a3ee-4a64216e7d99.mp4",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/ingest/80f69eaf-aa36-4951-9685-b8b1d86a3356",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/ingest/80f69eaf-aa36-4951-9685-b8b1d86a3356",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/2cea618f-d182-46a5-9510-a96207460257.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/9d043773-3f19-4ee4-adbd-df3c2979dd64.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/ec6a3655-7865-4e5e-b0a5-549d2f5b2dd7.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://localhost:8080/videos/fdc0295a-7a6e-4a91-a3ee-4a64216e7d99.mp4",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/sync/state",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://localhost:8080/videos/fdc0295a-7a6e-4a91-a3ee-4a64216e7d99.mp4",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:8080/videos/fdc0295a-7a6e-4a91-a3ee-4a64216e7d99.mp4",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/workflow/tasks",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/health",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/sync/state",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/hero/authority/events/fdc0295a-7a6e-4a91-a3ee-4a64216e7d99",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/series",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/dad00529-8854-407a-b0ab-4ecc7f9f0ce4.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/videos/dad00529-8854-407a-b0ab-4ecc7f9f0ce4.mp4",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/dad00529-8854-407a-b0ab-4ecc7f9f0ce4.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/dad00529-8854-407a-b0ab-4ecc7f9f0ce4.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/videos/dad00529-8854-407a-b0ab-4ecc7f9f0ce4.mp4",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/dad00529-8854-407a-b0ab-4ecc7f9f0ce4.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/dad00529-8854-407a-b0ab-4ecc7f9f0ce4.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/videos/dad00529-8854-407a-b0ab-4ecc7f9f0ce4.mp4",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://127.0.0.1:5173/ingest/80f69eaf-aa36-4951-9685-b8b1d86a3356",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/ingest/80f69eaf-aa36-4951-9685-b8b1d86a3356",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/dad00529-8854-407a-b0ab-4ecc7f9f0ce4.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/9d043773-3f19-4ee4-adbd-df3c2979dd64.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/ec6a3655-7865-4e5e-b0a5-549d2f5b2dd7.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/2cea618f-d182-46a5-9510-a96207460257.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/9d043773-3f19-4ee4-adbd-df3c2979dd64.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/ec6a3655-7865-4e5e-b0a5-549d2f5b2dd7.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/2cea618f-d182-46a5-9510-a96207460257.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/2cea618f-d182-46a5-9510-a96207460257.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/ec6a3655-7865-4e5e-b0a5-549d2f5b2dd7.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/9d043773-3f19-4ee4-adbd-df3c2979dd64.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/9d043773-3f19-4ee4-adbd-df3c2979dd64.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/2cea618f-d182-46a5-9510-a96207460257.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/ec6a3655-7865-4e5e-b0a5-549d2f5b2dd7.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/security/events",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:8080/videos/fdc0295a-7a6e-4a91-a3ee-4a64216e7d99.mp4",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/series/status",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/workflow/tasks",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/series/status",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/sync/status",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/series/status",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/health",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/analytics/status",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/reels/16c68f0d-0094-4735-9a8a-24f02a3f754f",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://localhost:8080/videos/fdc0295a-7a6e-4a91-a3ee-4a64216e7d99.mp4",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/ingest/80f69eaf-aa36-4951-9685-b8b1d86a3356",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/ingest/80f69eaf-aa36-4951-9685-b8b1d86a3356",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/9d043773-3f19-4ee4-adbd-df3c2979dd64.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/ec6a3655-7865-4e5e-b0a5-549d2f5b2dd7.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/2cea618f-d182-46a5-9510-a96207460257.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/security/events",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/workflow/tasks",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/workflow/tasks",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:8080/videos/fdc0295a-7a6e-4a91-a3ee-4a64216e7d99.mp4",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/workflow/tasks",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/sync/status",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/workflow/tasks",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://localhost:8080/videos/fdc0295a-7a6e-4a91-a3ee-4a64216e7d99.mp4",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/ingest/80f69eaf-aa36-4951-9685-b8b1d86a3356",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:8080/videos/fdc0295a-7a6e-4a91-a3ee-4a64216e7d99.mp4",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/ingest/80f69eaf-aa36-4951-9685-b8b1d86a3356",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/9d043773-3f19-4ee4-adbd-df3c2979dd64.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/2cea618f-d182-46a5-9510-a96207460257.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/ec6a3655-7865-4e5e-b0a5-549d2f5b2dd7.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/workflow/tasks",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/workflow/tasks",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/workflow/tasks",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/security/events",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/workflow/tasks",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:8080/videos/fdc0295a-7a6e-4a91-a3ee-4a64216e7d99.mp4",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/sync/status",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://localhost:8080/videos/fdc0295a-7a6e-4a91-a3ee-4a64216e7d99.mp4",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:8080/videos/fdc0295a-7a6e-4a91-a3ee-4a64216e7d99.mp4",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/sync/state",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/hero/authority/events/fdc0295a-7a6e-4a91-a3ee-4a64216e7d99",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/workflow/tasks",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/health",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/series",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/dad00529-8854-407a-b0ab-4ecc7f9f0ce4.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/videos/dad00529-8854-407a-b0ab-4ecc7f9f0ce4.mp4",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/dad00529-8854-407a-b0ab-4ecc7f9f0ce4.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/dad00529-8854-407a-b0ab-4ecc7f9f0ce4.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/videos/dad00529-8854-407a-b0ab-4ecc7f9f0ce4.mp4",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/dad00529-8854-407a-b0ab-4ecc7f9f0ce4.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/videos/dad00529-8854-407a-b0ab-4ecc7f9f0ce4.mp4",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://127.0.0.1:5173/ingest/80f69eaf-aa36-4951-9685-b8b1d86a3356",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/ingest/80f69eaf-aa36-4951-9685-b8b1d86a3356",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/dad00529-8854-407a-b0ab-4ecc7f9f0ce4.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/9d043773-3f19-4ee4-adbd-df3c2979dd64.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/2cea618f-d182-46a5-9510-a96207460257.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/ec6a3655-7865-4e5e-b0a5-549d2f5b2dd7.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/9d043773-3f19-4ee4-adbd-df3c2979dd64.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/2cea618f-d182-46a5-9510-a96207460257.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/ec6a3655-7865-4e5e-b0a5-549d2f5b2dd7.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/2cea618f-d182-46a5-9510-a96207460257.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/ec6a3655-7865-4e5e-b0a5-549d2f5b2dd7.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/9d043773-3f19-4ee4-adbd-df3c2979dd64.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/ec6a3655-7865-4e5e-b0a5-549d2f5b2dd7.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/2cea618f-d182-46a5-9510-a96207460257.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/9d043773-3f19-4ee4-adbd-df3c2979dd64.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://localhost:8080/videos/fdc0295a-7a6e-4a91-a3ee-4a64216e7d99.mp4",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/ingest/80f69eaf-aa36-4951-9685-b8b1d86a3356",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/ingest/80f69eaf-aa36-4951-9685-b8b1d86a3356",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/9d043773-3f19-4ee4-adbd-df3c2979dd64.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/2cea618f-d182-46a5-9510-a96207460257.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/ec6a3655-7865-4e5e-b0a5-549d2f5b2dd7.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/sync/status",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/workflow/tasks",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/workflow/tasks",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/notifications/status",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/workflow/tasks",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/series/status",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/watch/continue?viewer_id=e5e4b328-002a-4acb-aae4-3b59876391e7&limit=10",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/workflow/status",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/hero/presentation?t=1786760920384",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/ingest/80f69eaf-aa36-4951-9685-b8b1d86a3356",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/ingest/80f69eaf-aa36-4951-9685-b8b1d86a3356",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/9d043773-3f19-4ee4-adbd-df3c2979dd64.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/2cea618f-d182-46a5-9510-a96207460257.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/ec6a3655-7865-4e5e-b0a5-549d2f5b2dd7.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/9d043773-3f19-4ee4-adbd-df3c2979dd64.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/2cea618f-d182-46a5-9510-a96207460257.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/ec6a3655-7865-4e5e-b0a5-549d2f5b2dd7.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/9d043773-3f19-4ee4-adbd-df3c2979dd64.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/ec6a3655-7865-4e5e-b0a5-549d2f5b2dd7.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/2cea618f-d182-46a5-9510-a96207460257.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/ec6a3655-7865-4e5e-b0a5-549d2f5b2dd7.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/2cea618f-d182-46a5-9510-a96207460257.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/9d043773-3f19-4ee4-adbd-df3c2979dd64.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/workflow/tasks",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/hero/presentation?t=1786760997611",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/api/watch/continue?viewer_id=e5e4b328-002a-4acb-aae4-3b59876391e7&limit=10",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/ingest/80f69eaf-aa36-4951-9685-b8b1d86a3356",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:5173/ingest/80f69eaf-aa36-4951-9685-b8b1d86a3356",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/9d043773-3f19-4ee4-adbd-df3c2979dd64.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/2cea618f-d182-46a5-9510-a96207460257.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/ec6a3655-7865-4e5e-b0a5-549d2f5b2dd7.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/9d043773-3f19-4ee4-adbd-df3c2979dd64.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/2cea618f-d182-46a5-9510-a96207460257.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/ec6a3655-7865-4e5e-b0a5-549d2f5b2dd7.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/9d043773-3f19-4ee4-adbd-df3c2979dd64.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/2cea618f-d182-46a5-9510-a96207460257.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/ec6a3655-7865-4e5e-b0a5-549d2f5b2dd7.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/9d043773-3f19-4ee4-adbd-df3c2979dd64.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/ec6a3655-7865-4e5e-b0a5-549d2f5b2dd7.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/2cea618f-d182-46a5-9510-a96207460257.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/9d043773-3f19-4ee4-adbd-df3c2979dd64.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/2cea618f-d182-46a5-9510-a96207460257.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/ec6a3655-7865-4e5e-b0a5-549d2f5b2dd7.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/9d043773-3f19-4ee4-adbd-df3c2979dd64.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/ec6a3655-7865-4e5e-b0a5-549d2f5b2dd7.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "http://localhost:8080/thumbs/2cea618f-d182-46a5-9510-a96207460257.jpg",
+      "failure": "net::ERR_BLOCKED_BY_ORB"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "url": "https://127.0.0.1/",
+      "failure": "net::ERR_CONNECTION_REFUSED"
+    }
+  ],
+  "svelteEachDupes": [],
+  "findings": [],
+  "verdict": "PHASE-RC-LOCAL-CONSOLIDATION PASS",
+  "regressionFound": false
+}

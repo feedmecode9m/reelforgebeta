@@ -23,6 +23,7 @@ import {
         applyHeroManagerBackground,
         applyHeroSelection,
         buildHeroCommandBrief,
+        hasDurableHeroOverride,
         hasUserHeroOverride,
         hydrateHeroBackgroundStores,
         hydrateHeroBackgroundStoresSync,
@@ -1787,7 +1788,11 @@ function handleHeroManagerUpdated(event) {
   if (record.mode === 'none' || record.mode === 'asset') {
     applyHeroRecordBackgroundToViewer(record);
   } else if (record.mode === 'selection') {
-    applyHeroBackgroundFromIntelligence();
+    if (hasDurableHeroOverride(CONFIG)) {
+      applyHeroManagerBackground(loadHeroManagerConfig(), getHeroBackgroundStores(), { log: false });
+    } else {
+      applyHeroBackgroundFromIntelligence();
+    }
   } else if (config.backgroundSource === 'none') {
     applyManagerBackgroundFromConfig(config);
   } else if (config.backgroundSource === 'custom_video' || config.backgroundSource === 'custom_image') {
@@ -1809,6 +1814,10 @@ function handleHeroManagerUpdated(event) {
       const activeRecord = loadHeroRecord();
       if (activeRecord.mode === 'asset' || activeRecord.mode === 'none') {
         applyHeroRecordBackgroundToViewer(activeRecord);
+        return;
+      }
+      if (hasDurableHeroOverride(CONFIG)) {
+        applyHeroManagerBackground(loadHeroManagerConfig(), getHeroBackgroundStores(), { log: false });
         return;
       }
       if (hasUserHeroOverride(CONFIG)) return;
@@ -1841,7 +1850,13 @@ function applyHeroBackgroundFromIntelligence() {
     return;
   }
 
-  // selection mode
+  // PHASE-HERO-LOCK-1 — manager custom_* + heroAssetId locks even if record mode is still selection.
+  if (hasDurableHeroOverride(CONFIG)) {
+    applyHeroManagerBackground(loadHeroManagerConfig(), stores, { log: false });
+    return;
+  }
+
+  // selection mode (unlocked)
   if (hasUserHeroOverride(CONFIG)) return;
 
   applyHeroSelection(get(heroSelection), stores, {
@@ -1885,6 +1900,10 @@ function applyHeroIntelligence(force = false) {
     const activeRecord = loadHeroRecord();
     if (activeRecord.mode === 'asset' || activeRecord.mode === 'none') {
       applyHeroRecordBackgroundToViewer(activeRecord);
+      return;
+    }
+    if (hasDurableHeroOverride(CONFIG)) {
+      applyHeroManagerBackground(loadHeroManagerConfig(), getHeroBackgroundStores(), { log: false });
       return;
     }
     if (hasUserHeroOverride(CONFIG)) return;

@@ -1,0 +1,1680 @@
+{
+  "mission": "PHASE-HERO-REPLACE-2",
+  "mode": "READ_ONLY_FORENSIC",
+  "ts": "2026-08-15T01:48:08.376Z",
+  "frontend": "http://127.0.0.1:5173",
+  "verdict": "PHASE-HERO-REPLACE-2 LOCAL FAIL",
+  "timeline": [
+    {
+      "id": "A_START",
+      "at": "2026-08-15T01:48:08.647Z"
+    },
+    {
+      "id": "A_CURRENT_HERO",
+      "at": "2026-08-15T01:48:21.424Z",
+      "mode": "asset",
+      "assetId": "7d3984da-6fc4-4e17-a63d-0574bf1d4918",
+      "backgroundSource": "custom_video",
+      "panel": "Current Hero Active",
+      "detail": "Drop a file below to replace your homepage hero background.",
+      "panelShowsAssetId": false,
+      "backgroundAssetAttr": ""
+    },
+    {
+      "id": "B_REPLACE_START",
+      "at": "2026-08-15T01:48:30.763Z"
+    },
+    {
+      "id": "B_FILE_DROPPED",
+      "at": "2026-08-15T01:48:42.631Z",
+      "file": "/tmp/hero-replace-2-hero.mp4"
+    },
+    {
+      "id": "B_REPLACE_DONE",
+      "at": "2026-08-15T01:48:47.981Z",
+      "oldId": "7d3984da-6fc4-4e17-a63d-0574bf1d4918",
+      "newId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+      "phase": "committed",
+      "pass": true
+    },
+    {
+      "id": "C_REFRESH",
+      "at": "2026-08-15T01:48:47.981Z"
+    },
+    {
+      "id": "D_VAULT_START",
+      "at": "2026-08-15T01:48:53.515Z"
+    },
+    {
+      "id": "D_VAULT_DONE",
+      "at": "2026-08-15T01:49:27.588Z",
+      "vaultBeforeCount": 20,
+      "vaultAfterCount": 20,
+      "vaultBeforeIds": [
+        "1bfbada7-0bde-40b4-9e2c-d8a9eccd6e45",
+        "76fccb4e-1680-419c-82ab-e5f75e130430",
+        "cd68428b-6e3a-4354-af92-f42b9a120906",
+        "cea7c32d-ea9a-4171-9858-941318a8a79a",
+        "d4c07d82-f9b0-4648-abb1-74972e630de3",
+        "cb5fa060-0b3b-477e-9965-51a8cd013533",
+        "12c1d21d-b9b7-42bd-b54b-da90f93cf9c1",
+        "2fc0cd85-9c19-4cf7-ae5b-470e41e62bf4",
+        "6d54297c-a32a-4cbc-a684-7084a4196fcc",
+        "8fa7a524-6df6-4f85-8641-3e0a8cd3fcd0",
+        "345f24de-d5cf-4bc6-9627-2daff64f2740",
+        "001457bd-24fd-48ee-b543-58d5095ef353",
+        "2cea618f-d182-46a5-9510-a96207460257",
+        "bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17",
+        "d2f2fbc6-937b-4b7c-8319-26ec0dfd1c35",
+        "9d043773-3f19-4ee4-adbd-df3c2979dd64",
+        "18bddf10-45a7-4deb-bd9b-bc9cb65a1f22",
+        "65934555-716d-4d7d-97d7-bcd884cbb72c",
+        "6582dac2-1476-497f-84e6-40547a9b1eba",
+        "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee"
+      ],
+      "vaultAfterIds": [
+        "ec6a3655-7865-4e5e-b0a5-549d2f5b2dd7",
+        "1bfbada7-0bde-40b4-9e2c-d8a9eccd6e45",
+        "76fccb4e-1680-419c-82ab-e5f75e130430",
+        "cd68428b-6e3a-4354-af92-f42b9a120906",
+        "cea7c32d-ea9a-4171-9858-941318a8a79a",
+        "d4c07d82-f9b0-4648-abb1-74972e630de3",
+        "cb5fa060-0b3b-477e-9965-51a8cd013533",
+        "12c1d21d-b9b7-42bd-b54b-da90f93cf9c1",
+        "2fc0cd85-9c19-4cf7-ae5b-470e41e62bf4",
+        "6d54297c-a32a-4cbc-a684-7084a4196fcc",
+        "8fa7a524-6df6-4f85-8641-3e0a8cd3fcd0",
+        "345f24de-d5cf-4bc6-9627-2daff64f2740",
+        "001457bd-24fd-48ee-b543-58d5095ef353",
+        "2cea618f-d182-46a5-9510-a96207460257",
+        "bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17",
+        "d2f2fbc6-937b-4b7c-8319-26ec0dfd1c35",
+        "9d043773-3f19-4ee4-adbd-df3c2979dd64",
+        "18bddf10-45a7-4deb-bd9b-bc9cb65a1f22",
+        "65934555-716d-4d7d-97d7-bcd884cbb72c",
+        "6582dac2-1476-497f-84e6-40547a9b1eba"
+      ],
+      "vaultUploadOk": true,
+      "heroBefore": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+      "heroAfter": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+      "heroAfterRefresh": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+      "expectedHero": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+      "pass": true
+    },
+    {
+      "id": "E_FAILURES_START",
+      "at": "2026-08-15T01:49:27.588Z"
+    },
+    {
+      "id": "E1_INVALID_FILE",
+      "at": "2026-08-15T01:49:40.051Z"
+    },
+    {
+      "id": "E2_ZERO_FILE",
+      "at": "2026-08-15T01:49:43.055Z"
+    },
+    {
+      "id": "E3_UPLOAD_FAILURE",
+      "at": "2026-08-15T01:50:27.347Z"
+    },
+    {
+      "id": "E4_FINALIZE_FAILURE",
+      "at": "2026-08-15T01:51:26.382Z"
+    },
+    {
+      "id": "E5_TIMEOUT_WATCHDOG",
+      "at": "2026-08-15T01:52:25.575Z"
+    },
+    {
+      "id": "E7_LATE_COMMIT_AFTER_WATCHDOG",
+      "at": "2026-08-15T01:53:37.384Z"
+    },
+    {
+      "id": "F_REGRESSION",
+      "at": "2026-08-15T01:54:51.164Z"
+    },
+    {
+      "id": "DONE",
+      "at": "2026-08-15T01:54:57.039Z",
+      "verdict": "PHASE-HERO-REPLACE-2 LOCAL FAIL"
+    }
+  ],
+  "sections": {
+    "A_currentHero": {
+      "before": {
+        "record": {
+          "mode": "asset",
+          "assetId": "7d3984da-6fc4-4e17-a63d-0574bf1d4918",
+          "mediaUrl": "http://localhost:8080/videos/7d3984da-6fc4-4e17-a63d-0574bf1d4918.mp4",
+          "mediaKind": "video",
+          "title": "Hero Replace 2 Hero",
+          "source": "hero_reel_adapter",
+          "revision": 7
+        },
+        "manager": {
+          "heroAssetId": "7d3984da-6fc4-4e17-a63d-0574bf1d4918",
+          "backgroundSource": "custom_video",
+          "backgroundStyle": "video",
+          "mediaUrl": "http://localhost:8080/videos/7d3984da-6fc4-4e17-a63d-0574bf1d4918.mp4",
+          "heroTitle": "Black Warrior: Land, Legacy & Liberation"
+        },
+        "reel": {
+          "id": "7d3984da-6fc4-4e17-a63d-0574bf1d4918",
+          "url": "http://localhost:8080/videos/7d3984da-6fc4-4e17-a63d-0574bf1d4918.mp4",
+          "name": "Hero Replace 2 Hero"
+        },
+        "ui": {
+          "replacePhase": "active",
+          "title": "Current Hero Active",
+          "detail": "Drop a file below to replace your homepage hero background.",
+          "panelText": "Current Hero Active\n\nDrop a file below to replace your homepage hero background.",
+          "spinnerVisible": false,
+          "spinnerText": null,
+          "acceptVisible": false,
+          "rejectVisible": false,
+          "dropDisabledLooking": false,
+          "backgroundAssetAttr": "",
+          "panelShowsAssetId": false
+        }
+      },
+      "afterSettle": {
+        "record": {
+          "mode": "asset",
+          "assetId": "7d3984da-6fc4-4e17-a63d-0574bf1d4918",
+          "mediaUrl": "http://localhost:8080/videos/7d3984da-6fc4-4e17-a63d-0574bf1d4918.mp4",
+          "mediaKind": "video",
+          "title": "Hero Replace 2 Hero",
+          "source": "hero_reel_adapter",
+          "revision": 7
+        },
+        "manager": {
+          "heroAssetId": "7d3984da-6fc4-4e17-a63d-0574bf1d4918",
+          "backgroundSource": "custom_video",
+          "backgroundStyle": "video",
+          "mediaUrl": "http://localhost:8080/videos/7d3984da-6fc4-4e17-a63d-0574bf1d4918.mp4",
+          "heroTitle": "Black Warrior: Land, Legacy & Liberation"
+        },
+        "reel": {
+          "id": "7d3984da-6fc4-4e17-a63d-0574bf1d4918",
+          "url": "http://localhost:8080/videos/7d3984da-6fc4-4e17-a63d-0574bf1d4918.mp4",
+          "name": "Hero Replace 2 Hero"
+        },
+        "ui": {
+          "replacePhase": "active",
+          "title": "Current Hero Active",
+          "detail": "Drop a file below to replace your homepage hero background.",
+          "panelText": "Current Hero Active\n\nDrop a file below to replace your homepage hero background.",
+          "spinnerVisible": false,
+          "spinnerText": null,
+          "acceptVisible": false,
+          "rejectVisible": false,
+          "dropDisabledLooking": false,
+          "backgroundAssetAttr": "",
+          "panelShowsAssetId": false
+        }
+      },
+      "pass": true,
+      "notes": [
+        "Replace panel does NOT display heroAssetId string (representation via data attrs / storage only)"
+      ]
+    },
+    "viewerBefore": {
+      "cardCount": 21,
+      "cards": [
+        {
+          "id": "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee",
+          "titles": [
+            "01 ARRIVAL OPEN v1"
+          ],
+          "textHead": [
+            "PRODUCTION",
+            "WIDESCREEN",
+            "01 ARRIVAL OPEN v1",
+            "▶",
+            "TRENDING",
+            "STUDIO"
+          ]
+        },
+        {
+          "id": "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee",
+          "titles": [
+            "01 ARRIVAL OPEN v1"
+          ],
+          "textHead": [
+            "PRODUCTION",
+            "WIDESCREEN",
+            "▶",
+            "01 ARRIVAL OPEN v1",
+            "TRENDING",
+            "STUDIO"
+          ]
+        },
+        {
+          "id": "6582dac2-1476-497f-84e6-40547a9b1eba",
+          "titles": [
+            "02 ARRIVAL THE PROJECT INTRO v1"
+          ],
+          "textHead": [
+            "PRODUCTION",
+            "WIDESCREEN",
+            "▶",
+            "02 ARRIVAL THE PROJECT INTRO v1",
+            "TRENDING",
+            "STUDIO"
+          ]
+        },
+        {
+          "id": "65934555-716d-4d7d-97d7-bcd884cbb72c",
+          "titles": [
+            "MICROS Motherland V1(1)"
+          ],
+          "textHead": [
+            "PRODUCTION",
+            "WIDESCREEN",
+            "▶",
+            "MICROS Motherland V1(1)",
+            "TRENDING",
+            "STUDIO"
+          ]
+        },
+        {
+          "id": "18bddf10-45a7-4deb-bd9b-bc9cb65a1f22",
+          "titles": [],
+          "textHead": [
+            "WIDESCREEN",
+            "▶",
+            "Untitled",
+            "TRENDING"
+          ]
+        },
+        {
+          "id": "9d043773-3f19-4ee4-adbd-df3c2979dd64",
+          "titles": [],
+          "textHead": [
+            "WIDESCREEN",
+            "▶",
+            "Untitled",
+            "TRENDING"
+          ]
+        },
+        {
+          "id": "d2f2fbc6-937b-4b7c-8319-26ec0dfd1c35",
+          "titles": [],
+          "textHead": [
+            "WIDESCREEN",
+            "▶",
+            "Untitled",
+            "TRENDING"
+          ]
+        },
+        {
+          "id": "bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17",
+          "titles": [],
+          "textHead": [
+            "WIDESCREEN",
+            "▶",
+            "Untitled",
+            "TRENDING"
+          ]
+        },
+        {
+          "id": "2cea618f-d182-46a5-9510-a96207460257",
+          "titles": [],
+          "textHead": [
+            "WIDESCREEN",
+            "▶",
+            "Untitled",
+            "TRENDING"
+          ]
+        },
+        {
+          "id": "001457bd-24fd-48ee-b543-58d5095ef353",
+          "titles": [],
+          "textHead": [
+            "WIDESCREEN",
+            "▶",
+            "Untitled",
+            "TRENDING"
+          ]
+        },
+        {
+          "id": "345f24de-d5cf-4bc6-9627-2daff64f2740",
+          "titles": [],
+          "textHead": [
+            "WIDESCREEN",
+            "▶",
+            "Untitled",
+            "TRENDING"
+          ]
+        },
+        {
+          "id": "8fa7a524-6df6-4f85-8641-3e0a8cd3fcd0",
+          "titles": [],
+          "textHead": [
+            "WIDESCREEN",
+            "▶",
+            "Untitled",
+            "TRENDING"
+          ]
+        },
+        {
+          "id": "6d54297c-a32a-4cbc-a684-7084a4196fcc",
+          "titles": [],
+          "textHead": [
+            "WIDESCREEN",
+            "▶",
+            "Untitled",
+            "TRENDING"
+          ]
+        },
+        {
+          "id": "2fc0cd85-9c19-4cf7-ae5b-470e41e62bf4",
+          "titles": [],
+          "textHead": [
+            "WIDESCREEN",
+            "▶",
+            "Untitled",
+            "TRENDING"
+          ]
+        },
+        {
+          "id": "12c1d21d-b9b7-42bd-b54b-da90f93cf9c1",
+          "titles": [],
+          "textHead": [
+            "WIDESCREEN",
+            "▶",
+            "Untitled",
+            "TRENDING"
+          ]
+        },
+        {
+          "id": "cb5fa060-0b3b-477e-9965-51a8cd013533",
+          "titles": [],
+          "textHead": [
+            "WIDESCREEN",
+            "▶",
+            "Untitled",
+            "TRENDING"
+          ]
+        },
+        {
+          "id": "d4c07d82-f9b0-4648-abb1-74972e630de3",
+          "titles": [],
+          "textHead": [
+            "WIDESCREEN",
+            "▶",
+            "Untitled",
+            "TRENDING"
+          ]
+        },
+        {
+          "id": "cea7c32d-ea9a-4171-9858-941318a8a79a",
+          "titles": [],
+          "textHead": [
+            "WIDESCREEN",
+            "▶",
+            "Untitled",
+            "TRENDING"
+          ]
+        },
+        {
+          "id": "cd68428b-6e3a-4354-af92-f42b9a120906",
+          "titles": [],
+          "textHead": [
+            "WIDESCREEN",
+            "▶",
+            "Untitled",
+            "TRENDING"
+          ]
+        },
+        {
+          "id": "76fccb4e-1680-419c-82ab-e5f75e130430",
+          "titles": [],
+          "textHead": [
+            "WIDESCREEN",
+            "▶",
+            "Untitled",
+            "TRENDING"
+          ]
+        },
+        {
+          "id": "1bfbada7-0bde-40b4-9e2c-d8a9eccd6e45",
+          "titles": [],
+          "textHead": [
+            "WIDESCREEN",
+            "▶",
+            "Untitled",
+            "TRENDING"
+          ]
+        }
+      ],
+      "shelves": [],
+      "imgUuidCardCount": 0
+    },
+    "B_explicitReplace": {
+      "oldHeroAssetId": "7d3984da-6fc4-4e17-a63d-0574bf1d4918",
+      "newHeroAssetId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+      "transitions": [
+        {
+          "at": "2026-08-15T01:48:42.580Z",
+          "elapsedMs": 6,
+          "phase": "active",
+          "title": "Current Hero Active",
+          "detail": "Drop a file below to replace your homepage hero background.",
+          "spinnerVisible": false,
+          "spinnerText": null,
+          "acceptVisible": false,
+          "assetId": "7d3984da-6fc4-4e17-a63d-0574bf1d4918",
+          "revision": 19
+        },
+        {
+          "at": "2026-08-15T01:48:42.853Z",
+          "elapsedMs": 279,
+          "phase": "processing",
+          "title": "Replacing Hero",
+          "detail": "Uploading and applying your new hero…",
+          "spinnerVisible": true,
+          "spinnerText": "Processing hero asset...",
+          "acceptVisible": false,
+          "assetId": "7d3984da-6fc4-4e17-a63d-0574bf1d4918",
+          "revision": 19
+        },
+        {
+          "at": "2026-08-15T01:48:47.950Z",
+          "elapsedMs": 5376,
+          "phase": "committed",
+          "title": "Hero Updated Successfully",
+          "detail": "Your homepage hero background has been replaced.",
+          "spinnerVisible": false,
+          "spinnerText": null,
+          "acceptVisible": false,
+          "assetId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "revision": 20
+        }
+      ],
+      "afterReplace": {
+        "record": {
+          "mode": "asset",
+          "assetId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "mediaUrl": "http://localhost:8080/videos/4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d.mp4",
+          "mediaKind": "video",
+          "title": "Hero Replace 2 Hero",
+          "source": "commit_hero_video_identity",
+          "revision": 24
+        },
+        "manager": {
+          "heroAssetId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "backgroundSource": "custom_video",
+          "backgroundStyle": "video",
+          "mediaUrl": "http://localhost:8080/videos/7d3984da-6fc4-4e17-a63d-0574bf1d4918.mp4",
+          "heroTitle": "Black Warrior: Land, Legacy & Liberation"
+        },
+        "reel": {
+          "id": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "url": "http://localhost:8080/videos/4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d.mp4",
+          "name": "Hero Replace 2 Hero"
+        },
+        "ui": {
+          "replacePhase": "committed",
+          "title": "Hero Updated Successfully",
+          "detail": "Your homepage hero background has been replaced.",
+          "panelText": "Hero Updated Successfully\n\nYour homepage hero background has been replaced.",
+          "spinnerVisible": false,
+          "spinnerText": null,
+          "acceptVisible": false,
+          "rejectVisible": false,
+          "dropDisabledLooking": false,
+          "backgroundAssetAttr": "",
+          "panelShowsAssetId": false
+        }
+      },
+      "sawProcessing": true,
+      "exitedProcessing": true,
+      "successAfterCommit": true,
+      "commitLogObserved": true,
+      "pass": true
+    },
+    "C_persistence": {
+      "expectedHeroAssetId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+      "afterRefresh": {
+        "record": {
+          "mode": "asset",
+          "assetId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "mediaUrl": "http://localhost:8080/videos/4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d.mp4",
+          "mediaKind": "video",
+          "title": "Hero Replace 2 Hero",
+          "source": "hero_reel_adapter",
+          "revision": 29
+        },
+        "manager": {
+          "heroAssetId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "backgroundSource": "custom_video",
+          "backgroundStyle": "video",
+          "mediaUrl": "http://localhost:8080/videos/4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d.mp4",
+          "heroTitle": "Black Warrior: Land, Legacy & Liberation"
+        },
+        "reel": {
+          "id": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "url": "http://localhost:8080/videos/4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d.mp4",
+          "name": "Hero Replace 2 Hero"
+        },
+        "ui": {
+          "replacePhase": null,
+          "title": null,
+          "detail": null,
+          "panelText": null,
+          "spinnerVisible": false,
+          "spinnerText": null,
+          "acceptVisible": false,
+          "rejectVisible": false,
+          "dropDisabledLooking": false,
+          "backgroundAssetAttr": "",
+          "panelShowsAssetId": false
+        }
+      },
+      "pass": true
+    },
+    "D_vaultIsolation": {
+      "vaultBeforeCount": 20,
+      "vaultAfterCount": 20,
+      "vaultBeforeIds": [
+        "1bfbada7-0bde-40b4-9e2c-d8a9eccd6e45",
+        "76fccb4e-1680-419c-82ab-e5f75e130430",
+        "cd68428b-6e3a-4354-af92-f42b9a120906",
+        "cea7c32d-ea9a-4171-9858-941318a8a79a",
+        "d4c07d82-f9b0-4648-abb1-74972e630de3",
+        "cb5fa060-0b3b-477e-9965-51a8cd013533",
+        "12c1d21d-b9b7-42bd-b54b-da90f93cf9c1",
+        "2fc0cd85-9c19-4cf7-ae5b-470e41e62bf4",
+        "6d54297c-a32a-4cbc-a684-7084a4196fcc",
+        "8fa7a524-6df6-4f85-8641-3e0a8cd3fcd0",
+        "345f24de-d5cf-4bc6-9627-2daff64f2740",
+        "001457bd-24fd-48ee-b543-58d5095ef353",
+        "2cea618f-d182-46a5-9510-a96207460257",
+        "bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17",
+        "d2f2fbc6-937b-4b7c-8319-26ec0dfd1c35",
+        "9d043773-3f19-4ee4-adbd-df3c2979dd64",
+        "18bddf10-45a7-4deb-bd9b-bc9cb65a1f22",
+        "65934555-716d-4d7d-97d7-bcd884cbb72c",
+        "6582dac2-1476-497f-84e6-40547a9b1eba",
+        "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee"
+      ],
+      "vaultAfterIds": [
+        "ec6a3655-7865-4e5e-b0a5-549d2f5b2dd7",
+        "1bfbada7-0bde-40b4-9e2c-d8a9eccd6e45",
+        "76fccb4e-1680-419c-82ab-e5f75e130430",
+        "cd68428b-6e3a-4354-af92-f42b9a120906",
+        "cea7c32d-ea9a-4171-9858-941318a8a79a",
+        "d4c07d82-f9b0-4648-abb1-74972e630de3",
+        "cb5fa060-0b3b-477e-9965-51a8cd013533",
+        "12c1d21d-b9b7-42bd-b54b-da90f93cf9c1",
+        "2fc0cd85-9c19-4cf7-ae5b-470e41e62bf4",
+        "6d54297c-a32a-4cbc-a684-7084a4196fcc",
+        "8fa7a524-6df6-4f85-8641-3e0a8cd3fcd0",
+        "345f24de-d5cf-4bc6-9627-2daff64f2740",
+        "001457bd-24fd-48ee-b543-58d5095ef353",
+        "2cea618f-d182-46a5-9510-a96207460257",
+        "bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17",
+        "d2f2fbc6-937b-4b7c-8319-26ec0dfd1c35",
+        "9d043773-3f19-4ee4-adbd-df3c2979dd64",
+        "18bddf10-45a7-4deb-bd9b-bc9cb65a1f22",
+        "65934555-716d-4d7d-97d7-bcd884cbb72c",
+        "6582dac2-1476-497f-84e6-40547a9b1eba"
+      ],
+      "vaultUploadOk": true,
+      "heroBefore": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+      "heroAfter": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+      "heroAfterRefresh": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+      "expectedHero": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+      "pass": true
+    },
+    "E1_invalidFile": {
+      "transitions": [
+        {
+          "at": "2026-08-15T01:49:40.057Z",
+          "elapsedMs": 5,
+          "phase": "active",
+          "title": "Current Hero Active",
+          "detail": "Drop a file below to replace your homepage hero background.",
+          "spinnerVisible": false,
+          "spinnerText": null,
+          "acceptVisible": false,
+          "assetId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "revision": 53
+        },
+        {
+          "at": "2026-08-15T01:49:40.317Z",
+          "elapsedMs": 265,
+          "phase": "preview_pending",
+          "title": "Upload Needs Attention",
+          "detail": "Retry below or cancel to choose a different file",
+          "spinnerVisible": false,
+          "spinnerText": null,
+          "acceptVisible": true,
+          "assetId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "revision": 53
+        }
+      ],
+      "snap": {
+        "record": {
+          "mode": "asset",
+          "assetId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "mediaUrl": "http://localhost:8080/videos/4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d.mp4",
+          "mediaKind": "video",
+          "title": "Hero Replace 2 Hero",
+          "source": "hero_reel_adapter",
+          "revision": 53
+        },
+        "manager": {
+          "heroAssetId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "backgroundSource": "custom_video",
+          "backgroundStyle": "video",
+          "mediaUrl": "http://localhost:8080/videos/4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d.mp4",
+          "heroTitle": "Black Warrior: Land, Legacy & Liberation"
+        },
+        "reel": {
+          "id": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "url": "http://localhost:8080/videos/4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d.mp4",
+          "name": "Hero Replace 2 Hero"
+        },
+        "ui": {
+          "replacePhase": "preview_pending",
+          "title": "Upload Needs Attention",
+          "detail": "Retry below or cancel to choose a different file",
+          "panelText": "Upload Needs Attention\n\nRetry below or cancel to choose a different file",
+          "spinnerVisible": false,
+          "spinnerText": null,
+          "acceptVisible": true,
+          "rejectVisible": true,
+          "dropDisabledLooking": false,
+          "backgroundAssetAttr": "",
+          "panelShowsAssetId": false
+        }
+      },
+      "heroIntact": true,
+      "leftProcessing": true,
+      "retryable": true,
+      "pass": true
+    },
+    "E2_zeroFile": {
+      "transitions": [
+        {
+          "at": "2026-08-15T01:49:55.181Z",
+          "elapsedMs": 31,
+          "phase": "active",
+          "title": "Current Hero Active",
+          "detail": "Drop a file below to replace your homepage hero background.",
+          "spinnerVisible": false,
+          "spinnerText": null,
+          "acceptVisible": false,
+          "assetId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "revision": 60
+        },
+        {
+          "at": "2026-08-15T01:49:55.451Z",
+          "elapsedMs": 301,
+          "phase": "preview_pending",
+          "title": "Upload Needs Attention",
+          "detail": "Retry below or cancel to choose a different file",
+          "spinnerVisible": false,
+          "spinnerText": null,
+          "acceptVisible": true,
+          "assetId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "revision": 60
+        }
+      ],
+      "snap": {
+        "record": {
+          "mode": "asset",
+          "assetId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "mediaUrl": "http://localhost:8080/videos/4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d.mp4",
+          "mediaKind": "video",
+          "title": "Hero Replace 2 Hero",
+          "source": "hero_reel_adapter",
+          "revision": 60
+        },
+        "manager": {
+          "heroAssetId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "backgroundSource": "custom_video",
+          "backgroundStyle": "video",
+          "mediaUrl": "http://localhost:8080/videos/4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d.mp4",
+          "heroTitle": "Black Warrior: Land, Legacy & Liberation"
+        },
+        "reel": {
+          "id": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "url": "http://localhost:8080/videos/4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d.mp4",
+          "name": "Hero Replace 2 Hero"
+        },
+        "ui": {
+          "replacePhase": "preview_pending",
+          "title": "Upload Needs Attention",
+          "detail": "Retry below or cancel to choose a different file",
+          "panelText": "Upload Needs Attention\n\nRetry below or cancel to choose a different file",
+          "spinnerVisible": false,
+          "spinnerText": null,
+          "acceptVisible": true,
+          "rejectVisible": true,
+          "dropDisabledLooking": false,
+          "backgroundAssetAttr": "",
+          "panelShowsAssetId": false
+        }
+      },
+      "heroIntact": true,
+      "leftProcessing": true,
+      "pass": true
+    },
+    "E3_uploadFailure": {
+      "transitions": [
+        {
+          "at": "2026-08-15T01:50:38.947Z",
+          "elapsedMs": 15,
+          "phase": "active",
+          "title": "Current Hero Active",
+          "detail": "Drop a file below to replace your homepage hero background.",
+          "spinnerVisible": false,
+          "spinnerText": null,
+          "acceptVisible": false,
+          "assetId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "revision": 67
+        },
+        {
+          "at": "2026-08-15T01:50:39.265Z",
+          "elapsedMs": 333,
+          "phase": "preview_pending",
+          "title": "Upload Needs Attention",
+          "detail": "Retry below or cancel to choose a different file",
+          "spinnerVisible": false,
+          "spinnerText": null,
+          "acceptVisible": true,
+          "assetId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "revision": 67
+        }
+      ],
+      "snap": {
+        "record": {
+          "mode": "asset",
+          "assetId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "mediaUrl": "http://localhost:8080/videos/4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d.mp4",
+          "mediaKind": "video",
+          "title": "Hero Replace 2 Hero",
+          "source": "hero_reel_adapter",
+          "revision": 67
+        },
+        "manager": {
+          "heroAssetId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "backgroundSource": "custom_video",
+          "backgroundStyle": "video",
+          "mediaUrl": "http://localhost:8080/videos/4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d.mp4",
+          "heroTitle": "Black Warrior: Land, Legacy & Liberation"
+        },
+        "reel": {
+          "id": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "url": "http://localhost:8080/videos/4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d.mp4",
+          "name": "Hero Replace 2 Hero"
+        },
+        "ui": {
+          "replacePhase": "preview_pending",
+          "title": "Upload Needs Attention",
+          "detail": "Retry below or cancel to choose a different file",
+          "panelText": "Upload Needs Attention\n\nRetry below or cancel to choose a different file",
+          "spinnerVisible": false,
+          "spinnerText": null,
+          "acceptVisible": true,
+          "rejectVisible": true,
+          "dropDisabledLooking": false,
+          "backgroundAssetAttr": "",
+          "panelShowsAssetId": false
+        }
+      },
+      "failLog": true,
+      "heroIntact": true,
+      "leftProcessing": true,
+      "retryable": true,
+      "pass": true
+    },
+    "E4_finalizeFailure": {
+      "transitions": [
+        {
+          "at": "2026-08-15T01:51:38.070Z",
+          "elapsedMs": 103,
+          "phase": "active",
+          "title": "Current Hero Active",
+          "detail": "Drop a file below to replace your homepage hero background.",
+          "spinnerVisible": false,
+          "spinnerText": null,
+          "acceptVisible": false,
+          "assetId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "revision": 74
+        },
+        {
+          "at": "2026-08-15T01:51:38.401Z",
+          "elapsedMs": 434,
+          "phase": "preview_pending",
+          "title": "Upload Needs Attention",
+          "detail": "Retry below or cancel to choose a different file",
+          "spinnerVisible": false,
+          "spinnerText": null,
+          "acceptVisible": true,
+          "assetId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "revision": 74
+        }
+      ],
+      "snap": {
+        "record": {
+          "mode": "asset",
+          "assetId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "mediaUrl": "http://localhost:8080/videos/4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d.mp4",
+          "mediaKind": "video",
+          "title": "Hero Replace 2 Hero",
+          "source": "hero_reel_adapter",
+          "revision": 74
+        },
+        "manager": {
+          "heroAssetId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "backgroundSource": "custom_video",
+          "backgroundStyle": "video",
+          "mediaUrl": "http://localhost:8080/videos/4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d.mp4",
+          "heroTitle": "Black Warrior: Land, Legacy & Liberation"
+        },
+        "reel": {
+          "id": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "url": "http://localhost:8080/videos/4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d.mp4",
+          "name": "Hero Replace 2 Hero"
+        },
+        "ui": {
+          "replacePhase": "preview_pending",
+          "title": "Upload Needs Attention",
+          "detail": "Retry below or cancel to choose a different file",
+          "panelText": "Upload Needs Attention\n\nRetry below or cancel to choose a different file",
+          "spinnerVisible": false,
+          "spinnerText": null,
+          "acceptVisible": true,
+          "rejectVisible": true,
+          "dropDisabledLooking": false,
+          "backgroundAssetAttr": "",
+          "panelShowsAssetId": false
+        }
+      },
+      "heroIntact": true,
+      "leftProcessing": true,
+      "retryable": true,
+      "pass": true
+    },
+    "E5_timeout": {
+      "hungRequest": true,
+      "enteredProcessing": true,
+      "transitions": [
+        {
+          "at": "2026-08-15T01:52:36.978Z",
+          "elapsedMs": 7,
+          "phase": "active",
+          "title": "Current Hero Active",
+          "detail": "Drop a file below to replace your homepage hero background.",
+          "spinnerVisible": false,
+          "spinnerText": null,
+          "acceptVisible": false,
+          "assetId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "revision": 81
+        },
+        {
+          "at": "2026-08-15T01:52:37.237Z",
+          "elapsedMs": 266,
+          "phase": "processing",
+          "title": "Replacing Hero",
+          "detail": "Uploading and applying your new hero…",
+          "spinnerVisible": true,
+          "spinnerText": "Processing hero asset...",
+          "acceptVisible": false,
+          "assetId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "revision": 81
+        },
+        {
+          "at": "2026-08-15T01:53:22.380Z",
+          "elapsedMs": 45409,
+          "phase": "preview_pending",
+          "title": "Upload Needs Attention",
+          "detail": "Retry below or cancel to choose a different file",
+          "spinnerVisible": false,
+          "spinnerText": null,
+          "acceptVisible": true,
+          "assetId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "revision": 81
+        }
+      ],
+      "snap": {
+        "record": {
+          "mode": "asset",
+          "assetId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "mediaUrl": "http://localhost:8080/videos/4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d.mp4",
+          "mediaKind": "video",
+          "title": "Hero Replace 2 Hero",
+          "source": "hero_reel_adapter",
+          "revision": 81
+        },
+        "manager": {
+          "heroAssetId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "backgroundSource": "custom_video",
+          "backgroundStyle": "video",
+          "mediaUrl": "http://localhost:8080/videos/4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d.mp4",
+          "heroTitle": "Black Warrior: Land, Legacy & Liberation"
+        },
+        "reel": {
+          "id": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "url": "http://localhost:8080/videos/4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d.mp4",
+          "name": "Hero Replace 2 Hero"
+        },
+        "ui": {
+          "replacePhase": "preview_pending",
+          "title": "Upload Needs Attention",
+          "detail": "Retry below or cancel to choose a different file",
+          "panelText": "Upload Needs Attention\n\nRetry below or cancel to choose a different file",
+          "spinnerVisible": false,
+          "spinnerText": null,
+          "acceptVisible": true,
+          "rejectVisible": true,
+          "dropDisabledLooking": false,
+          "backgroundAssetAttr": "",
+          "panelShowsAssetId": false
+        }
+      },
+      "timeoutLog": true,
+      "elapsedMs": 45430,
+      "heroIntact": true,
+      "leftProcessing": true,
+      "retryable": true,
+      "maxStuckRiskNote": "Small-file accept watchdog is 45s; UI must leave processing by then. Large files (>12MiB) use 15min.",
+      "pass": true
+    },
+    "E7_lateCommitAfterWatchdog": {
+      "method": "route delay 48s then 200 with fake canonical identity",
+      "baseline": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+      "after": "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+      "lateIdApplied": true,
+      "timeoutThenSuccess": true,
+      "uiPhase": "committed",
+      "transitions": [
+        {
+          "at": "2026-08-15T01:53:49.099Z",
+          "elapsedMs": 4,
+          "phase": "active",
+          "title": "Current Hero Active",
+          "detail": "Drop a file below to replace your homepage hero background.",
+          "spinnerVisible": false,
+          "spinnerText": null,
+          "acceptVisible": false,
+          "assetId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "revision": 88
+        },
+        {
+          "at": "2026-08-15T01:53:49.363Z",
+          "elapsedMs": 269,
+          "phase": "processing",
+          "title": "Replacing Hero",
+          "detail": "Uploading and applying your new hero…",
+          "spinnerVisible": true,
+          "spinnerText": "Processing hero asset...",
+          "acceptVisible": false,
+          "assetId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "revision": 88
+        },
+        {
+          "at": "2026-08-15T01:54:34.357Z",
+          "elapsedMs": 45262,
+          "phase": "preview_pending",
+          "title": "Upload Needs Attention",
+          "detail": "Retry below or cancel to choose a different file",
+          "spinnerVisible": false,
+          "spinnerText": null,
+          "acceptVisible": true,
+          "assetId": "4336335c-0bdb-4eb2-8d20-f8a67d6a9a3d",
+          "revision": 88
+        }
+      ],
+      "pass": false,
+      "classificationIfFail": "LATE_COMMIT_AFTER_WATCHDOG — acceptHeroFile can persist Hero after 45s timeout UI"
+    },
+    "E6_applyPersistence_codeInspection": {
+      "method": "static",
+      "finding": "commitHeroVideoIdentity → selectHeroAsset returns null if assetId/mediaUrl/mediaKind missing; acceptHeroFile throws before that if reel lacks id/url. No separate UI branch for saveHeroRecord disk failure beyond catch → preview_pending + Failed status.",
+      "pass": true,
+      "note": "Covered live by E4 (missing canonical identity) which exercises throw before partial commit"
+    },
+    "F_regression": {
+      "viewerBeforeCardCount": 21,
+      "viewerAfterVaultCardCount": 21,
+      "viewerFinalCardCount": 21,
+      "imgUuidCardsFinal": 0,
+      "heroStillReplacement": false,
+      "networkMutations": {
+        "categoryPatch": 0,
+        "titlePatch": 0,
+        "descriptionPatch": 0,
+        "productionCatalogWrites": 0,
+        "reelCreate": 6,
+        "heroPresentationPuts": 4,
+        "seriesPutsAmbient": 34
+      },
+      "viewerSemanticCardFileUntouchedThisMission": true,
+      "notes": [
+        "No application source edits in this mission",
+        "Category/title/description/catalog counters = PATCH/PUT on /api/reels/:id only",
+        "POST /api/reels counted as reel_create (allowed for Replace Hero + Vault fixture)",
+        "PUT /api/hero/presentation counted separately (allowed for explicit replace)",
+        "PUT /api/series counted as ambient studio hydration, not title writes"
+      ],
+      "pass": false
+    }
+  },
+  "findings": [
+    {
+      "severity": "FAIL",
+      "area": "E7",
+      "detail": "Hero asset changed after watchdog timeout when hung upload later succeeded"
+    }
+  ],
+  "networkMutations": {
+    "categoryPatch": 0,
+    "titlePatch": 0,
+    "descriptionPatch": 0,
+    "productionCatalogWrites": 0,
+    "reelCreate": 6,
+    "heroPresentationPuts": 4,
+    "seriesPutsAmbient": 34,
+    "observed": [
+      {
+        "at": "2026-08-15T01:48:16.034Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:48:16.035Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:48:30.751Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:48:30.753Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:48:38.649Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:48:38.650Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:48:42.647Z",
+        "method": "POST",
+        "url": "http://127.0.0.1:5173/api/reels",
+        "kind": "reel_create"
+      },
+      {
+        "at": "2026-08-15T01:48:47.727Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:48:47.729Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:48:47.731Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:48:47.779Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/hero/presentation",
+        "kind": "hero_presentation"
+      },
+      {
+        "at": "2026-08-15T01:48:47.820Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/hero/presentation",
+        "kind": "hero_presentation"
+      },
+      {
+        "at": "2026-08-15T01:48:53.514Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:48:53.514Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:49:00.798Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:49:00.801Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:49:08.061Z",
+        "method": "POST",
+        "url": "http://127.0.0.1:5173/api/reels",
+        "kind": "reel_create"
+      },
+      {
+        "at": "2026-08-15T01:49:11.841Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:49:11.842Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:49:11.842Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:49:21.579Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:49:21.583Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:49:27.583Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:49:27.587Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:49:34.585Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:49:34.589Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:49:50.104Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:49:50.105Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:50:32.941Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:50:32.942Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:50:38.992Z",
+        "method": "POST",
+        "url": "http://127.0.0.1:5173/api/reels",
+        "kind": "reel_create"
+      },
+      {
+        "at": "2026-08-15T01:51:31.740Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:51:31.745Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:51:38.165Z",
+        "method": "POST",
+        "url": "http://127.0.0.1:5173/api/reels",
+        "kind": "reel_create"
+      },
+      {
+        "at": "2026-08-15T01:52:30.610Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:52:30.616Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:52:37.157Z",
+        "method": "POST",
+        "url": "http://127.0.0.1:5173/api/reels",
+        "kind": "reel_create"
+      },
+      {
+        "at": "2026-08-15T01:53:44.282Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:53:44.288Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:53:49.318Z",
+        "method": "POST",
+        "url": "http://127.0.0.1:5173/api/reels",
+        "kind": "reel_create"
+      },
+      {
+        "at": "2026-08-15T01:54:37.399Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/hero/presentation",
+        "kind": "hero_presentation"
+      },
+      {
+        "at": "2026-08-15T01:54:37.425Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/hero/presentation",
+        "kind": "hero_presentation"
+      },
+      {
+        "at": "2026-08-15T01:54:56.993Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      },
+      {
+        "at": "2026-08-15T01:54:56.994Z",
+        "method": "PUT",
+        "url": "http://127.0.0.1:5173/api/series/series-01-arrival-open",
+        "kind": "series_put_ambient"
+      }
+    ]
+  },
+  "relevantConsole": [
+    {
+      "at": "2026-08-15T01:52:40.171Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758760170}"
+    },
+    {
+      "at": "2026-08-15T01:52:42.207Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758762206}"
+    },
+    {
+      "at": "2026-08-15T01:52:45.194Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758765193}"
+    },
+    {
+      "at": "2026-08-15T01:52:47.393Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758767392}"
+    },
+    {
+      "at": "2026-08-15T01:52:49.576Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758769576}"
+    },
+    {
+      "at": "2026-08-15T01:52:53.493Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758773492}"
+    },
+    {
+      "at": "2026-08-15T01:52:55.693Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758775693}"
+    },
+    {
+      "at": "2026-08-15T01:52:57.219Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758777217}"
+    },
+    {
+      "at": "2026-08-15T01:52:59.425Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758779424}"
+    },
+    {
+      "at": "2026-08-15T01:53:01.944Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758781944}"
+    },
+    {
+      "at": "2026-08-15T01:53:04.010Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758784010}"
+    },
+    {
+      "at": "2026-08-15T01:53:06.213Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758786213}"
+    },
+    {
+      "at": "2026-08-15T01:53:08.375Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758788374}"
+    },
+    {
+      "at": "2026-08-15T01:53:10.544Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758790541}"
+    },
+    {
+      "at": "2026-08-15T01:53:12.194Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758792193}"
+    },
+    {
+      "at": "2026-08-15T01:53:14.944Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758794941}"
+    },
+    {
+      "at": "2026-08-15T01:53:17.156Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758797156}"
+    },
+    {
+      "at": "2026-08-15T01:53:19.332Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758799330}"
+    },
+    {
+      "at": "2026-08-15T01:53:22.033Z",
+      "text": "[HERO_ACCEPT_TIMEOUT] {timeoutMs: 45000, pendingType: video, fileName: hero-replace-2-hero.mp4, ts: 2026-08-15T01:53:22.032Z}"
+    },
+    {
+      "at": "2026-08-15T01:53:22.034Z",
+      "text": "[HERO_UX_STATE_CHANGE] {fromState: processing, toState: previewing, pendingFileName: hero-replace-2-hero.mp4}"
+    },
+    {
+      "at": "2026-08-15T01:53:23.852Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758803572}"
+    },
+    {
+      "at": "2026-08-15T01:53:25.799Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758805799}"
+    },
+    {
+      "at": "2026-08-15T01:53:27.231Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758807231}"
+    },
+    {
+      "at": "2026-08-15T01:53:29.611Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758809610}"
+    },
+    {
+      "at": "2026-08-15T01:53:33.521Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758813521}"
+    },
+    {
+      "at": "2026-08-15T01:53:35.718Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758815717}"
+    },
+    {
+      "at": "2026-08-15T01:53:36.754Z",
+      "text": "[HERO_UX_STATE_CHANGE] {fromState: previewing, toState: idle, pendingFileName: }"
+    },
+    {
+      "at": "2026-08-15T01:53:36.757Z",
+      "text": "[HERO_UX_STATE_CHANGE] {fromState: previewing, toState: idle, pendingFileName: }"
+    },
+    {
+      "at": "2026-08-15T01:53:38.037Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"featured_series\",\"title\":\"\",\"insight\":\"Team Spotlight\",\"episodeId\":null,\"reelId\":null,\"score\":12,\"timestamp\":1786758818037}"
+    },
+    {
+      "at": "2026-08-15T01:53:38.624Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"featured_series\",\"title\":\"\",\"insight\":\"Team Spotlight\",\"episodeId\":null,\"reelId\":null,\"score\":12,\"timestamp\":1786758818623}"
+    },
+    {
+      "at": "2026-08-15T01:53:40.469Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"Validation Series Updated\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":null,\"reelId\":null,\"score\":23,\"timestamp\":1786758820468}"
+    },
+    {
+      "at": "2026-08-15T01:53:40.579Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758820579}"
+    },
+    {
+      "at": "2026-08-15T01:53:42.805Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758822787}"
+    },
+    {
+      "at": "2026-08-15T01:53:44.256Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758824256}"
+    },
+    {
+      "at": "2026-08-15T01:53:45.761Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758825760}"
+    },
+    {
+      "at": "2026-08-15T01:53:48.745Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758828744}"
+    },
+    {
+      "at": "2026-08-15T01:53:49.119Z",
+      "text": "[BG7G_UPLOAD] {ts: 2026-08-15T01:53:49.113Z, component: handleHeroFileSelect, file: HeroExperience.svelte, fileName: hero-replace-2-hero.mp4, fileSize: 2325}"
+    },
+    {
+      "at": "2026-08-15T01:53:49.120Z",
+      "text": "[HERO_UX_STATE_CHANGE] {fromState: idle, toState: previewing, pendingFileName: hero-replace-2-hero.mp4}"
+    },
+    {
+      "at": "2026-08-15T01:53:49.120Z",
+      "text": "[HERO_UX_STATE_CHANGE] {fromState: idle, toState: processing, pendingFileName: hero-replace-2-hero.mp4}"
+    },
+    {
+      "at": "2026-08-15T01:53:49.121Z",
+      "text": "[HERO_ACCEPT] {stage: start, pendingType: video, name: hero-replace-2-hero.mp4, ts: 2026-08-15T01:53:49.121Z}"
+    },
+    {
+      "at": "2026-08-15T01:53:49.316Z",
+      "text": "[BG7G_UPLOAD] {ts: 2026-08-15T01:53:49.313Z, component: acceptHeroFile, file: HeroExperience.svelte, fileName: hero-replace-2-hero.mp4, fileSize: 2325}"
+    },
+    {
+      "at": "2026-08-15T01:53:49.316Z",
+      "text": "[BG7G_UPLOAD] {ts: 2026-08-15T01:53:49.314Z, component: uploadMedia, file: media.js, fileName: null, fileSize: null}"
+    },
+    {
+      "at": "2026-08-15T01:53:50.820Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758830820}"
+    },
+    {
+      "at": "2026-08-15T01:53:52.975Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758832974}"
+    },
+    {
+      "at": "2026-08-15T01:53:55.134Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758835133}"
+    },
+    {
+      "at": "2026-08-15T01:53:57.729Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758837728}"
+    },
+    {
+      "at": "2026-08-15T01:53:59.923Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758839922}"
+    },
+    {
+      "at": "2026-08-15T01:54:02.078Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758842076}"
+    },
+    {
+      "at": "2026-08-15T01:54:04.248Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758844247}"
+    },
+    {
+      "at": "2026-08-15T01:54:08.568Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758848567}"
+    },
+    {
+      "at": "2026-08-15T01:54:10.968Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758850968}"
+    },
+    {
+      "at": "2026-08-15T01:54:13.070Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758853069}"
+    },
+    {
+      "at": "2026-08-15T01:54:15.222Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758855221}"
+    },
+    {
+      "at": "2026-08-15T01:54:17.376Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758857375}"
+    },
+    {
+      "at": "2026-08-15T01:54:19.594Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758859593}"
+    },
+    {
+      "at": "2026-08-15T01:54:21.810Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758861809}"
+    },
+    {
+      "at": "2026-08-15T01:54:23.990Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758863989}"
+    },
+    {
+      "at": "2026-08-15T01:54:26.300Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758866299}"
+    },
+    {
+      "at": "2026-08-15T01:54:28.487Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758868486}"
+    },
+    {
+      "at": "2026-08-15T01:54:30.806Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758870805}"
+    },
+    {
+      "at": "2026-08-15T01:54:32.873Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758872872}"
+    },
+    {
+      "at": "2026-08-15T01:54:34.115Z",
+      "text": "[HERO_ACCEPT_TIMEOUT] {timeoutMs: 45000, pendingType: video, fileName: hero-replace-2-hero.mp4, ts: 2026-08-15T01:54:34.113Z}"
+    },
+    {
+      "at": "2026-08-15T01:54:34.116Z",
+      "text": "[HERO_UX_STATE_CHANGE] {fromState: processing, toState: previewing, pendingFileName: hero-replace-2-hero.mp4}"
+    },
+    {
+      "at": "2026-08-15T01:54:35.066Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758875066}"
+    },
+    {
+      "at": "2026-08-15T01:54:37.249Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758877248}"
+    },
+    {
+      "at": "2026-08-15T01:54:37.387Z",
+      "text": "[HERO_IDENTITY_COMMIT] {stage: commitHeroVideoIdentity, reelId: aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee, url: http://127.0.0.1:8080/videos/aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee.mp4, revision: 89, ts: 2026-08-15T01:54:37.387Z}"
+    },
+    {
+      "at": "2026-08-15T01:54:37.431Z",
+      "text": "[HERO_UPLOAD_FLOW] {stage: identity_committed, reelId: aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee, reelUrl: http://127.0.0.1:8080/videos/aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee.mp4, heroAssetId: aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee, backgroundSource: custom_video}"
+    },
+    {
+      "at": "2026-08-15T01:54:37.438Z",
+      "text": "[HERO_ACCEPT] {stage: complete, id: aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee, fileName: aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee.mp4, url: http://127.0.0.1:8080/videos/aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee.mp4, backgroundSource: custom_video}"
+    },
+    {
+      "at": "2026-08-15T01:54:37.440Z",
+      "text": "[HERO_UX_STATE_CHANGE] {fromState: previewing, toState: idle, pendingFileName: }"
+    },
+    {
+      "at": "2026-08-15T01:54:37.446Z",
+      "text": "[HERO_UX_STATE_CHANGE] {fromState: previewing, toState: idle, pendingFileName: }"
+    },
+    {
+      "at": "2026-08-15T01:54:38.988Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758878988}"
+    },
+    {
+      "at": "2026-08-15T01:54:41.230Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758881230}"
+    },
+    {
+      "at": "2026-08-15T01:54:43.422Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758883421}"
+    },
+    {
+      "at": "2026-08-15T01:54:47.339Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758887339}"
+    },
+    {
+      "at": "2026-08-15T01:54:49.532Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758889531}"
+    },
+    {
+      "at": "2026-08-15T01:54:51.748Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"featured_series\",\"title\":\"\",\"insight\":\"Team Spotlight\",\"episodeId\":null,\"reelId\":null,\"score\":12,\"timestamp\":1786758891748}"
+    },
+    {
+      "at": "2026-08-15T01:54:53.201Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"Validation Series Updated\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":null,\"reelId\":null,\"score\":23,\"timestamp\":1786758893201}"
+    },
+    {
+      "at": "2026-08-15T01:54:53.299Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758893298}"
+    },
+    {
+      "at": "2026-08-15T01:54:55.659Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758895658}"
+    },
+    {
+      "at": "2026-08-15T01:54:56.971Z",
+      "text": "[HERO_SELECTION] {\"mode\":\"TEAM_SPOTLIGHT\",\"source\":\"team_pick\",\"title\":\"01 ARRIVAL OPEN\",\"insight\":\"Team Spotlight · Production Team\",\"episodeId\":\"ep-01-arrival-open-s01e01-v1\",\"reelId\":\"73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee\",\"score\":29,\"timestamp\":1786758896970}"
+    }
+  ],
+  "stuckLoadingRisk": {
+    "infiniteHangWithoutWatchdog": false,
+    "smallFileWatchdogMs": 45000,
+    "largeFileWatchdogMs": 900000,
+    "processingCopyIsTransient": true,
+    "lateCommitAfterWatchdog": true,
+    "risk": "Files ≤12MiB: 45s watchdog clears processing. Files >12MiB: up to 15 min processing UX is expected. E7 probes whether a hung upload that later succeeds can still persist Hero after timeout UI."
+  }
+}
