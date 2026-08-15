@@ -1,0 +1,80 @@
+{
+  "mission": "PHASE-RELEASE-PREP-1",
+  "ts": "2026-08-15T02:35:00.000Z",
+  "branch": "main",
+  "pushed": false,
+  "deployed": false,
+  "localRc": "APPROVED",
+  "deploymentReadiness": "COMMITS_CREATED_NOT_PUSHED",
+  "commits": [
+    {
+      "hash": "ca052c71bb33c5d90eb5a6abfbbeddd57f18e655",
+      "short": "ca052c7",
+      "scope": "viewer-identity-card-presentation",
+      "message": "feat(viewer): ship Phase 6.6 canonical identity and single-title cards",
+      "phases": ["PHASE-6.6.2", "PHASE-6.6.3", "PHASE-6.6-shelf-diversity"],
+      "files": [
+        "frontend/src/components/viewer/ViewerSemanticCard.svelte",
+        "frontend/src/components/vertical/ReelshortExperience.svelte",
+        "frontend/src/lib/viewer/aiCleanupAgent.js",
+        "frontend/src/lib/feed/canonicalMediaIdentity.js",
+        "frontend/src/lib/feed/viewerShelfComposition.js",
+        "frontend/scripts/validate-phase-6-6-2-canonical-media-identity.mjs",
+        "frontend/scripts/validate-phase-6-6-viewer-shelf-diversity.mjs",
+        "frontend/PHASE-6-6-2_CANONICAL_MEDIA_IDENTITY_AUDIT.md",
+        "frontend/artifacts/phase-6-6-2-canonical-media-identity-report.json",
+        "frontend/artifacts/phase-6-6-2-local-visual-approval.json",
+        "frontend/artifacts/phase-6-6-viewer-shelf-diversity-report.json"
+      ]
+    },
+    {
+      "hash": "b6502004e75abd363faecb7670f72ed813dd4942",
+      "short": "b650200",
+      "scope": "studio-stability",
+      "message": "fix(studio): stabilize command-center keys and stop refresh storms",
+      "phases": ["PHASE-STUDIO-1"],
+      "files": [
+        "frontend/src/components/studio/ProductionCommandCenter.svelte",
+        "frontend/src/components/studio/StudioWorkspaceLayout.svelte",
+        "frontend/src/lib/command/commandCenter.js",
+        "frontend/src/lib/sentinel/sentinelAssistant.js",
+        "frontend/artifacts/phase-6-6-3-studio-1-local-validation.json"
+      ]
+    },
+    {
+      "hash": "d098178b4a5c59cfd9ec736e3b66ab163d8a9c36",
+      "short": "d098178",
+      "scope": "hero-lifecycle",
+      "message": "fix(hero): lock durable override and ignore late replace commits",
+      "phases": ["PHASE-HERO-LOCK-1", "PHASE-HERO-REPLACE-3"],
+      "files": [
+        "frontend/src/components/experiences/HeroExperience.svelte",
+        "frontend/src/lib/hero/heroIntelligence.js",
+        "frontend/src/viewer/viewerContext.js",
+        "frontend/scripts/validate-phase-hero-lock-1.mjs",
+        "frontend/scripts/validate-phase-hero-replace-3.mjs",
+        "frontend/package.json",
+        "MILESTONE_STATUS.md"
+      ]
+    }
+  ],
+  "validationArtifacts": [
+    "frontend/artifacts/PHASE-RC-LOCAL-CONSOLIDATION.md",
+    "frontend/artifacts/PHASE-RC-LOCAL-CONSOLIDATION.json",
+    "frontend/artifacts/PHASE-HERO-REPLACE-3-VALIDATION.md",
+    "frontend/artifacts/phase-hero-lock-1-validation.json",
+    "frontend/artifacts/phase-6-6-2-canonical-media-identity-report.json"
+  ],
+  "postCommitVerification": {
+    "validate_phase_6_6_2": "PASS",
+    "validate_phase_hero_lock_1": "PASS",
+    "npm_run_build": "PASS",
+    "bundle": "index-BEiDgrWY.js"
+  },
+  "intentionallyExcluded": [
+    "backend/public/thumbs/* local fixture images",
+    "historical BG-7 / Phase 16–26 reports",
+    "unrelated dirty artifacts (bg-6a, bg-7a1, phase-6-3)",
+    ".cursor tooling"
+  ]
+}
