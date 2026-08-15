@@ -24,6 +24,13 @@ import {
 import { isThumbnailImageReel } from './thumbnailCanonicalization.js';
 import { shouldSynthesizePersonalThumbnailFeedCard } from './thumbnailDestinationIdentity.js';
 import { evaluateViewerImageDiscoveryEligibility } from '../feed/viewerMediaIdentity.js';
+import {
+  findCanonicalFeedMatch,
+  matchCanonicalFeedIdentity,
+  normalizeMediaUrl,
+  removeCanonicalFeedMatches,
+  resolveProtectedFeedTitle
+} from '../feed/canonicalMediaIdentity.js';
 import { traceThumbStoreWrite } from './thumbStoreWriteTrace.js';
 import { pipelineCheckpoint } from '../diagnostics/pipelineDiag.js';
 import { vaultForensic } from '../diagnostics/vaultForensics.js';
@@ -260,38 +267,122 @@ export function createAiCleanupAgent(deps) {
   );
   const detectedCategory = classified.primaryCategory || CATEGORY_DETECTOR.detectFromTitle(stem);
   const primaryCategory = categoriesList.includes(detectedCategory) ? detectedCategory : 'Trending';
+  const probe = {
+    id: String(videoData.id || ''),
+    personal_video_id: String(videoData.id || videoData.personal_video_id || ''),
+    url: playableUrl,
+    type: 'video'
+  };
+
   feed.update((currentFeed) => {
-  const newFeed = { ...currentFeed };
+  let newFeed = { ...currentFeed };
   categoriesList.forEach((cat) => {
-  if (!newFeed[cat]) newFeed[cat] = [];
-  const removedPlaceholders = newFeed[cat].filter(
-  (r) => r.isPlaceholder && (r.personal_video_id === videoData.id || (r.url && videoData.url && r.url === videoData.url))
-  );
-  if (removedPlaceholders.length > 0) {
-  removedPlaceholders.forEach((old) => {
-  pipelineCheckpoint('PLACEHOLDER_REPLACED', { oldId: old.id, newId: String(videoData.id), vault: 'mp4' });
+    if (!newFeed[cat]) newFeed[cat] = [];
   });
-  }
-  // Remove any previously distributed copies of the same personal video.
-  newFeed[cat] = newFeed[cat].filter(
-  (r) =>
-  !(
-  (r.isPersonalVideo && r.personal_video_id === videoData.id) ||
-  (r.url && videoData.url && r.url === videoData.url)
-  )
-  );
+
+  // Drop true placeholder slots that pointed at this identity (not real catalog twins).
+  categoriesList.forEach((cat) => {
+    const before = newFeed[cat] || [];
+    const removedPlaceholders = before.filter(
+      (r) =>
+        r?.isPlaceholder &&
+        matchCanonicalFeedIdentity(r, probe)
+    );
+    if (removedPlaceholders.length > 0) {
+      removedPlaceholders.forEach((old) => {
+        pipelineCheckpoint('PLACEHOLDER_REPLACED', {
+          oldId: old.id,
+          newId: String(videoData.id),
+          vault: 'mp4'
+        });
+      });
+      newFeed[cat] = before.filter(
+        (r) => !(r?.isPlaceholder && matchCanonicalFeedIdentity(r, probe))
+      );
+    }
   });
+
+  const existingMatch = findCanonicalFeedMatch(newFeed, probe);
   const vaultPlaybackUrl = String(videoData?.playbackUrl || videoData?.playback_url || '').trim();
   const vaultPlaybackStatus = String(
     videoData?.playbackStatus || videoData?.playback_status || ''
   ).trim();
+  const relativeUrl = toRelativeMediaPath(String(videoData.url || '')) || String(videoData.url || '');
+  const relativeThumb = videoData.thumbnail
+    ? toRelativeMediaPath(String(videoData.thumbnail)) || String(videoData.thumbnail)
+    : '';
+
+  let persistentEntry = null;
+  try {
+    const titles = JSON.parse(localStorage.getItem(CONFIG.TITLES_STORAGE_KEY) || '{}');
+    persistentEntry = titles[String(videoData.id)] || null;
+  } catch {
+    persistentEntry = null;
+  }
+
+  const protectedTitle = resolveProtectedFeedTitle({
+    existing: existingMatch?.reel || null,
+    persistent: persistentEntry,
+    catalogTitle: String(videoData.title || '').replace(/\.[^/.]+$/, '') || '',
+    filenameFallback: stem
+  });
+
+  if (existingMatch) {
+    // Phase 6.6.2 — upsert: update existing canonical row; never insert a twin.
+    const prev = existingMatch.reel;
+    const merged = {
+      ...prev,
+      id: String(prev.id || videoData.id),
+      personal_video_id: String(prev.personal_video_id || videoData.id),
+      isPersonalVideo: true,
+      isPlaceholder: false,
+      type: 'video',
+      url: relativeUrl || prev.url,
+      thumbnailUrl: relativeThumb || prev.thumbnailUrl || prev.posterUrl || '',
+      posterUrl: relativeThumb || prev.posterUrl || prev.thumbnailUrl || '',
+      category: existingMatch.shelf || primaryCategory,
+      title: protectedTitle.title || prev.title || stem,
+      name: protectedTitle.title || prev.name || stem,
+      title_original: protectedTitle.title_original || prev.title_original || protectedTitle.title,
+      _localModified: protectedTitle.protected || Boolean(prev._localModified),
+      ...(vaultPlaybackUrl ? { playbackUrl: vaultPlaybackUrl } : {}),
+      ...(vaultPlaybackStatus ? { playbackStatus: vaultPlaybackStatus } : {})
+    };
+    if (!merged.playbackUrl || String(merged.playbackStatus || '').toLowerCase() !== 'ready') {
+      const u = String(prev.playbackUrl || prev.playback_url || '').trim();
+      const s = String(prev.playbackStatus || prev.playback_status || '').trim();
+      if (u) merged.playbackUrl = merged.playbackUrl || u;
+      if (s) merged.playbackStatus = merged.playbackStatus || s;
+    }
+
+    // Remove all identity matches (including same-shelf twins), then place one updated row.
+    const stripped = removeCanonicalFeedMatches(newFeed, probe);
+    newFeed = stripped.feedMap;
+    const shelf = existingMatch.shelf || primaryCategory;
+    if (!newFeed[shelf]) newFeed[shelf] = [];
+    newFeed[shelf] = [merged, ...(newFeed[shelf] || [])];
+
+    console.info('[CANONICAL_FEED_UPSERT]', {
+      stage: 'AI_CLEANUP_AGENT.distributeVideoToFeed',
+      action: 'update',
+      id: String(videoData?.id || ''),
+      shelf,
+      removedTwins: stripped.removed,
+      normalizedUrl: normalizeMediaUrl(relativeUrl),
+      titleSource: protectedTitle.source,
+      ts: new Date().toISOString()
+    });
+    return newFeed;
+  }
+
   const reel = {
   ...createLocalReel({
   id: String(videoData.id),
-  name: videoData.name.replace(/\.[^/.]+$/, ''),
+  name: protectedTitle.title || stem,
+  title: protectedTitle.title || stem,
   type: 'video',
-  url: toRelativeMediaPath(String(videoData.url || '')) || String(videoData.url || ''),
-  thumbnailUrl: videoData.thumbnail ? (toRelativeMediaPath(String(videoData.thumbnail)) || String(videoData.thumbnail)) : '',
+  url: relativeUrl,
+  thumbnailUrl: relativeThumb,
   category: primaryCategory,
   isPlaceholder: false,
   isPersonalVideo: true,
@@ -302,23 +393,24 @@ export function createAiCleanupAgent(deps) {
   auto_detected: true,
   detection_confidence: 'High',
   createdAt: videoData.addedAt || new Date().toISOString(),
-  // Carry catalog/worker derivative fields through vault → feed redistribute.
   ...(vaultPlaybackUrl ? { playbackUrl: vaultPlaybackUrl } : {}),
   ...(vaultPlaybackStatus ? { playbackStatus: vaultPlaybackStatus } : {})
   })
   };
-  // If vault entry lags catalog, keep derivative fields already on feed cards for this asset.
+  if (protectedTitle.protected) {
+    reel.title_original = protectedTitle.title_original || protectedTitle.title;
+    reel._localModified = true;
+  } else {
+    reel.title_original = protectedTitle.title_original || protectedTitle.title || stem;
+  }
+
+  // Inherit ready playback fields from any prior non-canonical leftovers.
   if (!reel.playbackUrl || String(reel.playbackStatus || '').toLowerCase() !== 'ready') {
     let inheritedUrl = '';
     let inheritedStatus = '';
     for (const cat of categoriesList) {
       for (const existing of currentFeed[cat] || []) {
-        if (!existing) continue;
-        const sameId =
-          String(existing.personal_video_id || existing.id || '') === String(videoData.id || '');
-        const sameUrl =
-          existing.url && videoData.url && String(existing.url) === String(videoData.url);
-        if (!sameId && !sameUrl) continue;
+        if (!existing || !matchCanonicalFeedIdentity(existing, probe)) continue;
         const u = String(existing.playbackUrl || existing.playback_url || '').trim();
         const s = String(existing.playbackStatus || existing.playback_status || '').trim();
         if (u && s.toLowerCase() === 'ready') {
@@ -334,19 +426,16 @@ export function createAiCleanupAgent(deps) {
     if (inheritedUrl) reel.playbackUrl = reel.playbackUrl || inheritedUrl;
     if (inheritedStatus) reel.playbackStatus = reel.playbackStatus || inheritedStatus;
   }
-  // Keep Studio rename overlay when vault redistribute replaces catalog cards.
-  try {
-    const titles = JSON.parse(localStorage.getItem(CONFIG.TITLES_STORAGE_KEY) || '{}');
-    const saved = titles[String(videoData.id)];
-    if (saved?.title) {
-      reel.title = saved.title;
-      reel.name = saved.title;
-      reel.title_original = saved.title_original || saved.title;
-      reel._localModified = true;
-    }
-  } catch {
-    /* ignore */
-  }
+
+  console.info('[CANONICAL_FEED_UPSERT]', {
+    stage: 'AI_CLEANUP_AGENT.distributeVideoToFeed',
+    action: 'insert',
+    id: String(videoData?.id || ''),
+    shelf: primaryCategory,
+    normalizedUrl: normalizeMediaUrl(relativeUrl),
+    titleSource: protectedTitle.source,
+    ts: new Date().toISOString()
+  });
   console.info('[HERO_ROUTE]', {
   stage: 'AI_CLEANUP_AGENT.distributeVideoToFeed',
   id: String(videoData?.id || ''),

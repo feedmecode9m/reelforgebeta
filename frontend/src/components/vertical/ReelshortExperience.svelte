@@ -147,6 +147,7 @@
         collectIdentityDedupedFeedMap,
         collectRealViewerReels
     } from '../../lib/feed/viewerSemanticShell.js';
+    import { composeViewerShelfLayouts } from '../../lib/feed/viewerShelfComposition.js';
     import { resolveViewerAssetId } from '../../lib/feed/viewerIdentityDedupe.js';
     import { logViewerMediaIdentityDiagnostics } from '../../lib/feed/viewerMediaIdentity.js';
     import '../../viewer/cinematicCardTokens.css';
@@ -343,6 +344,7 @@
     }
 
     /** Phase 6.4/6.5 — identity-first card resolution (video canonical; thumb → poster). */
+    /** Phase 6.6 — Featured promo remount OK; Browse = residual identities only. */
     /** @type {Record<string, unknown[]>} */
     let identityFeedMap = {};
     /** @type {Map<string, Record<string, unknown>>} */
@@ -350,9 +352,13 @@
     $: identityDedupe = collectIdentityDedupedFeedMap($normalizedFeed || $feed || {});
     $: identityFeedMap = identityDedupe.feedMap;
     $: identityResolvedById = identityDedupe.resolvedById;
-    /** Featured + browse layouts from identity-deduped feed (presentation only). */
     $: realViewerItems = collectRealViewerReels($normalizedFeed || $feed || {});
-    $: featuredItem = realViewerItems[0] || null;
+    $: shelfComposition = composeViewerShelfLayouts($normalizedFeed || $feed || {}, {
+        uniqueItems: realViewerItems,
+        identityFeedMap
+    });
+    $: featuredItem = shelfComposition.featuredItem || null;
+    $: browseItems = shelfComposition.browseItems || [];
     $: if (section === 'feed') {
         const flat = Object.values($normalizedFeed || $feed || {})
             .flat()
@@ -361,6 +367,9 @@
             /** @type {Record<string, unknown>[]} */ (flat),
             'ReelshortExperience:feed'
         );
+        if (import.meta.env.DEV) {
+            console.info('[VIEWER_SHELF_COMPOSITION]', shelfComposition.diagnostics);
+        }
     }
 
     function activateReel(reel, category) {
@@ -621,11 +630,11 @@
         {/if}
     {/each}
 
-    {#if realViewerItems.length > 1}
+    {#if browseItems.length > 0}
         <section class="viewer-browse" data-viewer-browse-grid aria-label="Browse">
             <h2 class="viewer-browse__heading">Browse</h2>
             <div class="viewer-browse__grid">
-                {#each realViewerItems as item (item.reel.id)}
+                {#each browseItems as item (item.reel.id)}
                     {@const gridReel = item.reel}
                     {@const gridCategory = item.shelf}
                     {@const gridResolved = item.resolvedMedia || resolveCardMedia(

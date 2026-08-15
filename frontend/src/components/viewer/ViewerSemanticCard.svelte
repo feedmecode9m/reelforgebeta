@@ -2,6 +2,7 @@
   /**
    * Audience-facing cinematic landscape card shell.
    * Phase 6.2 — badges, title overlay, hierarchy, elegant empty states.
+   * Phase 6.6.3 — single title per card (no overlay + metadata double stamp).
    * Media stays 16:9 centerpiece. No invented metadata.
    */
   import '../../viewer/cinematicCardTokens.css';
@@ -44,6 +45,8 @@
     ? `viewer-sem-card--anim-${resolvedShell.animationBehavior}`
     : 'viewer-sem-card--anim-parallax';
   $: hasTitle = Boolean(String(resolvedShell?.title || '').trim());
+  /** Featured: title on poster. Row/grid: title in info block. Never both. */
+  $: titlePlacement = variant === 'featured' ? 'overlay' : 'info';
   $: badgeList = Array.isArray(resolvedShell?.badges)
     ? resolvedShell.badges.map(String).filter(Boolean).slice(0, 3)
     : [];
@@ -115,8 +118,13 @@
           </div>
         {/if}
 
-        {#if hasTitle}
-          <h3 class="viewer-sem-card__title-overlay" data-viewer-sem-title-overlay>
+        {#if hasTitle && titlePlacement === 'overlay'}
+          <h3
+            class="viewer-sem-card__title-overlay"
+            data-viewer-sem-title
+            data-viewer-sem-title-overlay
+            data-vault-card-title
+          >
             {resolvedShell.title}
           </h3>
         {/if}
@@ -130,11 +138,11 @@
       </div>
 
       <div class="viewer-sem-card__info" data-viewer-sem-hierarchy>
-        {#if hasTitle}
+        {#if hasTitle && titlePlacement === 'info'}
           <h3 class="viewer-sem-card__title" data-viewer-sem-title data-vault-card-title>
             {resolvedShell.title}
           </h3>
-        {:else}
+        {:else if !hasTitle}
           <p class="viewer-sem-card__title-empty" data-viewer-sem-title-empty aria-hidden="true">
             Untitled
           </p>
@@ -278,7 +286,7 @@
     position: absolute;
     left: 0.85rem;
     right: 0.85rem;
-    bottom: 2.4rem;
+    bottom: 0.85rem;
     z-index: 2;
     margin: 0;
     font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
@@ -290,7 +298,11 @@
   }
   .viewer-sem-card--featured .viewer-sem-card__title-overlay {
     font-size: clamp(1.2rem, 2vw, 1.55rem);
-    bottom: 2.6rem;
+    bottom: 1rem;
+  }
+  /* Featured keeps shelf/meta under the frame; title lives on the poster only. */
+  .viewer-sem-card--featured .viewer-sem-card__info {
+    padding-top: 0.7rem;
   }
   .viewer-sem-card__play {
     position: absolute;

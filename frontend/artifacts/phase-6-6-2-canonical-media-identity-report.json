@@ -1,0 +1,20 @@
+{
+  "phase": "PHASE-6-6-2-CANONICAL-MEDIA-IDENTITY-UPSERT",
+  "status": "PASS",
+  "duplicatesBefore": 1,
+  "duplicatesAfter": 0,
+  "recordsBefore": 2,
+  "recordsAfter": 1,
+  "merge": {
+    "catalogPlusVaultAction": "update",
+    "titleAfterMerge": "Arrival: First Contact",
+    "vaultRerunAction": "update"
+  },
+  "mutations": {
+    "fetchMutations": 0
+  },
+  "files": [
+    "frontend/src/lib/feed/canonicalMediaIdentity.js",
+    "frontend/src/lib/viewer/aiCleanupAgent.js"
+  ]
+}

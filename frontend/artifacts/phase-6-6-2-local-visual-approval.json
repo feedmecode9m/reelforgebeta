@@ -1,0 +1,338 @@
+{
+  "phase": "PHASE-6-6-2-LOCAL-VISUAL-APPROVAL",
+  "timestamp": "2026-08-13T17:14:39.820Z",
+  "checks": {
+    "trendingBaseline": {
+      "cards": [
+        {
+          "assetId": "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee",
+          "title": "01 ARRIVAL OPEN v1",
+          "mediaSource": "video",
+          "mediaType": "video",
+          "posterUrl": "http://localhost:8080/thumbs/73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee.jpg",
+          "variant": "featured",
+          "featured": true,
+          "shelf": "",
+          "browse": false,
+          "hasImg": true,
+          "imgNatural": {
+            "w": 1080,
+            "h": 1920
+          },
+          "imgComplete": true
+        },
+        {
+          "assetId": "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee",
+          "title": "01 ARRIVAL OPEN v1",
+          "mediaSource": "video",
+          "mediaType": "video",
+          "posterUrl": "http://localhost:8080/thumbs/73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee.jpg",
+          "variant": "row",
+          "featured": false,
+          "shelf": "Trending",
+          "browse": false,
+          "hasImg": true,
+          "imgNatural": {
+            "w": 1080,
+            "h": 1920
+          },
+          "imgComplete": true
+        }
+      ],
+      "counts": {
+        "dom": 2,
+        "featured": 1,
+        "trending": 1,
+        "browse": 0,
+        "arrivalTrendingDom": 1,
+        "arrivalFeedRows": 1,
+        "uniqueDomIds": 1
+      },
+      "arrivalTrending": [
+        {
+          "assetId": "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee",
+          "title": "01 ARRIVAL OPEN v1",
+          "mediaSource": "video",
+          "mediaType": "video",
+          "posterUrl": "http://localhost:8080/thumbs/73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee.jpg",
+          "variant": "row",
+          "featured": false,
+          "shelf": "Trending",
+          "browse": false,
+          "hasImg": true,
+          "imgNatural": {
+            "w": 1080,
+            "h": 1920
+          },
+          "imgComplete": true
+        }
+      ],
+      "featured": [
+        {
+          "assetId": "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee",
+          "title": "01 ARRIVAL OPEN v1",
+          "mediaSource": "video",
+          "mediaType": "video",
+          "posterUrl": "http://localhost:8080/thumbs/73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee.jpg",
+          "variant": "featured",
+          "featured": true,
+          "shelf": "",
+          "browse": false,
+          "hasImg": true,
+          "imgNatural": {
+            "w": 1080,
+            "h": 1920
+          },
+          "imgComplete": true
+        }
+      ],
+      "browse": [],
+      "imgLeak": [],
+      "feedArrivalTitles": [
+        "01 ARRIVAL OPEN v1"
+      ],
+      "feedTrendingIds": [
+        {
+          "id": "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee",
+          "title": "01 ARRIVAL OPEN v1",
+          "type": "video"
+        }
+      ]
+    },
+    "trendingBaselineVerdict": "PASS",
+    "titleEditVerdict": "PASS",
+    "titleEdit": {
+      "patch": {
+        "status": 404,
+        "text": ""
+      },
+      "afterEdit": {
+        "cards": [
+          {
+            "assetId": "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee",
+            "title": "Arrival Opening Sequence",
+            "mediaSource": "video",
+            "mediaType": "video",
+            "posterUrl": "http://localhost:8080/thumbs/73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee.jpg",
+            "variant": "featured",
+            "featured": true,
+            "shelf": "",
+            "browse": false,
+            "hasImg": true,
+            "imgNatural": {
+              "w": 1080,
+              "h": 1920
+            },
+            "imgComplete": true
+          },
+          {
+            "assetId": "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee",
+            "title": "Arrival Opening Sequence",
+            "mediaSource": "video",
+            "mediaType": "video",
+            "posterUrl": "http://localhost:8080/thumbs/73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee.jpg",
+            "variant": "row",
+            "featured": false,
+            "shelf": "Trending",
+            "browse": false,
+            "hasImg": true,
+            "imgNatural": {
+              "w": 1080,
+              "h": 1920
+            },
+            "imgComplete": true
+          }
+        ],
+        "counts": {
+          "dom": 2,
+          "featured": 1,
+          "trending": 1,
+          "browse": 0,
+          "arrivalTrendingDom": 1,
+          "arrivalFeedRows": 1,
+          "uniqueDomIds": 1
+        },
+        "arrivalTrending": [
+          {
+            "assetId": "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee",
+            "title": "Arrival Opening Sequence",
+            "mediaSource": "video",
+            "mediaType": "video",
+            "posterUrl": "http://localhost:8080/thumbs/73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee.jpg",
+            "variant": "row",
+            "featured": false,
+            "shelf": "Trending",
+            "browse": false,
+            "hasImg": true,
+            "imgNatural": {
+              "w": 1080,
+              "h": 1920
+            },
+            "imgComplete": true
+          }
+        ],
+        "featured": [
+          {
+            "assetId": "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee",
+            "title": "Arrival Opening Sequence",
+            "mediaSource": "video",
+            "mediaType": "video",
+            "posterUrl": "http://localhost:8080/thumbs/73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee.jpg",
+            "variant": "featured",
+            "featured": true,
+            "shelf": "",
+            "browse": false,
+            "hasImg": true,
+            "imgNatural": {
+              "w": 1080,
+              "h": 1920
+            },
+            "imgComplete": true
+          }
+        ],
+        "browse": [],
+        "imgLeak": [],
+        "feedArrivalTitles": [
+          "Arrival Opening Sequence"
+        ],
+        "feedTrendingIds": [
+          {
+            "id": "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee",
+            "title": "Arrival Opening Sequence",
+            "type": "video"
+          }
+        ]
+      },
+      "uniqueArrivalTitles": [
+        "Arrival Opening Sequence"
+      ],
+      "hasCustom": true,
+      "hasOldAndNew": false,
+      "feedRows": 1,
+      "trendingDom": 1
+    },
+    "vaultSync": {
+      "afterSync": {
+        "cards": [
+          {
+            "assetId": "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee",
+            "title": "Arrival Opening Sequence",
+            "mediaSource": "video",
+            "mediaType": "video",
+            "posterUrl": "http://localhost:8080/thumbs/73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee.jpg",
+            "variant": "featured",
+            "featured": true,
+            "shelf": "",
+            "browse": false,
+            "hasImg": true,
+            "imgNatural": {
+              "w": 1080,
+              "h": 1920
+            },
+            "imgComplete": true
+          },
+          {
+            "assetId": "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee",
+            "title": "Arrival Opening Sequence",
+            "mediaSource": "video",
+            "mediaType": "video",
+            "posterUrl": "http://localhost:8080/thumbs/73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee.jpg",
+            "variant": "row",
+            "featured": false,
+            "shelf": "Trending",
+            "browse": false,
+            "hasImg": true,
+            "imgNatural": {
+              "w": 1080,
+              "h": 1920
+            },
+            "imgComplete": true
+          }
+        ],
+        "counts": {
+          "dom": 2,
+          "featured": 1,
+          "trending": 1,
+          "browse": 0,
+          "arrivalTrendingDom": 1,
+          "arrivalFeedRows": 1,
+          "uniqueDomIds": 1
+        },
+        "arrivalTrending": [
+          {
+            "assetId": "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee",
+            "title": "Arrival Opening Sequence",
+            "mediaSource": "video",
+            "mediaType": "video",
+            "posterUrl": "http://localhost:8080/thumbs/73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee.jpg",
+            "variant": "row",
+            "featured": false,
+            "shelf": "Trending",
+            "browse": false,
+            "hasImg": true,
+            "imgNatural": {
+              "w": 1080,
+              "h": 1920
+            },
+            "imgComplete": true
+          }
+        ],
+        "featured": [
+          {
+            "assetId": "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee",
+            "title": "Arrival Opening Sequence",
+            "mediaSource": "video",
+            "mediaType": "video",
+            "posterUrl": "http://localhost:8080/thumbs/73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee.jpg",
+            "variant": "featured",
+            "featured": true,
+            "shelf": "",
+            "browse": false,
+            "hasImg": true,
+            "imgNatural": {
+              "w": 1080,
+              "h": 1920
+            },
+            "imgComplete": true
+          }
+        ],
+        "browse": [],
+        "imgLeak": [],
+        "feedArrivalTitles": [
+          "Arrival Opening Sequence"
+        ],
+        "feedTrendingIds": [
+          {
+            "id": "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee",
+            "title": "Arrival Opening Sequence",
+            "type": "video"
+          }
+        ]
+      },
+      "feedRows": 1,
+      "trendingDom": 1,
+      "titles": [
+        "Arrival Opening Sequence"
+      ],
+      "twinTitles": false
+    },
+    "vaultSyncVerdict": "PASS",
+    "layout": {
+      "featured": 1,
+      "trending": 1,
+      "browse": 0,
+      "arrivalFeatured": 1,
+      "arrivalTrending": 1,
+      "arrivalBrowse": 0,
+      "uniqueIds": 1
+    },
+    "layoutVerdict": "PASS",
+    "lifecycle": {
+      "note": "Interactive MP4 drop not automated in this visual pass (studio freeze risk). Progress UI retained in prior Phase 6.3 validators.",
+      "scriptCount": 2,
+      "verdict": "DEFER_TO_HUMAN_OR_PHASE_6_3"
+    }
+  },
+  "pageErrors": [],
+  "overall": "PASS"
+}

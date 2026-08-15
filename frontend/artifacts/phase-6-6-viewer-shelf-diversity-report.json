@@ -1,0 +1,45 @@
+{
+  "phase": "PHASE-6-6-VIEWER-SHELF-DIVERSITY",
+  "status": "PASS",
+  "diagnostics": {
+    "policy": "featured_promo_remount_browse_residual",
+    "featuredId": "f727b62e-af4e-4e06-9c36-8312ddb735a8",
+    "featuredTitle": "03 CLUB POOM POOM V1",
+    "shelfIdentityCount": 2,
+    "browseIdentityCount": 0,
+    "uniqueIdentityCount": 2,
+    "projectedDomCardCount": 3,
+    "note": "Featured may remount one shelf identity; Browse never repeats shelf/Featured identities."
+  },
+  "placements": [
+    {
+      "assetId": "f727b62e-af4e-4e06-9c36-8312ddb735a8",
+      "title": "03 CLUB POOM POOM V1",
+      "Featured": true,
+      "shelves": [
+        "Trending"
+      ],
+      "Browse": false,
+      "placementCount": 2
+    },
+    {
+      "assetId": "03ef898a-989f-42c3-bdbb-67f37338df65",
+      "title": "01 ARRIVAL OPEN v1",
+      "Featured": false,
+      "shelves": [
+        "Trending"
+      ],
+      "Browse": false,
+      "placementCount": 1
+    }
+  ],
+  "residualBrowseIds": [
+    "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
+  ],
+  "mutations": {
+    "fetchMutations": 0,
+    "categoryPatch": 0,
+    "titleWrites": 0,
+    "descriptionWrites": 0
+  }
+}
