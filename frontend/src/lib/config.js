@@ -194,6 +194,35 @@ function isMediaPath(pathname) {
     return pathname.startsWith('/videos/') || pathname.startsWith('/thumbs/');
 }
 
+function isLoopbackHostname(hostname) {
+    const host = String(hostname || '').toLowerCase();
+    return host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0' || host === '::1';
+}
+
+/**
+ * Firefox Opaque Response Blocking rejects cross-origin <video>/<img> from :8080
+ * while the app is on :5173. In local DEV, load loopback /videos and /thumbs
+ * through the Vite proxy (same origin). Never rewrite Railway/R2/CDN hosts.
+ * @param {string} url
+ * @returns {string}
+ */
+export function rewriteDevLoopbackMediaToSameOrigin(url) {
+    if (!shouldUseSameOriginMediaInDev()) return url;
+    const trimmed = String(url || '').trim();
+    if (!/^https?:\/\//i.test(trimmed)) return trimmed;
+    try {
+        const parsed = new URL(trimmed);
+        if (!isLoopbackHostname(parsed.hostname)) return trimmed;
+        if (!isMediaPath(parsed.pathname)) return trimmed;
+        const backendPort = String(BACKEND_PORT || '8080');
+        if (parsed.port && parsed.port !== backendPort) return trimmed;
+        if (!parsed.port && backendPort !== '80' && backendPort !== '443') return trimmed;
+        return `${parsed.pathname}${parsed.search}`;
+    } catch {
+        return trimmed;
+    }
+}
+
 /**
  * Strip backend origin (or fix double-prefix corruption) → `/videos/...` or `/thumbs/...`.
  * @param {string | null | undefined} path
@@ -233,8 +262,8 @@ export function toRelativeMediaPath(path) {
 
 /**
  * Normalize any media path to a browser-loadable URL.
- * Default: full backend origin (http://localhost:8080/...) so media never hits Vite :5173.
- * Idempotent — safe to call on already-resolved absolute URLs.
+ * Local DEV: same-origin `/videos` and `/thumbs` via Vite proxy (Firefox ORB-safe).
+ * Production: absolute CDN/backend origin. Idempotent.
  * @param {string | null | undefined} path
  * @returns {string}
  */
@@ -244,8 +273,18 @@ export function toBackendMediaUrl(path) {
     if (!trimmed) return '';
     if (trimmed.startsWith('blob:') || trimmed.startsWith('data:')) return trimmed;
 
-    // Absolute http(s) — never strip host / rebuild from path only.
+    // Absolute http(s) — keep CDN/R2 hosts. Local loopback media uses the Vite proxy.
     if (/^https?:\/\//i.test(trimmed)) {
+        const rewritten = rewriteDevLoopbackMediaToSameOrigin(trimmed);
+        if (rewritten !== trimmed) {
+            logResolvedMediaUrl(
+                'media',
+                rewritten,
+                trimmed,
+                'toBackendMediaUrl:dev-loopback-same-origin'
+            );
+            return rewritten;
+        }
         logResolvedMediaUrl('media', trimmed, trimmed, 'toBackendMediaUrl:absolute_passthrough');
         return trimmed;
     }

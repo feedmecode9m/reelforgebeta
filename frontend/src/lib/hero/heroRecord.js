@@ -261,6 +261,16 @@ function normalizeAssetMediaFields(input) {
         mediaUrl = mediaUrl || videoUrl;
         if (posterUrl && isUnsafeHeroMediaUrl(posterUrl)) posterUrl = '';
         if (posterUrl && !isDurableHeroMediaUrl(posterUrl)) posterUrl = '';
+        // Video playback URL is never a poster. Missing artwork stays empty.
+        if (
+            posterUrl &&
+            (posterUrl === mediaUrl ||
+                posterUrl === videoUrl ||
+                VIDEO_EXT.test(posterUrl) ||
+                posterUrl.toLowerCase().includes('/videos/'))
+        ) {
+            posterUrl = '';
+        }
     } else if (mediaKind === 'image') {
         posterUrl = posterUrl || mediaUrl;
         mediaUrl = mediaUrl || posterUrl;
@@ -949,9 +959,14 @@ function interpretHeroReel(reel) {
               : inferMediaKind(mediaUrl, String(row.type || ''));
     if (mediaKind !== 'image' && mediaKind !== 'video') return null;
 
-    const thumb = String(row.thumbnail || row.thumbnailUrl || row.posterUrl || '').trim();
+    const thumb = String(
+        row.thumbnail || row.thumbnailUrl || row.posterUrl || row.previewUrl || ''
+    ).trim();
     const posterUrl =
-        mediaKind === 'video' && isDurableHeroMediaUrl(thumb)
+        mediaKind === 'video' &&
+        isDurableHeroMediaUrl(thumb) &&
+        !VIDEO_EXT.test(thumb) &&
+        !String(thumb).toLowerCase().includes('/videos/')
             ? thumb
             : mediaKind === 'image'
               ? mediaUrl

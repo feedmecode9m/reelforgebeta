@@ -81,6 +81,88 @@ function pickId(raw) {
  * @param {Record<string, unknown>} raw
  * @param {'video' | 'image'} kind
  */
+const VIDEO_MEDIA_EXT = /\.(mp4|mov|webm|m4v|avi|mkv)(\?|$)/i;
+const IMAGE_MEDIA_EXT = /\.(jpe?g|png|webp|gif)(\?|$)/i;
+
+/**
+ * True when a URL is a video file / playback path (never valid as an <img> src).
+ * blob:/data: are classified by mime at the card face, not here.
+ * @param {unknown} url
+ */
+export function isVaultVideoMediaUrl(url) {
+    const s = String(url || '').trim();
+    if (!s) return false;
+    if (s.startsWith('blob:') || s.startsWith('data:')) return false;
+    if (VIDEO_MEDIA_EXT.test(s)) return true;
+    if (/\/videos\//i.test(s) && !/\/thumbs\//i.test(s) && !IMAGE_MEDIA_EXT.test(s)) return true;
+    return false;
+}
+
+/**
+ * @param {unknown} url
+ */
+export function isVaultLocalPreviewUrl(url) {
+    const s = String(url || '').trim();
+    return s.startsWith('blob:') || s.startsWith('data:');
+}
+
+/**
+ * Vault card artwork source. Never uses a video playback URL as an image.
+ *
+ * Durable stills win over leftover blob/data localPreviewUrl so ready video
+ * cards can render <img>. Blobs are used only when no durable still exists.
+ *
+ * Priority: thumbnailUrl → thumbnail → posterUrl → previewUrl (non-blob)
+ *           → localPreviewUrl / blob preview
+ *
+ * @param {Record<string, unknown> | null | undefined} entry
+ * @returns {{ src: string; render: 'image' | 'local-preview' | 'empty' }}
+ */
+export function resolveVaultCardFace(entry) {
+    if (!entry || typeof entry !== 'object') {
+        return { src: '', render: 'empty' };
+    }
+    const type = String(entry.type || entry.assetType || entry.mimeType || '').toLowerCase();
+    const candidates = [
+        entry.thumbnailUrl,
+        entry.thumbnail_url,
+        entry.posterUrl,
+        entry.poster_url,
+        entry.poster,
+        entry.thumbnail,
+        entry.thumbnailPath,
+        entry.thumbnail_path,
+        entry.previewUrl,
+        entry.localPreviewUrl
+    ];
+    for (const candidate of candidates) {
+        const src = String(candidate ?? '').trim();
+        if (!src) continue;
+        if (src.startsWith('blob:') || src.startsWith('data:')) continue;
+        if (isVaultVideoMediaUrl(src)) continue;
+        return { src, render: 'image' };
+    }
+    for (const candidate of candidates) {
+        const src = String(candidate ?? '').trim();
+        if (!src) continue;
+        if (src.startsWith('data:image')) return { src, render: 'image' };
+        if (src.startsWith('data:video')) return { src, render: 'local-preview' };
+        if (src.startsWith('blob:')) {
+            if (type.startsWith('image/')) return { src, render: 'image' };
+            return { src, render: 'local-preview' };
+        }
+    }
+    return { src: '', render: 'empty' };
+}
+
+/**
+ * Image-or-preview URL for vault cards (empty when no still exists).
+ * @param {Record<string, unknown> | null | undefined} entry
+ */
+export function resolveVaultCardThumbnailUrl(entry) {
+    return resolveVaultCardFace(entry).src;
+}
+
 function pickUrls(raw, kind) {
     const url = firstString(
         raw.url,
@@ -92,6 +174,8 @@ function pickUrls(raw, kind) {
         raw.thumbnail_path
     );
     const thumbnailUrl = firstString(
+        raw.localPreviewUrl,
+        raw.previewUrl,
         raw.thumbnailUrl,
         raw.thumbnail_url,
         raw.thumbnail,
@@ -106,7 +190,8 @@ function pickUrls(raw, kind) {
         const media = url || thumbnailUrl;
         return { url: media, thumbnailUrl: thumbnailUrl || media };
     }
-    return { url, thumbnailUrl };
+    const stillOrPreview = isVaultVideoMediaUrl(thumbnailUrl) ? '' : thumbnailUrl;
+    return { url, thumbnailUrl: stillOrPreview };
 }
 
 /**
@@ -162,7 +247,9 @@ export function normalizeVaultAsset(raw, options = {}) {
     const id = pickId(row);
     if (!id) return null;
 
-    const status = normalizeStatus(row.status ?? row.uploadStatus ?? row.vaultState);
+    const status = normalizeStatus(
+        row.status ?? row.uploadStatus ?? row.vaultState ?? row.uploadState
+    );
     if (options.requireReady !== false && isPendingOrFailedVaultStatus(status)) {
         return null;
     }
@@ -181,11 +268,17 @@ export function normalizeVaultAsset(raw, options = {}) {
     }
 
     const { url, thumbnailUrl } = pickUrls(row, kind);
+    const previewUrl = firstString(row.previewUrl, row.localPreviewUrl);
+    const localPreviewUrl = firstString(row.localPreviewUrl, row.previewUrl);
 
-    // Video requires a media url (thumb alone is not enough for video type).
+    // Video requires a media url (thumb alone is not enough for video type),
+    // except in-flight local File/blob previews (requireReady: false).
     if (kind === 'video' && !url) {
-        // May still be an image mis-tagged — promote image if only thumbnail present
-        if (thumbnailUrl) {
+        const localPreview =
+            isVaultLocalPreviewUrl(previewUrl) || isVaultLocalPreviewUrl(thumbnailUrl);
+        if (localPreview && options.requireReady === false) {
+            // keep video + blob thumbnail
+        } else if (thumbnailUrl && !isVaultVideoMediaUrl(thumbnailUrl) && !isVaultLocalPreviewUrl(thumbnailUrl)) {
             kind = 'image';
         } else {
             return null;
@@ -239,8 +332,21 @@ export function normalizeVaultAsset(raw, options = {}) {
         title,
         displayTitle,
         type: kind,
-        url: url || thumbnailUrl,
-        thumbnailUrl: thumbnailUrl || url,
+        url: kind === 'video' ? url : url || thumbnailUrl,
+        mediaUrl: firstString(row.mediaUrl, kind === 'video' ? url : url || thumbnailUrl),
+        videoUrl: kind === 'video' ? firstString(row.videoUrl, row.video_url, url) : '',
+        thumbnailUrl: kind === 'video' ? thumbnailUrl : thumbnailUrl || url,
+        posterUrl: firstString(
+            row.posterUrl,
+            row.poster_url,
+            kind === 'video' && !isVaultVideoMediaUrl(thumbnailUrl) && !isVaultLocalPreviewUrl(thumbnailUrl)
+                ? thumbnailUrl
+                : kind === 'image'
+                  ? thumbnailUrl || url
+                  : ''
+        ),
+        previewUrl,
+        localPreviewUrl,
         status: status === 'complete' || status === 'completed' ? 'ready' : status || 'ready',
         createdAt: createdAt || null,
         category,

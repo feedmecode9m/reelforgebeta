@@ -40,6 +40,38 @@ export function normalizeMediaUrl(url) {
     return raw;
 }
 
+function isPosterLikeMediaUrl(url) {
+    const raw = text(url).split('?')[0].toLowerCase();
+    if (!raw) return false;
+    return /\.(jpe?g|png|webp|gif|avif)$/i.test(raw) || raw.includes('/thumbs/');
+}
+
+function isVideoLikeMediaUrl(url) {
+    const raw = text(url).split('?')[0].toLowerCase();
+    if (!raw) return false;
+    return (
+        /\.(mp4|m4v|mov|webm|mkv)$/i.test(raw) ||
+        raw.includes('/videos/') ||
+        (raw.includes('/prod/') && /\.mp4$/i.test(raw))
+    );
+}
+
+/**
+ * Playback/media URL used for identity. Poster/thumbnail never identify a video.
+ * @param {Record<string, unknown>} row
+ */
+function identityPlaybackUrl(row) {
+    const type = text(row.type || row.mediaType || row.media_type).toLowerCase();
+    const candidates = [row.video_url, row.playbackUrl, row.mediaUrl, row.url].map(text);
+    const videoUrl = candidates.find((u) => isVideoLikeMediaUrl(u)) || '';
+    if (type === 'video' || type.startsWith('video/') || videoUrl) {
+        return videoUrl;
+    }
+    const fallback = text(row.url || row.mediaUrl || row.video_url || row.playbackUrl);
+    if (isPosterLikeMediaUrl(fallback) && type === 'video') return '';
+    return fallback;
+}
+
 /**
  * Basename stem for filename-hash identity (never used as title authority).
  * @param {unknown} value
@@ -92,7 +124,7 @@ export function resolveCanonicalMediaIdentity(reel = {}, meta = {}) {
     const assetId = text(row.id || row.assetId || row.mediaAssetId || row.reelId);
     const personalVideoId = text(row.personal_video_id || row.personalVideoId);
     const placeholderId = text(row.placeholderId || (row.isPlaceholder ? row.id : ''));
-    const mediaUrl = text(row.url || row.mediaUrl || row.video_url || row.playbackUrl);
+    const mediaUrl = identityPlaybackUrl(row);
     const normalizedMediaUrl = normalizeMediaUrl(mediaUrl);
     const fileKey = mediaFilenameHashKey(
         row.fileName || row.file_name || row.filename || row.originalFilename || row.name || mediaUrl
@@ -365,8 +397,8 @@ export function matchCanonicalFeedIdentity(existing, probe) {
     if (leftAsset && rightPersonal && leftAsset === rightPersonal) return true;
     if (leftPersonal && rightAsset && leftPersonal === rightAsset) return true;
 
-    const leftUrl = normalizeMediaUrl(left.url || left.mediaUrl || left.video_url || left.playbackUrl);
-    const rightUrl = normalizeMediaUrl(right.url || right.mediaUrl || right.video_url || right.playbackUrl);
+    const leftUrl = normalizeMediaUrl(identityPlaybackUrl(left));
+    const rightUrl = normalizeMediaUrl(identityPlaybackUrl(right));
     if (
         leftUrl &&
         rightUrl &&

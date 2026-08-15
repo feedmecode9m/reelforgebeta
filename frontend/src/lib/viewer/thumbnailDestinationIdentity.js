@@ -64,6 +64,13 @@ export function feedHasCatalogOwnedThumbnailCard(feedMap, assetId) {
         for (const row of items) {
             if (!row || typeof row !== 'object') continue;
             if (isSyntheticPersonalThumbnailFeedCard(row)) continue;
+            const type = String(/** @type {Record<string, unknown>} */ (row).type || '').toLowerCase();
+            const url = String(/** @type {Record<string, unknown>} */ (row).url || '');
+            const isVideo =
+                type.startsWith('video') ||
+                url.includes('/videos/') ||
+                /\.(mp4|mov|webm|m4v)(\?|$)/i.test(url);
+            if (isVideo) continue;
             const id = String(/** @type {Record<string, unknown>} */ (row).id || '').trim();
             if (!id) continue;
             if (id === target || canonicalThumbnailAssetId(row) === target) return true;

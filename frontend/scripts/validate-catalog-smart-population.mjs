@@ -14,6 +14,8 @@ import {
     enrichCatalogCard,
     __resetCatalogTempKeySeqForTests
 } from '../src/lib/feed/catalogInventory.js';
+import { resolveCanonicalMediaIdentity, sameCanonicalMediaIdentity } from '../src/lib/feed/canonicalMediaIdentity.js';
+import { resolveViewerMediaIdentities } from '../src/lib/feed/viewerMediaIdentity.js';
 import {
     classifyContent,
     detectShelfFromTitle,
@@ -21,7 +23,7 @@ import {
 } from '../src/lib/feed/contentClassifier.js';
 import { distributeToShelves } from '../src/lib/feed/categoryDistribution.js';
 import { applyShelfRotation, resolveRotationSeed } from '../src/lib/feed/shelfRotation.js';
-import { fillShelfPresentation } from '../src/lib/feed/fillShelfPresentation.js';
+import { fillShelfPresentation, pickFirstListWithRealCards, collectPlayableVideosFromFeedMap, mergeMissingVaultImageCards } from '../src/lib/feed/fillShelfPresentation.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
@@ -190,6 +192,79 @@ console.log('\n[temp→durable]');
     assert(!String(upgraded[0]._catalogTempKey || '').startsWith('temp:'), 'temp key cleared');
 }
 
+// --- Shared poster must not collapse distinct MP4s ---
+console.log('\n[shared-poster identity]');
+{
+    const sharedPoster = 'https://cdn.example/thumbs/shared-art.jpg';
+    const v1 = {
+        id: 'video-aaaa-1111-1111-111111111111',
+        type: 'video',
+        title: 'Clip A',
+        url: 'https://cdn.example/videos/video-aaaa.mp4',
+        thumbnailUrl: sharedPoster,
+        posterUrl: sharedPoster
+    };
+    const v2 = {
+        id: 'video-bbbb-2222-2222-222222222222',
+        type: 'video',
+        title: 'Clip B',
+        url: 'https://cdn.example/videos/video-bbbb.mp4',
+        thumbnailUrl: sharedPoster,
+        posterUrl: sharedPoster
+    };
+    const merged = mergeMediaInventory([], [v1, v2]);
+    assert(merged.length === 2, 'two MP4s with same poster remain two cards');
+
+    const ownPoster = mergeMediaInventory([], [
+        {
+            id: 'video-cccc-3333-3333-333333333333',
+            type: 'video',
+            url: 'https://cdn.example/videos/video-cccc.mp4',
+            thumbnailUrl: 'https://cdn.example/thumbs/video-cccc.jpg'
+        }
+    ]);
+    assert(ownPoster.length === 1, 'one MP4 with its poster remains one card');
+    assert(String(ownPoster[0].posterUrl || ownPoster[0].thumbnailUrl).includes('video-cccc.jpg'), 'own poster attached');
+
+    const noPoster = projectCatalogCard({
+        id: 'video-dddd-4444-4444-444444444444',
+        type: 'video',
+        url: '/videos/video-dddd.mp4',
+        mediaUrl: '/videos/video-dddd.mp4'
+    });
+    assert(
+        !String(noPoster.posterUrl || '').includes('.mp4'),
+        'missing video poster does not become posterUrl=video.mp4'
+    );
+
+    const idA = resolveCanonicalMediaIdentity(v1);
+    const idB = resolveCanonicalMediaIdentity(v2);
+    assert(idA.canonicalId !== idB.canonicalId, 'canonical ids differ for distinct videos');
+    assert(idA.identityVia === 'assetId', 'video identity via assetId');
+    assert(!sameCanonicalMediaIdentity(v1, v2), 'shared poster does not sameCanonicalMediaIdentity');
+
+    const posterAsUrl = resolveCanonicalMediaIdentity({
+        id: '',
+        type: 'video',
+        url: sharedPoster,
+        video_url: 'https://cdn.example/videos/real.mp4',
+        posterUrl: sharedPoster
+    });
+    assert(
+        posterAsUrl.normalizedMediaUrl.includes('/videos/real.mp4') ||
+            posterAsUrl.canonicalId.includes('real.mp4'),
+        'video identity prefers playback URL over poster'
+    );
+
+    const viewer = resolveViewerMediaIdentities([v1, v2, {
+        id: 'img-shared',
+        type: 'image',
+        url: sharedPoster,
+        thumbnailUrl: sharedPoster
+    }]);
+    assert(viewer.canonical.filter((c) => c.kind === 'video').length === 2, 'viewer keeps two video identities');
+}
+
 // --- Classification (discovery only) ---
 console.log('\n[classification]');
 {
@@ -298,6 +373,41 @@ console.log('\n[placeholders]');
         { globalRealCount: 1 }
     );
     assert(withReal.length === 1, 'real shelf not padded');
+}
+
+console.log('\n[trending-source-fallback]');
+{
+    const emptyIdentity = [];
+    const feedVideos = [
+        { id: 'v1', type: 'video', url: '/videos/v1.mp4', isPersonalVideo: true, category: 'Romance' }
+    ];
+    const picked = pickFirstListWithRealCards([emptyIdentity, feedVideos]);
+    assert(picked.length === 1, 'empty identity array does not hide feed videos');
+
+    const recovered = collectPlayableVideosFromFeedMap({
+        Trending: [],
+        Romance: feedVideos
+    });
+    assert(recovered.length === 1 && recovered[0].id === 'v1', 'Trending fallback collects playable videos from other shelves');
+
+    const identityVideos = [
+        { id: 'v1', type: 'video', url: '/videos/v1.mp4', thumbnailUrl: '/thumbs/v1.jpg' }
+    ];
+    const feedWithVaultStill = [
+        ...identityVideos,
+        {
+            id: 'personal-thumb-vault-still-1',
+            type: 'image',
+            url: '/thumbs/still-1.jpg',
+            isPersonalThumbnail: true,
+            publishableImage: true
+        }
+    ];
+    const merged = mergeMissingVaultImageCards(identityVideos, [feedWithVaultStill]);
+    assert(
+        merged.length === 2 && merged.some((r) => r.id === 'personal-thumb-vault-still-1'),
+        'identity videos do not hide thumbnail vault stills'
+    );
 }
 
 // --- Rotation stability ---

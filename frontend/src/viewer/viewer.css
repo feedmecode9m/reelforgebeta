@@ -401,6 +401,20 @@ display: block;
 min-width: 0;
 min-height: 0;
 }
+.vault-card .vault-grid-poster {
+position: absolute;
+inset: 0;
+z-index: 2;
+width: 100%;
+height: 100%;
+object-fit: cover;
+object-position: center;
+display: block;
+}
+.vault-card.vault-card--pending .vault-grid-poster,
+.vault-card.vault-card--uploading .vault-grid-poster {
+z-index: 1;
+}
 .vault-card .placeholder, .video-placeholder {
   width: 100%;
   height: 100%;
@@ -435,6 +449,17 @@ min-height: 0;
   gap: 0.35rem;
   place-items: center;
   align-content: center;
+}
+.vault-card .vault-card-thumb-underlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.vault-card .vault-pending-face--over-thumb {
+  background: linear-gradient(145deg, rgba(18, 24, 32, 0.55) 0%, rgba(21, 32, 43, 0.5) 100%);
 }
 .vault-card .vault-pending-face small {
   font-size: 0.7rem;
@@ -735,12 +760,14 @@ margin: 0;
   letter-spacing: normal;
 }
 
-/* Unified creator completeness card (Hero Vault ready MP4) */
+/* Unified creator completeness card (Hero Vault ready MP4).
+   Default: compact bottom strip so the JPEG face stays visible.
+   Editing: expand over the card for the form. */
 .vault-creator-card {
   position: absolute;
   left: 6px;
   right: 6px;
-  top: 40px;
+  top: auto;
   bottom: 28px;
   z-index: 30;
   pointer-events: auto;
@@ -748,15 +775,23 @@ margin: 0;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  overflow: auto;
-  padding: 7px 8px;
+  overflow: hidden;
+  max-height: 44px;
+  padding: 6px 8px;
   border-radius: 9px;
-  background: linear-gradient(165deg, rgba(8, 12, 18, 0.96) 0%, rgba(16, 22, 32, 0.94) 100%);
+  background: rgba(8, 12, 18, 0.72);
   border: 1px solid rgba(148, 163, 184, 0.28);
   color: #e2e8f0;
   font-size: 0.58rem;
   line-height: 1.3;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+}
+.vault-creator-card--editing {
+  top: 40px;
+  bottom: 28px;
+  max-height: none;
+  overflow: auto;
+  background: linear-gradient(165deg, rgba(8, 12, 18, 0.96) 0%, rgba(16, 22, 32, 0.94) 100%);
 }
 .vault-creator-card--incomplete {
   border-color: rgba(251, 191, 36, 0.45);

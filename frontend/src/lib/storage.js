@@ -411,12 +411,23 @@ export function safeLocalStorageSet(key, data, options = {}) {
         }
         // Never persist blob:/data: — they expire, bloat quota recovery, and mid-upload
         // blob previews must stay memory-only so we do not wipe personal_thumbnails.
-        if (
-            typeof item?.url === 'string' &&
-            !item.url.startsWith('data:') &&
-            !item.url.startsWith('blob:')
-        ) {
-            kept.url = item.url;
+        const durableMediaFields = [
+            'url',
+            'mediaUrl',
+            'videoUrl',
+            'thumbnailUrl',
+            'posterUrl',
+            'previewUrl',
+            'localPreviewUrl'
+        ];
+        for (const field of durableMediaFields) {
+            const value = item?.[field];
+            if (typeof value !== 'string') continue;
+            if (value.startsWith('data:') || value.startsWith('blob:')) {
+                delete kept[field];
+                continue;
+            }
+            if (value) kept[field] = value;
         }
         return kept;
     });

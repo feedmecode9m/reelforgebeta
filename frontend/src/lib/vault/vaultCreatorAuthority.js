@@ -27,6 +27,15 @@ export const PERSONAL_VIDEO_VAULT_MINIMAL_FIELDS = [
     'size',
     'addedAt',
     'thumbnail',
+    'assetId',
+    'url',
+    'mediaUrl',
+    'videoUrl',
+    'thumbnailUrl',
+    'posterUrl',
+    'previewUrl',
+    'localPreviewUrl',
+    'status',
     'uploadState',
     'isOptimisticLocal',
     'uploadError',
@@ -38,6 +47,52 @@ export const PERSONAL_VIDEO_VAULT_MINIMAL_FIELDS = [
     // Durable creator presentation package
     'episodeEnrichment'
 ];
+
+const VIDEO_STILL_SKIP = /\.(mp4|mov|webm|m4v|avi|mkv)(\?|$)/i;
+
+/**
+ * Durable still URL from a vault/API row. Never blob/data and never a video file.
+ * @param {Record<string, unknown> | null | undefined} row
+ */
+export function pickDurableVaultStillUrl(row) {
+    if (!row || typeof row !== 'object') return '';
+    const candidates = [
+        row.thumbnailUrl,
+        row.thumbnail_url,
+        row.posterUrl,
+        row.poster_url,
+        row.poster,
+        row.thumbnail,
+        row.thumbnailPath,
+        row.thumbnail_path,
+        row.previewUrl
+    ];
+    for (const candidate of candidates) {
+        const s = String(candidate ?? '').trim();
+        if (!s) continue;
+        if (s.startsWith('blob:') || s.startsWith('data:')) continue;
+        if (VIDEO_STILL_SKIP.test(s)) continue;
+        if (/\/videos\//i.test(s) && !/\/thumbs\//i.test(s)) continue;
+        return s;
+    }
+    return '';
+}
+
+/**
+ * Stamp camelCase still fields used by Vault card render + persist.
+ * @param {Record<string, unknown>} entry
+ * @param {string} [stillUrl]
+ */
+export function stampVaultStillFields(entry, stillUrl = '') {
+    const still = String(stillUrl || pickDurableVaultStillUrl(entry) || '').trim();
+    if (!still) return entry;
+    return {
+        ...entry,
+        thumbnail: still,
+        thumbnailUrl: still,
+        posterUrl: still
+    };
+}
 
 /**
  * @param {unknown} value
@@ -138,7 +193,20 @@ export function overlayLocalCreatorVaultAuthority(catalogEntry, localEntry) {
         };
     }
 
-    return next;
+    const stillFields = ['thumbnailUrl', 'posterUrl', 'previewUrl', 'localPreviewUrl', 'thumbnail'];
+    for (const field of stillFields) {
+        const catalogVal = String(next[field] ?? '').trim();
+        const localVal = String(localEntry[field] ?? '').trim();
+        if (catalogVal || !localVal) continue;
+        if (localVal.startsWith('blob:') || localVal.startsWith('data:')) continue;
+        if (VIDEO_STILL_SKIP.test(localVal)) continue;
+        if (/\/videos\//i.test(localVal) && !/\/thumbs\//i.test(localVal)) continue;
+        next[field] = localVal;
+    }
+
+    const catalogStill = pickDurableVaultStillUrl(next);
+    const localStill = pickDurableVaultStillUrl(localEntry);
+    return stampVaultStillFields(next, catalogStill || localStill);
 }
 
 /**

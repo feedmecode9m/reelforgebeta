@@ -134,6 +134,22 @@ console.log('\n[image discovery eligibility]');
 
     const pub = evaluateViewerImageDiscoveryEligibility(publishableStill);
     assert(pub.allow, 'explicit publishable image allowed');
+
+    const vaultStill = {
+        id: 'personal-thumb-vault-9d043773-3f19-4ee4-adbd-df3c2979dd64',
+        title: 'IMG_0121.JPEG',
+        fileName: 'IMG_0121.JPEG',
+        type: 'image',
+        url: '/thumbs/9d043773-3f19-4ee4-adbd-df3c2979dd64.jpg',
+        isPersonalThumbnail: true,
+        publishableImage: true
+    };
+    const vaultElig = evaluateViewerImageDiscoveryEligibility(vaultStill);
+    assert(vaultElig.allow, `thumbnail vault still is discovery-eligible (${vaultElig.reason})`);
+    assert(
+        !classifyViewerImageArtifact(vaultStill).artifact,
+        'published vault still is not a catalog artifact'
+    );
 }
 
 console.log('\n[canonical identity resolution]');
@@ -183,6 +199,30 @@ console.log('\n[viewer collect — one premium card]');
     assert(
         !items.some((i) => /img.?0121/i.test(String(i.reel.title || i.resolvedMedia?.title || ''))),
         'no IMG_0121 card title in viewer collect'
+    );
+
+    const vaultStill = {
+        id: 'personal-thumb-vault-caa1a16f-be03-4c2b-9840-9fce9a809c00',
+        title: 'IMG_0121.JPEG',
+        fileName: 'IMG_0121.JPEG',
+        type: 'image',
+        url: '/thumbs/caa1a16f-be03-4c2b-9840-9fce9a809c00.jpg',
+        thumbnailUrl: '/thumbs/caa1a16f-be03-4c2b-9840-9fce9a809c00.jpg',
+        isPersonalThumbnail: true,
+        publishableImage: true,
+        category: 'Trending'
+    };
+    const withVault = collectRealViewerReels({
+        Trending: [arrivalVideo, img0121, vaultStill, placeholder],
+        Romance: []
+    });
+    assert(
+        withVault.some((i) => String(i.reel.id) === vaultStill.id),
+        'thumbnail vault still remains a viewer card beside Arrival'
+    );
+    assert(
+        withVault.some((i) => String(i.reel.id) === ARRIVAL_ID),
+        'Arrival video remains beside vault still'
     );
 }
 

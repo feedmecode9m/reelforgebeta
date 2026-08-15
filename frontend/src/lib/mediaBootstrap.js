@@ -361,9 +361,16 @@ export async function hydrateVaultFromReels(thumbnailKey, videoVaultKey, options
             if (isVideo) {
                 const entry = reelToVaultEntry(reel);
                 if (isHeroAsset(reel) || isHeroAsset(entry)) continue;
-                entry.thumbnail = reel.thumbnailUrl
-                    ? resolveUserPosterUrl(reel.thumbnailUrl) || entry.thumbnail
-                    : entry.thumbnail;
+                const still =
+                    resolveUserPosterUrl(reel.thumbnailUrl || reel.thumbnail_url) ||
+                    entry.thumbnailUrl ||
+                    entry.thumbnail ||
+                    '';
+                if (still) {
+                    entry.thumbnail = still;
+                    entry.thumbnailUrl = still;
+                    entry.posterUrl = still;
+                }
                 videoEntries.push(entry);
             }
         }
@@ -500,8 +507,31 @@ export function reelsToVideoVaultEntries(reels) {
             });
             continue;
         }
-        entry.thumbnail =
-            resolveUserPosterUrl(reel?.thumbnailUrl || reel?.thumbnail_url) || entry.thumbnail;
+        const still =
+            resolveUserPosterUrl(reel?.thumbnailUrl || reel?.thumbnail_url) ||
+            entry.thumbnailUrl ||
+            entry.thumbnail ||
+            '';
+        if (still) {
+            entry.thumbnail = still;
+            entry.thumbnailUrl = still;
+            entry.posterUrl = still;
+        }
+        if (import.meta.env.DEV) {
+            console.info('[LOCAL_VAULT_FACE_TRACE]', {
+                stage: 'reelsToVideoVaultEntries',
+                assetId: String(entry.id || reel?.id || ''),
+                url: String(entry.url || ''),
+                thumbnail: String(entry.thumbnail || ''),
+                thumbnailUrl: String(entry.thumbnailUrl || ''),
+                posterUrl: String(entry.posterUrl || ''),
+                previewUrl: String(entry.previewUrl || ''),
+                localPreviewUrl: String(entry.localPreviewUrl || ''),
+                resolvedFace: still ? { src: still, render: 'image' } : { src: '', render: 'empty' },
+                renderMode: still ? 'image' : 'empty',
+                ts: new Date().toISOString()
+            });
+        }
         entries.push(entry);
     }
     const deduped = dedupeVideoEntries(entries);

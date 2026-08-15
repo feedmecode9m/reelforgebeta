@@ -31,7 +31,10 @@
     logVaultPlaceholderGate
   } from '../../lib/diagnostics/renderGateForensics.js';
   import { uploadMedia, uploadThumbnail, fetchReadyReels as apiFetchReadyReels, deleteReelById as apiDeleteReelById } from '../../lib/api/media.js';
-  import { acceptVaultImageUploadResponse } from '../../lib/vault/normalizeVaultAsset.js';
+  import {
+    acceptVaultImageUploadResponse,
+    resolveVaultCardFace
+  } from '../../lib/vault/normalizeVaultAsset.js';
   import {
     resolveThumbnailUploadMediaUrl,
     isAcceptableThumbnailUploadMedia
@@ -305,6 +308,34 @@
       }
     }
     return null;
+  }
+
+  /**
+   * Dev-only pre-render audit: confirm still fields and that img face is never an MP4.
+   * @param {Record<string, unknown>} video
+   * @param {Record<string, unknown>} reel
+   * @param {{ src: string; render: string }} face
+   */
+  function auditVaultCardFace(video, reel, face) {
+    if (import.meta.env.DEV) {
+      const payload = {
+        stage: 'VaultExperience.svelte',
+        assetId: String(video?.id || video?.assetId || reel?.id || ''),
+        url: String(reel?.url || video?.url || video?.mediaUrl || video?.videoUrl || ''),
+        thumbnail: String(video?.thumbnail || reel?.thumbnail || ''),
+        thumbnailUrl: String(video?.thumbnailUrl || reel?.thumbnailUrl || ''),
+        posterUrl: String(video?.posterUrl || reel?.posterUrl || ''),
+        previewUrl: String(video?.previewUrl || reel?.previewUrl || ''),
+        localPreviewUrl: String(video?.localPreviewUrl || reel?.localPreviewUrl || ''),
+        resolvedFace: face,
+        renderMode: String(face?.render || 'empty'),
+        willRenderImg: face?.render === 'image',
+        ts: new Date().toISOString()
+      };
+      console.info('[LOCAL_VAULT_FACE_TRACE]', payload);
+      console.info('[VAULT_CARD_FACE]', payload);
+    }
+    return face;
   }
 
   /**
@@ -1856,7 +1887,11 @@
       size: file.size,
       addedAt: new Date().toISOString(),
       uploadState: 'pending_accept',
-      isOptimisticLocal: true
+      status: 'uploading',
+      isOptimisticLocal: true,
+      previewUrl: preview || '',
+      localPreviewUrl: preview || '',
+      thumbnailUrl: preview || ''
     };
     personalVideos.update((videos) => {
       const next = [
@@ -1966,7 +2001,11 @@
       size: file.size,
       addedAt: new Date().toISOString(),
       uploadState: 'uploading',
-      isOptimisticLocal: true
+      status: 'uploading',
+      isOptimisticLocal: true,
+      previewUrl: previewUrl || '',
+      localPreviewUrl: previewUrl || '',
+      thumbnailUrl: previewUrl || ''
     };
     personalVideos.update((videos) => {
       const filtered = (Array.isArray(videos) ? videos : []).filter((item) => {
@@ -3552,30 +3591,38 @@
   <div class="thumbnail-grid vault-grid vault-grid--images">
     {#each ($personalThumbnailCollection ?? []).filter(Boolean) as img, i (img?.id || img?.url || img?.fileName || `${img}-${i}`)}
       {@const reel = getVaultImageReel(img, i)}
+      {@const imageFace = resolveVaultCardFace({
+        type: 'image',
+        url: reel.url,
+        thumbnailUrl: reel.thumbnailUrl || reel.url,
+        thumbnail: typeof img === 'object' ? img?.thumbnail : ''
+      })}
       {@const selectId = thumbnailSelectionId(img, i)}
       <div
         class="vault-card thumbnail-item"
-        class:image={isImage(reel)}
+        class:image={isImage(reel) || imageFace.render === 'image'}
+        data-vault-face-render={imageFace.render}
+        data-vault-face-src={imageFace.src}
         use:vaultCardDiagnostics={`thumb-${i}`}
         draggable="true"
         on:dragstart={(event) => handleThumbnailVaultDragStart(event, img, i)}
         role="listitem"
       >
-        {#if isImage(reel) && reel.url && !reel.orphaned && !reel.missing}
+        {#if imageFace.render === 'image' && !reel.orphaned && !reel.missing}
           <MediaThumbnail
-            url={reel.url}
-            raw={String(reel.url || '').startsWith('blob:') || String(reel.url || '').startsWith('data:')}
+            url={imageFace.src}
+            raw={String(imageFace.src).startsWith('blob:') || String(imageFace.src).startsWith('data:')}
             alt={reel.name}
             loading="lazy"
-            className="vault-grid-visual {i === ($personalThumbnailIndex % $personalThumbnailCollection.length) ? 'active' : ''}"
+            className="vault-grid-visual vault-grid-poster {i === ($personalThumbnailIndex % $personalThumbnailCollection.length) ? 'active' : ''}"
             on:load={(event) =>
               (() => {
                 const currentTarget = event?.currentTarget;
-                console.info('[IMAGE_RENDER]', { index: i, url: reel.url, ts: new Date().toISOString() });
+                console.info('[IMAGE_RENDER]', { index: i, url: imageFace.src, ts: new Date().toISOString() });
                 logVaultCardLayoutDiagnostics(currentTarget?.closest?.('.vault-card'), `thumb-${i}:load`);
               })()}
             on:error={(event) => {
-              console.error('[Vault] Image failed:', reel.url);
+              console.error('[Vault] Image failed:', imageFace.src);
               handleVaultThumbnailError(event, img);
             }}
           />
@@ -3832,6 +3879,17 @@
         {#if video}
           {@const cardMediaAssetId = resolveMediaAssetId(video)}
           {@const reel = getVaultVideoReel(video)}
+          {@const cardFace = auditVaultCardFace(
+            video,
+            reel,
+            resolveVaultCardFace({
+              ...video,
+              ...reel,
+              thumbnailUrl: reel.thumbnailUrl || video.thumbnailUrl,
+              posterUrl: reel.posterUrl || video.posterUrl,
+              thumbnail: reel.thumbnail || video.thumbnail
+            })
+          )}
           {@const microDrama = isMicroDramaContent(video) || isMicroDramaContent(reel)}
           {@const isUploadingCard =
             video.uploadState === 'uploading' || String(video?.id || '').startsWith('local-upload-')}
@@ -3871,6 +3929,9 @@
                 : isFailedCard
                   ? 'failed'
                   : 'ready'}
+            data-vault-asset-id={String(cardMediaAssetId || video?.id || '')}
+            data-vault-face-render={cardFace.render}
+            data-vault-face-src={cardFace.src}
             use:vaultCardDiagnostics={`video-${vi}`}
             draggable={!isGhostCard && !isUploadingCard}
             on:dragstart={(event) => handleVaultVideoDragStart(event, video)}
@@ -3889,51 +3950,82 @@
             {#if $reelshortActive && microDrama}
               <VaultEngagementBadge itemId={video.id || reel.name} />
             {/if}
-            {#if isPendingCard}
-              <div class="placeholder vault-uploading-preview vault-pending-face" aria-hidden="true">
-                <span>🎬</span>
-                <small>Pending Accept</small>
-              </div>
-            {:else if isUploadingCard}
-              <div
-                class="placeholder vault-uploading-preview vault-pending-face"
-                aria-hidden="true"
-                data-vault-card-upload-progress
-                data-vault-upload-percent={uploadPct != null ? String(uploadPct) : ''}
-              >
-                <span>⬆</span>
-                <small>
-                  {#if uploadStage === 'VALIDATING'}
-                    Validating…
-                  {:else if uploadStage === 'FINALIZING'}
-                    Finalizing…
-                  {:else if uploadPct != null}
-                    Uploading {uploadPct}%
-                  {:else}
-                    Uploading {(Number(video.size || 0) / (1024 * 1024)).toFixed(0)} MB
-                  {/if}
-                </small>
-                <div class="vault-upload-track" aria-hidden="true">
-                  <div
-                    class="vault-upload-bar"
-                    style="width: {uploadPct != null ? uploadPct : uploadStage === 'FINALIZING' ? 100 : 8}%"
-                  ></div>
+            {#if isPendingCard || isUploadingCard}
+              {#if cardFace.render === 'image'}
+                <MediaThumbnail
+                  url={cardFace.src}
+                  alt={reel.name || reel.title || 'Video poster'}
+                  raw={String(cardFace.src).startsWith('blob:') || String(cardFace.src).startsWith('data:')}
+                  lazyLoad={false}
+                  className="vault-grid-visual vault-grid-poster vault-card-thumb-underlay"
+                />
+              {:else if cardFace.render === 'local-preview'}
+                <MediaRenderer
+                  type="video"
+                  url={cardFace.src}
+                  raw={true}
+                  muted
+                  playsinline
+                  autoplay={false}
+                  preload="metadata"
+                  playbackRole="preview"
+                  className="vault-grid-visual vault-grid-video vault-card-thumb-underlay"
+                  width="100%"
+                  height="100%"
+                />
+              {/if}
+              {#if isPendingCard}
+                <div
+                  class="placeholder vault-uploading-preview vault-pending-face"
+                  class:vault-pending-face--over-thumb={Boolean(cardFace.src)}
+                  aria-hidden="true"
+                >
+                  <span>🎬</span>
+                  <small>Pending Accept</small>
                 </div>
-              </div>
+              {:else}
+                <div
+                  class="placeholder vault-uploading-preview vault-pending-face"
+                  class:vault-pending-face--over-thumb={Boolean(cardFace.src)}
+                  aria-hidden="true"
+                  data-vault-card-upload-progress
+                  data-vault-upload-percent={uploadPct != null ? String(uploadPct) : ''}
+                >
+                  <span>⬆</span>
+                  <small>
+                    {#if uploadStage === 'VALIDATING'}
+                      Validating…
+                    {:else if uploadStage === 'FINALIZING'}
+                      Finalizing…
+                    {:else if uploadPct != null}
+                      Uploading {uploadPct}%
+                    {:else}
+                      Uploading {(Number(video.size || 0) / (1024 * 1024)).toFixed(0)} MB
+                    {/if}
+                  </small>
+                  <div class="vault-upload-track" aria-hidden="true">
+                    <div
+                      class="vault-upload-bar"
+                      style="width: {uploadPct != null ? uploadPct : uploadStage === 'FINALIZING' ? 100 : 8}%"
+                    ></div>
+                  </div>
+                </div>
+              {/if}
             {:else if isFailedCard}
               <div class="placeholder vault-interrupted-preview vault-pending-face" aria-hidden="true">
                 <span>⚠</span>
                 <small>{video.uploadState === 'interrupted' ? 'Interrupted' : 'Upload failed'}</small>
               </div>
-            {:else if isVideo(reel) && reel.url}
+            {:else}
               {@const previewActive =
                 String(activeVaultVideoPreviewId) === String(video?.id || reel?.id || '')}
-              {@const vaultPreviewPlayUrl = resolvePlayableMediaUrl(reel, 'vault_preview') || reel.url}
-              {#if previewActive}
+              {@const vaultPreviewPlayUrl =
+                (isVideo(reel) && (resolvePlayableMediaUrl(reel, 'vault_preview') || reel.url)) || ''}
+              {#if previewActive && vaultPreviewPlayUrl}
                 <MediaRenderer
                   type="video"
                   url={vaultPreviewPlayUrl}
-                  poster={reel.thumbnailUrl || undefined}
+                  poster={cardFace.render === 'image' ? cardFace.src : undefined}
                   raw={String(vaultPreviewPlayUrl || '').startsWith('blob:') || String(vaultPreviewPlayUrl || '').startsWith('data:')}
                   useSourceElement={true}
                   muted
@@ -3961,14 +4053,15 @@
                     )}
                   on:error={(event) => handleVaultVideoElementError(event, video, reel)}
                 />
-              {:else if reel.thumbnailUrl}
+              {:else if cardFace.render === 'image'}
                 <MediaThumbnail
-                  url={reel.thumbnailUrl}
+                  url={cardFace.src}
                   alt={reel.name || reel.title || 'Video poster'}
+                  raw={String(cardFace.src).startsWith('blob:') || String(cardFace.src).startsWith('data:')}
                   lazyLoad={true}
                   className="vault-grid-visual vault-grid-poster"
                 />
-              {:else}
+              {:else if vaultPreviewPlayUrl}
                 <div
                   class="placeholder vault-poster-first"
                   data-vault-poster-first
@@ -3977,10 +4070,10 @@
                   <span>▶</span>
                   <small>Hover to preview</small>
                 </div>
+              {:else}
+                {@const _vaultPlaceholderGate = logVaultPlaceholderGate(video, reel, vi)}
+                <div class="placeholder" aria-hidden="true">▶</div>
               {/if}
-            {:else}
-              {@const _vaultPlaceholderGate = logVaultPlaceholderGate(video, reel, vi)}
-              <div class="placeholder" aria-hidden="true">▶</div>
             {/if}
             <div class="vault-grid-chrome">
               {#if vaultCard.title}

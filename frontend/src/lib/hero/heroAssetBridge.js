@@ -81,15 +81,24 @@ export function normalizeHeroAssetRecord(item, options = {}) {
     if (!mediaUrl) return null;
 
     const thumbnailRaw = String(
-        item?.thumbnailUrl || item?.thumbnail_url || item?.thumbnail || item?.posterUrl || item?.poster_url || ''
+        item?.localPreviewUrl ||
+            item?.previewUrl ||
+            item?.thumbnailUrl ||
+            item?.thumbnail_url ||
+            item?.thumbnail ||
+            item?.posterUrl ||
+            item?.poster_url ||
+            ''
     ).trim();
-    const thumbnailUrl =
-        resolvePlayableMediaUrl(
-            resolveUserPosterUrl(thumbnailRaw) || thumbnailRaw
-        ) ||
-        (isVideoHeroAssetType(inferAssetType(mediaUrl, String(item?.type || '')))
-            ? ''
-            : resolvePlayableMediaUrl(mediaUrl));
+    const isVideoAsset = isVideoHeroAssetType(inferAssetType(mediaUrl, String(item?.type || '')));
+    const localThumb =
+        thumbnailRaw.startsWith('blob:') || thumbnailRaw.startsWith('data:image');
+    const posterOnly =
+        resolveUserPosterUrl(thumbnailRaw) || (localThumb ? thumbnailRaw : '');
+    const thumbnailUrl = isVideoAsset
+        ? resolvePlayableMediaUrl(posterOnly) || ''
+        : resolvePlayableMediaUrl(posterOnly || thumbnailRaw) ||
+          resolvePlayableMediaUrl(mediaUrl);
 
     const assetId =
         normalizeAssetId(String(item?.id || '')) ||

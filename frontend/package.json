@@ -63,6 +63,8 @@
     "validate:hero-vault-title-refresh": "node scripts/validate-hero-vault-title-refresh.mjs",
     "validate:hero-vault-title-fanout": "node scripts/validate-hero-vault-title-fanout.mjs",
     "validate:vault-card-projection": "node scripts/validate-vault-card-projection.mjs",
+    "validate:vault-thumbnail-visibility": "node scripts/validate-vault-thumbnail-visibility.mjs",
+    "validate:vault-thumbnail-production-path": "node scripts/validate-vault-thumbnail-production-path.mjs",
     "validate:catalog-smart-population": "node scripts/validate-catalog-smart-population.mjs",
     "validate:catalog-semantic-classification": "node scripts/validate-catalog-semantic-classification.mjs",
     "validate:title-nlp-suggestion": "node scripts/validate-title-nlp-suggestion.mjs",

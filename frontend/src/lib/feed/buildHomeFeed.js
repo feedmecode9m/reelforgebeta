@@ -9,6 +9,7 @@
 import { isVideoReel, isImageReel, ensurePrimaryMediaType } from '../api/reelContract.js';
 import { isHeroAsset } from '../hero/heroDomainGuard.js';
 import { toRelativeMediaPath } from '../config.js';
+import { durableImageVaultUrl } from '../viewer/vaultUtils.js';
 import { buildDemoFeedReels } from '../demoPlaceholders.js';
 import { logBg7nStage } from '../diagnostics/bg7nPipelineTrace.js';
 import {
@@ -126,32 +127,30 @@ export function evaluateFeedEligibility(reel, context = {}) {
  * @param {string} thumbnailStorageKey
  */
 function resolveReelThumbnailFromVault(reel, thumbnailStorageKey) {
+    if (typeof window === 'undefined') {
+        return durableImageVaultUrl(reel, reel) || reel.thumbnailUrl || '';
+    }
+    let storedThumbs = [];
+    try {
+        storedThumbs = JSON.parse(localStorage.getItem(thumbnailStorageKey) || '[]');
+    } catch {
+        storedThumbs = [];
+    }
+    const list = Array.isArray(storedThumbs) ? storedThumbs : [];
+    const reelId = String(reel.id || reel.personal_video_id || '').trim();
+    const fileKey = String(reel.fileName || reel.file_name || '').trim();
+    const entry =
+        list.find((t) => t && typeof t === 'object' && String(t.personal_video_id || '').trim() === reelId) ||
+        list.find((t) => t && typeof t === 'object' && String(t.id || '').trim() === reelId) ||
+        list.find((t) => {
+            if (!t || typeof t !== 'object') return false;
+            const byFile = String(t.fileName || t.file_name || '').trim();
+            return fileKey && byFile === fileKey;
+        });
+    const durable = durableImageVaultUrl(entry || reel, reel);
+    if (durable) return durable;
     if (reel.thumbnailUrl) {
         return toRelativeMediaPath(String(reel.thumbnailUrl)) || reel.thumbnailUrl;
-    }
-    if (typeof window === 'undefined') return reel.thumbnailUrl || '';
-    const storedThumbs = JSON.parse(localStorage.getItem(thumbnailStorageKey) || '[]');
-    const fileKey = String(reel.fileName || reel.file_name || '').trim();
-    const entry = (Array.isArray(storedThumbs) ? storedThumbs : []).find((t) => {
-        if (!t) return false;
-        if (typeof t === 'string') return t === fileKey;
-        const byFile = String(t.fileName || t.file_name || '').trim();
-        const byUrl = String(t.url || '').trim();
-        return (
-            (fileKey && byFile === fileKey) ||
-            (byUrl && toRelativeMediaPath(byUrl) === toRelativeMediaPath(String(reel.url || '')))
-        );
-    });
-    if (entry && typeof entry === 'object' && entry.url) {
-        return toRelativeMediaPath(String(entry.url)) || entry.url;
-    }
-    if (fileKey) {
-        const match = (Array.isArray(storedThumbs) ? storedThumbs : []).find(
-            (t) => t && String(t.fileName || t.file_name || '').trim() === fileKey
-        );
-        if (match?.url) {
-            return toRelativeMediaPath(String(match.url)) || match.url;
-        }
     }
     return reel.thumbnailUrl || '';
 }

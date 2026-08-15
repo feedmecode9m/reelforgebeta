@@ -18,7 +18,12 @@
  * @property {string} createdAt - ISO 8601 timestamp
  */
 
-import { toBackendMediaUrl, logResolvedMediaUrl, toRelativeMediaPath } from '../config.js';
+import {
+    toBackendMediaUrl,
+    logResolvedMediaUrl,
+    toRelativeMediaPath,
+    rewriteDevLoopbackMediaToSameOrigin
+} from '../config.js';
 import { reelResEntry, reelResExit, reelResNormalizeBranch, reelResReelSnapshot } from '../diagnostics/reelResolutionTrace.js';
 import { logBg7kCardNormalize } from '../diagnostics/bg7kCardRenderTrace.js';
 
@@ -110,8 +115,13 @@ export function resolveMediaUrl(url, kind = 'media', context = kind) {
         return trimmed;
     }
 
-    // Absolute http(s) — never rewrite to relative /videos (breaks cross-host hero media).
+    // Absolute http(s) — keep CDN/R2 hosts. Local loopback /videos|/thumbs → Vite proxy.
     if (/^https?:\/\//i.test(trimmed)) {
+        const rewritten = rewriteDevLoopbackMediaToSameOrigin(trimmed);
+        if (rewritten !== trimmed) {
+            logResolvedMediaUrl(kind, rewritten, trimmed, `${context}:dev-loopback-same-origin`);
+            return rewritten;
+        }
         logResolvedMediaUrl(kind, trimmed, trimmed, `${context}:absolute_passthrough`);
         return trimmed;
     }
@@ -476,13 +486,31 @@ export function reelToVaultEntry(reel) {
         playbackStatusRaw != null && String(playbackStatusRaw).trim() !== ''
             ? String(playbackStatusRaw).trim()
             : '';
+    const stillRaw = [
+        reel.thumbnailUrl,
+        reel.thumbnail_url,
+        reel.posterUrl,
+        reel.poster_url,
+        reel.thumbnail
+    ]
+        .map((v) => String(v || '').trim())
+        .find((s) => {
+            if (!s) return false;
+            if (s.startsWith('blob:') || s.startsWith('data:')) return false;
+            if (VIDEO_FILE_EXT.test(s)) return false;
+            if (/\/videos\//i.test(s) && !/\/thumbs\//i.test(s)) return false;
+            return true;
+        }) || '';
+    const still = stillRaw ? resolveMediaUrl(stillRaw, 'thumbnail') : '';
     return {
         id: String(reel.id || `reel_${fileName}`),
         name,
         title: name,
         fileName,
         url: resolveMediaUrl(String(reel.url || ''), 'video'),
-        thumbnail: reel.thumbnailUrl ? resolveMediaUrl(String(reel.thumbnailUrl), 'thumbnail') : '',
+        thumbnail: still,
+        thumbnailUrl: still,
+        posterUrl: still,
         type: fileName.toLowerCase().endsWith('.mov') ? 'video/quicktime' : 'video/mp4',
         addedAt: reel.createdAt || reel.created_at || new Date().toISOString(),
         ...(playbackUrl ? { playbackUrl } : {}),

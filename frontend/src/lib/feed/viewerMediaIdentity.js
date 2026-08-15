@@ -123,7 +123,11 @@ export function classifyViewerImageArtifact(reel) {
     if (reel.isUploadArtifact === true || reel.uploadArtifact === true) {
         return { artifact: true, reason: 'upload_artifact_flag' };
     }
-    // Synthetic personal-thumb feed injections are artwork sources, not discovery titles.
+    // Synthetic personal-thumb feed injections are artwork sources, not discovery titles
+    // unless the creator thumbnail vault explicitly published the still.
+    if (reel.isPersonalThumbnail === true && isExplicitlyPublishableViewerImage(reel)) {
+        return { artifact: false, reason: '' };
+    }
     if (reel.isPersonalThumbnail === true && !isExplicitlyPublishableViewerImage(reel)) {
         return { artifact: true, reason: 'personal_thumbnail_injection' };
     }
@@ -262,27 +266,35 @@ export function resolveViewerMediaIdentities(items = []) {
             text(img.parentReelId);
         const publishable = isExplicitlyPublishableViewerImage(img);
 
+        const keepVaultStill =
+            img.isPersonalThumbnail === true && publishable && !artifact.artifact;
+
         if (linked && videoById.has(linked)) {
             const art = text(img.url || img.thumbnailUrl || img.posterUrl);
             if (art && !posterByVideoId.has(linked)) {
                 posterByVideoId.set(linked, art);
                 attachedPosters += 1;
             }
-            suppressed.push({
-                assetId: id,
-                title,
-                reason: artifact.artifact
-                    ? `attached_poster:${artifact.reason}`
-                    : 'attached_poster:linked_video',
-                mediaUrl
-            });
-            continue;
+            if (!keepVaultStill) {
+                suppressed.push({
+                    assetId: id,
+                    title,
+                    reason: artifact.artifact
+                        ? `attached_poster:${artifact.reason}`
+                        : 'attached_poster:linked_video',
+                    mediaUrl
+                });
+                continue;
+            }
         }
 
         // Match poster-by-URL against video thumbnailUrl (same asset artwork).
+        // Shared artwork across multiple videos is presentation only — do not bind identity.
         let matchedVideoId = '';
         const imgUrlNorm = mediaUrl.split('?')[0].toLowerCase();
         if (imgUrlNorm) {
+            /** @type {string[]} */
+            const matchingIds = [];
             for (const v of videos) {
                 const thumbs = [
                     text(v.thumbnailUrl),
@@ -292,9 +304,12 @@ export function resolveViewerMediaIdentities(items = []) {
                     .map((u) => u.split('?')[0].toLowerCase())
                     .filter(Boolean);
                 if (thumbs.includes(imgUrlNorm)) {
-                    matchedVideoId = text(v.id);
-                    break;
+                    const vid = text(v.id);
+                    if (vid) matchingIds.push(vid);
                 }
+            }
+            if (matchingIds.length === 1) {
+                matchedVideoId = matchingIds[0];
             }
         }
         if (matchedVideoId) {
@@ -302,13 +317,15 @@ export function resolveViewerMediaIdentities(items = []) {
                 posterByVideoId.set(matchedVideoId, mediaUrl);
                 attachedPosters += 1;
             }
-            suppressed.push({
-                assetId: id,
-                title,
-                reason: 'attached_poster:shared_thumbnail_url',
-                mediaUrl
-            });
-            continue;
+            if (!keepVaultStill) {
+                suppressed.push({
+                    assetId: id,
+                    title,
+                    reason: 'attached_poster:shared_thumbnail_url',
+                    mediaUrl
+                });
+                continue;
+            }
         }
 
         if (artifact.artifact || !publishable) {

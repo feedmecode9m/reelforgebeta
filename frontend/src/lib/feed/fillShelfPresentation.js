@@ -43,6 +43,85 @@ export function isRealShelfCard(item) {
 }
 
 /**
+ * First candidate list that still has real (non-placeholder) cards.
+ * Empty arrays are not used as a successful source (`[] || fallback` is a trap).
+ * @param {Array<unknown[] | null | undefined>} candidates
+ * @returns {unknown[]}
+ */
+export function pickFirstListWithRealCards(candidates) {
+    for (const list of candidates) {
+        if (!Array.isArray(list) || list.length === 0) continue;
+        if (list.some((item) => isRealShelfCard(item))) return list;
+    }
+    return [];
+}
+
+/**
+ * Playable video cards across a feed map (for Trending discovery fallback).
+ * @param {Record<string, unknown[]> | null | undefined} feedMap
+ * @returns {unknown[]}
+ */
+export function collectPlayableVideosFromFeedMap(feedMap) {
+    const map = feedMap && typeof feedMap === 'object' ? feedMap : {};
+    /** @type {unknown[]} */
+    const out = [];
+    const seen = new Set();
+    for (const [shelf, items] of Object.entries(map)) {
+        if (shelf === 'Auto-Detect' || shelf === 'HERO') continue;
+        for (const reel of items || []) {
+            if (!isRealShelfCard(reel)) continue;
+            const url = String(reel?.url || reel?.mediaUrl || reel?.video_url || '');
+            const type = String(reel?.type || '');
+            const playable =
+                reel?.isPersonalVideo === true ||
+                type.startsWith('video') ||
+                url.includes('/videos/') ||
+                /\.(mp4|mov|webm|m4v)(\?|$)/i.test(url);
+            if (!playable) continue;
+            const id = String(reel?.id || '');
+            if (id && seen.has(id)) continue;
+            if (id) seen.add(id);
+            out.push(reel);
+        }
+    }
+    return out;
+}
+
+/**
+ * Identity-first shelves can already have videos and therefore skip $feed.
+ * Reattach creator thumbnail-vault stills that identity dropped.
+ * @param {unknown[]} primary
+ * @param {Array<unknown[] | null | undefined>} extraLists
+ * @returns {unknown[]}
+ */
+export function mergeMissingVaultImageCards(primary, extraLists = []) {
+    const out = Array.isArray(primary) ? [...primary] : [];
+    const seenIds = new Set(
+        out.map((row) => String(row?.id || '').trim()).filter(Boolean)
+    );
+    for (const list of extraLists) {
+        if (!Array.isArray(list)) continue;
+        for (const item of list) {
+            if (!isRealShelfCard(item)) continue;
+            const id = String(item?.id || '').trim();
+            if (id && seenIds.has(id)) continue;
+            const type = String(item?.type || item?.mediaType || '').toLowerCase();
+            const url = String(item?.url || item?.thumbnailUrl || item?.posterUrl || '');
+            const isVaultImage =
+                item?.isPersonalThumbnail === true ||
+                type === 'image' ||
+                type === 'thumbnail' ||
+                type.startsWith('image/') ||
+                (url.includes('/thumbs/') && !/\.(mp4|mov|webm|m4v)(\?|$)/i.test(url));
+            if (!isVaultImage) continue;
+            if (id) seenIds.add(id);
+            out.push(item);
+        }
+    }
+    return out;
+}
+
+/**
  * Pad a shelf row for visual composition without altering feed data.
  *
  * Empty-rail policy: when global real catalog inventory exists, never pad empty

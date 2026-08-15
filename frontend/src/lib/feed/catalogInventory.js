@@ -75,6 +75,55 @@ export function normalizeDurableMediaUrl(rawUrl) {
     return '';
 }
 
+function isPosterLikeUrl(rawUrl) {
+    const url = text(rawUrl).split('?')[0].split('#')[0].toLowerCase();
+    if (!url) return false;
+    return /\.(jpe?g|png|webp|gif|avif)$/i.test(url) || url.includes('/thumbs/');
+}
+
+function isVideoLikeUrl(rawUrl) {
+    const url = text(rawUrl).split('?')[0].split('#')[0].toLowerCase();
+    if (!url) return false;
+    return (
+        /\.(mp4|m4v|mov|webm|mkv)$/i.test(url) ||
+        url.includes('/videos/') ||
+        (url.includes('/prod/') && /\.mp4$/i.test(url))
+    );
+}
+
+/** Playback URLs only — posters are not video identity. */
+function durableVideoIdentityUrls(item) {
+    const row = item && typeof item === 'object' ? item : {};
+    /** @type {string[]} */
+    const out = [];
+    for (const raw of [row.video_url, row.playbackUrl, row.mediaUrl, row.url]) {
+        const value = text(raw);
+        if (!value || isPosterLikeUrl(value) || !isVideoLikeUrl(value)) continue;
+        const norm = normalizeDurableMediaUrl(value);
+        if (norm && !out.includes(norm)) out.push(norm);
+    }
+    return out;
+}
+
+/** Artwork URLs only — used to attach a poster image to a video, never to merge two videos. */
+function durablePosterIdentityUrls(item) {
+    const row = item && typeof item === 'object' ? item : {};
+    const kind = detectMediaKind(row);
+    const candidates =
+        kind === 'image'
+            ? [row.url, row.posterUrl, row.thumbnailUrl, row.thumbnail_url, row.mediaUrl]
+            : [row.posterUrl, row.thumbnailUrl, row.thumbnail_url];
+    /** @type {string[]} */
+    const out = [];
+    for (const raw of candidates) {
+        const value = text(raw);
+        if (!value || isVideoLikeUrl(value)) continue;
+        const norm = normalizeDurableMediaUrl(value);
+        if (norm && !out.includes(norm)) out.push(norm);
+    }
+    return out;
+}
+
 let tempKeySeq = 0;
 
 /**
@@ -120,16 +169,16 @@ export function resolveCanonicalMediaId(item) {
     }
 
     // Durable URL only when it safely identifies the same asset.
-    const urlCandidates = [
-        row.url,
-        row.video_url,
-        row.mediaUrl,
-        row.posterUrl,
-        row.thumbnailUrl,
-        row.thumbnail_url
-    ];
+    // Videos: playback URL only. Poster/thumbnail must not become identity.
+    const kind = detectMediaKind(row);
+    const urlCandidates =
+        kind === 'video'
+            ? [row.video_url, row.playbackUrl, row.mediaUrl, row.url]
+            : [row.url, row.mediaUrl, row.posterUrl, row.thumbnailUrl, row.thumbnail_url];
     for (const u of urlCandidates) {
-        const norm = normalizeDurableMediaUrl(text(u));
+        const value = text(u);
+        if (kind === 'video' && isPosterLikeUrl(value)) continue;
+        const norm = normalizeDurableMediaUrl(value);
         if (norm) {
             return { id: `url:${norm}`, durable: true };
         }
@@ -363,25 +412,34 @@ function findMergeKey(byId, canonicalId, incoming) {
     const replaces = text(incoming.replacesTempKey || incoming._catalogTempKey);
     if (replaces.startsWith('temp:') && byId.has(replaces)) return replaces;
 
-    const inUrls = [
-        normalizeDurableMediaUrl(text(incoming.url)),
-        normalizeDurableMediaUrl(text(incoming.video_url)),
-        normalizeDurableMediaUrl(text(incoming.mediaUrl)),
-        normalizeDurableMediaUrl(text(incoming.posterUrl)),
-        normalizeDurableMediaUrl(text(incoming.thumbnailUrl))
-    ].filter(Boolean);
+    const inVideo = durableVideoIdentityUrls(incoming);
+    const inPoster = durablePosterIdentityUrls(incoming);
+    const inKind = detectMediaKind(incoming);
 
-    if (!inUrls.length) return null;
+    if (!inVideo.length && !inPoster.length) return null;
 
     for (const [key, card] of byId.entries()) {
-        const cardUrls = [
-            normalizeDurableMediaUrl(text(card.url)),
-            normalizeDurableMediaUrl(text(card.video_url)),
-            normalizeDurableMediaUrl(text(card.mediaUrl)),
-            normalizeDurableMediaUrl(text(card.posterUrl)),
-            normalizeDurableMediaUrl(text(card.thumbnailUrl))
-        ].filter(Boolean);
-        if (cardUrls.some((u) => inUrls.includes(u))) {
+        const cardVideo = durableVideoIdentityUrls(card);
+        const cardPoster = durablePosterIdentityUrls(card);
+        const cardKind = detectMediaKind(card);
+
+        if (inVideo.some((u) => cardVideo.includes(u))) {
+            return key;
+        }
+
+        const sharedPoster = inPoster.some((u) => cardPoster.includes(u));
+        if (!sharedPoster) continue;
+
+        // Shared artwork may attach an image to its video. It must not merge two MP4s.
+        const bothVideos =
+            (inKind === 'video' || inVideo.length > 0) && (cardKind === 'video' || cardVideo.length > 0);
+        if (bothVideos) continue;
+
+        const oneImageOneVideo =
+            (inKind === 'image' && (cardKind === 'video' || cardVideo.length > 0)) ||
+            (cardKind === 'image' && (inKind === 'video' || inVideo.length > 0));
+        const bothImages = inKind === 'image' && cardKind === 'image';
+        if (oneImageOneVideo || bothImages) {
             return key;
         }
     }

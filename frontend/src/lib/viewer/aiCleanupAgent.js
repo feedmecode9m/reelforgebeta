@@ -5,6 +5,7 @@ import { getAdminAuthHeaders, getAdminToken } from '../api.js';
 import { isInvalidSessionError } from '../adminSession.js';
 import { filenameFromMediaRef } from '../vaultMedia.js';
 import { toRelativeMediaPath } from '../config.js';
+import { durableImageVaultUrl } from './vaultUtils.js';
 import {
   logDeletionPropagation,
   filterOutDeletedMedia,
@@ -39,6 +40,59 @@ import {
 } from '../feed/creatorCatalogMetadata.js';
 import { classifyContent } from '../feed/contentClassifier.js';
 import { applyCatalogMetadata, resolveCatalogMetadata } from '../feed/catalogMetadata.js';
+
+function isCameraRollThumbPath(url) {
+  const base = filenameFromMediaRef(url);
+  return /^(IMG_|DSC_|PXL_|MVIMG)/i.test(String(base || ''));
+}
+
+function feedCardNeedsVaultPoster(row) {
+  if (!row || typeof row !== 'object') return false;
+  if (row.isPlaceholder || row.isPresentationOnly) return false;
+  const url = String(row.url || row.mediaUrl || '');
+  const type = String(row.type || '');
+  const isVid =
+    row.isPersonalVideo === true ||
+    type.startsWith('video') ||
+    url.includes('/videos/') ||
+    /\.(mp4|mov|webm|m4v)(\?|$)/i.test(url);
+  if (!isVid) return false;
+  const poster = String(row.thumbnailUrl || row.posterUrl || row.thumbnail || '').trim();
+  if (!poster) return true;
+  if (poster.startsWith('blob:') || poster.startsWith('data:')) return true;
+  if (isCameraRollThumbPath(poster)) return true;
+  return false;
+}
+
+function stampFeedPoster(row, thumbUrl) {
+  return { ...row, thumbnailUrl: thumbUrl, posterUrl: thumbUrl, thumbnail: thumbUrl };
+}
+
+function attachVaultStillToFeedMap(newFeed, categoriesList, thumbUrl, linkedId) {
+  if (!thumbUrl) return newFeed;
+  const link = String(linkedId || '').trim();
+  for (const cat of categoriesList) {
+    newFeed[cat] = (newFeed[cat] || []).map((r) => {
+      if (!r || typeof r !== 'object') return r;
+      const id = String(r.id || '').trim();
+      const vid = String(r.personal_video_id || '').trim();
+      if (link && (id === link || vid === link)) return stampFeedPoster(r, thumbUrl);
+      if (feedCardNeedsVaultPoster(r)) return stampFeedPoster(r, thumbUrl);
+      return r;
+    });
+  }
+  return newFeed;
+}
+
+function ensureVideoOnTrendingShelf(newFeed, reel) {
+  const id = String(reel?.id || '').trim();
+  if (!id || !reel) return newFeed;
+  if (!newFeed.Trending) newFeed.Trending = [];
+  const already = newFeed.Trending.some((r) => String(r?.id || '').trim() === id);
+  if (already) return newFeed;
+  newFeed.Trending = [{ ...reel, category: 'Trending' }, ...newFeed.Trending];
+  return newFeed;
+}
 
 export function createAiCleanupAgent(deps) {
   const {
@@ -361,6 +415,7 @@ export function createAiCleanupAgent(deps) {
     const shelf = existingMatch.shelf || primaryCategory;
     if (!newFeed[shelf]) newFeed[shelf] = [];
     newFeed[shelf] = [merged, ...(newFeed[shelf] || [])];
+    ensureVideoOnTrendingShelf(newFeed, merged);
 
     console.info('[CANONICAL_FEED_UPSERT]', {
       stage: 'AI_CLEANUP_AGENT.distributeVideoToFeed',
@@ -445,6 +500,7 @@ export function createAiCleanupAgent(deps) {
   ts: new Date().toISOString()
   });
   newFeed[primaryCategory].unshift(reel);
+  ensureVideoOnTrendingShelf(newFeed, reel);
   return newFeed;
   });
   // Force UI refresh and persist feed
@@ -652,7 +708,8 @@ export function createAiCleanupAgent(deps) {
     name: thumbnailName,
     url: base64Data,
     type: 'image',
-    isPersonalThumbnail: true
+    isPersonalThumbnail: true,
+    publishableImage: true
   };
   if (!shouldSynthesizePersonalThumbnailFeedCard(thumbProbe, newFeed)) {
     return newFeed;
@@ -667,23 +724,11 @@ export function createAiCleanupAgent(deps) {
       reelId: canonicalId,
       ts: new Date().toISOString()
     });
-    if (canonicalId && base64Data) {
-      categoriesList.forEach((cat) => {
-        newFeed[cat] = (newFeed[cat] || []).map((r) => {
-          if (!r || typeof r !== 'object') return r;
-          const id = String(r.id || r.personal_video_id || '').trim();
-          if (id !== canonicalId) return r;
-          if (String(r.type || '').startsWith('video') || r.isPersonalVideo) {
-            return {
-              ...r,
-              thumbnailUrl: r.thumbnailUrl || base64Data,
-              posterUrl: r.posterUrl || base64Data
-            };
-          }
-          return r;
-        });
-      });
-    }
+    const still = durableImageVaultUrl(
+      { id: canonicalId, url: base64Data, fileName: thumbnailName },
+      { id: canonicalId, url: base64Data, fileName: thumbnailName }
+    ) || base64Data;
+    attachVaultStillToFeedMap(newFeed, categoriesList, still, canonicalId);
     return newFeed;
   }
   const placeholder = createLocalReel({
@@ -756,13 +801,13 @@ export function createAiCleanupAgent(deps) {
   }
   const rawThumbUrl = typeof thumb === 'string' ? '' : String(thumb.url || '').trim();
   const fileKey = thumbKey;
-  let thumbUrl = '';
-  if (rawThumbUrl) {
-    const rel = toRelativeMediaPath(rawThumbUrl);
-    thumbUrl = rel.startsWith('/thumbs/') ? rel : (fileKey ? `/thumbs/${fileKey}` : '');
-  } else if (fileKey) {
-    thumbUrl = `/thumbs/${fileKey}`;
-  }
+  const thumbUrl =
+    durableImageVaultUrl(
+      typeof thumb === 'object' ? thumb : { fileName: fileKey, url: rawThumbUrl },
+      typeof thumb === 'object' ? thumb : { fileName: fileKey, url: rawThumbUrl }
+    ) ||
+    (rawThumbUrl.startsWith('/thumbs/') ? rawThumbUrl : '') ||
+    (fileKey && /^[0-9a-f]{8}-/i.test(fileKey) ? `/thumbs/${fileKey.replace(/^thumbs\//, '')}` : '');
   if (!thumbUrl) return;
   // Prefer catalog-owned image card (same reel id) when present — do not inject a second
   // synthetic personal-thumb-* representation for the same canonical asset.
@@ -777,7 +822,8 @@ export function createAiCleanupAgent(deps) {
     return;
   }
   const displayLabel = typeof thumb === 'string' ? thumb : String(thumb.title || thumb.name || fileKey);
-  const heroVideo = resolveActiveHeroVideoReel();
+  const linkedVideoId =
+    typeof thumb === 'object' ? String(thumb.personal_video_id || '').trim() : '';
   const thumbProbe = {
     id: typeof thumb === 'object' ? String(thumb.id || '') : '',
     title: displayLabel,
@@ -786,40 +832,32 @@ export function createAiCleanupAgent(deps) {
     url: thumbUrl,
     type: 'image',
     isPersonalThumbnail: true,
-    personal_video_id: typeof thumb === 'object' ? thumb.personal_video_id : undefined
+    publishableImage: true,
+    ...(linkedVideoId ? { personal_video_id: linkedVideoId } : {})
   };
-  // Phase 6.5 — do not inject IMG_/UUID/personal thumb cards into discovery shelves.
+  // Vault stills stay on Trending as image cards; also stamp linked video posters.
   const discovery = evaluateViewerImageDiscoveryEligibility(thumbProbe);
   if (!discovery.allow) {
-    const linkedId =
-      String(thumbProbe.personal_video_id || '').trim() ||
-      String(heroVideo?.id || '').trim();
-    if (linkedId && thumbUrl) {
-      categoriesList.forEach((cat) => {
-        newFeed[cat] = (newFeed[cat] || []).map((r) => {
-          if (!r || typeof r !== 'object') return r;
-          const id = String(r.id || r.personal_video_id || '').trim();
-          if (id !== linkedId) return r;
-          return {
-            ...r,
-            thumbnailUrl: r.thumbnailUrl || thumbUrl,
-            posterUrl: r.posterUrl || thumbUrl
-          };
-        });
-      });
-    }
+    const linkedId = linkedVideoId;
+    attachVaultStillToFeedMap(newFeed, categoriesList, thumbUrl, linkedId);
     console.info('[PERSONAL_THUMBNAIL_SKIP_DISCOVERY]', {
       stage: 'AI_CLEANUP_AGENT.syncThumbnailsToFeed',
       reason: discovery.reason,
       thumbnailName: fileKey,
       linkedId,
+      posterUrl: thumbUrl,
       ts: new Date().toISOString()
     });
     return;
   }
   const detectedCategory = CATEGORY_DETECTOR.detectFromTitle(String(displayLabel).replace(/\.[^/.]+$/, ''));
   const primaryCategory = categoriesList.includes(detectedCategory) ? detectedCategory : 'Trending';
-  const placeholder = createLocalReel({ id: thumb.id ? `personal-thumb-${thumb.id}` : `personal-thumb-${fileKey}`, name: `Personal Content ${thumbIndex + 1} - ${primaryCategory}`, category: primaryCategory, type: 'image', url: thumbUrl, thumbnailUrl: thumbUrl, isPlaceholder: false, isPersonalThumbnail: true, personal_thumbnail: fileKey, publishableImage: true, ...(heroVideo ? { personal_video_id: heroVideo.id } : {}), likes: Math.floor(Math.random() * 100) + 50, views: Math.floor(Math.random() * 500) + 100, match: 'PERSONAL THUMBNAIL', ai_tags: ['personal-thumbnail', 'user-uploaded'], createdAt: thumbAddedAt || new Date().toISOString() });
+  attachVaultStillToFeedMap(newFeed, categoriesList, thumbUrl, linkedVideoId);
+  const vaultStillId =
+    typeof thumb === 'object' && thumb.id
+      ? `personal-thumb-vault-${thumb.id}`
+      : `personal-thumb-${fileKey}`;
+  const placeholder = createLocalReel({ id: vaultStillId, name: `Personal Content ${thumbIndex + 1} - ${primaryCategory}`, category: primaryCategory, type: 'image', url: thumbUrl, thumbnailUrl: thumbUrl, posterUrl: thumbUrl, isPlaceholder: false, isPersonalThumbnail: true, personal_thumbnail: fileKey, publishableImage: true, likes: Math.floor(Math.random() * 100) + 50, views: Math.floor(Math.random() * 500) + 100, match: 'PERSONAL THUMBNAIL', ai_tags: ['personal-thumbnail', 'user-uploaded'], createdAt: thumbAddedAt || new Date().toISOString() });
   console.info('[PERSONAL_THUMBNAIL_INSERT]', {
   stage: 'AI_CLEANUP_AGENT.syncThumbnailsToFeed',
   placeholderId: placeholder.id,

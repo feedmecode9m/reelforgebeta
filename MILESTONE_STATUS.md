@@ -12,6 +12,18 @@ Single source of truth for implementation vs release state. Update when a milest
 
 | Area | Status |
 |------|--------|
+| **LOCAL-TRENDING-THUMBS-1** | ✅ **Implementation Complete** — Hero Vault JPEGs from `personal_thumbnails` appear as Trending image cards (`/thumbs/{id}.jpg`); catalog IMG_/UUID artifacts still suppressed; no deploy |
+| **LOCAL-TRENDING-CARDS-1** | ✅ **Implementation Complete** — empty identity `[]` no longer hides Trending; vault upsert keeps videos on Trending; `[TRENDING_RENDER_TRACE]`; no deploy |
+| **LOCAL-TRENDING-POSTER-1** | ✅ **Implementation Complete** — thumbnail vault JPEGs stamp Trending video posters via `/thumbs/{id}.jpg` (not `IMG_*.JPEG`); no deploy |
+| **BACKEND-THUMB-INTEGRITY-WIRE-1** | ✅ **Implementation Complete** — `mod thumbnail_integrity` registered on binary crate (`main.rs`); no deploy |
+| **LOCAL-FIREFOX-ORB-1** | ✅ **Implementation Complete** — local DEV loads loopback `/videos` `/thumbs` same-origin (Firefox ORB); Vite HMR no longer forces `wss://localhost:443`; no deploy |
+| **LOCAL-VAULT-THUMB-7** | ✅ **Implementation Complete** — after refresh, Your Thumbnails maps camera-roll `/thumbs/IMG_*.JPEG` to `/thumbs/{id}.jpg`; no deploy |
+| **LOCAL-VAULT-THUMB-6** | ✅ **Implementation Complete** — Your Thumbnails no longer rewrites `thumbs/{id}.jpg` to original `IMG_*.JPEG` filename; no deploy |
+| **LOCAL-VAULT-THUMB-5** | ✅ **Implementation Complete** — completeness overlay was covering JPEG (`elementFromPoint` → `.vault-creator-card`); collapsed to bottom strip; no deploy |
+| **LOCAL-VAULT-THUMB-4** | ✅ **Implementation Complete** — DOM Case B: `<img>` mounts; poster pinned above placeholder; `[LOCAL_VAULT_DOM_FACE_TRACE]`; no deploy |
+| **LOCAL-VAULT-THUMB-2** | ✅ **Implementation Complete** — Vault card `<img>` no longer gated on playback `url`; local stills survive blob-stripped rows; no deploy |
+| **LOCAL-VAULT-THUMB-1** | ✅ **Implementation Complete** — local Vault card face prefers durable stills over leftover blob preview; thumbnail-vault bind by video id; onMount stamps stills; no deploy |
+| **VAULT-THUMB-VERIFY-1** | ✅ **Release Approved** — Netlify `6a7fed8aae98910e5b60fb72` / `index-YoGUUdot.js`; Gates 1–7 PASS; Vault thumbnail visibility closed |
 | **PHASE-THUMBNAIL-REPAIR-1 Poster integrity** | ✅ **Implementation Complete** — missing thumbs regenerated into served `public/thumbs`; 674-byte ffmpeg fixtures flagged unrepairable (source too small); viewer cards no longer 404/SVG; no deploy |
 | **PHASE-HERO-REPLACE-3 Late commit guard** | ✅ **Implementation Complete** — timeout invalidates accept token; late upload discarded; no deploy |
 | **PHASE-HERO-REPLACE-VALIDATION** | ✅ **Validation Complete (PASS local)** — explicit Replace works under durable lock; REPLACE-1 not opened; no deploy |

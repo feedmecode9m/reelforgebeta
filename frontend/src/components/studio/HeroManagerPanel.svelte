@@ -49,6 +49,7 @@
         ignoreIdentityProposal
     } from '../../lib/intelligence/contentIdentityGuard.js';
     import { buildHeroAssetRegistry, isVideoHeroAssetType } from '../../lib/hero/heroAssetBridge.js';
+    import { resolveVaultCardFace } from '../../lib/vault/normalizeVaultAsset.js';
     import MediaRenderer from '../media/MediaRenderer.svelte';
     import MediaThumbnail from '../media/MediaThumbnail.svelte';
     import { resolveMediaForRender } from '../media/resolveDisplayUrl.js';
@@ -1602,8 +1603,9 @@
      * @param {Record<string, unknown>} item
      */
     function resolveHeroVaultPosterUrl(item) {
-        const raw = String(item?.thumbnailUrl || item?.posterUrl || '').trim();
-        if (!raw) return '';
+        const face = resolveVaultCardFace(item);
+        if (face.render !== 'image' || !face.src) return '';
+        const raw = String(face.src).trim();
         if (raw.startsWith('blob:') || raw.startsWith('data:')) return raw;
         return resolveMediaForRender(raw, 'poster', 'HeroVaultPosterPreview') || raw;
     }

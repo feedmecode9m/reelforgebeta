@@ -11,6 +11,7 @@
 import { stripPersonalThumbPrefix } from '../viewer/thumbnailDestinationIdentity.js';
 import {
     evaluateViewerImageDiscoveryEligibility,
+    isExplicitlyPublishableViewerImage,
     resolveSafeViewerCardTitle
 } from './viewerMediaIdentity.js';
 
@@ -193,6 +194,13 @@ export function collectViewerIdentitySignals(reel) {
  * @returns {{ matched: boolean, via: string }}
  */
 export function matchViewerIdentity(a, b) {
+    // Creator thumbnail-vault stills stay their own Trending cards (Hero Vault parity).
+    if (
+        (a?.isPersonalThumbnail === true && isExplicitlyPublishableViewerImage(a)) ||
+        (b?.isPersonalThumbnail === true && isExplicitlyPublishableViewerImage(b))
+    ) {
+        return { matched: false, via: '' };
+    }
     const sa = collectViewerIdentitySignals(a);
     const sb = collectViewerIdentitySignals(b);
 

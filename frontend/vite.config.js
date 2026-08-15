@@ -8,6 +8,8 @@ const BACKEND_PORT =
     '8080';
 const BACKEND_TARGET = `http://127.0.0.1:${BACKEND_PORT}`;
 const VITE_ALLOWED_HOSTS = true;
+const HMR_TUNNEL =
+    process.env.VITE_HMR_TUNNEL === 'true' || process.env.VITE_NGROK === 'true';
 
 console.log(`[vite] Media/API proxy target: ${BACKEND_TARGET} (/api, /videos, /thumbs)`);
 console.info('[VITE_HOST_CONFIG_UPDATED]', {
@@ -15,11 +17,15 @@ console.info('[VITE_HOST_CONFIG_UPDATED]', {
   targetDomain: '.ngrok-free.app',
   permissiveMode: true
 });
-console.info('[VITE_HMR_TUNNEL_CONFIGURED]', {
-  protocol: 'wss',
-  clientPort: 443,
-  tunnelStability: true
-});
+if (HMR_TUNNEL) {
+  console.info('[VITE_HMR_TUNNEL_CONFIGURED]', {
+    protocol: 'wss',
+    clientPort: 443,
+    tunnelStability: true
+  });
+} else {
+  console.info('[VITE_HMR_LOCAL]', { protocol: 'ws', overlay: false });
+}
 
 function createProxy(pathPrefix) {
   return {
@@ -84,11 +90,15 @@ export default defineConfig({
     host: 'localhost',
     allowedHosts: VITE_ALLOWED_HOSTS,
     cors: true,
-    hmr: {
-      protocol: 'wss',
-      clientPort: 443,
-      overlay: false
-    },
+    hmr: HMR_TUNNEL
+      ? {
+          protocol: 'wss',
+          clientPort: 443,
+          overlay: false
+        }
+      : {
+          overlay: false
+        },
     proxy: {
       '/api': createProxy('/api'),
       '/admin': createProxy('/admin'),

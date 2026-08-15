@@ -154,6 +154,11 @@ pub async fn serve_media_file(
                 header::ACCEPT_RANGES,
                 header::HeaderValue::from_static("bytes"),
             );
+            // Firefox ORB blocks opaque cross-origin media (Vite :5173 → backend :8080).
+            response.headers_mut().insert(
+                header::HeaderName::from_static("cross-origin-resource-policy"),
+                header::HeaderValue::from_static("cross-origin"),
+            );
             response
         }
         Err(error) => HttpResponse::InternalServerError().json(serde_json::json!({

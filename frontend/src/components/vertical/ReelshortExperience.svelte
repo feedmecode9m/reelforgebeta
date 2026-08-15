@@ -139,7 +139,8 @@
         resetBg7nMediaRendererCards
     } from '../../lib/diagnostics/bg7nPipelineTrace.js';
     import { logBg7pShelfDistribution, shelfCountsFromFeed } from '../../lib/diagnostics/bg7pShelfDistribution.js';
-    import { fillShelfPresentation, isRealShelfCard } from '../../lib/feed/fillShelfPresentation.js';
+    import { fillShelfPresentation, isRealShelfCard, pickFirstListWithRealCards, collectPlayableVideosFromFeedMap, mergeMissingVaultImageCards } from '../../lib/feed/fillShelfPresentation.js';
+    import { durableImageVaultUrl } from '../../lib/viewer/vaultUtils.js';
     import { resolveVaultCardProjection } from '../../lib/content/vaultCardProjection.js';
     import ViewerSemanticCard from '../viewer/ViewerSemanticCard.svelte';
     import {
@@ -235,6 +236,18 @@
             feedShelfCounts: shelfCountsFromFeed($feed),
             timestamp: new Date().toISOString()
         });
+        const trendingRow = feedSectionRoot?.querySelector('[data-viewer-discovery-row="Trending"]');
+        const trendingDom = trendingRow
+            ? trendingRow.querySelectorAll('[data-viewer-semantic-card], .reel-card:not(.presentation-slot)')
+                  .length
+            : 0;
+        console.info('[TRENDING_RENDER_TRACE]', {
+            stage: 'dom',
+            finalDomCardCount: trendingDom,
+            shouldRenderShelf: shouldRenderShelf('Trending'),
+            displayShelfCount: getShelfDisplayItems('Trending').length,
+            ts: new Date().toISOString()
+        });
     });
 
     /** Real feed cards → sorted real-only → presentation padding (BG-7S). */
@@ -274,12 +287,90 @@
             .filter((item) => isRealShelfCard(item)).length;
     }
 
+    function localVaultStillCards() {
+        if (typeof localStorage === 'undefined') return [];
+        try {
+            const stored = JSON.parse(localStorage.getItem('personal_thumbnails') || '[]');
+            if (!Array.isArray(stored)) return [];
+            return stored
+                .map((thumb, index) => {
+                    const row =
+                        thumb && typeof thumb === 'object'
+                            ? thumb
+                            : { fileName: String(thumb || ''), url: '' };
+                    const url = durableImageVaultUrl(row, row);
+                    if (!url) return null;
+                    const rawId = String(row.id || '').trim();
+                    const id = rawId
+                        ? `personal-thumb-vault-${rawId}`
+                        : `personal-thumb-vault-${index}`;
+                    return {
+                        id,
+                        type: 'image',
+                        url,
+                        thumbnailUrl: url,
+                        posterUrl: url,
+                        isPersonalThumbnail: true,
+                        publishableImage: true,
+                        category: 'Trending',
+                        isPlaceholder: false
+                    };
+                })
+                .filter(Boolean);
+        } catch {
+            return [];
+        }
+    }
+
+    function getShelfSource(category) {
+        const identity = identityFeedMap?.[category];
+        const normalized = $normalizedFeed?.[category];
+        const raw = $feed?.[category];
+        const picked = pickFirstListWithRealCards([identity, normalized, raw]);
+        const extras = [raw, normalized, identity];
+        if (category === 'Trending') extras.push(localVaultStillCards());
+        const merged = mergeMissingVaultImageCards(picked, extras);
+        if (merged.length > 0) return merged;
+        if (category === 'Trending') {
+            return collectPlayableVideosFromFeedMap($normalizedFeed || $feed || {});
+        }
+        return Array.isArray(identity) ? identity : Array.isArray(raw) ? raw : [];
+    }
+
     function getShelfDisplayItems(category) {
-        const source = identityFeedMap?.[category] || $normalizedFeed[category] || $feed[category] || [];
-        const real = UIAgent.fillLandscape ? UIAgent.fillLandscape(source, category) : source;
-        return fillShelfPresentation(real, category, undefined, {
+        const source = getShelfSource(category);
+        const hydrated = UIAgent.fillLandscape ? UIAgent.fillLandscape(source, category) : source;
+        const filteredReal = (hydrated || []).filter(isRealShelfCard);
+        const display = fillShelfPresentation(hydrated, category, undefined, {
             globalRealCount: countGlobalRealFeedCards()
         });
+        if (category === 'Trending' && typeof window !== 'undefined') {
+            console.info('[TRENDING_RENDER_TRACE]', {
+                rawTrendingInputCount: Array.isArray($feed?.Trending) ? $feed.Trending.length : 0,
+                normalizedTrendingCount: Array.isArray($normalizedFeed?.Trending)
+                    ? $normalizedFeed.Trending.length
+                    : 0,
+                identityTrendingCount: Array.isArray(identityFeedMap?.Trending)
+                    ? identityFeedMap.Trending.length
+                    : 0,
+                hydratedReelCount: Array.isArray(hydrated) ? hydrated.length : 0,
+                filteredCount: filteredReal.length,
+                displayShelfCount: Array.isArray(display) ? display.length : 0,
+                failure:
+                    display.length > 0
+                        ? null
+                        : filteredReal.length === 0 &&
+                            (Array.isArray($feed?.Trending) ? $feed.Trending.length : 0) === 0
+                          ? 'A_or_hydration'
+                          : filteredReal.length === 0
+                            ? 'B_filtering'
+                            : display.length === 0
+                              ? 'C_shelf_filler'
+                              : 'D_render_condition',
+                ts: new Date().toISOString()
+            });
+        }
+        return display;
     }
 
     /**

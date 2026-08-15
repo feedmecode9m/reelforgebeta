@@ -47,7 +47,8 @@ import { mergeTitleIntoPersistentMap } from '../lib/content/persistentTitleMap.j
 import {
     PERSONAL_VIDEO_VAULT_MINIMAL_FIELDS,
     overlayLocalCreatorVaultAuthority,
-    indexVaultAssetsByMediaId
+    indexVaultAssetsByMediaId,
+    pickDurableVaultStillUrl
 } from '../lib/vault/vaultCreatorAuthority.js';
 import { shouldStreamDiagnostics } from '../lib/diagnostics/pipelineSnapshot.js';
 import { notifyInterruptedUploads } from '../lib/diagnostics/uploadRecovery.js';
@@ -1021,11 +1022,42 @@ reasons: 'filterNonHeroAssets+filterOutDeletedMedia'
 });
 // Rehydrate durable identity + episode package; seal legacy rows that predate seriesIdentity storage
 const sealedVideos = sealVaultAssetsWithEnrichment(filteredStoredVideos);
-personalVideos.set(sealedVideos.map((video) => ({
+personalVideos.set(sealedVideos.map((video) => {
+const durableStill = pickDurableVaultStillUrl(video);
+const resolvedStill = resolveUserPosterUrl(durableStill) || durableStill;
+const playbackRaw = [video.url, video.videoUrl, video.video_url, video.mediaUrl]
+  .map((value) => String(value || '').trim())
+  .find((value) => {
+    if (!value) return false;
+    if (value.startsWith('blob:') || value.startsWith('data:')) return true;
+    return /\/videos\//i.test(value) || /\.(mp4|mov|webm|m4v|avi|mkv)(\?|$)/i.test(value);
+  }) || '';
+const next = {
 ...video,
-url: video.url ? toRelativeMediaPath(video.url) : '',
-thumbnail: resolveUserPosterUrl(video.thumbnail) || ''
-})));
+url: playbackRaw ? toRelativeMediaPath(playbackRaw) : '',
+...(resolvedStill
+  ? { thumbnail: resolvedStill, thumbnailUrl: resolvedStill, posterUrl: resolvedStill }
+  : {})
+};
+if (import.meta.env.DEV) {
+  console.info('[LOCAL_VAULT_FACE_TRACE]', {
+    stage: 'reloadVaultStoresFromStorage',
+    assetId: String(video?.id || video?.assetId || ''),
+    url: String(next.url || ''),
+    thumbnail: String(next.thumbnail || ''),
+    thumbnailUrl: String(next.thumbnailUrl || ''),
+    posterUrl: String(next.posterUrl || ''),
+    previewUrl: String(next.previewUrl || ''),
+    localPreviewUrl: String(next.localPreviewUrl || ''),
+    resolvedFace: resolvedStill
+      ? { src: resolvedStill, render: 'image' }
+      : { src: '', render: 'empty' },
+    renderMode: resolvedStill ? 'image' : 'empty',
+    ts: new Date().toISOString()
+  });
+}
+return next;
+}));
 console.info('[STORE_UPDATE]', {
 store: 'personalVideos',
 count: sealedVideos.length,
@@ -1106,8 +1138,13 @@ if (backendReachable) {
         if (state === 'pending_accept') return entry;
         if (state === 'uploading') {
           const url = String(entry?.url || '').trim();
+          const preview = String(
+            entry?.previewUrl || entry?.localPreviewUrl || entry?.thumbnailUrl || ''
+          ).trim();
           // Same-session blob preview still valid — keep uploading.
-          if (url.startsWith('blob:')) return entry;
+          if (url.startsWith('blob:') || preview.startsWith('blob:') || preview.startsWith('data:')) {
+            return entry;
+          }
           // After hard refresh blob was stripped from storage — mark interrupted.
           return {
             ...entry,
@@ -1122,7 +1159,15 @@ if (backendReachable) {
         }
         if (entry?.isOptimisticLocal) {
           const url = String(entry?.url || '').trim();
-          if (url.startsWith('blob:') && state === 'uploading') return entry;
+          const preview = String(
+            entry?.previewUrl || entry?.localPreviewUrl || entry?.thumbnailUrl || ''
+          ).trim();
+          if (
+            state === 'uploading' &&
+            (url.startsWith('blob:') || preview.startsWith('blob:') || preview.startsWith('data:'))
+          ) {
+            return entry;
+          }
           return {
             ...entry,
             uploadState: state === 'uploading' ? 'interrupted' : state || 'interrupted',
@@ -2301,10 +2346,14 @@ console.log(`[onMount] Loaded ${storedVideos.length} videos from [${hadLocalCach
 if (storedVideos.length > 0) {
 const filteredStoredVideos = filterOutDeletedMedia(filterNonHeroAssets(storedVideos));
 personalVideos.set(filteredStoredVideos.map((video) => {
+const durableStill = pickDurableVaultStillUrl(video);
+const resolvedStill = resolveUserPosterUrl(durableStill) || durableStill;
 const normalized = {
 ...video,
 url: video.url ? toRelativeMediaPath(video.url) : '',
-thumbnail: resolveUserPosterUrl(video.thumbnail) || ''
+...(resolvedStill
+  ? { thumbnail: resolvedStill, thumbnailUrl: resolvedStill, posterUrl: resolvedStill }
+  : { thumbnail: resolveUserPosterUrl(video.thumbnail) || video.thumbnail || '' })
 };
 if (normalized.url && normalized.url.startsWith('blob:')) {
 fetch(normalized.url, { method: 'HEAD' }).catch(() => {
