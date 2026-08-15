@@ -20,6 +20,7 @@ pub mod media_durability;
 pub mod media_api;
 pub mod media_seed;
 pub mod media_validator;
+pub mod thumbnail_integrity;
 pub mod models;
 pub mod no_compress;
 pub mod reel_contract;

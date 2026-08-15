@@ -12,6 +12,7 @@ Single source of truth for implementation vs release state. Update when a milest
 
 | Area | Status |
 |------|--------|
+| **PHASE-THUMBNAIL-REPAIR-1 Poster integrity** | ✅ **Implementation Complete** — missing thumbs regenerated into served `public/thumbs`; 674-byte ffmpeg fixtures flagged unrepairable (source too small); viewer cards no longer 404/SVG; no deploy |
 | **PHASE-HERO-REPLACE-3 Late commit guard** | ✅ **Implementation Complete** — timeout invalidates accept token; late upload discarded; no deploy |
 | **PHASE-HERO-REPLACE-VALIDATION** | ✅ **Validation Complete (PASS local)** — explicit Replace works under durable lock; REPLACE-1 not opened; no deploy |
 | **PHASE-HERO-LOCK-1 Durable Hero Override** | ✅ **Implementation Complete** — selection cannot replace locked Hero; no deploy |

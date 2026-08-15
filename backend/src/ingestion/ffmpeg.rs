@@ -9,8 +9,9 @@ use tokio::time::timeout;
 const FFMPEG_TIMEOUT: Duration = Duration::from_secs(30);
 
 /// Seek points for thumbnail extraction.
-/// Prefer ~1s into the clip; fall back to frame 0 for sub-second / 1s fixtures.
-const SEEK_CANDIDATES: &[&str] = &["1", "0"];
+/// Prefer a later frame (avoids black/title cards), then earlier fallbacks
+/// for sub-second / 1s test fixtures.
+const SEEK_CANDIDATES: &[&str] = &["1", "2", "0.5", "3", "0"];
 
 /// Extract one JPEG frame from `input` (path or URL) into `thumb_path`.
 ///
@@ -25,6 +26,7 @@ async fn extract_jpeg_frame(input: &OsStr, thumb_path: &Path) -> Result<(), Stri
     }
 
     let mut last_err = String::from("ffmpeg produced no output file");
+    let mut fallback: Option<Vec<u8>> = None;
 
     for ss in SEEK_CANDIDATES {
         if thumb_path.exists() {
@@ -75,6 +77,19 @@ async fn extract_jpeg_frame(input: &OsStr, thumb_path: &Path) -> Result<(), Stri
             continue;
         }
 
+        if crate::thumbnail_integrity::is_usable_poster(&bytes) {
+            return Ok(());
+        }
+
+        fallback = Some(bytes);
+        last_err = "ffmpeg frame is below poster quality threshold".to_string();
+    }
+
+    if let Some(bytes) = fallback {
+        if let Some(parent) = thumb_path.parent() {
+            let _ = std::fs::create_dir_all(parent);
+        }
+        std::fs::write(thumb_path, bytes).map_err(|e| e.to_string())?;
         return Ok(());
     }
 

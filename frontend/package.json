@@ -92,6 +92,7 @@
     "validate:phase-6-6-2-canonical-media-identity": "node scripts/validate-phase-6-6-2-canonical-media-identity.mjs",
     "validate:phase-hero-lock-1": "node scripts/validate-phase-hero-lock-1.mjs",
     "validate:phase-hero-replace-3": "node scripts/validate-phase-hero-replace-3.mjs",
+    "validate:phase-thumbnail-repair-1": "node scripts/validate-phase-thumbnail-repair-1.mjs",
     "test:phase-6-5-production-smoke": "node scripts/mission-phase-6-5-production-smoke.mjs",
     "mission:phase-3a-production-audit": "node scripts/mission-phase-3a-production-audit.mjs",
     "validate:catalog-metadata-enrichment": "node scripts/validate-catalog-metadata-enrichment.mjs",
