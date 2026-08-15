@@ -80,6 +80,9 @@
     let stopSharedInterval = () => {};
     let unregisterSharedRefresh = () => {};
     let guideMeMode = isGuideMeModeEnabled();
+    /** PHASE-STUDIO-1 — gate notification eval to refresh-bus ticks only. */
+    let lastNotificationRefreshKey = -1;
+    let prevSelectedSeriesId = selectedSeriesId;
 
     /** @type {ReturnType<typeof buildCommandCenterSnapshot> | null} */
     let snapshot = null;
@@ -177,8 +180,19 @@
     $: missingQueue = getMissingAssetQueue(feedReels, selectedSeriesId);
     $: actionPlan = buildStudioActionPlan(selectedSeriesId, feedReels);
     $: refreshKey, auditProductionOperations(feedReels, selectedSeriesId, true);
-    $: refreshKey, selectedSeriesId, feedReels, evaluateNotificationTriggers(selectedSeriesId, feedReels);
-    $: selectedSeriesId, feedReels, scheduleCommandCenterRefresh('workspace-reactive');
+
+    // PHASE-STUDIO-1 — notification triggers only when shared refresh bus advances
+    // (mount / interval / domain event / tab / series change). Never schedule on feedReels ticks.
+    $: if (refreshKey !== lastNotificationRefreshKey) {
+        lastNotificationRefreshKey = refreshKey;
+        void evaluateNotificationTriggers(selectedSeriesId, feedReels);
+    }
+
+    // Series switch is an explicit studio action — allow one refresh, not feedReels ticks.
+    $: if (selectedSeriesId !== prevSelectedSeriesId) {
+        prevSelectedSeriesId = selectedSeriesId;
+        scheduleCommandCenterRefresh('workspace-series-change');
+    }
 
     /** @param {typeof WORKSPACE_TABS[number]} tab */
     function selectTab(tab) {

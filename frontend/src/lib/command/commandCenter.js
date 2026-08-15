@@ -413,11 +413,21 @@ export function buildPlatformOperationsBrief(seriesId, feedReels = []) {
         });
     }
 
-    const recommendedActions = sentinel.nextActions.slice(0, 4);
+    const recommendedActions = [];
+    /** @type {Set<string>} */
+    const seenActionIds = new Set();
+    for (const action of sentinel.nextActions || []) {
+        const id = String(action?.id || '').trim();
+        if (!id || seenActionIds.has(id)) continue;
+        seenActionIds.add(id);
+        recommendedActions.push({ ...action, id });
+        if (recommendedActions.length >= 4) break;
+    }
     if (recommendedActions.length === 0) {
         for (const [index, recommendation] of sentinel.recommendations.slice(0, 4).entries()) {
+            const id = `rec-${index}`;
             recommendedActions.push({
-                id: `rec-${index}`,
+                id,
                 title: recommendation,
                 detail: recommendation,
                 targetTab: 'Overview',

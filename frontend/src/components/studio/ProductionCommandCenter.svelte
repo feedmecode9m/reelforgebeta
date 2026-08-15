@@ -324,8 +324,8 @@ import GlobalSearchBar from '../discovery/GlobalSearchBar.svelte';
             <section class="production-command-center-shell__actions" data-command-recommended-actions-panel>
                 <h4>Recommended Actions</h4>
                 <ul>
-                    {#each brief.recommendedActions as action (action.id || action.title)}
-                        <li data-command-recommended-action={action.id || action.title}>
+                    {#each brief.recommendedActions as action (action.id)}
+                        <li data-command-recommended-action={action.id}>
                             <strong>{action.title}</strong>
                             <p>{action.detail}</p>
                         </li>

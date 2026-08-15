@@ -1,0 +1,94 @@
+{
+  "mission": "PHASE-6.6.3 + PHASE-STUDIO-1 local validation",
+  "generatedAt": "2026-08-13T18:15:16.392Z",
+  "buildBundle": "index-_9eoAxXi.js",
+  "phase663": {
+    "visual": {
+      "cards": [
+        {
+          "section": "Featured",
+          "variant": "featured",
+          "titleCount": 1,
+          "titles": [
+            "01 ARRIVAL OPEN v1"
+          ],
+          "overlays": 1,
+          "infoTitles": 0,
+          "hasUuidTitle": false,
+          "hasImgTitle": false,
+          "poster": "http://localhost:8080/thumbs/73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee.jpg",
+          "textSnippet": "PRODUCTION WIDESCREEN 01 ARRIVAL OPEN v1 ▶ TRENDING STUDIO PRODUCTION"
+        },
+        {
+          "section": "Trending",
+          "variant": "row",
+          "titleCount": 1,
+          "titles": [
+            "01 ARRIVAL OPEN v1"
+          ],
+          "overlays": 0,
+          "infoTitles": 1,
+          "hasUuidTitle": false,
+          "hasImgTitle": false,
+          "poster": "http://localhost:8080/thumbs/73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee.jpg",
+          "textSnippet": "PRODUCTION WIDESCREEN ▶ 01 ARRIVAL OPEN v1 TRENDING STUDIO PRODUCTION"
+        }
+      ],
+      "featuredTitleCount": [
+        1
+      ],
+      "trendingTitleCount": [
+        1
+      ],
+      "browseTitleCount": [],
+      "uuidTitles": 0,
+      "imgTitles": 0,
+      "postersPresent": 2
+    },
+    "gate": {
+      "featuredTitleCountOne": true,
+      "trendingTitleCountOne": true,
+      "browseTitleCountOne": true,
+      "uuidTitlesZero": true,
+      "imgTitlesZero": true,
+      "postersPresent": true
+    },
+    "pass": true
+  },
+  "phaseStudio1": {
+    "studioUnit": {
+      "collisionCase": {
+        "actions": [
+          {
+            "id": "missing-asset-e01",
+            "title": "Attach reel to E01"
+          },
+          {
+            "id": "missing-asset-e02",
+            "title": "Attach reel to E02"
+          }
+        ],
+        "keys": [
+          "missing-asset-e01",
+          "missing-asset-e02"
+        ],
+        "keyDupes": [],
+        "titles": [
+          "Attach reel to E01",
+          "Attach reel to E02"
+        ]
+      },
+      "reactiveStormRemoved": true,
+      "pccKeysOnIdOnly": true
+    },
+    "refreshStats": {
+      "scheduledCount": 25,
+      "flushedCount": 25,
+      "listenerCount": 1,
+      "intervalOwnerId": null,
+      "flushesAfterDebounce": 25
+    },
+    "pageErrors": [],
+    "pass": true
+  }
+}

@@ -320,6 +320,7 @@ export function analyzeProduction(seriesId, feedReels = []) {
         missingQueue: missing,
         quickWins: actionPlan.quickWins.map((item) => item.title),
         nextActions: actionPlan.recommendations.slice(0, 3).map((item) => ({
+            id: String(item.id || `production-${item.title}`),
             title: item.title,
             detail: item.description || item.title,
             targetTab: 'Production',
@@ -423,6 +424,7 @@ export function analyzeWorkflows(seriesId, feedReels = []) {
         workflowHealth,
         issues,
         nextActions: openTasks.slice(0, 3).map((task) => ({
+            id: String(task.id || `workflow-${task.title || task.taskType}`),
             title: task.title || task.taskType,
             detail: 'Complete this workflow task to restore momentum.',
             targetTab: 'Production',
@@ -517,10 +519,32 @@ export function masterAnalysis(seriesId = null, feedReels = [], options = {}) {
         ...copilot.recommendedActions.map((item) => item.title)
     ].filter((value, index, list) => list.indexOf(value) === index).slice(0, 8);
 
-    const nextActions = [
+    /** Stable ids + dedupe — PCC keys on action.id only (PHASE-STUDIO-1). */
+    const nextActionsRaw = [
         ...(production.nextActions || []),
         ...(workflows.nextActions || [])
-    ].slice(0, 6);
+    ];
+    /** @type {Map<string, (typeof nextActionsRaw)[number]>} */
+    const nextActionsById = new Map();
+    for (const action of nextActionsRaw) {
+        const id = String(action?.id || action?.title || '').trim();
+        if (!id || nextActionsById.has(id)) continue;
+        nextActionsById.set(id, { ...action, id });
+    }
+    // Also collapse near-duplicates that differ only by casing in the title.
+    /** @type {Set<string>} */
+    const seenTitleKeys = new Set();
+    const nextActions = [];
+    for (const action of nextActionsById.values()) {
+        const titleKey = String(action.title || '')
+            .trim()
+            .toLowerCase()
+            .replace(/\s+/g, ' ');
+        if (titleKey && seenTitleKeys.has(titleKey)) continue;
+        if (titleKey) seenTitleKeys.add(titleKey);
+        nextActions.push(action);
+        if (nextActions.length >= 6) break;
+    }
 
     const readinessScore = Math.round(
         (platform.readinessScore +
