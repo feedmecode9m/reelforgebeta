@@ -1,6 +1,12 @@
 import { get } from 'svelte/store';
 import { logBg7kPlaceholderFallback } from '../diagnostics/bg7kCardRenderTrace.js';
 import { logBg7nStage } from '../diagnostics/bg7nPipelineTrace.js';
+import {
+    displayDiscoveryShelf,
+    getActiveDiscoveryShelves,
+    reconcileFeedToCanonicalShelves,
+    resolveCanonicalDiscoveryShelf
+} from '../feed/discoveryTaxonomy.js';
 
 export function createUiAgent(deps) {
   const {
@@ -37,7 +43,11 @@ export function createUiAgent(deps) {
     'Suspense': { color: '#8B4513', label: 'Suspense' },
     'Auto-Detect': { color: '#666', label: 'Auto-Detect' }
   },
-  getStudioConfigs(category) { return this.configs[category] || { color: '#666', label: category }; },
+  getStudioConfigs(category) {
+    const canonical = resolveCanonicalDiscoveryShelf(category) || String(category || '').trim();
+    const base = this.configs[canonical] || { color: '#666', label: canonical || String(category || '') };
+    return { ...base, label: displayDiscoveryShelf(canonical || category) };
+  },
   // Disable synthetic auto-pan on hover; it fights native wheel/touch scroll and causes row jitter.
   startScroll: (_e) => {},
   stopScroll: (_e) => {},
@@ -165,7 +175,20 @@ export function createUiAgent(deps) {
       videoSource.set('');
     }
   },
-  async renameCategory(oldName, newName) { const trimmed = newName?.trim(); if (!trimmed || trimmed === oldName) return; categoryNames.saveName(oldName, trimmed); const currentFeed = get(feed); if (currentFeed[oldName]) { currentFeed[trimmed] = currentFeed[oldName].map((r) => ({ ...r, category: trimmed })); delete currentFeed[oldName]; feed.set({ ...currentFeed }); categories.set(Object.keys(currentFeed)); } uploadStatus.set('✅ Category Renamed & Persisted'); },
+  async renameCategory(oldName, newName) {
+    const trimmed = newName?.trim();
+    if (!trimmed) return;
+    const canonical =
+        resolveCanonicalDiscoveryShelf(oldName) ||
+        (getActiveDiscoveryShelves().includes(oldName) ? oldName : '');
+    if (!canonical) return;
+    if (trimmed === categoryNames.getName(canonical)) return;
+    categoryNames.saveName(canonical, trimmed);
+    const currentFeed = get(feed) || {};
+    const reconciled = reconcileFeedToCanonicalShelves(currentFeed);
+    feed.set(reconciled);
+    uploadStatus.set('✅ Category label updated everywhere');
+  },
   togglePersonalStudioMode: () => { personalStudioMode.update((p) => { const newVal = !p; const thumbCount = get(personalThumbnailCollection).length; uploadStatus.set(newVal ? `🎬 PERSONAL STUDIO MODE ACTIVATED (${thumbCount} thumbnails)` : '🎬 PERSONAL STUDIO MODE DEACTIVATED'); return newVal; }); },
   togglePersonalThumbnails: () => { usePersonalThumbnails.update((u) => { const newVal = !u; const thumbCount = get(personalThumbnailCollection).length; uploadStatus.set(newVal ? `🖼️  USING PERSONAL THUMBNAILS (${thumbCount})` : '🖼️  USING AI-GENERATED THUMBNAILS'); return newVal; }); },
   quickUploadPersonal: () => { const nt = get(newTitle); if (!nt) { uploadStatus.set('ERROR: TITLE REQUIRED'); return; } PersonalUploadSystem.quickUpload(nt, 'Trending'); },

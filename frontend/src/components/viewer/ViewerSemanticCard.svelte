@@ -143,9 +143,7 @@
             {resolvedShell.title}
           </h3>
         {:else if !hasTitle}
-          <p class="viewer-sem-card__title-empty" data-viewer-sem-title-empty aria-hidden="true">
-            Untitled
-          </p>
+          <p class="viewer-sem-card__title-empty" data-viewer-sem-title-empty aria-hidden="true"></p>
         {/if}
         <div class="viewer-sem-card__meta">
           {#if resolvedShell.shelf}

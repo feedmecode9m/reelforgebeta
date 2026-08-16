@@ -12,6 +12,11 @@ Single source of truth for implementation vs release state. Update when a milest
 
 | Area | Status |
 |------|--------|
+| **LOCAL-EPISODES-MASTER-EDIT-1** | ✅ **Implementation Complete** — All Episodes titles match Hero Vault Master Edit (persistent map + playback alias); no deploy |
+| **THEATER-MOBILE-EPISODES-1** | ✅ **Release Approved** — Netlify `6a81e5613cd2117211070523` / `index-BB00hp3I.js`; Gates 1–7 PASS; phone Theater MP4 no longer covered by All Episodes |
+| **LOCAL-COLLECTIONS-DORMANT-1** | ⏳ **Release in progress** — Prod `index-B3YLBAMn.js`. Gates 3–4 PASS. Gate 5 PASS after validator TLS transport fix (`npm run test:bg-7a1-release`). Gate 6–7 not re-run in this session. |
+| **LOCAL-VAULT-LINK-CHECKBOX-1** | ✅ **Implementation Complete** — Arrival Open is not Theater-family with MICROS Motherland when unchecked; leftover stamps/catalog ignored; no deploy |
+| **LOCAL-TRENDING-VIDEOS-1** | ✅ **Implementation Complete** — vault MP4s stay on Trending beside thumbnail stills (stills no longer skip video recovery); no deploy |
 | **LOCAL-TRENDING-THUMBS-1** | ✅ **Implementation Complete** — Hero Vault JPEGs from `personal_thumbnails` appear as Trending image cards (`/thumbs/{id}.jpg`); catalog IMG_/UUID artifacts still suppressed; no deploy |
 | **LOCAL-TRENDING-CARDS-1** | ✅ **Implementation Complete** — empty identity `[]` no longer hides Trending; vault upsert keeps videos on Trending; `[TRENDING_RENDER_TRACE]`; no deploy |
 | **LOCAL-TRENDING-POSTER-1** | ✅ **Implementation Complete** — thumbnail vault JPEGs stamp Trending video posters via `/thumbs/{id}.jpg` (not `IMG_*.JPEG`); no deploy |
@@ -68,6 +73,46 @@ Single source of truth for implementation vs release state. Update when a milest
 | BG-8 product development | 🔜 After BG-7B |
 
 **RELEASE-01 note:** Product Studio RC track is frozen and live. BG-7A credential-gate status above remains historical for that milestone’s `release-run.sh` track and does not reopen RELEASE-01.
+
+---
+
+## LOCAL-EPISODES-MASTER-EDIT-1
+
+```
+LOCAL-EPISODES-MASTER-EDIT-1
+Implementation: COMPLETE
+Release: BLOCKED (implementation only; not deployed)
+Release Process: v1.0
+```
+
+All Episodes menu titles use the Hero Vault Master Edit label (`reel_titles_persistent`, including playback-URL aliases). Package/franchise names no longer replace the vault card title. Live after Master Edit via `reelforge:vault-title-updated`.
+
+---
+
+## THEATER-MOBILE-EPISODES-1
+
+```
+THEATER-MOBILE-EPISODES-1
+Implementation: COMPLETE
+Release: APPROVED
+Release Process: v1.0
+Manifest: frontend/artifacts/release-manifest-theater-mobile-episodes-1-1786897969096.json
+Sign-off: frontend/THEATER-MOBILE-EPISODES-1_DEPLOYMENT_SIGNOFF.md
+```
+
+Phone Theater no longer auto-opens All Episodes over the MP4 or traps the circular close. Desktop docks the episode rail once per session. Shipped with LOCAL-MOBILE-PRESENTATION-1 (`viewport-fit=cover`, playsinline). Bundle `index-BB00hp3I.js`.
+
+## LOCAL-MOBILE-PRESENTATION-1
+
+```
+LOCAL-MOBILE-PRESENTATION-1
+Implementation: COMPLETE
+Release: APPROVED (shipped inside THEATER-MOBILE-EPISODES-1)
+Release Process: v1.0
+Manifest: frontend/artifacts/release-manifest-theater-mobile-episodes-1-1786897969096.json
+```
+
+Local LAN bind (`0.0.0.0`) + production/local viewport-fit, iOS `playsinline`, Theater mobile chrome helper, non-prod LAN CORS, rewrite loopback media/upload URLs when the page is opened from a phone.
 
 ---
 

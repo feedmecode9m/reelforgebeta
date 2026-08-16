@@ -4,7 +4,8 @@ import {
     DIRECT_UPLOAD_BASE_URL,
     NETLIFY_PROXY_MAX_REQUEST_BYTES,
     SIGNED_UPLOADS_MIN_BYTES,
-    USE_SIGNED_UPLOADS
+    USE_SIGNED_UPLOADS,
+    rewriteDevLoopbackAbsoluteToSameOrigin
 } from '../config.js';
 import { enforceUploadPolicy } from '../security/securityPolicyEngine.js';
 import { saveUploadCheckpoint, clearUploadCheckpoint } from '../diagnostics/uploadRecovery.js';
@@ -539,7 +540,9 @@ async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = nu
         throw new Error(err.error || `Signed upload sign failed (${signResponse.status})`);
     }
     signBody = await signResponse.json();
-    const uploadUrl = String(signBody.uploadUrl || `${DIRECT_UPLOAD_BASE_URL}/api/uploads/direct/${signBody.uploadId}`);
+    const uploadUrl = rewriteDevLoopbackAbsoluteToSameOrigin(
+        String(signBody.uploadUrl || `${DIRECT_UPLOAD_BASE_URL}/api/uploads/direct/${signBody.uploadId}`)
+    );
     patchUploadDiagContext(diagContext, {
         reelId: signBody.reelId,
         uploadId: signBody.uploadId

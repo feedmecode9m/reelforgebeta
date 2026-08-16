@@ -407,6 +407,10 @@
         resolveContentIdentity,
         applyContentIdentityToSeriesContext
     } from '../../lib/content/contentIdentityResolver.js';
+    import {
+        detectMobilePresentation,
+        subscribeMobilePresentation
+    } from '../../lib/device/mobilePresentation.js';
 
     /** @type {import('svelte/store').Readable<unknown[]>} */
     export let personalVideos;
@@ -432,7 +436,7 @@
      * native video volume chrome, and overflow:hidden can clip menu + control bars.
      * Desktop path leaves controls as always-native (no mobile chrome).
      */
-    let isMobileTheater = false;
+    let isMobileTheater = typeof window !== 'undefined' ? detectMobilePresentation() : true;
     /** Autoplay requires muted; after gesture, user mute state is tracked (never force-mute). */
     let theaterMuted = true;
     let theaterVolume = 1;
@@ -441,8 +445,6 @@
     let menuVisible = true;
     /** @type {ReturnType<typeof setTimeout> | null} */
     let mobileControlsHideTimer = null;
-    /** @type {MediaQueryList | null} */
-    let mobileTheaterMql = null;
 
     /** @param {string} reason */
     function reportTheaterControls(reason) {
@@ -458,19 +460,8 @@
         });
     }
 
-    function detectMobileTheater() {
-        if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
-            return false;
-        }
-        // Coarse pointer / no-hover covers phones & tablets; narrow width covers landscape phones.
-        return (
-            window.matchMedia('(hover: none) and (pointer: coarse)').matches ||
-            window.matchMedia('(max-width: 640px)').matches
-        );
-    }
-
     function syncMobileTheaterFlag(reason = 'detect') {
-        const next = detectMobileTheater();
+        const next = detectMobilePresentation();
         const changed = next !== isMobileTheater;
         isMobileTheater = next;
         if (!isMobileTheater) {
@@ -564,22 +555,7 @@
 
     onMount(() => {
         syncMobileTheaterFlag('mount');
-        if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
-        mobileTheaterMql = window.matchMedia('(hover: none) and (pointer: coarse), (max-width: 640px)');
-        const onChange = () => syncMobileTheaterFlag('viewport_change');
-        if (typeof mobileTheaterMql.addEventListener === 'function') {
-            mobileTheaterMql.addEventListener('change', onChange);
-        } else if (typeof mobileTheaterMql.addListener === 'function') {
-            mobileTheaterMql.addListener(onChange);
-        }
-        return () => {
-            if (!mobileTheaterMql) return;
-            if (typeof mobileTheaterMql.removeEventListener === 'function') {
-                mobileTheaterMql.removeEventListener('change', onChange);
-            } else if (typeof mobileTheaterMql.removeListener === 'function') {
-                mobileTheaterMql.removeListener(onChange);
-            }
-        };
+        return subscribeMobilePresentation(() => syncMobileTheaterFlag('viewport_change'));
     });
     onDestroy(() => {
         if (mobileControlsHideTimer != null) clearTimeout(mobileControlsHideTimer);
@@ -660,21 +636,35 @@
     /** Landscape Theater: dock episode rail beside player (desktop / wide canvas). */
     $: seriesDrawerDocked = seriesDrawerOpen && !isMobileTheater && hasSeriesDrawer;
     $: if (seriesContext) selectedSeriesEpisodeId = seriesContext.episode.episodeId;
-    $: if (!$activeReel) {
+
+    /**
+     * Auto-open the episode rail once per Theater session on desktop only.
+     * Phones must see the MP4 first — a full-screen All Episodes overlay hid playback
+     * and ate the close control because this used to re-force open=true on every tick.
+     */
+    let seriesDrawerAutoOpenedForId = '';
+    $: theaterSessionId = $activeReel?.id == null ? '' : String($activeReel.id);
+    $: if (!theaterSessionId) {
         seriesDrawerOpen = false;
+        seriesDrawerAutoOpenedForId = '';
         selectedSeriesEpisodeId = '';
         episodeNavNotice = '';
         theaterBgPosterFailed = false;
-    }
-    /**
-     * Mount the existing SeriesDrawer shelf when Theater has series episodes so
-     * episode posters are discoverable without requiring ALL EPISODES first.
-     * Uses the same SeriesDrawer + SeasonAccordion + EpisodeChip path (no second list).
-     * ALL EPISODES control remains for re-open after dismiss. Does not change selection/playback.
-     * Only re-runs when $activeReel / hasSeriesDrawer change — manual close is respected until then.
-     */
-    $: if ($activeReel && hasSeriesDrawer) {
+    } else if (
+        hasSeriesDrawer &&
+        !isMobileTheater &&
+        seriesDrawerAutoOpenedForId !== theaterSessionId
+    ) {
         seriesDrawerOpen = true;
+        seriesDrawerAutoOpenedForId = theaterSessionId;
+    } else if (
+        isMobileTheater &&
+        seriesDrawerOpen &&
+        seriesDrawerAutoOpenedForId &&
+        seriesDrawerAutoOpenedForId === theaterSessionId
+    ) {
+        // Desktop auto-open raced before mobile detect — do not keep a blocking overlay.
+        seriesDrawerOpen = false;
     }
 
     let lastTheaterVideoKey = '';
@@ -710,25 +700,29 @@
             return;
         }
         // Related-resolver members may carry reelId without catalog bind yet.
+        const member = relatedEpisodes?.members?.find(
+            (m) =>
+                m.episodeId === episodeId ||
+                m.assetId === detailReelId ||
+                m.reelId === detailReelId ||
+                m.assetId === String(event.detail?.mediaAssetId || '')
+        );
+        const fromView = drawerSeriesView?.seasons
+            ?.flatMap((s) => s.episodes || [])
+            .find((e) => e.episodeId === episodeId);
         const reelId =
             detailReelId ||
             (event.detail?.mediaAssetId ? String(event.detail.mediaAssetId) : '') ||
-            relatedEpisodes?.members?.find(
-                (m) =>
-                    m.episodeId === episodeId ||
-                    m.assetId === detailReelId ||
-                    m.assetId === String(event.detail?.mediaAssetId || '')
-            )?.reelId ||
-            drawerSeriesView?.seasons
-                ?.flatMap((s) => s.episodes || [])
-                .find((e) => e.episodeId === episodeId)?.reelId ||
-            '';
+            (member?.reelId ? String(member.reelId) : '') ||
+            (member?.assetId ? String(member.assetId) : '') ||
+            (fromView?.reelId ? String(fromView.reelId) : '') ||
+            (fromView?.mediaAssetId ? String(fromView.mediaAssetId) : '');
         if (reelId) {
             const fromVault = ($personalVideos || []).find((v) => String(v?.id || '') === reelId);
             const fromReady = relatedReadyAssets.find(
                 (v) => String(v?.id || v?.assetId || '') === reelId
             );
-            const candidate = fromVault || fromReady;
+            const candidate = fromVault || fromReady || (member?.url || member?.playbackUrl ? member : null);
             if (candidate && typeof openTheaterReel === 'function') {
                 openTheaterReel(candidate);
                 seriesDrawerOpen = false;
@@ -1101,10 +1095,10 @@
                     <div class="theater-meta">
                         <div class="meta-row">
                             <span class="meta-label">Category:</span>
-                            <span class="meta-value" style="color: {UIAgent.getStudioConfigs($activeReel.category).color}">{$activeReel.category}</span>
+                            <span class="meta-value" style="color: {UIAgent.getStudioConfigs($activeReel.category).color}">{UIAgent.getStudioConfigs($activeReel.category).label}</span>
                         </div>
                         {#if $activeReel.auto_detected}
-                            <div class="auto-detect-notice"><span>🤖 Smart-placed in: <strong>{$activeReel.category}</strong> ({$activeReel.detection_confidence || 'High'} confidence)</span></div>
+                            <div class="auto-detect-notice"><span>🤖 Smart-placed in: <strong>{UIAgent.getStudioConfigs($activeReel.category).label}</strong> ({$activeReel.detection_confidence || 'High'} confidence)</span></div>
                         {/if}
                         {#if $activeReel.isPersonalThumbnail}
                             <div class="personal-thumbnail-notice"><span>🖼️ Personal thumbnail from your collection</span></div>
@@ -1607,6 +1601,15 @@
             pointer-events: auto;
         }
 
+        .theater-container.theater-mobile .theater-close-btn {
+            min-width: 2.75rem;
+            min-height: 2.75rem;
+            padding: 0.55rem 0.85rem;
+            z-index: 42;
+            touch-action: manipulation;
+            pointer-events: auto;
+        }
+
         .theater-container.theater-mobile .theater-header-actions,
         .theater-container.theater-mobile .theater-header-actions--visible {
             position: relative;
@@ -1645,9 +1648,9 @@
             align-items: center;
             gap: 0.65rem;
             position: absolute;
-            left: 0.5rem;
-            right: 0.5rem;
-            bottom: 0.55rem;
+            left: max(0.5rem, env(safe-area-inset-left, 0px));
+            right: max(0.5rem, env(safe-area-inset-right, 0px));
+            bottom: max(0.55rem, env(safe-area-inset-bottom, 0px));
             z-index: 12;
             padding: 0.45rem 0.65rem;
             border-radius: 8px;

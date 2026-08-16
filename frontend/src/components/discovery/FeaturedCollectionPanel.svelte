@@ -1,63 +1,47 @@
 <script>
-  import {
-    buildCollectionDiscoveryLayer,
-    loadCollections,
-    selectFeaturedCollection
-  } from '../../lib/collections/collectionIntelligence.js';
+  import { onDestroy } from 'svelte';
+  import { resolvePublicFeaturedCollectionTitle } from '../../lib/collections/collectionIntelligence.js';
   import { presentFeaturedCollection } from '../../lib/viewer/viewerIntelligencePresentation.js';
 
-  let collections = loadCollections();
-  let featured = selectFeaturedCollection(collections);
-  let discoveryLinks = buildCollectionDiscoveryLayer(collections);
+  let featuredTitle = resolvePublicFeaturedCollectionTitle();
 
-  $: presentation = (() => {
-    if (!featured) return null;
-    const connections =
-      discoveryLinks.find((item) => item.collectionId === featured.collectionId)
-        ?.discoveryConnections || [];
-    return presentFeaturedCollection(featured, { discoveryConnections: connections });
-  })();
+  $: presentation = featuredTitle
+    ? presentFeaturedCollection(
+        {
+          collectionId: 'hero-admin-featured',
+          collectionTitle: featuredTitle,
+          collectionDescription: '',
+          collectionType: 'documentary'
+        },
+        { discoveryConnections: [] }
+      )
+    : null;
 
-  function refreshCollections() {
-    collections = loadCollections();
-    featured = selectFeaturedCollection(collections);
-    discoveryLinks = buildCollectionDiscoveryLayer(collections);
-  }
-
-  function handleOpenCollection() {
-    if (!featured || !presentation) return;
-    console.info('[FEATURED_COLLECTION_OPEN]', {
-      collectionId: featured.collectionId,
-      // Only creator truth title — never NLP rewrite
-      collectionTitle: presentation.creatorTruth.title,
-      provenance: {
-        creatorTruth: true,
-        intelligenceExplanation: presentation.intelligenceExplanation.authoritative === false,
-        discoveryContext: presentation.discoveryContext.authoritative === false
-      }
-    });
+  function refreshFeatured() {
+    featuredTitle = resolvePublicFeaturedCollectionTitle();
   }
 
   if (typeof window !== 'undefined') {
-    window.addEventListener('reelforge:collections-updated', refreshCollections);
+    window.addEventListener('reelforge:hero-manager-updated', refreshFeatured);
+    window.addEventListener('reelforge:hero-record-updated', refreshFeatured);
   }
+
+  onDestroy(() => {
+    if (typeof window === 'undefined') return;
+    window.removeEventListener('reelforge:hero-manager-updated', refreshFeatured);
+    window.removeEventListener('reelforge:hero-record-updated', refreshFeatured);
+  });
 </script>
 
-<section class="featured-collection-panel" data-featured-collection-panel>
-  <header>
-    <h3>Featured Collection</h3>
-  </header>
-  {#if presentation}
+{#if presentation}
+  <section class="featured-collection-panel" data-featured-collection-panel>
+    <header>
+      <h3>Featured Collection</h3>
+    </header>
     <article class="featured-collection-panel__card" data-featured-collection-card>
       <div class="featured-collection-panel__meta" data-creator-truth>
-        <span>{featured.collectionType}</span>
-        <!-- Creator title only — primary display -->
         <h4 data-creator-title>{presentation.display.primaryTitle}</h4>
-        {#if presentation.display.officialDescription}
-          <p data-creator-description>{presentation.display.officialDescription}</p>
-        {/if}
       </div>
-
       {#if presentation.display.showIntelligence}
         <div
           class="featured-collection-panel__intelligence"
@@ -70,7 +54,6 @@
           {/each}
         </div>
       {/if}
-
       {#if presentation.display.discoveryChips.length}
         <div class="featured-collection-panel__chips" data-discovery-context>
           <p class="featured-collection-panel__discovery-label">Discovery signals (not official metadata)</p>
@@ -79,20 +62,9 @@
           {/each}
         </div>
       {/if}
-
-      {#if presentation.discoveryContext.connectionTags.length}
-        <p class="featured-collection-panel__links" data-discovery-links>
-          Discovery links:
-          {presentation.discoveryContext.connectionTags.join(' • ')}
-        </p>
-      {/if}
-
-      <button type="button" on:click={handleOpenCollection}>Explore Collection</button>
     </article>
-  {:else}
-    <p class="featured-collection-panel__empty">No featured collection available.</p>
-  {/if}
-</section>
+  </section>
+{/if}
 
 <style>
   .featured-collection-panel {
@@ -114,82 +86,31 @@
     display: grid;
     gap: 0.45rem;
   }
-  .featured-collection-panel__meta span {
+  .featured-collection-panel__meta h4 {
+    margin: 0.15rem 0 0;
+    font-size: 0.95rem;
+    color: #fff;
+  }
+  .featured-collection-panel__intel-label,
+  .featured-collection-panel__discovery-label {
+    margin: 0;
     font-size: 0.56rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: rgba(255, 255, 255, 0.68);
-  }
-  .featured-collection-panel__meta h4 {
-    margin: 0.15rem 0;
-    font-size: 1rem;
-    color: #fff;
-  }
-  .featured-collection-panel__meta p {
-    margin: 0;
-    color: rgba(255, 255, 255, 0.78);
-    font-size: 0.7rem;
-    line-height: 1.35;
-  }
-  .featured-collection-panel__intelligence {
-    padding: 0.4rem 0.5rem;
-    border-radius: 8px;
-    border: 1px dashed rgba(250, 204, 21, 0.35);
-    background: rgba(250, 204, 21, 0.06);
-  }
-  .featured-collection-panel__intel-label {
-    margin: 0 0 0.25rem;
-    font-size: 0.52rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: rgba(250, 204, 21, 0.9);
+    color: rgba(255, 255, 255, 0.55);
   }
   .featured-collection-panel__intel-line {
     margin: 0.15rem 0 0;
     font-size: 0.68rem;
-    line-height: 1.35;
-    color: rgba(255, 255, 255, 0.82);
-    font-style: italic;
-  }
-  .featured-collection-panel__discovery-label {
-    width: 100%;
-    margin: 0 0 0.2rem;
-    font-size: 0.5rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.72);
   }
   .featured-collection-panel__chips {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.3rem;
+    gap: 0.35rem;
   }
   .featured-collection-panel__chips small {
-    display: inline-block;
-    padding: 0.2rem 0.45rem;
-    border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: rgba(255, 255, 255, 0.85);
-    font-size: 0.54rem;
-  }
-  .featured-collection-panel button {
-    justify-self: start;
-    border: 1px solid rgba(255, 215, 120, 0.6);
-    background: rgba(255, 215, 120, 0.15);
-    color: #fff;
-    border-radius: 999px;
-    padding: 0.3rem 0.65rem;
-    font-size: 0.6rem;
-    cursor: pointer;
-  }
-  .featured-collection-panel__links {
-    margin: 0;
     font-size: 0.58rem;
-    color: rgba(255, 255, 255, 0.7);
-  }
-  .featured-collection-panel__empty {
-    margin: 0.5rem 0 0;
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.68rem;
+    color: rgba(255, 226, 163, 0.85);
   }
 </style>

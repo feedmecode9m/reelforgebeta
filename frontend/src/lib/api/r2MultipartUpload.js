@@ -7,6 +7,7 @@
  */
 
 import { API_BASE_URL } from '../api.js';
+import { rewriteDevLoopbackAbsoluteToSameOrigin } from '../config.js';
 
 export const MULTIPART_CREATE_URL = '/api/uploads/multipart/create';
 export const MULTIPART_SIGN_PART_URL = '/api/uploads/multipart/sign-part';
@@ -205,7 +206,9 @@ export async function uploadFileMultipartParallel(session, file, headers = {}, o
             throw new Error(`multipart sign-part failed (${signRes.status})`);
         }
         const signed = await signRes.json();
-        const uploadUrl = String(signed.uploadUrl || signed.upload_url || '');
+        const uploadUrl = rewriteDevLoopbackAbsoluteToSameOrigin(
+            String(signed.uploadUrl || signed.upload_url || '')
+        );
         if (!uploadUrl) throw new Error('multipart sign-part missing uploadUrl');
 
         const blob = file.slice(part.start, part.end);

@@ -13,6 +13,7 @@
   } from '../../lib/feed/productionCategoryAudit.js';
   import { formatSuggestionConfidence } from '../../lib/feed/categorySuggestionReview.js';
   import { fetchReadyReels } from '../../lib/api/media.js';
+  import { categoryAliasStore, displayDiscoveryShelf } from '../../lib/feed/discoveryTaxonomy.js';
 
   /** @type {import('svelte/store').Readable<Record<string, unknown[]>> | null} */
   export let feed = null;
@@ -238,7 +239,7 @@
         <p class="smart-audit__dist-label">CURRENT DISTRIBUTION</p>
         <ul>
           {#each shelfEntries(audit.currentDistribution) as row}
-            <li data-current-shelf={row.name}>{row.name}: {row.count}</li>
+            <li data-current-shelf={row.name}>{displayDiscoveryShelf(row.name, $categoryAliasStore)}: {row.count}</li>
           {/each}
         </ul>
       </div>
@@ -246,7 +247,7 @@
         <p class="smart-audit__dist-label">RECOMMENDED DISTRIBUTION</p>
         <ul>
           {#each shelfEntries(audit.recommendedDistribution) as row}
-            <li data-recommended-shelf={row.name}>{row.name}: {row.count}</li>
+            <li data-recommended-shelf={row.name}>{displayDiscoveryShelf(row.name, $categoryAliasStore)}: {row.count}</li>
           {/each}
         </ul>
       </div>
@@ -302,11 +303,11 @@
             </div>
           </div>
           <ul class="smart-audit__facts">
-            <li data-audit-current>Current: {row.currentCategory} ({row.currentCategorySource})</li>
+            <li data-audit-current>Current: {displayDiscoveryShelf(row.currentCategory, $categoryAliasStore)} ({row.currentCategorySource})</li>
             <li data-audit-suggested>
-              Recommended: {row.suggestedCategory || '—'}
+              Recommended: {row.suggestedCategory ? displayDiscoveryShelf(row.suggestedCategory, $categoryAliasStore) : '—'}
               {#if row.alternativeCategory}
-                · Alt: {row.alternativeCategory}
+                · Alt: {displayDiscoveryShelf(row.alternativeCategory, $categoryAliasStore)}
               {/if}
             </li>
             <li data-audit-confidence>
@@ -321,7 +322,7 @@
 
           {#if row.creatorLocked}
             <p class="smart-audit__lock" data-audit-creator-lock>
-              CREATOR LOCKED · NLP may suggest {row.suggestedCategory || '—'} but cannot overwrite {row.currentCategory}
+              CREATOR LOCKED · NLP may suggest {row.suggestedCategory ? displayDiscoveryShelf(row.suggestedCategory, $categoryAliasStore) : '—'} but cannot overwrite {displayDiscoveryShelf(row.currentCategory, $categoryAliasStore)}
             </p>
           {:else if row.auditState === 'RECOMMEND_CHANGE'}
             <div class="smart-audit__actions">
@@ -338,7 +339,7 @@
                 Override
                 <select bind:value={manualDraft[row.id]} data-audit-override-select>
                   {#each CREATOR_SHELF_OPTIONS as opt}
-                    <option value={opt}>{opt}</option>
+                    <option value={opt}>{displayDiscoveryShelf(opt, $categoryAliasStore)}</option>
                   {/each}
                 </select>
               </label>
@@ -367,7 +368,7 @@
                 Choose Category
                 <select bind:value={manualDraft[row.id]} data-manual-category-select>
                   {#each CREATOR_SHELF_OPTIONS as opt}
-                    <option value={opt}>{opt}</option>
+                    <option value={opt}>{displayDiscoveryShelf(opt, $categoryAliasStore)}</option>
                   {/each}
                 </select>
               </label>

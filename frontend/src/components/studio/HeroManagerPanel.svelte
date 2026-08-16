@@ -33,10 +33,11 @@
         UNTITLED_CREATOR_EXPERIENCE
     } from '../../lib/hero/heroTitleIntelligence.js';
     import { resolveVaultCardProjection } from '../../lib/content/vaultCardProjection.js';
-    import { mergeTitleIntoPersistentMap } from '../../lib/content/persistentTitleMap.js';
+    import { mergeTitleIntoPersistentMap, mediaRecordTitleKeys, mediaRecordPlaybackKey, mediaPathAssetId } from '../../lib/content/persistentTitleMap.js';
     import {
         CREATOR_SHELF_OPTIONS
     } from '../../lib/feed/creatorCatalogMetadata.js';
+    import { categoryAliasStore, displayDiscoveryShelf, resolveCanonicalDiscoveryShelf } from '../../lib/feed/discoveryTaxonomy.js';
     import {
         reevaluateAfterCanonicalTitleSave,
         formatSuggestionConfidence,
@@ -919,26 +920,53 @@
         }
     }
 
-    function writePersistentTitle(reelId, title) {
-        if (!reelId || !title) return;
+    function collectTitleAliasIds(item, playbackKey = '') {
+        const ids = new Set(mediaRecordTitleKeys(item));
+        const pathId = mediaPathAssetId(playbackKey || item);
+        if (pathId) ids.add(pathId);
+        const consider = (entry) => {
+            if (!entry || typeof entry !== 'object') return;
+            const play = mediaRecordPlaybackKey(entry);
+            if (playbackKey && play === playbackKey) {
+                for (const key of mediaRecordTitleKeys(entry)) ids.add(key);
+            }
+        };
+        if (personalVideos && typeof personalVideos.subscribe === 'function') {
+            const list = get(personalVideos);
+            if (Array.isArray(list)) list.forEach(consider);
+        }
+        if (feed && typeof feed.subscribe === 'function') {
+            const currentFeed = get(feed);
+            for (const cat of Object.keys(currentFeed || {})) {
+                const rows = currentFeed[cat];
+                if (Array.isArray(rows)) rows.forEach(consider);
+            }
+        }
+        if (Array.isArray(feedReels)) feedReels.forEach(consider);
+        return [...ids];
+    }
+
+    function writePersistentTitle(reelId, title, extraIds = []) {
+        if (!title) return;
+        const ids = [...new Set([reelId, ...extraIds].map((id) => String(id || '').trim()).filter(Boolean))];
+        if (!ids.length) return;
         if (persistentTitles?.saveTitle) {
-            // Shared store path — Phase 22 merge lives in persistentTitles.saveTitle.
-            persistentTitles.saveTitle(reelId, { title, title_original: title });
+            for (const id of ids) {
+                persistentTitles.saveTitle(id, { title, title_original: title });
+            }
             return;
         }
-        // Fallback when store not injected: merge-on-write into reel_titles_persistent.
-        const map = readPersistentTitleMap();
-        const next = mergeTitleIntoPersistentMap(map, reelId, {
-            title,
-            title_original: title,
-            savedAt: new Date().toISOString()
-        });
+        let map = readPersistentTitleMap();
+        const patch = { title, title_original: title, savedAt: new Date().toISOString() };
+        for (const id of ids) {
+            map = mergeTitleIntoPersistentMap(map, id, patch);
+        }
         try {
-            localStorage.setItem(TITLES_KEY(), JSON.stringify(next));
+            localStorage.setItem(TITLES_KEY(), JSON.stringify(map));
         } catch {
             /* ignore */
         }
-        storageSet(TITLES_KEY(), next);
+        storageSet(TITLES_KEY(), map);
     }
 
     function lookupPersistentTitle(reelId) {
@@ -962,10 +990,13 @@
         }
     }
 
-    function applyTitleToRecord(entry, assetId, title) {
+    function applyTitleToRecord(entry, assetId, title, playbackKey = '') {
         if (!entry || typeof entry !== 'object') return entry;
-        const id = String(entry.id || entry.assetId || entry.personal_video_id || '').trim();
-        if (id !== assetId) return entry;
+        const keys = mediaRecordTitleKeys(entry);
+        const play = mediaRecordPlaybackKey(entry);
+        const idHit = keys.includes(String(assetId || '').trim());
+        const urlHit = Boolean(playbackKey) && play === playbackKey;
+        if (!idHit && !urlHit) return entry;
         return {
             ...entry,
             title,
@@ -1864,12 +1895,14 @@
         const durableTitle = intelligence.normalizedTitle;
 
         renamedTitles = { ...renamedTitles, [assetId]: durableTitle };
-        writePersistentTitle(assetId, durableTitle);
+        const playbackKey = mediaRecordPlaybackKey(item);
+        const aliasIds = collectTitleAliasIds(item, playbackKey);
+        writePersistentTitle(assetId, durableTitle, aliasIds);
 
         if (personalVideos && typeof personalVideos.update === 'function') {
             personalVideos.update((videos) => {
                 const list = Array.isArray(videos) ? videos : [];
-                const next = list.map((entry) => applyTitleToRecord(entry, assetId, durableTitle));
+                const next = list.map((entry) => applyTitleToRecord(entry, assetId, durableTitle, playbackKey));
                 try {
                     persistPersonalVault(next);
                 } catch {
@@ -1878,9 +1911,13 @@
                 return next;
             });
         } else {
-            patchJsonArrayStorage(VIDEO_VAULT_KEY(), (entry) => applyTitleToRecord(entry, assetId, durableTitle));
+            patchJsonArrayStorage(VIDEO_VAULT_KEY(), (entry) =>
+                applyTitleToRecord(entry, assetId, durableTitle, playbackKey)
+            );
         }
-        patchJsonArrayStorage(THUMB_VAULT_KEY(), (entry) => applyTitleToRecord(entry, assetId, durableTitle));
+        patchJsonArrayStorage(THUMB_VAULT_KEY(), (entry) =>
+            applyTitleToRecord(entry, assetId, durableTitle, playbackKey)
+        );
 
         if (feed && typeof feed.update === 'function') {
             feed.update((currentFeed) => {
@@ -1888,7 +1925,9 @@
                 const next = { ...currentFeed };
                 for (const cat of Object.keys(next)) {
                     if (!Array.isArray(next[cat])) continue;
-                    next[cat] = next[cat].map((entry) => applyTitleToRecord(entry, assetId, durableTitle));
+                    next[cat] = next[cat].map((entry) =>
+                        applyTitleToRecord(entry, assetId, durableTitle, playbackKey)
+                    );
                 }
                 try {
                     storageSet(CONFIG?.FEED_STORAGE_KEY || 'reelforge_feed', next);
@@ -1985,9 +2024,7 @@
         try {
             const reelsForBridge = Array.isArray(feedReels) ? feedReels : [];
             const withTitles = reelsForBridge.map((reel) =>
-                String(reel?.id || '') === assetId
-                    ? { ...reel, title: durableTitle, name: durableTitle, title_original: durableTitle }
-                    : reel
+                applyTitleToRecord(reel, assetId, durableTitle, playbackKey)
             );
             bridgeFeedReelsToCatalog(
                 withTitles.length
@@ -2129,13 +2166,14 @@
             return;
         }
         categorySuggestionReview = null;
-        statusMessage = `Category accepted · ${review.suggestedCategory} (creator) for “${review.title}”`;
+        statusMessage = `Category accepted · ${displayDiscoveryShelf(review.suggestedCategory)} (creator) for “${review.title}”`;
     }
 
     function applyHeroCategoryOverride() {
         const review = categorySuggestionReview;
         if (!review?.assetId) return;
-        const chosen = String(review.overrideCategory || 'Trending').trim() || 'Trending';
+        const chosen =
+            resolveCanonicalDiscoveryShelf(review.overrideCategory || 'Trending') || 'Trending';
         if (!CREATOR_SHELF_OPTIONS.includes(chosen)) {
             statusMessage = 'Choose a valid shelf category to override.';
             return;
@@ -2154,7 +2192,7 @@
             return;
         }
         categorySuggestionReview = null;
-        statusMessage = `Category override · ${chosen} (creator) for “${review.title}”`;
+        statusMessage = `Category override · ${displayDiscoveryShelf(chosen)} (creator) for “${review.title}”`;
     }
 
     function applyHeroManualCategory() {
@@ -3564,11 +3602,11 @@
                 <p class="hero-manager__nlp-review-title" data-nlp-creator-lock>CREATOR LOCKED</p>
                 <ul class="hero-manager__nlp-review-facts">
                     <li data-nlp-current-category>
-                        Creator decision: {categorySuggestionReview.currentCategory}
+                        Creator decision: {displayDiscoveryShelf(categorySuggestionReview.currentCategory, $categoryAliasStore)}
                     </li>
                     {#if categorySuggestionReview.suggestedCategory}
                         <li data-nlp-suggested-category>
-                            NLP suggestion (non-binding): {categorySuggestionReview.suggestedCategory}
+                            NLP suggestion (non-binding): {displayDiscoveryShelf(categorySuggestionReview.suggestedCategory, $categoryAliasStore)}
                         </li>
                     {/if}
                     <li data-nlp-shelf-fit-reason>{categorySuggestionReview.shelfFitReason}</li>
@@ -3578,9 +3616,9 @@
                     UNDERSTOOD / NO SHELF FIT
                 </p>
                 <ul class="hero-manager__nlp-review-facts">
-                    <li data-nlp-current-category>Current: {categorySuggestionReview.currentCategory}</li>
+                    <li data-nlp-current-category>Current: {displayDiscoveryShelf(categorySuggestionReview.currentCategory, $categoryAliasStore)}</li>
                     <li data-nlp-recommended-shelf>
-                        Recommended shelf: {categorySuggestionReview.recommendedShelf || 'Trending'}
+                        Recommended shelf: {displayDiscoveryShelf(categorySuggestionReview.recommendedShelf || 'Trending', $categoryAliasStore)}
                     </li>
                     <li data-nlp-shelf-fit-reason>
                         Reason: {categorySuggestionReview.shelfFitReason ||
@@ -3596,13 +3634,13 @@
             {:else if categorySuggestionReview.offer}
                 <p class="hero-manager__nlp-review-title">Category suggestion after title save</p>
                 <ul class="hero-manager__nlp-review-facts">
-                    <li data-nlp-current-category>Current: {categorySuggestionReview.currentCategory}</li>
+                    <li data-nlp-current-category>Current: {displayDiscoveryShelf(categorySuggestionReview.currentCategory, $categoryAliasStore)}</li>
                     <li data-nlp-suggested-category>
-                        Suggested: {categorySuggestionReview.suggestedCategory}
+                        Suggested: {displayDiscoveryShelf(categorySuggestionReview.suggestedCategory, $categoryAliasStore)}
                     </li>
                     {#if categorySuggestionReview.alternativeCategory}
                         <li data-nlp-alternative-category>
-                            Alternative: {categorySuggestionReview.alternativeCategory}
+                            Alternative: {displayDiscoveryShelf(categorySuggestionReview.alternativeCategory, $categoryAliasStore)}
                         </li>
                     {/if}
                     <li data-nlp-suggestion-confidence>
@@ -3632,7 +3670,7 @@
                             aria-label="Override shelf category"
                         >
                             {#each CREATOR_SHELF_OPTIONS as option}
-                                <option value={option}>{option}</option>
+                                <option value={option}>{displayDiscoveryShelf(option, $categoryAliasStore)}</option>
                             {/each}
                         </select>
                     </label>
@@ -3660,7 +3698,7 @@
                                 aria-label="Manual shelf category"
                             >
                                 {#each CREATOR_SHELF_OPTIONS as option}
-                                    <option value={option}>{option}</option>
+                                    <option value={option}>{displayDiscoveryShelf(option, $categoryAliasStore)}</option>
                                 {/each}
                             </select>
                         </label>

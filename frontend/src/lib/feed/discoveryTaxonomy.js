@@ -1,3 +1,5 @@
+import { writable, get as storeGet } from 'svelte/store';
+
 /**
  * Expandable discovery taxonomy — shelves vs presentation themes.
  *
@@ -70,6 +72,111 @@ export function normalizeActiveShelf(category) {
 export function isRegisteredShelf(shelfId) {
     const id = String(shelfId || '').trim();
     return DISCOVERY_TAXONOMY.some((s) => s.id === id);
+}
+
+/** localStorage key for Studio LIVE CONTENT display aliases (canonical id → label). */
+export const CATEGORY_NAMES_STORAGE_KEY = 'reelforge_category_names';
+
+/**
+ * @returns {Record<string, string>}
+ */
+export function readCategoryNameMap() {
+    if (typeof localStorage === 'undefined') return {};
+    try {
+        const raw = JSON.parse(localStorage.getItem(CATEGORY_NAMES_STORAGE_KEY) || '{}');
+        return raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+    } catch {
+        return {};
+    }
+}
+
+/** Reactive canonical id → display alias (synced from Studio LIVE CONTENT). */
+export const categoryAliasStore = writable({});
+
+/**
+ * @param {Record<string, string> | null | undefined} map
+ */
+export function syncCategoryAliasStore(map) {
+    categoryAliasStore.set(map && typeof map === 'object' && !Array.isArray(map) ? { ...map } : {});
+}
+
+syncCategoryAliasStore(readCategoryNameMap());
+
+/**
+ * Audience / Studio label for a canonical shelf id.
+ * @param {unknown} shelfId
+ * @param {Record<string, string> | null | undefined} [nameMap]
+ */
+export function displayDiscoveryShelf(shelfId, nameMap = null) {
+    const id = String(shelfId || '').trim();
+    if (!id) return '';
+    const map =
+        nameMap && typeof nameMap === 'object'
+            ? nameMap
+            : { ...readCategoryNameMap(), ...(storeGet(categoryAliasStore) || {}) };
+    const custom = String(map[id] || '').trim();
+    if (custom) return custom;
+    const tax = DISCOVERY_TAXONOMY.find((s) => s.id === id);
+    return tax?.label || id;
+}
+
+/**
+ * Display label using the live alias store (Studio rename).
+ * @param {unknown} shelfId
+ */
+export function labelDiscoveryShelf(shelfId) {
+    return displayDiscoveryShelf(shelfId, storeGet(categoryAliasStore));
+}
+
+/**
+ * Map a UI label (canonical or renamed) back to an active shelf id.
+ * @param {unknown} value
+ * @param {Record<string, string> | null | undefined} [nameMap]
+ * @returns {string}
+ */
+export function resolveCanonicalDiscoveryShelf(value, nameMap = null) {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    const active = getActiveDiscoveryShelves();
+    if (active.includes(raw)) return raw;
+    const map =
+        nameMap && typeof nameMap === 'object'
+            ? nameMap
+            : { ...readCategoryNameMap(), ...(storeGet(categoryAliasStore) || {}) };
+    for (const id of active) {
+        if (String(map[id] || '').trim() === raw) return id;
+    }
+    return normalizeActiveShelf(raw);
+}
+
+/**
+ * Keep feed object keys on canonical shelves. Display aliases never become feed keys.
+ * @param {Record<string, unknown> | null | undefined} feedMap
+ * @param {Record<string, string> | null | undefined} [nameMap]
+ * @returns {Record<string, unknown[]>}
+ */
+export function reconcileFeedToCanonicalShelves(feedMap, nameMap = null) {
+    /** @type {Record<string, unknown[]>} */
+    const out = {};
+    for (const id of getActiveDiscoveryShelves()) out[id] = [];
+    if (feedMap && typeof feedMap === 'object') {
+        for (const [key, rows] of Object.entries(feedMap)) {
+            if (key === 'Auto-Detect' || key === 'HERO') {
+                out[key] = Array.isArray(rows) ? rows : [];
+                continue;
+            }
+            const canonical = resolveCanonicalDiscoveryShelf(key, nameMap) || 'Trending';
+            if (!out[canonical]) out[canonical] = [];
+            for (const row of Array.isArray(rows) ? rows : []) {
+                if (!row || typeof row !== 'object') continue;
+                out[canonical].push({
+                    .../** @type {Record<string, unknown>} */ (row),
+                    category: canonical
+                });
+            }
+        }
+    }
+    return out;
 }
 
 /**

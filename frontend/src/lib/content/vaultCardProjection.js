@@ -19,6 +19,7 @@ import {
     UNTITLED_CREATOR_EXPERIENCE,
     REEL_TITLES_PERSISTENT_KEY
 } from '../hero/heroTitleIntelligence.js';
+import { lookupPersistentTitleEntry } from './persistentTitleMap.js';
 
 /**
  * @typedef {Object} VaultCardProjection
@@ -81,6 +82,7 @@ export function isManufacturedViewerTitle(value) {
     if (!raw) return false;
     if (raw === UNTITLED_CREATOR_EXPERIENCE) return true;
     if (/^untitled(\s+video|\s+reel|\s+item)?$/i.test(raw)) return true;
+    if (/^personal content(\s+\d+)?(\s*[-–—].*)?$/i.test(raw)) return true;
     if (/^coming soon$/i.test(raw)) return true;
     if (/^episode\s+\d+$/i.test(raw)) return true;
     if (/^suggested\s*:/i.test(raw)) return true;
@@ -343,9 +345,20 @@ export function resolveVaultCardProjection(assetId, sources = {}) {
     const persistentTitle =
         sources.persistentTitle !== undefined
             ? text(sources.persistentTitle)
-            : id
-              ? lookupPersistentHeroTitle(id, storageKey)
-              : '';
+            : (() => {
+                  if (typeof localStorage === 'undefined') {
+                      return id ? lookupPersistentHeroTitle(id, storageKey) : '';
+                  }
+                  try {
+                      const map = JSON.parse(localStorage.getItem(storageKey) || '{}');
+                      const saved = lookupPersistentTitleEntry(map, reel || { id });
+                      const fromAlias = text(saved?.title || saved?.title_original);
+                      if (fromAlias) return fromAlias;
+                  } catch {
+                      /* fall through */
+                  }
+                  return id ? lookupPersistentHeroTitle(id, storageKey) : '';
+              })();
 
     const linkedEpisodeTitle = text(sources.episodeTitle || seriesMeta?.episodeTitle || '');
     const assetTitle =

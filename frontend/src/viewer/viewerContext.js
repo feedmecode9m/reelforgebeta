@@ -45,6 +45,10 @@ import { isHeroAsset, filterNonHeroAssets } from '../lib/hero/heroDomainGuard.js
 import { sealVaultAssetsWithEnrichment } from '../lib/series/vaultEpisodeEnrichment.js';
 import { mergeTitleIntoPersistentMap } from '../lib/content/persistentTitleMap.js';
 import {
+    reconcileFeedToCanonicalShelves,
+    syncCategoryAliasStore
+} from '../lib/feed/discoveryTaxonomy.js';
+import {
     PERSONAL_VIDEO_VAULT_MINIMAL_FIELDS,
     overlayLocalCreatorVaultAuthority,
     indexVaultAssetsByMediaId,
@@ -180,7 +184,6 @@ import {
   reconcileThumbnailVault,
   syncCollectionStore,
   readThumbnailVault,
-  writeThumbnailVault,
   deriveCollectionKeys,
   upgradeThumbnailVaultFromBackendReels,
   THUMBNAIL_KEY
@@ -261,11 +264,32 @@ resetLocalData();
 }
 function persistPersonalVault(videos) {
 const inputVideos = Array.isArray(videos) ? videos : [];
-let filtered = filterOutDeletedMedia(filterNonHeroAssets(inputVideos));
+let filtered = filterOutDeletedMedia(inputVideos);
+// Hero MP4s belong in personal_video_vault (Hero Vault inventory). Feed
+// distribution still uses filterNonHeroAssets; stripping them here made the
+// selected Hero vanish from storage after refresh.
+try {
+  const existing = JSON.parse(
+    (typeof window !== 'undefined' ? localStorage.getItem(CONFIG.VIDEO_VAULT_KEY) : null) || '[]'
+  );
+  const inputIds = new Set(
+    filtered.map((row) => String(row?.id || '').trim()).filter(Boolean)
+  );
+  for (const row of Array.isArray(existing) ? existing : []) {
+    if (!row || typeof row !== 'object') continue;
+    if (!isHeroAsset(row)) continue;
+    const id = String(row.id || '').trim();
+    if (id && inputIds.has(id)) continue;
+    filtered.push(row);
+    if (id) inputIds.add(id);
+  }
+} catch {
+  /* keep incoming list */
+}
 // Seal durable seriesIdentity from Hero Vault title labels before write
 filtered = sealVaultAssetsWithEnrichment(filtered);
-traceVideoStoreBoundary('persistPersonalVault:filterNonHeroAssets', inputVideos, filtered, {
-reasons: 'filterNonHeroAssets+filterOutDeletedMedia'
+traceVideoStoreBoundary('persistPersonalVault:filterOutDeletedMedia', inputVideos, filtered, {
+reasons: 'filterOutDeletedMedia+retainHeroVaultRows'
 });
 if (pendingHeroAssetIds.size) {
   const before = filtered.length;
@@ -711,11 +735,18 @@ subscribe: store.subscribe,
 set: store.set,
 update: store.update,
 saveName: (originalName, customName) => {
-if (!customName?.trim() || customName === originalName) return;
-store.update((current) => ({
-...current,
-[originalName]: customName.trim()
-}));
+const key = String(originalName || '').trim();
+if (!key) return;
+const next = String(customName || '').trim();
+store.update((current) => {
+const out = { ...(current || {}) };
+if (!next || next === key) {
+delete out[key];
+return out;
+}
+out[key] = next;
+return out;
+});
 },
 getName: (originalName) => {
 let result = originalName;
@@ -728,6 +759,7 @@ reset: () => store.set({})
 };
 }
 const categoryNames = createPersistentCategoryStore();
+categoryNames.subscribe((current) => syncCategoryAliasStore(current));
 // ==========================================
 // Persistent Title Store
 // ==========================================
@@ -759,12 +791,18 @@ const persistentTitles = createPersistentTitleStore();
 // ==========================================
 // Derived Stores
 // ==========================================
+function applyCanonicalFeed(next) {
+const reconciled = reconcileFeedToCanonicalShelves(next);
+feed.set(reconciled);
+categories.set(Object.keys(reconciled));
+return reconciled;
+}
+const CANONICAL_LIVE_SHELVES = ['Trending', 'Romance', 'Cyber-Action', 'Suspense'];
 const categoryCounts = derived(feed, ($feed) => {
 const counts = {};
-Object.keys($feed).forEach((cat) => {
-if (cat !== 'Auto-Detect' && $feed[cat]) {
-counts[cat] = $feed[cat].filter((r) => !r.isPlaceholder).length;
-}
+CANONICAL_LIVE_SHELVES.forEach((cat) => {
+const rows = Array.isArray($feed?.[cat]) ? $feed[cat] : [];
+counts[cat] = rows.filter((r) => r && !r.isPlaceholder).length;
 });
 return counts;
 });
@@ -992,12 +1030,10 @@ personal_thumbnails: thumbs.length,
 ts: new Date().toISOString()
 });
 if (thumbs.length > 0) {
-const nonHeroThumbs = filterNonHeroAssets(thumbs);
-writeThumbnailVault(nonHeroThumbs, CONFIG.THUMBNAIL_STORAGE_KEY);
 syncCollectionStore(personalThumbnailCollection, CONFIG.THUMBNAIL_STORAGE_KEY);
 console.info('[VAULT_RELOAD]', {
-action: 'reloadVaultStoresFromStorage:mutate',
-personal_thumbnails: nonHeroThumbs.length,
+action: 'reloadVaultStoresFromStorage:hydrate',
+personal_thumbnails: thumbs.length,
 ts: new Date().toISOString()
 });
 } else {
@@ -1211,6 +1247,22 @@ if (backendReachable) {
       rawUrl && !rawUrl.startsWith('blob:') && !rawUrl.startsWith('data:')
         ? toRelativeMediaPath(rawUrl)
         : '';
+    const key =
+      canonicalUrl ||
+      String(entry.fileName || entry.name || entry.id || '').trim();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    merged.push(entry);
+  }
+  const localDurable = rejectTombstonedVaultEntries(
+    existing.filter((entry) => !isPendingLocalVideoVaultEntry(entry)),
+    'backend-projection-local-durable'
+  );
+  for (const entry of localDurable) {
+    if (!entry || typeof entry !== 'object') continue;
+    const rawUrl = String(entry.url || '').trim();
+    if (!rawUrl || rawUrl.startsWith('blob:') || rawUrl.startsWith('data:')) continue;
+    const canonicalUrl = toRelativeMediaPath(rawUrl);
     const key =
       canonicalUrl ||
       String(entry.fileName || entry.name || entry.id || '').trim();
@@ -1432,11 +1484,10 @@ AI_CLEANUP_AGENT.distributeVideoToFeed(video);
 }
 });
 }
-feed.set(tombstoneSafeFeed);
-logBg7nStage('feed.set:prunedFeed', tombstoneSafeFeed);
-logBg7pShelfDistribution('feed.set:prunedFeed', tombstoneSafeFeed);
-categories.set(Object.keys(tombstoneSafeFeed));
-const feedWrite = storageSet(CONFIG.FEED_STORAGE_KEY, tombstoneSafeFeed);
+const publishedFeed = applyCanonicalFeed(tombstoneSafeFeed);
+logBg7nStage('feed.set:prunedFeed', publishedFeed);
+logBg7pShelfDistribution('feed.set:prunedFeed', publishedFeed);
+const feedWrite = storageSet(CONFIG.FEED_STORAGE_KEY, publishedFeed);
 if (!feedWrite.ok) {
 uploadStatus.set('Storage full, clear data to continue');
 loading.set(false);
@@ -1452,8 +1503,7 @@ thumbCountBefore: get(personalThumbnailCollection).length,
 videoCountBefore: get(personalVideos).length,
 ts: new Date().toISOString()
 });
-writeThumbnailVault([], CONFIG.THUMBNAIL_STORAGE_KEY);
-syncCollectionStore(personalThumbnailCollection, CONFIG.THUMBNAIL_STORAGE_KEY);
+// Empty catalog is not a vault delete — keep personal_thumbnails / membership.
 // Do not hard-wipe in-flight / interrupted MP4 vault rows — empty catalog ≠ abandon upload stubs.
 const existingVaultVideos = JSON.parse(
   (typeof window !== 'undefined' ? localStorage.getItem(CONFIG.VIDEO_VAULT_KEY) : null) || '[]'
@@ -1463,7 +1513,7 @@ const pendingOnly = mergeVideoVaultEntries(
   [],
   { backendReachable: true }
 );
-personalVideos.set(pendingOnly);
+personalVideos.set(filterNonHeroAssets(pendingOnly));
 persistPersonalVault(pendingOnly);
 console.info('[SYNC_RECONCILE_EMPTY_BACKEND]', {
 stage: 'preserve-pending-video-vault',
@@ -1474,11 +1524,10 @@ const { feed: demoFeed, placeholdersInjected: emptyCatalogPlaceholders } = apply
 emptyFeedMap(),
 ALLOW_UI_PLACEHOLDERS
 );
-feed.set(demoFeed);
-logBg7nStage('feed.set:emptyBackend', demoFeed);
-categories.set(Object.keys(demoFeed));
+const publishedEmpty = applyCanonicalFeed(demoFeed);
+logBg7nStage('feed.set:emptyBackend', publishedEmpty);
 contentEmpty.set(!ALLOW_UI_PLACEHOLDERS || pendingOnly.length > 0);
-storageSet(CONFIG.FEED_STORAGE_KEY, demoFeed);
+storageSet(CONFIG.FEED_STORAGE_KEY, publishedEmpty);
 console.info('[SYNC_RECONCILE_EMPTY_BACKEND]', {
 stage: 'authoritative-empty-catalog:demo-feed',
 demoCount: demoFeed.Trending.length,
@@ -1588,17 +1637,17 @@ ts: new Date().toISOString()
 console.info('[STORE_WRITE]', {
 store: CONFIG.VIDEO_VAULT_KEY,
 source: 'syncFromVault',
-count: nonHeroMergedVaultVideos.length,
+count: mergedVaultVideos.length,
 ts: new Date().toISOString()
 });
 console.info('[HERO_STORE_WRITE]', {
 stage: 'syncFromVault:video-vault-persist',
 key: CONFIG.VIDEO_VAULT_KEY,
-count: nonHeroMergedVaultVideos.length,
+count: mergedVaultVideos.length,
 heroAssetId: heroAssetIdSnapshot,
 ts: new Date().toISOString()
 });
-persistPersonalVault(nonHeroMergedVaultVideos);
+persistPersonalVault(mergedVaultVideos);
 // Master Edit defense: catalog harvest cannot revive names that lose to reel_titles_persistent.
 try {
   AI_CLEANUP_AGENT.applyPersistedTitlesOverlay();
@@ -1625,10 +1674,9 @@ get(feed),
 ALLOW_UI_PLACEHOLDERS
 );
 if (placeholdersInjected) {
-feed.set(fallbackFeed);
-logBg7nStage('feed.set:placeholderFallback', fallbackFeed);
-categories.set(Object.keys(fallbackFeed));
-storageSet(CONFIG.FEED_STORAGE_KEY, fallbackFeed);
+const publishedFallback = applyCanonicalFeed(fallbackFeed);
+logBg7nStage('feed.set:placeholderFallback', publishedFallback);
+storageSet(CONFIG.FEED_STORAGE_KEY, publishedFallback);
 demoInjected = true;
 console.info('[DEMO_FEED_INJECTED]', {
 demoCount: fallbackFeed.Trending.length,

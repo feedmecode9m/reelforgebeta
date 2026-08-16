@@ -1,5 +1,5 @@
 <script>
-    import { createEventDispatcher, onDestroy, tick } from 'svelte';
+    import { createEventDispatcher, onDestroy, onMount, tick } from 'svelte';
     import { getSeriesById, getReelSeriesMetadata } from '../../lib/series/seriesStore.js';
     import {
         buildSeriesViewFromRelated,
@@ -57,9 +57,20 @@
      */
     export let docked = false;
 
+    let titleEpoch = 0;
+    onMount(() => {
+        if (typeof window === 'undefined') return;
+        const onVaultTitle = () => {
+            titleEpoch += 1;
+        };
+        window.addEventListener('reelforge:vault-title-updated', onVaultTitle);
+        return () => window.removeEventListener('reelforge:vault-title-updated', onVaultTitle);
+    });
+
     $: catalogSeries = seriesId ? getSeriesById(seriesId) : null;
 
     $: relatedResult = (() => {
+        void titleEpoch;
         if (seriesView) return null;
         if (!seedAsset) return null;
         const ready =
@@ -241,7 +252,7 @@
                 type="button"
                 class="series-drawer-backdrop"
                 aria-label="Close episode browser"
-                on:click={closeDrawer}
+                on:click|stopPropagation={closeDrawer}
             ></button>
         {/if}
         <aside
@@ -270,7 +281,7 @@
                         type="button"
                         class="series-shelf__close"
                         aria-label="Close episode browser"
-                        on:click={closeDrawer}
+                        on:click|stopPropagation={closeDrawer}
                     >✕</button>
                 </header>
 
@@ -287,6 +298,7 @@
                                 seriesLabel={seriesLabelText}
                                 viewerMode={true}
                                 flat={flatViewerShelf}
+                                titleEpoch={titleEpoch}
                                 on:episodeSelect={handleEpisodeSelect}
                             />
                         {/each}
@@ -298,7 +310,7 @@
                         <MediaPoster url={series.poster} className="series-drawer__poster" aria-hidden="true" />
                     {/if}
                     <div class="series-drawer__hero-scrim"></div>
-                    <button type="button" class="series-drawer__close" aria-label="Close episode browser" on:click={closeDrawer}>✕</button>
+                    <button type="button" class="series-drawer__close" aria-label="Close episode browser" on:click|stopPropagation={closeDrawer}>✕</button>
                     <div class="series-drawer__hero-copy">
                         <p class="series-drawer__eyebrow">Series</p>
                         <h2 id="series-drawer-title" class="series-drawer__title">{series.title}</h2>
@@ -331,6 +343,7 @@
                                     heroVaultAssets={readyAssets}
                                     seriesLabel={seriesLabelText}
                                     viewerMode={false}
+                                    titleEpoch={titleEpoch}
                                     on:episodeSelect={handleEpisodeSelect}
                                 />
                             {/each}
@@ -444,16 +457,17 @@
     }
     .series-drawer__close {
         position: absolute;
-        top: 0.85rem;
-        right: 0.85rem;
+        top: max(0.85rem, env(safe-area-inset-top, 0px));
+        right: max(0.85rem, env(safe-area-inset-right, 0px));
         z-index: 2;
-        width: 2rem;
-        height: 2rem;
+        width: 2.75rem;
+        height: 2.75rem;
         border-radius: 50%;
         border: 1px solid rgba(255, 255, 255, 0.25);
         background: rgba(0, 0, 0, 0.55);
         color: #fff;
         cursor: pointer;
+        touch-action: manipulation;
     }
     .series-drawer__hero-copy {
         position: absolute;
@@ -618,15 +632,17 @@
     }
     .series-shelf__close {
         flex-shrink: 0;
-        width: 2rem;
-        height: 2rem;
+        width: 2.75rem;
+        height: 2.75rem;
         border-radius: 50%;
         border: 1px solid rgba(255, 255, 255, 0.12);
         background: rgba(255, 255, 255, 0.04);
         color: rgba(255, 255, 255, 0.85);
         cursor: pointer;
-        font-size: 0.85rem;
+        font-size: 1rem;
         line-height: 1;
+        touch-action: manipulation;
+        z-index: 3;
         transition: background 0.15s ease, border-color 0.15s ease;
     }
     .series-shelf__close:hover {

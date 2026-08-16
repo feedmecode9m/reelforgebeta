@@ -65,7 +65,7 @@ export function buildViewerSemanticShell(reel = {}, projection = {}, resolvedMed
 
     return {
         assetId: enriched.assetId,
-        title: text(resolvedMedia?.title) || enriched.title,
+        title: text(projection.title) || enriched.title || text(resolvedMedia?.title),
         shelf: text(resolvedMedia?.shelf) || enriched.shelf,
         duration: enriched.duration,
         durationLabel: enriched.durationLabel,

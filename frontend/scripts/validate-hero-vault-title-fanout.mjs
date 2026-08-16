@@ -238,6 +238,9 @@ const identitySrc = read('src/lib/content/contentIdentityResolver.js');
 const titleIntelSrc = read('src/lib/hero/heroTitleIntelligence.js');
 const studioSrc = read('src/components/experiences/StudioExperience.svelte');
 const vaultResolverSrc = read('src/lib/series/episodeVaultResolver.js');
+const chipSrc = read('src/components/series/EpisodeChip.svelte');
+const relatedSrc = read('src/lib/series/resolveRelatedEpisodes.js');
+const drawerSrc = read('src/components/series/SeriesDrawer.svelte');
 const pkg = read('package.json');
 
 const editStart = panelSrc.indexOf('async function editHeroVaultTitle');
@@ -262,6 +265,22 @@ assert(
     'Hero Vault card uses vault projection for viewer title (not stale item.title first)'
 );
 
+assert(
+    relatedSrc.includes('heroVaultMasterEditTitle') &&
+        relatedSrc.includes('lookupPersistentTitleEntry') &&
+        relatedSrc.includes('resolveLinkedAssetDisplayTitle'),
+    'All Episodes related members stamp Hero Vault Master Edit titles'
+);
+assert(
+    chipSrc.includes('resolveLinkedAssetDisplayTitle') &&
+        chipSrc.includes('reelforge:vault-title-updated') &&
+        chipSrc.includes('data-vault-card-title'),
+    'All Episodes chips resolve Master Edit labels and listen for vault-title-updated'
+);
+assert(
+    drawerSrc.includes('reelforge:vault-title-updated') && drawerSrc.includes('titleEpoch'),
+    'All Episodes drawer remounts after Hero Vault Master Edit'
+);
 assert(
     theaterSrc.includes("reelforge:vault-title-updated") &&
         theaterSrc.includes('activeReel.set'),
@@ -325,6 +344,46 @@ assert(panelSrc.includes('deleteReelById'), 'Hero Vault permanent delete path re
 assert(
     pkg.includes('validate:hero-vault-title-fanout'),
     'package.json registers validate:hero-vault-title-fanout'
+);
+
+console.log('\n[hero-vault-title-fanout — playback alias]');
+const {
+    mediaRecordTitleKeys,
+    mediaRecordPlaybackKey,
+    lookupPersistentTitleEntry,
+    mediaPathAssetId
+} = await import('../src/lib/content/persistentTitleMap.js');
+
+const HERO_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+const CATALOG_ID = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+const motherland = { title: 'MICROS Motherland V1(1)', title_original: 'MICROS Motherland V1(1)' };
+const aliasMap = { [HERO_ID]: motherland };
+const catalogReel = {
+    id: CATALOG_ID,
+    title: '01 ARRIVAL OPEN v1',
+    url: `https://cdn.example/videos/${HERO_ID}.mp4`
+};
+assert(
+    mediaRecordPlaybackKey({ mediaUrl: `https://host/videos/${HERO_ID}.mp4?x=1` }) ===
+        `/videos/${HERO_ID}.mp4`,
+    'playback key strips host and query'
+);
+assert(mediaPathAssetId(catalogReel) === HERO_ID, 'path UUID extracted from catalog url');
+assert(
+    mediaRecordTitleKeys(catalogReel).includes(HERO_ID),
+    'catalog reel title keys include playback UUID'
+);
+assert(
+    lookupPersistentTitleEntry(aliasMap, catalogReel)?.title === motherland.title,
+    'persistent Motherland wins for catalog Arrival row via /videos UUID'
+);
+assert(
+    panelSrc.includes('collectTitleAliasIds') && panelSrc.includes('mediaRecordPlaybackKey'),
+    'Hero Vault title save fans out by id and playback URL'
+);
+assert(
+    panelSrc.includes('applyTitleToRecord(entry, assetId, durableTitle, playbackKey)'),
+    'feed/vault title patch matches playback URL'
 );
 
 if (failed) {

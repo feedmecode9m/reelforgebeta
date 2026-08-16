@@ -85,6 +85,7 @@ async function main() {
         } = await server.ssrLoadModule('/src/lib/series/resolveRelatedEpisodes.js');
         const { reelToVaultEntry } = await server.ssrLoadModule('/src/lib/api/reelContract.js');
         const store = await server.ssrLoadModule('/src/lib/series/seriesStore.js');
+        const familyLink = await server.ssrLoadModule('/src/lib/series/vaultTheaterFamilyLink.js');
 
         // --- Structural wiring ---
         const vaultExp = read('src/components/experiences/VaultExperience.svelte');
@@ -114,6 +115,253 @@ async function main() {
                 !cardSrc.toLowerCase().includes('admin'),
             'identity card omits parser/admin terms'
         );
+
+        const statusCard = read('src/components/series/VaultEpisodeCreatorStatus.svelte');
+        assert(
+            statusCard.includes('data-theater-family-link') &&
+                statusCard.includes('Link selected for Theater') &&
+                statusCard.includes('Leave unlinked') &&
+                statusCard.includes('siblingIds'),
+            'Video Vault edit menu exposes Theater family linker'
+        );
+        assert(
+            vaultExp.includes('applyVaultTheaterFamilyLink') && vaultExp.includes('siblingIds'),
+            'VaultExperience persists Theater family siblings'
+        );
+
+        {
+            const a = {
+                id: R1,
+                title: 'Motherland 1',
+                url: `https://cdn.example/videos/${R1}.mp4`,
+                type: 'video'
+            };
+            const b = {
+                id: R2,
+                title: 'Motherland 2',
+                url: `https://cdn.example/videos/${R2}.mp4`,
+                type: 'video'
+            };
+            const c = {
+                id: R3,
+                title: 'Unrelated Club Mix',
+                url: `https://cdn.example/videos/${R3}.mp4`,
+                type: 'video'
+            };
+            const cands = familyLink.listVaultTheaterLinkCandidates([a, b, c], R1, 'Motherland 1');
+            assert(cands.some((row) => row.id === R2 && row.suggested), 'matching title is suggested');
+            assert(cands.some((row) => row.id === R3 && !row.suggested), 'unrelated title is not forced');
+            const linked = familyLink.applyVaultTheaterFamilyLink([a, b, c], {
+                primaryId: R1,
+                siblingIds: [R2],
+                seriesLabel: 'Motherland',
+                seasonNumber: 1
+            });
+            assert(linked.mutated, 'family link mutates selected rows');
+            assert(linked.allowedIds.includes(R1) && linked.allowedIds.includes(R2), 'allowed ids are family members');
+            const motherland = linked.list.filter((row) =>
+                String(row.seriesLabel || row.seriesIdentity?.seriesLabel || '') === 'Motherland'
+            );
+            assert(motherland.length === 2, 'two vault rows share Motherland');
+            assert(
+                String(linked.list.find((row) => row.id === R3)?.seriesLabel || '') === '',
+                'unselected row stays unlinked'
+            );
+            const related = resolveRelatedEpisodes(linked.list.find((row) => row.id === R1), {
+                readyAssets: linked.list
+            });
+            assert(
+                (related?.members?.length || 0) >= 2,
+                'Theater related resolver sees linked family'
+            );
+            const drawer = buildSeriesViewFromRelated(related, null);
+            const drawerEps = (drawer?.seasons || []).flatMap((s) => s.episodes || []);
+            assert(
+                drawerEps.length >= 2,
+                `All Episodes paints linked vault rows without catalog publish (got ${drawerEps.length})`
+            );
+
+            const viaAlias = familyLink.applyVaultTheaterFamilyLink(
+                [
+                    {
+                        id: R1,
+                        title: 'MICROS Motherland V1(1)',
+                        url: `https://cdn.example/videos/${R1}.mp4`,
+                        type: 'video'
+                    },
+                    {
+                        id: R2,
+                        assetId: 'arrival-alias',
+                        title: '02 ARRIVAL OPEN v1',
+                        url: `https://cdn.example/videos/${R2}.mp4`,
+                        type: 'video'
+                    }
+                ],
+                {
+                    primaryId: R1,
+                    siblingIds: ['arrival-alias'],
+                    seriesLabel: 'Motherland',
+                    seasonNumber: 1
+                }
+            );
+            assert(
+                String(viaAlias.list.find((row) => row.id === R2)?.seriesLabel || '') === 'Motherland',
+                'checkbox alias id still links 02 Arrival'
+            );
+            const marked = familyLink.markSameTheaterFamily(
+                familyLink.listVaultTheaterLinkCandidates(viaAlias.list, R1, 'MICROS Motherland'),
+                'motherland',
+                { seedTitle: 'MICROS Motherland V1(1)', seedConfirmed: true }
+            );
+            assert(
+                !marked.some((row) => row.id === R2 && row.sameFamily),
+                'Arrival Open is not pre-checked on Motherland after unrelated stamp'
+            );
+            const theaterSiblings = familyLink.theaterLinkedSiblingIds(viaAlias.list, R1);
+            assert(!theaterSiblings.includes(R2), 'unrelated Arrival is not a Theater sibling of Motherland');
+            const viaRelated = resolveRelatedEpisodes(viaAlias.list.find((row) => row.id === R1), {
+                readyAssets: viaAlias.list
+            });
+            const viaTitles = (viaRelated?.members || []).map((m) => String(m.title || ''));
+            assert(
+                !viaTitles.some((t) => /arrival/i.test(t)),
+                'Theater All Episodes does not attach Arrival Open to Motherland'
+            );
+
+            const unrelated = [
+                {
+                    id: R1,
+                    title: 'MICROS Motherland V1(1)',
+                    url: `https://cdn.example/videos/${R1}.mp4`,
+                    type: 'video'
+                },
+                {
+                    id: R2,
+                    title: '01 ARRIVAL OPEN v1',
+                    url: `https://cdn.example/videos/${R2}.mp4`,
+                    type: 'video',
+                    seriesLabel: '01 Arrival',
+                    seriesIdentity: { seriesLabel: '01 Arrival', seasonNumber: 1, episodeNumber: 1 }
+                }
+            ];
+            const unrelatedMarked = familyLink.markSameTheaterFamily(
+                familyLink.listVaultTheaterLinkCandidates(unrelated, R1, 'MICROS Motherland V1(1)'),
+                familyLink.defaultTheaterFamilyLabel(unrelated[0], 'MICROS Motherland V1(1)')
+            );
+            assert(
+                !unrelatedMarked.some((row) => row.id === R2 && row.sameFamily),
+                'MICROS Motherland does not pre-check 01 Arrival Open'
+            );
+            assert(
+                !familyLink.theaterLinkedSiblingIds(unrelated, R1).includes(R2),
+                'unrelated Arrival is not a Theater sibling of Motherland'
+            );
+            assert(
+                !familyLink.titlesSuggestTheaterMatch('MICROS Motherland V1(1)', '01 ARRIVAL OPEN v1'),
+                'Motherland title does not suggest Arrival Open'
+            );
+
+            store.resetSeriesCatalogEmpty?.();
+            store.seriesCatalog.set([
+                {
+                    id: 'series-01-arrival',
+                    title: '01 Arrival',
+                    description: '',
+                    poster: '',
+                    tags: [],
+                    seasons: [
+                        {
+                            seasonId: 's1',
+                            seasonNumber: 1,
+                            title: 'Season 1',
+                            episodes: [
+                                {
+                                    episodeId: 'ep-motherland',
+                                    episodeNumber: 2,
+                                    title: 'MICROS Motherland V1(1)',
+                                    status: 'published',
+                                    reelId: 'feed-motherland-reel',
+                                    mediaAssetId: R1
+                                },
+                                {
+                                    episodeId: 'ep-arrival',
+                                    episodeNumber: 1,
+                                    title: '01 ARRIVAL OPEN v1',
+                                    status: 'published',
+                                    reelId: 'feed-arrival-reel',
+                                    mediaAssetId: R2
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]);
+            const afterReset = [
+                {
+                    id: R1,
+                    title: 'MICROS Motherland V1(1)',
+                    url: `https://cdn.example/videos/${R1}.mp4`,
+                    type: 'video'
+                },
+                {
+                    id: R2,
+                    title: '01 ARRIVAL OPEN v1',
+                    url: `https://cdn.example/videos/${R2}.mp4`,
+                    type: 'video'
+                }
+            ];
+            const resetSiblings = familyLink.theaterLinkedSiblingIds(afterReset, R1);
+            assert(
+                !resetSiblings.includes(R2),
+                'catalog co-membership does not force Arrival checkbox after reset'
+            );
+            store.resetSeriesCatalogEmpty?.();
+
+            const untitledA = {
+                id: R1,
+                name: '',
+                title: '',
+                url: `https://cdn.example/videos/${R1}.mp4`,
+                type: 'video',
+                seriesIdentity: {
+                    seriesLabel: 'Motherland',
+                    seasonNumber: 1,
+                    episodeNumber: 1,
+                    confirmedByCreator: true
+                },
+                seriesLabel: 'Motherland',
+                seasonNumber: 1,
+                episodeNumber: 1
+            };
+            const untitledB = {
+                id: R2,
+                name: '',
+                title: '',
+                url: `https://cdn.example/videos/${R2}.mp4`,
+                type: 'video',
+                seriesIdentity: {
+                    seriesLabel: 'Motherland',
+                    seasonNumber: 1,
+                    episodeNumber: 2,
+                    confirmedByCreator: true
+                },
+                seriesLabel: 'Motherland',
+                seasonNumber: 1,
+                episodeNumber: 2
+            };
+            const untitledRelated = resolveRelatedEpisodes(untitledA, {
+                readyAssets: [untitledA, untitledB]
+            });
+            assert(
+                (untitledRelated?.members?.length || 0) >= 2,
+                'creator-linked family groups even when vault titles are blank'
+            );
+            const untitledDrawer = buildSeriesViewFromRelated(untitledRelated, null);
+            assert(
+                ((untitledDrawer?.seasons || []).flatMap((s) => s.episodes || [])).length >= 2,
+                'All Episodes paints blank-title linked family'
+            );
+        }
 
         // --- Phase 1: Upload MP4 STIRRED_S01E02 → seal + presentation ---
         const rawUpload = {

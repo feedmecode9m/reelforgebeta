@@ -4,6 +4,7 @@
    * No external platform branding. No invented editorial metadata.
    */
   import { creatorShelfChoices } from '../../lib/feed/creatorPresentationControl.js';
+  import { categoryAliasStore, displayDiscoveryShelf } from '../../lib/feed/discoveryTaxonomy.js';
 
   export let profile = null;
   /** Optional: show creator handoff affordance */
@@ -119,7 +120,7 @@
       {/if}
 
       <div class="sem-card__primary-meta">
-        <span class="sem-card__shelf" data-sem-shelf>{profile.shelfCategory || profile.category}</span>
+        <span class="sem-card__shelf" data-sem-shelf={profile.shelfCategory || profile.category}>{displayDiscoveryShelf(profile.shelfCategory || profile.category, $categoryAliasStore)}</span>
         {#if profile.mood}
           <span class="sem-card__mood" data-sem-mood>{profile.mood}</span>
         {/if}
@@ -156,7 +157,7 @@
           <p class="sem-card__handoff-label" data-sem-handoff-label>{profile.handoffLabel}</p>
           {#if profile.handoffMode === 'recommend-accept' || profile.handoffMode === 'recommend-review'}
             <p class="sem-card__handoff-detail" data-sem-suggestion>
-              Suggested shelf: {profile.suggestedCategory || '—'}
+              Suggested shelf: {profile.suggestedCategory ? displayDiscoveryShelf(profile.suggestedCategory, $categoryAliasStore) : '—'}
               {#if profile.confidenceLabel}
                 · {profile.confidenceLabel}
               {/if}
@@ -182,7 +183,7 @@
               <span>Set category</span>
               <select bind:value={manualDraft} data-sem-manual-select>
                 {#each shelfOptions as opt}
-                  <option value={opt}>{opt}</option>
+                  <option value={opt}>{displayDiscoveryShelf(opt, $categoryAliasStore)}</option>
                 {/each}
               </select>
             </label>

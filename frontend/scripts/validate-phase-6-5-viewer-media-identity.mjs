@@ -104,6 +104,17 @@ console.log('\n[title safety]');
     assert(isUnsafeViewerCardTitle(`${IMG_0121_ID}.jpeg`), 'UUID filename unsafe');
     assert(isUnsafeViewerCardTitle('00192384'), 'numeric id unsafe');
     assert(!isUnsafeViewerCardTitle('01 ARRIVAL OPEN v1'), 'Arrival title safe');
+    assert(isUnsafeViewerCardTitle('Personal Content 1 - Trending'), 'personal content dump unsafe');
+    assert(isUnsafeViewerCardTitle('Personal Content - Trending'), 'personal content shelf dump unsafe');
+    assert(
+        resolveSafeViewerCardTitle({
+            title: 'Personal Content 1 - Trending',
+            name: 'Personal Content 1 - Trending',
+            isPersonalThumbnail: true,
+            publishableImage: true
+        }) === '',
+        'thumbnail dump title → blank until Hero Vault edit'
+    );
     assert(resolveSafeViewerCardTitle(img0121) === '', 'unsafe image title → blank');
     assert(
         resolveSafeViewerCardTitle(arrivalVideo) === '01 ARRIVAL OPEN v1',

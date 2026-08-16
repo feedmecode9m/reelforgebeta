@@ -35,11 +35,11 @@
   import CreatorCatalogPanel from '../series/CreatorCatalogPanel.svelte';
   import CreatorSeriesAssembly from '../series/CreatorSeriesAssembly.svelte';
   import ContentIntelligencePanel from '../studio/ContentIntelligencePanel.svelte';
-  import CollectionsManagerPanel from '../studio/CollectionsManagerPanel.svelte';
   import ProductionCommandCenter from '../studio/ProductionCommandCenter.svelte';
   import SmartCategoryAuditPanel from '../studio/SmartCategoryAuditPanel.svelte';
   import IdentityBackedEditorialReviewPanel from '../studio/IdentityBackedEditorialReviewPanel.svelte';
   import SemanticProductionCardsPanel from '../studio/SemanticProductionCardsPanel.svelte';
+  import { categoryAliasStore, displayDiscoveryShelf } from '../../lib/feed/discoveryTaxonomy.js';
   import DeveloperDiagnosticsCenter from '../diagnostics/DeveloperDiagnosticsCenter.svelte';
   import EpisodeReelAttachmentPanel from '../studio/EpisodeReelAttachmentPanel.svelte';
   import { emitCreatorProductionUpdated } from '../../lib/studio/creatorActionRouter.js';
@@ -478,7 +478,7 @@
     setBulkActionState('executing');
     studioBulkCategoryResult = null;
     uploadStatus.set(
-      `🏷️ Updating category to ${category} for ${idsToUpdate.length} production${idsToUpdate.length === 1 ? '' : 's'}…`
+      `🏷️ Updating category to ${displayDiscoveryShelf(category)} for ${idsToUpdate.length} production${idsToUpdate.length === 1 ? '' : 's'}…`
     );
 
     const token = getAdminToken();
@@ -1380,7 +1380,7 @@
                       {#if cat === 'Auto-Detect'}
                         🤖 {cat} (Recommended)
                       {:else}
-                        📁 {cat}
+                        📁 {displayDiscoveryShelf(cat, $categoryAliasStore)}
                       {/if}
                     </option>
                   {/each}
@@ -1449,7 +1449,7 @@
               {:else if $newCategory === 'Auto-Detect'}
                 <span class="ai-upload">📤 UPLOAD WITH SMART PLACEMENT</span>
               {:else}
-                <span>📤 UPLOAD TO {$newCategory}</span>
+                <span>📤 UPLOAD TO {displayDiscoveryShelf($newCategory, $categoryAliasStore)}</span>
               {/if}
             </button>
           <div class="studio-hierarchy-section">
@@ -1668,7 +1668,6 @@
               />
             </div>
             <ContentIntelligencePanel />
-            <CollectionsManagerPanel />
             <div class="asset-manager" data-content-panel="collections">
             <div class="smart-header">
               <div class="ai-badge">LIVE CONTENT</div>
@@ -1679,7 +1678,7 @@
               <div class="category-chips-grid">
                 {#each Object.entries($categoryCounts) as [name, count]}
                   {@const catConfig = UIAgent.getStudioConfigs(name)}
-                  {@const displayName = categoryNames.getName(name)}
+                  {@const displayName = displayDiscoveryShelf(name, $categoryAliasStore)}
                   <div class="category-chip futuristic-card" style="border-color: {catConfig.color}">
                     <span
                       contenteditable="true"
@@ -1753,10 +1752,10 @@
             />
 
             <div class="category-stats">
-              {#each Object.keys($feed).filter((cat) => cat !== 'Auto-Detect') as cat}
+              {#each Object.entries($categoryCounts) as [cat, count]}
                 {#if $feed[cat]}
                   {@const catConfig = UIAgent.getStudioConfigs(cat)}
-                  {@const displayName = categoryNames.getName(cat)}
+                  {@const displayName = displayDiscoveryShelf(cat, $categoryAliasStore)}
                   <div class="stat-item">
                     <span
                       class="stat-category"
@@ -1765,7 +1764,7 @@
                       {displayName}
                     </span>
                     <span class="stat-count">
-                      {$feed[cat].filter((reel) => !reel.isPlaceholder).length} items
+                      {count} items
                     </span>
                     <span class="personal-count" style="color: {catConfig.color}">
                       ({$feed[cat].filter((reel) => reel.isPersonalThumbnail).length} personal thumbs)
@@ -1874,7 +1873,7 @@
                         aria-label="Bulk category target"
                       >
                         {#each STUDIO_BULK_CATEGORY_OPTIONS as option}
-                          <option value={option}>{option}</option>
+                          <option value={option}>{displayDiscoveryShelf(option, $categoryAliasStore)}</option>
                         {/each}
                       </select>
                     </label>
@@ -2188,7 +2187,7 @@
                           class="smart-category"
                           style="background: {reelConfig.color}20; color: {reelConfig.color}"
                         >
-                          {reel.category}
+                          {displayDiscoveryShelf(reel.category, $categoryAliasStore) || reel.category}
                         </span>
                         {#if productionStatus}
                           <span class="production-status-badge status-{productionStatus}">

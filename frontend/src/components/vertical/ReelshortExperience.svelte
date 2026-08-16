@@ -139,8 +139,9 @@
         resetBg7nMediaRendererCards
     } from '../../lib/diagnostics/bg7nPipelineTrace.js';
     import { logBg7pShelfDistribution, shelfCountsFromFeed } from '../../lib/diagnostics/bg7pShelfDistribution.js';
-    import { fillShelfPresentation, isRealShelfCard, pickFirstListWithRealCards, collectPlayableVideosFromFeedMap, mergeMissingVaultImageCards } from '../../lib/feed/fillShelfPresentation.js';
+    import { fillShelfPresentation, isRealShelfCard, isPlayableShelfVideo, pickFirstListWithRealCards, collectPlayableVideosFromFeedMap, mergeMissingVaultImageCards, mergeMissingPlayableVideos } from '../../lib/feed/fillShelfPresentation.js';
     import { durableImageVaultUrl } from '../../lib/viewer/vaultUtils.js';
+    import { LEGACY_HERO_REEL_KEY } from '../../lib/hero/heroRecord.js';
     import { resolveVaultCardProjection } from '../../lib/content/vaultCardProjection.js';
     import ViewerSemanticCard from '../viewer/ViewerSemanticCard.svelte';
     import {
@@ -149,6 +150,7 @@
         collectRealViewerReels
     } from '../../lib/feed/viewerSemanticShell.js';
     import { composeViewerShelfLayouts } from '../../lib/feed/viewerShelfComposition.js';
+    import { categoryAliasStore, displayDiscoveryShelf } from '../../lib/feed/discoveryTaxonomy.js';
     import { resolveViewerAssetId } from '../../lib/feed/viewerIdentityDedupe.js';
     import { logViewerMediaIdentityDiagnostics } from '../../lib/feed/viewerMediaIdentity.js';
     import '../../viewer/cinematicCardTokens.css';
@@ -322,6 +324,57 @@
         }
     }
 
+    function localVaultVideoCards() {
+        if (typeof localStorage === 'undefined') return [];
+        try {
+            const stored = JSON.parse(localStorage.getItem('personal_video_vault') || '[]');
+            if (!Array.isArray(stored)) return [];
+            return stored
+                .map((row) => {
+                    if (!row || typeof row !== 'object') return null;
+                    const state = String(row.uploadState || '').toLowerCase();
+                    if (
+                        state === 'failed' ||
+                        state === 'interrupted' ||
+                        state === 'pending_accept' ||
+                        state === 'uploading' ||
+                        row.deleted === true
+                    ) {
+                        return null;
+                    }
+                    const card = {
+                        ...row,
+                        type: row.type || 'video',
+                        isPersonalVideo: true,
+                        category: 'Trending',
+                        isPlaceholder: false
+                    };
+                    return isPlayableShelfVideo(card) ? card : null;
+                })
+                .filter(Boolean);
+        } catch {
+            return [];
+        }
+    }
+
+    function localHeroReelCard() {
+        if (typeof localStorage === 'undefined') return null;
+        try {
+            const raw = JSON.parse(localStorage.getItem(LEGACY_HERO_REEL_KEY) || 'null');
+            if (!raw || typeof raw !== 'object') return null;
+            const card = {
+                ...raw,
+                type: raw.type || 'video',
+                isPersonalVideo: true,
+                category: 'Trending',
+                isPlaceholder: false
+            };
+            return isPlayableShelfVideo(card) ? card : null;
+        } catch {
+            return null;
+        }
+    }
+
     function getShelfSource(category) {
         const identity = identityFeedMap?.[category];
         const normalized = $normalizedFeed?.[category];
@@ -329,7 +382,17 @@
         const picked = pickFirstListWithRealCards([identity, normalized, raw]);
         const extras = [raw, normalized, identity];
         if (category === 'Trending') extras.push(localVaultStillCards());
-        const merged = mergeMissingVaultImageCards(picked, extras);
+        let merged = mergeMissingVaultImageCards(picked, extras);
+        if (category === 'Trending') {
+            merged = mergeMissingPlayableVideos(merged, [
+                collectPlayableVideosFromFeedMap($normalizedFeed || $feed || {}),
+                localVaultVideoCards(),
+                [localHeroReelCard()].filter(Boolean),
+                identity,
+                normalized,
+                raw
+            ]);
+        }
         if (merged.length > 0) return merged;
         if (category === 'Trending') {
             return collectPlayableVideosFromFeedMap($normalizedFeed || $feed || {});
@@ -380,7 +443,9 @@
     function resolveCardMedia(reel, category) {
         const id = resolveViewerAssetId(reel);
         const fromMap = id ? identityResolvedById.get(id) : null;
-        if (fromMap) return fromMap;
+        if (fromMap && !(hasPlayableVideo(reel) && fromMap.mediaSource === 'image')) {
+            return fromMap;
+        }
         const projection = resolveVaultCardProjection(String(reel?.id || ''), { reel });
         return {
             mediaSource: hasPlayableVideo(reel) ? 'video' : 'image',
@@ -583,7 +648,7 @@
 
     {#each Object.keys($feed).filter((cat) => cat !== 'Auto-Detect') as category}
         {@const config = UIAgent.getStudioConfigs(category)}
-        {@const displayName = categoryNames.getName(category)}
+        {@const displayName = displayDiscoveryShelf(category, $categoryAliasStore)}
         {@const headingLabel = String(displayName || config.label || category)}
         {#if shouldRenderShelf(category)}
         <section class="shelf" data-viewer-discovery-row={category}>

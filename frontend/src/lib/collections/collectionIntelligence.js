@@ -96,17 +96,10 @@ export function validateCollectionMetadata(input) {
   };
 }
 
-export function buildDefaultCollections() {
-  return DEFAULT_COLLECTION_TITLES.map((title, index) =>
-    normalizeCollectionMetadata({
-      collectionId: toCollectionId(title),
-      collectionTitle: title,
-      collectionDescription: `${title} stories curated for documentary discovery.`,
-      collectionType: 'documentary',
-      collectionPriority: 100 - index * 5
-    })
-  );
-}
+/**
+ * Default theme titles kept for dormant/legacy storage detection only.
+ * Do not seed these into Studio or the viewer.
+ */
 
 function safeParse(raw, fallback) {
   try {
@@ -117,12 +110,49 @@ function safeParse(raw, fallback) {
 }
 
 export function loadCollections() {
-  if (typeof window === 'undefined') return buildDefaultCollections();
+  if (typeof window === 'undefined') return [];
   const raw = localStorage.getItem(COLLECTIONS_STORAGE_KEY);
-  if (!raw) return buildDefaultCollections();
+  if (!raw) return [];
   const parsed = safeParse(raw, []);
-  if (!Array.isArray(parsed) || parsed.length === 0) return buildDefaultCollections();
-  return parsed.map((item) => normalizeCollectionMetadata(item));
+  if (!Array.isArray(parsed) || parsed.length === 0) return [];
+  return parsed
+    .map((item) => normalizeCollectionMetadata(item))
+    .filter((item) => !isDormantSeedCollection(item));
+}
+
+/**
+ * Seed themes from Collections Manager are not live catalog. Ignore them.
+ * @param {ReturnType<typeof normalizeCollectionMetadata>} item
+ */
+function isDormantSeedCollection(item) {
+  if (!item?.collectionTitle) return true;
+  const defaultTitle = DEFAULT_COLLECTION_TITLES.some(
+    (title) => title.toLowerCase() === String(item.collectionTitle).toLowerCase()
+  );
+  const noAssignments =
+    item.featuredSeries.length === 0 &&
+    item.featuredEpisodes.length === 0 &&
+    item.communityRepresented.length === 0 &&
+    item.educationalThemes.length === 0 &&
+    item.searchKeywords.length === 0;
+  return defaultTitle && noAssignments;
+}
+
+/**
+ * Public featured collection name from Master Hero Admin — Public Presentation.
+ * Empty when the admin has not labeled one.
+ * @returns {string}
+ */
+export function resolvePublicFeaturedCollectionTitle() {
+  if (typeof window === 'undefined') return '';
+  try {
+    const raw = localStorage.getItem('reelforge_hero_manager_config');
+    if (!raw) return '';
+    const parsed = JSON.parse(raw);
+    return String(parsed?.featuredCollection || '').trim();
+  } catch {
+    return '';
+  }
 }
 
 export function persistCollections(collections) {

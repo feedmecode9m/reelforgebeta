@@ -57,6 +57,23 @@ export function pickFirstListWithRealCards(candidates) {
 }
 
 /**
+ * @param {unknown} reel
+ * @returns {boolean}
+ */
+export function isPlayableShelfVideo(reel) {
+    if (!isRealShelfCard(reel)) return false;
+    const url = String(reel?.url || reel?.mediaUrl || reel?.video_url || reel?.playbackUrl || '');
+    if (!url || url.startsWith('blob:') || url.startsWith('data:')) return false;
+    const type = String(reel?.type || reel?.mediaType || '');
+    return (
+        reel?.isPersonalVideo === true ||
+        type.startsWith('video') ||
+        url.includes('/videos/') ||
+        /\.(mp4|mov|webm|m4v)(\?|$)/i.test(url)
+    );
+}
+
+/**
  * Playable video cards across a feed map (for Trending discovery fallback).
  * @param {Record<string, unknown[]> | null | undefined} feedMap
  * @returns {unknown[]}
@@ -69,15 +86,7 @@ export function collectPlayableVideosFromFeedMap(feedMap) {
     for (const [shelf, items] of Object.entries(map)) {
         if (shelf === 'Auto-Detect' || shelf === 'HERO') continue;
         for (const reel of items || []) {
-            if (!isRealShelfCard(reel)) continue;
-            const url = String(reel?.url || reel?.mediaUrl || reel?.video_url || '');
-            const type = String(reel?.type || '');
-            const playable =
-                reel?.isPersonalVideo === true ||
-                type.startsWith('video') ||
-                url.includes('/videos/') ||
-                /\.(mp4|mov|webm|m4v)(\?|$)/i.test(url);
-            if (!playable) continue;
+            if (!isPlayableShelfVideo(reel)) continue;
             const id = String(reel?.id || '');
             if (id && seen.has(id)) continue;
             if (id) seen.add(id);
@@ -115,6 +124,45 @@ export function mergeMissingVaultImageCards(primary, extraLists = []) {
                 (url.includes('/thumbs/') && !/\.(mp4|mov|webm|m4v)(\?|$)/i.test(url));
             if (!isVaultImage) continue;
             if (id) seenIds.add(id);
+            out.push(item);
+        }
+    }
+    return out;
+}
+
+/**
+ * Stills on Trending must not skip the vault-video recovery path.
+ * Append playable MP4s that are not already on the shelf (by id or playback URL).
+ * @param {unknown[]} primary
+ * @param {Array<unknown[] | null | undefined>} extraLists
+ * @returns {unknown[]}
+ */
+export function mergeMissingPlayableVideos(primary, extraLists = []) {
+    const out = Array.isArray(primary) ? [...primary] : [];
+    const seenIds = new Set(
+        out.map((row) => String(row?.id || '').trim()).filter(Boolean)
+    );
+    const seenUrls = new Set(
+        out
+            .map((row) =>
+                String(row?.url || row?.mediaUrl || row?.video_url || row?.playbackUrl || '')
+                    .split('?')[0]
+                    .toLowerCase()
+            )
+            .filter(Boolean)
+    );
+    for (const list of extraLists) {
+        if (!Array.isArray(list)) continue;
+        for (const item of list) {
+            if (!isPlayableShelfVideo(item)) continue;
+            const id = String(item?.id || '').trim();
+            const url = String(item?.url || item?.mediaUrl || item?.video_url || item?.playbackUrl || '')
+                .split('?')[0]
+                .toLowerCase();
+            if (id && seenIds.has(id)) continue;
+            if (url && seenUrls.has(url)) continue;
+            if (id) seenIds.add(id);
+            if (url) seenUrls.add(url);
             out.push(item);
         }
     }

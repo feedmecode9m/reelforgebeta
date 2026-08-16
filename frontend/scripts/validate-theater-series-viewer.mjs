@@ -102,6 +102,12 @@ async function main() {
         assert(stirredRelated.members.length >= 2, 'STIRRED: related members ≥ 2');
         assert(/stirred/i.test(stirredRelated.seriesTitle), 'STIRRED: series title from vault labels');
 
+        const unpublishedView = buildSeriesViewFromRelated(stirredRelated, null);
+        assert(
+            titlesOf(unpublishedView).length >= 2,
+            `Theater All Episodes paints vault family without catalog published status (got ${titlesOf(unpublishedView).join(' | ')})`
+        );
+
         const publishMembers = (related) => ({
             ...related,
             members: (related.members || []).map((m) => ({ ...m, status: 'published' }))
@@ -215,9 +221,10 @@ async function main() {
         assert(/viewerMode=\{true\}/.test(theater), 'Theater drawer viewerMode');
         assert(/seriesDrawerDocked|docked=\{seriesDrawerDocked\}/.test(theater), 'Landscape dock wiring');
         assert(
-            /\$activeReel && hasSeriesDrawer/.test(theater) &&
+            /seriesDrawerAutoOpenedForId/.test(theater) &&
+                /!isMobileTheater/.test(theater) &&
                 /seriesDrawerOpen\s*=\s*true/.test(theater),
-            'Theater auto-opens series episode shelf when series episodes exist'
+            'Theater auto-opens docked episode shelf once per desktop session (not over mobile video)'
         );
         assert(
             /resolvePlayableMediaUrl\(\$activeReel,\s*['"]theater['"]\)/.test(theater),
@@ -259,6 +266,27 @@ async function main() {
                 resolverSrc
             ) || /vault-related/.test(resolverSrc),
             'buildSeriesView prioritizes vault/related members'
+        );
+
+        const arrival = {
+            id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa10',
+            name: '01 ARRIVAL OPEN v1',
+            title: '01 ARRIVAL OPEN v1',
+            status: 'ready',
+            url: 'https://cdn.example/videos/arrival.mp4'
+        };
+        const micros = {
+            id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa11',
+            name: '01 MICROS Motherland V1',
+            title: '01 MICROS Motherland V1',
+            status: 'ready',
+            url: 'https://cdn.example/videos/motherland.mp4'
+        };
+        const split = resolveRelatedEpisodes(arrival, { readyAssets: [arrival, micros] });
+        const splitTitles = (split?.members || []).map((m) => String(m.title || ''));
+        assert(
+            splitTitles.filter((t) => /motherland/i.test(t)).length === 0,
+            '01 ARRIVAL OPEN is not Theater-linked to 01 MICROS Motherland'
         );
 
         // Hero Admin must not be required for this contract

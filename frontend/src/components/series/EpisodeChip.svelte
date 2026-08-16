@@ -1,7 +1,11 @@
 <script>
-    import { createEventDispatcher } from 'svelte';
+    import { createEventDispatcher, onMount } from 'svelte';
     import { resolveMediaForRender } from '../media/resolveDisplayUrl.js';
     import { resolveVaultCardProjection } from '../../lib/content/vaultCardProjection.js';
+    import {
+        resolveLinkedAssetDisplayTitle,
+        UNTITLED_CREATOR_EXPERIENCE
+    } from '../../lib/hero/heroTitleIntelligence.js';
 
     const dispatch = createEventDispatcher();
 
@@ -36,9 +40,23 @@
     /** @type {boolean | undefined} */
     export let playable = undefined;
 
+    /** Optional playback URL so persistent-title aliases match Hero Vault ids. */
+    /** @type {string} */
+    export let mediaUrl = '';
+
     /** Hero Vault thumbnail URL (bound ready asset) */
     /** @type {string} */
     export let thumbnailUrl = '';
+
+    let titleEpoch = 0;
+    onMount(() => {
+        if (typeof window === 'undefined') return;
+        const onVaultTitle = () => {
+            titleEpoch += 1;
+        };
+        window.addEventListener('reelforge:vault-title-updated', onVaultTitle);
+        return () => window.removeEventListener('reelforge:vault-title-updated', onVaultTitle);
+    });
 
     /** @type {string | null} */
     export let mediaAssetId = null;
@@ -64,14 +82,12 @@
     $: labelRoot = String(seriesLabel || '').trim();
     $: seBadge = `S${seasonNumber} · E${episodeNumber}`;
     /**
-     * Viewer shelf line: "01  STIRRED • S1 • E1"
-     * Never includes confidence, vault inference, or admin binding labels.
+     * Structural S/E line. Master Edit label is `displayTitle` / data-vault-card-title.
      */
-    $: viewerIdentityLine = labelRoot
-        ? `${epPad}  ${labelRoot} • S${seasonNumber} • E${episodeNumber}`
-        : seasonNumber && episodeNumber
-          ? `${epPad}  S${seasonNumber} • E${episodeNumber}`
-          : '';
+    $: viewerIdentityLine =
+        seasonNumber && episodeNumber
+            ? `${epPad}  • S${seasonNumber} • E${episodeNumber}`
+            : '';
 
     /** @type {string} */
     $: linkedReelId = String(mediaAssetId || '').trim();
@@ -87,38 +103,29 @@
                   title: String(title || '').trim(),
                   name: String(title || '').trim(),
                   thumbnailUrl: String(thumbnailUrl || '').trim(),
-                  description: String(description || '').trim()
+                  description: String(description || '').trim(),
+                  url: String(mediaUrl || '').trim(),
+                  mediaUrl: String(mediaUrl || '').trim()
               }
           })
         : null;
 
     /**
-     * Viewer: canonical vault title only (blank stays blank — never "Episode N").
+     * Viewer: Hero Vault Master Edit label (same authority as vault cards).
      * Admin: preserve package title for creator tooling.
      */
     $: displayTitle = (() => {
+        void titleEpoch;
         if (viewerMode) {
             const projected = String(vaultCard?.title || '').trim();
-            if (projected) return projected;
-            // no linked reel — structural package title only if non-manufactured
+            if (projected && projected !== UNTITLED_CREATOR_EXPERIENCE) return projected;
+            const linked = resolveLinkedAssetDisplayTitle(linkedReelId, {
+                episodeTitle: String(title || '').trim(),
+                assetTitle: String(title || '').trim()
+            });
+            if (linked && linked !== UNTITLED_CREATOR_EXPERIENCE) return linked;
             const t = String(title || '').trim();
             if (!t || /^episode\s+\d+$/i.test(t) || /^untitled/i.test(t)) return '';
-            if (labelRoot) {
-                const loose = (s) =>
-                    String(s || '')
-                        .toLowerCase()
-                        .replace(/[^a-z0-9]+/g, ' ')
-                        .trim();
-                const lt = loose(t);
-                const ll = loose(labelRoot);
-                if (
-                    lt === ll ||
-                    lt === `${ll} ${episodeNumber}` ||
-                    lt === `${ll} s${seasonNumber} e${episodeNumber}`
-                ) {
-                    return '';
-                }
-            }
             return t;
         }
         return String(title || '').trim();
@@ -435,17 +442,18 @@
         gap: 0.12rem;
     }
     .episode-card__identity {
-        font-size: 0.88rem;
-        font-weight: 600;
-        letter-spacing: 0.02em;
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
         line-height: 1.3;
-        color: rgba(255, 255, 255, 0.88);
+        color: rgba(255, 255, 255, 0.5);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
     .episode-chip.viewer.selected .episode-card__identity {
-        color: #fff;
+        color: rgba(255, 255, 255, 0.75);
     }
     .episode-card__se {
         font-size: 0.68rem;
@@ -458,13 +466,16 @@
         color: rgba(255, 255, 255, 0.75);
     }
     .episode-card__title {
-        font-size: 0.78rem;
-        font-weight: 500;
-        line-height: 1.25;
-        color: rgba(255, 255, 255, 0.45);
+        font-size: 0.88rem;
+        font-weight: 600;
+        line-height: 1.3;
+        color: rgba(255, 255, 255, 0.92);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+    .episode-chip.viewer.selected .episode-card__title {
+        color: #fff;
     }
     .episode-card__description {
         display: block;

@@ -102,18 +102,24 @@ export function snapshotVaultCreatorFieldsByMediaId(list) {
  * Assert non-target rows did not change identity/package fields.
  * @param {unknown} beforeList
  * @param {unknown} afterList
- * @param {string} targetMediaAssetId
+ * @param {string} [targetMediaAssetId]
+ * @param {string[]} [allowedExtraIds] extra ids intentionally mutated (Theater family link)
  * @returns {{ ok: boolean; violations: string[] }}
  */
-export function assertNoCrossWrite(beforeList, afterList, targetMediaAssetId) {
+export function assertNoCrossWrite(beforeList, afterList, targetMediaAssetId, allowedExtraIds = []) {
     const target = String(targetMediaAssetId || '').trim();
+    const allowed = new Set(
+        [target, ...(Array.isArray(allowedExtraIds) ? allowedExtraIds : [])]
+            .map((id) => String(id || '').trim())
+            .filter(Boolean)
+    );
     const before = snapshotVaultCreatorFieldsByMediaId(beforeList);
     const after = snapshotVaultCreatorFieldsByMediaId(afterList);
     /** @type {string[]} */
     const violations = [];
 
     for (const [id, prev] of before.entries()) {
-        if (id === target) continue;
+        if (allowed.has(id)) continue;
         const next = after.get(id);
         if (!next) {
             violations.push(`${id}: row removed by mutation targeting ${target}`);

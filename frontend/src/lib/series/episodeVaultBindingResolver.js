@@ -221,7 +221,8 @@ export function episodeChipPresentation(episode, result) {
             matchTier: result.matchTier,
             bindingLabel: result.bindingLabel,
             playable: true,
-            bindingMode: result.bindingMode
+            bindingMode: result.bindingMode,
+            mediaUrl: result.mediaUrl || ''
         };
     }
     return {
@@ -230,7 +231,8 @@ export function episodeChipPresentation(episode, result) {
         matchTier: null,
         bindingLabel: 'Asset unavailable',
         playable: false,
-        bindingMode: null
+        bindingMode: null,
+        mediaUrl: ''
     };
 }
 

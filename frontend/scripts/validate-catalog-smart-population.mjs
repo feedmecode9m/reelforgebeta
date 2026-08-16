@@ -23,7 +23,13 @@ import {
 } from '../src/lib/feed/contentClassifier.js';
 import { distributeToShelves } from '../src/lib/feed/categoryDistribution.js';
 import { applyShelfRotation, resolveRotationSeed } from '../src/lib/feed/shelfRotation.js';
-import { fillShelfPresentation, pickFirstListWithRealCards, collectPlayableVideosFromFeedMap, mergeMissingVaultImageCards } from '../src/lib/feed/fillShelfPresentation.js';
+import { fillShelfPresentation, pickFirstListWithRealCards, collectPlayableVideosFromFeedMap, mergeMissingVaultImageCards, mergeMissingPlayableVideos } from '../src/lib/feed/fillShelfPresentation.js';
+import {
+    displayDiscoveryShelf,
+    reconcileFeedToCanonicalShelves,
+    resolveCanonicalDiscoveryShelf,
+    syncCategoryAliasStore
+} from '../src/lib/feed/discoveryTaxonomy.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
@@ -408,6 +414,25 @@ console.log('\n[trending-source-fallback]');
         merged.length === 2 && merged.some((r) => r.id === 'personal-thumb-vault-still-1'),
         'identity videos do not hide thumbnail vault stills'
     );
+
+    const stillsOnly = [
+        {
+            id: 'personal-thumb-vault-still-1',
+            type: 'image',
+            url: '/thumbs/still-1.jpg',
+            isPersonalThumbnail: true,
+            publishableImage: true
+        }
+    ];
+    const vaultMp4 = [
+        { id: 'vault-mp4-1', type: 'video', url: '/videos/vault-mp4-1.mp4', isPersonalVideo: true }
+    ];
+    const withVaultVideo = mergeMissingPlayableVideos(stillsOnly, [vaultMp4]);
+    assert(
+        withVaultVideo.some((r) => r.id === 'vault-mp4-1') &&
+            withVaultVideo.some((r) => r.id === 'personal-thumb-vault-still-1'),
+        'Trending stills do not hide a vault MP4'
+    );
 }
 
 // --- Rotation stability ---
@@ -471,6 +496,33 @@ console.log('\n[enrich helper]');
     assert(e.playable === true, 'enrich playable');
     assert(e.category === 'Romance', 'category preserved on soft reclassify incoming');
     assert(String(e.posterUrl).includes('.jpg'), 'poster kept');
+}
+
+// --- LIVE CONTENT display aliases never become feed keys ---
+console.log('\n[shelf display aliases]');
+{
+    const aliases = { Romance: 'Love Stories' };
+    syncCategoryAliasStore(aliases);
+    assert(
+        displayDiscoveryShelf('Romance', aliases) === 'Love Stories',
+        'display alias for Romance'
+    );
+    assert(
+        resolveCanonicalDiscoveryShelf('Love Stories', aliases) === 'Romance',
+        'display label resolves to canonical Romance'
+    );
+    const reconciled = reconcileFeedToCanonicalShelves(
+        {
+            'Love Stories': [{ id: '1', title: 'A' }],
+            Trending: [{ id: '2', title: 'B' }]
+        },
+        aliases
+    );
+    assert(Array.isArray(reconciled.Romance) && reconciled.Romance.length === 1, 'alias shelf folded into Romance');
+    assert(reconciled.Romance[0].category === 'Romance', 'row.category stays canonical');
+    assert(Array.isArray(reconciled.Trending) && reconciled.Trending.length === 1, 'Trending kept');
+    assert(reconciled['Love Stories'] == null, 'display name is not a feed key');
+    syncCategoryAliasStore({});
 }
 
 // --- Wiring source checks (no Hero/Theater/backend edits) ---

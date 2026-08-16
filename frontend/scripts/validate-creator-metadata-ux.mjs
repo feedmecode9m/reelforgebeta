@@ -113,6 +113,15 @@ console.log('\n[UX contracts — VaultEpisodeCreatorStatus + presentation]');
         'save path threads saveToken for ack matching'
     );
     assert(
+        vaultSrc.includes('stampTitleOnLocalMediaStores') &&
+            vaultSrc.includes('applyTitleFieldsToRecord'),
+        'Video Vault package save stamps feed/vault titles by id and playback'
+    );
+    assert(
+        vaultSrc.includes('vault-card--editing') && cardSrc.includes('closeEditor'),
+        'editing card disables drag; Done closes editor'
+    );
+    assert(
         presentationSrc.includes('descriptionFieldState') &&
             presentationSrc.includes('tagsFieldState') &&
             presentationSrc.includes('categoryFieldState'),

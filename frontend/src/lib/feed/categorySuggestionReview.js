@@ -18,6 +18,7 @@ import {
     saveCreatorCatalogMetadata,
     createMemoryStorage
 } from './creatorCatalogMetadata.js';
+import { resolveCanonicalDiscoveryShelf } from './discoveryTaxonomy.js';
 import { SERIES_METADATA_STORAGE_KEY } from '../series/seriesMetadataStorage.js';
 import { confidenceBand, suggestShelfClassification } from './titleNlpProvider.js';
 
@@ -524,12 +525,15 @@ export function persistCreatorCategoryChoice(assetId, fields, options = {}) {
     );
     if (!gate.ok) return null;
 
-    const category = normalizeCreatorCategory(fields.category) || String(fields.category || '').trim();
-    if (!gate.assetId || !category) return null;
-    const allowed = CREATOR_SHELF_OPTIONS.includes(category)
-        ? category
-        : normalizeCreatorCategory(category);
-    if (!allowed && category !== 'Trending') return null;
+    const resolved =
+        resolveCanonicalDiscoveryShelf(fields.category) ||
+        normalizeCreatorCategory(fields.category) ||
+        String(fields.category || '').trim();
+    if (!gate.assetId || !resolved) return null;
+    const allowed = CREATOR_SHELF_OPTIONS.includes(resolved)
+        ? resolved
+        : normalizeCreatorCategory(resolved);
+    if (!allowed && resolved !== 'Trending') return null;
     const shelf = allowed || 'Trending';
 
     return saveCreatorCatalogMetadata(

@@ -149,12 +149,14 @@ async function main() {
     );
     assert(
         cardSrc.includes("dispatch('confirmIdentity'") &&
-            cardSrc.includes('mediaAssetId: model?.mediaAssetId'),
+            (cardSrc.includes('mediaAssetId: model?.mediaAssetId') ||
+                cardSrc.includes('resolveMediaAssetId(asset)')),
         'identity event payload carries model.mediaAssetId'
     );
     assert(
         cardSrc.includes("dispatch('savePackage'") &&
-            cardSrc.includes("mediaAssetId: model?.mediaAssetId"),
+            (cardSrc.includes("mediaAssetId: model?.mediaAssetId") ||
+                cardSrc.includes('resolveMediaAssetId(asset)')),
         'package event payload carries model.mediaAssetId'
     );
 

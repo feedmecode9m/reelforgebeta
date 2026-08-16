@@ -32,6 +32,12 @@ import {
 import { viewerFieldsFromVaultEnrichment } from './vaultEpisodeEnrichment.js';
 import { sortEpisodesForDisplay } from './seriesCatalogEdits.js';
 import { episodeIsViewerDiscoverable } from './publishingLifecycle.js';
+import {
+    resolveLinkedAssetDisplayTitle,
+    REEL_TITLES_PERSISTENT_KEY,
+    UNTITLED_CREATOR_EXPERIENCE
+} from '../hero/heroTitleIntelligence.js';
+import { lookupPersistentTitleEntry } from '../content/persistentTitleMap.js';
 
 const UUID_RE =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -80,6 +86,7 @@ const STOP = new Set([
  * @property {string} [seriesLabel]
  * @property {string} [episodeId]
  * @property {string} [source]
+ * @property {boolean} [fromVault]
  * @property {number} [createdAtMs]
  * @property {number} [vaultIndex]
  */
@@ -160,7 +167,8 @@ export function identityTokens(title) {
         .split(' ')
         .map((t) => t.trim())
         .filter(Boolean)
-        .filter((t) => !STOP.has(t));
+        .filter((t) => !STOP.has(t))
+        .filter((t) => !/^\d{1,3}$/.test(t));
 }
 
 /**
@@ -197,11 +205,73 @@ export function sharesEntityTokenPrefix(a, b) {
 }
 
 /**
+ * Persistent Hero Vault Master Edit via id or playback-URL alias.
+ * @param {Record<string, unknown> | null | undefined} asset
+ * @param {string} reelId
+ * @param {string} [mediaUrl]
+ * @returns {string}
+ */
+function persistentMasterEditTitle(asset, reelId, mediaUrl = '') {
+    if (typeof localStorage === 'undefined') return '';
+    try {
+        const map = JSON.parse(localStorage.getItem(REEL_TITLES_PERSISTENT_KEY) || '{}');
+        const saved = lookupPersistentTitleEntry(map, {
+            ...(asset && typeof asset === 'object' ? asset : {}),
+            id: reelId || assetIdOf(asset),
+            url: mediaUrl || mediaUrlOf(asset)
+        });
+        return String(saved?.title || saved?.title_original || '').trim();
+    } catch {
+        return '';
+    }
+}
+
+/**
+ * All Episodes rows use the same Hero Vault Master Edit label as the vault card.
+ * @param {Record<string, unknown> | null | undefined} asset
+ * @param {string} reelId
+ * @param {string} fallbackTitle
+ * @param {string} [mediaUrl]
+ * @returns {string}
+ */
+function heroVaultMasterEditTitle(asset, reelId, fallbackTitle = '', mediaUrl = '') {
+    const id = String(reelId || assetIdOf(asset) || '').trim();
+    const fallback = String(fallbackTitle || '').trim();
+    if (!id && !fallback) return '';
+    const fromMap = persistentMasterEditTitle(asset, id, mediaUrl);
+    const canonical = resolveLinkedAssetDisplayTitle(id, {
+        persistentTitle: fromMap || undefined,
+        episodeTitle: fallback,
+        assetTitle: displayTitleOf(asset) || fallback,
+        fileName: String(asset?.fileName || asset?.file_name || '')
+    });
+    if (canonical && canonical !== UNTITLED_CREATOR_EXPERIENCE) return canonical;
+    return fallback;
+}
+
+/**
  * @param {Record<string, unknown> | null | undefined} item
  */
 function displayTitleOf(item) {
+    const enrich =
+        item?.episodeEnrichment && typeof item.episodeEnrichment === 'object'
+            ? /** @type {Record<string, unknown>} */ (item.episodeEnrichment)
+            : null;
+    const nested =
+        item?.seriesIdentity && typeof item.seriesIdentity === 'object'
+            ? /** @type {Record<string, unknown>} */ (item.seriesIdentity)
+            : null;
     return String(
-        item?.name || item?.title || item?.fileName || item?.file_name || item?.assetId || ''
+        enrich?.title ||
+            item?.name ||
+            item?.title ||
+            nested?.episodeTitle ||
+            nested?.seriesLabel ||
+            item?.seriesLabel ||
+            item?.fileName ||
+            item?.file_name ||
+            item?.assetId ||
+            ''
     ).trim();
 }
 
@@ -344,8 +414,16 @@ export function normalizeHeroVaultSeriesLabel(assetOrTitle) {
  */
 function seriesIdentityKeyOf(asset) {
     if (!asset || typeof asset !== 'object') return '';
+    const nested =
+        asset.seriesIdentity && typeof asset.seriesIdentity === 'object'
+            ? /** @type {Record<string, unknown>} */ (asset.seriesIdentity)
+            : null;
+    const creatorLinked =
+        nested?.confirmedByCreator === true ||
+        nested?.identitySource === 'creator' ||
+        asset.confirmedByCreator === true;
     const label = normalizeHeroVaultSeriesLabel(asset);
-    if (label.confidence === 'low') return '';
+    if (label.confidence === 'low' && !creatorLinked) return '';
     const key = normalizeSeriesText(label.seriesLabel || '');
     if (!key || key === 'series') return '';
     return key;
@@ -366,6 +444,49 @@ function createdAtMsOf(asset) {
     if (typeof raw === 'number' && Number.isFinite(raw)) return raw;
     const t = Date.parse(String(raw || ''));
     return Number.isFinite(t) ? t : 0;
+}
+
+/**
+ * @param {string} seedTitle
+ * @param {string} otherTitle
+ * @param {string} seedDesc
+ * @param {string} otherDesc
+ * @param {string} seedCreator
+ * @param {string} otherCreator
+ */
+function creatorConfirmedVaultIdentity(asset) {
+    if (!asset || typeof asset !== 'object') return false;
+    const nested =
+        asset.seriesIdentity && typeof asset.seriesIdentity === 'object'
+            ? /** @type {Record<string, unknown>} */ (asset.seriesIdentity)
+            : null;
+    return (
+        nested?.confirmedByCreator === true ||
+        nested?.identitySource === 'creator' ||
+        asset.confirmedByCreator === true
+    );
+}
+
+/**
+ * Vault files join a Theater family when titles actually relate, or when both are
+ * untitled creator-stamped siblings. Shared catalog series / leftover labels are not enough.
+ */
+function vaultFamilyAllowsJoin(
+    seed,
+    other,
+    seedTitle,
+    otherTitle,
+    seedDesc,
+    otherDesc,
+    seedCreator,
+    otherCreator
+) {
+    if (titlesRelated(seedTitle, otherTitle, seedDesc, otherDesc, seedCreator, otherCreator)) {
+        return true;
+    }
+    const seedEmpty = !String(seedTitle || '').trim();
+    const otherEmpty = !String(otherTitle || '').trim();
+    return seedEmpty && otherEmpty && creatorConfirmedVaultIdentity(seed) && creatorConfirmedVaultIdentity(other);
 }
 
 /**
@@ -627,7 +748,7 @@ export function buildSeriesViewFromRelated(related, catalogSeries = null, option
             status: m.status || 'ready',
             reelId: m.reelId,
             mediaAssetId: m.assetId || null,
-            tags: ['vault-related'],
+            tags: m.fromVault || m.source === 'vault' ? ['vault-related'] : ['catalog-related'],
             seasonNumber: m.seasonNumber,
             seriesLabel: m.seriesLabel || related.seriesTitle || seriesTitle,
             createdAtMs: m.createdAtMs,
@@ -690,8 +811,9 @@ export function buildSeriesViewFromRelated(related, catalogSeries = null, option
     /** @type {Map<number, Array<import('./seriesTypes.js').Episode & { seriesLabel?: string; createdAtMs?: number; vaultIndex?: number; displayOrder?: number }>>} */
     const bySeason = new Map();
     for (const ep of episodeMap.values()) {
-        // Viewer shelf: published only (ready/draft/archived hidden from discovery lists)
-        if (viewerMode && ep.status && !episodeIsViewerDiscoverable(ep)) continue;
+        // Catalog-only rows stay published-gated. Vault-linked Theater family always paints.
+        const vaultSpine = (ep.tags || []).includes('vault-related');
+        if (viewerMode && !vaultSpine && ep.status && !episodeIsViewerDiscoverable(ep)) continue;
         const sn = Number(ep.seasonNumber) || 1;
         const { seasonNumber: _drop, ...rest } = ep;
         const list = bySeason.get(sn) || [];
@@ -827,8 +949,9 @@ export function resolveRelatedEpisodes(assetOrReel, options = {}) {
     /** @type {Array<Record<string, unknown>>} */
     const family = [];
     for (const asset of readyAssets) {
+        const identityKey = seriesIdentityKeyOf(asset);
         const title = displayTitleOf(asset);
-        if (!title) continue;
+        if (!title && !identityKey) continue;
         const id = resolveSeedId(asset) || assetIdOf(asset);
         const isSeed =
             (seedId && (id === seedId || assetIdOf(asset) === seedId)) ||
@@ -845,7 +968,17 @@ export function resolveRelatedEpisodes(assetOrReel, options = {}) {
             seedIdentityKey &&
             otherIdentityKey &&
             seedIdentityKey === otherIdentityKey &&
-            seedIdentityKey.length >= 2
+            seedIdentityKey.length >= 2 &&
+            vaultFamilyAllowsJoin(
+                assetOrReel,
+                asset,
+                seedTitle,
+                title,
+                seedDesc,
+                descriptionOf(asset),
+                seedCreator,
+                creatorKeyOf(asset)
+            )
         ) {
             family.push(asset);
             continue;
@@ -854,14 +987,40 @@ export function resolveRelatedEpisodes(assetOrReel, options = {}) {
         // 2) Explicit same series from mediaAssetId / reel metadata
         const otherMeta = id ? getReelSeriesMetadata(id) : null;
         if (seriesId && otherMeta?.seriesId && String(otherMeta.seriesId) === seriesId) {
-            family.push(asset);
-            continue;
+            if (
+                vaultFamilyAllowsJoin(
+                    assetOrReel,
+                    asset,
+                    seedTitle,
+                    title,
+                    seedDesc,
+                    descriptionOf(asset),
+                    seedCreator,
+                    creatorKeyOf(asset)
+                )
+            ) {
+                family.push(asset);
+                continue;
+            }
         }
         if (seriesId) {
             const ctx = id ? getEpisodeByReelId(id) : null;
             if (ctx?.series?.id && String(ctx.series.id) === seriesId) {
-                family.push(asset);
-                continue;
+                if (
+                    vaultFamilyAllowsJoin(
+                        assetOrReel,
+                        asset,
+                        seedTitle,
+                        title,
+                        seedDesc,
+                        descriptionOf(asset),
+                        seedCreator,
+                        creatorKeyOf(asset)
+                    )
+                ) {
+                    family.push(asset);
+                    continue;
+                }
             }
         }
 
@@ -984,6 +1143,7 @@ export function resolveRelatedEpisodes(assetOrReel, options = {}) {
             thumbnailUrl: enrich.artworkUrl || thumbnailUrlOf(asset),
             episodeId: '',
             source: 'vault',
+            fromVault: true,
             createdAtMs: createdAtMsOf(asset),
             vaultIndex
         };
@@ -1011,7 +1171,10 @@ export function resolveRelatedEpisodes(assetOrReel, options = {}) {
                 if (Number(ctx.episode.episodeNumber) >= 1) {
                     m.episodeNumber = Number(ctx.episode.episodeNumber);
                 }
-                if (String(ctx.episode.title || '').trim()) {
+                const packageTitle = viewerFieldsFromVaultEnrichment(asset).title;
+                if (packageTitle) {
+                    m.title = packageTitle;
+                } else if (String(ctx.episode.title || '').trim()) {
                     m.title = String(ctx.episode.title).trim();
                 }
             } else if (Number(ctx.episode.episodeNumber) >= 1) {
@@ -1026,7 +1189,54 @@ export function resolveRelatedEpisodes(assetOrReel, options = {}) {
         }
     }
 
-    let members = dedupeMembers([...catalogMembers, ...vaultMembers]);
+    for (const m of vaultMembers) {
+        const asset = poolMeta.find(
+            (p) =>
+                resolveSeedId(p.asset) === m.reelId ||
+                assetIdOf(p.asset) === m.reelId ||
+                assetIdOf(p.asset) === m.assetId
+        )?.asset;
+        const stamped = heroVaultMasterEditTitle(
+            asset,
+            String(m.reelId || m.assetId || ''),
+            m.title,
+            m.mediaUrl
+        );
+        if (stamped) m.title = stamped;
+    }
+
+    const vaultFamilyKeys = new Set();
+    for (const m of vaultMembers) {
+        for (const key of [m.assetId, m.reelId]) {
+            const id = String(key || '').trim();
+            if (id) vaultFamilyKeys.add(id);
+        }
+    }
+    const filteredCatalog = catalogMembers.filter((member) => {
+        const ids = [member.assetId, member.reelId].map((value) => String(value || '').trim()).filter(Boolean);
+        const hasVaultCounterpart = readyAssets.some((asset) => {
+            const assetIds = [assetIdOf(asset), resolveSeedId(asset)].map((value) => String(value || '').trim());
+            return ids.some((id) => assetIds.includes(id));
+        });
+        if (!hasVaultCounterpart) return true;
+        return ids.some((id) => vaultFamilyKeys.has(id));
+    });
+    let members = dedupeMembers([...filteredCatalog, ...vaultMembers]);
+    for (const m of members) {
+        const asset = poolMeta.find(
+            (p) =>
+                resolveSeedId(p.asset) === m.reelId ||
+                assetIdOf(p.asset) === m.reelId ||
+                assetIdOf(p.asset) === m.assetId
+        )?.asset;
+        const stamped = heroVaultMasterEditTitle(
+            asset,
+            String(m.reelId || m.assetId || ''),
+            m.title,
+            m.mediaUrl
+        );
+        if (stamped) m.title = stamped;
+    }
 
     // Viewer franchise title: majority vault seriesLabel wins over longest raw episode title.
     if (vaultMembers.length) {

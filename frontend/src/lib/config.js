@@ -155,6 +155,10 @@ function resolveDirectUploadBaseUrl() {
         if (sanitized) return sanitized;
     }
     if (import.meta.env.DEV) {
+        // Phones on LAN cannot PUT to the computer's localhost. Same-origin Vite proxy.
+        if (typeof window !== 'undefined' && !isLoopbackHostname(window.location.hostname)) {
+            return '';
+        }
         return `http://localhost:${BACKEND_PORT}`;
     }
     return 'https://reelforge-deploy-production.up.railway.app';
@@ -197,6 +201,29 @@ function isMediaPath(pathname) {
 function isLoopbackHostname(hostname) {
     const host = String(hostname || '').toLowerCase();
     return host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0' || host === '::1';
+}
+
+/**
+ * When the page is opened from a phone (LAN IP / ngrok) in DEV, rewrite
+ * http://localhost[:port]/... to a same-origin path so media and signed PUTs
+ * go through the Vite proxy instead of the phone's own loopback.
+ * @param {string} url
+ * @returns {string}
+ */
+export function rewriteDevLoopbackAbsoluteToSameOrigin(url) {
+    if (!import.meta.env.DEV) return url;
+    const trimmed = String(url || '').trim();
+    if (!/^https?:\/\//i.test(trimmed)) return trimmed;
+    if (typeof window === 'undefined' || isLoopbackHostname(window.location.hostname)) {
+        return trimmed;
+    }
+    try {
+        const parsed = new URL(trimmed);
+        if (!isLoopbackHostname(parsed.hostname)) return trimmed;
+        return `${parsed.pathname}${parsed.search}`;
+    } catch {
+        return trimmed;
+    }
 }
 
 /**
@@ -275,7 +302,9 @@ export function toBackendMediaUrl(path) {
 
     // Absolute http(s) — keep CDN/R2 hosts. Local loopback media uses the Vite proxy.
     if (/^https?:\/\//i.test(trimmed)) {
-        const rewritten = rewriteDevLoopbackMediaToSameOrigin(trimmed);
+        const rewritten = rewriteDevLoopbackAbsoluteToSameOrigin(
+            rewriteDevLoopbackMediaToSameOrigin(trimmed)
+        );
         if (rewritten !== trimmed) {
             logResolvedMediaUrl(
                 'media',

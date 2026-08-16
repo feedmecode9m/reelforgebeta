@@ -1183,6 +1183,34 @@ export function getEpisodeByReelId(reelId) {
 }
 
 /**
+ * Catalog episode for a vault/feed id: reelId, mediaAssetId, or heroVaultAssetId.
+ * Video Vault cards often use a personal-video id that is stored on the episode
+ * as mediaAssetId rather than reelId (Theater's active feed reel).
+ * @param {string} mediaId
+ * @returns {{ series: Series; season: Season; episode: Episode } | undefined}
+ */
+export function getEpisodeByMediaIdentity(mediaId) {
+    const want = String(mediaId || '').trim();
+    if (!want) return undefined;
+    const byReel = getEpisodeByReelId(want);
+    if (byReel) return byReel;
+    const byEpisode = getEpisodeById(want);
+    if (byEpisode) return byEpisode;
+    for (const raw of get(seriesCatalog)) {
+        const series = /** @type {Series} */ (applySeriesCatalogEdit(raw));
+        for (const season of series.seasons || []) {
+            const episode = (season.episodes || []).find((e) => {
+                const media = e.mediaAssetId != null ? String(e.mediaAssetId).trim() : '';
+                const hero = e.heroVaultAssetId != null ? String(e.heroVaultAssetId).trim() : '';
+                return media === want || hero === want;
+            });
+            if (episode) return { series, season, episode };
+        }
+    }
+    return undefined;
+}
+
+/**
  * Update the catalog + studio metadata episode title for a bound reel.
  * Keeps Episodes labeling / title-match ordering in sync after vault renames.
  * @param {string} reelId

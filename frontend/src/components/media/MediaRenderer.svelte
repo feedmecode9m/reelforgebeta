@@ -40,7 +40,8 @@
     export let muted = false;
     export let loop = false;
     export let controls = false;
-    export let playsinline = false;
+    /** Required for iOS/Android inline playback (otherwise Safari force-fullscreens). */
+    export let playsinline = true;
 
     /** @type {string} */
     export let className = '';
@@ -251,6 +252,7 @@
             {loop}
             {controls}
             {playsinline}
+            webkit-playsinline={playsinline ? true : undefined}
             preload={effectivePreload || undefined}
             width={width || undefined}
             height={height || undefined}
@@ -302,6 +304,7 @@
             {loop}
             {controls}
             {playsinline}
+            webkit-playsinline={playsinline ? true : undefined}
             preload={effectivePreload || undefined}
             width={width || undefined}
             height={height || undefined}

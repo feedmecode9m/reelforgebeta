@@ -42,6 +42,28 @@ assert(
     'Featured does not map searchKeywords as Genre',
     !/Genre:\s*\{featured/.test(featuredSrc) && !featuredSrc.includes('Genre: {')
 );
+assert(
+    'Featured Collection reads Hero Admin public label',
+    featuredSrc.includes('resolvePublicFeaturedCollectionTitle')
+);
+assert(
+    'Featured Collection does not load seed collections',
+    !featuredSrc.includes('loadCollections') && !featuredSrc.includes('selectFeaturedCollection')
+);
+
+const studioSrc = read('src/components/experiences/StudioExperience.svelte');
+assert(
+    'Studio does not mount Collections Manager',
+    !studioSrc.includes('CollectionsManagerPanel')
+);
+
+const collectionsSrc = read('src/lib/collections/collectionIntelligence.js');
+assert(
+    'collections loader does not seed default themes',
+    collectionsSrc.includes('return []') &&
+        collectionsSrc.includes('isDormantSeedCollection') &&
+        !/if \(!raw\) return buildDefaultCollections/.test(collectionsSrc)
+);
 
 const seedSrc = read('src/lib/hero/heroViewerTruth.js');
 assert(
@@ -145,7 +167,33 @@ try {
     assert('genre unchanged', applied.next.genre === 'Oral History');
     assert('community unchanged', applied.next.communityRepresented === 'Caribbean diaspora');
 
-    console.log('\n[3] Featured Collection presentation audit');
+    const collections = await vite.ssrLoadModule('/src/lib/collections/collectionIntelligence.js');
+    bag.set(
+        'reelforge_documentary_collections',
+        JSON.stringify([
+            {
+                collectionId: 'collection-black-agriculture',
+                collectionTitle: 'Black Agriculture',
+                collectionDescription: 'seed',
+                collectionType: 'documentary'
+            }
+        ])
+    );
+    assert(
+        'seed Black Agriculture is not loaded as a live collection',
+        collections.loadCollections().length === 0
+    );
+    assert(
+        'no Hero Admin label means no public featured title',
+        collections.resolvePublicFeaturedCollectionTitle() === ''
+    );
+    bag.set('reelforge_hero_manager_config', JSON.stringify({ featuredCollection: 'Black Legacy Stories' }));
+    assert(
+        'Hero Admin featuredCollection is the public label',
+        collections.resolvePublicFeaturedCollectionTitle() === 'Black Legacy Stories'
+    );
+    bag.delete('reelforge_hero_manager_config');
+    bag.delete('reelforge_documentary_collections');
     const featured = presentation.presentFeaturedCollection(
         {
             collectionId: 'collection-black-agriculture',

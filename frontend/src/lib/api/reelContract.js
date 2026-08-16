@@ -22,7 +22,8 @@ import {
     toBackendMediaUrl,
     logResolvedMediaUrl,
     toRelativeMediaPath,
-    rewriteDevLoopbackMediaToSameOrigin
+    rewriteDevLoopbackMediaToSameOrigin,
+    rewriteDevLoopbackAbsoluteToSameOrigin
 } from '../config.js';
 import { reelResEntry, reelResExit, reelResNormalizeBranch, reelResReelSnapshot } from '../diagnostics/reelResolutionTrace.js';
 import { logBg7kCardNormalize } from '../diagnostics/bg7kCardRenderTrace.js';
@@ -117,7 +118,9 @@ export function resolveMediaUrl(url, kind = 'media', context = kind) {
 
     // Absolute http(s) — keep CDN/R2 hosts. Local loopback /videos|/thumbs → Vite proxy.
     if (/^https?:\/\//i.test(trimmed)) {
-        const rewritten = rewriteDevLoopbackMediaToSameOrigin(trimmed);
+        const rewritten = rewriteDevLoopbackAbsoluteToSameOrigin(
+            rewriteDevLoopbackMediaToSameOrigin(trimmed)
+        );
         if (rewritten !== trimmed) {
             logResolvedMediaUrl(kind, rewritten, trimmed, `${context}:dev-loopback-same-origin`);
             return rewritten;

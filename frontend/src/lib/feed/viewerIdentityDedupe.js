@@ -506,6 +506,11 @@ export function dedupeViewerFeedIdentities(feedMap) {
         const id = resolveViewerAssetId(item.reel);
         if (!id) continue;
         if (resolved.suppressedIds.has(id)) continue;
+        const prev = survivors.get(id);
+        const prevKind = prev ? classifyViewerMediaKind(prev.reel) : '';
+        const nextKind = classifyViewerMediaKind(item.reel);
+        // A vault still must not replace a playable MP4 that shares a stripped id.
+        if (prevKind === 'video' && nextKind !== 'video') continue;
         survivors.set(id, { reel: item.reel, shelf: item.shelf });
         resolvedById.set(id, item.resolvedMedia);
     }

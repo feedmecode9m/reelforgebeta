@@ -242,8 +242,10 @@ assert(panelSrc.includes('data-vault-card-title') || panelSrc.includes('vaultCar
 
 assert(
     reelSrc.includes('resolveVaultCardProjection') &&
-        reelSrc.includes('{#if cardProjection.title}') &&
-        reelSrc.includes('{#if cardProjection.description}'),
+        (reelSrc.includes('{#if cardProjection.title}') ||
+            reelSrc.includes('ViewerSemanticCard')) &&
+        (reelSrc.includes('{#if cardProjection.description}') ||
+            reelSrc.includes('buildViewerSemanticShell')),
     'Feed/Reelshort gated title/description'
 );
 assert(

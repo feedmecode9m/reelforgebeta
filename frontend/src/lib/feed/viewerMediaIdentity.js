@@ -8,6 +8,8 @@
  * Presentation-only. No category / title / description writes.
  */
 
+import { lookupPersistentTitleEntry } from '../content/persistentTitleMap.js';
+
 /**
  * @param {unknown} value
  * @returns {string}
@@ -58,6 +60,11 @@ export function isUnsafeViewerCardTitle(value) {
     if (/^[A-Z0-9]+([_-][A-Z0-9]+){1,}$/.test(raw) && raw.includes('_')) return true;
     if (/^\d{6,}$/.test(raw)) return true;
     if (raw.length > 64 && !/\s/.test(raw)) return true;
+    // Auto-labeled vault stills — blank on Trending until Hero Vault edit.
+    if (/^personal content(\s+\d+)?(\s*[-–—].*)?$/i.test(raw)) return true;
+    if (/^untitled(\s+(video|reel|item|image|thumbnail|creator experience))?$/i.test(raw)) {
+        return true;
+    }
     return false;
 }
 
@@ -68,8 +75,19 @@ export function isUnsafeViewerCardTitle(value) {
  * @returns {string}
  */
 export function resolveSafeViewerCardTitle(reel = {}, projection = null) {
+    let persistent = '';
+    if (typeof localStorage !== 'undefined') {
+        try {
+            const map = JSON.parse(localStorage.getItem('reel_titles_persistent') || '{}');
+            const saved = lookupPersistentTitleEntry(map, reel);
+            persistent = String(saved?.title || saved?.title_original || '').trim();
+        } catch {
+            persistent = '';
+        }
+    }
     const candidates = [
         text(projection?.title),
+        persistent,
         text(reel?.persistentTitle),
         text(reel?.creatorTitle),
         text(reel?.editedTitle),

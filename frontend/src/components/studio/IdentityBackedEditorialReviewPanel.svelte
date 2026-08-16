@@ -11,6 +11,7 @@
   } from '../../lib/feed/identityBackedEditorialReview.js';
   import { formatSuggestionConfidence } from '../../lib/feed/categorySuggestionReview.js';
   import { fetchReadyReels } from '../../lib/api/media.js';
+  import { categoryAliasStore, displayDiscoveryShelf } from '../../lib/feed/discoveryTaxonomy.js';
 
   export let authHeaders = () => ({});
   export let onCategoryPersisted = () => {};
@@ -157,7 +158,7 @@
             <li data-id-matched-file>
               Matched source: {row.matchedLocalFiles?.join(' ≡ ') || row.matchedLocalFile || '—'}
             </li>
-            <li data-id-current-category>Current category: {row.currentCategory}</li>
+            <li data-id-current-category>Current category: {displayDiscoveryShelf(row.currentCategory, $categoryAliasStore)}</li>
             {#if row.provisionalTitle}
               <li data-id-provisional-title>
                 Provisional (not authoritative): {row.provisionalTitle}
@@ -181,7 +182,7 @@
             </p>
           {:else if row.nlpRan}
             <ul class="id-editorial__facts" data-id-nlp-block>
-              <li data-id-suggested>Suggested: {row.suggestedCategory || '—'}</li>
+              <li data-id-suggested>Suggested: {row.suggestedCategory ? displayDiscoveryShelf(row.suggestedCategory, $categoryAliasStore) : '—'}</li>
               <li data-id-nlp-confidence>
                 NLP confidence: {formatSuggestionConfidence(row.nlpConfidence, row.confidenceBand)}
               </li>
@@ -223,7 +224,7 @@
                 disabled={!row.actionsEnabled || Boolean(actionBusyId)}
               >
                 {#each CREATOR_SHELF_OPTIONS as opt}
-                  <option value={opt}>{opt}</option>
+                  <option value={opt}>{displayDiscoveryShelf(opt, $categoryAliasStore)}</option>
                 {/each}
               </select>
             </label>

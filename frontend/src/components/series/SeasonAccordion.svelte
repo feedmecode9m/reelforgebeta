@@ -45,6 +45,10 @@
     /** @type {string} */
     export let seriesLabel = '';
 
+    /** Remount chips when Hero Vault Master Edit fans out. */
+    /** @type {number} */
+    export let titleEpoch = 0;
+
     $: readyVaultAssets =
         Array.isArray(heroVaultAssets) && heroVaultAssets.length
             ? heroVaultAssets
@@ -84,6 +88,18 @@
         });
     }
 
+    /**
+     * @param {import('../../lib/series/seriesTypes.js').Episode} episode
+     * @param {{ mediaUrl?: string }} chip
+     */
+    function mediaUrlForChip(episode, chip) {
+        return String(
+            chip?.mediaUrl ||
+                /** @type {{ mediaUrl?: string }} */ (episode).mediaUrl ||
+                ''
+        ).trim();
+    }
+
     function toggleExpanded() {
         if (flat) return;
         expanded = !expanded;
@@ -112,7 +128,7 @@
 {#if showViewerFlat}
     <!-- Single-season shelf: no empty accordion chrome -->
     <div class="season-shelf" role="list" aria-label="{seasonLabel} episodes">
-        {#each sortedEpisodes as episode (episode.episodeId)}
+        {#each sortedEpisodes as episode (`${episode.episodeId}:${titleEpoch}`)}
             {@const vault = resolveForChip(episode)}
             {@const chip = episodeChipPresentation(episode, vault)}
             <div role="listitem">
@@ -127,6 +143,7 @@
                     status={episode.status}
                     mediaAssetId={chip.mediaAssetId || episode.mediaAssetId || episode.reelId || null}
                     thumbnailUrl={posterForChip(episode, chip)}
+                    mediaUrl={mediaUrlForChip(episode, chip)}
                     matchTier={null}
                     bindingLabel={''}
                     playable={chip.playable || Boolean(episode.mediaAssetId || episode.reelId)}
@@ -157,7 +174,7 @@
                 role="region"
                 aria-label="{seasonLabel} episodes"
             >
-                {#each sortedEpisodes as episode (episode.episodeId)}
+                {#each sortedEpisodes as episode (`${episode.episodeId}:${titleEpoch}`)}
                     {@const vault = resolveForChip(episode)}
                     {@const chip = episodeChipPresentation(episode, vault)}
                     <EpisodeChip
@@ -171,6 +188,7 @@
                         status={episode.status}
                         mediaAssetId={chip.mediaAssetId || episode.mediaAssetId || episode.reelId || null}
                         thumbnailUrl={posterForChip(episode, chip)}
+                        mediaUrl={mediaUrlForChip(episode, chip)}
                         matchTier={null}
                         bindingLabel={''}
                         playable={chip.playable || Boolean(episode.mediaAssetId || episode.reelId)}
@@ -198,7 +216,7 @@
 
         {#if expanded}
             <div class="season-accordion__body" role="region" aria-label="{seasonLabel} episodes">
-                {#each sortedEpisodes as episode (episode.episodeId)}
+                {#each sortedEpisodes as episode (`${episode.episodeId}:${titleEpoch}`)}
                     {@const vault = resolveForChip(episode)}
                     {@const chip = episodeChipPresentation(episode, vault)}
                     <EpisodeChip
@@ -212,6 +230,7 @@
                         status={episode.status}
                         mediaAssetId={chip.mediaAssetId || episode.mediaAssetId || episode.reelId || null}
                         thumbnailUrl={posterForChip(episode, chip)}
+                        mediaUrl={mediaUrlForChip(episode, chip)}
                         matchTier={chip.matchTier}
                         bindingLabel={chip.bindingLabel}
                         playable={chip.playable || Boolean(episode.mediaAssetId || episode.reelId)}

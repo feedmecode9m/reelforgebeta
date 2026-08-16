@@ -6,6 +6,7 @@ import { isInvalidSessionError } from '../adminSession.js';
 import { filenameFromMediaRef } from '../vaultMedia.js';
 import { toRelativeMediaPath } from '../config.js';
 import { durableImageVaultUrl } from './vaultUtils.js';
+import { lookupPersistentTitleEntry, mediaRecordPlaybackKey } from '../content/persistentTitleMap.js';
 import {
   logDeletionPropagation,
   filterOutDeletedMedia,
@@ -24,7 +25,7 @@ import {
 } from './thumbnailVault.js';
 import { isThumbnailImageReel } from './thumbnailCanonicalization.js';
 import { shouldSynthesizePersonalThumbnailFeedCard } from './thumbnailDestinationIdentity.js';
-import { evaluateViewerImageDiscoveryEligibility } from '../feed/viewerMediaIdentity.js';
+import { evaluateViewerImageDiscoveryEligibility, isUnsafeViewerCardTitle } from '../feed/viewerMediaIdentity.js';
 import {
   findCanonicalFeedMatch,
   matchCanonicalFeedIdentity,
@@ -92,6 +93,51 @@ function ensureVideoOnTrendingShelf(newFeed, reel) {
   if (already) return newFeed;
   newFeed.Trending = [{ ...reel, category: 'Trending' }, ...newFeed.Trending];
   return newFeed;
+}
+
+function seedPlaybackTitleMap(titles, titleByPlayback, videoVaultKey = 'personal_video_vault') {
+  const push = (entry) => {
+    if (!entry || typeof entry !== 'object') return;
+    const saved = lookupPersistentTitleEntry(titles, entry);
+    const play = mediaRecordPlaybackKey(entry);
+    if (saved?.title && play && !titleByPlayback.has(play)) {
+      titleByPlayback.set(play, saved);
+    }
+  };
+  try {
+    const vault = JSON.parse(
+      (typeof window !== 'undefined' ? localStorage.getItem(videoVaultKey) : null) || '[]'
+    );
+    if (Array.isArray(vault)) vault.forEach(push);
+  } catch {
+    /* ignore */
+  }
+  try {
+    const hero = JSON.parse(
+      (typeof window !== 'undefined' ? localStorage.getItem('reelforge_hero_reel') : null) || 'null'
+    );
+    push(hero);
+  } catch {
+    /* ignore */
+  }
+}
+
+function resolvePersistentTitleForMedia(titles, probes, videoVaultKey = 'personal_video_vault') {
+  const list = Array.isArray(probes) ? probes : [probes];
+  for (const probe of list) {
+    if (!probe || typeof probe !== 'object') continue;
+    const hit = lookupPersistentTitleEntry(titles, probe);
+    if (hit?.title) return hit;
+  }
+  const titleByPlayback = new Map();
+  seedPlaybackTitleMap(titles, titleByPlayback, videoVaultKey);
+  for (const probe of list) {
+    if (!probe || typeof probe !== 'object') continue;
+    const play = mediaRecordPlaybackKey(probe);
+    const hit = play ? titleByPlayback.get(play) : null;
+    if (hit?.title) return hit;
+  }
+  return null;
 }
 
 export function createAiCleanupAgent(deps) {
@@ -369,7 +415,11 @@ export function createAiCleanupAgent(deps) {
   let persistentEntry = null;
   try {
     const titles = JSON.parse(localStorage.getItem(CONFIG.TITLES_STORAGE_KEY) || '{}');
-    persistentEntry = titles[String(videoData.id)] || null;
+    persistentEntry = resolvePersistentTitleForMedia(
+      titles,
+      [videoData, existingMatch?.reel],
+      CONFIG.VIDEO_VAULT_KEY
+    );
   } catch {
     persistentEntry = null;
   }
@@ -548,15 +598,29 @@ export function createAiCleanupAgent(deps) {
         for (const cat of Object.keys(current || {})) {
           if (!next[cat]) next[cat] = [];
         }
+        const titleByPlayback = new Map();
+        seedPlaybackTitleMap(titles, titleByPlayback, CONFIG.VIDEO_VAULT_KEY);
         for (const item of byId.values()) {
-          const id = String(item.id || item.personal_video_id || '').trim();
-          const saved = id ? titles[id] : null;
+          const seeded = lookupPersistentTitleEntry(titles, item);
+          const play = mediaRecordPlaybackKey(item);
+          if (seeded?.title && play && !titleByPlayback.has(play)) {
+            titleByPlayback.set(play, seeded);
+          }
+        }
+        for (const item of byId.values()) {
+          const saved =
+            lookupPersistentTitleEntry(titles, item) ||
+            titleByPlayback.get(mediaRecordPlaybackKey(item)) ||
+            null;
           let card = { ...item };
-          if (saved?.title) {
+          if (saved?.title && !isUnsafeViewerCardTitle(saved.title)) {
             card.title = saved.title;
             card.name = saved.title;
             card.title_original = saved.title_original || saved.title;
             card._localModified = true;
+          } else if (item.isPersonalThumbnail) {
+            card.title = '';
+            card.name = '';
           }
           // Phase 19: authored-empty description clears stale live evidence (not "no update").
           if (saved && Object.prototype.hasOwnProperty.call(saved, 'description')) {
@@ -733,7 +797,8 @@ export function createAiCleanupAgent(deps) {
   }
   const placeholder = createLocalReel({
   id: canonicalId ? `personal-thumb-${canonicalId}` : `personal-thumb-${thumbnailName}`,
-  name: `Personal Content - ${primaryCategory}`,
+  name: '',
+  title: '',
   category: primaryCategory,
   type: 'image',
   url: base64Data,
@@ -850,14 +915,13 @@ export function createAiCleanupAgent(deps) {
     });
     return;
   }
-  const detectedCategory = CATEGORY_DETECTOR.detectFromTitle(String(displayLabel).replace(/\.[^/.]+$/, ''));
-  const primaryCategory = categoriesList.includes(detectedCategory) ? detectedCategory : 'Trending';
+  const primaryCategory = 'Trending';
   attachVaultStillToFeedMap(newFeed, categoriesList, thumbUrl, linkedVideoId);
   const vaultStillId =
     typeof thumb === 'object' && thumb.id
       ? `personal-thumb-vault-${thumb.id}`
       : `personal-thumb-${fileKey}`;
-  const placeholder = createLocalReel({ id: vaultStillId, name: `Personal Content ${thumbIndex + 1} - ${primaryCategory}`, category: primaryCategory, type: 'image', url: thumbUrl, thumbnailUrl: thumbUrl, posterUrl: thumbUrl, isPlaceholder: false, isPersonalThumbnail: true, personal_thumbnail: fileKey, publishableImage: true, likes: Math.floor(Math.random() * 100) + 50, views: Math.floor(Math.random() * 500) + 100, match: 'PERSONAL THUMBNAIL', ai_tags: ['personal-thumbnail', 'user-uploaded'], createdAt: thumbAddedAt || new Date().toISOString() });
+  const placeholder = createLocalReel({ id: vaultStillId, name: '', title: '', category: 'Trending', type: 'image', url: thumbUrl, thumbnailUrl: thumbUrl, posterUrl: thumbUrl, isPlaceholder: false, isPersonalThumbnail: true, personal_thumbnail: fileKey, publishableImage: true, likes: Math.floor(Math.random() * 100) + 50, views: Math.floor(Math.random() * 500) + 100, match: 'PERSONAL THUMBNAIL', ai_tags: ['personal-thumbnail', 'user-uploaded'], createdAt: thumbAddedAt || new Date().toISOString() });
   console.info('[PERSONAL_THUMBNAIL_INSERT]', {
   stage: 'AI_CLEANUP_AGENT.syncThumbnailsToFeed',
   placeholderId: placeholder.id,
