@@ -302,25 +302,33 @@
    */
   let vaultUploadUi = null;
 
+  /** @param {unknown} value */
+  function normalizeUploadProgressKey(value) {
+    return String(value || '')
+      .trim()
+      .replace(/\s+/g, ' ')
+      .toLowerCase();
+  }
+
   /**
    * Resolve put % for a vault card (filename keys from progress events).
    * @param {Record<string, unknown> | null | undefined} video
    * @returns {number | null}
    */
   function lookupVaultUploadPercent(video) {
-    const keys = [
+    const rawKeys = [
       String(video?.fileName || '').trim(),
       String(video?.name || '').trim(),
       String(video?.title || '').trim()
     ].filter(Boolean);
+    const keys = [...new Set(rawKeys.map((key) => normalizeUploadProgressKey(key)).filter(Boolean))];
+    let maxPercent = null;
     for (const key of keys) {
-      if (vaultUploadPercents[key] != null) return vaultUploadPercents[key];
-      const lower = key.toLowerCase();
-      for (const [pk, pv] of Object.entries(vaultUploadPercents)) {
-        if (String(pk).toLowerCase() === lower) return pv;
-      }
+      const value = vaultUploadPercents[key];
+      if (value == null) continue;
+      maxPercent = maxPercent == null ? value : Math.max(maxPercent, value);
     }
-    return null;
+    return maxPercent;
   }
 
   /**
@@ -356,7 +364,7 @@
    * @param {'ACCEPTED' | 'VALIDATING' | 'UPLOADING' | 'FINALIZING' | 'COMPLETE'} stage
    */
   function setVaultUploadStage(fileName, stage) {
-    const key = String(fileName || '').trim();
+    const key = normalizeUploadProgressKey(fileName);
     if (!key) return;
     vaultUploadStages = { ...vaultUploadStages, [key]: stage };
     console.info('[MP4_UPLOAD_STAGE]', { stage, fileName: key, ts: new Date().toISOString() });
@@ -367,7 +375,7 @@
    * @param {number} [percent]
    */
   function setVaultUploadPercent(fileName, percent) {
-    const key = String(fileName || '').trim();
+    const key = normalizeUploadProgressKey(fileName);
     if (!key || percent == null || Number.isNaN(Number(percent))) return;
     const next = Math.max(0, Math.min(100, Number(percent)));
     const prev = vaultUploadPercents[key];
@@ -388,19 +396,12 @@
 
   /** @param {string} fileName */
   function clearVaultUploadProgress(fileName) {
-    const key = String(fileName || '').trim();
+    const key = normalizeUploadProgressKey(fileName);
     if (!key) return;
     const nextPct = { ...vaultUploadPercents };
     const nextStage = { ...vaultUploadStages };
     delete nextPct[key];
     delete nextStage[key];
-    const lower = key.toLowerCase();
-    for (const pk of Object.keys(nextPct)) {
-      if (String(pk).toLowerCase() === lower) delete nextPct[pk];
-    }
-    for (const pk of Object.keys(nextStage)) {
-      if (String(pk).toLowerCase() === lower) delete nextStage[pk];
-    }
     vaultUploadPercents = nextPct;
     vaultUploadStages = nextStage;
   }
@@ -414,9 +415,9 @@
 
   /** @param {string} fileName @param {number} [holdMs] */
   function endVaultUploadUi(fileName, holdMs = 2400) {
-    const key = String(fileName || '').trim();
+    const key = normalizeUploadProgressKey(fileName);
     resourceManager.setTimeout(() => {
-      if (vaultUploadUi && String(vaultUploadUi.name) === key) {
+      if (vaultUploadUi && normalizeUploadProgressKey(vaultUploadUi.name) === key) {
         vaultUploadUi = null;
       }
       clearVaultUploadProgress(key);
@@ -427,8 +428,9 @@
   $: vaultLiveUpload = (() => {
     if (!vaultUploadUi?.name) return null;
     const name = vaultUploadUi.name;
-    const percent = vaultUploadPercents[name] ?? lookupVaultUploadPercent({ fileName: name, name });
-    const stage = vaultUploadStages[name] || (percent != null ? 'UPLOADING' : 'ACCEPTED');
+    const key = normalizeUploadProgressKey(name);
+    const percent = vaultUploadPercents[key] ?? lookupVaultUploadPercent({ fileName: name, name });
+    const stage = vaultUploadStages[key] || (percent != null ? 'UPLOADING' : 'ACCEPTED');
     return { name, percent, stage, size: Number(vaultUploadUi.size || 0) };
   })();
 
@@ -4072,8 +4074,9 @@
           {@const isPendingCard =
             video.uploadState === 'pending_accept' || String(video?.id || '').startsWith('local-pending-')}
           {@const uploadPct = lookupVaultUploadPercent(video)}
+          {@const uploadStageKey = normalizeUploadProgressKey(video?.fileName || video?.name || '')}
           {@const uploadStage =
-            vaultUploadStages[String(video?.fileName || video?.name || '').trim()] ||
+            vaultUploadStages[uploadStageKey] ||
             (isUploadingCard ? (uploadPct != null ? 'UPLOADING' : 'VALIDATING') : '')}
           {@const isGhostOnly =
             isGhostVideoVaultEntry(video) && !isDurableVideoVaultWorkspaceAsset(video)}
