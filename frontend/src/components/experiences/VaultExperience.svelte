@@ -30,7 +30,13 @@
     logVaultRenderGate,
     logVaultPlaceholderGate
   } from '../../lib/diagnostics/renderGateForensics.js';
-  import { uploadMedia, uploadThumbnail, fetchReadyReels as apiFetchReadyReels, deleteReelById as apiDeleteReelById } from '../../lib/api/media.js';
+  import {
+    uploadMedia,
+    uploadThumbnail,
+    fetchReadyReels as apiFetchReadyReels,
+    deleteReelById as apiDeleteReelById,
+    computeUploadPutTimeoutMs
+  } from '../../lib/api/media.js';
   import {
     acceptVaultImageUploadResponse,
     resolveVaultCardFace
@@ -64,7 +70,7 @@
   } from '../../lib/content/persistentTitleMap.js';
   import VaultEpisodeCreatorStatus from '../series/VaultEpisodeCreatorStatus.svelte';
   import { validateVideoFile } from '../../lib/runtime-guards.js';
-  import { API_BASE_URL, toRelativeMediaPath, SIGNED_UPLOADS_MIN_BYTES } from '../../lib/config.js';
+  import { API_BASE_URL, toRelativeMediaPath } from '../../lib/config.js';
   import {
     ADMIN_SESSION_TOKEN_KEY,
     getAdminAuthHeaders,
@@ -218,7 +224,6 @@
   let activeVaultVideoPreviewId = '';
   let thumbnailCanonInFlight = false;
   // BG-7X: prevent identical duplicate uploads while an upload is in-flight (see uploadLockDiag.js).
-  const VAULT_UPLOAD_TIMEOUT_MS_LARGE = 20 * 60 * 1000;
   const VAULT_UPLOAD_TIMEOUT_MS_DEFAULT = 5 * 60 * 1000;
 
   $: utils =
@@ -757,10 +762,11 @@
         return;
       }
       if (phase !== 'put') return;
-      const percent = Number(detail.percent);
-      if (Number.isNaN(percent)) return;
       setVaultUploadStage(fileName, 'UPLOADING');
-      setVaultUploadPercent(fileName, percent);
+      const percent = Number(detail.percent);
+      if (!Number.isNaN(percent)) {
+        setVaultUploadPercent(fileName, percent);
+      }
     };
     window.addEventListener('reelforge:upload-progress', onVaultUploadProgress);
     await ensureThumbnailCanonicalization();
@@ -2825,10 +2831,10 @@
       fileName: incomingName,
       fileSize: incomingSize
     });
-    const uploadTimeoutMs =
-      Number(file.size || 0) >= SIGNED_UPLOADS_MIN_BYTES
-        ? VAULT_UPLOAD_TIMEOUT_MS_LARGE
-        : VAULT_UPLOAD_TIMEOUT_MS_DEFAULT;
+    const uploadTimeoutMs = Math.max(
+      VAULT_UPLOAD_TIMEOUT_MS_DEFAULT,
+      computeUploadPutTimeoutMs(Number(file.size || 0)) + 2 * 60 * 1000
+    );
     let uploadTimedOut = false;
     const uploadAbortController = new AbortController();
     uploadDiagCtx.abortSignal = uploadAbortController.signal;
@@ -2897,7 +2903,9 @@
         });
         uploadAbortController.abort();
       }, uploadTimeoutMs);
-      const response = await uploadMedia(formData, getAdminAuthHeaders(), uploadDiagCtx);
+      const response = await uploadMedia(formData, getAdminAuthHeaders(), uploadDiagCtx, {
+        awaitReady: false
+      });
       logUploadStage(uploadDiagCtx, 'UPLOAD_MEDIA_RETURNED', {
         reelId: response?.id || ''
       });
@@ -2937,6 +2945,7 @@
         response?.fileName ||
         response?.file_name ||
         (resolvedUrl ? String(resolvedUrl).split('/').pop()?.split('?')[0] || '' : '');
+      const uploadPending = String(response?.status || '').toLowerCase() !== 'ready';
       const normalizedResponse = {
         ...response,
         url: resolvedUrl,
@@ -3016,7 +3025,7 @@
           }
           return !match;
         });
-        const next = [{ ...entry, uploadState: 'ready' }, ...filtered];
+        const next = [{ ...entry, uploadState: uploadPending ? 'processing' : 'ready' }, ...filtered];
         if (next.length > CONFIG.MAX_VAULT_ITEMS) next.pop();
         console.info('[BG7G_STORE]', {
           ts: new Date().toISOString(),
@@ -3037,7 +3046,7 @@
         });
         return next;
       });
-      setVaultUploadStage(file.name, 'COMPLETE');
+      setVaultUploadStage(file.name, uploadPending ? 'PROCESSING' : 'COMPLETE');
       setVaultUploadPercent(file.name, 100);
       endVaultUploadUi(file.name, 2400);
       console.info('[MP4_UPLOAD_COMPLETE]', {
@@ -3106,7 +3115,11 @@
         thumbnail: entry.thumbnail || '',
         ts: new Date().toISOString()
       });
-      uploadStatus.set(`✅ Added to vault & feed: ${file.name}`);
+      uploadStatus.set(
+        uploadPending
+          ? `✅ Upload accepted: ${file.name} — processing in background`
+          : `✅ Added to vault & feed: ${file.name}`
+      );
       clearUploadCheckpoint(uploadKey);
       vaultForensic('VAULT_UPLOAD_SUCCESS', {
         vaultType: 'video',
@@ -4266,6 +4279,13 @@
                   {:else}
                     ⬆ Uploading
                   {/if}
+                </span>
+              {:else if video.uploadState === 'processing'}
+                <span
+                  class="upload-state-badge upload-state-badge--processing"
+                  title="Upload complete; backend is finishing processing"
+                >
+                  ⏳ Processing
                 </span>
               {:else if video.uploadState === 'interrupted'}
                 <span

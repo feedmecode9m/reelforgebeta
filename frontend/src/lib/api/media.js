@@ -19,6 +19,8 @@ import {
 /** @param {number} fileSizeBytes */
 export function computeUploadPutTimeoutMs(fileSizeBytes = 0) {
     const size = Number(fileSizeBytes || 0);
+    if (size >= 500 * 1024 * 1024) return 45 * 60 * 1000;
+    if (size >= 250 * 1024 * 1024) return 30 * 60 * 1000;
     if (size >= 100 * 1024 * 1024) return 20 * 60 * 1000;
     if (size >= SIGNED_UPLOADS_MIN_BYTES) return 15 * 60 * 1000;
     return 5 * 60 * 1000;
@@ -281,9 +283,17 @@ function logUploadSizeTrace(detail) {
  * @param {Record<string, unknown>} body
  * @param {string | null} primaryFileName
  * @param {number} httpStatus
+ * @param {{ awaitReady?: boolean }} [options]
  * @returns {Promise<CreatedReelResponse>}
  */
-async function processIngestAcceptedResponse(body, primaryFileName, httpStatus, diagContext = null) {
+async function processIngestAcceptedResponse(
+    body,
+    primaryFileName,
+    httpStatus,
+    diagContext = null,
+    options = {}
+) {
+    const awaitReady = options.awaitReady !== false;
     if (httpStatus === 202 || body.status === 'pending') {
         const reelId = String(body.id || '');
         patchUploadDiagContext(diagContext, { reelId });
@@ -294,6 +304,31 @@ async function processIngestAcceptedResponse(body, primaryFileName, httpStatus, 
             result: 'accepted_pending'
         });
         if (!reelId) throw new Error('Ingestion accepted but no reel id returned');
+        if (!awaitReady) {
+            const pending = {
+                id: reelId,
+                name: String(body.name || body.title || primaryFileName || 'Pending upload'),
+                fileName: String(body.fileName || body.file_name || ''),
+                type: String(body.type || 'video'),
+                status: String(body.status || 'pending'),
+                url: String(body.url || body.videoUrl || body.video_url || ''),
+                thumbnailUrl: String(
+                    body.thumbnailUrl ||
+                        body.thumbnail_url ||
+                        body.thumbnailPath ||
+                        body.thumbnail_path ||
+                        ''
+                ),
+                pollUrl: String(body.pollUrl || body.poll_url || `/api/reels/${reelId}`),
+                createdAt: String(body.createdAt || body.created_at || new Date().toISOString())
+            };
+            emitUploadProgress({
+                fileName: primaryFileName || '',
+                phase: 'ingest',
+                stage: 'accepted_pending'
+            });
+            return pending;
+        }
         logUploadStage(diagContext, 'POLL_BEGIN', { reelId });
         emitUploadProgress({
             fileName: primaryFileName || '',
@@ -406,8 +441,9 @@ async function processIngestAcceptedResponse(body, primaryFileName, httpStatus, 
  * @param {File} file
  * @param {Record<string, string>} headers
  * @param {{ title?: string; description?: string; category?: string; episodeId?: string; seriesId?: string; seasonId?: string; identitySource?: string }} [meta]
+ * @param {{ awaitReady?: boolean }} [options]
  */
-async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = null) {
+async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = null, options = {}) {
     const primaryFileName = file?.name || null;
     const uploadIdentity = uploadIdentityFromMeta(meta);
     try {
@@ -765,7 +801,8 @@ async function uploadVideoSigned(file, headers = {}, meta = {}, diagContext = nu
         body,
         primaryFileName,
         finalizeResponse.status,
-        diagContext
+        diagContext,
+        options
     );
     logUploadStage(diagContext, 'UPLOAD_SIGNED_RETURN');
     return result;
@@ -807,9 +844,10 @@ import {
  * POST /api/reels — unified multipart create (video, thumbnail, title, description).
  * @param {FormData} formData
  * @param {Record<string, string>} [headers]
+ * @param {{ awaitReady?: boolean }} [options]
  * @returns {Promise<CreatedReelResponse>}
  */
-export async function createReel(formData, headers = {}, diagContext = null) {
+export async function createReel(formData, headers = {}, diagContext = null, options = {}) {
     const fileInfo = {};
     let primaryFileName = null;
     let uploadIdentity = { source: 'multipart' };
@@ -843,7 +881,8 @@ export async function createReel(formData, headers = {}, diagContext = null) {
                         undefined,
                     identitySource: 'createReel:signed-redirect'
                 },
-                diagContext
+                diagContext,
+                options
             );
         }
         if (isBrowserFile(videoEntry)) {
@@ -1017,7 +1056,7 @@ export async function createReel(formData, headers = {}, diagContext = null) {
         });
     }
 
-    return processIngestAcceptedResponse(body, primaryFileName, response.status, diagContext);
+    return processIngestAcceptedResponse(body, primaryFileName, response.status, diagContext, options);
     } catch (error) {
         logUploadError(diagContext, error);
         throw error;
@@ -1078,10 +1117,11 @@ export async function uploadVideo(file, headers = {}, meta = {}) {
  * Upload via FormData (always POST /api/reels) or infer file kind for single-file upload.
  * @param {File | FormData} fileOrFormData
  * @param {Record<string, string> | string} [headersOrMime]
+ * @param {{ awaitReady?: boolean }} [options]
  * @returns {Promise<CreatedReelResponse>}
  * @deprecated Use createReel directly when building FormData; this wrapper delegates only.
  */
-export async function uploadMedia(fileOrFormData, headersOrMime = {}, diagContext = null) {
+export async function uploadMedia(fileOrFormData, headersOrMime = {}, diagContext = null, options = {}) {
     logUploadStage(diagContext, 'UPLOAD_MEDIA_ENTER');
     try {
     if (fileOrFormData instanceof FormData) {
@@ -1108,7 +1148,8 @@ export async function uploadMedia(fileOrFormData, headersOrMime = {}, diagContex
                         undefined,
                     identitySource: 'uploadMedia:formData'
                 },
-                diagContext
+                diagContext,
+                options
             );
         }
         if (isBrowserFile(videoEntry)) {
@@ -1128,7 +1169,7 @@ export async function uploadMedia(fileOrFormData, headersOrMime = {}, diagContex
             state: 'formData_delegate'
         });
         pipelineDiag('UPLOAD', 'uploadMedia', 'media.js', { result: 'formData_delegate' });
-        return await createReel(fileOrFormData, headers, diagContext);
+        return await createReel(fileOrFormData, headers, diagContext, options);
     }
 
     const file = fileOrFormData;
