@@ -12,8 +12,8 @@ Single source of truth for implementation vs release state. Update when a milest
 
 | Area | Status |
 |------|--------|
-| **LOCAL-STUDIO-EPISODE-GUIDE-1** | ✅ **Implementation Complete** — LA episode guide fills Theater All Episodes + Studio Catalog / Intelligence / Discovery / Category audit / Episode Operations; no Vic G or Motherland headings; no deploy |
-| **LOCAL-VIEWER-ALL-EPISODES-GUIDE-1** | ✅ **Implementation Complete** — All Episodes poster stack is title + count + PDF wording (e.g. Arrival / 2 episodes); no deploy |
+| **LOCAL-STUDIO-EPISODE-GUIDE-1** | ✅ **Release Approved** — Netlify `6a84deac2810fa1debff9f35` / `index-C7cuc5MR.js`; Gates 1–7 PASS; Theater All Episodes + Studio episode guide live |
+| **LOCAL-VIEWER-ALL-EPISODES-GUIDE-1** | ✅ **Release Approved** — shipped with LOCAL-STUDIO-EPISODE-GUIDE-1 (`index-C7cuc5MR.js`) |
 | **LOCAL-VIEWER-MAIN-POLISH-2** | ✅ **Release Approved** — Netlify `6a84c0cf61f5c954c59bcc7c` / `index-B7HE1x7y.js`; Gates 1–7 PASS; homepage Notifications bell removed |
 | **LOCAL-VIEWER-MAIN-POLISH-1** | ✅ **Release Approved** — Netlify `6a84b5a3c066c3f40c67b66a` / `index-COVGWNdx.js`; Gates 1–7 PASS; homepage is Hero plus shelves (no Featured Collection / Viewer intelligence) |
 | **LOCAL-TRENDING-POSTER-PAINT-1** | ✅ **Implementation Complete** — after Processing badge, Trending uses `/thumbs/{id}.jpg` immediately (no random still); first 8 posters eager-load; thumb 404 retries; no deploy |
@@ -103,11 +103,12 @@ Single source of truth for implementation vs release state. Update when a milest
 ```
 LOCAL-STUDIO-EPISODE-GUIDE-1
 Implementation: COMPLETE
-Release: BLOCKED (not requested)
+Release: APPROVED
 Release Process: v1.0
+Manifest: release-manifest-local-studio-episode-guide-1-1787092869341.json
 ```
 
-The LA episode guide now seeds Smart Production Studio: Creator Catalog apply/prefill, Content Intelligence + Discovery Fields, category-audit classification titles, and Episode Operations titles. Production-facing names are episode titles (Arrival, …) or Los Angeles Production — not Vic G or Motherland. Vault identity and playback are unchanged.
+Live bundle `index-C7cuc5MR.js`. Theater All Episodes and Smart Production Studio present LA episode-guide titles and wording. Production-facing names are episode titles (Arrival, …) or Los Angeles Production — not Vic G or Motherland.
 
 ---
 
@@ -116,8 +117,9 @@ The LA episode guide now seeds Smart Production Studio: Creator Catalog apply/pr
 ```
 LOCAL-VIEWER-ALL-EPISODES-GUIDE-1
 Implementation: COMPLETE
-Release: BLOCKED (not requested)
+Release: APPROVED
 Release Process: v1.0
+Manifest: release-manifest-local-studio-episode-guide-1-1787092869341.json
 ```
 
 All Episodes (Theater) presents Los Angeles Production editorial titles and descriptions from the episode guide when that family is detected. Under the poster the stack is All Episodes → episode title (e.g. Arrival) → count → that episode’s guide wording. Playback/upload unchanged.
