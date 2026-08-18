@@ -53,7 +53,7 @@ impl SignedUploadStore {
         let max_bytes = std::env::var("SIGNED_UPLOAD_MAX_BYTES")
             .ok()
             .and_then(|v| v.parse().ok())
-            .unwrap_or(536_870_912); // 512 MiB
+            .unwrap_or(2_147_483_648); // 2 GiB
         Self {
             sessions: tokio::sync::RwLock::new(HashMap::new()),
             ttl_seconds,
@@ -686,4 +686,54 @@ pub async fn finalize_reel(
     );
 
     response
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::{Mutex, OnceLock};
+
+    fn env_lock() -> &'static Mutex<()> {
+        static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+        LOCK.get_or_init(|| Mutex::new(()))
+    }
+
+    #[test]
+    fn signed_upload_default_limit_is_two_gib_without_env_override() {
+        let _guard = env_lock().lock().expect("env lock poisoned");
+        let prior = std::env::var("SIGNED_UPLOAD_MAX_BYTES").ok();
+        std::env::remove_var("SIGNED_UPLOAD_MAX_BYTES");
+        let store = SignedUploadStore::from_env();
+        assert_eq!(store.max_bytes, 2_147_483_648);
+        if let Some(value) = prior {
+            std::env::set_var("SIGNED_UPLOAD_MAX_BYTES", value);
+        }
+    }
+
+    #[test]
+    fn signed_upload_limit_honors_env_override() {
+        let _guard = env_lock().lock().expect("env lock poisoned");
+        let prior = std::env::var("SIGNED_UPLOAD_MAX_BYTES").ok();
+        std::env::set_var("SIGNED_UPLOAD_MAX_BYTES", "123456789");
+        let store = SignedUploadStore::from_env();
+        assert_eq!(store.max_bytes, 123_456_789);
+        if let Some(value) = prior {
+            std::env::set_var("SIGNED_UPLOAD_MAX_BYTES", value);
+        } else {
+            std::env::remove_var("SIGNED_UPLOAD_MAX_BYTES");
+        }
+    }
+
+    #[test]
+    fn around_nine_hundred_mb_sources_pass_default_admission_threshold() {
+        let _guard = env_lock().lock().expect("env lock poisoned");
+        let prior = std::env::var("SIGNED_UPLOAD_MAX_BYTES").ok();
+        std::env::remove_var("SIGNED_UPLOAD_MAX_BYTES");
+        let store = SignedUploadStore::from_env();
+        assert!(852_575_217 <= store.max_bytes);
+        assert!(903_238_844 <= store.max_bytes);
+        if let Some(value) = prior {
+            std::env::set_var("SIGNED_UPLOAD_MAX_BYTES", value);
+        }
+    }
 }

@@ -22,7 +22,7 @@
 |----------|-------|-------|
 | `backend/src/main.rs:291` | `PayloadConfig::new(104_857_600)` | 100 MiB global |
 | `backend/src/main.rs:307` | `600 * 1024 * 1024` | 600 MiB direct PUT |
-| `backend/src/signed_upload.rs:55` | `536_870_912` default | 512 MiB signed max |
+| `backend/src/signed_upload.rs:56` | `2_147_483_648` default | 2 GiB signed max |
 | `frontend/src/lib/config.js:132` | `6_000_000` | Signed route threshold (6 MB), not 5 |
 | `frontend/src/lib/storage.js:23` | `5 * 1024 * 1024` | **localStorage budget only** — not upload transport |
 
