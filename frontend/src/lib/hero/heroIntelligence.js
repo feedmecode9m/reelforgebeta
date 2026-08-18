@@ -32,6 +32,8 @@ import {
     isRelativeVideosPath
 } from './heroPlaybackUrl.js';
 import { resolveUserPosterUrl } from '../vaultMedia.js';
+import { sanitizeHeroCtaTarget } from './heroCtaIntent.js';
+export { sanitizeHeroCtaTarget };
 import { searchMarketplaceListings } from '../marketplace/marketplaceEngine.js';
 import {
     buildHeroAssetRegistry,
@@ -759,8 +761,7 @@ export function getDefaultHeroManagerConfig() {
             // In-hero advance only unless Creator sets a real path explicitly.
             ctaPrimaryTarget: '',
             ctaSecondaryLabel: 'Learn More',
-            // Never default home users onto the demo series route.
-            // Visiting /series/neon-vengeance still works when the user navigates there.
+            // Leftover demo/category routes are stripped by sanitizeHeroCtaTarget.
             ctaSecondaryTarget: '',
             campaignType: 'editorial_story',
             featuredCollection: '',
@@ -768,23 +769,6 @@ export function getDefaultHeroManagerConfig() {
             storyStatus: 'draft',
             storyScheduledFor: ''
     };
-}
-
-/**
- * Strip legacy/default CTA paths that sent users into the demo SeriesPublic page.
- * Explicit non-demo paths are preserved; empty means no navigation.
- * @param {unknown} raw
- * @returns {string}
- */
-export function sanitizeHeroCtaTarget(raw) {
-    const resolved = String(raw || '').trim();
-    if (!resolved) return '';
-    const normalized = resolved.replace(/\/+$/, '') || '/';
-    // Known prior default that routed Learn More → SeriesPublic unexpectedly.
-    if (/^\/series\/neon-vengeance$/i.test(normalized)) {
-        return '';
-    }
-    return resolved;
 }
 
 /** @returns {HeroManagerConfig} */

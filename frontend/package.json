@@ -49,6 +49,7 @@
     "validate:global-search": "node scripts/validate-global-search.mjs",
     "validate:homepage-feed": "node scripts/validate-homepage-feed.mjs",
     "validate:hero-carousel": "node scripts/validate-hero-carousel.mjs",
+    "validate:hero-cta-actions": "node scripts/validate-hero-cta-actions.mjs",
     "validate:playback-stability": "node scripts/validate-playback-stability.mjs",
     "validate:playback-derivative": "node scripts/validate-playback-derivative.mjs",
     "validate:playback-selection": "node scripts/validate-playback-selection.mjs",

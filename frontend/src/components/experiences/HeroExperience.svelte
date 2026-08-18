@@ -47,6 +47,12 @@
     HERO_REEL_STORAGE_KEY,
     saveHeroReel
   } from '../../lib/hero/heroReelIdentity.js';
+  import {
+    countHeroRelatedMembers,
+    heroFeaturedGuideCopy,
+    resolveHeroCtaIntent,
+    resolveHeroFeaturedWatchReel
+  } from '../../lib/hero/heroCtaActions.js';
   import { validateVideoFile } from '../../lib/runtime-guards.js';
   import { getAdminAuthHeaders } from '../../lib/api.js';
   import { uploadMedia } from '../../lib/api/media.js';
@@ -189,6 +195,9 @@ export let sanitizeViewer = false;
   /** Phase 8 — server-hydrated hero authority record (null until rehydrate). */
   let hydratedAuthorityRecord = null;
   let heroViewerDescription = '';
+  let heroLearnMoreExpanded = false;
+  let heroLearnMoreCopy = '';
+  let heroCtaFeaturedId = '';
   /** @type {string[]} */
   let heroIntelligenceLines = [];
   let heroCreatorIntentText = '';
@@ -654,20 +663,28 @@ $: heroBadgeLabel = sanitizeViewer || heroStoryPublished
     }
 
     if (publicResolved?.isPublicApproved && publicResolved.title) {
-      heroStoryTitle = publicResolved.title;
-      heroStoryDescription = publicResolved.description || '';
+      heroStoryTitle = isStockHeroViewerCopy(publicResolved.title, 'title')
+        ? ''
+        : publicResolved.title;
+      heroStoryDescription = isStockHeroViewerCopy(publicResolved.description, 'description')
+        ? ''
+        : publicResolved.description || '';
     } else {
       // Landscape headline for vault-bound heroes = manager/presentation heroTitle
       // after vault-canonical reconcile (persistent/rename). Sticky creatorTruth
       // first-capture must not resurrect an older title over Edit Title / persistent.
       // Never treat heroDescription as the title.
-      heroStoryTitle = String(heroManagerConfig?.heroTitle || '').trim()
+      // Never use leftover demo/category titles (Neon Vengeance, Black Agriculture, …).
+      const rawTitle = String(heroManagerConfig?.heroTitle || '').trim()
         || String(publicResolved?.title || '').trim();
-      heroStoryDescription = isStockHeroViewerCopy(heroManagerConfig?.heroDescription, 'description')
+      heroStoryTitle = isStockHeroViewerCopy(rawTitle, 'title') ? '' : rawTitle;
+      const rawDescription = String(heroManagerConfig?.heroDescription || publicResolved?.description || '').trim();
+      heroStoryDescription = isStockHeroViewerCopy(rawDescription, 'description')
         ? ''
-        : String(heroManagerConfig?.heroDescription || publicResolved?.description || '').trim();
+        : rawDescription;
     }
-    heroStorySubtitle = String(heroManagerConfig?.heroSubtitle || '').trim();
+    const rawSubtitle = String(heroManagerConfig?.heroSubtitle || '').trim();
+    heroStorySubtitle = isStockHeroViewerCopy(rawSubtitle, 'subtitle') ? '' : rawSubtitle;
     // Approved creator intent only (not private notes, not AI invent).
     heroCreatorIntentText =
       publicResolved?.creatorIntent?.visible
@@ -703,6 +720,17 @@ $: heroBadgeLabel = sanitizeViewer || heroStoryPublished
     heroSlideDetail = '';
   }
   $: heroViewerDescription = String(heroStoryDescription || '').trim();
+  $: {
+    void heroManagerConfig;
+    void feedReels;
+    const featured = featuredHeroWatchReel();
+    const nextId = featured?.id ? String(featured.id) : '';
+    if (nextId !== heroCtaFeaturedId) {
+      heroCtaFeaturedId = nextId;
+      heroLearnMoreExpanded = false;
+      heroLearnMoreCopy = '';
+    }
+  }
   $: if (!mediaPlaceholderFixLogged && heroSlideVideo && !$heroVideoFailed) {
     mediaPlaceholderFixLogged = true;
     console.info('[MEDIA_PLACEHOLDER_LOGIC_FIXED]', {
@@ -1194,6 +1222,81 @@ $: heroBadgeLabel = sanitizeViewer || heroStoryPublished
       verified
     });
     return verified;
+  }
+
+  function unwrapVideoList(value) {
+    if (Array.isArray(value)) return value;
+    if (value && typeof value.subscribe === 'function') {
+      try {
+        const list = get(value);
+        return Array.isArray(list) ? list : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  }
+
+  function featuredHeroWatchReel() {
+    return resolveHeroFeaturedWatchReel({
+      feedReels: Array.isArray(feedReels) ? feedReels : [],
+      personalVideos: unwrapVideoList(personalVideos)
+    });
+  }
+
+  function dispatchHeroCta(name, reel) {
+    if (typeof window === 'undefined' || !reel) return;
+    window.dispatchEvent(new CustomEvent(name, { detail: { reel } }));
+  }
+
+  function handleHeroWatchNow() {
+    const reel = featuredHeroWatchReel();
+    const intent = resolveHeroCtaIntent({
+      kind: 'watch',
+      campaignTarget: heroStoryPrimaryTarget,
+      featuredReel: reel
+    });
+    console.info('[HERO_CTA]', {
+      kind: 'watch',
+      action: intent.action,
+      campaignTarget: heroStoryPrimaryTarget || '',
+      reelId: reel?.id || '',
+      ts: new Date().toISOString()
+    });
+    if (intent.action === 'navigate') {
+      openStoryTarget(intent.target);
+      return;
+    }
+    if (intent.action === 'theater') {
+      dispatchHeroCta('reelforge:hero-watch-now', intent.reel);
+    }
+  }
+
+  function handleHeroLearnMore() {
+    const reel = featuredHeroWatchReel();
+    const readyAssets = [
+      ...(Array.isArray(feedReels) ? feedReels : []),
+      ...unwrapVideoList(personalVideos)
+    ];
+    const intent = resolveHeroCtaIntent({
+      kind: 'learn',
+      campaignTarget: heroStorySecondaryTarget,
+      featuredReel: reel,
+      relatedMemberCount: countHeroRelatedMembers(reel, readyAssets)
+    });
+    if (intent.action === 'navigate') {
+      openStoryTarget(intent.target);
+      return;
+    }
+    if (intent.action === 'episodes') {
+      dispatchHeroCta('reelforge:hero-learn-more', intent.reel);
+      return;
+    }
+    const visible = String(heroViewerDescription || '').trim();
+    let extra = heroFeaturedGuideCopy(reel) || String(heroSlideSubtitle || '').trim();
+    if (isStockHeroViewerCopy(extra, 'any')) extra = '';
+    heroLearnMoreCopy = extra && extra !== visible ? extra : '';
+    heroLearnMoreExpanded = true;
   }
 
   function openStoryTarget(target) {
@@ -2410,6 +2513,11 @@ $: heroBadgeLabel = sanitizeViewer || heroStoryPublished
       {#if heroViewerDescription}
         <p class="hero-story-description" data-hero-story-description>{heroViewerDescription}</p>
       {/if}
+      {#if heroLearnMoreExpanded && heroLearnMoreCopy}
+        <p class="hero-story-description hero-story-description--learn-more" data-hero-learn-more-copy>
+          {heroLearnMoreCopy}
+        </p>
+      {/if}
       {#if heroCreatorIntentText}
         <div class="hero-creator-intent" data-creator-intent>
           <p class="hero-creator-intent__text">{heroCreatorIntentText}</p>
@@ -2466,10 +2574,8 @@ $: heroBadgeLabel = sanitizeViewer || heroStoryPublished
           type="button"
           class="hero-carousel-controls__btn"
           data-hero-watch-now
-          on:click={() => {
-            if (heroStoryPublished) openStoryTarget(heroStoryPrimaryTarget);
-            else goToSlide(activeSlideIndex, 'watch_now');
-          }}
+          aria-label={heroStoryPrimaryLabel || 'Watch Now'}
+          on:click={handleHeroWatchNow}
         >
           {heroStoryPrimaryLabel || 'Watch Now'}
         </button>
@@ -2477,10 +2583,9 @@ $: heroBadgeLabel = sanitizeViewer || heroStoryPublished
           type="button"
           class="hero-carousel-controls__btn"
           data-hero-story-secondary-cta
-          on:click={() => {
-            if (heroStoryPublished) openStoryTarget(heroStorySecondaryTarget);
-            else goToSlide(activeSlideIndex + 1, 'learn_more');
-          }}
+          data-hero-learn-more
+          aria-label={heroStorySecondaryLabel || 'Learn More'}
+          on:click={handleHeroLearnMore}
         >
           {heroStorySecondaryLabel || 'Learn More'}
         </button>
@@ -2781,6 +2886,10 @@ $: heroBadgeLabel = sanitizeViewer || heroStoryPublished
     font-size: 0.88rem;
     line-height: 1.45;
     color: rgba(255, 255, 255, 0.9);
+  }
+  .hero-story-description--learn-more {
+    max-width: 46rem;
+    color: rgba(255, 255, 255, 0.94);
   }
   .hero-creator-intent {
     margin: 0.5rem 0 0;

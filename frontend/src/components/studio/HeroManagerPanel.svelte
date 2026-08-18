@@ -3242,7 +3242,7 @@
         <div class="hero-story-composer__grid">
             <label class="hero-manager__field">
                 <span>Primary CTA Target</span>
-                <input type="text" bind:value={config.ctaPrimaryTarget} placeholder="/watch" on:change={handleFieldCommit} on:blur={handleFieldCommit} />
+                <input type="text" bind:value={config.ctaPrimaryTarget} placeholder="optional https://… (Watch Now plays the hero MP4 if empty)" on:change={handleFieldCommit} on:blur={handleFieldCommit} />
             </label>
             <label class="hero-manager__field">
                 <span>Secondary CTA Target</span>

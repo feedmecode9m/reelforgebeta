@@ -16,6 +16,7 @@ import {
     resolveCanonicalHeroTitle,
     UNTITLED_CREATOR_EXPERIENCE
 } from './heroTitleIntelligence.js';
+import { isLegacyHeroDemoCopy } from './heroCtaIntent.js';
 
 /** @type {ReadonlyArray<string>} */
 export const STOCK_HERO_TITLES = [
@@ -81,6 +82,7 @@ export function isStockHeroViewerCopy(value, kind = 'any') {
     const text = String(value || '').trim();
     if (!text) return false;
     if (isUnsafeHeroFilenameTitle(text)) return true;
+    if (isLegacyHeroDemoCopy(text)) return true;
     if (kind === 'title' || kind === 'any') {
         if (matchesStockList(text, STOCK_HERO_TITLES)) return true;
         if (kind === 'title' && isGenericCatalogHeroTitle(text)) return true;

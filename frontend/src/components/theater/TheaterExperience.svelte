@@ -512,6 +512,10 @@
     let seriesDrawerOpen = false;
     let selectedSeriesEpisodeId = '';
     let episodeNavNotice = '';
+    /** Homepage Learn More asked for All Episodes; Watch Now must not auto-dock the rail. */
+    let heroCtaPendingEpisodes = false;
+    let heroCtaSuppressAutoOpen = false;
+    let seriesDrawerOpenIntent = '';
 
     /**
      * Mobile theater presentation: touch/coarse-pointer devices do not reliably show
@@ -872,12 +876,32 @@
         }
     }
 
+    function onHeroWatchNowCta() {
+        heroCtaSuppressAutoOpen = true;
+        heroCtaPendingEpisodes = false;
+        seriesDrawerOpenIntent = '';
+    }
+
+    function onHeroLearnMoreCta() {
+        heroCtaPendingEpisodes = true;
+        heroCtaSuppressAutoOpen = false;
+        seriesDrawerOpenIntent = 'hero-learn-more';
+    }
+
     onMount(() => {
         syncMobileTheaterFlag('mount');
+        if (typeof window !== 'undefined') {
+            window.addEventListener('reelforge:hero-watch-now', onHeroWatchNowCta);
+            window.addEventListener('reelforge:hero-learn-more', onHeroLearnMoreCta);
+        }
         return subscribeMobilePresentation(() => syncMobileTheaterFlag('viewport_change'));
     });
     onDestroy(() => {
         if (mobileControlsHideTimer != null) clearTimeout(mobileControlsHideTimer);
+        if (typeof window !== 'undefined') {
+            window.removeEventListener('reelforge:hero-watch-now', onHeroWatchNowCta);
+            window.removeEventListener('reelforge:hero-learn-more', onHeroLearnMoreCta);
+        }
     });
 
     /** Creator identity for the active reel (Hero Vault source of truth). */
@@ -960,6 +984,8 @@
      * Auto-open the episode rail once per Theater session on desktop only.
      * Phones must see the MP4 first — a full-screen All Episodes overlay hid playback
      * and ate the close control because this used to re-force open=true on every tick.
+     * Homepage Watch Now also suppresses that dock. Learn More may open All Episodes
+     * on purpose, including on phones.
      */
     let seriesDrawerAutoOpenedForId = '';
     $: theaterSessionId = $activeReel?.id == null ? '' : String($activeReel.id);
@@ -969,6 +995,18 @@
         selectedSeriesEpisodeId = '';
         episodeNavNotice = '';
         theaterBgPosterFailed = false;
+        seriesDrawerOpenIntent = '';
+    } else if (heroCtaPendingEpisodes && hasSeriesDrawer) {
+        seriesDrawerOpen = true;
+        seriesDrawerAutoOpenedForId = theaterSessionId;
+        seriesDrawerOpenIntent = 'hero-learn-more';
+        heroCtaPendingEpisodes = false;
+        heroCtaSuppressAutoOpen = false;
+    } else if (heroCtaSuppressAutoOpen) {
+        seriesDrawerOpen = false;
+        seriesDrawerAutoOpenedForId = theaterSessionId;
+        seriesDrawerOpenIntent = '';
+        heroCtaSuppressAutoOpen = false;
     } else if (
         hasSeriesDrawer &&
         !isMobileTheater &&
@@ -976,14 +1014,17 @@
     ) {
         seriesDrawerOpen = true;
         seriesDrawerAutoOpenedForId = theaterSessionId;
+        seriesDrawerOpenIntent = 'auto';
     } else if (
         isMobileTheater &&
         seriesDrawerOpen &&
+        seriesDrawerOpenIntent === 'auto' &&
         seriesDrawerAutoOpenedForId &&
         seriesDrawerAutoOpenedForId === theaterSessionId
     ) {
         // Desktop auto-open raced before mobile detect — do not keep a blocking overlay.
         seriesDrawerOpen = false;
+        seriesDrawerOpenIntent = '';
     }
 
     let lastTheaterVideoKey = '';

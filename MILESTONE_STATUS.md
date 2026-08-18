@@ -12,7 +12,7 @@ Single source of truth for implementation vs release state. Update when a milest
 
 | Area | Status |
 |------|--------|
-| **LOCAL-STUDIO-EPISODE-GUIDE-1** | ✅ **Release Approved** — Netlify `6a84deac2810fa1debff9f35` / `index-C7cuc5MR.js`; Gates 1–7 PASS; Theater All Episodes + Studio episode guide live |
+| **LOCAL-HERO-CTA-1** | ✅ **Implementation Complete** — homepage Watch Now opens Theater on the featured MP4; Learn More opens All Episodes when a family exists, otherwise expands hero copy; leftover `/series/neon-vengeance` and hardcoded category titles are not used; no deploy |
 | **LOCAL-VIEWER-ALL-EPISODES-GUIDE-1** | ✅ **Release Approved** — shipped with LOCAL-STUDIO-EPISODE-GUIDE-1 (`index-C7cuc5MR.js`) |
 | **LOCAL-VIEWER-MAIN-POLISH-2** | ✅ **Release Approved** — Netlify `6a84c0cf61f5c954c59bcc7c` / `index-B7HE1x7y.js`; Gates 1–7 PASS; homepage Notifications bell removed |
 | **LOCAL-VIEWER-MAIN-POLISH-1** | ✅ **Release Approved** — Netlify `6a84b5a3c066c3f40c67b66a` / `index-COVGWNdx.js`; Gates 1–7 PASS; homepage is Hero plus shelves (no Featured Collection / Viewer intelligence) |
@@ -95,6 +95,19 @@ Single source of truth for implementation vs release state. Update when a milest
 | BG-8 product development | 🔜 After BG-7B |
 
 **RELEASE-01 note:** Product Studio RC track is frozen and live. BG-7A credential-gate status above remains historical for that milestone’s `release-run.sh` track and does not reopen RELEASE-01.
+
+---
+
+## LOCAL-HERO-CTA-1
+
+```
+LOCAL-HERO-CTA-1
+Implementation: COMPLETE
+Release: not started
+Release Process: v1.0
+```
+
+Homepage Watch Now opens Theater on the featured hero MP4 without auto-opening All Episodes. Learn More opens All Episodes when that MP4 has a related family; otherwise it expands hero copy. Hero Manager CTA URLs remain campaign overrides. Leftover demo/category titles (`/series/neon-vengeance`, Neon Vengeance, Black Agriculture, …) are not used as destinations or story copy. No deploy.
 
 ---
 

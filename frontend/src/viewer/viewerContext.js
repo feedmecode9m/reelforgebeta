@@ -2553,10 +2553,20 @@ applyHeroIntelligence(true);
 const onHeroIntelRefresh = () => applyHeroIntelligence(false);
 const onHeroManagerUpdated = (event) => handleHeroManagerUpdated(event);
 const onHeroRecordUpdated = (event) => handleHeroRecordUpdated(event);
+const onHeroWatchNow = (event) => {
+const reel = event?.detail?.reel;
+if (reel) openTheater(reel);
+};
+const onHeroLearnMore = (event) => {
+const reel = event?.detail?.reel;
+if (reel) openTheater(reel);
+};
 window.addEventListener('reelforge:metrics-updated', onHeroIntelRefresh);
 window.addEventListener('reelforge:release-schedule-updated', onHeroIntelRefresh);
 window.addEventListener('reelforge:hero-manager-updated', onHeroManagerUpdated);
 window.addEventListener('reelforge:hero-record-updated', onHeroRecordUpdated);
+window.addEventListener('reelforge:hero-watch-now', onHeroWatchNow);
+window.addEventListener('reelforge:hero-learn-more', onHeroLearnMore);
 AI_CLEANUP_AGENT.init();
 if (!isStorageFull()) {
 resourceManager.setTimeout(() => AI_CLEANUP_AGENT.syncVideoVaultToFeed(), 200);
@@ -2616,6 +2626,8 @@ window.removeEventListener('reelforge:metrics-updated', onHeroIntelRefresh);
 window.removeEventListener('reelforge:release-schedule-updated', onHeroIntelRefresh);
 window.removeEventListener('reelforge:hero-manager-updated', onHeroManagerUpdated);
 window.removeEventListener('reelforge:hero-record-updated', onHeroRecordUpdated);
+window.removeEventListener('reelforge:hero-watch-now', onHeroWatchNow);
+window.removeEventListener('reelforge:hero-learn-more', onHeroLearnMore);
 if (typeof window !== 'undefined') {
 window.removeEventListener('reelforge:hero-upload', onHeroUpload);
 window.removeEventListener('reelforge:upload-progress', onUploadProgress);
