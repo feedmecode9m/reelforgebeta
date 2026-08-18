@@ -1,6 +1,6 @@
 {
   "mission": "BG-7A.1",
-  "generatedAt": "2026-08-17T18:07:10.182Z",
+  "generatedAt": "2026-08-18T16:33:59.850Z",
   "frontend": "https://strong-lolly-a9fcb4.netlify.app",
   "backend": "https://reelforge-deploy-production.up.railway.app",
   "phase1": {
@@ -8,15 +8,15 @@
       {
         "name": "local_dist_recorded",
         "ok": true,
-        "localBundle": "index-0PRUZE5a.js",
+        "localBundle": "index-51czQBro.js",
         "skippedRebuild": true,
         "reason": "production HTML is the source of truth for the live bundle",
-        "ts": "2026-08-17T18:07:10.186Z"
+        "ts": "2026-08-18T16:33:59.855Z"
       }
     ],
     "localBundle": {
-      "file": "index-0PRUZE5a.js",
-      "hash": "0PRUZE5a"
+      "file": "index-51czQBro.js",
+      "hash": "51czQBro"
     },
     "pass": true
   },
@@ -25,33 +25,33 @@
       {
         "name": "html_references_deployed_bundle",
         "ok": true,
-        "productionBundle": "index-0PRUZE5a.js",
-        "ts": "2026-08-17T18:07:10.402Z"
+        "productionBundle": "index-51czQBro.js",
+        "ts": "2026-08-18T16:34:00.028Z"
       },
       {
         "name": "netlify_deploy",
         "ok": true,
         "skipped": true,
         "reason": "Gate 5 does not redeploy; Gate 3 already published the release",
-        "ts": "2026-08-17T18:07:10.402Z"
+        "ts": "2026-08-18T16:34:00.029Z"
       },
       {
         "name": "deployed_bundle_reachable",
         "ok": true,
-        "url": "https://strong-lolly-a9fcb4.netlify.app/assets/index-0PRUZE5a.js",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/assets/index-51czQBro.js",
         "status": 200,
-        "bytes": 2549992,
-        "ts": "2026-08-17T18:07:11.741Z"
+        "bytes": 2554246,
+        "ts": "2026-08-18T16:34:03.438Z"
       },
       {
         "name": "production_not_stale_bundle",
         "ok": true,
-        "production": "index-0PRUZE5a.js",
+        "production": "index-51czQBro.js",
         "staleSet": [
           "index-B_skNQ2_.js",
           "index-BIIRf46H.js"
         ],
-        "ts": "2026-08-17T18:07:11.741Z"
+        "ts": "2026-08-18T16:34:03.438Z"
       },
       {
         "name": "bundle_contains_release_markers",
@@ -61,32 +61,32 @@
           "thumbnailUrl"
         ],
         "missing": [],
-        "ts": "2026-08-17T18:07:11.741Z"
+        "ts": "2026-08-18T16:34:03.438Z"
       },
       {
         "name": "local_dist_hash_informational",
         "ok": true,
-        "local": "index-0PRUZE5a.js",
-        "production": "index-0PRUZE5a.js",
+        "local": "index-51czQBro.js",
+        "production": "index-51czQBro.js",
         "hashesMatch": true,
         "note": "Gate 5 must not require identical Vite hashes between Gate 1 and Gate 3 rebuilds",
-        "ts": "2026-08-17T18:07:11.741Z"
+        "ts": "2026-08-18T16:34:03.438Z"
       }
     ],
     "localBundle": {
-      "file": "index-0PRUZE5a.js",
-      "hash": "0PRUZE5a"
+      "file": "index-51czQBro.js",
+      "hash": "51czQBro"
     },
     "productionBundle": {
-      "file": "index-0PRUZE5a.js",
-      "hash": "0PRUZE5a"
+      "file": "index-51czQBro.js",
+      "hash": "51czQBro"
     },
     "previousBundle": "index-B_skNQ2_.js",
     "deployAttempted": false,
     "deployBlocked": false,
     "pass": true,
     "deploymentUrl": "https://strong-lolly-a9fcb4.netlify.app",
-    "deploymentTimestamp": "2026-08-17T18:07:10.182Z"
+    "deploymentTimestamp": "2026-08-18T16:33:59.850Z"
   },
   "phase3": {
     "skipped": true,

@@ -12,7 +12,24 @@ Single source of truth for implementation vs release state. Update when a milest
 
 | Area | Status |
 |------|--------|
-| **LOCAL-EPISODES-MASTER-EDIT-1** | ✅ **Implementation Complete** — All Episodes titles match Hero Vault Master Edit (persistent map + playback alias); no deploy |
+| **VAULT-LARGE-MP4-2GIB-1** | ✅ **Release Approved** — Netlify `6a84895a035909f9643e510c` / `index-51czQBro.js`; Gates 1–7 PASS; vault client cap 2 GiB (replaces live 500 MiB UI) |
+| **LOCAL-VIEWER-DISCOVERY-RAIL-2** | ✅ **Release Approved** — Netlify `6a834db39bd23fc893e624d9` / `index-0PRUZE5a.js`; Gates 1–7 PASS; Home / New Releases / Trending / Suspense |
+| **LOCAL-MOBILE-HERO-THEATER-SCALE-1** | ✅ **Implementation Complete** — mobile hero billboard ~86vh (was 56vh/420px); Theater full-bleed cover like Netflix; no playback change; no deploy |
+| **LOCAL-THEATER-MOBILE-CHROME-1** | ✅ **Implementation Complete** — Play/Mute bottom safe-area overlay, tap show/hide; video/play path untouched; no deploy |
+| **LOCAL-MOBILE-PLAYBACK-TRACE-4** | ✅ **Implementation Complete** — Case D readiness traces (`VIDEO_MOUNT`/`sourceSrc`/`networkState`/`loadedmetadata`/`canplay`/`PLAY_RESULT`); no PLAY-2 rewrite; no deploy |
+| **LOCAL-MOBILE-PLAYBACK-FIX-B1** | ✅ **Implementation Complete** — Case B: `crypto.randomUUID()` on iOS LAN HTTP aborted handoff after CLICK; telemetry isolated; no playback rewrite; no deploy |
+| **LOCAL-MOBILE-PLAYBACK-TRACE-2** | ✅ **Classified B then D** — iPhone CLICK→Theater open; overlay ruled out; B fixed; readiness next |
+| **LOCAL-MOBILE-PLAYBACK-TRACE-1** | ✅ **Implementation Complete** — `[MOBILE_PLAY_TRACE]` along card→Theater→play; discovery rail pointer-events fix; no playback rewrite; no deploy |
+| **LOCAL-PCC-VOCAB-1** | ✅ **Implementation Complete** — Production Command Center single-pane vocab (Sentinel/security/production/publishing/teams/hero/ops/notifications); no deploy |
+| **LOCAL-VIEWER-DISCOVERY-RAIL-1** | ✅ **Implementation Complete** — Home / New Releases / Trending rail + Browse all series chrome; SCD alias sync; posters/cards unchanged; no deploy |
+| **LOCAL-MOBILE-EXPERIENCE-HARDENING-1** | ✅ **Release Approved** — Netlify `6a8227a2887977b652e346af` / `index-C25k7QqQ.js`; Gates 1–7 PASS |
+| **LOCAL-THEATER-MOBILE-PLAY-2** | ✅ **Release Approved** — Netlify `6a8223984c35c4198ea37b31` / `index-BL8hsq5M.js`; Gates 1–7 PASS |
+| **LOCAL-EPISODES-MOBILE-BATCH-1** | ✅ **Release Approved** — Netlify `6a821b591972b8a17fcfb1dd` / `index-CU8MeNww.js` (superseded live by PLAY-2) |
+| **LOCAL-THEATER-MOBILE-PLAY-1** | ✅ **Release Approved** — shipped inside LOCAL-EPISODES-MOBILE-BATCH-1 (superseded by PLAY-2) |
+| **LOCAL-EPISODES-SAFE-TITLE-1** | ✅ **Release Approved** — shipped inside LOCAL-EPISODES-MOBILE-BATCH-1 |
+| **LOCAL-EPISODES-FAMILY-TITLE-1** | ✅ **Release Approved** — shipped inside LOCAL-EPISODES-MOBILE-BATCH-1 |
+| **LOCAL-EPISODES-MOBILE-POSTER-2** | ✅ **Release Approved** — shipped inside LOCAL-EPISODES-MOBILE-BATCH-1 |
+| **LOCAL-EPISODES-MASTER-EDIT-1** | ✅ **Release Approved** — shipped inside LOCAL-EPISODES-MOBILE-POSTER-1 (`index-Bg7aM1aY.js`) |
 | **THEATER-MOBILE-EPISODES-1** | ✅ **Release Approved** — Netlify `6a81e5613cd2117211070523` / `index-BB00hp3I.js`; Gates 1–7 PASS; phone Theater MP4 no longer covered by All Episodes |
 | **LOCAL-COLLECTIONS-DORMANT-1** | ⏳ **Release in progress** — Prod `index-B3YLBAMn.js`. Gates 3–4 PASS. Gate 5 PASS after validator TLS transport fix (`npm run test:bg-7a1-release`). Gate 6–7 not re-run in this session. |
 | **LOCAL-VAULT-LINK-CHECKBOX-1** | ✅ **Implementation Complete** — Arrival Open is not Theater-family with MICROS Motherland when unchecked; leftover stamps/catalog ignored; no deploy |
@@ -76,13 +93,310 @@ Single source of truth for implementation vs release state. Update when a milest
 
 ---
 
+## VAULT-LARGE-MP4-2GIB-1
+
+```
+VAULT-LARGE-MP4-2GIB-1
+Implementation: COMPLETE
+Release: APPROVED
+Release Process: v1.0
+Manifest: release-manifest-vault-large-mp4-2gib-1-1787071034130.json
+```
+
+Video Vault client size cap aligned to backend 2 GiB (`2147483648`). Production no longer serves `index-D6rDq1TT.js` (500 MiB toast). Live bundle `index-51czQBro.js`. `[VAULT_DROP_COMPARE]` logger shipped. Upload/R2/playback transport unchanged.
+
+---
+
+## LOCAL-PCC-VOCAB-1
+
+```
+LOCAL-PCC-VOCAB-1
+Implementation: COMPLETE
+Release: BLOCKED (implementation only; not deployed)
+Release Process: v1.0
+```
+
+Canonical `PRODUCTION_COMMAND_CENTER_VOCAB` + dashboard sections for Sentinel, Hero Intelligence, Operations, Notifications. UI header/aggregates/nav/appearance aligned.
+
+---
+
+## LOCAL-VIEWER-DISCOVERY-RAIL-2
+
+```
+LOCAL-VIEWER-DISCOVERY-RAIL-2
+Implementation: COMPLETE
+Release: APPROVED
+Release Process: v1.0
+Manifest: release-manifest-local-viewer-discovery-rail-2-1786990222416.json
+```
+
+Viewer primary rail is Home / New Releases / Trending / **Suspense**. Suspense maps to the SCD `Suspense` shelf. LIVE CONTENT rename still drives the tab label. Cards and posters unchanged. Action/Cyber-Action remains on Home until assigned its own tab.
+
+---
+
+## LOCAL-VIEWER-DISCOVERY-RAIL-1
+
+```
+LOCAL-VIEWER-DISCOVERY-RAIL-1
+Implementation: COMPLETE
+Release: BLOCKED (implementation only; not deployed)
+Release Process: v1.0
+```
+
+Screenshot-style Home / New Releases / Trending rail + Browse all series layout. Labels sync from Smart Category Distribution renames. ViewerSemanticCard posters/cards/placeholders unchanged.
+
+---
+
+---
+
+## LOCAL-MOBILE-HERO-THEATER-SCALE-1
+
+```
+LOCAL-MOBILE-HERO-THEATER-SCALE-1
+Implementation: COMPLETE
+Release: not started (presentation; no production deploy)
+```
+
+Mobile homepage hero was capped at `max-height: 56vh` / `420px`, so scrolling cut the background short. Billboard is now ~86dvh. Theater fills the device (`object-fit: cover`, full-bleed canvas). Playback path unchanged.
+
+## LOCAL-THEATER-MOBILE-CHROME-1
+
+```
+LOCAL-THEATER-MOBILE-CHROME-1
+Implementation: COMPLETE
+Release: not started (presentation polish; no production deploy)
+```
+
+Playback stays on the proven path. Mobile Theater chrome only:
+
+* Play/Mute docked to the bottom safe area
+* Tap canvas to show/hide; auto-hide while playing; Play stays when paused
+* Native `<video controls>` off on mobile (custom overlay is the control surface)
+* Volume slider and bottom CLOSE THEATER removed from the picture
+* Header fades with chrome so landscape is a clean canvas
+
+Do not touch R2, derivatives, range, `<source>`, or `startTheaterPlayback`.
+
+## LOCAL-MOBILE-PLAYBACK-TRACE-4
+
+```
+LOCAL-MOBILE-PLAYBACK-TRACE-4
+Implementation: COMPLETE
+Release: not started (local Vite; no production deploy)
+```
+
+Case D: Theater opens, `<video>` mounts, `readyState=0`, still paused. PLAY-2 pointerup reaches the handler. Instrumentation only — src vs `<source>`, networkState, loadedmetadata/canplay/error, play() fulfill/reject. No MP4/R2/derivative/PLAY-2 architecture change.
+
+Phone re-tap on `http://10.0.0.115:5173` and classify:
+
+| Trace | Meaning |
+|-------|---------|
+| `sourceSrc` set, `currentSrc` empty, `networkState=3` | iOS never selected `<source>` |
+| `VIDEO_LOAD_CALL` then no `VIDEO_LOADED_METADATA` | fetch/codec/range failure |
+| `VIDEO_ERROR` | media element error code |
+| `PLAY_REJECT` | `play()` promise rejected |
+| `VIDEO_CANPLAY` + still paused | start policy, not missing source |
+
+## LOCAL-MOBILE-PLAYBACK-FIX-B1
+
+```
+LOCAL-MOBILE-PLAYBACK-FIX-B1
+Implementation: COMPLETE
+Release: not started (local Vite verify; no production deploy)
+```
+
+TRACE-2 Case B: iPhone produced `CLICK` and never `ACTIVATE_REEL`. Cause: `activateReel` called `logTheaterOpen` → `recordMetric` → `crypto.randomUUID()`, which throws on iOS Safari for `http://10.0.0.115` (not a secure context). Desktop `localhost` is secure, so the same path worked there.
+
+Fix limited to the handoff boundary:
+
+* Safe UUID fallback in metrics + viewer id
+* `logTheaterOpen` cannot abort Theater
+* `ACTIVATE_REEL` logs before diagnostics
+* `HANDOFF_INVOKE` / `HANDOFF_ERROR` on the card callback
+
+PLAY-2 / `video.play()` / media delivery untouched. Re-tap on `http://10.0.0.115:5173` and expect `CLICK` → `HANDOFF_INVOKE` → `ACTIVATE_REEL` → `OPEN_THEATER_REEL`.
+
+## LOCAL-MOBILE-PLAYBACK-TRACE-2
+
+```
+LOCAL-MOBILE-PLAYBACK-TRACE-2
+Implementation: COMPLETE (classified Case B from device CLICK-only trace)
+Release: not started (no production deploy during investigation)
+```
+
+Option B only: phone → `http://10.0.0.115:5173`. First real tap: `CLICK` / `ViewerSemanticCard.onActivate` / `viewerOpen:false`. Overlay (Case A) ruled out. Handoff (Case B) confirmed. Closed by LOCAL-MOBILE-PLAYBACK-FIX-B1.
+
+## LOCAL-MOBILE-PLAYBACK-TRACE-1
+
+```
+LOCAL-MOBILE-PLAYBACK-TRACE-1
+Implementation: COMPLETE
+Release: not started (trace + chrome tap fix only; no deploy)
+Release Process: n/a until release mission
+```
+
+Identify where mobile play stops before rewriting playback. Instrumented `[MOBILE_PLAY_TRACE]` on:
+
+* `ViewerSemanticCard` CLICK (+ `hitTop` overlay probe)
+* `activateReel` / handoff
+* `viewerContext` handleCardClick / openTheater
+* `openTheaterReel` (enrich fail / setActive / afterTick videoMounted)
+* PLAY-2 chrome pointerup + `startTheaterPlayback`
+
+Canonical path confirmed: **no separate `mobilePlay()`** — cards use the same Theater open pipeline as desktop. Sticky discovery rail `pointer-events` no longer steal taps under the fade zone. PLAY-2 activation logic untouched.
+
+Artifact: `frontend/artifacts/LOCAL-MOBILE-PLAYBACK-TRACE-1.md`  
+Gates: `npm run validate:mobile-playback-trace` → `artifacts/mobile-playback-trace-gates.json`
+
+## LOCAL-MOBILE-EXPERIENCE-HARDENING-1
+
+```
+LOCAL-MOBILE-EXPERIENCE-HARDENING-1
+Implementation: COMPLETE
+Release: APPROVED
+Release Process: v1.0
+Manifest: release-manifest-local-mobile-experience-hardening-1-1786914935837.json
+```
+
+Sign-off: `frontend/LOCAL-MOBILE-EXPERIENCE-HARDENING-1_DEPLOYMENT_SIGNOFF.md`  
+Production: https://strong-lolly-a9fcb4.netlify.app (`index-C25k7QqQ.js`)
+
+Audit: `frontend/artifacts/mobile-surface-audit.json`  
+Gates: `frontend/artifacts/mobile-experience-hardening-gates.json`  
+Diagnostics: `[MOBILE_IDENTITY_TRACE]`, `[MOBILE_SHELF_TRACE]`. Theater PLAY-2 not reopened.
+
+---
+
+## LOCAL-THEATER-MOBILE-PLAY-2
+
+```
+LOCAL-THEATER-MOBILE-PLAY-2
+Implementation: COMPLETE
+Release: APPROVED
+Release Process: v1.0
+Manifest: release-manifest-local-theater-mobile-play-2-1786913909044.json
+```
+
+Sign-off: `frontend/LOCAL-THEATER-MOBILE-PLAY-2_DEPLOYMENT_SIGNOFF.md`  
+Production: https://strong-lolly-a9fcb4.netlify.app (`index-BL8hsq5M.js`)
+
+Mobile Theater Play uses pointerup for user-activation, resolves video via manager or DOM, and retries muted after NotAllowedError.
+
+---
+
+## LOCAL-EPISODES-MOBILE-BATCH-1
+
+```
+LOCAL-EPISODES-MOBILE-BATCH-1
+Implementation: COMPLETE
+Release: APPROVED
+Release Process: v1.0
+Manifest: release-manifest-local-episodes-mobile-batch-1-1786911794988.json
+```
+
+Sign-off: `frontend/LOCAL-EPISODES-MOBILE-BATCH-1_DEPLOYMENT_SIGNOFF.md`  
+Production: https://strong-lolly-a9fcb4.netlify.app (`index-CU8MeNww.js`)
+
+Ships mobile All Episodes poster UUID stills, Family/series heading, safe titles (no `copy UUID` / invented Episode N), and Theater mobile Play/Pause.
+
+---
+
+## LOCAL-THEATER-MOBILE-PLAY-1
+
+```
+LOCAL-THEATER-MOBILE-PLAY-1
+Implementation: COMPLETE
+Release: APPROVED (shipped inside LOCAL-EPISODES-MOBILE-BATCH-1)
+Release Process: v1.0
+Manifest: release-manifest-local-episodes-mobile-batch-1-1786911794988.json
+```
+
+Mobile Theater play taps failed because video `touchend`/`click` handlers called `stopPropagation` over native controls. Explicit Play/Pause chrome now calls `video.play()` / `pause()`; handlers no longer block native control gestures.
+
+---
+
+## LOCAL-EPISODES-SAFE-TITLE-1
+
+```
+LOCAL-EPISODES-SAFE-TITLE-1
+Implementation: COMPLETE
+Release: APPROVED (shipped inside LOCAL-EPISODES-MOBILE-BATCH-1)
+Release Process: v1.0
+Manifest: release-manifest-local-episodes-mobile-batch-1-1786911794988.json
+```
+
+Mobile All Episodes never paints Finder `copy <UUID>` stems. Package shells no longer invent "Episode 2/3". Chips stay blank until a safe catalog / Master Edit title exists.
+
+---
+
+## LOCAL-EPISODES-FAMILY-TITLE-1
+
+```
+LOCAL-EPISODES-FAMILY-TITLE-1
+Implementation: COMPLETE
+Release: APPROVED (shipped inside LOCAL-EPISODES-MOBILE-BATCH-1)
+Release Process: v1.0
+Manifest: release-manifest-local-episodes-mobile-batch-1-1786911794988.json
+```
+
+Theater All Episodes shelf heading uses Family / series name (`seriesLabel` / creator package title). Episode Master Edit labels stay on chips only.
+
+---
+
+## LOCAL-EPISODES-MOBILE-POSTER-2
+
+```
+LOCAL-EPISODES-MOBILE-POSTER-2
+Implementation: COMPLETE
+Release: APPROVED (shipped inside LOCAL-EPISODES-MOBILE-BATCH-1)
+Release Process: v1.0
+Manifest: release-manifest-local-episodes-mobile-batch-1-1786911794988.json
+```
+
+Mobile All Episodes invents `/thumbs/{R2-uuid}.jpg` (not vault-personal id) and donates catalog/feed stills onto vault MP4 twins that share the same playback file.
+
+---
+
+## LOCAL-EPISODES-DEDUPE-1
+
+```
+LOCAL-EPISODES-DEDUPE-1
+Implementation: COMPLETE
+Release: APPROVED
+Release Process: v1.0
+Manifest: release-manifest-local-episodes-dedupe-1-1786905755127.json
+```
+
+Sign-off: `frontend/LOCAL-EPISODES-DEDUPE-1_DEPLOYMENT_SIGNOFF.md`  
+Production: https://strong-lolly-a9fcb4.netlify.app (`index-DNLsyeVt.js`)
+
+Theater All Episodes treats catalog reel id and R2 `/prod/{uuid}.mp4` as one episode. Thumbnail stills are not listed as extra episodes.
+
+---
+
+## LOCAL-EPISODES-MOBILE-POSTER-1
+
+```
+LOCAL-EPISODES-MOBILE-POSTER-1
+Implementation: COMPLETE
+Release: APPROVED
+Release Process: v1.0
+Manifest: frontend/artifacts/release-manifest-local-episodes-mobile-poster-1-1786903347731.json
+Sign-off: frontend/LOCAL-EPISODES-MOBILE-POSTER-1_DEPLOYMENT_SIGNOFF.md
+```
+
+Theater All Episodes on phones: do not use MP4 URLs as `<img>` posters; same-id thumbnail vault JPEGs stamp the video row; overlay posters load eagerly with `.jpg`/`.png` fallback. Live bundle `index-Bg7aM1aY.js`.
+
+---
+
 ## LOCAL-EPISODES-MASTER-EDIT-1
 
 ```
 LOCAL-EPISODES-MASTER-EDIT-1
 Implementation: COMPLETE
-Release: BLOCKED (implementation only; not deployed)
+Release: APPROVED (shipped inside LOCAL-EPISODES-MOBILE-POSTER-1)
 Release Process: v1.0
+Manifest: frontend/artifacts/release-manifest-local-episodes-mobile-poster-1-1786903347731.json
 ```
 
 All Episodes menu titles use the Hero Vault Master Edit label (`reel_titles_persistent`, including playback-URL aliases). Package/franchise names no longer replace the vault card title. Live after Master Edit via `reelforge:vault-title-updated`.
