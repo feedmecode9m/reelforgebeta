@@ -12,6 +12,7 @@ Single source of truth for implementation vs release state. Update when a milest
 
 | Area | Status |
 |------|--------|
+| **LOCAL-VIEWER-MAIN-POLISH-2** | ✅ **Implementation Complete** — homepage Notifications chrome unmounted; Studio PCC notifications kept; no deploy |
 | **LOCAL-VIEWER-MAIN-POLISH-1** | ✅ **Release Approved** — Netlify `6a84b5a3c066c3f40c67b66a` / `index-COVGWNdx.js`; Gates 1–7 PASS; homepage is Hero plus shelves (no Featured Collection / Viewer intelligence) |
 | **LOCAL-TRENDING-POSTER-PAINT-1** | ✅ **Implementation Complete** — after Processing badge, Trending uses `/thumbs/{id}.jpg` immediately (no random still); first 8 posters eager-load; thumb 404 retries; no deploy |
 | **VAULT-LARGE-MP4-2GIB-1** | ✅ **Release Approved** — Netlify `6a84895a035909f9643e510c` / `index-51czQBro.js`; Gates 1–7 PASS; vault client cap 2 GiB (replaces live 500 MiB UI) |
@@ -92,6 +93,19 @@ Single source of truth for implementation vs release state. Update when a milest
 | BG-8 product development | 🔜 After BG-7B |
 
 **RELEASE-01 note:** Product Studio RC track is frozen and live. BG-7A credential-gate status above remains historical for that milestone’s `release-run.sh` track and does not reopen RELEASE-01.
+
+---
+
+## LOCAL-VIEWER-MAIN-POLISH-2
+
+```
+LOCAL-VIEWER-MAIN-POLISH-2
+Implementation: COMPLETE
+Release: BLOCKED (not requested)
+Release Process: v1.0
+```
+
+Public homepage no longer mounts `NotificationBridge`. Studio Production Command Center notifications remain.
 
 ---
 

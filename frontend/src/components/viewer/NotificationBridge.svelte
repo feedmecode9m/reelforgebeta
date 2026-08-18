@@ -8,6 +8,8 @@
   });
 </script>
 
+{#if false}
 <div class="header-actions">
   <NotificationCenter />
 </div>
+{/if}

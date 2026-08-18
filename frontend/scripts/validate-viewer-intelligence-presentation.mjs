@@ -40,8 +40,17 @@ assert(
     !viewerSrc.includes('FeaturedCollectionPanel')
 );
 assert(
+    'viewer homepage does not mount Notifications chrome',
+    !viewerSrc.includes('NotificationBridge')
+);
+assert(
     'Featured Collection panel is disabled (no public render)',
     featuredSrc.includes('{#if false}')
+);
+const notificationBridgeSrc = read('src/components/viewer/NotificationBridge.svelte');
+assert(
+    'NotificationBridge is disabled (no public render)',
+    notificationBridgeSrc.includes('{#if false}')
 );
 assert('Featured Collection uses presentation layer', featuredSrc.includes('presentFeaturedCollection'));
 assert('Featured uses data-creator-title', featuredSrc.includes('data-creator-title'));

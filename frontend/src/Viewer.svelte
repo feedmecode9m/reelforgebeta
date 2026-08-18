@@ -7,7 +7,6 @@ import { logTheaterState } from './lib/theater/theaterDiagnostics.js';
 import { createViewerContext } from './viewer/viewerContext.js';
 import './viewer/viewer.css';
 import ObservabilityBridge from './components/viewer/ObservabilityBridge.svelte';
-import NotificationBridge from './components/viewer/NotificationBridge.svelte';
 import HeroExperienceBridge from './components/viewer/HeroExperienceBridge.svelte';
 import FeedExperienceBridge from './components/viewer/FeedExperienceBridge.svelte';
 import TheaterExperienceBridge from './components/viewer/TheaterExperienceBridge.svelte';
@@ -189,7 +188,6 @@ $: studioSeriesMetadataReelLabel = (() => {
     {viewerHydrationReady}
     sanitizeViewer={true}
   />
-  <NotificationBridge />
   <FeedExperienceBridge
     {loading}
     {feed}
