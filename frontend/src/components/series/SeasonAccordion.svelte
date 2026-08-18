@@ -57,8 +57,23 @@
     $: sortedEpisodes = [...(season?.episodes || [])]
         .filter(Boolean)
         .sort((a, b) => a.episodeNumber - b.episodeNumber);
+    $: viewerRows = sortedEpisodes.map((episode) => {
+        const vault = resolveForChip(episode);
+        const chip = episodeChipPresentation(episode, vault);
+        const mediaUrl = mediaUrlForChip(episode, chip);
+        const playable = chip.playable || Boolean(mediaUrl);
+        return {
+            episode,
+            chip,
+            mediaUrl,
+            posterUrl: posterForChip(episode, chip),
+            playable
+        };
+    });
+    $: viewerRenderableRows = viewerRows.filter((row) => row.playable);
+    $: viewerEpisodes = viewerRenderableRows.map((row) => row.episode);
     $: seasonLabel = season?.title || `Season ${season?.seasonNumber ?? 1}`;
-    $: episodeCount = sortedEpisodes.length;
+    $: episodeCount = viewerMode ? viewerEpisodes.length : sortedEpisodes.length;
     $: effectiveSeriesLabel = String(seriesLabel || '').trim();
     $: showShell = !flat && viewerMode && episodeCount > 0;
     $: showViewerFlat = viewerMode && flat && episodeCount > 0;
@@ -128,26 +143,24 @@
 {#if showViewerFlat}
     <!-- Single-season shelf: no empty accordion chrome -->
     <div class="season-shelf" role="list" aria-label="{seasonLabel} episodes">
-        {#each sortedEpisodes as episode (`${episode.episodeId}:${titleEpoch}`)}
-            {@const vault = resolveForChip(episode)}
-            {@const chip = episodeChipPresentation(episode, vault)}
+        {#each viewerRenderableRows as row (`${row.episode.episodeId}:${titleEpoch}`)}
             <div role="listitem">
                 <EpisodeChip
                     seasonNumber={season.seasonNumber}
-                    episodeNumber={episode.episodeNumber}
-                    title={episode.title}
-                    seriesLabel={/** @type {{ seriesLabel?: string }} */ (episode).seriesLabel ||
+                    episodeNumber={row.episode.episodeNumber}
+                    title={row.episode.title}
+                    seriesLabel={/** @type {{ seriesLabel?: string }} */ (row.episode).seriesLabel ||
                         effectiveSeriesLabel}
                     viewerMode={true}
-                    episodeId={episode.episodeId}
-                    status={episode.status}
-                    mediaAssetId={chip.mediaAssetId || episode.mediaAssetId || episode.reelId || null}
-                    thumbnailUrl={posterForChip(episode, chip)}
-                    mediaUrl={mediaUrlForChip(episode, chip)}
+                    episodeId={row.episode.episodeId}
+                    status={row.episode.status}
+                    mediaAssetId={row.chip.mediaAssetId || null}
+                    thumbnailUrl={row.posterUrl}
+                    mediaUrl={row.mediaUrl}
                     matchTier={null}
                     bindingLabel={''}
-                    playable={chip.playable || Boolean(episode.mediaAssetId || episode.reelId)}
-                    selected={isEpisodeSelected(episode)}
+                    playable={row.playable}
+                    selected={isEpisodeSelected(row.episode)}
                     on:select={handleEpisodeSelect}
                 />
             </div>
@@ -174,25 +187,23 @@
                 role="region"
                 aria-label="{seasonLabel} episodes"
             >
-                {#each sortedEpisodes as episode (`${episode.episodeId}:${titleEpoch}`)}
-                    {@const vault = resolveForChip(episode)}
-                    {@const chip = episodeChipPresentation(episode, vault)}
+                {#each viewerRenderableRows as row (`${row.episode.episodeId}:${titleEpoch}`)}
                     <EpisodeChip
                         seasonNumber={season.seasonNumber}
-                        episodeNumber={episode.episodeNumber}
-                        title={episode.title}
-                        seriesLabel={/** @type {{ seriesLabel?: string }} */ (episode).seriesLabel ||
+                        episodeNumber={row.episode.episodeNumber}
+                        title={row.episode.title}
+                        seriesLabel={/** @type {{ seriesLabel?: string }} */ (row.episode).seriesLabel ||
                             effectiveSeriesLabel}
                         viewerMode={true}
-                        episodeId={episode.episodeId}
-                        status={episode.status}
-                        mediaAssetId={chip.mediaAssetId || episode.mediaAssetId || episode.reelId || null}
-                        thumbnailUrl={posterForChip(episode, chip)}
-                        mediaUrl={mediaUrlForChip(episode, chip)}
+                        episodeId={row.episode.episodeId}
+                        status={row.episode.status}
+                        mediaAssetId={row.chip.mediaAssetId || null}
+                        thumbnailUrl={row.posterUrl}
+                        mediaUrl={row.mediaUrl}
                         matchTier={null}
                         bindingLabel={''}
-                        playable={chip.playable || Boolean(episode.mediaAssetId || episode.reelId)}
-                        selected={isEpisodeSelected(episode)}
+                        playable={row.playable}
+                        selected={isEpisodeSelected(row.episode)}
                         on:select={handleEpisodeSelect}
                     />
                 {/each}
