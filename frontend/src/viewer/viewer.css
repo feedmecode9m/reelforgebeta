@@ -1585,6 +1585,7 @@ margin: 0;
 }
 .video-vault-drop--upload {
   border-color: rgba(0, 242, 255, 0.35);
+  min-height: 220px;
 }
 .video-vault-drop--delete {
   border-style: dashed;

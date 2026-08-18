@@ -192,7 +192,7 @@
    */
   let vaultDropDebug = {
     kind: 'idle',
-    message: 'Drop status: waiting — drop an MP4/MOV on UPLOAD VIDEO',
+    message: 'Drop status: waiting — drop an MP4/MOV anywhere in Studio, then ACCEPT',
     at: 0
   };
 
@@ -211,6 +211,29 @@
     if (kind === 'missed' || kind === 'rejected' || kind === 'received') {
       uploadStatus.set(vaultDropDebug.message);
     }
+  }
+
+  /**
+   * Single comparison line for working vs large Downloads MP4s.
+   * Filter console for [VAULT_DROP_COMPARE].
+   */
+  function logVaultDropCompare(result, file = null, extra = {}) {
+    const fileSize = Number(file?.size ?? extra.fileSize ?? 0);
+    const maxBytes = Number(CONFIG?.MAX_VIDEO_SIZE || 0);
+    console.info('[VAULT_DROP_COMPARE]', {
+      result,
+      fileName: file?.name || extra.fileName || null,
+      fileSize,
+      fileType: file?.type || extra.fileType || null,
+      maxBytes,
+      overMax: maxBytes > 0 ? fileSize > maxBytes : null,
+      skipBlobPreview:
+        extra.skipBlobPreview != null
+          ? extra.skipBlobPreview
+          : fileSize > 24 * 1024 * 1024,
+      source: extra.source || 'drop',
+      ts: new Date().toISOString()
+    });
   }
   /** @type {((event: DragEvent) => void) | null} */
   let vaultDocDragOverHandler = null;
@@ -628,55 +651,37 @@
     vaultDocDragOverHandler = (event) => {
       const types = Array.from(event?.dataTransfer?.types || []);
       if (!types.includes('Files')) return;
-      const path = event.composedPath?.() || [];
-      const overUpload = path.some(
-        (n) =>
-          n?.classList?.contains?.('video-vault-drop') &&
-          !String(n?.getAttribute?.('aria-label') || '')
-            .toLowerCase()
-            .includes('delete')
-      );
-      const overDelete = path.some(
-        (n) => n?.getAttribute?.('aria-label') === 'Delete drop zone'
-      );
-      if (overUpload || overDelete) {
-        vaultNearMissHint = '';
-        return;
-      }
       event.preventDefault();
-      vaultNearMissHint = 'Drop on UPLOAD VIDEO zone — not here';
+      if (event.dataTransfer) event.dataTransfer.dropEffect = 'copy';
+      vaultNearMissHint = 'Release to stage MP4 in Video Vault';
+      if (vaultDropDebug.kind === 'idle' || vaultDropDebug.kind === 'missed') {
+        setVaultDropDebug('hovering', 'Drop status: release anywhere in Studio to stage the MP4');
+      }
       if (vaultNearMissClearTimer) clearTimeout(vaultNearMissClearTimer);
       vaultNearMissClearTimer = setTimeout(() => {
         vaultNearMissHint = '';
       }, 1200);
     };
     vaultDocDropHandler = (event) => {
+      const file = Array.from(event?.dataTransfer?.files || []).find((item) =>
+        isVaultVideoFileCandidate(item)
+      );
+      if (!file) return;
       const path = event.composedPath?.() || [];
-      const overVault = path.some(
+      const overDedicatedVideoDrop = path.some(
         (n) =>
-          n?.classList?.contains?.('video-vault-drop') ||
+          n?.classList?.contains?.('video-vault-drop--upload') ||
           n?.classList?.contains?.('personal-media-grid')
       );
-      if (overVault) return;
-      const files = Array.from(event?.dataTransfer?.files || []);
-      const looksVideo = files.some((f) => {
-        const name = String(f?.name || '').toLowerCase();
-        const type = String(f?.type || '').toLowerCase();
-        return type.startsWith('video/') || /\.(mp4|mov|webm|m4v)$/.test(name);
-      });
-      if (!looksVideo) return;
+      if (overDedicatedVideoDrop) return;
       event.preventDefault();
-      const missedName = files.find((f) => f?.name)?.name || 'video file';
-      vaultNearMissHint = 'Missed upload zone — drop on UPLOAD VIDEO (MP4/MOV)';
+      event.stopPropagation();
+      vaultNearMissHint = '';
       setVaultDropDebug(
-        'missed',
-        `Drop missed: ${missedName} landed outside UPLOAD VIDEO — drop on the cyan upload box`
+        'received',
+        `Drop received: ${file.name} (${formatVaultDropSize(file.size)}) — click ACCEPT to upload`
       );
-      if (vaultNearMissClearTimer) clearTimeout(vaultNearMissClearTimer);
-      vaultNearMissClearTimer = setTimeout(() => {
-        vaultNearMissHint = '';
-        uploadStatus.set('Standby');
-      }, 4000);
+      stagePendingVaultVideo(file, 'drop');
     };
     if (typeof document !== 'undefined') {
       document.addEventListener('dragover', vaultDocDragOverHandler, true);
@@ -1702,9 +1707,18 @@
       result: 'drop_received'
     });
 
+    const videoFile = Array.from(event.dataTransfer?.files || []).find((item) =>
+      isVaultVideoFileCandidate(item)
+    );
+    if (videoFile) {
+      await handleVaultVideoDrop(event);
+      return;
+    }
+
     const file = Array.from(event.dataTransfer?.files || []).find((f) => f.type.startsWith('image/'));
     if (!file) {
       pipelineDiag('DND', 'handleVaultThumbnailDrop', 'VaultExperience.svelte', { result: 'rejected_not_image' });
+      setVaultDropDebug('rejected', 'Drop rejected: not an image (thumbnail vault) or MP4 (video vault)');
       uploadStatus.set('⚠️ Please drop an image');
       resourceManager.setTimeout(() => uploadStatus.set('Standby'), 3000);
       return;
@@ -1762,7 +1776,7 @@
     if (related && event.currentTarget?.contains?.(related)) return;
     videoDragActive.set(false);
     if (vaultDropDebug.kind === 'hovering') {
-      setVaultDropDebug('idle', 'Drop status: waiting — drop an MP4/MOV on UPLOAD VIDEO');
+      setVaultDropDebug('idle', 'Drop status: waiting — drop an MP4/MOV anywhere in Studio, then ACCEPT');
     }
   }
 
@@ -1835,6 +1849,11 @@
     });
 
     if (!file) {
+      logVaultDropCompare('rejected_not_video', dropFiles[0] || null, {
+        fileName: dropFiles[0]?.name || null,
+        fileSize: dropFiles[0]?.size ?? 0,
+        fileType: dropFiles[0]?.type || null
+      });
       setVaultDropDebug(
         'rejected',
         dropFiles.length
@@ -1902,6 +1921,7 @@
   function stagePendingVaultVideo(file, source = 'drop') {
     if (!file) return;
     if (Number(file.size || 0) <= 0) {
+      logVaultDropCompare('rejected_empty', file, { source });
       console.info('[MP4_DROP_REJECTED]', {
         reason: 'zero_byte_file',
         fileName: file.name || null,
@@ -1915,6 +1935,7 @@
     }
     if (file.size > CONFIG.MAX_VIDEO_SIZE) {
       const maxMb = CONFIG.MAX_VIDEO_SIZE / 1024 / 1024;
+      logVaultDropCompare('rejected_too_large', file, { source });
       setVaultDropDebug(
         'rejected',
         `Drop rejected: ${file.name} is ${formatVaultDropSize(file.size)} — max ${maxMb}MB`
@@ -1978,6 +1999,7 @@
       return next;
     });
     pendingVaultVideo.set(pending);
+    logVaultDropCompare('staged', file, { source, skipBlobPreview });
     console.info('[MP4_PENDING_PREVIEW]', {
       source,
       fileName: pending.name,
