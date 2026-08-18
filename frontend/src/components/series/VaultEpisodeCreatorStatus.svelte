@@ -419,6 +419,9 @@
       });
     } else if (!siblings.length) {
       dispatch('confirmIdentity', {
+        seriesLabel,
+        seasonNumber: Number(draftSeason) > 0 ? Math.floor(Number(draftSeason)) : 1,
+        episodeNumber: Number(draftEpisode) > 0 ? Math.floor(Number(draftEpisode)) : 1,
         mediaAssetId: resolveMediaAssetId(asset) || model?.mediaAssetId || '',
         unlinkTheaterFamily: true
       });

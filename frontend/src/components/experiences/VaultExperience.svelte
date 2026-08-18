@@ -2246,7 +2246,19 @@
         const siblingIds = Array.isArray(detail?.siblingIds) ? detail.siblingIds : [];
         if (detail?.unlinkTheaterFamily === true) {
           const cleared = clearUnrelatedTheaterFamilySiblings(list, id);
-          const cross = assertNoCrossWrite(list, cleared.list, id, cleared.allowedIds);
+          let nextList = cleared.list;
+          let updatedPrimary = false;
+          const draftSeriesLabel = String(detail?.seriesLabel || '').trim();
+          if (draftSeriesLabel) {
+            const identity = applyIdentityToVaultListByMediaAssetId(nextList, id, {
+              seriesLabel: draftSeriesLabel,
+              seasonNumber: detail?.seasonNumber,
+              episodeNumber: detail?.episodeNumber
+            });
+            nextList = identity.list;
+            updatedPrimary = identity.mutated;
+          }
+          const cross = assertNoCrossWrite(list, nextList, id, cleared.allowedIds);
           if (!cross.ok) {
             console.error('[VAULT_CROSS_WRITE_BLOCKED]', {
               action: 'theater-family-unlink',
@@ -2255,13 +2267,13 @@
             });
             return list;
           }
-          if (!cleared.mutated) return list;
+          if (!cleared.mutated && !updatedPrimary) return list;
           try {
-            persistPersonalVault(cleared.list);
+            persistPersonalVault(nextList);
           } catch {
             /* ignore */
           }
-          return cleared.list;
+          return nextList;
         }
         if (siblingIds.length) {
           const linked = applyVaultTheaterFamilyLink(list, {
