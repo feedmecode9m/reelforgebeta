@@ -12,7 +12,7 @@ Single source of truth for implementation vs release state. Update when a milest
 
 | Area | Status |
 |------|--------|
-| **LOCAL-VIEWER-MAIN-POLISH-2** | ✅ **Implementation Complete** — homepage Notifications chrome unmounted; Studio PCC notifications kept; no deploy |
+| **LOCAL-VIEWER-MAIN-POLISH-2** | ✅ **Release Approved** — Netlify `6a84c0cf61f5c954c59bcc7c` / `index-B7HE1x7y.js`; Gates 1–7 PASS; homepage Notifications bell removed |
 | **LOCAL-VIEWER-MAIN-POLISH-1** | ✅ **Release Approved** — Netlify `6a84b5a3c066c3f40c67b66a` / `index-COVGWNdx.js`; Gates 1–7 PASS; homepage is Hero plus shelves (no Featured Collection / Viewer intelligence) |
 | **LOCAL-TRENDING-POSTER-PAINT-1** | ✅ **Implementation Complete** — after Processing badge, Trending uses `/thumbs/{id}.jpg` immediately (no random still); first 8 posters eager-load; thumb 404 retries; no deploy |
 | **VAULT-LARGE-MP4-2GIB-1** | ✅ **Release Approved** — Netlify `6a84895a035909f9643e510c` / `index-51czQBro.js`; Gates 1–7 PASS; vault client cap 2 GiB (replaces live 500 MiB UI) |
@@ -101,11 +101,12 @@ Single source of truth for implementation vs release state. Update when a milest
 ```
 LOCAL-VIEWER-MAIN-POLISH-2
 Implementation: COMPLETE
-Release: BLOCKED (not requested)
+Release: APPROVED
 Release Process: v1.0
+Manifest: release-manifest-local-viewer-main-polish-2-1787085225487.json
 ```
 
-Public homepage no longer mounts `NotificationBridge`. Studio Production Command Center notifications remain.
+Public homepage no longer mounts `NotificationBridge`. Live bundle `index-B7HE1x7y.js`. Studio Production Command Center notifications remain.
 
 ---
 
