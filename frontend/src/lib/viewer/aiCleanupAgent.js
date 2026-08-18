@@ -5,7 +5,7 @@ import { getAdminAuthHeaders, getAdminToken } from '../api.js';
 import { isInvalidSessionError } from '../adminSession.js';
 import { filenameFromMediaRef } from '../vaultMedia.js';
 import { toRelativeMediaPath } from '../config.js';
-import { durableImageVaultUrl } from './vaultUtils.js';
+import { durableImageVaultUrl, resolveDurableViewerPoster } from './vaultUtils.js';
 import { lookupPersistentTitleEntry, mediaRecordPlaybackKey } from '../content/persistentTitleMap.js';
 import {
   logDeletionPropagation,
@@ -408,9 +408,13 @@ export function createAiCleanupAgent(deps) {
     videoData?.playbackStatus || videoData?.playback_status || ''
   ).trim();
   const relativeUrl = toRelativeMediaPath(String(videoData.url || '')) || String(videoData.url || '');
-  const relativeThumb = videoData.thumbnail
-    ? toRelativeMediaPath(String(videoData.thumbnail)) || String(videoData.thumbnail)
-    : '';
+  const relativeThumb = (() => {
+    const durable = resolveDurableViewerPoster(videoData, videoData);
+    if (durable) return durable;
+    const raw = String(videoData.thumbnail || '').trim();
+    if (!raw || raw.startsWith('blob:') || raw.startsWith('data:')) return '';
+    return toRelativeMediaPath(raw) || raw;
+  })();
 
   let persistentEntry = null;
   try {

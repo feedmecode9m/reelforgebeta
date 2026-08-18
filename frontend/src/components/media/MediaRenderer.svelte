@@ -211,9 +211,23 @@
     }
 
     function applyImageFallback(node) {
+        let thumbRetries = 0;
+        /** @type {ReturnType<typeof setTimeout>[]} */
+        const retryTimers = [];
         const handler = () => {
-            if (!resolvedFallback) return;
             const currentSrc = node.getAttribute('src') || '';
+            const thumbPath = currentSrc.split('?')[0];
+            if (/\/thumbs\//i.test(thumbPath) && thumbRetries < 3) {
+                thumbRetries += 1;
+                const delay = 700 * thumbRetries;
+                retryTimers.push(
+                    setTimeout(() => {
+                        node.setAttribute('src', `${thumbPath}?v=${Date.now()}`);
+                    }, delay)
+                );
+                return;
+            }
+            if (!resolvedFallback) return;
             const absoluteCurrent = new URL(currentSrc, window.location.href).href;
             const absoluteFallback = new URL(resolvedFallback, window.location.href).href;
             if (absoluteCurrent !== absoluteFallback) {
@@ -228,6 +242,7 @@
         return {
             destroy() {
                 node.removeEventListener('error', handler);
+                retryTimers.forEach((id) => clearTimeout(id));
             }
         };
     }

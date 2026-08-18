@@ -2415,14 +2415,14 @@ $: heroBadgeLabel = sanitizeViewer || heroStoryPublished
           <p class="hero-creator-intent__text">{heroCreatorIntentText}</p>
         </div>
       {/if}
-      {#if heroIntelligenceLines?.length}
+      {#if !sanitizeViewer && heroIntelligenceLines?.length}
         <div class="hero-intelligence-context" data-intelligence-explanation>
           {#each heroIntelligenceLines as line (line)}
             <p class="hero-intelligence-context__line">{line}</p>
           {/each}
         </div>
       {/if}
-      {#if heroDiscoveryConnections?.length}
+      {#if !sanitizeViewer && heroDiscoveryConnections?.length}
         <div class="hero-discovery-connections" data-discovery-connections>
           {#each heroDiscoveryConnections as conn, i (conn.relationshipId || conn.label || i)}
             <p class="hero-discovery-connections__item" data-discovery-type={conn.type || ''}>
@@ -2434,7 +2434,7 @@ $: heroBadgeLabel = sanitizeViewer || heroStoryPublished
           {/each}
         </div>
       {/if}
-      {#if heroTrustSignals?.length}
+      {#if !sanitizeViewer && heroTrustSignals?.length}
         <div class="hero-viewer-trust" data-viewer-trust-signals>
           {#each heroTrustSignals as signal, i (signal.label + String(i))}
             <p class="hero-viewer-trust__item" data-trust-label={signal.label}>

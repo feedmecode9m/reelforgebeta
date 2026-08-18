@@ -1,7 +1,7 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
   import { get, writable } from 'svelte/store';
-  import { createVaultUtils } from '../../lib/viewer/vaultUtils.js';
+  import { createVaultUtils, durableImageVaultUrl } from '../../lib/viewer/vaultUtils.js';
   import { isImage, isVideo } from '../../lib/vaultMedia.js';
   import MediaRenderer from '../media/MediaRenderer.svelte';
   import MediaThumbnail from '../media/MediaThumbnail.svelte';
@@ -3069,6 +3069,13 @@
           addedAt: response.createdAt || response.created_at || new Date().toISOString()
         }
       );
+      if (!String(entry.thumbnailUrl || entry.posterUrl || entry.thumbnail || '').trim()) {
+        const durableStill = durableImageVaultUrl(entry, entry);
+        if (durableStill) {
+          entry.thumbnailUrl = durableStill;
+          entry.posterUrl = durableStill;
+        }
+      }
       if (isHeroAsset(entry)) {
         // Still show in MP4 vault — hero domain should not hide a successful content upload.
         console.warn('[BG7W_HERO_VAULT_GATE]', {
@@ -3153,15 +3160,20 @@
         ts: new Date().toISOString()
       });
       if (previewUrl && previewUrl.startsWith('blob:')) {
-        try {
-          URL.revokeObjectURL(previewUrl);
-        } catch {
-          /* ignore */
-        }
-        try {
-          resourceManager.revokeBlobUrl?.(previewUrl);
-        } catch {
-          /* ignore */
+        if (uploadPending) {
+          entry.localPreviewUrl = previewUrl;
+          entry.previewUrl = previewUrl;
+        } else {
+          try {
+            URL.revokeObjectURL(previewUrl);
+          } catch {
+            /* ignore */
+          }
+          try {
+            resourceManager.revokeBlobUrl?.(previewUrl);
+          } catch {
+            /* ignore */
+          }
         }
       }
       console.info('[STORE_UPDATE]', {
@@ -4169,6 +4181,7 @@
             })
           )}
           {@const microDrama = isMicroDramaContent(video) || isMicroDramaContent(reel)}
+          {@const isProcessingCard = video.uploadState === 'processing'}
           {@const isUploadingCard =
             video.uploadState === 'uploading' || String(video?.id || '').startsWith('local-upload-')}
           {@const isFailedCard =
@@ -4199,12 +4212,15 @@
             class:micro-drama={microDrama}
             class:ghost-outline={isGhostCard && !isFailedCard && !isPendingCard && !isUploadingCard}
             class:vault-card--uploading={isUploadingCard}
+            class:vault-card--processing={isProcessingCard}
             class:vault-card--failed={isFailedCard}
             class:vault-card--pending={isPendingCard}
             data-vault-card-state={isPendingCard
               ? 'pending_accept'
               : isUploadingCard
                 ? 'uploading'
+                : isProcessingCard
+                  ? 'processing'
                 : isFailedCard
                   ? 'failed'
                   : 'ready'}
@@ -4338,7 +4354,7 @@
                   url={cardFace.src}
                   alt={reel.name || reel.title || 'Video poster'}
                   raw={String(cardFace.src).startsWith('blob:') || String(cardFace.src).startsWith('data:')}
-                  lazyLoad={true}
+                  lazyLoad={false}
                   className="vault-grid-visual vault-grid-poster"
                 />
               {:else if vaultPreviewPlayUrl}

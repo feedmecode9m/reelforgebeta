@@ -33,7 +33,7 @@
   });
 </script>
 
-{#if presentation}
+{#if false}
   <section class="featured-collection-panel" data-featured-collection-panel>
     <header>
       <h3>Featured Collection</h3>

@@ -55,6 +55,34 @@ export function durableImageVaultUrl(entry, item) {
   return '';
 }
 
+/**
+ * Viewer/Trending poster URL. Prefer a real still, then `/thumbs/{id}.jpg`.
+ * Never invents remote stock art (that paints after the Processing badge).
+ * @param {Record<string, unknown> | null | undefined} entry
+ * @param {Record<string, unknown> | null | undefined} [item]
+ */
+export function resolveDurableViewerPoster(entry, item) {
+  const rows = [entry, item].filter((row) => row && typeof row === 'object');
+  for (const row of rows) {
+    const candidates = [
+      row.thumbnailUrl,
+      row.thumbnail_url,
+      row.posterUrl,
+      row.poster_url,
+      row.poster,
+      row.thumbnail
+    ];
+    for (const candidate of candidates) {
+      const src = String(candidate || '').trim();
+      if (!src) continue;
+      if (src.startsWith('blob:') || src.startsWith('data:')) continue;
+      if (isVaultVideoMediaUrl(src)) continue;
+      return src;
+    }
+  }
+  return durableImageVaultUrl(entry, item) || '';
+}
+
 export function createVaultUtils(deps) {
   const { CONFIG, personalThumbnailCollection, getFallbackImage } = deps;
 

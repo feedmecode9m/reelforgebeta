@@ -33,7 +33,16 @@ assert('presentation module exists', modSrc.includes('buildViewerIntelligencePre
 assert('three provenance blocks documented', modSrc.includes('creatorTruth') && modSrc.includes('intelligenceExplanation') && modSrc.includes('discoveryContext'));
 assert('identity protection present', modSrc.includes('PROTECTED_IDENTITY_PHRASES'));
 
+const viewerSrc = read('src/Viewer.svelte');
 const featuredSrc = read('src/components/discovery/FeaturedCollectionPanel.svelte');
+assert(
+    'viewer homepage does not mount Featured Collection panel',
+    !viewerSrc.includes('FeaturedCollectionPanel')
+);
+assert(
+    'Featured Collection panel is disabled (no public render)',
+    featuredSrc.includes('{#if false}')
+);
 assert('Featured Collection uses presentation layer', featuredSrc.includes('presentFeaturedCollection'));
 assert('Featured uses data-creator-title', featuredSrc.includes('data-creator-title'));
 assert('Featured separates data-intelligence-explanation', featuredSrc.includes('data-intelligence-explanation'));

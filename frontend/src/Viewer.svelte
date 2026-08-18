@@ -14,7 +14,6 @@ import TheaterExperienceBridge from './components/viewer/TheaterExperienceBridge
 import StudioLauncher from './components/viewer/StudioLauncher.svelte';
 import GlobalOperationStatus from './components/viewer/GlobalOperationStatus.svelte';
 import BackendHealthBanner from './components/viewer/BackendHealthBanner.svelte';
-import FeaturedCollectionPanel from './components/discovery/FeaturedCollectionPanel.svelte';
 import ConsumerChrome from './components/navigation/ConsumerChrome.svelte';
 
 const ctx = createViewerContext();
@@ -190,7 +189,6 @@ $: studioSeriesMetadataReelLabel = (() => {
     {viewerHydrationReady}
     sanitizeViewer={true}
   />
-  <FeaturedCollectionPanel />
   <NotificationBridge />
   <FeedExperienceBridge
     {loading}

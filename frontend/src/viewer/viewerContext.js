@@ -192,7 +192,7 @@ import {
 import { traceThumbStoreWrite } from '../lib/viewer/thumbStoreWriteTrace.js';
 import { createAiCleanupAgent } from '../lib/viewer/aiCleanupAgent.js';
 import { createUiAgent } from '../lib/viewer/uiAgent.js';
-import { createVaultUtils } from '../lib/viewer/vaultUtils.js';
+import { createVaultUtils, resolveDurableViewerPoster } from '../lib/viewer/vaultUtils.js';
 import {
   activeReel,
   theaterManager,
@@ -1056,7 +1056,14 @@ function initViewerAgents() {
 }
 
 initViewerAgents();
-const getImg = (reel, category, i) => UIAgent.getImg?.(reel, category, i) || getRandomThumb();
+const getImg = (reel, category, i) => {
+  const durable = resolveDurableViewerPoster(reel, reel);
+  if (durable) return durable;
+  if (reel?.isPlaceholder || reel?.isPresentationOnly || reel?.isGhost) {
+    return UIAgent.getImg?.(reel, category, i) || getRandomThumb();
+  }
+  return '';
+};
 // ==========================================
 // 🚀 FIXED DRAG & DROP HANDLERS
 // ==========================================

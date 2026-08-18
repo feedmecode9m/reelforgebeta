@@ -214,7 +214,7 @@ export function rewriteDevLoopbackAbsoluteToSameOrigin(url) {
     if (!import.meta.env.DEV) return url;
     const trimmed = String(url || '').trim();
     if (!/^https?:\/\//i.test(trimmed)) return trimmed;
-    if (typeof window === 'undefined' || isLoopbackHostname(window.location.hostname)) {
+    if (typeof window === 'undefined' || isLoopbackHostname(window.location?.hostname)) {
         return trimmed;
     }
     try {

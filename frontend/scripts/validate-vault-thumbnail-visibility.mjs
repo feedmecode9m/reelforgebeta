@@ -41,7 +41,7 @@ try {
     const { normalizeHeroAssetRecord } = await vite.ssrLoadModule(
         '/src/lib/hero/heroAssetBridge.js'
     );
-    const { createVaultUtils, durableImageVaultUrl } = await vite.ssrLoadModule(
+    const { createVaultUtils, durableImageVaultUrl, resolveDurableViewerPoster } = await vite.ssrLoadModule(
         '/src/lib/viewer/vaultUtils.js'
     );
     const { writable } = await vite.ssrLoadModule('svelte/store');
@@ -380,6 +380,29 @@ try {
             },
             null
         ) === '/thumbs/9d043773-3f19-4ee4-adbd-df3c2979dd64.jpg'
+    );
+    assert(
+        'processing video without still uses /thumbs/{id}.jpg instead of a random poster',
+        resolveDurableViewerPoster(
+            {
+                id: '85257521-0000-4000-8000-000000000001',
+                type: 'video',
+                url: '/videos/85257521-0000-4000-8000-000000000001.mp4',
+                uploadState: 'processing'
+            },
+            null
+        ) === '/thumbs/85257521-0000-4000-8000-000000000001.jpg'
+    );
+    assert(
+        'explicit poster wins over predicted /thumbs path',
+        resolveDurableViewerPoster(
+            {
+                id: '85257521-0000-4000-8000-000000000001',
+                thumbnailUrl: '/thumbs/linked-still.jpg',
+                url: '/videos/85257521-0000-4000-8000-000000000001.mp4'
+            },
+            null
+        ) === '/thumbs/linked-still.jpg'
     );
 
     assert(

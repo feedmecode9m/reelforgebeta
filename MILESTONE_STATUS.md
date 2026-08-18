@@ -12,6 +12,8 @@ Single source of truth for implementation vs release state. Update when a milest
 
 | Area | Status |
 |------|--------|
+| **LOCAL-VIEWER-MAIN-POLISH-1** | ✅ **Release in progress** — homepage drops Featured Collection / Viewer intelligence / Exploring Legacy Stories; viewer hero hides trust/intelligence chrome |
+| **LOCAL-TRENDING-POSTER-PAINT-1** | ✅ **Implementation Complete** — after Processing badge, Trending uses `/thumbs/{id}.jpg` immediately (no random still); first 8 posters eager-load; thumb 404 retries; no deploy |
 | **VAULT-LARGE-MP4-2GIB-1** | ✅ **Release Approved** — Netlify `6a84895a035909f9643e510c` / `index-51czQBro.js`; Gates 1–7 PASS; vault client cap 2 GiB (replaces live 500 MiB UI) |
 | **LOCAL-VIEWER-DISCOVERY-RAIL-2** | ✅ **Release Approved** — Netlify `6a834db39bd23fc893e624d9` / `index-0PRUZE5a.js`; Gates 1–7 PASS; Home / New Releases / Trending / Suspense |
 | **LOCAL-MOBILE-HERO-THEATER-SCALE-1** | ✅ **Implementation Complete** — mobile hero billboard ~86vh (was 56vh/420px); Theater full-bleed cover like Netflix; no playback change; no deploy |
