@@ -389,6 +389,7 @@ fn is_public_mutating_route(method: &Method, path: &str) -> bool {
             | "/api/analytics"
             | "/api/security/events"
             | "/api/dev/client-log"
+            | "/api/debug/mobile-trace"
     )
 }
 
@@ -608,6 +609,10 @@ mod tests {
             "/api/watch/event"
         ));
         assert!(!mutating_route_requires_admin(&Method::POST, "/api/analytics"));
+        assert!(!mutating_route_requires_admin(
+            &Method::POST,
+            "/api/debug/mobile-trace"
+        ));
         assert_eq!(
             mutating_route_required_role(&Method::POST, "/api/auth/login"),
             None

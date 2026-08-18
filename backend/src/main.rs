@@ -36,6 +36,7 @@ pub mod workflow_api;
 pub mod utils;
 pub mod video_stream;
 pub mod video_pipeline_trace;
+pub mod debug_mobile_trace;
 
 use crate::events::ReelEvent;
 use crate::no_compress::NoCompress;
@@ -61,6 +62,37 @@ fn is_production_env() -> bool {
 
 fn is_deployed_host() -> bool {
     is_production_env()
+}
+
+/// Private IPv4 used when phones hit `npm run dev` on the LAN (non-production only).
+fn is_private_ipv4_host(host: &str) -> bool {
+    let mut parts = host.split('.');
+    let a = parts.next().and_then(|p| p.parse::<u8>().ok());
+    let b = parts.next().and_then(|p| p.parse::<u8>().ok());
+    let c = parts.next().and_then(|p| p.parse::<u8>().ok());
+    let d = parts.next().and_then(|p| p.parse::<u8>().ok());
+    if parts.next().is_some() {
+        return false;
+    }
+    match (a, b, c, d) {
+        (Some(10), Some(_), Some(_), Some(_)) => true,
+        (Some(192), Some(168), Some(_), Some(_)) => true,
+        (Some(172), Some(n), Some(_), Some(_)) if (16..=31).contains(&n) => true,
+        _ => false,
+    }
+}
+
+fn is_local_dev_browser_origin(origin: &str) -> bool {
+    let o = origin.trim();
+    if o.starts_with("http://localhost:") || o.starts_with("http://127.0.0.1:") {
+        return true;
+    }
+    let Some(rest) = o.strip_prefix("http://") else {
+        return false;
+    };
+    let hostport = rest.split('/').next().unwrap_or("");
+    let host = hostport.rsplit_once(':').map(|(h, _)| h).unwrap_or(hostport);
+    is_private_ipv4_host(host)
 }
 
 fn configure_cors() -> Cors {
@@ -98,8 +130,10 @@ fn configure_cors() -> Cors {
             .allowed_origin("http://localhost:5173")
             .allowed_origin("http://127.0.0.1:5173")
             .allowed_origin_fn(|origin, _req_head| {
-                origin.as_bytes().starts_with(b"http://localhost:")
-                    || origin.as_bytes().starts_with(b"http://127.0.0.1:")
+                origin
+                    .to_str()
+                    .map(is_local_dev_browser_origin)
+                    .unwrap_or(false)
             });
     } else {
         for origin in &origins {
@@ -265,6 +299,10 @@ async fn main() -> std::io::Result<()> {
 
     let videos_path_data = web::Data::new(crate::video_stream::VideosDir(videos_path.clone()));
     let thumbs_path_data = web::Data::new(crate::video_stream::ThumbsDir(thumbs_path.clone()));
+    let mobile_trace_buffer = web::Data::new(crate::debug_mobile_trace::MobileTraceBuffer::new());
+    if crate::debug_mobile_trace::is_local_debug_sink_enabled() {
+        println!("[MOBILE_PLAY_TRACE_REMOTE] sink enabled GET/POST /api/debug/mobile-trace (in-memory, max 50)");
+    }
 
     if db_available {
         let worker_videos = videos_path.clone();
@@ -311,6 +349,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(videos_path_data.clone())
             .app_data(thumbs_path_data.clone())
             .app_data(health_state_data.clone())
+            .app_data(mobile_trace_buffer.clone())
             .route("/health", web::get().to(handlers::health_check))
             .route("/api/health", web::get().to(handlers::health_check))
             .route("/api/status", web::get().to(handlers::health_check))
@@ -710,6 +749,11 @@ async fn main() -> std::io::Result<()> {
                     .route(
                         "/dev/client-log",
                         web::post().to(handlers::ingest_client_log),
+                    )
+                    .service(
+                        web::resource("/debug/mobile-trace")
+                            .route(web::post().to(crate::debug_mobile_trace::post_mobile_trace))
+                            .route(web::get().to(crate::debug_mobile_trace::get_mobile_trace)),
                     )
                     .route("/health", web::get().to(handlers::health_check))
                     .service(

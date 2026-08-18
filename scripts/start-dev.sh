@@ -172,6 +172,14 @@ dev_stack_healthy() {
 print_ready_message() {
   log_info "🎉 Development environment ready!"
   log_info "   → http://127.0.0.1:$FRONTEND_PORT"
+  local lan_ip=""
+  lan_ip="$(hostname -I 2>/dev/null | awk '{print $1}')"
+  if [[ -z "$lan_ip" ]] && command -v ip >/dev/null 2>&1; then
+    lan_ip="$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{for (i=1;i<=NF;i++) if ($i=="src") {print $(i+1); exit}}')"
+  fi
+  if [[ -n "$lan_ip" && "$lan_ip" != "127.0.0.1" ]]; then
+    log_info "   → http://${lan_ip}:$FRONTEND_PORT  (phones on the same Wi-Fi)"
+  fi
   log_info "   Backend health: http://127.0.0.1:$BACKEND_PORT/health"
 }
 
@@ -500,7 +508,7 @@ ensure_port_free "$FRONTEND_PORT" "frontend" || exit 1
 log_info "🔧 Starting frontend on :$FRONTEND_PORT..."
 set +e
 run_as_dev_user "printf '\n[start-dev] %s launching frontend on :%s\n' \"\$(date -Is)\" \"$FRONTEND_PORT\" >> \"$FRONTEND_LOG_FILE\""
-run_as_dev_user_bg "cd \"$FRONTEND_DIR\" && npm run dev -- --port \"$FRONTEND_PORT\" --strictPort --host 127.0.0.1 >> \"$FRONTEND_LOG_FILE\" 2>&1"
+run_as_dev_user_bg "cd \"$FRONTEND_DIR\" && npm run dev -- --port \"$FRONTEND_PORT\" --strictPort --host 0.0.0.0 >> \"$FRONTEND_LOG_FILE\" 2>&1"
 FRONTEND_PID=$!
 wait "$FRONTEND_PID"
 FRONTEND_EXIT_CODE=$?
