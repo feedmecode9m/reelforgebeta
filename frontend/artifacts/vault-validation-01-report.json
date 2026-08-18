@@ -1,0 +1,72 @@
+{
+  "mission": "VAULT-VALIDATION-01",
+  "ts": "2026-07-23T16:23:26.991Z",
+  "prod": "https://reelforge-deploy-production.up.railway.app",
+  "cases": [
+    {
+      "name": "thumbnail:fresh_upload",
+      "pass": true,
+      "ms": 1382,
+      "upload": {
+        "status": 202,
+        "id": "271b0c2a-873a-460e-961d-be8679dcf052",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/271b0c2a-873a-460e-961d-be8679dcf052.png"
+      },
+      "identityOk": true,
+      "refreshOk": true,
+      "urlHead": {
+        "ok": true,
+        "status": 200
+      },
+      "deleteOk": true,
+      "postDeleteGone": true
+    },
+    {
+      "name": "thumbnail:duplicate_filename",
+      "pass": true,
+      "ms": 842,
+      "note": "backend_created_distinct_ids",
+      "id1": "3ced1225-2b2d-4dde-8246-aa7876e32f30",
+      "id2": "a31dbdf8-357c-4574-8b58-9f11db88e517",
+      "distinctIds": true
+    },
+    {
+      "name": "video:fresh_upload_r2",
+      "pass": false,
+      "ms": 328,
+      "isR2Public": false,
+      "urlHead": {
+        "ok": false,
+        "status": 0
+      },
+      "refreshOk": false,
+      "deleteOk": false,
+      "postDeleteGone": false
+    },
+    {
+      "name": "video:duplicate_filename",
+      "pass": false,
+      "ms": 304,
+      "note": "ids_not_distinct",
+      "distinctIds": false
+    },
+    {
+      "name": "hero:fresh_upload",
+      "pass": false,
+      "ms": 339,
+      "refreshOk": false,
+      "deleteOk": false
+    }
+  ],
+  "historicalChecks": {
+    "filename_as_identity": false,
+    "r2_urls_in_catalog": false,
+    "delete_removes_db_row": false,
+    "refresh_survives": false
+  },
+  "summary": {
+    "pass": 2,
+    "fail": 3,
+    "total": 5
+  }
+}

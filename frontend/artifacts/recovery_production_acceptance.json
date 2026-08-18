@@ -1,0 +1,161 @@
+{
+  "mission": "RECOVERY_RELEASE_PRODUCTION_ACCEPTANCE",
+  "generatedAt": "2026-08-12T20:20:11.099Z",
+  "frontend": "https://strong-lolly-a9fcb4.netlify.app",
+  "backend": "https://reelforge-deploy-production.up.railway.app",
+  "commit": "117ca4849cb7866f89c1c23e28272c45d9dab6fd",
+  "backendDeployId": "8ee10157-f7f6-453f-ab47-700d1a333de9",
+  "frontendDeployId": "6a7cd28c3cd1b61dc46e9e4f",
+  "gates": {
+    "A_catalog": {
+      "count": 26,
+      "six": [
+        {
+          "id": "03ef898a-989f-42c3-bdbb-67f37338df65",
+          "type": "video",
+          "category": "Trending",
+          "name": "01 ARRIVAL OPEN v1"
+        },
+        {
+          "id": "201ec6ee-6822-4bda-9295-080beb6f4e35",
+          "type": "video",
+          "category": "Trending",
+          "name": "07 AMP JAM V1"
+        },
+        {
+          "id": "615e0eae-47b4-468a-b6dd-a6846b464846",
+          "type": "video",
+          "category": "Trending",
+          "name": "MICROS STIRRED V1"
+        },
+        {
+          "id": "9a1251a2-d6a6-42e5-9fcd-4eca17dcd6ef",
+          "type": "video",
+          "category": "Trending",
+          "name": "MICROS Motherland V1(1)"
+        },
+        {
+          "id": "d2aafde7-d7ba-492c-a860-20b51f7f4033",
+          "type": "video",
+          "category": "Trending",
+          "name": "03 CLUB POOM POOM V1"
+        },
+        {
+          "id": "3894107e-ae44-43c5-af72-b3f5d5e0ad90",
+          "type": "video",
+          "category": "Trending",
+          "name": "condo v1 2"
+        }
+      ],
+      "categoryHistogram": {
+        "Trending": 25,
+        "HERO": 1
+      },
+      "mp4AsImage": 0,
+      "pass": true
+    },
+    "B_shelves": {
+      "dramaGuard": {
+        "romanceCount": 0,
+        "romanceIds": [],
+        "stirredInRomance": false,
+        "motherlandInRomance": false,
+        "trending": 7,
+        "cyber": 0,
+        "suspense": 0,
+        "keys": [
+          "Trending",
+          "Romance",
+          "Cyber-Action",
+          "Suspense"
+        ]
+      },
+      "pass": true
+    },
+    "C_zeroByte": {
+      "pendingAfterZero": 0,
+      "pass": true
+    },
+    "C_vault": {
+      "pendingVisible": true,
+      "readyCopy": 3,
+      "acceptVisible": true,
+      "zones": {
+        "upload": true,
+        "delete": true
+      },
+      "canonicalId": "67bc8621-230e-4117-b3ec-20a695dddfc6",
+      "typeAfter": "video",
+      "reelPostsDelta": 1,
+      "pass": true
+    },
+    "C_largePending": {
+      "largePending": 4,
+      "pass": true
+    },
+    "E_reload": {
+      "id": "67bc8621-230e-4117-b3ec-20a695dddfc6",
+      "row": {
+        "id": "67bc8621-230e-4117-b3ec-20a695dddfc6",
+        "type": "video",
+        "category": "Trending",
+        "name": "67bc8621-230e-4117-b3ec-20a695dddfc6"
+      },
+      "pass": true
+    },
+    "D_pipeline": {
+      "canonicalId": "67bc8621-230e-4117-b3ec-20a695dddfc6",
+      "type": "video",
+      "pass": true
+    },
+    "G_playback": {
+      "healed": {
+        "ok": true,
+        "duration": 113.446667,
+        "w": 1080
+      },
+      "pass": true
+    },
+    "F_commandCenter": {
+      "method": "phase26_2_unauth_20s_window",
+      "unauth20s": {
+        "workflowPosts": 0,
+        "workflow401": 0,
+        "notifGets": 2,
+        "statuses": [],
+        "statusesSample": []
+      },
+      "threat": null,
+      "authenticatedNote": "Authenticated studio sync may POST many workflow tasks successfully; containment target is unauthorized 401 storm = 0",
+      "pass": true
+    },
+    "bundle": {
+      "name": "index-Cgpghqeg.js",
+      "sha256": "145c35997d70b1adfb878499e97b1272c0926635e4a644f73a3555237ae9edf7",
+      "markers": {
+        "readyCopy": true,
+        "zeroByte": true,
+        "vaultDrop": true,
+        "circuit": true
+      }
+    }
+  },
+  "verdicts": {
+    "CATALOG": "PASS",
+    "MP4_MEDIA_TYPE": "PASS",
+    "CATALOG_DISTRIBUTION": "PASS",
+    "VAULT_DROP_ACCEPT_UPLOAD": "PASS",
+    "FEED_DISTRIBUTION": "PASS",
+    "RELOAD_EQUIVALENCE": "PASS",
+    "PLAYBACK": "PASS",
+    "COMMAND_CENTER_STABILITY": "PASS",
+    "PHASE_17_26_2_REGRESSION": "PASS",
+    "RECOVERY_RELEASE": "PASS"
+  },
+  "network": {
+    "workflowPosts": 5463,
+    "notificationGets": 20,
+    "reelPosts": 1,
+    "workflowAuthFailures": 0
+  }
+}

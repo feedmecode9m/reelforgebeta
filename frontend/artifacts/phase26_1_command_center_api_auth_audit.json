@@ -1,0 +1,136 @@
+{
+  "mission": "PHASE-26.1 Production Command-Center API Retry / Auth Audit",
+  "generatedAt": "2026-08-12T19:05:00.000Z",
+  "mode": "AUDIT_ONLY",
+  "codeChanges": "none",
+  "commitPushDeploy": "none",
+  "head": "c532201572b0ba202eb3df7fb758bb884496efea",
+  "productionBundle": {
+    "htmlScript": "index-Cu_7jFHY.js",
+    "note": "Live Netlify still serves Phase 22 bundle index-Cu_7jFHY.js — NOT Phase 25 (c532201). User claim that production includes Phase 25 is contradicted by live HTML.",
+    "phase22Commit": "8804ffc",
+    "workflowStormCodePresentInProdBundle": true,
+    "prodMarkers": {
+      "WORKFLOW_DB_WRITE": true,
+      "hydrateNotifications": true,
+      "workflow-tasks-updated": true,
+      "createWorkflowTask_POST_no_Authorization": true,
+      "THREAT_EVENT": true,
+      "/api/security/events": true
+    }
+  },
+  "liveApiProbes": {
+    "GET /api/workflow/status (no auth)": "200 enabled:true count:13",
+    "GET /api/workflow/tasks (no auth)": "200",
+    "POST /api/workflow/tasks (no auth)": "401 missing_authorization",
+    "GET /api/notifications?userId=user-owner-1": "200",
+    "GET /api/notifications/status": "200 count:716",
+    "POST /api/security/events (no auth)": "201 (public mutating route)"
+  },
+  "classification": ["B", "C", "D", "G", "H"],
+  "classificationDetail": {
+    "A_expected_unauth_fallback": "PARTIAL — local fallback is intentional AFTER write failure, but client keeps retrying protected mutations",
+    "B_retry_polling_loop": "YES — Command Center 5s refresh + reactive feed + persist→push retries",
+    "C_command_center_init_loop": "YES — buildCommandCenterSnapshot/buildPlatformOperationsBrief → syncWorkflowTasks → persist → push",
+    "D_notification_polling_loop": "YES — event-driven hydrate on every workflow-tasks-updated (not a fixed interval poller)",
+    "E_workflow_task_creation_loop": "YES — pushStoreToApi POSTs tasks whenever local store changes",
+    "F_threat_feedback_loop": "AMPLIFIER — observes failures and POSTs security events; does not initiate workflow writes",
+    "G_missing_auth_contract": "YES — writes require Admin Bearer; frontend workflowFetch sends no Authorization",
+    "H_interacting_problems": "YES — auth gap + availability mis-signal + refresh cadence + notification hydrate coupling + threat scoring"
+  },
+  "rootCause": {
+    "initiatingFunction": "persistWorkflowTaskStore → pushStoreToApi (frontend/src/lib/workflow/workflowEngine.js)",
+    "initiatingTrigger": "syncWorkflowTasks via buildCommandCenterSnapshot / StudioWorkspaceLayout + ProductionCommandCenter 5s refresh and reactive $: feedReels",
+    "mechanism": [
+      "isWorkflowApiAvailable() uses GET /api/workflow/status which is public → returns true",
+      "pushStoreToApi then POSTs /api/workflow/tasks without Authorization",
+      "backend auth middleware requires Admin for mutating /api/* (except public list including /api/security/events)",
+      "401 missing_authorization → WORKFLOW_DB_WRITE source=fallback",
+      "NO session-level circuit breaker — next local persist retries the write path",
+      "persist dispatches reelforge:workflow-tasks-updated → hydrateNotifications → GET /api/notifications?userId=user-owner-1",
+      "threat fetch wrapper counts failures/mutations → THREAT_EVENT failure_burst/mutation_burst → POST /api/security/events"
+    ]
+  },
+  "callGraph": {
+    "workflowTasksPOST": [
+      "StudioWorkspaceLayout.refreshSnapshot / ProductionCommandCenter.refreshBrief",
+      "→ commandCenter.buildCommandCenterSnapshot / buildPlatformOperationsBrief",
+      "→ syncWorkflowTasks",
+      "→ persistWorkflowTaskStore",
+      "→ pushStoreToApi",
+      "→ isWorkflowApiAvailable → GET /api/workflow/status",
+      "→ createWorkflowTask → workflowFetch POST /api/workflow/tasks (no auth header)",
+      "→ 401 → catch logWorkflowDbWrite(fallback, missing_authorization)"
+    ],
+    "workflowStatusGET": [
+      "isWorkflowApiAvailable / fetchWorkflowApiStatus",
+      "also hydrateWorkflowTasksFromApi on initWorkflowEngine"
+    ],
+    "notificationsGET": [
+      "initNotificationCenter listener: reelforge:workflow-tasks-updated → hydrateNotifications",
+      "also teams-updated / release-updated / initial hydrate / NotificationCenter.svelte",
+      "userId defaults via getCurrentTeamUserId() → user-owner-1"
+    ],
+    "securityEventsPOST": [
+      "threatDetectionEngine.recordThreatEvent → postSecurityEvent",
+      "triggered when trackSignal counts exceed yellow thresholds (apiFailures yellow=3, api mutations yellow=12, workflow yellow=4)",
+      "15s cooldown per category:type; security API excluded from failure tracking"
+    ]
+  },
+  "authContract": {
+    "backend": "mutating /api/* requires Admin Bearer unless public (security/events is public)",
+    "frontendWorkflow": "workflowFetch only sets Content-Type; does not call getAdminAuthorizationHeader()",
+    "401meaning": "genuine auth requirement incorrectly handled by treating read-availability as write-availability and retrying forever on each persist",
+    "expectedFallback": "localStorage workflow store is fine; repeated unauthorized POSTs are NOT expected"
+  },
+  "notificationFrequency": {
+    "intended": "hydrate on init + relevant domain events; evaluateNotificationTriggers on workspace refresh (local trigger logic, not necessarily remote list)",
+    "actual": "hydrateNotifications on every workflow-tasks-updated; Command Center refresh can cause store persists that fire that event",
+    "how1019": "≈1 GET /api/notifications?userId=user-owner-1 per hydrate; at ~1/s ≈17 min, at ~2/s ≈8.5 min, at ~5/s ≈3.4 min of Studio-open storm; 5s timer alone cannot produce 1019",
+    "defaultUserId": "user-owner-1"
+  },
+  "threatFeedback": {
+    "initiatesWorkflowWrites": false,
+    "amplifiesApiNoise": true,
+    "amplifiesScore": true,
+    "uploadCategoryCountZero": "confirms storm is not upload/vault PUT burst",
+    "canTriggerCommandCenterRefresh": "indirectly via discovery/security UI listeners; primary Command Center loop is independent 5s + workflow-tasks-updated"
+  },
+  "studioVaultImpact": {
+    "canDegradeResponsiveness": true,
+    "how": "main-thread event churn + competing network (status/tasks/notifications/security) while Studio open",
+    "mp4DnD": "UNRELATED as root cause; Phase 26 probe still got ACCEPT UI during production session"
+  },
+  "mediaVaultRelation": "unrelated",
+  "minimalSurgicalFix": [
+    {
+      "file": "frontend/src/lib/api/workflowApi.js",
+      "change": "Attach getAdminAuthorizationHeader()/getAdminAuthHeaders() on POST/PUT/DELETE; map 401 to typed auth error"
+    },
+    {
+      "file": "frontend/src/lib/workflow/workflowEngine.js",
+      "function": "pushStoreToApi / isWorkflowApiAvailable usage",
+      "change": "On missing_authorization, set writeDisabledForSession=true and stop further POSTs; do not treat GET status success as write permission"
+    },
+    {
+      "file": "frontend/src/lib/notifications/notificationCenter.js",
+      "function": "initNotificationCenter",
+      "change": "Debounce hydrateNotifications; remove or heavily throttle hydrate-on-every-workflow-tasks-updated"
+    },
+    {
+      "file": "frontend/src/components/studio/StudioWorkspaceLayout.svelte + ProductionCommandCenter.svelte",
+      "change": "Debounce refreshSnapshot/refreshBrief; avoid dual 5s refreshers both syncing workflow on same events"
+    }
+  ],
+  "validation": {
+    "npm_run_build": "PASS",
+    "git_diff_check": "PASS",
+    "validate_creator_metadata_readiness": "PASS",
+    "validate_title_map_merge": "PASS"
+  },
+  "finalVerdict": "BLOCKER_FOR_COMMAND_CENTER_AUTH_RETRY",
+  "phase27MediaVault": "MAY_PROCEED for vault-specific work (DnD/upload path not caused by this storm)",
+  "mustFixBeforePhase27": false,
+  "recommendedNextPhase": "PHASE-26.2 surgical Command Center auth+retry containment (workflow Authorization + write circuit breaker + notification hydrate debounce)",
+  "severity": "HIGH"
+}

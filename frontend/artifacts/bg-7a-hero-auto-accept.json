@@ -1,0 +1,112 @@
+{
+  "generatedAt": "2026-07-18T19:30:26.567Z",
+  "frontend": "https://strong-lolly-a9fcb4.netlify.app",
+  "mission": "BG-7A",
+  "steps": [
+    {
+      "name": "studio_unlocked",
+      "ok": true,
+      "ts": "2026-07-18T19:30:46.257Z"
+    },
+    {
+      "name": "upload_starts_after_drop",
+      "ok": true,
+      "postCount": 1,
+      "uxPhase": "processing",
+      "ts": "2026-07-18T19:30:46.525Z"
+    },
+    {
+      "name": "post_api_reels_after_drop",
+      "ok": true,
+      "postCount": 1,
+      "ts": "2026-07-18T19:30:51.551Z"
+    },
+    {
+      "name": "canonical_reel_saved",
+      "ok": true,
+      "reelId": "9f6ea9c9-2cf3-4a0a-8c29-dcee40e243dd",
+      "ts": "2026-07-18T19:30:51.551Z"
+    },
+    {
+      "name": "manager_custom_video",
+      "ok": true,
+      "config": {
+        "backgroundSource": "custom_video",
+        "heroAssetId": "9f6ea9c9-2cf3-4a0a-8c29-dcee40e243dd"
+      },
+      "ts": "2026-07-18T19:30:51.551Z"
+    },
+    {
+      "name": "hero_asset_id_matches_reel",
+      "ok": true,
+      "heroAssetId": "9f6ea9c9-2cf3-4a0a-8c29-dcee40e243dd",
+      "reelId": "9f6ea9c9-2cf3-4a0a-8c29-dcee40e243dd",
+      "ts": "2026-07-18T19:30:51.551Z"
+    },
+    {
+      "name": "stage_video_updated",
+      "ok": true,
+      "stageVideoSrc": "https://strong-lolly-a9fcb4.netlify.app/videos/9f6ea9c9-2cf3-4a0a-8c29-dcee40e243dd.mp4",
+      "ts": "2026-07-18T19:30:51.553Z"
+    },
+    {
+      "name": "persistence_after_reload",
+      "ok": true,
+      "reelIdBefore": "9f6ea9c9-2cf3-4a0a-8c29-dcee40e243dd",
+      "reelIdAfter": "9f6ea9c9-2cf3-4a0a-8c29-dcee40e243dd",
+      "ts": "2026-07-18T19:31:02.695Z"
+    }
+  ],
+  "network": [
+    {
+      "phase": "request",
+      "method": "POST",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels"
+    },
+    {
+      "phase": "response",
+      "status": 202,
+      "id": "9f6ea9c9-2cf3-4a0a-8c29-dcee40e243dd",
+      "url": null
+    }
+  ],
+  "pass": true,
+  "afterUpload": {
+    "localStorage": {
+      "reelforge_hero_reel": {
+        "id": "9f6ea9c9-2cf3-4a0a-8c29-dcee40e243dd",
+        "fileName": "9f6ea9c9-2cf3-4a0a-8c29-dcee40e243dd.mp4",
+        "name": "Bg 7a Hero 1784403046258",
+        "url": "/videos/9f6ea9c9-2cf3-4a0a-8c29-dcee40e243dd.mp4",
+        "thumbnail": "/thumbs/9f6ea9c9-2cf3-4a0a-8c29-dcee40e243dd.jpg",
+        "type": "video",
+        "backgroundSource": "custom_video"
+      },
+      "reelforge_hero_manager_config": {
+        "backgroundSource": "custom_video",
+        "heroAssetId": "9f6ea9c9-2cf3-4a0a-8c29-dcee40e243dd"
+      }
+    },
+    "stageVideo": {
+      "src": "https://strong-lolly-a9fcb4.netlify.app/videos/9f6ea9c9-2cf3-4a0a-8c29-dcee40e243dd.mp4",
+      "readyState": 4
+    }
+  },
+  "afterReload": {
+    "localStorage": {
+      "reelforge_hero_reel": {
+        "id": "9f6ea9c9-2cf3-4a0a-8c29-dcee40e243dd",
+        "fileName": "9f6ea9c9-2cf3-4a0a-8c29-dcee40e243dd.mp4",
+        "name": "Bg 7a Hero 1784403046258",
+        "url": "/videos/9f6ea9c9-2cf3-4a0a-8c29-dcee40e243dd.mp4",
+        "thumbnail": "/thumbs/9f6ea9c9-2cf3-4a0a-8c29-dcee40e243dd.jpg",
+        "type": "video",
+        "backgroundSource": "custom_video"
+      },
+      "reelforge_hero_manager_config": {
+        "backgroundSource": "custom_video",
+        "heroAssetId": "9f6ea9c9-2cf3-4a0a-8c29-dcee40e243dd"
+      }
+    }
+  }
+}

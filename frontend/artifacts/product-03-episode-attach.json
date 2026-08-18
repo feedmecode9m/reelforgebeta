@@ -1,0 +1,72 @@
+{
+  "generatedAt": "2026-07-16T18:32:10.408Z",
+  "frontend": "http://127.0.0.1:4173",
+  "mission": "PRODUCT-03",
+  "targetEpisodeId": "ep-neon-s01e04",
+  "steps": [
+    {
+      "name": "studio_unlocked",
+      "ok": true,
+      "ts": "2026-07-16T18:32:13.112Z"
+    },
+    {
+      "name": "production_panel_visible",
+      "ok": true,
+      "ts": "2026-07-16T18:32:18.509Z"
+    },
+    {
+      "name": "vault_reels_available",
+      "ok": true,
+      "vaultCount": 5,
+      "reelId": "6e420f7b-3ee4-42a4-8989-eecfcc2de1a2",
+      "ts": "2026-07-16T18:32:18.633Z"
+    },
+    {
+      "name": "episode_dropdown_populated",
+      "ok": true,
+      "episodeOptions": 14,
+      "ts": "2026-07-16T18:32:18.937Z"
+    },
+    {
+      "name": "attach_success_ui",
+      "ok": true,
+      "successVisible": true,
+      "ts": "2026-07-16T18:32:25.565Z"
+    },
+    {
+      "name": "episode_metadata_updated",
+      "ok": true,
+      "reelId": "6e420f7b-3ee4-42a4-8989-eecfcc2de1a2",
+      "attachedReelId": "6e420f7b-3ee4-42a4-8989-eecfcc2de1a2",
+      "ts": "2026-07-16T18:32:25.565Z"
+    },
+    {
+      "name": "persistence_after_reload",
+      "ok": true,
+      "reelIdBefore": "6e420f7b-3ee4-42a4-8989-eecfcc2de1a2",
+      "reelIdAfter": "6e420f7b-3ee4-42a4-8989-eecfcc2de1a2",
+      "ts": "2026-07-16T18:32:33.593Z"
+    }
+  ],
+  "pass": true,
+  "afterReload": {
+    "reelId": "6e420f7b-3ee4-42a4-8989-eecfcc2de1a2",
+    "metaEntry": {
+      "description": "Finale — one exploit left to expose the truth.",
+      "episodeId": "ep-neon-s01e04",
+      "episodeNumber": 4,
+      "episodeStatus": "draft",
+      "episodeTitle": "Zero Day",
+      "genre": "Cyber-Action",
+      "reelId": "6e420f7b-3ee4-42a4-8989-eecfcc2de1a2",
+      "releaseYear": 2024,
+      "runtime": 340,
+      "seasonNumber": 1,
+      "seriesId": "series-neon-vengeance",
+      "seriesName": "Neon Vengeance",
+      "tags": [],
+      "updatedAt": 1784226751670
+    },
+    "heroReelId": null
+  }
+}

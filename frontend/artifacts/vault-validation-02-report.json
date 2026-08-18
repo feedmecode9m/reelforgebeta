@@ -1,0 +1,1553 @@
+{
+  "mission": "VAULT-VALIDATION-02",
+  "timestamp": "2026-07-25T02:21:33.043Z",
+  "environment": {
+    "frontend": "https://strong-lolly-a9fcb4.netlify.app/",
+    "backend": "https://reelforge-deploy-production.up.railway.app",
+    "railwayDeploy": "9aa4473e-f684-4ffe-9f88-e417ba0ea917"
+  },
+  "testIdentity": {
+    "dir": "/tmp/vault-val02-20260725T022132Z",
+    "ts": "20260725T022132Z",
+    "thumb": "/tmp/vault-val02-20260725T022132Z/VAULT_TEST_THUMB_20260725T022132Z.jpg",
+    "video": "/tmp/vault-val02-20260725T022132Z/VAULT_TEST_VIDEO_20260725T022132Z.mp4",
+    "hero": "/tmp/vault-val02-20260725T022132Z/VAULT_TEST_HERO_20260725T022132Z.mp4"
+  },
+  "bundleHash": "index-Dv1Hvx_O.js",
+  "markers": {
+    "VAULT_ITEM_COUNT": [
+      {
+        "ts": 1784946101839,
+        "text": "[VAULT_ITEM_COUNT] {images: 0, videos: 0, ts: 2026-07-25T02:21:41.837Z}"
+      },
+      {
+        "ts": 1784946102020,
+        "text": "[VAULT_ITEM_COUNT] {images: 0, videos: 0, ts: 2026-07-25T02:21:42.020Z}"
+      },
+      {
+        "ts": 1784946102453,
+        "text": "[VAULT_ITEM_COUNT] {images: 0, videos: 19, ts: 2026-07-25T02:21:42.453Z}"
+      },
+      {
+        "ts": 1784946115612,
+        "text": "[VAULT_ITEM_COUNT] {images: 1, videos: 19, ts: 2026-07-25T02:21:55.610Z}"
+      },
+      {
+        "ts": 1784946117808,
+        "text": "[VAULT_ITEM_COUNT] {images: 1, videos: 19, ts: 2026-07-25T02:21:57.703Z}"
+      },
+      {
+        "ts": 1784946122885,
+        "text": "[VAULT_ITEM_COUNT] {images: 0, videos: 0, ts: 2026-07-25T02:22:02.884Z}"
+      },
+      {
+        "ts": 1784946123492,
+        "text": "[VAULT_ITEM_COUNT] {images: 0, videos: 0, ts: 2026-07-25T02:22:03.491Z}"
+      },
+      {
+        "ts": 1784946125737,
+        "text": "[VAULT_ITEM_COUNT] {images: 0, videos: 0, ts: 2026-07-25T02:22:05.736Z}"
+      },
+      {
+        "ts": 1784946125915,
+        "text": "[VAULT_ITEM_COUNT] {images: 0, videos: 0, ts: 2026-07-25T02:22:05.914Z}"
+      },
+      {
+        "ts": 1784946126616,
+        "text": "[VAULT_ITEM_COUNT] {images: 0, videos: 19, ts: 2026-07-25T02:22:06.616Z}"
+      },
+      {
+        "ts": 1784946141938,
+        "text": "[VAULT_ITEM_COUNT] {images: 0, videos: 19, ts: 2026-07-25T02:22:21.925Z}"
+      },
+      {
+        "ts": 1784947042065,
+        "text": "[VAULT_ITEM_COUNT] {images: 0, videos: 0, ts: 2026-07-25T02:37:22.063Z}"
+      },
+      {
+        "ts": 1784947042245,
+        "text": "[VAULT_ITEM_COUNT] {images: 0, videos: 0, ts: 2026-07-25T02:37:22.245Z}"
+      },
+      {
+        "ts": 1784947046775,
+        "text": "[VAULT_ITEM_COUNT] {images: 0, videos: 19, ts: 2026-07-25T02:37:26.774Z}"
+      }
+    ],
+    "VAULT_STORAGE": [
+      {
+        "ts": 1784946101839,
+        "text": "[VAULT_STORAGE] {key: personal_thumbnails, action: getStoredThumbnailEntries, count: 0, ts: 2026-07-25T02:21:41.838Z}"
+      },
+      {
+        "ts": 1784946115611,
+        "text": "[VAULT_STORAGE] {key: personal_thumbnails, action: getStoredThumbnailEntries, count: 1, ts: 2026-07-25T02:21:55.609Z}"
+      },
+      {
+        "ts": 1784946115611,
+        "text": "[VAULT_STORAGE] {key: personal_thumbnails, action: getStoredThumbnailEntries, count: 1, ts: 2026-07-25T02:21:55.609Z}"
+      },
+      {
+        "ts": 1784946115612,
+        "text": "[VAULT_STORAGE] {key: personal_thumbnails, action: getStoredThumbnailEntries, count: 1, ts: 2026-07-25T02:21:55.610Z}"
+      },
+      {
+        "ts": 1784946115612,
+        "text": "[VAULT_STORAGE] {key: personal_thumbnails, action: getStoredThumbnailEntries, count: 1, ts: 2026-07-25T02:21:55.610Z}"
+      },
+      {
+        "ts": 1784946117808,
+        "text": "[VAULT_STORAGE] {key: personal_thumbnails, action: getStoredThumbnailEntries, count: 1, ts: 2026-07-25T02:21:57.703Z}"
+      },
+      {
+        "ts": 1784946117808,
+        "text": "[VAULT_STORAGE] {key: personal_thumbnails, action: getStoredThumbnailEntries, count: 1, ts: 2026-07-25T02:21:57.703Z}"
+      },
+      {
+        "ts": 1784946117808,
+        "text": "[VAULT_STORAGE] {key: personal_thumbnails, action: getStoredThumbnailEntries, count: 1, ts: 2026-07-25T02:21:57.703Z}"
+      },
+      {
+        "ts": 1784946117808,
+        "text": "[VAULT_STORAGE] {key: personal_thumbnails, action: getStoredThumbnailEntries, count: 1, ts: 2026-07-25T02:21:57.703Z}"
+      },
+      {
+        "ts": 1784946122885,
+        "text": "[VAULT_STORAGE] {key: personal_thumbnails, action: getStoredThumbnailEntries, count: 0, ts: 2026-07-25T02:22:02.884Z}"
+      },
+      {
+        "ts": 1784946125737,
+        "text": "[VAULT_STORAGE] {key: personal_thumbnails, action: getStoredThumbnailEntries, count: 0, ts: 2026-07-25T02:22:05.736Z}"
+      },
+      {
+        "ts": 1784947042065,
+        "text": "[VAULT_STORAGE] {key: personal_thumbnails, action: getStoredThumbnailEntries, count: 0, ts: 2026-07-25T02:37:22.064Z}"
+      },
+      {
+        "ts": 1784947046775,
+        "text": "[VAULT_STORAGE] {key: personal_thumbnails, action: getStoredThumbnailEntries, count: 0, ts: 2026-07-25T02:37:26.775Z}"
+      }
+    ],
+    "DELETE_REACTIVE": [
+      {
+        "ts": 1784946101839,
+        "text": "[DELETE_REACTIVE] {storeCount: 0, renderedCount: 0, selectedCount: 0, ts: 1784946101838}"
+      },
+      {
+        "ts": 1784946115612,
+        "text": "[DELETE_REACTIVE] {storeCount: 1, renderedCount: 0, selectedCount: 0, ts: 1784946115610}"
+      },
+      {
+        "ts": 1784946122885,
+        "text": "[DELETE_REACTIVE] {storeCount: 0, renderedCount: 0, selectedCount: 0, ts: 1784946122884}"
+      },
+      {
+        "ts": 1784946125737,
+        "text": "[DELETE_REACTIVE] {storeCount: 0, renderedCount: 0, selectedCount: 0, ts: 1784946125736}"
+      },
+      {
+        "ts": 1784947042065,
+        "text": "[DELETE_REACTIVE] {storeCount: 0, renderedCount: 0, selectedCount: 0, ts: 1784947042065}"
+      },
+      {
+        "ts": 1784947046775,
+        "text": "[DELETE_REACTIVE] {storeCount: 0, renderedCount: 0, selectedCount: 0, ts: 1784947046775}"
+      }
+    ],
+    "DELETE_AUDIT_START": [
+      {
+        "ts": 1784946101839,
+        "text": "[DELETE_AUDIT_START] {scope: vault-experience, timestamp: 1784946101838}"
+      },
+      {
+        "ts": 1784946122886,
+        "text": "[DELETE_AUDIT_START] {scope: vault-experience, timestamp: 1784946122885}"
+      },
+      {
+        "ts": 1784946125737,
+        "text": "[DELETE_AUDIT_START] {scope: vault-experience, timestamp: 1784946125736}"
+      },
+      {
+        "ts": 1784947042066,
+        "text": "[DELETE_AUDIT_START] {scope: vault-experience, timestamp: 1784947042065}"
+      },
+      {
+        "ts": 1784947046776,
+        "text": "[DELETE_AUDIT_START] {scope: vault-experience, timestamp: 1784947046775}"
+      }
+    ],
+    "DELETE_HANDLER_ATTACHED": [
+      {
+        "ts": 1784946101840,
+        "text": "[DELETE_HANDLER_ATTACHED] {vault: thumbnail-vault, mechanism: single, timestamp: 1784946101838}"
+      },
+      {
+        "ts": 1784946101840,
+        "text": "[DELETE_HANDLER_ATTACHED] {vault: video-vault, mechanism: single, timestamp: 1784946101838}"
+      },
+      {
+        "ts": 1784946101840,
+        "text": "[DELETE_HANDLER_ATTACHED] {vault: thumbnail-vault, mechanism: batch, timestamp: 1784946101838}"
+      },
+      {
+        "ts": 1784946101840,
+        "text": "[DELETE_HANDLER_ATTACHED] {vault: video-vault, mechanism: batch, timestamp: 1784946101838}"
+      },
+      {
+        "ts": 1784946101840,
+        "text": "[DELETE_HANDLER_ATTACHED] {vault: vault-delete-zone, mechanism: drag-drop, timestamp: 1784946101838}"
+      },
+      {
+        "ts": 1784946122886,
+        "text": "[DELETE_HANDLER_ATTACHED] {vault: thumbnail-vault, mechanism: single, timestamp: 1784946122885}"
+      },
+      {
+        "ts": 1784946122886,
+        "text": "[DELETE_HANDLER_ATTACHED] {vault: video-vault, mechanism: single, timestamp: 1784946122885}"
+      },
+      {
+        "ts": 1784946122886,
+        "text": "[DELETE_HANDLER_ATTACHED] {vault: thumbnail-vault, mechanism: batch, timestamp: 1784946122885}"
+      },
+      {
+        "ts": 1784946122886,
+        "text": "[DELETE_HANDLER_ATTACHED] {vault: video-vault, mechanism: batch, timestamp: 1784946122885}"
+      },
+      {
+        "ts": 1784946122886,
+        "text": "[DELETE_HANDLER_ATTACHED] {vault: vault-delete-zone, mechanism: drag-drop, timestamp: 1784946122885}"
+      },
+      {
+        "ts": 1784946125737,
+        "text": "[DELETE_HANDLER_ATTACHED] {vault: thumbnail-vault, mechanism: single, timestamp: 1784946125736}"
+      },
+      {
+        "ts": 1784946125737,
+        "text": "[DELETE_HANDLER_ATTACHED] {vault: video-vault, mechanism: single, timestamp: 1784946125736}"
+      },
+      {
+        "ts": 1784946125737,
+        "text": "[DELETE_HANDLER_ATTACHED] {vault: thumbnail-vault, mechanism: batch, timestamp: 1784946125736}"
+      },
+      {
+        "ts": 1784946125738,
+        "text": "[DELETE_HANDLER_ATTACHED] {vault: video-vault, mechanism: batch, timestamp: 1784946125736}"
+      },
+      {
+        "ts": 1784946125738,
+        "text": "[DELETE_HANDLER_ATTACHED] {vault: vault-delete-zone, mechanism: drag-drop, timestamp: 1784946125737}"
+      },
+      {
+        "ts": 1784947042066,
+        "text": "[DELETE_HANDLER_ATTACHED] {vault: thumbnail-vault, mechanism: single, timestamp: 1784947042066}"
+      },
+      {
+        "ts": 1784947042066,
+        "text": "[DELETE_HANDLER_ATTACHED] {vault: video-vault, mechanism: single, timestamp: 1784947042066}"
+      },
+      {
+        "ts": 1784947042066,
+        "text": "[DELETE_HANDLER_ATTACHED] {vault: thumbnail-vault, mechanism: batch, timestamp: 1784947042066}"
+      },
+      {
+        "ts": 1784947042066,
+        "text": "[DELETE_HANDLER_ATTACHED] {vault: video-vault, mechanism: batch, timestamp: 1784947042066}"
+      },
+      {
+        "ts": 1784947042066,
+        "text": "[DELETE_HANDLER_ATTACHED] {vault: vault-delete-zone, mechanism: drag-drop, timestamp: 1784947042066}"
+      },
+      {
+        "ts": 1784947046776,
+        "text": "[DELETE_HANDLER_ATTACHED] {vault: thumbnail-vault, mechanism: single, timestamp: 1784947046775}"
+      },
+      {
+        "ts": 1784947046776,
+        "text": "[DELETE_HANDLER_ATTACHED] {vault: video-vault, mechanism: single, timestamp: 1784947046775}"
+      },
+      {
+        "ts": 1784947046776,
+        "text": "[DELETE_HANDLER_ATTACHED] {vault: thumbnail-vault, mechanism: batch, timestamp: 1784947046775}"
+      },
+      {
+        "ts": 1784947046776,
+        "text": "[DELETE_HANDLER_ATTACHED] {vault: video-vault, mechanism: batch, timestamp: 1784947046776}"
+      },
+      {
+        "ts": 1784947046776,
+        "text": "[DELETE_HANDLER_ATTACHED] {vault: vault-delete-zone, mechanism: drag-drop, timestamp: 1784947046776}"
+      }
+    ],
+    "VAULT_DROP": [
+      {
+        "ts": 1784946101991,
+        "text": "[VAULT_DROP] {vaultType: thumbnail, assetId: null, fileName: VAULT_TEST_THUMB_20260725T022132Z.jpg, storageLocation: pendingThumbnail, backendEndpoint: null}"
+      }
+    ],
+    "VAULT_BOOTSTRAP": [
+      {
+        "ts": 1784946102332,
+        "text": "[VAULT_BOOTSTRAP] {action: hydrateVaultFromReels:thumbs, localCount: 0, backendReels: 19, ts: 2026-07-25T02:21:42.331Z}"
+      },
+      {
+        "ts": 1784946102332,
+        "text": "[VAULT_BOOTSTRAP] {action: upgradeThumbnailVaultFromBackendReels:complete, before: 0, after: 0, ts: 2026-07-25T02:21:42.331Z}"
+      },
+      {
+        "ts": 1784946102332,
+        "text": "[VAULT_BOOTSTRAP] {action: bootstrapMediaFromBackend:complete, source: api-reels, thumbnails: 0, videos: 19, ts: 2026-07-25T02:21:42.332Z}"
+      },
+      {
+        "ts": 1784946126522,
+        "text": "[VAULT_BOOTSTRAP] {action: hydrateVaultFromReels:thumbs, localCount: 0, backendReels: 20, ts: 2026-07-25T02:22:06.519Z}"
+      },
+      {
+        "ts": 1784946126522,
+        "text": "[VAULT_BOOTSTRAP] {action: upgradeThumbnailVaultFromBackendReels:complete, before: 0, after: 0, ts: 2026-07-25T02:22:06.519Z}"
+      },
+      {
+        "ts": 1784946126522,
+        "text": "[VAULT_BOOTSTRAP] {action: bootstrapMediaFromBackend:complete, source: api-reels, thumbnails: 0, videos: 19, ts: 2026-07-25T02:22:06.519Z}"
+      },
+      {
+        "ts": 1784947045258,
+        "text": "[VAULT_BOOTSTRAP] {action: hydrateVaultFromReels:thumbs, localCount: 0, backendReels: 20, ts: 2026-07-25T02:37:25.256Z}"
+      },
+      {
+        "ts": 1784947045258,
+        "text": "[VAULT_BOOTSTRAP] {action: upgradeThumbnailVaultFromBackendReels:complete, before: 0, after: 0, ts: 2026-07-25T02:37:25.256Z}"
+      },
+      {
+        "ts": 1784947045258,
+        "text": "[VAULT_BOOTSTRAP] {action: bootstrapMediaFromBackend:complete, source: api-reels, thumbnails: 0, videos: 19, ts: 2026-07-25T02:37:25.256Z}"
+      }
+    ],
+    "VAULT_PERSIST": [
+      {
+        "ts": 1784946102450,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 8e40f3ca-e220-40f7-a636-b828b4008f68, fileName: 8e40f3ca-e220-40f7-a636-b828b4008f68.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784946102452,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 8e40f3ca-e220-40f7-a636-b828b4008f68, fileName: 8e40f3ca-e220-40f7-a636-b828b4008f68.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784946115609,
+        "text": "[VAULT_PERSIST] {vaultType: thumbnail, assetId: 26c72e0f-3951-4f00-84d3-13a09ba893db, fileName: 26c72e0f-3951-4f00-84d3-13a09ba893db.jpg, storageLocation: personal_thumbnails, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784946117457,
+        "text": "[VAULT_PERSIST] {vaultType: thumbnail, assetId: 26c72e0f-3951-4f00-84d3-13a09ba893db, fileName: 26c72e0f-3951-4f00-84d3-13a09ba893db.jpg, storageLocation: personal_thumbnails, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784946117458,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 8e40f3ca-e220-40f7-a636-b828b4008f68, fileName: 8e40f3ca-e220-40f7-a636-b828b4008f68.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784946126613,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 8e40f3ca-e220-40f7-a636-b828b4008f68, fileName: 8e40f3ca-e220-40f7-a636-b828b4008f68.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784946126615,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 8e40f3ca-e220-40f7-a636-b828b4008f68, fileName: 8e40f3ca-e220-40f7-a636-b828b4008f68.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784946141620,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 8e40f3ca-e220-40f7-a636-b828b4008f68, fileName: 8e40f3ca-e220-40f7-a636-b828b4008f68.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784947045349,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 8e40f3ca-e220-40f7-a636-b828b4008f68, fileName: 8e40f3ca-e220-40f7-a636-b828b4008f68.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784947045350,
+        "text": "[VAULT_PERSIST] {vaultType: video, assetId: 8e40f3ca-e220-40f7-a636-b828b4008f68, fileName: 8e40f3ca-e220-40f7-a636-b828b4008f68.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+      }
+    ],
+    "VAULT_REFRESH_RESTORE": [
+      {
+        "ts": 1784946102452,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: thumbnail, assetId: null, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784946102453,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: video, assetId: null, fileName: null, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784946117455,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: thumbnail, assetId: null, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784946117459,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: video, assetId: null, fileName: null, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784946126614,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: thumbnail, assetId: null, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784946126615,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: video, assetId: null, fileName: null, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784946141619,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: thumbnail, assetId: null, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784946141621,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: video, assetId: null, fileName: null, storageLocation: personal_video_vault, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784947045349,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: thumbnail, assetId: null, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}"
+      },
+      {
+        "ts": 1784947045350,
+        "text": "[VAULT_REFRESH_RESTORE] {vaultType: video, assetId: null, fileName: null, storageLocation: personal_video_vault, backendEndpoint: null}"
+      }
+    ],
+    "VAULT_RELOAD": [
+      {
+        "ts": 1784946102452,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:start, personal_thumbnails: 0, ts: 2026-07-25T02:21:42.450Z}"
+      },
+      {
+        "ts": 1784946102452,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:clear, personal_thumbnails: 0, ts: 2026-07-25T02:21:42.451Z}"
+      },
+      {
+        "ts": 1784946117455,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:start, personal_thumbnails: 1, ts: 2026-07-25T02:21:57.455Z}"
+      },
+      {
+        "ts": 1784946117457,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:mutate, personal_thumbnails: 1, ts: 2026-07-25T02:21:57.456Z}"
+      },
+      {
+        "ts": 1784946126614,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:start, personal_thumbnails: 0, ts: 2026-07-25T02:22:06.614Z}"
+      },
+      {
+        "ts": 1784946126614,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:clear, personal_thumbnails: 0, ts: 2026-07-25T02:22:06.614Z}"
+      },
+      {
+        "ts": 1784946141619,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:start, personal_thumbnails: 0, ts: 2026-07-25T02:22:21.617Z}"
+      },
+      {
+        "ts": 1784946141619,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:clear, personal_thumbnails: 0, ts: 2026-07-25T02:22:21.618Z}"
+      },
+      {
+        "ts": 1784947045350,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:start, personal_thumbnails: 0, ts: 2026-07-25T02:37:25.347Z}"
+      },
+      {
+        "ts": 1784947045350,
+        "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:clear, personal_thumbnails: 0, ts: 2026-07-25T02:37:25.347Z}"
+      }
+    ],
+    "VAULT_ACCEPT": [
+      {
+        "ts": 1784946103168,
+        "text": "[VAULT_ACCEPT] {vaultType: thumbnail, assetId: null, fileName: VAULT_TEST_THUMB_20260725T022132Z.jpg, storageLocation: personal_thumbnails, backendEndpoint: /api/reels}"
+      }
+    ],
+    "VAULT_UPLOAD_START": [
+      {
+        "ts": 1784946103168,
+        "text": "[VAULT_UPLOAD_START] {vaultType: thumbnail, assetId: null, fileName: VAULT_TEST_THUMB_20260725T022132Z.jpg, storageLocation: backend, backendEndpoint: /api/reels}"
+      }
+    ],
+    "VAULT_UPLOAD_SUCCESS": [
+      {
+        "ts": 1784946115611,
+        "text": "[VAULT_UPLOAD_SUCCESS] {vaultType: thumbnail, assetId: 26c72e0f-3951-4f00-84d3-13a09ba893db, fileName: 26c72e0f-3951-4f00-84d3-13a09ba893db.jpg, storageLocation: /thumbs/26c72e0f-3951-4f00-84d3-13a09ba893db.jpg, backendEndpoint: /api/reels}"
+      }
+    ],
+    "VAULT_RENDER": [
+      {
+        "ts": 1784946115612,
+        "text": "[VAULT_RENDER] {renderIndex: 0, storeOrigin: personalThumbnailCollection, componentOrigin: VaultExperience, collectionItem: 26c72e0f-3951-4f00-84d3-13a09ba893db.jpg, displayName: VAULT_TEST_THUMB_20260725T022132Z.jpg}"
+      },
+      {
+        "ts": 1784946117808,
+        "text": "[VAULT_RENDER] {renderIndex: 0, storeOrigin: personalThumbnailCollection, componentOrigin: VaultExperience, collectionItem: 26c72e0f-3951-4f00-84d3-13a09ba893db.jpg, displayName: VAULT_TEST_THUMB_20260725T022132Z.jpg}"
+      }
+    ],
+    "VAULT_SYNC": [
+      {
+        "ts": 1784946117455,
+        "text": "[VAULT_SYNC] {action: syncFromVault:pre-upgrade, backendReels: 0, personal_thumbnails: 1, ts: 2026-07-25T02:21:57.454Z}"
+      },
+      {
+        "ts": 1784946117459,
+        "text": "[VAULT_SYNC] {action: syncFromVault:post-reload, personal_thumbnails: 1, collectionStore: 1, ts: 2026-07-25T02:21:57.458Z}"
+      },
+      {
+        "ts": 1784946141618,
+        "text": "[VAULT_SYNC] {action: syncFromVault:pre-upgrade, backendReels: 0, personal_thumbnails: 0, ts: 2026-07-25T02:22:21.617Z}"
+      },
+      {
+        "ts": 1784946141621,
+        "text": "[VAULT_SYNC] {action: syncFromVault:post-reload, personal_thumbnails: 0, collectionStore: 0, ts: 2026-07-25T02:22:21.619Z}"
+      }
+    ]
+  },
+  "network": {
+    "summary": {
+      "sign": [],
+      "finalize": [],
+      "r2Put": [],
+      "reelPost": [
+        {
+          "ts": 1784946107383,
+          "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels",
+          "method": "POST",
+          "status": 202,
+          "ok": true,
+          "kind": "response"
+        }
+      ],
+      "reelDelete": []
+    },
+    "tail": [
+      {
+        "ts": 1784947040809,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947040809,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947040810,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947040810,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947040911,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/watch/continue?viewer_id=1f7b08f3-c243-4d1e-b03c-a84291e97a05&limit=10",
+        "method": "GET",
+        "status": 404,
+        "ok": false,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947040969,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947040999,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "method": "POST",
+        "status": 401,
+        "ok": false,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947041000,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947041000,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947041155,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947041169,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "method": "POST",
+        "status": 401,
+        "ok": false,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947041176,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947041178,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947041352,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947041354,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "method": "POST",
+        "status": 401,
+        "ok": false,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947041477,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947041486,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947041558,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947041648,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/state",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947041670,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947041719,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947041830,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947041832,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947041988,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push",
+        "method": "POST",
+        "status": 401,
+        "ok": false,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947042123,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "method": "POST",
+        "status": 401,
+        "ok": false,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947042123,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947042123,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947042239,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels?t=1784947042065",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947042246,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947042580,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/analytics/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947042583,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947042584,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications",
+        "method": "POST",
+        "status": 401,
+        "ok": false,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947042585,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947042589,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/series/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947042590,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947042693,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications",
+        "method": "POST",
+        "status": 401,
+        "ok": false,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947042755,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947042757,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "method": "POST",
+        "status": 401,
+        "ok": false,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947042850,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947042850,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/state",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947042851,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/security/events",
+        "method": "POST",
+        "status": 201,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947042921,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947042929,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947042930,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947042946,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/series",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947043019,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947043178,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push",
+        "method": "POST",
+        "status": 401,
+        "ok": false,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947043265,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "method": "POST",
+        "status": 401,
+        "ok": false,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947043266,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947043269,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947043271,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947043427,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "method": "POST",
+        "status": 401,
+        "ok": false,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947043435,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947043442,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947043443,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947043595,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "method": "POST",
+        "status": 401,
+        "ok": false,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947043606,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947043607,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947043870,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947043873,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947044046,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947044050,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/state",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947044212,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947044224,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/security/events",
+        "method": "POST",
+        "status": 201,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947044294,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947044437,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push",
+        "method": "POST",
+        "status": 401,
+        "ok": false,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947044515,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "method": "POST",
+        "status": 401,
+        "ok": false,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947044535,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947044705,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947044879,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947045072,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/health",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947045072,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947045240,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947045249,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947045249,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels?t=1784947045069",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947045387,
+        "url": "https://ui-avatars.com/api/?name=ST&background=111827&color=ffffff&size=128&bold=true",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947045416,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947045421,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947045508,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/watch/continue?viewer_id=694bb38d-c20a-488a-8b8c-942a49707e11&limit=10",
+        "method": "GET",
+        "status": 404,
+        "ok": false,
+        "kind": "response"
+      },
+      {
+        "ts": 1784947045602,
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "method": "GET",
+        "status": 200,
+        "ok": true,
+        "kind": "response"
+      }
+    ]
+  },
+  "storageSnapshots": {
+    "thumbnailBeforeDelete": null,
+    "thumbnailAfterDelete": null,
+    "heroBeforeDelete": {
+      "manager": null,
+      "heroReel": null,
+      "heroVideo": null
+    },
+    "heroAfterDelete": {
+      "manager": null,
+      "heroReel": null
+    }
+  },
+  "vaults": {
+    "thumbnail": {
+      "drop": {
+        "acceptVisible": true,
+        "countBefore": 0,
+        "countAfterDrop": 0,
+        "noBackendBeforeAccept": true
+      },
+      "accept": {
+        "id": "26c72e0f-3951-4f00-84d3-13a09ba893db",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/26c72e0f-3951-4f00-84d3-13a09ba893db.jpg",
+        "identityUsesId": false
+      },
+      "refresh": {
+        "survives": false,
+        "catalogMatch": true
+      },
+      "delete": {
+        "resurrected": false,
+        "storageHead": {
+          "ok": true,
+          "status": 200,
+          "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/26c72e0f-3951-4f00-84d3-13a09ba893db.jpg"
+        },
+        "catalogGone": true
+      }
+    },
+    "video": {
+      "pass": false,
+      "error": "fetch failed"
+    },
+    "hero": {
+      "signedPath": {
+        "signOk": false,
+        "finalizeOk": false
+      },
+      "persist": {
+        "heroAssetId": null,
+        "hasHeroVideoKey": false,
+        "notInMp4Vault": true
+      },
+      "refresh": {
+        "survives": false
+      },
+      "delete": {
+        "heroDeleted": false,
+        "resurrected": null
+      }
+    }
+  },
+  "identityAudit": {
+    "sampleLines": [
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/mediaBootstrap.js:54:        const key = canonicalUrl || String(entry?.fileName || entry?.name || '').trim();",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/media/theaterPlayback.js:42:        reel.fileName,",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/media/theaterPlayback.js:53:            const vStem = String(v.fileName || v.name || v.title || v.url || '')",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/dropAffordance.js:50: * @param {{ fileName?: string | null; fileSize?: number | null; fileCount?: number; detail?: string }} [extra]",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/dropAffordance.js:57:        fileName: extra.fileName ?? null,",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/feed/buildHomeFeed.js:112:    const fileKey = String(reel.fileName || reel.file_name || '').trim();",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/feed/buildHomeFeed.js:116:        const byFile = String(t.fileName || t.file_name || '').trim();",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/feed/buildHomeFeed.js:128:            (t) => t && String(t.fileName || t.file_name || '').trim() === fileKey",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/api/ingestPoll.js:107:                fileName: normalized.fileName || normalized.name || null,",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/vaultUtils.js:57:    const basename = filenameFromMediaRef(String(key || '').trim());",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/vaultUtils.js:58:    if (!basename || !/\\.(jpe?g|png|gif|webp)$/i.test(basename)) return '';",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/vaultUtils.js:59:    return `/thumbs/${basename.replace(/^thumbs\\//, '')}`;",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/vaultUtils.js:62:  const key = typeof item === 'string' ? item.trim() : String(item?.fileName || item?.file_name || item?.id || item?.url || '').trim();",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/vaultUtils.js:69:        const fileName = filenameFromMediaRef(raw) || raw;",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/vaultUtils.js:70:        return { fileName, url: thumbPathFromFileKey(fileName) };",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/vaultUtils.js:77:  const byFile = stored.find((t) => t && typeof t === 'object' && String(t.fileName || t.file_name || '').trim() === key);",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/vaultUtils.js:81:      (t) => t && typeof t === 'object' && String(t.fileName || t.file_name || '').trim() === keyBase",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/vaultUtils.js:99:  if (nameOrUrl.fileName || nameOrUrl.file_name) return resolveThumbnailPath(nameOrUrl.fileName || nameOrUrl.file_name, index);",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/vaultUtils.js:246:  const lookupKey = typeof item === 'string' ? item : String(item?.fileName || item?.file_name || item?.id || '').trim();",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/vaultUtils.js:259:  const diskKey = String(entry?.fileName || entry?.file_name || '').trim() || filenameFromMediaRef(entry?.url);",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/vaultUtils.js:264:  const diskKey = String(entry?.fileName || entry?.file_name || '').trim() || filenameFromMediaRef(path);",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/api/reelContract.js:10: * @property {string} fileName - Disk basename under public/videos or public/thumbs",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/api/reelContract.js:115:function fileNameFromUrl(url) {",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/api/reelContract.js:154:    const fileName = String(",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/api/reelContract.js:155:        raw.fileName ?? raw.file_name ?? fileNameFromUrl(videoLegacy || thumbLegacy)",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/api/reelContract.js:161:        fileName,",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/api/reelContract.js:203:                  fileName: String(",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/api/reelContract.js:204:                      raw.fileName ??",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/api/reelContract.js:206:                          fileNameFromUrl(raw.url ?? raw.video_url)",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/api/reelContract.js:346:            fileName: partial.fileName ?? partial.file_name ?? fileNameFromUrl(partial.url),",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/api/reelContract.js:358: * Video vault entry from a normalized reel (display name from reel.name, disk ops from fileName).",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/api/reelContract.js:363:    const fileName =",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/api/reelContract.js:364:        String(reel.fileName || reel.file_name || fileNameFromUrl(reel.url)).trim() ||",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/api/reelContract.js:368:        id: String(reel.id || `reel_${fileName}`),",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/api/reelContract.js:370:        fileName,",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/api/reelContract.js:373:        type: fileName.toLowerCase().endsWith('.mov') ? 'video/quicktime' : 'video/mp4',",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/studio/episodeReelAttachment.js:135:    return String(r.name || r.title || r.fileName || r.file_name || r.id || 'Untitled reel');",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbStoreWriteTrace.js:7:    return { id: null, fileName: entry, url: null, orphaned: null, placeholder: null };",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbStoreWriteTrace.js:10:    return { id: null, fileName: null, url: null, orphaned: null, placeholder: null };",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbStoreWriteTrace.js:14:    fileName: entry.fileName || entry.file_name || null,",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/viewer/viewerContext.js:274:fileName: filtered[0]?.fileName || filtered[0]?.name || null,",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/viewer/viewerContext.js:284:  fileName: filtered[0]?.fileName || filtered[0]?.name || null,",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/viewer/viewerContext.js:292:minimalFields: ['id', 'name', 'fileName', 'type', 'size', 'addedAt', 'thumbnail']",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/viewer/viewerContext.js:869:  fileName: null,",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/viewer/viewerContext.js:916:  fileName: null,",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/viewer/viewerContext.js:985:const key = canonicalUrl || String(entry.fileName || entry.name || '').trim();",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbnailVault.js:76:  const fileName =",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbnailVault.js:77:    String(reel?.fileName || reel?.file_name || '').trim() ||",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbnailVault.js:79:  const displayName = String(reel?.name || reel?.title || fileName);",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbnailVault.js:83:    fileName,",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbnailVault.js:84:    url: relUrl || (fileName ? `/thumbs/${fileName.replace(/^thumbs\\//, '')}` : ''),",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbnailVault.js:109:    const fileName = String(entry?.fileName || '').trim();",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbnailVault.js:110:    const key = id || url || fileName || name;",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbnailVault.js:164:      const fileName = String(entry).trim();",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbnailVault.js:165:      if (!fileName) return entry;",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbnailVault.js:167:        fileName,",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbnailVault.js:168:        url: `/thumbs/${fileName.replace(/^thumbs\\//, '')}`,",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbnailVault.js:169:        name: fileName,",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbnailVault.js:200:    fileName: list[0]?.fileName || list[0]?.name || null,",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbnailVault.js:251:      fileName: null,",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbnailVault.js:279:    const fileName =",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbnailVault.js:280:      String(reel?.fileName || reel?.file_name || '').trim() ||",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbnailVault.js:282:    const displayName = String(reel?.name || reel?.title || fileName);",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbnailVault.js:287:        return (fileName && key === fileName) || (relUrl && key === relUrl.split('/').pop()?.split('?')[0]);",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbnailVault.js:291:        (fileName && e?.fileName === fileName) ||",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbnailVault.js:299:        fileName: fileName || key,",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbnailVault.js:313:    if (fileName && target.fileName !== fileName) {",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbnailVault.js:314:      target.fileName = fileName;",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbnailVault.js:437:    fileName: null,",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbnailVault.js:465:    fileName: null,",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbnailVault.js:534: * Remove by collection display key (legacy fileName fallback).",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbnailVault.js:538:export function removeThumbnailVaultByIndex(fileKey, storageKey = THUMBNAIL_KEY) {",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/viewer/thumbnailVault.js:544:    const fn = String(t.fileName || t.file_name || '').trim();",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/api/media.js:59:            fileName: primaryFileName,",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/api/media.js:79:            fileName: primaryFileName,",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/api/media.js:87:            fileName: primaryFileName,",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/api/media.js:109:                fileName: primaryFileName,",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/api/media.js:142:        fileName: primaryFileName,",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/api/media.js:174:        fileName: primaryFileName,",
+      "/home/youloose2dafish/projects/reelforge/frontend/src/lib/api/media.js:181:        fileName: primaryFileName,"
+    ]
+  },
+  "defects": [
+    {
+      "vault": "video",
+      "error": "fetch failed"
+    }
+  ],
+  "result": "FAIL",
+  "consoleTail": [
+    {
+      "ts": 1784946126522,
+      "text": "[VAULT_BOOTSTRAP] {action: hydrateVaultFromReels:thumbs, localCount: 0, backendReels: 20, ts: 2026-07-25T02:22:06.519Z}"
+    },
+    {
+      "ts": 1784946126522,
+      "text": "[VAULT_BOOTSTRAP] {action: upgradeThumbnailVaultFromBackendReels:complete, before: 0, after: 0, ts: 2026-07-25T02:22:06.519Z}"
+    },
+    {
+      "ts": 1784946126522,
+      "text": "[BG7G_STORE] {ts: 2026-07-25T02:22:06.519Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 11734}"
+    },
+    {
+      "ts": 1784946126522,
+      "text": "[VAULT_BOOTSTRAP] {action: bootstrapMediaFromBackend:complete, source: api-reels, thumbnails: 0, videos: 19, ts: 2026-07-25T02:22:06.519Z}"
+    },
+    {
+      "ts": 1784946126613,
+      "text": "[BG7G_STORE] {ts: 2026-07-25T02:22:06.613Z, component: persistPersonalVault, file: viewerContext.js, fileName: 8e40f3ca-e220-40f7-a636-b828b4008f68.mp4, fileSize: null}"
+    },
+    {
+      "ts": 1784946126613,
+      "text": "[VAULT_PERSIST] {vaultType: video, assetId: 8e40f3ca-e220-40f7-a636-b828b4008f68, fileName: 8e40f3ca-e220-40f7-a636-b828b4008f68.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+    },
+    {
+      "ts": 1784946126614,
+      "text": "[BG7G_STORE] {ts: 2026-07-25T02:22:06.613Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 11734}"
+    },
+    {
+      "ts": 1784946126614,
+      "text": "[VAULT_REFRESH_RESTORE] {vaultType: thumbnail, assetId: null, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}"
+    },
+    {
+      "ts": 1784946126614,
+      "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:start, personal_thumbnails: 0, ts: 2026-07-25T02:22:06.614Z}"
+    },
+    {
+      "ts": 1784946126614,
+      "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:clear, personal_thumbnails: 0, ts: 2026-07-25T02:22:06.614Z}"
+    },
+    {
+      "ts": 1784946126615,
+      "text": "[BG7G_STORE] {ts: 2026-07-25T02:22:06.614Z, component: persistPersonalVault, file: viewerContext.js, fileName: 8e40f3ca-e220-40f7-a636-b828b4008f68.mp4, fileSize: null}"
+    },
+    {
+      "ts": 1784946126615,
+      "text": "[VAULT_PERSIST] {vaultType: video, assetId: 8e40f3ca-e220-40f7-a636-b828b4008f68, fileName: 8e40f3ca-e220-40f7-a636-b828b4008f68.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+    },
+    {
+      "ts": 1784946126615,
+      "text": "[BG7G_STORE] {ts: 2026-07-25T02:22:06.615Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 11734}"
+    },
+    {
+      "ts": 1784946126615,
+      "text": "[VAULT_REFRESH_RESTORE] {vaultType: video, assetId: null, fileName: null, storageLocation: personal_video_vault, backendEndpoint: null}"
+    },
+    {
+      "ts": 1784946126616,
+      "text": "[VAULT_ITEM_COUNT] {images: 0, videos: 19, ts: 2026-07-25T02:22:06.616Z}"
+    },
+    {
+      "ts": 1784946141618,
+      "text": "[VAULT_SYNC] {action: syncFromVault:pre-upgrade, backendReels: 0, personal_thumbnails: 0, ts: 2026-07-25T02:22:21.617Z}"
+    },
+    {
+      "ts": 1784946141619,
+      "text": "[VAULT_REFRESH_RESTORE] {vaultType: thumbnail, assetId: null, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}"
+    },
+    {
+      "ts": 1784946141619,
+      "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:start, personal_thumbnails: 0, ts: 2026-07-25T02:22:21.617Z}"
+    },
+    {
+      "ts": 1784946141619,
+      "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:clear, personal_thumbnails: 0, ts: 2026-07-25T02:22:21.618Z}"
+    },
+    {
+      "ts": 1784946141620,
+      "text": "[BG7G_STORE] {ts: 2026-07-25T02:22:21.618Z, component: persistPersonalVault, file: viewerContext.js, fileName: 8e40f3ca-e220-40f7-a636-b828b4008f68.mp4, fileSize: null}"
+    },
+    {
+      "ts": 1784946141620,
+      "text": "[VAULT_PERSIST] {vaultType: video, assetId: 8e40f3ca-e220-40f7-a636-b828b4008f68, fileName: 8e40f3ca-e220-40f7-a636-b828b4008f68.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+    },
+    {
+      "ts": 1784946141620,
+      "text": "[BG7G_STORE] {ts: 2026-07-25T02:22:21.619Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 11734}"
+    },
+    {
+      "ts": 1784946141621,
+      "text": "[VAULT_REFRESH_RESTORE] {vaultType: video, assetId: null, fileName: null, storageLocation: personal_video_vault, backendEndpoint: null}"
+    },
+    {
+      "ts": 1784946141621,
+      "text": "[VAULT_SYNC] {action: syncFromVault:post-reload, personal_thumbnails: 0, collectionStore: 0, ts: 2026-07-25T02:22:21.619Z}"
+    },
+    {
+      "ts": 1784946141938,
+      "text": "[VAULT_ITEM_COUNT] {images: 0, videos: 19, ts: 2026-07-25T02:22:21.925Z}"
+    },
+    {
+      "ts": 1784946427610,
+      "text": "[BG7G_DROP] {ts: 2026-07-25T02:27:07.608Z, component: handleHeroFileSelect, file: HeroExperience.svelte, fileName: VAULT_TEST_HERO_20260725T022132Z.mp4, fileSize: 30223729}"
+    },
+    {
+      "ts": 1784946427611,
+      "text": "[BG7G_UPLOAD] {ts: 2026-07-25T02:27:07.611Z, component: handleHeroFileSelect, file: HeroExperience.svelte, fileName: VAULT_TEST_HERO_20260725T022132Z.mp4, fileSize: 30223729}"
+    },
+    {
+      "ts": 1784947042065,
+      "text": "[VAULT_ITEM_COUNT] {images: 0, videos: 0, ts: 2026-07-25T02:37:22.063Z}"
+    },
+    {
+      "ts": 1784947042065,
+      "text": "[VAULT_STORAGE] {key: personal_thumbnails, action: getStoredThumbnailEntries, count: 0, ts: 2026-07-25T02:37:22.064Z}"
+    },
+    {
+      "ts": 1784947042065,
+      "text": "[DELETE_REACTIVE] {storeCount: 0, renderedCount: 0, selectedCount: 0, ts: 1784947042065}"
+    },
+    {
+      "ts": 1784947042066,
+      "text": "[DELETE_AUDIT_START] {scope: vault-experience, timestamp: 1784947042065}"
+    },
+    {
+      "ts": 1784947042066,
+      "text": "[DELETE_HANDLER_ATTACHED] {vault: thumbnail-vault, mechanism: single, timestamp: 1784947042066}"
+    },
+    {
+      "ts": 1784947042066,
+      "text": "[DELETE_HANDLER_ATTACHED] {vault: video-vault, mechanism: single, timestamp: 1784947042066}"
+    },
+    {
+      "ts": 1784947042066,
+      "text": "[DELETE_HANDLER_ATTACHED] {vault: thumbnail-vault, mechanism: batch, timestamp: 1784947042066}"
+    },
+    {
+      "ts": 1784947042066,
+      "text": "[DELETE_HANDLER_ATTACHED] {vault: video-vault, mechanism: batch, timestamp: 1784947042066}"
+    },
+    {
+      "ts": 1784947042066,
+      "text": "[DELETE_HANDLER_ATTACHED] {vault: vault-delete-zone, mechanism: drag-drop, timestamp: 1784947042066}"
+    },
+    {
+      "ts": 1784947042245,
+      "text": "[VAULT_ITEM_COUNT] {images: 0, videos: 0, ts: 2026-07-25T02:37:22.245Z}"
+    },
+    {
+      "ts": 1784947045258,
+      "text": "[VAULT_BOOTSTRAP] {action: hydrateVaultFromReels:thumbs, localCount: 0, backendReels: 20, ts: 2026-07-25T02:37:25.256Z}"
+    },
+    {
+      "ts": 1784947045258,
+      "text": "[VAULT_BOOTSTRAP] {action: upgradeThumbnailVaultFromBackendReels:complete, before: 0, after: 0, ts: 2026-07-25T02:37:25.256Z}"
+    },
+    {
+      "ts": 1784947045258,
+      "text": "[BG7G_STORE] {ts: 2026-07-25T02:37:25.256Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 11734}"
+    },
+    {
+      "ts": 1784947045258,
+      "text": "[VAULT_BOOTSTRAP] {action: bootstrapMediaFromBackend:complete, source: api-reels, thumbnails: 0, videos: 19, ts: 2026-07-25T02:37:25.256Z}"
+    },
+    {
+      "ts": 1784947045349,
+      "text": "[BG7G_STORE] {ts: 2026-07-25T02:37:25.345Z, component: persistPersonalVault, file: viewerContext.js, fileName: 8e40f3ca-e220-40f7-a636-b828b4008f68.mp4, fileSize: null}"
+    },
+    {
+      "ts": 1784947045349,
+      "text": "[VAULT_PERSIST] {vaultType: video, assetId: 8e40f3ca-e220-40f7-a636-b828b4008f68, fileName: 8e40f3ca-e220-40f7-a636-b828b4008f68.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+    },
+    {
+      "ts": 1784947045349,
+      "text": "[BG7G_STORE] {ts: 2026-07-25T02:37:25.346Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 11734}"
+    },
+    {
+      "ts": 1784947045349,
+      "text": "[VAULT_REFRESH_RESTORE] {vaultType: thumbnail, assetId: null, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}"
+    },
+    {
+      "ts": 1784947045350,
+      "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:start, personal_thumbnails: 0, ts: 2026-07-25T02:37:25.347Z}"
+    },
+    {
+      "ts": 1784947045350,
+      "text": "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:clear, personal_thumbnails: 0, ts: 2026-07-25T02:37:25.347Z}"
+    },
+    {
+      "ts": 1784947045350,
+      "text": "[BG7G_STORE] {ts: 2026-07-25T02:37:25.348Z, component: persistPersonalVault, file: viewerContext.js, fileName: 8e40f3ca-e220-40f7-a636-b828b4008f68.mp4, fileSize: null}"
+    },
+    {
+      "ts": 1784947045350,
+      "text": "[VAULT_PERSIST] {vaultType: video, assetId: 8e40f3ca-e220-40f7-a636-b828b4008f68, fileName: 8e40f3ca-e220-40f7-a636-b828b4008f68.mp4, storageLocation: personal_video_vault, backendEndpoint: null}"
+    },
+    {
+      "ts": 1784947045350,
+      "text": "[BG7G_STORE] {ts: 2026-07-25T02:37:25.348Z, component: safeStorageSet, file: storage.js, fileName: null, fileSize: 11734}"
+    },
+    {
+      "ts": 1784947045350,
+      "text": "[VAULT_REFRESH_RESTORE] {vaultType: video, assetId: null, fileName: null, storageLocation: personal_video_vault, backendEndpoint: null}"
+    },
+    {
+      "ts": 1784947046775,
+      "text": "[VAULT_ITEM_COUNT] {images: 0, videos: 19, ts: 2026-07-25T02:37:26.774Z}"
+    },
+    {
+      "ts": 1784947046775,
+      "text": "[VAULT_STORAGE] {key: personal_thumbnails, action: getStoredThumbnailEntries, count: 0, ts: 2026-07-25T02:37:26.775Z}"
+    },
+    {
+      "ts": 1784947046775,
+      "text": "[DELETE_REACTIVE] {storeCount: 0, renderedCount: 0, selectedCount: 0, ts: 1784947046775}"
+    },
+    {
+      "ts": 1784947046776,
+      "text": "[DELETE_AUDIT_START] {scope: vault-experience, timestamp: 1784947046775}"
+    },
+    {
+      "ts": 1784947046776,
+      "text": "[DELETE_HANDLER_ATTACHED] {vault: thumbnail-vault, mechanism: single, timestamp: 1784947046775}"
+    },
+    {
+      "ts": 1784947046776,
+      "text": "[DELETE_HANDLER_ATTACHED] {vault: video-vault, mechanism: single, timestamp: 1784947046775}"
+    },
+    {
+      "ts": 1784947046776,
+      "text": "[DELETE_HANDLER_ATTACHED] {vault: thumbnail-vault, mechanism: batch, timestamp: 1784947046775}"
+    },
+    {
+      "ts": 1784947046776,
+      "text": "[DELETE_HANDLER_ATTACHED] {vault: video-vault, mechanism: batch, timestamp: 1784947046776}"
+    },
+    {
+      "ts": 1784947046776,
+      "text": "[DELETE_HANDLER_ATTACHED] {vault: vault-delete-zone, mechanism: drag-drop, timestamp: 1784947046776}"
+    }
+  ]
+}

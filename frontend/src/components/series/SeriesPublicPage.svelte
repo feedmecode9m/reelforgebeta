@@ -737,6 +737,9 @@
   .series-page {
     min-height: 100vh;
     min-height: 100dvh;
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
     color: var(--lz-ink, #f4f4f5);
     background: var(--lz-atmosphere-soft, #05060a);
     font-family: var(--lz-font-body, 'Segoe UI', ui-sans-serif, system-ui, sans-serif);
@@ -1087,6 +1090,12 @@
     .series-public__row-play {
       grid-column: 2;
       justify-self: start;
+    }
+    .series-public__row-play {
+      min-height: 44px;
+      min-width: 44px;
+      padding: 0.55rem 0.85rem;
+      touch-action: manipulation;
     }
   }
 </style>

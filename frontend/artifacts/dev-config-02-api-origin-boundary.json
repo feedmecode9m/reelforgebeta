@@ -1,0 +1,150 @@
+{
+  "mission": "DEV-CONFIG-02",
+  "generated_at": "2026-07-20T08:43:00-04:00",
+  "step1_references_inventory": {
+    "env_sources": {
+      "frontend/.env.local": {
+        "VITE_API_URL": "https://reelforge-deploy-production.up.railway.app",
+        "VITE_API_BASE_URL": "https://reelforge-deploy-production.up.railway.app",
+        "VITE_BACKEND_URL": "https://reelforge-deploy-production.up.railway.app"
+      },
+      "frontend/.env": {
+        "VITE_BACKEND_URL": "http://localhost:8080",
+        "VITE_API_BASE_URL": "http://localhost:8080",
+        "VITE_API_URL": "https://reelforge-deploy-production.up.railway.app"
+      }
+    },
+    "resolution": {
+      "file": "frontend/src/lib/config.js",
+      "VITE_*_consumers": [
+        {
+          "keys": ["VITE_API_URL", "VITE_API_BASE_URL", "VITE_BACKEND_URL"],
+          "function": "resolveConfiguredApiUrl",
+          "purpose": "Choose external API/backend origin when configured"
+        },
+        {
+          "keys": ["VITE_USE_SAME_ORIGIN_API"],
+          "function": "shouldUseSameOriginApi",
+          "purpose": "Force same-origin /api for Netlify/static or explicit override"
+        },
+        {
+          "keys": ["VITE_FORCE_DIRECT_BACKEND_API"],
+          "function": "resolveApiBaseUrl",
+          "purpose": "In dev: default to same-origin proxy unless forced direct"
+        },
+        {
+          "keys": ["VITE_BACKEND_PORT"],
+          "function": "BACKEND_PORT constant",
+          "purpose": "Dev fallback port when BACKEND_URL is not configured"
+        }
+      ],
+      "resolved_values_in_local_dev_with_current_env": {
+        "USE_SAME_ORIGIN_API": false,
+        "BACKEND_URL": "https://reelforge-deploy-production.up.railway.app",
+        "API_BASE_URL": "",
+        "API_BASE_URL_reason": "DEV=true and VITE_FORCE_DIRECT_BACKEND_API != 'true' => same-origin (Vite proxy)"
+      }
+    },
+    "runtime_consumers": [
+      {
+        "symbol": "API_BASE_URL",
+        "file": "frontend/src/lib/api.js",
+        "function": "apiRequest",
+        "purpose": "Builds fetch URL as `${API_BASE_URL}${endpoint}` for all API calls"
+      },
+      {
+        "symbol": "API_BASE_URL",
+        "file": "frontend/src/lib/api.js",
+        "function": "checkBackendHealth",
+        "purpose": "Health probes paths ['/api/health','/health','/'] across bases ['', API_BASE_URL, BACKEND_URL]"
+      },
+      {
+        "symbol": "BACKEND_URL",
+        "file": "frontend/src/lib/wsReelEvents.js",
+        "function": "connectReelEventSocket",
+        "purpose": "Builds WebSocket URL: ws(s)://<BACKEND_URL>/ws/control-center when not same-origin"
+      },
+      {
+        "symbol": "BACKEND_URL",
+        "file": "frontend/src/lib/config.js",
+        "function": "toBackendMediaUrl",
+        "purpose": "Resolves media URLs (/videos,/thumbs). In dev defaults to same-origin media unless forced direct; otherwise may use BACKEND_URL/ASSET_BASE_URL"
+      },
+      {
+        "symbol": "BACKEND_URL",
+        "file": "frontend/src/lib/security/securityAuditEngine.js",
+        "function": "runSecurityAudit (riskReport.apiExposure/environment)",
+        "purpose": "Diagnostics-only: records apiBaseUrl/backendUrl + VITE_* env values"
+      },
+      {
+        "symbol": "BACKEND_URL",
+        "file": "frontend/src/lib/platform/platformAudit.js",
+        "function": "runPlatformAudit",
+        "purpose": "Diagnostics-only: lists dependencies including BACKEND_URL"
+      }
+    ]
+  },
+  "step2_classification_proxy_vs_direct": {
+    "proxy_path_callers": [
+      {
+        "file": "frontend/src/lib/api.js",
+        "function": "apiRequest",
+        "example": "fetch(`${API_BASE_URL}${endpoint}`) where API_BASE_URL='' => fetch('/api/...')",
+        "classification": "PROXY PATH"
+      },
+      {
+        "file": "frontend/src/lib/api/*.js",
+        "function": "fetchWithRetry callers",
+        "example": "fetchWithRetry(`${API_BASE_URL}/api/reels?...`) where API_BASE_URL='' => '/api/reels'",
+        "classification": "PROXY PATH"
+      },
+      {
+        "file": "frontend/src/lib/api/ingestPoll.js",
+        "function": "pollIngestionUntilReady",
+        "example": "fetch(`${API_BASE_URL}/api/reels/{id}`) where API_BASE_URL='' => '/api/reels/{id}'",
+        "classification": "PROXY PATH"
+      },
+      {
+        "file": "frontend/src/lib/api.js",
+        "function": "checkBackendHealth",
+        "example_primary": "fetch('/api/health') (base='')",
+        "classification": "PROXY PATH (primary), DIRECT BACKEND PATH (fallback when base=BACKEND_URL)"
+      }
+    ],
+    "direct_backend_callers": [
+      {
+        "file": "frontend/src/lib/wsReelEvents.js",
+        "function": "connectReelEventSocket",
+        "example": "new WebSocket((BACKEND_URL).replace(/^http/,'ws') + '/ws/control-center')",
+        "resolved_target_in_local_dev": "wss://reelforge-deploy-production.up.railway.app/ws/control-center",
+        "classification": "DIRECT BACKEND PATH"
+      }
+    ]
+  },
+  "step3_startup_bootstrap_railway_usage": {
+    "startup_consumer": {
+      "file": "frontend/src/viewer/viewerContext.js",
+      "trigger": "onMount() after syncFromVault(true)",
+      "calls": "connectReelEventSocket(...)"
+    },
+    "railway_usage": {
+      "function": "connectReelEventSocket",
+      "file": "frontend/src/lib/wsReelEvents.js",
+      "request": "WebSocket to `${wsBase}/ws/control-center`",
+      "wsBase_resolution": "(BACKEND_URL).replace(/^http/,'ws') when USE_SAME_ORIGIN_API=false",
+      "resolved_url_in_local_dev": "wss://reelforge-deploy-production.up.railway.app/ws/control-center",
+      "timing": "after initial vault sync completes (post-syncFromVault in viewerContext)"
+    },
+    "healthcheck_fallback_note": {
+      "function": "checkBackendHealth",
+      "file": "frontend/src/lib/api.js",
+      "note": "If local proxy path fails, it will next try base=BACKEND_URL (Railway) for /api/health and /health."
+    }
+  },
+  "step4_multiple_origins_verdict": "MULTIPLE API ORIGINS",
+  "evidence_summary": [
+    "API calls use API_BASE_URL which is '' in dev => same-origin /api via Vite proxy to localhost:8080.",
+    "WebSocket events use BACKEND_URL directly when USE_SAME_ORIGIN_API=false; with current .env.local this points to Railway.",
+    "Therefore a single local session can simultaneously use local proxy for REST and Railway for WebSocket."
+  ]
+}

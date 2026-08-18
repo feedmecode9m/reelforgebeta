@@ -1,0 +1,74 @@
+{
+  "mission": "RC1-LARGE-HERO-UPLOAD-CHARACTERIZATION",
+  "release_id": "RC1-2026-07-18-001",
+  "generatedAt": "2026-07-18T20:17:16.272Z",
+  "frontendUrl": "https://strong-lolly-a9fcb4.netlify.app/",
+  "apiUrl": "https://strong-lolly-a9fcb4.netlify.app",
+  "videoPath": "/home/youloose2dafish/Downloads/condo_v1_2.mp4",
+  "videoSizeBytes": 362155056,
+  "phases": [
+    {
+      "name": "UPLOAD_STARTED",
+      "ts": "2026-07-18T20:17:16.883Z",
+      "file": "condo_v1_2.mp4",
+      "sizeBytes": 362155056
+    },
+    {
+      "name": "UPLOAD_BYTES_SENT",
+      "ts": "2026-07-18T20:17:31.690Z",
+      "note": "setInputFiles dispatched to hero pipeline",
+      "elapsedMs": 26
+    },
+    {
+      "name": "POST_COMPLETE",
+      "ts": "2026-07-18T20:22:31.802Z",
+      "status": 502,
+      "elapsedMs": 300105,
+      "reelId": null
+    },
+    {
+      "name": "TEST_B_CATALOG_CHECK",
+      "ts": "2026-07-18T20:47:55.680Z",
+      "reelId": null
+    }
+  ],
+  "testA_upload": {
+    "postEvents": [
+      {
+        "phase": "request",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels",
+        "ts": "2026-07-18T20:17:31.696Z",
+        "t0": 1784405851696
+      },
+      {
+        "phase": "response",
+        "status": 502,
+        "elapsedMs": 300105,
+        "id": null,
+        "ingestStatus": null,
+        "ts": "2026-07-18T20:22:31.802Z"
+      }
+    ],
+    "heroAfterUpload": {
+      "reel": null,
+      "mgr": null
+    },
+    "heroAfterRefresh": {
+      "reel": null,
+      "mgr": null
+    },
+    "uploadWaitMs": 1800000,
+    "ok": false
+  },
+  "testB_catalog": {
+    "exists": false,
+    "reel": null,
+    "ok": false
+  },
+  "testC_restore": {
+    "skipped": true,
+    "reason": "no_reel_id"
+  },
+  "pass": false,
+  "completedAt": "2026-07-18T20:47:55.996Z"
+}

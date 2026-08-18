@@ -1,0 +1,292 @@
+{
+  "mission": "RC3-BOOT-02",
+  "baseline": [
+    "RC1 freeze",
+    "RC2 PASS",
+    "RC3-BOOT-01 complete"
+  ],
+  "productionUrl": "https://strong-lolly-a9fcb4.netlify.app/",
+  "generatedAt": "2026-07-20T04:59:13.188Z",
+  "static": {
+    "saveHeroManagerConfigCallsites": [
+      {
+        "file": "src/components/experiences/HeroExperience.svelte",
+        "function": "acceptHeroFile",
+        "caller": "beginHeroAutoAccept() → acceptHeroFile()",
+        "event": "User selects hero file (input change) AND upload completion succeeds",
+        "evidence": {
+          "line": 1415,
+          "text": "saveHeroManagerConfig({"
+        }
+      },
+      {
+        "file": "src/components/experiences/HeroExperience.svelte",
+        "function": "acceptHeroFile",
+        "caller": "beginHeroAutoAccept() → acceptHeroFile()",
+        "event": "User selects hero file (input change) AND upload completion succeeds",
+        "evidence": {
+          "line": 1484,
+          "text": "saveHeroManagerConfig({"
+        }
+      },
+      {
+        "file": "src/components/studio/HeroManagerPanel.svelte",
+        "function": "applyStoryStoryState",
+        "caller": "HeroManagerPanel.applyStoryStoryState()",
+        "event": "User clicks Save Draft / Publish Story / Schedule Story",
+        "evidence": {
+          "line": 214,
+          "text": "saveHeroManagerConfig(config);"
+        }
+      },
+      {
+        "file": "src/components/studio/HeroManagerPanel.svelte",
+        "function": "deleteHeroVaultAsset",
+        "caller": "HeroManagerPanel.deleteHeroVaultAsset()",
+        "event": "User clicks Delete on a hero vault item",
+        "evidence": {
+          "line": 409,
+          "text": "saveHeroManagerConfig(config);"
+        }
+      },
+      {
+        "file": "src/components/studio/HeroManagerPanel.svelte",
+        "function": "toggleCampaign",
+        "caller": "HeroManagerPanel.toggleCampaign()",
+        "event": "User interacts with Hero Manager controls",
+        "evidence": {
+          "line": 587,
+          "text": "saveHeroManagerConfig(config);"
+        }
+      },
+      {
+        "file": "src/components/studio/HeroManagerPanel.svelte",
+        "function": "updateCampaignSchedule",
+        "caller": "HeroManagerPanel.updateCampaignSchedule()",
+        "event": "User interacts with Hero Manager controls",
+        "evidence": {
+          "line": 604,
+          "text": "saveHeroManagerConfig(config);"
+        }
+      },
+      {
+        "file": "src/components/studio/HeroManagerPanel.svelte",
+        "function": "applyConfig",
+        "caller": "UI bindings (on:change={applyConfig}) OR Apply button (data-hero-manager-apply)",
+        "event": "User changes Hero Type / Background Source / Background Style / Auto Rotate or clicks Apply",
+        "evidence": {
+          "applyButtonPresent": true,
+          "onChangeApplyConfigPresent": true,
+          "autoRotateCheckboxPresent": true
+        }
+      },
+      {
+        "file": "src/lib/hero/heroIntelligence.js",
+        "function": "unknown",
+        "caller": "unknown",
+        "event": "unknown",
+        "evidence": {
+          "line": 733,
+          "text": "export function saveHeroManagerConfig(patch = {}) {"
+        }
+      },
+      {
+        "file": "src/lib/hero/heroIntelligence.js",
+        "function": "rotateHeroSelection",
+        "caller": "heroIntelligence.rotateHeroSelection()",
+        "event": "Timer: startHeroRotation interval (only if config.autoRotate === true; requires prior saved config)",
+        "evidence": {
+          "line": 2317,
+          "text": "const nextConfig = saveHeroManagerConfig({ heroType: nextType });"
+        }
+      },
+      {
+        "file": "src/lib/hero/heroIntelligence.js",
+        "function": "updateHeroManagerConfig",
+        "caller": "heroIntelligence.updateHeroManagerConfig()",
+        "event": "Called from HeroManagerPanel.applyConfig (user interaction)",
+        "evidence": {
+          "line": 2383,
+          "text": "const config = saveHeroManagerConfig(patch);"
+        }
+      }
+    ]
+  },
+  "runtime": {
+    "phaseA_freshBoot_noInteraction": {
+      "startedAt": "2026-07-20T04:59:13.540Z",
+      "opsCount": 6000,
+      "keyWritesCount": 0,
+      "firstKeyRead": {
+        "id": 6001,
+        "ts": "2026-07-20T04:59:27.483Z",
+        "perfNowMs": 14167.699999999255,
+        "storageType": "localStorage",
+        "op": "getItem",
+        "key": "reelforge_hero_manager_config",
+        "prev": {
+          "present": false,
+          "heroAssetId": null,
+          "backgroundSource": null,
+          "rawLength": 0
+        },
+        "next": null,
+        "stack": [
+          "Error: RC3-BOOT-02 stack",
+          "at record (<anonymous>:43:19)",
+          "at proto.getItem (<anonymous>:65:5)",
+          "at HU (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:9:111217)",
+          "at oN (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:9:111790)",
+          "at ds (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:9:111862)",
+          "at FN (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:9:170804)",
+          "at Qu (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:9:173017)",
+          "at B9 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:9:189899)",
+          "at ZN (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:9:192444)",
+          "at Pm (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:9:192808)"
+        ],
+        "trigger": ""
+      },
+      "errors": [
+        {
+          "ts": "2026-07-20T04:59:24.157Z",
+          "message": "",
+          "filename": "",
+          "lineno": null,
+          "colno": null
+        },
+        {
+          "ts": "2026-07-20T04:59:24.342Z",
+          "message": "",
+          "filename": "",
+          "lineno": null,
+          "colno": null
+        }
+      ]
+    },
+    "phaseB_userAction_createsKey": {
+      "beforeValuePresent": false,
+      "afterValuePresent": true,
+      "afterValueSummary": {
+        "heroAssetId": "",
+        "backgroundSource": "selection"
+      },
+      "keyWritesCount": 1,
+      "firstKeyWrite": {
+        "id": 6001,
+        "ts": "2026-07-20T04:59:57.445Z",
+        "perfNowMs": 2643.7999999998137,
+        "storageType": "localStorage",
+        "op": "setItem",
+        "key": "reelforge_hero_manager_config",
+        "prev": {
+          "present": false,
+          "heroAssetId": null,
+          "backgroundSource": null,
+          "rawLength": 0
+        },
+        "next": {
+          "present": true,
+          "heroAssetId": "",
+          "backgroundSource": "selection",
+          "rawLength": 2162
+        },
+        "stack": [
+          "Error: RC3-BOOT-02 stack",
+          "at record (<anonymous>:43:19)",
+          "at proto.setItem (<anonymous>:72:5)",
+          "at Ba (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:9:62863)",
+          "at $4 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:9:86880)",
+          "at HTMLInputElement.X (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:25:41949)"
+        ],
+        "trigger": "user_action:toggle_auto_rotate"
+      },
+      "errors": [
+        {
+          "ts": "2026-07-20T04:59:55.176Z",
+          "message": "",
+          "filename": "",
+          "lineno": null,
+          "colno": null
+        },
+        {
+          "ts": "2026-07-20T04:59:55.266Z",
+          "message": "",
+          "filename": "",
+          "lineno": null,
+          "colno": null
+        }
+      ]
+    }
+  },
+  "answers": {
+    "step3_anyAutomaticCreatorExecutesOnFreshBrowser": "NO",
+    "step3_proof": {
+      "waitMs": 20000,
+      "keyWritesCountWithinWindow": 0,
+      "firstKeyRead": {
+        "id": 6001,
+        "ts": "2026-07-20T04:59:27.483Z",
+        "perfNowMs": 14167.699999999255,
+        "storageType": "localStorage",
+        "op": "getItem",
+        "key": "reelforge_hero_manager_config",
+        "prev": {
+          "present": false,
+          "heroAssetId": null,
+          "backgroundSource": null,
+          "rawLength": 0
+        },
+        "next": null,
+        "stack": [
+          "Error: RC3-BOOT-02 stack",
+          "at record (<anonymous>:43:19)",
+          "at proto.getItem (<anonymous>:65:5)",
+          "at HU (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:9:111217)",
+          "at oN (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:9:111790)",
+          "at ds (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:9:111862)",
+          "at FN (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:9:170804)",
+          "at Qu (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:9:173017)",
+          "at B9 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:9:189899)",
+          "at ZN (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:9:192444)",
+          "at Pm (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:9:192808)"
+        ],
+        "trigger": ""
+      }
+    },
+    "step4_firstUserActionExpectedToCreateKey": "Studio → System tab (HeroManagerPanel) → change any control bound to applyConfig (e.g., Auto Rotate checkbox)",
+    "step5_executionTrace": {
+      "userAction": "Studio → System tab → click Auto Rotate checkbox",
+      "expectedHandler": "HeroManagerPanel applyConfig() → updateHeroManagerConfig() → saveHeroManagerConfig() → localStorage.setItem(reelforge_hero_manager_config)",
+      "observedFirstWrite": {
+        "id": 6001,
+        "ts": "2026-07-20T04:59:57.445Z",
+        "perfNowMs": 2643.7999999998137,
+        "storageType": "localStorage",
+        "op": "setItem",
+        "key": "reelforge_hero_manager_config",
+        "prev": {
+          "present": false,
+          "heroAssetId": null,
+          "backgroundSource": null,
+          "rawLength": 0
+        },
+        "next": {
+          "present": true,
+          "heroAssetId": "",
+          "backgroundSource": "selection",
+          "rawLength": 2162
+        },
+        "stack": [
+          "Error: RC3-BOOT-02 stack",
+          "at record (<anonymous>:43:19)",
+          "at proto.setItem (<anonymous>:72:5)",
+          "at Ba (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:9:62863)",
+          "at $4 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:9:86880)",
+          "at HTMLInputElement.X (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:25:41949)"
+        ],
+        "trigger": "user_action:toggle_auto_rotate"
+      }
+    }
+  },
+  "verdict": "CREATOR NEVER EXECUTES"
+}

@@ -32,6 +32,10 @@ function text(value) {
  *   category?: string;
  *   posterUrl?: string;
  *   description?: string;
+ *   seriesLine?: string;
+ *   seasonNumber?: number | string;
+ *   episodeNumber?: number | string;
+ *   seriesLabel?: string;
  * }} [projection]
  * @param {{
  *   mediaSource?: string;
@@ -63,6 +67,31 @@ export function buildViewerSemanticShell(reel = {}, projection = {}, resolvedMed
             enriched.themes
         );
 
+    const seasonNumber =
+        projection.seasonNumber != null
+            ? Number(projection.seasonNumber)
+            : reel.seasonNumber != null
+              ? Number(reel.seasonNumber)
+              : null;
+    const episodeNumber =
+        projection.episodeNumber != null
+            ? Number(projection.episodeNumber)
+            : reel.episodeNumber != null
+              ? Number(reel.episodeNumber)
+              : null;
+    const seriesLabel = text(
+        projection.seriesLabel || reel.seriesLabel || reel.seriesName || reel.seriesTitle
+    );
+    let episodeIdentity = '';
+    if (Number.isFinite(seasonNumber) && Number.isFinite(episodeNumber) && seasonNumber > 0 && episodeNumber > 0) {
+        episodeIdentity = `S${Math.trunc(seasonNumber)} · E${Math.trunc(episodeNumber)}`;
+    } else if (Number.isFinite(episodeNumber) && episodeNumber > 0) {
+        episodeIdentity = `E${Math.trunc(episodeNumber)}`;
+    }
+    const seriesLine =
+        text(projection.seriesLine) ||
+        [seriesLabel, episodeIdentity].filter(Boolean).join(' · ');
+
     return {
         assetId: enriched.assetId,
         title: text(projection.title) || enriched.title || text(resolvedMedia?.title),
@@ -85,6 +114,9 @@ export function buildViewerSemanticShell(reel = {}, projection = {}, resolvedMed
         presentationCssClass: enriched.presentation?.cssClass || 'sem-card--theme-neutral',
         animationBehavior: enriched.presentation?.animation || 'lift',
         resolvedMedia: media,
+        seriesLine,
+        episodeIdentity,
+        seriesLabel,
         // Explicitly omitted / never invented for viewer shell:
         inventedDescription: false,
         inventedGenre: false,

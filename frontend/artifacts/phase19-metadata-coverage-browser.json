@@ -1,0 +1,22 @@
+{
+  "generatedAt": "2026-08-12T16:08:12.456Z",
+  "baseline": "b9e4f42",
+  "failures": [],
+  "notes": [
+    "UI unlock",
+    "UI tags/shelf",
+    "A title",
+    "B Romance",
+    "C Suspense",
+    "D Cyber",
+    "E clear→Suspense",
+    "F neutral→Trending",
+    "H immediate Romance",
+    "G reload",
+    "I/J art+id",
+    "K failure safety",
+    "L Romance",
+    "L clear Suspense"
+  ],
+  "pass": true
+}

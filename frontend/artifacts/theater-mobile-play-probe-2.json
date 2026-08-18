@@ -1,0 +1,93 @@
+{
+  "notes": [
+    "A: theater opened",
+    "A: play hittable",
+    "A: Play click started playback",
+    "A: Pause click paused playback",
+    "B: theater opened",
+    "B: autoplay still running (paused=false) — policy may not apply",
+    "C: recovered from paused state"
+  ],
+  "failures": [
+    "B: Play did not start when autoplay blocked (btn=Play)"
+  ],
+  "snaps": {
+    "openedVia": ".viewer-featured [data-reel-id]",
+    "A_before_force": {
+      "paused": false,
+      "currentTime": 3.227096,
+      "readyState": 4,
+      "muted": true,
+      "btn": "Pause",
+      "src": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/f727b62e-af4e-4e06-9c36-8312ddb735a8.playba",
+      "err": null
+    },
+    "A_forced_paused": {
+      "paused": true,
+      "currentTime": 0,
+      "readyState": 4,
+      "muted": true,
+      "btn": "Play",
+      "src": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/f727b62e-af4e-4e06-9c36-8312ddb735a8.playba",
+      "err": null
+    },
+    "A_hit": {
+      "isPlay": true,
+      "text": "Play"
+    },
+    "A_after_play_click": {
+      "paused": false,
+      "currentTime": 1.983447,
+      "readyState": 4,
+      "muted": true,
+      "btn": "Pause",
+      "src": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/f727b62e-af4e-4e06-9c36-8312ddb735a8.playba",
+      "err": null
+    },
+    "A_after_pause_click": {
+      "paused": true,
+      "currentTime": 2.094117,
+      "readyState": 4,
+      "muted": true,
+      "btn": "Play",
+      "src": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/f727b62e-af4e-4e06-9c36-8312ddb735a8.playba",
+      "err": null
+    },
+    "B_before": {
+      "paused": false,
+      "currentTime": 3.642213,
+      "readyState": 4,
+      "muted": true,
+      "btn": "Pause",
+      "src": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/f727b62e-af4e-4e06-9c36-8312ddb735a8.playba",
+      "err": null
+    },
+    "B_after": {
+      "paused": true,
+      "currentTime": 3.754785,
+      "readyState": 4,
+      "muted": true,
+      "btn": "Play",
+      "src": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/f727b62e-af4e-4e06-9c36-8312ddb735a8.playba",
+      "err": null
+    },
+    "C_mid": {
+      "paused": true,
+      "currentTime": 3.137554,
+      "readyState": 4,
+      "muted": true,
+      "btn": "Play",
+      "src": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/f727b62e-af4e-4e06-9c36-8312ddb735a8.playba",
+      "err": null
+    },
+    "C_after": {
+      "paused": false,
+      "currentTime": 4.648252,
+      "readyState": 4,
+      "muted": true,
+      "btn": "Pause",
+      "src": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/f727b62e-af4e-4e06-9c36-8312ddb735a8.playba",
+      "err": null
+    }
+  }
+}

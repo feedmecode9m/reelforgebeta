@@ -1,0 +1,1872 @@
+{
+  "mission": "RC3-HERO-STATE-01",
+  "goal": "Hero Registry Hydration Trace \u2014 find first place a valid hero asset disappears",
+  "baseline": [
+    "RC1-2026-07-19-POST-08C",
+    "RC2 MP4 Acceptance PASS"
+  ],
+  "generatedAt": "2026-07-20T04:28:58.902Z",
+  "frontendUrl": "https://strong-lolly-a9fcb4.netlify.app/",
+  "rules": {
+    "noSourceChanges": true,
+    "noFixes": true,
+    "noCommits": true,
+    "noDeploys": true,
+    "ignoreUploadTransport": true,
+    "ignoreReconnect": true,
+    "ignoreThumbnails": true
+  },
+  "staticChain": {
+    "keys": {
+      "manager": "reelforge_hero_manager_config",
+      "reel": "reelforge_hero_reel",
+      "video": "reelforge_hero_video",
+      "image": "reelforge_hero_image"
+    },
+    "loadHeroVaultItemsGates": [
+      "reel = loadHeroReel(); if (!reel?.id || !reel?.url) return []",
+      "if (manager.heroAssetId !== reel.id) return []",
+      "else return [heroReelToVaultItem(reel)]"
+    ],
+    "resolvePath": [
+      "localStorage",
+      "loadHeroManagerConfig()",
+      "loadHeroReel()",
+      "loadHeroVaultItems()",
+      "buildHeroAssetRegistry()",
+      "resolveHeroBackgroundAsset()",
+      "HeroExperience / viewer render"
+    ],
+    "defaultFallbackPaths": [
+      "/videos/hero-background.mp4",
+      "/hero-background.mp4"
+    ],
+    "note": "applyHeroManagerBackground early-returns when backgroundSource === \"selection\""
+  },
+  "seedReel": {
+    "id": "192293f7-c784-46af-aa45-1bb15b6a4cc6",
+    "fileName": "192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4",
+    "name": "Rc2 Hero 1784471351550",
+    "url": "https://strong-lolly-a9fcb4.netlify.app/videos/192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4",
+    "type": "video",
+    "backgroundSource": "custom_video",
+    "status": "ready",
+    "category": "HERO"
+  },
+  "fallbackHeads": {
+    "videosHeroBackground": {
+      "url": "https://strong-lolly-a9fcb4.netlify.app/videos/hero-background.mp4",
+      "status": 404,
+      "ok": false,
+      "contentType": "application/json"
+    },
+    "rootHeroBackground": {
+      "url": "https://strong-lolly-a9fcb4.netlify.app/hero-background.mp4",
+      "status": 200,
+      "ok": true,
+      "contentType": "video/mp4"
+    },
+    "seededReelPath": {
+      "url": "https://strong-lolly-a9fcb4.netlify.app/videos/192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4",
+      "status": 200,
+      "ok": true,
+      "contentType": "video/mp4"
+    }
+  },
+  "bundle": "/assets/index-Btl25zBV.js",
+  "passes": [
+    {
+      "name": "A_cold_boot",
+      "startedAt": "2026-07-20T04:29:05.703Z",
+      "setup": {
+        "action": "cleared_all_hero_keys"
+      },
+      "storageBeforeNav": {
+        "at": "2026-07-20T04:29:12.290Z",
+        "keys": {
+          "manager": {
+            "present": false,
+            "raw": null,
+            "parsed": null
+          },
+          "reel": {
+            "present": false,
+            "raw": null,
+            "parsed": null
+          },
+          "video": {
+            "present": false,
+            "raw": null,
+            "parsed": null
+          },
+          "image": {
+            "present": false,
+            "raw": null,
+            "parsed": null
+          }
+        },
+        "derived": {
+          "hasReelId": false,
+          "hasReelUrl": false,
+          "heroAssetId": "",
+          "reelId": "",
+          "idsMatch": false,
+          "wouldReturnEmpty": true
+        },
+        "allHeroRelatedKeys": []
+      },
+      "storageAfterBoot": {
+        "at": "2026-07-20T04:29:31.202Z",
+        "keys": {
+          "manager": {
+            "present": false,
+            "raw": null,
+            "parsed": null
+          },
+          "reel": {
+            "present": false,
+            "raw": null,
+            "parsed": null
+          },
+          "video": {
+            "present": false,
+            "raw": null,
+            "parsed": null
+          },
+          "image": {
+            "present": false,
+            "raw": null,
+            "parsed": null
+          }
+        },
+        "derived": {
+          "hasReelId": false,
+          "hasReelUrl": false,
+          "heroAssetId": "",
+          "reelId": "",
+          "idsMatch": false,
+          "wouldReturnEmpty": true
+        },
+        "allHeroRelatedKeys": []
+      },
+      "domAfterBoot": {
+        "at": "2026-07-20T04:29:31.207Z",
+        "videoSrc": "https://strong-lolly-a9fcb4.netlify.app/videos/3538ddd6-463d-46df-b896-2df21e57e99e.mp4",
+        "videoError": false,
+        "imgSrc": "https://strong-lolly-a9fcb4.netlify.app/placeholders/media-fallback.svg"
+      },
+      "classifySummary": {
+        "start": {
+          "ts": "2026-07-20T04:29:18.230Z",
+          "type": "info",
+          "text": "[HERO_CLASSIFY] {stage: resolveHeroBackgroundAsset:start, heroAssetId: , canonicalReelId: , backgroundSource: selection, vaultItemsCount: 0}"
+        },
+        "resolved": {
+          "ts": "2026-07-20T04:29:18.230Z",
+          "type": "info",
+          "text": "[HERO_ROUTE] {stage: resolveHeroBackgroundAsset:resolved, heroAssetId: , resolvedAssetId: , assetType: unknown, mediaUrl: }"
+        }
+      },
+      "mediaResponses": [
+        {
+          "ts": "2026-07-20T04:29:12.386Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/hero-background.mp4",
+          "status": 404
+        },
+        {
+          "ts": "2026-07-20T04:29:13.304Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/hero-background.mp4",
+          "status": 404
+        },
+        {
+          "ts": "2026-07-20T04:29:14.409Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/hero-background.mp4",
+          "status": 404
+        },
+        {
+          "ts": "2026-07-20T04:29:14.555Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/hero-background.mp4",
+          "status": 404
+        },
+        {
+          "ts": "2026-07-20T04:29:14.646Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/hero-background.MOV",
+          "status": 404
+        },
+        {
+          "ts": "2026-07-20T04:29:14.802Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/hero-background.MOV",
+          "status": 404
+        },
+        {
+          "ts": "2026-07-20T04:29:21.764Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/f3d26ccd-2fff-46b7-8c57-14a87242e350.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:21.765Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/4c840a16-77f7-4a2f-b81d-0dee37b3de18.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:21.766Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/5ab6c2ad-f457-4bb2-ba4e-0992b863f14d.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:21.768Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/aa0691a3-69da-46d6-9ffd-a7f20cf7c976.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:21.768Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/356f0466-6dfb-4a17-974a-14d0f627e688.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:21.769Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/9178e241-176d-439d-82cb-a0ecc5f9ae7d.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:21.769Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/a4e45b23-a984-457b-9c86-4b994db584c9.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:21.769Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/fb0e2473-f2b9-40bf-97d7-b781095b5347.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:21.771Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/40137565-aada-4baf-8eeb-2e42c7032cc0.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:21.771Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/f9299f26-7bea-4873-ad72-cf18120dbd98.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:21.771Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/dbf24a89-7636-4313-9a45-248d0bbeef8c.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:21.771Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/9f6ea9c9-2cf3-4a0a-8c29-dcee40e243dd.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:21.772Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/9cbb9526-cf81-4294-b777-ff94dfe89f61.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:21.772Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/aba87aec-f114-427a-a7ed-6da9017eae66.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:21.772Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/085d5f3b-a18d-4cee-b656-dc21250ff0c3.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:21.773Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:21.814Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/3538ddd6-463d-46df-b896-2df21e57e99e.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:26.565Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/f3d26ccd-2fff-46b7-8c57-14a87242e350.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:26.565Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/4c840a16-77f7-4a2f-b81d-0dee37b3de18.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:26.566Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/5ab6c2ad-f457-4bb2-ba4e-0992b863f14d.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:26.566Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/aa0691a3-69da-46d6-9ffd-a7f20cf7c976.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:26.567Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/9178e241-176d-439d-82cb-a0ecc5f9ae7d.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:26.568Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/a4e45b23-a984-457b-9c86-4b994db584c9.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:26.568Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/40137565-aada-4baf-8eeb-2e42c7032cc0.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:26.569Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/dbf24a89-7636-4313-9a45-248d0bbeef8c.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:26.570Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/9f6ea9c9-2cf3-4a0a-8c29-dcee40e243dd.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:26.570Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/9cbb9526-cf81-4294-b777-ff94dfe89f61.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:26.570Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/aba87aec-f114-427a-a7ed-6da9017eae66.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:26.570Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:26.571Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/3538ddd6-463d-46df-b896-2df21e57e99e.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:27.723Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/f9299f26-7bea-4873-ad72-cf18120dbd98.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:27.943Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/085d5f3b-a18d-4cee-b656-dc21250ff0c3.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:28.958Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/356f0466-6dfb-4a17-974a-14d0f627e688.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:28.958Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/fb0e2473-f2b9-40bf-97d7-b781095b5347.mp4",
+          "status": 206
+        }
+      ],
+      "pageErrors": [],
+      "restore": [
+        {
+          "ts": "2026-07-20T04:29:14.326Z",
+          "type": "info",
+          "text": "[BG7V_HERO_RESTORE_REASON] {heroAssetId: , matchedReelId: null, restoreAttempted: false, restored: false, reason: NO_HERO_ID}"
+        }
+      ],
+      "storeReads": [
+        {
+          "ts": "2026-07-20T04:29:14.805Z",
+          "type": "info",
+          "text": "[HERO_STORE_READ] {stage: reloadVaultStoresFromStorage:videos, key: personal_video_vault, count: 5, ts: 2026-07-20T04:29:14.804Z}"
+        },
+        {
+          "ts": "2026-07-20T04:29:16.000Z",
+          "type": "info",
+          "text": "[HERO_STORE_READ] {stage: reloadVaultStoresFromStorage:videos, key: personal_video_vault, count: 5, ts: 2026-07-20T04:29:15.999Z}"
+        },
+        {
+          "ts": "2026-07-20T04:29:16.330Z",
+          "type": "info",
+          "text": "[HERO_STORE_READ] {stage: AI_CLEANUP_AGENT.syncVideoVaultToFeed, key: personal_video_vault, count: 5, ts: 2026-07-20T04:29:16.327Z}"
+        },
+        {
+          "ts": "2026-07-20T04:29:18.104Z",
+          "type": "info",
+          "text": "[HERO_STORE_READ] {stage: AI_CLEANUP_AGENT.syncVideoVaultToFeed, key: personal_video_vault, count: 5, ts: 2026-07-20T04:29:18.103Z}"
+        }
+      ],
+      "classification": {
+        "verdict": "EMPTY_AT_LOCALSTORAGE_BOOT",
+        "firstEmptyStage": "localStorage (reelforge_hero_reel + reelforge_hero_manager_config.heroAssetId)",
+        "detail": "No hero reel and no heroAssetId present before resolve"
+      },
+      "endedAt": "2026-07-20T04:29:31.209Z",
+      "heroConsoleExcerpt": [
+        {
+          "ts": "2026-07-20T04:29:26.223Z",
+          "type": "log",
+          "text": "[HERO_TRANSITION] {\"trigger\":\"autoplay\",\"fromIndex\":0,\"toIndex\":1,\"slideType\":\"image\",\"slideId\":\"slide-image:reel-neon-s01e02\",\"transitionStyle\":\"fade\",\"paused\":false,\"timestamp\":1784521766221}"
+        },
+        {
+          "ts": "2026-07-20T04:29:26.224Z",
+          "type": "log",
+          "text": "[HERO_ROTATION] {\"trigger\":\"autoplay\",\"index\":1,\"slideType\":\"image\",\"slideId\":\"slide-image:reel-neon-s01e02\",\"timestamp\":1784521766222}"
+        },
+        {
+          "ts": "2026-07-20T04:29:26.224Z",
+          "type": "info",
+          "text": "[HERO_CAROUSEL_NAVIGATE] {direction: autoplay, targetAssetId: slide-image:reel-neon-s01e02}"
+        },
+        {
+          "ts": "2026-07-20T04:29:26.224Z",
+          "type": "info",
+          "text": "[HERO_CAROUSEL_RENDER] {assetId: slide-image:reel-neon-s01e02, type: image, mediaLoaded: true}"
+        },
+        {
+          "ts": "2026-07-20T04:29:28.422Z",
+          "type": "log",
+          "text": "[HERO_BLOCKER] {\"seriesId\":\"series-trending-shorts\",\"blocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"readiness\":0,\"timestamp\":1784521768421}"
+        },
+        {
+          "ts": "2026-07-20T04:29:28.422Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e01\",\"title\":\"Upload S1:E01 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521768421}"
+        },
+        {
+          "ts": "2026-07-20T04:29:28.422Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e02\",\"title\":\"Upload S1:E02 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521768421}"
+        },
+        {
+          "ts": "2026-07-20T04:29:28.423Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e03\",\"title\":\"Upload S1:E03 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521768422}"
+        },
+        {
+          "ts": "2026-07-20T04:29:28.423Z",
+          "type": "log",
+          "text": "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-trending-shorts\",\"readinessPercent\":0,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"publishingVelocity\":0,\"unreadNotifications\":200,\"timestamp\":1784521768422}"
+        },
+        {
+          "ts": "2026-07-20T04:29:29.667Z",
+          "type": "log",
+          "text": "[HERO_BLOCKER] {\"seriesId\":\"series-trending-shorts\",\"blocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"readiness\":0,\"timestamp\":1784521769666}"
+        },
+        {
+          "ts": "2026-07-20T04:29:29.667Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e01\",\"title\":\"Upload S1:E01 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521769666}"
+        },
+        {
+          "ts": "2026-07-20T04:29:29.667Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e02\",\"title\":\"Upload S1:E02 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521769666}"
+        },
+        {
+          "ts": "2026-07-20T04:29:29.667Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e03\",\"title\":\"Upload S1:E03 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521769666}"
+        },
+        {
+          "ts": "2026-07-20T04:29:29.667Z",
+          "type": "log",
+          "text": "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-trending-shorts\",\"readinessPercent\":0,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"publishingVelocity\":0,\"unreadNotifications\":200,\"timestamp\":1784521769666}"
+        },
+        {
+          "ts": "2026-07-20T04:29:30.402Z",
+          "type": "log",
+          "text": "[HERO_SCORE] {\"source\":\"featured_series\",\"episodeId\":\"ep-trending-s01e02\",\"views\":0,\"completionRate\":0,\"releasePriority\":20,\"teamPriority\":15,\"publishingStatus\":85,\"total\":19,\"timestamp\":1784521770401}"
+        },
+        {
+          "ts": "2026-07-20T04:29:30.403Z",
+          "type": "log",
+          "text": "[HERO_SCORE] {\"source\":\"featured_series\",\"episodeId\":\"ep-neon-s01e02\",\"views\":0,\"completionRate\":0,\"releasePriority\":20,\"teamPriority\":15,\"publishingStatus\":85,\"total\":19,\"timestamp\":1784521770401}"
+        },
+        {
+          "ts": "2026-07-20T04:29:30.403Z",
+          "type": "log",
+          "text": "[HERO_SCORE] {\"source\":\"creator_spotlight\",\"episodeId\":\"ep-neon-s01e02\",\"views\":0,\"completionRate\":0,\"releasePriority\":20,\"teamPriority\":45,\"publishingStatus\":85,\"total\":24,\"timestamp\":1784521770402}"
+        },
+        {
+          "ts": "2026-07-20T04:29:30.403Z",
+          "type": "log",
+          "text": "[HERO_SCORE] {\"source\":\"team_pick\",\"episodeId\":\"ep-neon-s01e02\",\"views\":0,\"completionRate\":0,\"releasePriority\":20,\"teamPriority\":90,\"publishingStatus\":85,\"total\":30,\"timestamp\":1784521770402}"
+        },
+        {
+          "ts": "2026-07-20T04:29:30.404Z",
+          "type": "log",
+          "text": "[HERO_SCORE] {\"source\":\"studio_priority\",\"episodeId\":\"ep-trending-s01e01\",\"views\":0,\"completionRate\":0,\"releasePriority\":20,\"teamPriority\":15,\"publishingStatus\":85,\"total\":19,\"timestamp\":1784521770403}"
+        },
+        {
+          "ts": "2026-07-20T04:29:30.404Z",
+          "type": "log",
+          "text": "[HERO_SCORE] {\"source\":\"editors_choice\",\"episodeId\":\"ep-trending-s01e03\",\"views\":0,\"completionRate\":0,\"releasePriority\":20,\"teamPriority\":15,\"publishingStatus\":75,\"total\":18,\"timestamp\":1784521770403}"
+        },
+        {
+          "ts": "2026-07-20T04:29:30.404Z",
+          "type": "log",
+          "text": "[HERO_PRIORITY] {\"ranked\":[{\"source\":\"creator_spotlight\",\"discoveryType\":\"TRENDING\",\"title\":\"Neon Vengeance\",\"score\":24,\"priorityIndex\":2},{\"source\":\"featured_series\",\"discoveryType\":\"TRENDING\",\"title\":\"Trending Shorts\",\"score\":19,\"priorityIndex\":2},{\"source\":\"featured_series\",\"discoveryType\":\"TRENDING\",\"title\":\"Trending Shorts\",\"score\":19,\"priorityIndex\":2},{\"source\":\"editors_choice\",\"discoveryType\":\"TRENDING\",\"title\":\"Cliffhanger\",\"score\":18,\"priorityIndex\":2},{\"source\":\"team_pick\",\"discoveryType\":\"TEAM_SPOTLIGHT\",\"title\":\"Neon Vengeance\",\"score\":30,\"priorityIndex\":4},{\"source\":\"studio_priority\",\"discoveryType\":\"STUDIO_PRIORITY\",\"title\":\"Hook \u2014 15s\",\"score\":19,\"priorityIndex\":5}],\"timestamp\":1784521770403}"
+        },
+        {
+          "ts": "2026-07-20T04:29:30.404Z",
+          "type": "log",
+          "text": "[HERO_INTELLIGENCE] {\"candidateCount\":6,\"sources\":[\"featured_series\",\"creator_spotlight\",\"team_pick\",\"studio_priority\",\"editors_choice\",\"featured_series\"],\"seriesId\":\"series-trending-shorts\",\"timestamp\":1784521770403}"
+        },
+        {
+          "ts": "2026-07-20T04:29:30.410Z",
+          "type": "log",
+          "text": "[HERO_BLOCKER] {\"seriesId\":\"series-vault-chronicles\",\"blocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"readiness\":0,\"timestamp\":1784521770408}"
+        },
+        {
+          "ts": "2026-07-20T04:29:30.410Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e01\",\"title\":\"Upload S1:E01 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521770408}"
+        },
+        {
+          "ts": "2026-07-20T04:29:30.410Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e02\",\"title\":\"Upload S1:E02 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521770408}"
+        },
+        {
+          "ts": "2026-07-20T04:29:30.410Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e03\",\"title\":\"Upload S1:E03 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521770409}"
+        },
+        {
+          "ts": "2026-07-20T04:29:30.410Z",
+          "type": "log",
+          "text": "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-vault-chronicles\",\"readinessPercent\":0,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"publishingVelocity\":0,\"unreadNotifications\":200,\"timestamp\":1784521770409}"
+        },
+        {
+          "ts": "2026-07-20T04:29:30.415Z",
+          "type": "log",
+          "text": "[HERO_BLOCKER] {\"seriesId\":\"series-neon-vengeance\",\"blocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":6,\"openTasks\":5,\"readiness\":25,\"timestamp\":1784521770414}"
+        },
+        {
+          "ts": "2026-07-20T04:29:30.415Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e01\",\"title\":\"Upload S1:E01 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1784521770414}"
+        },
+        {
+          "ts": "2026-07-20T04:29:30.415Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e02\",\"title\":\"Upload S1:E02 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1784521770414}"
+        },
+        {
+          "ts": "2026-07-20T04:29:30.415Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e03\",\"title\":\"Upload S1:E03 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1784521770414}"
+        },
+        {
+          "ts": "2026-07-20T04:29:30.415Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e04\",\"title\":\"Upload S1:E04 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1784521770414}"
+        },
+        {
+          "ts": "2026-07-20T04:29:30.415Z",
+          "type": "log",
+          "text": "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-neon-vengeance\",\"readinessPercent\":25,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":6,\"openTasks\":5,\"publishingVelocity\":0,\"unreadNotifications\":200,\"timestamp\":1784521770414}"
+        },
+        {
+          "ts": "2026-07-20T04:29:30.425Z",
+          "type": "log",
+          "text": "[DISCOVERY_INDEX] {\"totalDocuments\":299,\"bySource\":{\"series_metadata\":19,\"episode\":12,\"workflow\":13,\"notification\":200,\"revenue\":3,\"hero_content\":6,\"marketplace\":16,\"security_event\":6,\"sentinel_recommendation\":24},\"timestamp\":1784521770419}"
+        }
+      ]
+    },
+    {
+      "name": "B_seed_matched_reload",
+      "startedAt": "2026-07-20T04:29:31.306Z",
+      "setup": {
+        "action": "seed_matched_reel_and_manager",
+        "heroAssetId": "192293f7-c784-46af-aa45-1bb15b6a4cc6"
+      },
+      "storageBeforeNav": {
+        "at": "2026-07-20T04:29:38.401Z",
+        "keys": {
+          "manager": {
+            "present": true,
+            "rawLength": 189,
+            "parsed": {
+              "backgroundSource": "custom_video",
+              "heroAssetId": "192293f7-c784-46af-aa45-1bb15b6a4cc6",
+              "backgroundStyle": "video",
+              "heroType": "FEATURED_RELEASE",
+              "autoRotate": false,
+              "updatedAt": 1784521778396
+            }
+          },
+          "reel": {
+            "present": true,
+            "rawLength": 237,
+            "parsed": {
+              "id": "192293f7-c784-46af-aa45-1bb15b6a4cc6",
+              "fileName": "192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4",
+              "name": "Rc2 Hero 1784471351550",
+              "url": "/videos/192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4",
+              "type": "video",
+              "backgroundSource": "custom_video"
+            }
+          },
+          "video": {
+            "present": false,
+            "raw": null,
+            "parsed": null
+          },
+          "image": {
+            "present": false,
+            "raw": null,
+            "parsed": null
+          }
+        },
+        "derived": {
+          "hasReelId": true,
+          "hasReelUrl": true,
+          "heroAssetId": "192293f7-c784-46af-aa45-1bb15b6a4cc6",
+          "reelId": "192293f7-c784-46af-aa45-1bb15b6a4cc6",
+          "idsMatch": true,
+          "wouldReturnEmpty": false
+        },
+        "allHeroRelatedKeys": [
+          "reelforge_hero_manager_config",
+          "reelforge_hero_reel"
+        ]
+      },
+      "storageAfterBoot": {
+        "at": "2026-07-20T04:29:56.705Z",
+        "keys": {
+          "manager": {
+            "present": true,
+            "rawLength": 189,
+            "parsed": {
+              "backgroundSource": "custom_video",
+              "heroAssetId": "192293f7-c784-46af-aa45-1bb15b6a4cc6",
+              "backgroundStyle": "video",
+              "heroType": "FEATURED_RELEASE",
+              "autoRotate": false,
+              "updatedAt": 1784521778396
+            }
+          },
+          "reel": {
+            "present": true,
+            "rawLength": 237,
+            "parsed": {
+              "id": "192293f7-c784-46af-aa45-1bb15b6a4cc6",
+              "fileName": "192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4",
+              "name": "Rc2 Hero 1784471351550",
+              "url": "/videos/192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4",
+              "type": "video",
+              "backgroundSource": "custom_video"
+            }
+          },
+          "video": {
+            "present": false,
+            "raw": null,
+            "parsed": null
+          },
+          "image": {
+            "present": false,
+            "raw": null,
+            "parsed": null
+          }
+        },
+        "derived": {
+          "hasReelId": true,
+          "hasReelUrl": true,
+          "heroAssetId": "192293f7-c784-46af-aa45-1bb15b6a4cc6",
+          "reelId": "192293f7-c784-46af-aa45-1bb15b6a4cc6",
+          "idsMatch": true,
+          "wouldReturnEmpty": false
+        },
+        "allHeroRelatedKeys": [
+          "reelforge_hero_manager_config",
+          "reelforge_hero_reel",
+          "heroBackgroundState"
+        ]
+      },
+      "domAfterBoot": {
+        "at": "2026-07-20T04:29:56.722Z",
+        "videoSrc": "https://strong-lolly-a9fcb4.netlify.app/videos/192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4",
+        "videoError": false,
+        "imgSrc": null
+      },
+      "classifySummary": {
+        "start": {
+          "ts": "2026-07-20T04:29:44.166Z",
+          "type": "info",
+          "text": "[HERO_CLASSIFY] {stage: resolveHeroBackgroundAsset:start, heroAssetId: 192293f7-c784-46af-aa45-1bb15b6a4cc6, canonicalReelId: 192293f7-c784-46af-aa45-1bb15b6a4cc6, backgroundSource: custom_video, vaultItemsCount: 1}"
+        },
+        "resolved": {
+          "ts": "2026-07-20T04:29:44.166Z",
+          "type": "info",
+          "text": "[HERO_ROUTE] {stage: resolveHeroBackgroundAsset:resolved, heroAssetId: 192293f7-c784-46af-aa45-1bb15b6a4cc6, resolvedAssetId: 192293f7-c784-46af-aa45-1bb15b6a4cc6, assetType: mp4, mediaUrl: /videos/192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4}"
+        }
+      },
+      "mediaResponses": [
+        {
+          "ts": "2026-07-20T04:29:38.430Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/hero-background.mp4",
+          "status": 404
+        },
+        {
+          "ts": "2026-07-20T04:29:38.790Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:43.202Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/4c840a16-77f7-4a2f-b81d-0dee37b3de18.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:43.203Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/f9299f26-7bea-4873-ad72-cf18120dbd98.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:43.204Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/dbf24a89-7636-4313-9a45-248d0bbeef8c.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:43.206Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/4c840a16-77f7-4a2f-b81d-0dee37b3de18.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:43.248Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/f3d26ccd-2fff-46b7-8c57-14a87242e350.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:44.169Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/40137565-aada-4baf-8eeb-2e42c7032cc0.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:44.171Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/9178e241-176d-439d-82cb-a0ecc5f9ae7d.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:44.235Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/a4e45b23-a984-457b-9c86-4b994db584c9.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:44.746Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/5ab6c2ad-f457-4bb2-ba4e-0992b863f14d.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:44.746Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/aa0691a3-69da-46d6-9ffd-a7f20cf7c976.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:44.747Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/356f0466-6dfb-4a17-974a-14d0f627e688.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:44.748Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/fb0e2473-f2b9-40bf-97d7-b781095b5347.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:45.044Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/9f6ea9c9-2cf3-4a0a-8c29-dcee40e243dd.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:45.046Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/9cbb9526-cf81-4294-b777-ff94dfe89f61.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:45.046Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/aba87aec-f114-427a-a7ed-6da9017eae66.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:45.046Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/085d5f3b-a18d-4cee-b656-dc21250ff0c3.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:45.046Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/3538ddd6-463d-46df-b896-2df21e57e99e.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:45.048Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/f9299f26-7bea-4873-ad72-cf18120dbd98.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:45.049Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/dbf24a89-7636-4313-9a45-248d0bbeef8c.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:45.049Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/f3d26ccd-2fff-46b7-8c57-14a87242e350.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:46.794Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/40137565-aada-4baf-8eeb-2e42c7032cc0.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:46.795Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/9178e241-176d-439d-82cb-a0ecc5f9ae7d.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:46.795Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/a4e45b23-a984-457b-9c86-4b994db584c9.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:48.371Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/5ab6c2ad-f457-4bb2-ba4e-0992b863f14d.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:48.371Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/aa0691a3-69da-46d6-9ffd-a7f20cf7c976.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:48.371Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/356f0466-6dfb-4a17-974a-14d0f627e688.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:48.372Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/fb0e2473-f2b9-40bf-97d7-b781095b5347.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:48.373Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/9f6ea9c9-2cf3-4a0a-8c29-dcee40e243dd.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:48.373Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/9cbb9526-cf81-4294-b777-ff94dfe89f61.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:48.374Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/aba87aec-f114-427a-a7ed-6da9017eae66.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:48.374Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/085d5f3b-a18d-4cee-b656-dc21250ff0c3.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:29:48.377Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/3538ddd6-463d-46df-b896-2df21e57e99e.mp4",
+          "status": 206
+        }
+      ],
+      "pageErrors": [
+        {
+          "ts": "2026-07-20T04:29:51.512Z",
+          "message": "The user aborted a request.",
+          "stack": ""
+        }
+      ],
+      "restore": [
+        {
+          "ts": "2026-07-20T04:29:40.810Z",
+          "type": "info",
+          "text": "[BG7V_HERO_RESTORE_REASON] {heroAssetId: 192293f7-c784-46af-aa45-1bb15b6a4cc6, matchedReelId: 192293f7-c784-46af-aa45-1bb15b6a4cc6, restoreAttempted: false, restored: false, reason: ALREADY_PRESENT}"
+        }
+      ],
+      "storeReads": [
+        {
+          "ts": "2026-07-20T04:29:38.601Z",
+          "type": "info",
+          "text": "[HERO_STORE_READ] {stage: loadHeroVaultItems, key: reelforge_hero_reel, id: 192293f7-c784-46af-aa45-1bb15b6a4cc6, fileName: 192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4, url: /videos/192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4}"
+        },
+        {
+          "ts": "2026-07-20T04:29:38.612Z",
+          "type": "info",
+          "text": "[HERO_STORE_READ] {stage: loadHeroVaultItems, key: reelforge_hero_reel, id: 192293f7-c784-46af-aa45-1bb15b6a4cc6, fileName: 192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4, url: /videos/192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4}"
+        },
+        {
+          "ts": "2026-07-20T04:29:38.621Z",
+          "type": "info",
+          "text": "[HERO_STORE_READ] {stage: loadHeroVaultItems, key: reelforge_hero_reel, id: 192293f7-c784-46af-aa45-1bb15b6a4cc6, fileName: 192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4, url: /videos/192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4}"
+        },
+        {
+          "ts": "2026-07-20T04:29:40.817Z",
+          "type": "info",
+          "text": "[HERO_STORE_READ] {stage: reloadVaultStoresFromStorage:videos, key: personal_video_vault, count: 5, ts: 2026-07-20T04:29:40.816Z}"
+        },
+        {
+          "ts": "2026-07-20T04:29:41.966Z",
+          "type": "info",
+          "text": "[HERO_STORE_READ] {stage: reloadVaultStoresFromStorage:videos, key: personal_video_vault, count: 5, ts: 2026-07-20T04:29:41.965Z}"
+        },
+        {
+          "ts": "2026-07-20T04:29:42.022Z",
+          "type": "info",
+          "text": "[HERO_STORE_READ] {stage: loadHeroVaultItems, key: reelforge_hero_reel, id: 192293f7-c784-46af-aa45-1bb15b6a4cc6, fileName: 192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4, url: /videos/192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4}"
+        },
+        {
+          "ts": "2026-07-20T04:29:42.033Z",
+          "type": "info",
+          "text": "[HERO_STORE_READ] {stage: loadHeroVaultItems, key: reelforge_hero_reel, id: 192293f7-c784-46af-aa45-1bb15b6a4cc6, fileName: 192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4, url: /videos/192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4}"
+        },
+        {
+          "ts": "2026-07-20T04:29:42.049Z",
+          "type": "info",
+          "text": "[HERO_STORE_READ] {stage: loadHeroVaultItems, key: reelforge_hero_reel, id: 192293f7-c784-46af-aa45-1bb15b6a4cc6, fileName: 192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4, url: /videos/192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4}"
+        },
+        {
+          "ts": "2026-07-20T04:29:42.051Z",
+          "type": "info",
+          "text": "[HERO_STORE_READ] {stage: loadHeroVaultItems, key: reelforge_hero_reel, id: 192293f7-c784-46af-aa45-1bb15b6a4cc6, fileName: 192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4, url: /videos/192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4}"
+        },
+        {
+          "ts": "2026-07-20T04:29:42.063Z",
+          "type": "info",
+          "text": "[HERO_STORE_READ] {stage: loadHeroVaultItems, key: reelforge_hero_reel, id: 192293f7-c784-46af-aa45-1bb15b6a4cc6, fileName: 192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4, url: /videos/192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4}"
+        },
+        {
+          "ts": "2026-07-20T04:29:42.251Z",
+          "type": "info",
+          "text": "[HERO_STORE_READ] {stage: AI_CLEANUP_AGENT.syncVideoVaultToFeed, key: personal_video_vault, count: 5, ts: 2026-07-20T04:29:42.250Z}"
+        },
+        {
+          "ts": "2026-07-20T04:29:42.400Z",
+          "type": "info",
+          "text": "[HERO_STORE_READ] {stage: loadHeroVaultItems, key: reelforge_hero_reel, id: 192293f7-c784-46af-aa45-1bb15b6a4cc6, fileName: 192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4, url: /videos/192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4}"
+        },
+        {
+          "ts": "2026-07-20T04:29:44.050Z",
+          "type": "info",
+          "text": "[HERO_STORE_READ] {stage: AI_CLEANUP_AGENT.syncVideoVaultToFeed, key: personal_video_vault, count: 5, ts: 2026-07-20T04:29:44.049Z}"
+        },
+        {
+          "ts": "2026-07-20T04:29:44.165Z",
+          "type": "info",
+          "text": "[HERO_STORE_READ] {stage: loadHeroVaultItems, key: reelforge_hero_reel, id: 192293f7-c784-46af-aa45-1bb15b6a4cc6, fileName: 192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4, url: /videos/192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4}"
+        }
+      ],
+      "classification": {
+        "verdict": "HYDRATION_PRESERVES_SEEDED_ASSET",
+        "firstEmptyStage": null,
+        "detail": "Matched seed survived reload; resolve vaultItemsCount=1; DOM videoSrc is seeded reel"
+      },
+      "endedAt": "2026-07-20T04:29:56.724Z",
+      "heroConsoleExcerpt": [
+        {
+          "ts": "2026-07-20T04:29:51.195Z",
+          "type": "log",
+          "text": "[HERO_INTELLIGENCE] {\"candidateCount\":6,\"sources\":[\"featured_series\",\"creator_spotlight\",\"team_pick\",\"studio_priority\",\"editors_choice\",\"featured_series\"],\"seriesId\":\"series-trending-shorts\",\"timestamp\":1784521791194}"
+        },
+        {
+          "ts": "2026-07-20T04:29:51.197Z",
+          "type": "log",
+          "text": "[HERO_BLOCKER] {\"seriesId\":\"series-trending-shorts\",\"blocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"readiness\":0,\"timestamp\":1784521791195}"
+        },
+        {
+          "ts": "2026-07-20T04:29:51.197Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e01\",\"title\":\"Upload S1:E01 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521791196}"
+        },
+        {
+          "ts": "2026-07-20T04:29:51.197Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e02\",\"title\":\"Upload S1:E02 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521791196}"
+        },
+        {
+          "ts": "2026-07-20T04:29:51.197Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e03\",\"title\":\"Upload S1:E03 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521791196}"
+        },
+        {
+          "ts": "2026-07-20T04:29:51.197Z",
+          "type": "log",
+          "text": "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-trending-shorts\",\"readinessPercent\":0,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"publishingVelocity\":0,\"unreadNotifications\":200,\"timestamp\":1784521791196}"
+        },
+        {
+          "ts": "2026-07-20T04:29:51.200Z",
+          "type": "log",
+          "text": "[HERO_BLOCKER] {\"seriesId\":\"series-vault-chronicles\",\"blocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"readiness\":0,\"timestamp\":1784521791199}"
+        },
+        {
+          "ts": "2026-07-20T04:29:51.200Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e01\",\"title\":\"Upload S1:E01 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521791199}"
+        },
+        {
+          "ts": "2026-07-20T04:29:51.200Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e02\",\"title\":\"Upload S1:E02 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521791199}"
+        },
+        {
+          "ts": "2026-07-20T04:29:51.201Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e03\",\"title\":\"Upload S1:E03 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521791200}"
+        },
+        {
+          "ts": "2026-07-20T04:29:51.201Z",
+          "type": "log",
+          "text": "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-vault-chronicles\",\"readinessPercent\":0,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"publishingVelocity\":0,\"unreadNotifications\":200,\"timestamp\":1784521791200}"
+        },
+        {
+          "ts": "2026-07-20T04:29:51.205Z",
+          "type": "log",
+          "text": "[HERO_BLOCKER] {\"seriesId\":\"series-neon-vengeance\",\"blocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":6,\"openTasks\":6,\"readiness\":25,\"timestamp\":1784521791204}"
+        },
+        {
+          "ts": "2026-07-20T04:29:51.205Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e01\",\"title\":\"Upload S1:E01 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1784521791204}"
+        },
+        {
+          "ts": "2026-07-20T04:29:51.205Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e02\",\"title\":\"Upload S1:E02 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1784521791204}"
+        },
+        {
+          "ts": "2026-07-20T04:29:51.205Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e03\",\"title\":\"Upload S1:E03 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1784521791204}"
+        },
+        {
+          "ts": "2026-07-20T04:29:51.205Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e04\",\"title\":\"Upload S1:E04 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1784521791204}"
+        },
+        {
+          "ts": "2026-07-20T04:29:51.206Z",
+          "type": "log",
+          "text": "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-neon-vengeance\",\"readinessPercent\":25,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":6,\"openTasks\":6,\"publishingVelocity\":0,\"unreadNotifications\":200,\"timestamp\":1784521791204}"
+        },
+        {
+          "ts": "2026-07-20T04:29:55.280Z",
+          "type": "info",
+          "text": "[HERO_LOAD] {key: reelforge_hero_manager_config, backgroundSource: custom_video, heroAssetId: 192293f7-c784-46af-aa45-1bb15b6a4cc6, ts: 2026-07-20T04:29:55.279Z}"
+        },
+        {
+          "ts": "2026-07-20T04:29:55.280Z",
+          "type": "log",
+          "text": "[HERO_SCORE] {\"source\":\"featured_series\",\"episodeId\":\"ep-trending-s01e02\",\"views\":0,\"completionRate\":0,\"releasePriority\":20,\"teamPriority\":15,\"publishingStatus\":85,\"total\":19,\"timestamp\":1784521795280}"
+        },
+        {
+          "ts": "2026-07-20T04:29:55.282Z",
+          "type": "log",
+          "text": "[HERO_SCORE] {\"source\":\"studio_priority\",\"episodeId\":\"ep-trending-s01e01\",\"views\":0,\"completionRate\":0,\"releasePriority\":20,\"teamPriority\":15,\"publishingStatus\":85,\"total\":19,\"timestamp\":1784521795281}"
+        },
+        {
+          "ts": "2026-07-20T04:29:55.282Z",
+          "type": "log",
+          "text": "[HERO_SCORE] {\"source\":\"editors_choice\",\"episodeId\":\"ep-trending-s01e03\",\"views\":0,\"completionRate\":0,\"releasePriority\":20,\"teamPriority\":15,\"publishingStatus\":75,\"total\":18,\"timestamp\":1784521795281}"
+        },
+        {
+          "ts": "2026-07-20T04:29:55.282Z",
+          "type": "info",
+          "text": "[HERO_LOAD] {key: reelforge_hero_manager_config, backgroundSource: custom_video, heroAssetId: 192293f7-c784-46af-aa45-1bb15b6a4cc6, ts: 2026-07-20T04:29:55.281Z}"
+        },
+        {
+          "ts": "2026-07-20T04:29:55.283Z",
+          "type": "log",
+          "text": "[HERO_PRIORITY] {\"ranked\":[{\"source\":\"creator_spotlight\",\"discoveryType\":\"TRENDING\",\"title\":\"Neon Vengeance\",\"score\":24,\"priorityIndex\":2},{\"source\":\"featured_series\",\"discoveryType\":\"TRENDING\",\"title\":\"Trending Shorts\",\"score\":19,\"priorityIndex\":2},{\"source\":\"featured_series\",\"discoveryType\":\"TRENDING\",\"title\":\"Trending Shorts\",\"score\":19,\"priorityIndex\":2},{\"source\":\"editors_choice\",\"discoveryType\":\"TRENDING\",\"title\":\"Cliffhanger\",\"score\":18,\"priorityIndex\":2},{\"source\":\"team_pick\",\"discoveryType\":\"TEAM_SPOTLIGHT\",\"title\":\"Neon Vengeance\",\"score\":30,\"priorityIndex\":4},{\"source\":\"studio_priority\",\"discoveryType\":\"STUDIO_PRIORITY\",\"title\":\"Hook \u2014 15s\",\"score\":19,\"priorityIndex\":5}],\"timestamp\":1784521795281}"
+        },
+        {
+          "ts": "2026-07-20T04:29:55.283Z",
+          "type": "log",
+          "text": "[HERO_INTELLIGENCE] {\"candidateCount\":6,\"sources\":[\"featured_series\",\"creator_spotlight\",\"team_pick\",\"studio_priority\",\"editors_choice\",\"featured_series\"],\"seriesId\":\"series-trending-shorts\",\"timestamp\":1784521795282}"
+        },
+        {
+          "ts": "2026-07-20T04:29:55.284Z",
+          "type": "log",
+          "text": "[HERO_BLOCKER] {\"seriesId\":\"series-trending-shorts\",\"blocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"readiness\":0,\"timestamp\":1784521795283}"
+        },
+        {
+          "ts": "2026-07-20T04:29:55.284Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e01\",\"title\":\"Upload S1:E01 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521795283}"
+        },
+        {
+          "ts": "2026-07-20T04:29:55.284Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e02\",\"title\":\"Upload S1:E02 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521795283}"
+        },
+        {
+          "ts": "2026-07-20T04:29:55.284Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e03\",\"title\":\"Upload S1:E03 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521795283}"
+        },
+        {
+          "ts": "2026-07-20T04:29:55.284Z",
+          "type": "log",
+          "text": "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-trending-shorts\",\"readinessPercent\":0,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"publishingVelocity\":0,\"unreadNotifications\":200,\"timestamp\":1784521795284}"
+        },
+        {
+          "ts": "2026-07-20T04:29:55.289Z",
+          "type": "log",
+          "text": "[HERO_BLOCKER] {\"seriesId\":\"series-vault-chronicles\",\"blocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"readiness\":0,\"timestamp\":1784521795288}"
+        },
+        {
+          "ts": "2026-07-20T04:29:55.289Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e01\",\"title\":\"Upload S1:E01 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521795288}"
+        },
+        {
+          "ts": "2026-07-20T04:29:55.289Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e02\",\"title\":\"Upload S1:E02 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521795288}"
+        },
+        {
+          "ts": "2026-07-20T04:29:55.289Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e03\",\"title\":\"Upload S1:E03 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521795288}"
+        },
+        {
+          "ts": "2026-07-20T04:29:55.289Z",
+          "type": "log",
+          "text": "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-vault-chronicles\",\"readinessPercent\":0,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"publishingVelocity\":0,\"unreadNotifications\":200,\"timestamp\":1784521795288}"
+        },
+        {
+          "ts": "2026-07-20T04:29:55.293Z",
+          "type": "log",
+          "text": "[HERO_BLOCKER] {\"seriesId\":\"series-neon-vengeance\",\"blocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":6,\"openTasks\":6,\"readiness\":25,\"timestamp\":1784521795292}"
+        },
+        {
+          "ts": "2026-07-20T04:29:55.293Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e01\",\"title\":\"Upload S1:E01 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1784521795292}"
+        },
+        {
+          "ts": "2026-07-20T04:29:55.294Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e02\",\"title\":\"Upload S1:E02 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1784521795292}"
+        },
+        {
+          "ts": "2026-07-20T04:29:55.294Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e03\",\"title\":\"Upload S1:E03 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1784521795292}"
+        },
+        {
+          "ts": "2026-07-20T04:29:55.294Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e04\",\"title\":\"Upload S1:E04 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1784521795292}"
+        },
+        {
+          "ts": "2026-07-20T04:29:55.294Z",
+          "type": "log",
+          "text": "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-neon-vengeance\",\"readinessPercent\":25,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":6,\"openTasks\":6,\"publishingVelocity\":0,\"unreadNotifications\":200,\"timestamp\":1784521795293}"
+        }
+      ]
+    },
+    {
+      "name": "C_seed_mismatch_reload",
+      "startedAt": "2026-07-20T04:29:56.810Z",
+      "setup": {
+        "action": "seed_mismatched_heroAssetId",
+        "reelId": "192293f7-c784-46af-aa45-1bb15b6a4cc6",
+        "heroAssetId": "00000000-0000-0000-0000-000000000000"
+      },
+      "storageBeforeNav": {
+        "at": "2026-07-20T04:30:03.825Z",
+        "keys": {
+          "manager": {
+            "present": true,
+            "rawLength": 189,
+            "parsed": {
+              "backgroundSource": "custom_video",
+              "heroAssetId": "00000000-0000-0000-0000-000000000000",
+              "backgroundStyle": "video",
+              "heroType": "FEATURED_RELEASE",
+              "autoRotate": false,
+              "updatedAt": 1784521803821
+            }
+          },
+          "reel": {
+            "present": true,
+            "rawLength": 237,
+            "parsed": {
+              "id": "192293f7-c784-46af-aa45-1bb15b6a4cc6",
+              "fileName": "192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4",
+              "name": "Rc2 Hero 1784471351550",
+              "url": "/videos/192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4",
+              "type": "video",
+              "backgroundSource": "custom_video"
+            }
+          },
+          "video": {
+            "present": false,
+            "raw": null,
+            "parsed": null
+          },
+          "image": {
+            "present": false,
+            "raw": null,
+            "parsed": null
+          }
+        },
+        "derived": {
+          "hasReelId": true,
+          "hasReelUrl": true,
+          "heroAssetId": "00000000-0000-0000-0000-000000000000",
+          "reelId": "192293f7-c784-46af-aa45-1bb15b6a4cc6",
+          "idsMatch": false,
+          "wouldReturnEmpty": true
+        },
+        "allHeroRelatedKeys": [
+          "reelforge_hero_manager_config",
+          "reelforge_hero_reel"
+        ]
+      },
+      "storageAfterBoot": {
+        "at": "2026-07-20T04:30:22.105Z",
+        "keys": {
+          "manager": {
+            "present": true,
+            "rawLength": 189,
+            "parsed": {
+              "backgroundSource": "custom_video",
+              "heroAssetId": "00000000-0000-0000-0000-000000000000",
+              "backgroundStyle": "video",
+              "heroType": "FEATURED_RELEASE",
+              "autoRotate": false,
+              "updatedAt": 1784521803821
+            }
+          },
+          "reel": {
+            "present": true,
+            "rawLength": 237,
+            "parsed": {
+              "id": "192293f7-c784-46af-aa45-1bb15b6a4cc6",
+              "fileName": "192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4",
+              "name": "Rc2 Hero 1784471351550",
+              "url": "/videos/192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4",
+              "type": "video",
+              "backgroundSource": "custom_video"
+            }
+          },
+          "video": {
+            "present": false,
+            "raw": null,
+            "parsed": null
+          },
+          "image": {
+            "present": false,
+            "raw": null,
+            "parsed": null
+          }
+        },
+        "derived": {
+          "hasReelId": true,
+          "hasReelUrl": true,
+          "heroAssetId": "00000000-0000-0000-0000-000000000000",
+          "reelId": "192293f7-c784-46af-aa45-1bb15b6a4cc6",
+          "idsMatch": false,
+          "wouldReturnEmpty": true
+        },
+        "allHeroRelatedKeys": [
+          "reelforge_hero_manager_config",
+          "reelforge_hero_reel"
+        ]
+      },
+      "domAfterBoot": {
+        "at": "2026-07-20T04:30:22.110Z",
+        "videoSrc": "https://strong-lolly-a9fcb4.netlify.app/videos/3538ddd6-463d-46df-b896-2df21e57e99e.mp4",
+        "videoError": false,
+        "imgSrc": "https://strong-lolly-a9fcb4.netlify.app/placeholders/media-fallback.svg"
+      },
+      "classifySummary": {
+        "start": {
+          "ts": "2026-07-20T04:30:09.355Z",
+          "type": "info",
+          "text": "[HERO_CLASSIFY] {stage: resolveHeroBackgroundAsset:start, heroAssetId: 00000000-0000-0000-0000-000000000000, canonicalReelId: 192293f7-c784-46af-aa45-1bb15b6a4cc6, backgroundSource: custom_video, vaultItemsCount: 0}"
+        },
+        "resolved": {
+          "ts": "2026-07-20T04:30:09.355Z",
+          "type": "info",
+          "text": "[HERO_ROUTE] {stage: resolveHeroBackgroundAsset:resolved, heroAssetId: 00000000-0000-0000-0000-000000000000, resolvedAssetId: 192293f7-c784-46af-aa45-1bb15b6a4cc6, assetType: unknown, mediaUrl: }"
+        }
+      },
+      "mediaResponses": [
+        {
+          "ts": "2026-07-20T04:30:03.867Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/hero-background.mp4",
+          "status": 404
+        },
+        {
+          "ts": "2026-07-20T04:30:04.188Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/hero-background.mp4",
+          "status": 404
+        },
+        {
+          "ts": "2026-07-20T04:30:05.669Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/hero-background.mp4",
+          "status": 404
+        },
+        {
+          "ts": "2026-07-20T04:30:05.752Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/hero-background.mp4",
+          "status": 404
+        },
+        {
+          "ts": "2026-07-20T04:30:05.827Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/hero-background.MOV",
+          "status": 404
+        },
+        {
+          "ts": "2026-07-20T04:30:05.949Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/hero-background.MOV",
+          "status": 404
+        },
+        {
+          "ts": "2026-07-20T04:30:07.589Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/f3d26ccd-2fff-46b7-8c57-14a87242e350.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:30:07.589Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/4c840a16-77f7-4a2f-b81d-0dee37b3de18.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:30:07.855Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/5ab6c2ad-f457-4bb2-ba4e-0992b863f14d.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:30:10.401Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/aa0691a3-69da-46d6-9ffd-a7f20cf7c976.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:30:10.402Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/356f0466-6dfb-4a17-974a-14d0f627e688.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:30:10.402Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/9178e241-176d-439d-82cb-a0ecc5f9ae7d.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:30:10.403Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/a4e45b23-a984-457b-9c86-4b994db584c9.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:30:10.403Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/fb0e2473-f2b9-40bf-97d7-b781095b5347.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:30:10.403Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/40137565-aada-4baf-8eeb-2e42c7032cc0.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:30:10.404Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/f9299f26-7bea-4873-ad72-cf18120dbd98.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:30:10.404Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/dbf24a89-7636-4313-9a45-248d0bbeef8c.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:30:10.404Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/9f6ea9c9-2cf3-4a0a-8c29-dcee40e243dd.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:30:10.405Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/9cbb9526-cf81-4294-b777-ff94dfe89f61.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:30:10.405Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/aba87aec-f114-427a-a7ed-6da9017eae66.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:30:10.406Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/085d5f3b-a18d-4cee-b656-dc21250ff0c3.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:30:10.406Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:30:10.406Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/3538ddd6-463d-46df-b896-2df21e57e99e.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:30:10.407Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/hero-background.mp4",
+          "status": 404
+        },
+        {
+          "ts": "2026-07-20T04:30:10.409Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/5ab6c2ad-f457-4bb2-ba4e-0992b863f14d.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:30:13.287Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/aa0691a3-69da-46d6-9ffd-a7f20cf7c976.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:30:13.288Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/356f0466-6dfb-4a17-974a-14d0f627e688.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:30:13.288Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/9178e241-176d-439d-82cb-a0ecc5f9ae7d.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:30:13.288Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/a4e45b23-a984-457b-9c86-4b994db584c9.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:30:13.289Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/fb0e2473-f2b9-40bf-97d7-b781095b5347.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:30:13.289Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/40137565-aada-4baf-8eeb-2e42c7032cc0.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:30:13.289Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/f9299f26-7bea-4873-ad72-cf18120dbd98.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:30:13.290Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/dbf24a89-7636-4313-9a45-248d0bbeef8c.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:30:13.290Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/9f6ea9c9-2cf3-4a0a-8c29-dcee40e243dd.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:30:13.290Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/9cbb9526-cf81-4294-b777-ff94dfe89f61.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:30:13.290Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/aba87aec-f114-427a-a7ed-6da9017eae66.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:30:13.291Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/085d5f3b-a18d-4cee-b656-dc21250ff0c3.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:30:13.291Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4",
+          "status": 206
+        },
+        {
+          "ts": "2026-07-20T04:30:13.292Z",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/3538ddd6-463d-46df-b896-2df21e57e99e.mp4",
+          "status": 206
+        }
+      ],
+      "pageErrors": [
+        {
+          "ts": "2026-07-20T04:30:11.338Z",
+          "message": "The user aborted a request.",
+          "stack": ""
+        },
+        {
+          "ts": "2026-07-20T04:30:17.821Z",
+          "message": "The user aborted a request.",
+          "stack": ""
+        }
+      ],
+      "restore": [
+        {
+          "ts": "2026-07-20T04:30:05.336Z",
+          "type": "info",
+          "text": "[BG7V_HERO_RESTORE_REASON] {heroAssetId: 00000000-0000-0000-0000-000000000000, matchedReelId: 192293f7-c784-46af-aa45-1bb15b6a4cc6, restoreAttempted: false, restored: false, reason: ALREADY_PRESENT}"
+        }
+      ],
+      "storeReads": [
+        {
+          "ts": "2026-07-20T04:30:05.955Z",
+          "type": "info",
+          "text": "[HERO_STORE_READ] {stage: reloadVaultStoresFromStorage:videos, key: personal_video_vault, count: 5, ts: 2026-07-20T04:30:05.954Z}"
+        },
+        {
+          "ts": "2026-07-20T04:30:07.144Z",
+          "type": "info",
+          "text": "[HERO_STORE_READ] {stage: reloadVaultStoresFromStorage:videos, key: personal_video_vault, count: 5, ts: 2026-07-20T04:30:07.143Z}"
+        },
+        {
+          "ts": "2026-07-20T04:30:07.441Z",
+          "type": "info",
+          "text": "[HERO_STORE_READ] {stage: AI_CLEANUP_AGENT.syncVideoVaultToFeed, key: personal_video_vault, count: 5, ts: 2026-07-20T04:30:07.440Z}"
+        },
+        {
+          "ts": "2026-07-20T04:30:09.242Z",
+          "type": "info",
+          "text": "[HERO_STORE_READ] {stage: AI_CLEANUP_AGENT.syncVideoVaultToFeed, key: personal_video_vault, count: 5, ts: 2026-07-20T04:30:09.241Z}"
+        }
+      ],
+      "classification": {
+        "verdict": "VAULT_CLEARED_BY_ID_MISMATCH_GATE",
+        "firstEmptyStage": "loadHeroVaultItems() id mismatch gate",
+        "detail": {
+          "hasReelId": true,
+          "hasReelUrl": true,
+          "heroAssetId": "00000000-0000-0000-0000-000000000000",
+          "reelId": "192293f7-c784-46af-aa45-1bb15b6a4cc6",
+          "idsMatch": false,
+          "wouldReturnEmpty": true
+        }
+      },
+      "endedAt": "2026-07-20T04:30:22.111Z",
+      "heroConsoleExcerpt": [
+        {
+          "ts": "2026-07-20T04:30:18.460Z",
+          "type": "log",
+          "text": "[HERO_INTELLIGENCE] {\"candidateCount\":6,\"sources\":[\"featured_series\",\"creator_spotlight\",\"team_pick\",\"studio_priority\",\"editors_choice\",\"featured_series\"],\"seriesId\":\"series-trending-shorts\",\"timestamp\":1784521818459}"
+        },
+        {
+          "ts": "2026-07-20T04:30:18.462Z",
+          "type": "log",
+          "text": "[HERO_BLOCKER] {\"seriesId\":\"series-trending-shorts\",\"blocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"readiness\":0,\"timestamp\":1784521818461}"
+        },
+        {
+          "ts": "2026-07-20T04:30:18.462Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e01\",\"title\":\"Upload S1:E01 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521818461}"
+        },
+        {
+          "ts": "2026-07-20T04:30:18.462Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e02\",\"title\":\"Upload S1:E02 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521818462}"
+        },
+        {
+          "ts": "2026-07-20T04:30:18.463Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e03\",\"title\":\"Upload S1:E03 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521818462}"
+        },
+        {
+          "ts": "2026-07-20T04:30:18.463Z",
+          "type": "log",
+          "text": "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-trending-shorts\",\"readinessPercent\":0,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"publishingVelocity\":0,\"unreadNotifications\":200,\"timestamp\":1784521818462}"
+        },
+        {
+          "ts": "2026-07-20T04:30:18.467Z",
+          "type": "log",
+          "text": "[HERO_BLOCKER] {\"seriesId\":\"series-vault-chronicles\",\"blocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"readiness\":0,\"timestamp\":1784521818466}"
+        },
+        {
+          "ts": "2026-07-20T04:30:18.467Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e01\",\"title\":\"Upload S1:E01 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521818466}"
+        },
+        {
+          "ts": "2026-07-20T04:30:18.467Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e02\",\"title\":\"Upload S1:E02 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521818466}"
+        },
+        {
+          "ts": "2026-07-20T04:30:18.467Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e03\",\"title\":\"Upload S1:E03 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521818466}"
+        },
+        {
+          "ts": "2026-07-20T04:30:18.467Z",
+          "type": "log",
+          "text": "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-vault-chronicles\",\"readinessPercent\":0,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"publishingVelocity\":0,\"unreadNotifications\":200,\"timestamp\":1784521818466}"
+        },
+        {
+          "ts": "2026-07-20T04:30:18.472Z",
+          "type": "log",
+          "text": "[HERO_BLOCKER] {\"seriesId\":\"series-neon-vengeance\",\"blocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":6,\"openTasks\":5,\"readiness\":25,\"timestamp\":1784521818471}"
+        },
+        {
+          "ts": "2026-07-20T04:30:18.473Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e01\",\"title\":\"Upload S1:E01 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1784521818471}"
+        },
+        {
+          "ts": "2026-07-20T04:30:18.473Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e02\",\"title\":\"Upload S1:E02 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1784521818471}"
+        },
+        {
+          "ts": "2026-07-20T04:30:18.473Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e03\",\"title\":\"Upload S1:E03 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1784521818471}"
+        },
+        {
+          "ts": "2026-07-20T04:30:18.473Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e04\",\"title\":\"Upload S1:E04 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1784521818472}"
+        },
+        {
+          "ts": "2026-07-20T04:30:18.473Z",
+          "type": "log",
+          "text": "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-neon-vengeance\",\"readinessPercent\":25,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":6,\"openTasks\":5,\"publishingVelocity\":0,\"unreadNotifications\":200,\"timestamp\":1784521818472}"
+        },
+        {
+          "ts": "2026-07-20T04:30:20.537Z",
+          "type": "info",
+          "text": "[HERO_LOAD] {key: reelforge_hero_manager_config, backgroundSource: custom_video, heroAssetId: 00000000-0000-0000-0000-000000000000, ts: 2026-07-20T04:30:20.537Z}"
+        },
+        {
+          "ts": "2026-07-20T04:30:20.538Z",
+          "type": "log",
+          "text": "[HERO_SCORE] {\"source\":\"featured_series\",\"episodeId\":\"ep-trending-s01e02\",\"views\":0,\"completionRate\":0,\"releasePriority\":20,\"teamPriority\":15,\"publishingStatus\":85,\"total\":19,\"timestamp\":1784521820537}"
+        },
+        {
+          "ts": "2026-07-20T04:30:20.539Z",
+          "type": "log",
+          "text": "[HERO_SCORE] {\"source\":\"studio_priority\",\"episodeId\":\"ep-trending-s01e01\",\"views\":0,\"completionRate\":0,\"releasePriority\":20,\"teamPriority\":15,\"publishingStatus\":85,\"total\":19,\"timestamp\":1784521820538}"
+        },
+        {
+          "ts": "2026-07-20T04:30:20.539Z",
+          "type": "log",
+          "text": "[HERO_SCORE] {\"source\":\"editors_choice\",\"episodeId\":\"ep-trending-s01e03\",\"views\":0,\"completionRate\":0,\"releasePriority\":20,\"teamPriority\":15,\"publishingStatus\":75,\"total\":18,\"timestamp\":1784521820538}"
+        },
+        {
+          "ts": "2026-07-20T04:30:20.539Z",
+          "type": "info",
+          "text": "[HERO_LOAD] {key: reelforge_hero_manager_config, backgroundSource: custom_video, heroAssetId: 00000000-0000-0000-0000-000000000000, ts: 2026-07-20T04:30:20.539Z}"
+        },
+        {
+          "ts": "2026-07-20T04:30:20.540Z",
+          "type": "log",
+          "text": "[HERO_PRIORITY] {\"ranked\":[{\"source\":\"creator_spotlight\",\"discoveryType\":\"TRENDING\",\"title\":\"Neon Vengeance\",\"score\":24,\"priorityIndex\":2},{\"source\":\"featured_series\",\"discoveryType\":\"TRENDING\",\"title\":\"Trending Shorts\",\"score\":19,\"priorityIndex\":2},{\"source\":\"featured_series\",\"discoveryType\":\"TRENDING\",\"title\":\"Trending Shorts\",\"score\":19,\"priorityIndex\":2},{\"source\":\"editors_choice\",\"discoveryType\":\"TRENDING\",\"title\":\"Cliffhanger\",\"score\":18,\"priorityIndex\":2},{\"source\":\"team_pick\",\"discoveryType\":\"TEAM_SPOTLIGHT\",\"title\":\"Neon Vengeance\",\"score\":30,\"priorityIndex\":4},{\"source\":\"studio_priority\",\"discoveryType\":\"STUDIO_PRIORITY\",\"title\":\"Hook \u2014 15s\",\"score\":19,\"priorityIndex\":5}],\"timestamp\":1784521820539}"
+        },
+        {
+          "ts": "2026-07-20T04:30:20.540Z",
+          "type": "log",
+          "text": "[HERO_INTELLIGENCE] {\"candidateCount\":6,\"sources\":[\"featured_series\",\"creator_spotlight\",\"team_pick\",\"studio_priority\",\"editors_choice\",\"featured_series\"],\"seriesId\":\"series-trending-shorts\",\"timestamp\":1784521820539}"
+        },
+        {
+          "ts": "2026-07-20T04:30:20.542Z",
+          "type": "log",
+          "text": "[HERO_BLOCKER] {\"seriesId\":\"series-trending-shorts\",\"blocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"readiness\":0,\"timestamp\":1784521820541}"
+        },
+        {
+          "ts": "2026-07-20T04:30:20.542Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e01\",\"title\":\"Upload S1:E01 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521820541}"
+        },
+        {
+          "ts": "2026-07-20T04:30:20.542Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e02\",\"title\":\"Upload S1:E02 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521820541}"
+        },
+        {
+          "ts": "2026-07-20T04:30:20.542Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e03\",\"title\":\"Upload S1:E03 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521820541}"
+        },
+        {
+          "ts": "2026-07-20T04:30:20.542Z",
+          "type": "log",
+          "text": "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-trending-shorts\",\"readinessPercent\":0,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"publishingVelocity\":0,\"unreadNotifications\":200,\"timestamp\":1784521820541}"
+        },
+        {
+          "ts": "2026-07-20T04:30:20.553Z",
+          "type": "log",
+          "text": "[HERO_BLOCKER] {\"seriesId\":\"series-vault-chronicles\",\"blocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"readiness\":0,\"timestamp\":1784521820545}"
+        },
+        {
+          "ts": "2026-07-20T04:30:20.553Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e01\",\"title\":\"Upload S1:E01 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521820545}"
+        },
+        {
+          "ts": "2026-07-20T04:30:20.553Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e02\",\"title\":\"Upload S1:E02 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521820545}"
+        },
+        {
+          "ts": "2026-07-20T04:30:20.553Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e03\",\"title\":\"Upload S1:E03 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521820545}"
+        },
+        {
+          "ts": "2026-07-20T04:30:20.553Z",
+          "type": "log",
+          "text": "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-vault-chronicles\",\"readinessPercent\":0,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"publishingVelocity\":0,\"unreadNotifications\":200,\"timestamp\":1784521820545}"
+        },
+        {
+          "ts": "2026-07-20T04:30:20.554Z",
+          "type": "log",
+          "text": "[HERO_BLOCKER] {\"seriesId\":\"series-neon-vengeance\",\"blocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":6,\"openTasks\":5,\"readiness\":25,\"timestamp\":1784521820549}"
+        },
+        {
+          "ts": "2026-07-20T04:30:20.554Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e01\",\"title\":\"Upload S1:E01 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1784521820550}"
+        },
+        {
+          "ts": "2026-07-20T04:30:20.554Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e02\",\"title\":\"Upload S1:E02 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1784521820550}"
+        },
+        {
+          "ts": "2026-07-20T04:30:20.554Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e03\",\"title\":\"Upload S1:E03 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1784521820550}"
+        },
+        {
+          "ts": "2026-07-20T04:30:20.554Z",
+          "type": "log",
+          "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e04\",\"title\":\"Upload S1:E04 reel\",\"priority\":\"CRITICAL\",\"impact\":6,\"timestamp\":1784521820550}"
+        },
+        {
+          "ts": "2026-07-20T04:30:20.554Z",
+          "type": "log",
+          "text": "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-neon-vengeance\",\"readinessPercent\":25,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":6,\"openTasks\":5,\"publishingVelocity\":0,\"unreadNotifications\":200,\"timestamp\":1784521820550}"
+        }
+      ]
+    }
+  ],
+  "synthesis": {
+    "overallVerdict": "EMPTY_AT_LOCALSTORAGE_BOOT",
+    "firstDisappearance": "localStorage (no hero reel / no heroAssetId at boot)",
+    "fallbackVideosHeroBackground404": true,
+    "fallbackRootHeroBackgroundOk": true,
+    "passVerdicts": [
+      {
+        "name": "A_cold_boot",
+        "verdict": "EMPTY_AT_LOCALSTORAGE_BOOT",
+        "firstEmptyStage": "localStorage (reelforge_hero_reel + reelforge_hero_manager_config.heroAssetId)"
+      },
+      {
+        "name": "B_seed_matched_reload",
+        "verdict": "HYDRATION_PRESERVES_SEEDED_ASSET",
+        "firstEmptyStage": null
+      },
+      {
+        "name": "C_seed_mismatch_reload",
+        "verdict": "VAULT_CLEARED_BY_ID_MISMATCH_GATE",
+        "firstEmptyStage": "loadHeroVaultItems() id mismatch gate"
+      }
+    ],
+    "timeline": [
+      {
+        "stage": "localStorage boot",
+        "status": "empty",
+        "heroAssetId": "",
+        "vaultWouldBeEmpty": true
+      },
+      {
+        "stage": "loadHeroVaultItems id mismatch gate",
+        "status": "returns []",
+        "evidence": {
+          "hasReelId": true,
+          "hasReelUrl": true,
+          "heroAssetId": "00000000-0000-0000-0000-000000000000",
+          "reelId": "192293f7-c784-46af-aa45-1bb15b6a4cc6",
+          "idsMatch": false,
+          "wouldReturnEmpty": true
+        }
+      },
+      {
+        "stage": "seeded matched reload",
+        "status": "HYDRATION_PRESERVES_SEEDED_ASSET",
+        "derived": {
+          "hasReelId": true,
+          "hasReelUrl": true,
+          "heroAssetId": "192293f7-c784-46af-aa45-1bb15b6a4cc6",
+          "reelId": "192293f7-c784-46af-aa45-1bb15b6a4cc6",
+          "idsMatch": true,
+          "wouldReturnEmpty": false
+        },
+        "dom": {
+          "at": "2026-07-20T04:29:56.722Z",
+          "videoSrc": "https://strong-lolly-a9fcb4.netlify.app/videos/192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4",
+          "videoError": false,
+          "imgSrc": null
+        }
+      }
+    ],
+    "interpretation": [
+      "Cold boot with empty hero keys \u2192 heroAssetId=\"\" and vaultItemsCount=0 at resolveHeroBackgroundAsset (matches user log).",
+      "First emptiness is at localStorage boot \u2014 not a mid-pipeline drop of a previously selected asset in this profile.",
+      "When reelforge_hero_reel + matching heroAssetId + backgroundSource=custom_video are present, hydration preserves the asset (Pass B: vaultItemsCount=1, DOM plays seeded MP4).",
+      "loadHeroVaultItems() returns [] when manager.heroAssetId !== reel.id even if the reel exists (Pass C) \u2014 measurable gate that yields vaultItemsCount=0.",
+      "Default fallback /videos/hero-background.mp4 returns HTTP 404; /hero-background.mp4 returns 200. Cold boot attempts the 404 path repeatedly before carousel content appears.",
+      "RC2 \"Hero persistence OK\" and runtime vaultItemsCount=0 are compatible: different localStorage profiles. Persistence works when keys are written; empty profile resolves empty."
+    ]
+  },
+  "verdict": "EMPTY_AT_LOCALSTORAGE_BOOT",
+  "verdictDetail": "Primary: empty localStorage at boot \u2192 empty resolver. Secondary concrete failure: default fallback /videos/hero-background.mp4 is 404. Proven gate: id mismatch empties vault. Proven positive: matched seed hydrates.",
+  "measuredChain": {
+    "coldBoot": [
+      {
+        "stage": "localStorage",
+        "heroAssetId": "",
+        "reel": null,
+        "status": "EMPTY"
+      },
+      {
+        "stage": "loadHeroManagerConfig",
+        "backgroundSource": "selection (default)",
+        "heroAssetId": "",
+        "status": "EMPTY_ID"
+      },
+      {
+        "stage": "loadHeroReel",
+        "status": "NULL"
+      },
+      {
+        "stage": "loadHeroVaultItems",
+        "count": 0,
+        "status": "EMPTY"
+      },
+      {
+        "stage": "resolveHeroBackgroundAsset",
+        "vaultItemsCount": 0,
+        "vaultMatch": false,
+        "mediaUrl": "",
+        "status": "EMPTY"
+      },
+      {
+        "stage": "fallback request",
+        "url": "/videos/hero-background.mp4",
+        "status": 404
+      },
+      {
+        "stage": "UI",
+        "status": "carousel/other video after fallback failures"
+      }
+    ],
+    "firstPlaceAssetAbsent": "localStorage (reelforge_hero_reel missing AND heroAssetId \"\")"
+  }
+}

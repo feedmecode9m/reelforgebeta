@@ -1,0 +1,154 @@
+{
+  "phase": "PHASE-THUMBNAIL-REPAIR-1",
+  "cardCount": 10,
+  "emptyPoster": 0,
+  "fallbackCount": 0,
+  "decoded": 10,
+  "thumb404": [],
+  "cards": [
+    {
+      "poster": "http://localhost:8080/thumbs/73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee.jpg",
+      "assetId": "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee",
+      "title": "01 ARRIVAL OPEN v1"
+    },
+    {
+      "poster": "http://localhost:8080/thumbs/73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee.jpg",
+      "assetId": "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee",
+      "title": "01 ARRIVAL OPEN v1"
+    },
+    {
+      "poster": "http://localhost:8080/thumbs/6582dac2-1476-497f-84e6-40547a9b1eba.jpg",
+      "assetId": "6582dac2-1476-497f-84e6-40547a9b1eba",
+      "title": "02 ARRIVAL THE PROJECT INTRO v1"
+    },
+    {
+      "poster": "http://localhost:8080/thumbs/65934555-716d-4d7d-97d7-bcd884cbb72c.jpg",
+      "assetId": "65934555-716d-4d7d-97d7-bcd884cbb72c",
+      "title": "MICROS Motherland V1(1)"
+    },
+    {
+      "poster": "http://localhost:8080/thumbs/9d043773-3f19-4ee4-adbd-df3c2979dd64.jpg",
+      "assetId": "9d043773-3f19-4ee4-adbd-df3c2979dd64",
+      "title": ""
+    },
+    {
+      "poster": "http://localhost:8080/thumbs/bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17.jpg",
+      "assetId": "bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17",
+      "title": ""
+    },
+    {
+      "poster": "http://localhost:8080/thumbs/2cea618f-d182-46a5-9510-a96207460257.jpg",
+      "assetId": "2cea618f-d182-46a5-9510-a96207460257",
+      "title": ""
+    },
+    {
+      "poster": "http://localhost:8080/thumbs/ec6a3655-7865-4e5e-b0a5-549d2f5b2dd7.jpg",
+      "assetId": "ec6a3655-7865-4e5e-b0a5-549d2f5b2dd7",
+      "title": ""
+    },
+    {
+      "poster": "http://localhost:8080/thumbs/16c68f0d-0094-4735-9a8a-24f02a3f754f.jpg",
+      "assetId": "16c68f0d-0094-4735-9a8a-24f02a3f754f",
+      "title": ""
+    },
+    {
+      "poster": "http://localhost:8080/thumbs/cf2008f3-e390-4a91-b11e-c72f422ba1f7.jpg",
+      "assetId": "cf2008f3-e390-4a91-b11e-c72f422ba1f7",
+      "title": ""
+    }
+  ],
+  "imgs": [
+    {
+      "src": "http://localhost:8080/thumbs/73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee.jpg",
+      "width": 1080,
+      "height": 1920,
+      "complete": true,
+      "display": "block",
+      "opacity": "1",
+      "fallback": false
+    },
+    {
+      "src": "http://localhost:8080/thumbs/73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee.jpg",
+      "width": 1080,
+      "height": 1920,
+      "complete": true,
+      "display": "block",
+      "opacity": "1",
+      "fallback": false
+    },
+    {
+      "src": "http://localhost:8080/thumbs/6582dac2-1476-497f-84e6-40547a9b1eba.jpg",
+      "width": 1080,
+      "height": 1920,
+      "complete": true,
+      "display": "block",
+      "opacity": "1",
+      "fallback": false
+    },
+    {
+      "src": "http://localhost:8080/thumbs/65934555-716d-4d7d-97d7-bcd884cbb72c.jpg",
+      "width": 2160,
+      "height": 4096,
+      "complete": true,
+      "display": "block",
+      "opacity": "1",
+      "fallback": false
+    },
+    {
+      "src": "http://localhost:8080/thumbs/9d043773-3f19-4ee4-adbd-df3c2979dd64.jpg",
+      "width": 1280,
+      "height": 720,
+      "complete": true,
+      "display": "block",
+      "opacity": "1",
+      "fallback": false
+    },
+    {
+      "src": "http://localhost:8080/thumbs/bf9f1f0c-e8d9-45cb-abb7-7e7b3707ea17.jpg",
+      "width": 1280,
+      "height": 720,
+      "complete": true,
+      "display": "block",
+      "opacity": "1",
+      "fallback": false
+    },
+    {
+      "src": "http://localhost:8080/thumbs/2cea618f-d182-46a5-9510-a96207460257.jpg",
+      "width": 1280,
+      "height": 720,
+      "complete": true,
+      "display": "block",
+      "opacity": "1",
+      "fallback": false
+    },
+    {
+      "src": "http://localhost:8080/thumbs/ec6a3655-7865-4e5e-b0a5-549d2f5b2dd7.jpg",
+      "width": 640,
+      "height": 360,
+      "complete": true,
+      "display": "block",
+      "opacity": "1",
+      "fallback": false
+    },
+    {
+      "src": "http://localhost:8080/thumbs/16c68f0d-0094-4735-9a8a-24f02a3f754f.jpg",
+      "width": 320,
+      "height": 240,
+      "complete": true,
+      "display": "block",
+      "opacity": "1",
+      "fallback": false
+    },
+    {
+      "src": "http://localhost:8080/thumbs/cf2008f3-e390-4a91-b11e-c72f422ba1f7.jpg",
+      "width": 320,
+      "height": 240,
+      "complete": true,
+      "display": "block",
+      "opacity": "1",
+      "fallback": false
+    }
+  ],
+  "repairVerdict": "PASS",
+  "failures": []
+}

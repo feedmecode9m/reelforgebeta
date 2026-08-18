@@ -64,9 +64,19 @@ export function mediaPathAssetId(value) {
         .split('#')[0]
         .toLowerCase();
     const match = path.match(
-        /\/(?:videos|thumbs)\/([0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})\.[a-z0-9]+$/i
+        /\/(?:videos|thumbs|prod)\/([0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})\.[a-z0-9]+$/i
     );
-    return match ? match[1] : '';
+    if (match) return match[1];
+    const file = path.split('/').pop() || '';
+    const stem = file.replace(/\.[a-z0-9]+$/i, '');
+    if (
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+            stem
+        )
+    ) {
+        return stem;
+    }
+    return '';
 }
 
 export function mediaRecordTitleKeys(entry) {

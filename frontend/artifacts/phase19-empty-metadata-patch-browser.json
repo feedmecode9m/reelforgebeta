@@ -1,0 +1,59 @@
+{
+  "generatedAt": "2026-08-12T16:27:14.028Z",
+  "baselineDeploy": "6a7c9ba9dad2a23e09b1e2fc",
+  "patchUncommitted": true,
+  "result": {
+    "afterSuspense": {
+      "shelf": "Suspense",
+      "description": "haunted mystery suspense thriller pursuit",
+      "tags": [
+        "suspense",
+        "thriller",
+        "haunted"
+      ]
+    },
+    "beforeClear": {
+      "description": "haunted mystery suspense thriller pursuit",
+      "tags": [
+        "suspense",
+        "thriller",
+        "haunted"
+      ],
+      "category": "Suspense"
+    },
+    "afterClear": {
+      "shelf": "Trending",
+      "description": "",
+      "tags": [],
+      "creatorCategory": null,
+      "art": "https://strong-lolly-a9fcb4.netlify.app/thumbs/03ef898a-989f-42c3-bdbb-67f37338df65.jpg"
+    },
+    "afterReload": {
+      "shelf": "Trending",
+      "description": "",
+      "tags": [],
+      "primaryDesc": "",
+      "primaryTags": []
+    },
+    "romance": "Romance",
+    "suspense": "Suspense",
+    "uniqueCanonical": 1,
+    "dualListSameId": 2
+  },
+  "failures": [],
+  "notes": [
+    "1 Suspense populated",
+    "2 stale evidence present before clear",
+    "3 live description cleared",
+    "3 live tags cleared",
+    "3 classification → Trending",
+    "4 reload Trending",
+    "4 reload primary empty",
+    "art preserved",
+    "Phase17 Romance",
+    "Phase18 clear→Suspense",
+    "J is discovery dual-list not duplicate identity",
+    "J: same canonical id may appear on genre shelf + Trending (intentional cross-list)"
+  ],
+  "pass": true
+}

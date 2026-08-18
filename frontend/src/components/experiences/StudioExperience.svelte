@@ -1675,6 +1675,14 @@
             </div>
             <div class="distribution-center">
               <h3 class="glow-text">Smart Category Distribution</h3>
+              <p
+                class="scd-viewer-rail-hint"
+                data-scd-viewer-rail-hint
+                style="margin: 0.35rem 0 1rem; font-size: 0.82rem; line-height: 1.45; color: rgba(255,255,255,0.62); max-width: 42rem;"
+              >
+                Viewer Home / New Releases / Trending / Suspense labels sync from these LIVE CONTENT renames
+                (Romance → New Releases tab, Trending → Trending tab, Suspense → Suspense tab). Cards and posters are unchanged.
+              </p>
               <div class="category-chips-grid">
                 {#each Object.entries($categoryCounts) as [name, count]}
                   {@const catConfig = UIAgent.getStudioConfigs(name)}

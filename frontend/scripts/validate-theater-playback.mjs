@@ -91,6 +91,30 @@ assert(
     'Theater mount does not race a second play() after tick'
 );
 
+// Mobile play chrome: explicit Play/Pause (native control taps were blocked by stopPropagation)
+assert(/toggleTheaterPlayback/.test(theater), 'mobile Theater exposes toggleTheaterPlayback');
+assert(/startTheaterPlayback/.test(theater), 'mobile Theater exposes startTheaterPlayback helper');
+assert(/resolveTheaterVideoElement/.test(theater), 'mobile Theater resolves video via manager or DOM');
+assert(/theater-mobile-play/.test(theater), 'mobile Theater renders Play/Pause control');
+assert(/handleTheaterPlayPointerUp/.test(theater), 'mobile Play uses pointerup for user-activation');
+assert(/toggleMobileTheaterChrome/.test(theater), 'mobile chrome toggles on canvas tap');
+assert(/hideMobileTheaterControls/.test(theater), 'mobile chrome hides while playing');
+assert(/env\(safe-area-inset-bottom/.test(theater), 'mobile Play/Mute dock to bottom safe area');
+assert(/controls=\{!isMobileTheater\}/.test(theater), 'mobile uses custom chrome instead of native video controls');
+assert(!/class="theater-mobile-volume"/.test(theater), 'mobile overlay does not include volume slider');
+assert(
+    !/on:touchend=\{handleTheaterVideoInteraction\}/.test(theater),
+    'Theater video does not attach touchend stopPropagation handler (iOS play break)'
+);
+assert(
+    /Do NOT stopPropagation/.test(theater) || !/e\.stopPropagation\(\);\s*\n\s*if \(isMobileTheater\)/.test(theater),
+    'mobile video interaction does not stopPropagation before native play'
+);
+assert(
+    /NotAllowed|force mute \+ retry|el\.muted = true/.test(theater),
+    'mobile play retries muted after NotAllowedError'
+);
+
 // 5. Diagnostics attached on mount
 assert(
     /attachTheaterPlaybackDiagnostics/.test(theater),
@@ -126,6 +150,10 @@ assert(
 // 9. Reelshort ambient theater path prefers poster when ambientBlur (no second MP4 competition)
 const ambientBlur = /ambientBlur|theater-ambient|MediaPoster/.test(reelshort);
 assert(ambientBlur, 'ReelshortExperience retains ambient poster / theater-ambient path');
+assert(
+    /max-width:\s*none\s*!important/.test(reelshort) && /aspect-ratio:\s*auto/.test(reelshort),
+    'mobile Reelshort theater drops 450px / 9:16 phone-frame so player can fill the device'
+);
 
 if (failures.length) {
     console.error('FAIL validate-theater-playback');

@@ -87,7 +87,7 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    host: 'localhost',
+    host: true,
     allowedHosts: VITE_ALLOWED_HOSTS,
     cors: true,
     hmr: HMR_TUNNEL
@@ -110,6 +110,7 @@ export default defineConfig({
     }
   },
   preview: {
+    host: true,
     allowedHosts: VITE_ALLOWED_HOSTS
   },
   resolve: {

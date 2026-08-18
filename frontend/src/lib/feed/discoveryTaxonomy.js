@@ -74,6 +74,57 @@ export function isRegisteredShelf(shelfId) {
     return DISCOVERY_TAXONOMY.some((s) => s.id === id);
 }
 
+/**
+ * Audience primary rail (Home / New Releases / Trending / Suspense).
+ * Labels sync from Smart Category Distribution / Master Edit aliases via categoryAliasStore.
+ * `shelfId: null` = Home (all active shelves). Cards/posters are unchanged — chrome only.
+ * Admin SCD rename later updates the matching tab without changing shelf ids.
+ * @type {ReadonlyArray<{ key: string; shelfId: string | null; defaultLabel: string }>}
+ */
+export const VIEWER_PRIMARY_RAIL = Object.freeze([
+    { key: 'home', shelfId: null, defaultLabel: 'Home' },
+    { key: 'new-releases', shelfId: 'Romance', defaultLabel: 'New Releases' },
+    { key: 'trending', shelfId: 'Trending', defaultLabel: 'Trending' },
+    { key: 'suspense', shelfId: 'Suspense', defaultLabel: 'Suspense' }
+]);
+
+/**
+ * Audience label for a primary rail tab.
+ * Home stays fixed. Shelf tabs prefer Studio SCD rename, else screenshot default.
+ * @param {{ key: string; shelfId: string | null; defaultLabel: string }} slot
+ * @param {Record<string, string> | null | undefined} [nameMap]
+ */
+export function labelViewerPrimaryRailTab(slot, nameMap = null) {
+    if (!slot || !slot.shelfId) return String(slot?.defaultLabel || 'Home');
+    const custom = displayDiscoveryShelf(slot.shelfId, nameMap);
+    const canonical = String(slot.shelfId || '').trim();
+    if (custom && custom !== canonical) return custom;
+    return String(slot.defaultLabel || custom || canonical);
+}
+
+/**
+ * @param {Record<string, string> | null | undefined} [nameMap]
+ */
+export function listViewerPrimaryRailTabs(nameMap = null) {
+    return VIEWER_PRIMARY_RAIL.map((slot) => ({
+        ...slot,
+        label: labelViewerPrimaryRailTab(slot, nameMap)
+    }));
+}
+
+/**
+ * Whether a canonical shelf row should render under the active primary rail tab.
+ * @param {string} category
+ * @param {string | null | undefined} activeRailKey
+ */
+export function shelfVisibleForViewerRail(category, activeRailKey) {
+    const key = String(activeRailKey || 'home').trim() || 'home';
+    if (key === 'home') return true;
+    const slot = VIEWER_PRIMARY_RAIL.find((s) => s.key === key);
+    if (!slot || !slot.shelfId) return true;
+    return String(category || '').trim() === slot.shelfId;
+}
+
 /** localStorage key for Studio LIVE CONTENT display aliases (canonical id → label). */
 export const CATEGORY_NAMES_STORAGE_KEY = 'reelforge_category_names';
 

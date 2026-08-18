@@ -97,6 +97,7 @@ import { initProductionPipelineEngine } from '../lib/workflows/productionPipelin
 import { initReportingEngine } from '../lib/reporting/reportingEngine.js';
 import { initPublishingProfile } from '../lib/publishing/publishingProfileStore.js';
 import { logTheaterOpen, logTheaterState } from '../lib/theater/theaterDiagnostics.js';
+import { logMobilePlayTrace } from '../lib/device/mobileExperienceDiagnostics.js';
 import { resolveDisplayUrl } from '../components/media/resolveDisplayUrl.js';
 import { connectReelEventSocket } from '../lib/wsReelEvents.js';
 import { toBackendMediaUrl, toRelativeMediaPath, logResolvedMediaUrl, logFinalMediaUrl, videoMimeForPath, auditRenderedMediaUrls } from '../lib/config.js';
@@ -203,6 +204,20 @@ export function createViewerContext() {
 // ==========================================
 // Constants & Configuration
 // ==========================================
+const DEFAULT_SIGNED_UPLOAD_MAX_BYTES = 2_147_483_648; // 2 GiB
+function resolveMaxVideoSizeBytes() {
+  const raw = (
+    import.meta.env.VITE_MAX_VIDEO_SIZE_BYTES ||
+    import.meta.env.VITE_SIGNED_UPLOAD_MAX_BYTES ||
+    ''
+  )
+    .toString()
+    .trim();
+  const parsed = Number.parseInt(raw, 10);
+  if (Number.isFinite(parsed) && parsed > 0) return parsed;
+  return DEFAULT_SIGNED_UPLOAD_MAX_BYTES;
+}
+
 const CONFIG = Object.freeze({
 CATEGORIES: ['Auto-Detect', 'Trending', 'Cyber-Action', 'Romance', 'Suspense'],
 HERO_VIDEO_PATHS: [
@@ -224,7 +239,7 @@ VAULT_KEY: 'reel_vault',
 TITLES_KEY: 'reel_titles',
 VIDEO_VAULT_INDEX_KEY: 'video_vault_index',
 FEED_STORAGE_KEY: 'reelforge_feed',
-MAX_VIDEO_SIZE: 500 * 1024 * 1024,
+MAX_VIDEO_SIZE: resolveMaxVideoSizeBytes(),
 MAX_VAULT_ITEMS: 20,
 MAX_RECENT_ITEMS: 50,
 CLEANUP_INTERVAL: 5 * 60 * 1000,
@@ -640,6 +655,14 @@ return null;
 
 /** Feed shelf card click → theater (wired as onOpenTheater from ReelshortExperience). @param {Record<string, unknown>} reel */
 function handleCardClick(reel) {
+logMobilePlayTrace('VIEWER_HANDLE_CARD_CLICK', {
+assetId: String(reel?.id || '').trim(),
+title: String(reel?.title || reel?.name || '').trim(),
+mediaUrl: String(reel?.url || reel?.playbackUrl || reel?.mediaUrl || reel?.videoUrl || '').trim(),
+resolver: 'viewerContext.handleCardClick',
+source: 'viewer-handleCardClick',
+playCalled: false
+});
 logTheaterOpen(reel, {
 source: 'viewer-handleCardClick',
 isPlaceholder: Boolean(reel?.isPlaceholder),
@@ -655,14 +678,41 @@ openTheater(reel);
 function openTheater(reel) {
 if (!reel) {
 logTheaterOpen(null, { source: 'viewer-openTheater', aborted: true, reason: 'no-reel' });
+logMobilePlayTrace('VIEWER_OPEN_THEATER_ABORTED', {
+resolver: 'viewerContext.openTheater',
+reason: 'no-reel',
+playCalled: false
+});
 return;
 }
+logMobilePlayTrace('VIEWER_OPEN_THEATER', {
+assetId: String(reel?.id || '').trim(),
+title: String(reel?.title || reel?.name || '').trim(),
+mediaUrl: String(reel?.url || reel?.playbackUrl || reel?.mediaUrl || reel?.videoUrl || '').trim(),
+resolver: 'viewerContext.openTheater → openTheaterReel',
+source: 'viewer-openTheater',
+playCalled: false
+});
 openTheaterReel(reel);
 logTheaterState({
 source: 'viewer-openTheater-complete',
 activeReelId: get(activeReel)?.id ?? null,
 visible: Boolean(get(activeReel)),
 resolvedFromFeed: Boolean(findReelInFeed(reel?.id))
+});
+logMobilePlayTrace('VIEWER_OPEN_THEATER_COMPLETE', {
+assetId: String(get(activeReel)?.id || reel?.id || '').trim(),
+title: String(get(activeReel)?.title || reel?.title || '').trim(),
+mediaUrl: String(
+get(activeReel)?.url ||
+get(activeReel)?.playbackUrl ||
+reel?.url ||
+reel?.playbackUrl ||
+''
+).trim(),
+resolver: 'viewerContext.openTheater.complete',
+source: 'viewer-openTheater-complete',
+viewerOpen: Boolean(get(activeReel))
 });
 }
 

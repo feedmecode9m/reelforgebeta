@@ -1,0 +1,16 @@
+{
+  "generatedAt": "2026-08-12T15:04:50.329Z",
+  "patch": "VaultExperience.saveVaultEpisodeEnrichment → AI_CLEANUP_AGENT.applyPersistedTitlesOverlay after savedMeta",
+  "focusedImmediateRomance": "PASS",
+  "fingerprint": {
+    "romanceBeforeOverlay": false,
+    "romanceAfterOverlay": true
+  },
+  "notes": [
+    "A/B/C immediate reshelf PASS with live applyPersistedTitlesOverlay",
+    "E reload matches PASS",
+    "F/H/G PASS",
+    "D clear-to-neutral: pre-existing stale creatorCategory on feed card when titles category cleared — out of scope for this surgical overlay patch"
+  ],
+  "pass": true
+}

@@ -1,0 +1,137 @@
+{
+  "generatedAt": "2026-07-16T18:53:25.536Z",
+  "frontend": "https://strong-lolly-a9fcb4.netlify.app",
+  "mission": "BG-AUTO-01",
+  "steps": [
+    {
+      "name": "studio_unlocked",
+      "ok": true,
+      "ts": "2026-07-16T18:53:40.455Z"
+    },
+    {
+      "name": "preview_visible_after_drop",
+      "ok": true,
+      "previewVisible": false,
+      "acceptVisible": true,
+      "uxPhase": null,
+      "ts": "2026-07-16T18:53:41.994Z"
+    },
+    {
+      "name": "no_upload_before_accept",
+      "ok": true,
+      "postCount": 0,
+      "ts": "2026-07-16T18:53:42.003Z"
+    },
+    {
+      "name": "no_canonical_reel_before_accept",
+      "ok": true,
+      "heroReel": null,
+      "ts": "2026-07-16T18:53:42.003Z"
+    },
+    {
+      "name": "post_api_reels_after_accept",
+      "ok": true,
+      "postCount": 1,
+      "ts": "2026-07-16T18:53:46.108Z"
+    },
+    {
+      "name": "canonical_reel_saved",
+      "ok": true,
+      "reelId": "4c840a16-77f7-4a2f-b81d-0dee37b3de18",
+      "ts": "2026-07-16T18:53:46.108Z"
+    },
+    {
+      "name": "manager_custom_video",
+      "ok": true,
+      "config": {
+        "backgroundSource": "custom_video",
+        "heroAssetId": "4c840a16-77f7-4a2f-b81d-0dee37b3de18"
+      },
+      "ts": "2026-07-16T18:53:46.108Z"
+    },
+    {
+      "name": "hero_asset_id_matches_reel",
+      "ok": true,
+      "heroAssetId": "4c840a16-77f7-4a2f-b81d-0dee37b3de18",
+      "reelId": "4c840a16-77f7-4a2f-b81d-0dee37b3de18",
+      "ts": "2026-07-16T18:53:46.108Z"
+    },
+    {
+      "name": "stage_video_updated",
+      "ok": true,
+      "stageVideoSrc": "https://strong-lolly-a9fcb4.netlify.app/videos/4c840a16-77f7-4a2f-b81d-0dee37b3de18.mp4",
+      "ts": "2026-07-16T18:53:46.113Z"
+    },
+    {
+      "name": "persistence_after_reload",
+      "ok": true,
+      "reelIdBefore": "4c840a16-77f7-4a2f-b81d-0dee37b3de18",
+      "reelIdAfter": "4c840a16-77f7-4a2f-b81d-0dee37b3de18",
+      "ts": "2026-07-16T18:53:49.820Z"
+    }
+  ],
+  "network": [
+    {
+      "phase": "request",
+      "method": "POST",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels"
+    },
+    {
+      "phase": "response",
+      "status": 202,
+      "id": "4c840a16-77f7-4a2f-b81d-0dee37b3de18",
+      "url": null
+    }
+  ],
+  "pass": true,
+  "afterDrop": {
+    "localStorage": {
+      "reelforge_hero_reel": null,
+      "reelforge_hero_manager_config": null,
+      "reelforge_hero_video": null,
+      "reelforge_hero_image": null
+    }
+  },
+  "afterAccept": {
+    "localStorage": {
+      "reelforge_hero_reel": {
+        "id": "4c840a16-77f7-4a2f-b81d-0dee37b3de18",
+        "fileName": "4c840a16-77f7-4a2f-b81d-0dee37b3de18.mp4",
+        "name": "Bg Auto 01 Hero 1784228020456",
+        "url": "/videos/4c840a16-77f7-4a2f-b81d-0dee37b3de18.mp4",
+        "thumbnail": "/thumbs/4c840a16-77f7-4a2f-b81d-0dee37b3de18.jpg",
+        "type": "video",
+        "backgroundSource": "custom_video"
+      },
+      "reelforge_hero_manager_config": {
+        "backgroundSource": "custom_video",
+        "heroAssetId": "4c840a16-77f7-4a2f-b81d-0dee37b3de18"
+      },
+      "reelforge_hero_video": null,
+      "reelforge_hero_image": null
+    },
+    "stageVideo": {
+      "src": "https://strong-lolly-a9fcb4.netlify.app/videos/4c840a16-77f7-4a2f-b81d-0dee37b3de18.mp4",
+      "readyState": 4
+    }
+  },
+  "afterReload": {
+    "localStorage": {
+      "reelforge_hero_reel": {
+        "id": "4c840a16-77f7-4a2f-b81d-0dee37b3de18",
+        "fileName": "4c840a16-77f7-4a2f-b81d-0dee37b3de18.mp4",
+        "name": "Bg Auto 01 Hero 1784228020456",
+        "url": "/videos/4c840a16-77f7-4a2f-b81d-0dee37b3de18.mp4",
+        "thumbnail": "/thumbs/4c840a16-77f7-4a2f-b81d-0dee37b3de18.jpg",
+        "type": "video",
+        "backgroundSource": "custom_video"
+      },
+      "reelforge_hero_manager_config": {
+        "backgroundSource": "custom_video",
+        "heroAssetId": "4c840a16-77f7-4a2f-b81d-0dee37b3de18"
+      },
+      "reelforge_hero_video": null,
+      "reelforge_hero_image": null
+    }
+  }
+}

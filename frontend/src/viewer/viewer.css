@@ -234,18 +234,32 @@ backdrop-filter: blur(2px);
   main > header {
     padding: 0.85rem 1rem;
   }
+  /* Netflix-style billboard: keep the full hero canvas in view while scrolling. */
   .hero-stage {
-    height: 52vh;
-    min-height: 240px;
-    max-height: 420px;
+    height: min(88dvh, 88vh);
+    min-height: 72dvh;
+    max-height: none;
+    margin-bottom: 1.15rem;
   }
   .hero-stage.hero-stage--viewer {
-    min-height: 42vh;
-    max-height: 56vh;
+    height: min(86dvh, 86vh);
+    min-height: 74dvh;
+    max-height: none;
+  }
+  .hero-stage--viewer .hero-video,
+  .hero-stage--viewer .hero-fallback-image,
+  .hero-stage--viewer .hero-media,
+  .hero-stage--viewer [data-media-renderer] {
+    object-position: center 28%;
+  }
+  .hero-video-container.hero-bg-ambient-motion .hero-video,
+  .hero-video-container.hero-bg-ambient-motion .hero-fallback-image.active {
+    transform: none;
+    animation: none;
   }
   .hero-wrap {
     width: 94vw;
-    padding: 0 1rem 2.2rem;
+    padding: 0 1rem max(2.2rem, env(safe-area-inset-bottom, 0px));
   }
   .hero-stage--viewer [data-hero-story-description] {
     margin-top: 0.8rem;
@@ -1275,6 +1289,10 @@ margin: 0;
   background: rgba(229, 9, 20, 0.95);
   color: #fff;
 }
+.vault-card .upload-state-badge--processing {
+  background: rgba(250, 204, 21, 0.94);
+  color: #111;
+}
 .vault-card .upload-state-badge--interrupted {
   background: rgba(251, 191, 36, 0.92);
   color: #111;
@@ -1520,6 +1538,40 @@ margin: 0;
   margin: 0;
   font-size: 0.7rem;
   color: rgba(255, 255, 255, 0.45);
+}
+.vault-drop-debug {
+  margin: 0.5rem 0 0.35rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 650;
+  line-height: 1.35;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.72);
+  color: #cbd5e1;
+}
+.vault-drop-debug--idle {
+  color: #94a3b8;
+}
+.vault-drop-debug--hovering {
+  border-color: rgba(0, 242, 255, 0.45);
+  background: rgba(0, 242, 255, 0.1);
+  color: #a5f3fc;
+}
+.vault-drop-debug--received {
+  border-color: rgba(34, 197, 94, 0.5);
+  background: rgba(22, 163, 74, 0.16);
+  color: #bbf7d0;
+}
+.vault-drop-debug--missed {
+  border-color: rgba(250, 204, 21, 0.5);
+  background: rgba(250, 204, 21, 0.12);
+  color: #fde68a;
+}
+.vault-drop-debug--rejected {
+  border-color: rgba(248, 113, 113, 0.5);
+  background: rgba(239, 68, 68, 0.14);
+  color: #fecaca;
 }
 .vault-near-miss-hint {
   margin: 0.5rem 0;

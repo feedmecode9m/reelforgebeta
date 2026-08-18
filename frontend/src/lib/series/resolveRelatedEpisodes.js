@@ -16,9 +16,15 @@
  *   8. Episode-number parse patterns (via vaultSeriesInference)
  */
 
-import { getEpisodeById, getEpisodeByReelId, getReelSeriesMetadata, getSeriesById } from './seriesStore.js';
+import {
+    getEpisodeById,
+    getEpisodeByMediaIdentity,
+    getEpisodeByReelId,
+    getReelSeriesMetadata,
+    getSeriesById
+} from './seriesStore.js';
 import { getReadyHeroVaultAssets } from './heroVaultAssetSource.js';
-import { assetIdOf } from './episodeVaultResolver.js';
+import { assetIdOf, isVideoAsset, isImageAsset } from './episodeVaultResolver.js';
 import {
     parseHighConfidenceEpisodeTitle,
     slugifySeriesKey,
@@ -34,10 +40,16 @@ import { sortEpisodesForDisplay } from './seriesCatalogEdits.js';
 import { episodeIsViewerDiscoverable } from './publishingLifecycle.js';
 import {
     resolveLinkedAssetDisplayTitle,
+    isUnsafeHeroFilenameTitle,
     REEL_TITLES_PERSISTENT_KEY,
     UNTITLED_CREATOR_EXPERIENCE
 } from '../hero/heroTitleIntelligence.js';
-import { lookupPersistentTitleEntry } from '../content/persistentTitleMap.js';
+import {
+    lookupPersistentTitleEntry,
+    mediaPathAssetId,
+    mediaRecordTitleKeys
+} from '../content/persistentTitleMap.js';
+import { isUnsafeViewerCardTitle } from '../feed/viewerMediaIdentity.js';
 
 const UUID_RE =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -156,6 +168,89 @@ export function stripEpisodeDecorFromTitle(rawTitle) {
 }
 
 /**
+ * True when a string is an episode Master Edit / file stem, not a Family / series name.
+ * All Episodes shelf heading must not use these.
+ * @param {unknown} value
+ */
+export function looksLikeEpisodeFacingTitle(value) {
+    const text = cleanSpaces(stripMediaExtension(value));
+    if (!text) return true;
+    if (isUnsafeHeroFilenameTitle(text) || isUnsafeViewerCardTitle(text)) return true;
+    if (/^\d{1,2}([\s_\-.]|$)/.test(text)) return true;
+    if (/\bS\d{1,2}\s*[Ee]\d{1,3}\b/i.test(text)) return true;
+    if (/\b(?:ep(?:isode)?)\s*\d{1,3}\b/i.test(text)) return true;
+    if (/_v\d+\b/i.test(text)) return true;
+    if (/_(?:arrival|open|cut|final|master|edit)\b/i.test(text)) return true;
+    if (/\b(?:arrival|open)\b/i.test(text) && /\bv\d+\b/i.test(text)) return true;
+    return false;
+}
+
+/**
+ * All Episodes menu title: Family / series name, never a single episode Master Edit.
+ * @param {{
+ *   relatedTitle?: unknown;
+ *   catalogTitle?: unknown;
+ *   familyLabels?: unknown[];
+ *   identityFranchise?: unknown;
+ *   identityEntity?: unknown;
+ *   seedTitle?: unknown;
+ *   creatorConfirmedCatalog?: boolean;
+ * }} [input]
+ */
+export function resolveFamilySeriesTitle(input = {}) {
+    const catalogTitle = cleanSpaces(input.catalogTitle);
+    const relatedTitle = cleanSpaces(input.relatedTitle);
+    const franchise = cleanSpaces(input.identityFranchise);
+    const entity = cleanSpaces(input.identityEntity);
+    const seedTitle = cleanSpaces(input.seedTitle);
+    const labels = (Array.isArray(input.familyLabels) ? input.familyLabels : [])
+        .map((value) => cleanSpaces(value))
+        .filter(Boolean);
+
+    /** @type {string[]} */
+    const ranked = [];
+    const push = (value) => {
+        const next = cleanSpaces(value);
+        if (!next) return;
+        if (looksLikeEpisodeFacingTitle(next)) return;
+        if (ranked.some((existing) => normalizeSeriesText(existing) === normalizeSeriesText(next))) {
+            return;
+        }
+        ranked.push(next);
+    };
+
+    if (input.creatorConfirmedCatalog && catalogTitle) push(catalogTitle);
+    for (const label of labels) push(label);
+    push(catalogTitle);
+    push(entity);
+    push(stripEpisodeDecorFromTitle(franchise) || franchise);
+    push(stripEpisodeDecorFromTitle(relatedTitle) || relatedTitle);
+    push(stripEpisodeDecorFromTitle(seedTitle));
+
+    if (!ranked.length) {
+        const fallback =
+            (!looksLikeEpisodeFacingTitle(catalogTitle) && catalogTitle) ||
+            (!looksLikeEpisodeFacingTitle(relatedTitle) && relatedTitle) ||
+            stripEpisodeDecorFromTitle(seedTitle) ||
+            catalogTitle ||
+            relatedTitle ||
+            'Series';
+        return cleanSpaces(fallback) || 'Series';
+    }
+
+    // Prefer the shortest stable family root among equally episode-free labels
+    // ("Vic G" over a longer episode-adjacent phrase), but keep free-form franchise
+    // when it is the only non-episode candidate.
+    ranked.sort((a, b) => {
+        const aTokens = a.split(/\s+/).length;
+        const bTokens = b.split(/\s+/).length;
+        if (aTokens !== bTokens) return aTokens - bTokens;
+        return a.length - b.length;
+    });
+    return ranked[0];
+}
+
+/**
  * Identity token stream — keeps single-letter tokens after a longer word (Vic G).
  * @param {unknown} title
  * @returns {string[]}
@@ -245,8 +340,28 @@ function heroVaultMasterEditTitle(asset, reelId, fallbackTitle = '', mediaUrl = 
         assetTitle: displayTitleOf(asset) || fallback,
         fileName: String(asset?.fileName || asset?.file_name || '')
     });
-    if (canonical && canonical !== UNTITLED_CREATOR_EXPERIENCE) return canonical;
-    return fallback;
+    if (canonical && canonical !== UNTITLED_CREATOR_EXPERIENCE) {
+        if (
+            isUnsafeHeroFilenameTitle(canonical) ||
+            isUnsafeViewerCardTitle(canonical)
+        ) {
+            return fallback &&
+                !isUnsafeHeroFilenameTitle(fallback) &&
+                !isUnsafeViewerCardTitle(fallback)
+                ? fallback
+                : '';
+        }
+        return canonical;
+    }
+    if (
+        fallback &&
+        !isUnsafeHeroFilenameTitle(fallback) &&
+        !isUnsafeViewerCardTitle(fallback) &&
+        !/^episode\s+\d+$/i.test(fallback)
+    ) {
+        return fallback;
+    }
+    return '';
 }
 
 /**
@@ -498,6 +613,15 @@ function vaultFamilyAllowsJoin(
  * @param {string} otherCreator
  */
 function titlesRelated(seedTitle, otherTitle, seedDesc, otherDesc, seedCreator, otherCreator) {
+    // Filename / "copy UUID" stems never form an All Episodes family by title alone.
+    if (
+        isUnsafeHeroFilenameTitle(seedTitle) ||
+        isUnsafeHeroFilenameTitle(otherTitle) ||
+        isUnsafeViewerCardTitle(seedTitle) ||
+        isUnsafeViewerCardTitle(otherTitle)
+    ) {
+        return false;
+    }
     const ta = identityTokens(seedTitle);
     const tb = identityTokens(otherTitle);
     if (sharesEntityTokenPrefix(ta, tb)) return true;
@@ -547,7 +671,9 @@ function membersFromCatalog(seriesId) {
             out.push({
                 assetId: assetId || String(ep.episodeId || ''),
                 reelId,
-                title: String(ep.title || `Episode ${ep.episodeNumber}`),
+                // Empty package titles stay empty — viewer chips resolve Master Edit / safe catalog names.
+                // Never invent "Episode N" for All Episodes (mobile shows that instead of real names).
+                title: String(ep.title || '').trim(),
                 episodeNumber: Number(ep.episodeNumber) || 1,
                 seasonNumber: Number(season.seasonNumber) || 1,
                 mediaUrl: '',
@@ -572,13 +698,69 @@ function membersFromCatalog(seriesId) {
 function preferPresentationTitle(a, b) {
     const A = String(a || '').trim();
     const B = String(b || '').trim();
+    const unsafe = (t) =>
+        !t ||
+        isUnsafeHeroFilenameTitle(t) ||
+        isUnsafeViewerCardTitle(t) ||
+        /^episode\s+\d+$/i.test(t);
+    if (unsafe(A) && !unsafe(B)) return B;
+    if (unsafe(B) && !unsafe(A)) return A;
+    if (unsafe(A) && unsafe(B)) return '';
     if (!A) return B;
     if (!B) return A;
     const mediaish = (t) => /\.(mp4|mov|webm|m4v|avi|mkv)$/i.test(t);
     if (mediaish(A) && !mediaish(B)) return B;
     if (mediaish(B) && !mediaish(A)) return A;
-    // Prefer creator package titles over bare SxxExx file stems only when one is richer
+    const genericEp = (t) => /^episode\s+\d+$/i.test(t);
+    if (genericEp(A) && !genericEp(B)) return B;
+    if (genericEp(B) && !genericEp(A)) return A;
     return A;
+}
+
+/**
+ * Catalog reel id, vault id, and R2 /prod/{uuid}.mp4 are the same episode.
+ * @param {RelatedEpisodeMember} m
+ * @returns {string[]}
+ */
+function aliasIdsForMember(m) {
+    return mediaRecordTitleKeys({
+        id: m.assetId || m.reelId,
+        assetId: m.assetId,
+        reelId: m.reelId,
+        mediaAssetId: m.assetId,
+        mediaUrl: m.mediaUrl,
+        url: m.mediaUrl
+    }).map((id) => String(id || '').trim().toLowerCase()).filter(Boolean);
+}
+
+/**
+ * @param {RelatedEpisodeMember} prev
+ * @param {RelatedEpisodeMember} m
+ * @returns {RelatedEpisodeMember}
+ */
+function mergeRelatedMembers(prev, m) {
+    return {
+        ...prev,
+        ...m,
+        title: preferPresentationTitle(m.title, prev.title),
+        description: String(prev.description || m.description || '').trim() || m.description || '',
+        thumbnailUrl: (() => {
+            const a = String(m.thumbnailUrl || '').trim();
+            const b = String(prev.thumbnailUrl || '').trim();
+            return a || b;
+        })(),
+        reelId: m.reelId || prev.reelId,
+        assetId: m.assetId || prev.assetId,
+        episodeId: m.episodeId || prev.episodeId,
+        mediaUrl: (() => {
+            const a = String(m.mediaUrl || '').trim();
+            const b = String(prev.mediaUrl || '').trim();
+            if (isVideoAsset(a, '') && !isVideoAsset(b, '')) return a;
+            if (isVideoAsset(b, '') && !isVideoAsset(a, '')) return b;
+            return a || b;
+        })(),
+        source: m.source === 'catalog' || prev.source === 'catalog' ? 'catalog' : m.source || prev.source
+    };
 }
 
 /**
@@ -586,41 +768,36 @@ function preferPresentationTitle(a, b) {
  * @returns {RelatedEpisodeMember[]}
  */
 function dedupeMembers(list) {
-    /** @type {Map<string, RelatedEpisodeMember>} */
-    const byKey = new Map();
+    /** @type {{ ids: Set<string>; titleKey: string; member: RelatedEpisodeMember }[]} */
+    const groups = [];
     for (const m of list) {
-        const key =
-            (m.reelId && `r:${m.reelId}`) ||
-            (m.assetId && `a:${m.assetId}`) ||
-            `t:${normalizeSeriesText(m.title)}|e${m.episodeNumber}`;
-        const prev = byKey.get(key);
-        if (!prev) {
-            byKey.set(key, m);
+        const ids = new Set(aliasIdsForMember(m));
+        const titleKey = `${normalizeSeriesText(m.title)}|s${Number(m.seasonNumber) || 1}|e${Number(m.episodeNumber) || 0}`;
+        let hit = -1;
+        for (let i = 0; i < groups.length; i++) {
+            let overlap = false;
+            for (const id of ids) {
+                if (groups[i].ids.has(id)) {
+                    overlap = true;
+                    break;
+                }
+            }
+            if (!overlap && titleKey && !titleKey.startsWith('|') && groups[i].titleKey === titleKey) {
+                overlap = Boolean(normalizeSeriesText(m.title));
+            }
+            if (overlap) {
+                hit = i;
+                break;
+            }
+        }
+        if (hit >= 0) {
+            for (const id of ids) groups[hit].ids.add(id);
+            groups[hit].member = mergeRelatedMembers(groups[hit].member, m);
             continue;
         }
-        // Prefer catalog-bound reel + richer media / presentation package
-        byKey.set(key, {
-            ...prev,
-            ...m,
-            title: preferPresentationTitle(m.title, prev.title),
-            description: String(prev.description || m.description || '').trim() || m.description || '',
-            mediaUrl: m.mediaUrl || prev.mediaUrl,
-            // Prefer explicit artwork package over default poster when both present
-            thumbnailUrl: (() => {
-                const a = String(m.thumbnailUrl || '').trim();
-                const b = String(prev.thumbnailUrl || '').trim();
-                if (a && b) {
-                    // Keep non-empty pair: prefer later only if previous looks empty
-                    return a || b;
-                }
-                return a || b;
-            })(),
-            reelId: m.reelId || prev.reelId,
-            episodeId: m.episodeId || prev.episodeId,
-            source: m.source === 'catalog' || prev.source === 'catalog' ? 'catalog' : m.source || prev.source
-        });
+        groups.push({ ids, titleKey, member: m });
     }
-    return [...byKey.values()].sort((a, b) => {
+    return groups.map((g) => g.member).sort((a, b) => {
         if (a.seasonNumber !== b.seasonNumber) return a.seasonNumber - b.seasonNumber;
         // Creator displayOrder overrides episodeNumber presentation order when present
         const da = Number(a.displayOrder);
@@ -656,9 +833,20 @@ export function buildSeriesViewFromRelated(related, catalogSeries = null, option
     const seriesId =
         String(related.seriesId || catalogSeries?.id || '').trim() ||
         `series-${slugifySeriesKey(related.seriesTitle || catalogSeries?.title || 'related')}`;
-    // Viewer prefers vault-inferred franchise title; catalog title only when related empty.
-    const seriesTitle =
-        String(related.seriesTitle || catalogSeries?.title || '').trim() || 'Series';
+    const creatorConfirmedCatalog = Boolean(
+        catalogSeries?.confirmedByCreator === true ||
+            (Array.isArray(catalogSeries?.tags) &&
+                catalogSeries.tags.some((tag) => /creator-(?:package|confirmed)/i.test(String(tag || ''))))
+    );
+    // Viewer shelf heading = Family / series name (never an episode Master Edit).
+    const seriesTitle = resolveFamilySeriesTitle({
+        relatedTitle: related.seriesTitle,
+        catalogTitle: catalogSeries?.title,
+        familyLabels: (related.members || []).map((m) => m.seriesLabel),
+        identityFranchise: related.identity?.franchise,
+        identityEntity: related.identity?.entity,
+        creatorConfirmedCatalog
+    });
 
     /** @type {Map<string, import('./seriesTypes.js').Episode & { seasonNumber?: number; seriesLabel?: string; createdAtMs?: number; vaultIndex?: number }>} */
     const episodeMap = new Map();
@@ -711,6 +899,7 @@ export function buildSeriesViewFromRelated(related, catalogSeries = null, option
             ...ep,
             reelId: prev.reelId || ep.reelId,
             mediaAssetId: prev.mediaAssetId || ep.mediaAssetId || null,
+            mediaUrl: prev.mediaUrl || ep.mediaUrl || '',
             title: nextTitle,
             description: prev.description || ep.description,
             genre: ep.genre || prev.genre,
@@ -748,6 +937,7 @@ export function buildSeriesViewFromRelated(related, catalogSeries = null, option
             status: m.status || 'ready',
             reelId: m.reelId,
             mediaAssetId: m.assetId || null,
+            mediaUrl: m.mediaUrl || '',
             tags: m.fromVault || m.source === 'vault' ? ['vault-related'] : ['catalog-related'],
             seasonNumber: m.seasonNumber,
             seriesLabel: m.seriesLabel || related.seriesTitle || seriesTitle,
@@ -762,10 +952,24 @@ export function buildSeriesViewFromRelated(related, catalogSeries = null, option
     for (const season of catalogSeries?.seasons || []) {
         for (const ep of season.episodes || []) {
             const byReel =
-                ep.reelId &&
-                [...episodeMap.entries()].find(
-                    ([, e]) => e.reelId && String(e.reelId) === String(ep.reelId)
-                );
+                (ep.reelId || ep.mediaAssetId || ep.heroVaultAssetId) &&
+                [...episodeMap.entries()].find(([, e]) => {
+                    const ids = [
+                        e.reelId,
+                        e.mediaAssetId,
+                        mediaPathAssetId({
+                            id: e.reelId || e.mediaAssetId,
+                            url: e.mediaUrl,
+                            mediaUrl: e.mediaUrl
+                        })
+                    ]
+                        .map((v) => String(v || '').trim().toLowerCase())
+                        .filter(Boolean);
+                    const catalogIds = [ep.reelId, ep.mediaAssetId, ep.heroVaultAssetId]
+                        .map((v) => String(v || '').trim().toLowerCase())
+                        .filter(Boolean);
+                    return catalogIds.some((id) => ids.includes(id));
+                });
             if (byReel) {
                 const [key, prev] = byReel;
                 putEpisode(key, {
@@ -779,9 +983,9 @@ export function buildSeriesViewFromRelated(related, catalogSeries = null, option
                 continue;
             }
             const titleKey = normalizeSeriesText(ep.title);
-            const byTitle = [...episodeMap.entries()].find(
-                ([, e]) => normalizeSeriesText(e.title) === titleKey
-            );
+            const byTitle =
+                titleKey &&
+                [...episodeMap.entries()].find(([, e]) => normalizeSeriesText(e.title) === titleKey);
             if (byTitle) {
                 const [key, prev] = byTitle;
                 putEpisode(key, {
@@ -796,6 +1000,17 @@ export function buildSeriesViewFromRelated(related, catalogSeries = null, option
             }
             // Catalog-only episode (not in vault) — viewer mode: published only
             if (viewerMode && !episodeIsViewerDiscoverable(ep)) continue;
+            const seasonN = Number(season.seasonNumber) || 1;
+            const epN = Number(ep.episodeNumber) || 0;
+            const slotTaken = [...episodeMap.values()].some((e) => {
+                const sameSeason = (Number(e.seasonNumber) || 1) === seasonN;
+                const sameEp = Number(e.episodeNumber) === epN && epN >= 1;
+                return sameSeason && sameEp;
+            });
+            const catTitle = String(ep.title || '').trim();
+            if (!catTitle || isSyntheticPackageTitle(catTitle)) {
+                if (slotTaken || viewerMode) continue;
+            }
             putEpisode(`c:${ep.episodeId}`, {
                 ...ep,
                 seasonNumber: season.seasonNumber,
@@ -953,9 +1168,15 @@ export function resolveRelatedEpisodes(assetOrReel, options = {}) {
         const title = displayTitleOf(asset);
         if (!title && !identityKey) continue;
         const id = resolveSeedId(asset) || assetIdOf(asset);
+        const otherUrl = mediaUrlOf(asset);
+        const imageOnly =
+            isImageAsset(otherUrl, String(asset?.type || '')) &&
+            !isVideoAsset(otherUrl, String(asset?.type || ''));
         const isSeed =
             (seedId && (id === seedId || assetIdOf(asset) === seedId)) ||
             (!seedId && normalizeSeriesText(title) === normalizeSeriesText(seedTitle));
+
+        if (imageOnly && !isSeed) continue;
 
         if (isSeed) {
             family.push(asset);
@@ -1052,11 +1273,44 @@ export function resolveRelatedEpisodes(assetOrReel, options = {}) {
     /** @type {Map<string, Record<string, unknown>>} */
     const familyMap = new Map();
     for (const a of family) {
-        const k = resolveSeedId(a) || assetIdOf(a) || normalizeSeriesText(displayTitleOf(a));
-        if (!k || familyMap.has(k)) continue;
-        familyMap.set(k, a);
+        const aliases = mediaRecordTitleKeys({
+            ...a,
+            url: mediaUrlOf(a),
+            mediaUrl: mediaUrlOf(a)
+        }).map((id) => String(id || '').trim().toLowerCase()).filter(Boolean);
+        const fallback = resolveSeedId(a) || assetIdOf(a) || normalizeSeriesText(displayTitleOf(a));
+        const keys = aliases.length ? aliases : fallback ? [fallback] : [];
+        const existingKey = keys.find((k) => familyMap.has(k));
+        if (existingKey) {
+            const kept = familyMap.get(existingKey);
+            if (kept) {
+                const donated = (() => {
+                    const keptThumb = String(
+                        kept.thumbnailUrl || kept.thumbnail_url || kept.thumbnail || kept.posterUrl || ''
+                    ).trim();
+                    if (keptThumb && !/\.(mp4|mov|webm|m4v)(\?|$)/i.test(keptThumb)) return kept;
+                    const still = String(
+                        a.thumbnailUrl || a.thumbnail_url || a.thumbnail || a.posterUrl || ''
+                    ).trim();
+                    if (!still || /\.(mp4|mov|webm|m4v)(\?|$)/i.test(still)) return kept;
+                    return { ...kept, thumbnailUrl: still, thumbnail: still };
+                })();
+                familyMap.set(existingKey, donated);
+                for (const k of keys) {
+                    if (familyMap.get(k) === kept) familyMap.set(k, donated);
+                    else if (!familyMap.has(k)) familyMap.set(k, donated);
+                }
+            }
+            continue;
+        }
+        const primary = keys[0] || fallback;
+        if (!primary || familyMap.has(primary)) continue;
+        familyMap.set(primary, a);
+        for (const k of keys) {
+            if (!familyMap.has(k)) familyMap.set(k, a);
+        }
     }
-    const familyList = [...familyMap.values()];
+    const familyList = [...new Set(familyMap.values())];
 
     const poolMeta = familyList.map((asset) => {
         const title = displayTitleOf(asset);
@@ -1097,8 +1351,19 @@ export function resolveRelatedEpisodes(assetOrReel, options = {}) {
         const identity = buildVaultSeriesIdentity(asset);
         const label = normalizeHeroVaultSeriesLabel(asset);
         const enrich = viewerFieldsFromVaultEnrichment(asset);
-        const reelId = UUID_RE.test(String(id)) ? String(id) : null;
-        const ctx = reelId ? getEpisodeByReelId(reelId) : null;
+        const playbackId = mediaPathAssetId({
+            ...(asset && typeof asset === 'object' ? asset : {}),
+            url: mediaUrlOf(asset),
+            mediaUrl: mediaUrlOf(asset)
+        });
+        const reelId = UUID_RE.test(String(id))
+            ? String(id)
+            : UUID_RE.test(String(playbackId))
+              ? String(playbackId)
+              : null;
+        const ctx =
+            (reelId ? getEpisodeByMediaIdentity(reelId) : null) ||
+            (playbackId ? getEpisodeByMediaIdentity(playbackId) : null);
         const creatorConfirmed = isCatalogBindingCreatorConfirmed(asset, ctx);
         const enRes = resolveAuthoritativeEpisodeNumber({
             identity,
@@ -1207,15 +1472,18 @@ export function resolveRelatedEpisodes(assetOrReel, options = {}) {
 
     const vaultFamilyKeys = new Set();
     for (const m of vaultMembers) {
-        for (const key of [m.assetId, m.reelId]) {
-            const id = String(key || '').trim();
-            if (id) vaultFamilyKeys.add(id);
+        for (const key of aliasIdsForMember(m)) {
+            vaultFamilyKeys.add(key);
         }
     }
     const filteredCatalog = catalogMembers.filter((member) => {
-        const ids = [member.assetId, member.reelId].map((value) => String(value || '').trim()).filter(Boolean);
+        const ids = aliasIdsForMember(member);
         const hasVaultCounterpart = readyAssets.some((asset) => {
-            const assetIds = [assetIdOf(asset), resolveSeedId(asset)].map((value) => String(value || '').trim());
+            const assetIds = mediaRecordTitleKeys({
+                ...asset,
+                url: mediaUrlOf(asset),
+                mediaUrl: mediaUrlOf(asset)
+            }).map((value) => String(value || '').trim().toLowerCase());
             return ids.some((id) => assetIds.includes(id));
         });
         if (!hasVaultCounterpart) return true;
@@ -1238,28 +1506,23 @@ export function resolveRelatedEpisodes(assetOrReel, options = {}) {
         if (stamped) m.title = stamped;
     }
 
-    // Viewer franchise title: majority vault seriesLabel wins over longest raw episode title.
+    // Viewer All Episodes heading: Family / series name, never an episode Master Edit.
     if (vaultMembers.length) {
         /** @type {Map<string, { display: string; n: number }>} */
         const labelFreq = new Map();
         for (const m of vaultMembers) {
             const display = String(m.seriesLabel || '').trim();
-            if (!display) continue;
+            if (!display || looksLikeEpisodeFacingTitle(display)) continue;
             const k = normalizeSeriesText(display);
             const cur = labelFreq.get(k) || { display, n: 0 };
             cur.n += 1;
-            // Prefer shorter display (franchise root over full episode phrasing)
+            // Prefer shorter family root over longer episode-adjacent phrasing
             if (display.length < cur.display.length) cur.display = display;
             labelFreq.set(k, cur);
         }
         let top = /** @type {{ display: string; n: number } | null} */ (null);
         for (const v of labelFreq.values()) {
-            if (
-                !top ||
-                v.n > top.n ||
-                // On a tie, prefer the longer franchise/master title (Vic G LA Story over Vic G)
-                (v.n === top.n && v.display.length > top.display.length)
-            ) {
+            if (!top || v.n > top.n || (v.n === top.n && v.display.length < top.display.length)) {
                 top = v;
             }
         }
@@ -1296,7 +1559,9 @@ export function resolveRelatedEpisodes(assetOrReel, options = {}) {
                 vaultIndex: 0
             }
         ]);
-        if (!seriesTitle) seriesTitle = seedLabel.seriesLabel || seedTitle;
+        if (!seriesTitle && !looksLikeEpisodeFacingTitle(seedLabel.seriesLabel)) {
+            seriesTitle = seedLabel.seriesLabel;
+        }
     }
 
     // Assign free-form pilot episode number 1 but avoid colliding with another ep 1
@@ -1324,9 +1589,25 @@ export function resolveRelatedEpisodes(assetOrReel, options = {}) {
               }
             : null;
 
+    const creatorConfirmedCatalog = Boolean(
+        catalogSeries?.confirmedByCreator === true ||
+            (Array.isArray(catalogSeries?.tags) &&
+                catalogSeries.tags.some((tag) => /creator-(?:package|confirmed)/i.test(String(tag || ''))))
+    );
+
+    seriesTitle = resolveFamilySeriesTitle({
+        relatedTitle: seriesTitle,
+        catalogTitle: catalogSeries?.title,
+        familyLabels: members.map((m) => m.seriesLabel),
+        identityFranchise: identity?.franchise,
+        identityEntity: identity?.entity,
+        seedTitle,
+        creatorConfirmedCatalog
+    });
+
     return {
         seriesId,
-        seriesTitle: seriesTitle || franchiseTitle || seedTitle || '',
+        seriesTitle: seriesTitle || 'Series',
         members,
         identity
     };

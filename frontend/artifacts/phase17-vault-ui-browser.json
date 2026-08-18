@@ -1,0 +1,28 @@
+{
+  "failures": [
+    "vault creator card present",
+    "UI save wrote primary titles map",
+    "UI save wrote Romance category",
+    "pre-reload Romance shelf (step 6)",
+    "reload Romance remains",
+    "reload title",
+    "artwork remains"
+  ],
+  "notes": [
+    "pre-reload romance=false total=6",
+    "no duplicate explosion",
+    "no Coming Soon placeholders in feed store"
+  ],
+  "previewText": "",
+  "feedBeforeReload": {
+    "romance": false,
+    "total": 6
+  },
+  "feedAfter": {
+    "romance": false,
+    "art": null,
+    "dupes": 1,
+    "comingSoon": 0
+  },
+  "pass": false
+}

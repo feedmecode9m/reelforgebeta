@@ -1,0 +1,1428 @@
+{
+  "mission": "NETLIFY-R2-PUT-ROOTCAUSE-01",
+  "timestamp": "2026-07-24T17:14:58.079Z",
+  "presignedPut": {
+    "small": {
+      "putUrlRedacted": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/76ac0c12-1f61-4340-96a0-b0704dd96dc0.mp4?[REDACTED_QUERY]",
+      "host": "f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com",
+      "pathname": "/reelforge-media/prod/76ac0c12-1f61-4340-96a0-b0704dd96dc0.mp4",
+      "objectKey": "prod/76ac0c12-1f61-4340-96a0-b0704dd96dc0.mp4",
+      "queryParams": {
+        "x-id": "PutObject",
+        "X-Amz-Algorithm": "AWS4-HMAC-SHA256",
+        "X-Amz-Credential": "[REDACTED]",
+        "X-Amz-Date": "20260724T170737Z",
+        "X-Amz-Expires": "3600",
+        "X-Amz-SignedHeaders": "content-type;host",
+        "X-Amz-Signature": "[REDACTED]"
+      }
+    },
+    "medium": {
+      "putUrlRedacted": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/982a4860-792b-4ba1-9252-52fcd8caaefe.mp4?[REDACTED_QUERY]",
+      "host": "f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com",
+      "pathname": "/reelforge-media/prod/982a4860-792b-4ba1-9252-52fcd8caaefe.mp4",
+      "objectKey": "prod/982a4860-792b-4ba1-9252-52fcd8caaefe.mp4",
+      "queryParams": {
+        "x-id": "PutObject",
+        "X-Amz-Algorithm": "AWS4-HMAC-SHA256",
+        "X-Amz-Credential": "[REDACTED]",
+        "X-Amz-Date": "20260724T170737Z",
+        "X-Amz-Expires": "3600",
+        "X-Amz-SignedHeaders": "content-type;host",
+        "X-Amz-Signature": "[REDACTED]"
+      }
+    },
+    "signedContentType": "video/mp4",
+    "signedHeaders": "content-type;host",
+    "appSendsExtraHeader": "X-Upload-Token (NOT in X-Amz-SignedHeaders)",
+    "expiresSec": "3600"
+  },
+  "cors": {
+    "netlifyOrigin_contentType": {
+      "origin": "https://strong-lolly-a9fcb4.netlify.app",
+      "requestHeaders": "content-type",
+      "http": 204,
+      "ok": true,
+      "error": null,
+      "responseHeaders": {
+        "access-control-allow-headers": "content-type",
+        "access-control-allow-methods": "PUT, GET, HEAD",
+        "access-control-allow-origin": "https://strong-lolly-a9fcb4.netlify.app",
+        "access-control-max-age": "3600",
+        "cf-ray": "a20485b178f9d327-MIA",
+        "connection": "keep-alive",
+        "date": "Fri, 24 Jul 2026 17:07:37 GMT",
+        "server": "cloudflare",
+        "vary": "Origin"
+      }
+    },
+    "netlifyOrigin_withToken": {
+      "origin": "https://strong-lolly-a9fcb4.netlify.app",
+      "requestHeaders": "content-type,x-upload-token",
+      "http": 204,
+      "ok": true,
+      "error": null,
+      "responseHeaders": {
+        "access-control-allow-headers": "content-type, x-upload-token",
+        "access-control-allow-methods": "PUT, GET, HEAD",
+        "access-control-allow-origin": "https://strong-lolly-a9fcb4.netlify.app",
+        "access-control-max-age": "3600",
+        "cf-ray": "a20485b36af8fb01-MIA",
+        "connection": "keep-alive",
+        "date": "Fri, 24 Jul 2026 17:07:38 GMT",
+        "server": "cloudflare",
+        "vary": "Origin"
+      }
+    },
+    "localOrigin_withToken": {
+      "origin": "http://127.0.0.1:4173",
+      "requestHeaders": "content-type,x-upload-token",
+      "http": 403,
+      "ok": false,
+      "error": null,
+      "responseHeaders": {
+        "cf-ray": "a20485b3f9bed327-MIA",
+        "connection": "keep-alive",
+        "content-encoding": "gzip",
+        "content-type": "application/xml",
+        "date": "Fri, 24 Jul 2026 17:07:38 GMT",
+        "server": "cloudflare",
+        "transfer-encoding": "chunked"
+      }
+    },
+    "localOrigin_contentType": {
+      "origin": "http://127.0.0.1:4173",
+      "requestHeaders": "content-type",
+      "http": 403,
+      "ok": false,
+      "error": null,
+      "responseHeaders": {
+        "cf-ray": "a20485b48e9efb01-MIA",
+        "connection": "keep-alive",
+        "content-encoding": "gzip",
+        "content-type": "application/xml",
+        "date": "Fri, 24 Jul 2026 17:07:38 GMT",
+        "server": "cloudflare",
+        "transfer-encoding": "chunked"
+      }
+    }
+  },
+  "curl": {
+    "small_noToken": {
+      "label": "s-no-tok",
+      "exitCode": 0,
+      "stderr": "curl: unknown --write-out variable: 'sslverify_result'\n",
+      "http": "200",
+      "timeTotalSec": "0.702354",
+      "sizeUpload": "1024",
+      "httpVersion": "1.1",
+      "sslVerify": null,
+      "responseHeaders": [
+        "HTTP/1.1 200 OK",
+        "Date: Fri, 24 Jul 2026 17:07:38 GMT",
+        "Content-Type: text/plain;charset=UTF-8",
+        "Content-Length: 0",
+        "Connection: keep-alive",
+        "ETag: \"d47b127bc2de2d687ddc82dac354c415\"",
+        "x-amz-checksum-crc64nvme: Qeh8oXvGiSo=",
+        "x-amz-version-id: 7e606ae731794a2a7442378f49e682e8",
+        "Server: cloudflare",
+        "CF-RAY: a20485b6a9fd1b0d-MIA",
+        "",
+        ""
+      ],
+      "cfRay": "a20485b6a9fd1b0d-MIA",
+      "xAmzRequestId": null
+    },
+    "small_withToken": {
+      "label": "s-tok",
+      "exitCode": 0,
+      "stderr": "curl: unknown --write-out variable: 'sslverify_result'\n",
+      "http": "200",
+      "timeTotalSec": "0.768970",
+      "sizeUpload": "1024",
+      "httpVersion": "1.1",
+      "sslVerify": null,
+      "responseHeaders": [
+        "HTTP/1.1 200 OK",
+        "Date: Fri, 24 Jul 2026 17:07:39 GMT",
+        "Content-Type: text/plain;charset=UTF-8",
+        "Content-Length: 0",
+        "Connection: keep-alive",
+        "ETag: \"d47b127bc2de2d687ddc82dac354c415\"",
+        "x-amz-checksum-crc64nvme: Qeh8oXvGiSo=",
+        "x-amz-version-id: 7e606ae72e62d60afabf5ee5e46ee628",
+        "Server: cloudflare",
+        "CF-RAY: a20485bb8cb83cca-MIA",
+        "",
+        ""
+      ],
+      "cfRay": "a20485bb8cb83cca-MIA",
+      "xAmzRequestId": null
+    },
+    "medium_noToken": {
+      "label": "m-no-tok",
+      "exitCode": 0,
+      "stderr": "curl: unknown --write-out variable: 'sslverify_result'\n",
+      "http": "200",
+      "timeTotalSec": "429.950765",
+      "sizeUpload": "30223729",
+      "httpVersion": "1.1",
+      "sslVerify": null,
+      "responseHeaders": [
+        "HTTP/1.1 100 Continue",
+        "",
+        "HTTP/1.1 200 OK",
+        "Date: Fri, 24 Jul 2026 17:14:49 GMT",
+        "Content-Type: text/plain;charset=UTF-8",
+        "Content-Length: 0",
+        "Connection: keep-alive",
+        "ETag: \"70c4230d91051d535ffd2b55c342a054\"",
+        "x-amz-checksum-crc64nvme: oIr0kJEsuVY=",
+        "x-amz-version-id: 7e606ae72b300dbece7ff6ee9d222691",
+        "Server: cloudflare",
+        "CF-RAY: a20485c0abd9120e-MIA",
+        "",
+        ""
+      ],
+      "cfRay": "a20485c0abd9120e-MIA",
+      "xAmzRequestId": null
+    }
+  },
+  "tls": {
+    "host": "f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com",
+    "exitCode": 0,
+    "protocol": null,
+    "cipher": null,
+    "verifyReturn": null,
+    "snippet": "\nCONNECTION ESTABLISHED\nProtocol version: TLSv1.3\nCiphersuite: TLS_AES_256_GCM_SHA384\nPeer certificate: CN = r2.cloudflarestorage.com\nHash used: SHA256\nSignature type: ECDSA\nVerification: OK\nServer Temp Key: X25519, 253 bits\nDONE\n"
+  },
+  "browserSmall": {
+    "result": {
+      "bodyInfo": {
+        "constructor": "File",
+        "isFile": true,
+        "isBlob": true,
+        "size": 1024,
+        "type": "video/mp4",
+        "name": "probe_1k.mp4",
+        "lastModified": 1784913290828
+      },
+      "fetchNoToken": {
+        "ok": false,
+        "error": "Failed to fetch",
+        "name": "TypeError",
+        "ms": 369
+      },
+      "fetchWithToken": {
+        "ok": false,
+        "error": "Failed to fetch",
+        "name": "TypeError",
+        "ms": 86
+      },
+      "xhrNoToken": {
+        "ok": false,
+        "status": 0,
+        "readyState": 4,
+        "ms": 92,
+        "error": "xhr.onerror"
+      },
+      "xhrWithToken": {
+        "ok": false,
+        "status": 0,
+        "readyState": 4,
+        "ms": 78,
+        "error": "xhr.onerror"
+      },
+      "events": [
+        {
+          "stage": "permissions",
+          "origin": "http://127.0.0.1:8765",
+          "protocol": "http:",
+          "isSecureContext": true,
+          "crossOriginIsolated": false,
+          "serviceWorker": true,
+          "ts": 1784913290829
+        },
+        {
+          "stage": "csp_meta",
+          "present": false,
+          "content": null,
+          "ts": 1784913290829
+        },
+        {
+          "stage": "body_inspect",
+          "bodyInfo": {
+            "constructor": "File",
+            "isFile": true,
+            "isBlob": true,
+            "size": 1024,
+            "type": "video/mp4",
+            "name": "probe_1k.mp4",
+            "lastModified": 1784913290828
+          },
+          "ts": 1784913290829
+        },
+        {
+          "stage": "fetch_put_begin",
+          "withToken": false,
+          "body": {
+            "constructor": "File",
+            "isFile": true,
+            "isBlob": true,
+            "size": 1024,
+            "type": "video/mp4",
+            "name": "probe_1k.mp4",
+            "lastModified": 1784913290828
+          },
+          "headers": [
+            "Content-Type"
+          ],
+          "ts": 1784913290830
+        },
+        {
+          "stage": "fetch_put_error",
+          "ms": 369,
+          "name": "TypeError",
+          "message": "Failed to fetch",
+          "constructor": "TypeError",
+          "stack": "TypeError: Failed to fetch\n    at runFetchPut (http://127.0.0.1:8765/:32:23)\n    at async window.runRootcause (http://127.0.0.1:8765/:74:24)\n    at async <anonymous>:329:30",
+          "ts": 1784913291199
+        },
+        {
+          "stage": "fetch_put_begin",
+          "withToken": true,
+          "body": {
+            "constructor": "File",
+            "isFile": true,
+            "isBlob": true,
+            "size": 1024,
+            "type": "video/mp4",
+            "name": "probe_1k.mp4",
+            "lastModified": 1784913291207
+          },
+          "headers": [
+            "Content-Type",
+            "X-Upload-Token"
+          ],
+          "ts": 1784913291208
+        },
+        {
+          "stage": "fetch_put_error",
+          "ms": 86,
+          "name": "TypeError",
+          "message": "Failed to fetch",
+          "constructor": "TypeError",
+          "stack": "TypeError: Failed to fetch\n    at runFetchPut (http://127.0.0.1:8765/:32:23)\n    at async window.runRootcause (http://127.0.0.1:8765/:75:26)\n    at async <anonymous>:329:30",
+          "ts": 1784913291293
+        },
+        {
+          "stage": "xhr_put_begin",
+          "withToken": false,
+          "body": {
+            "constructor": "File",
+            "size": 1024,
+            "type": "video/mp4",
+            "name": "probe_1k.mp4"
+          },
+          "ts": 1784913291300
+        },
+        {
+          "stage": "xhr_put_error",
+          "ms": 92,
+          "status": 0,
+          "readyState": 4,
+          "ts": 1784913291392
+        },
+        {
+          "stage": "xhr_put_begin",
+          "withToken": true,
+          "body": {
+            "constructor": "File",
+            "size": 1024,
+            "type": "video/mp4",
+            "name": "probe_1k.mp4"
+          },
+          "ts": 1784913291399
+        },
+        {
+          "stage": "xhr_put_error",
+          "ms": 78,
+          "status": 0,
+          "readyState": 4,
+          "ts": 1784913291477
+        }
+      ]
+    },
+    "cdpEvents": [
+      {
+        "type": "requestWillBeSentExtraInfo",
+        "requestId": "219A7B0FEF3362ECA904A25D8EAE5020",
+        "associatedCookies": [],
+        "headers": {
+          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+          "Accept-Encoding": "gzip, deflate, br, zstd",
+          "Connection": "keep-alive",
+          "Host": "127.0.0.1:8765",
+          "Sec-Fetch-Dest": "document",
+          "Sec-Fetch-Mode": "navigate",
+          "Sec-Fetch-Site": "none",
+          "Sec-Fetch-User": "?1",
+          "Upgrade-Insecure-Requests": "1",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36",
+          "sec-ch-ua": "\"Chromium\";v=\"148\", \"HeadlessChrome\";v=\"148\", \"Not/A)Brand\";v=\"99\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Linux\""
+        },
+        "connectTiming": {
+          "requestTime": 5391.680852
+        },
+        "siteHasCookieInOtherPartition": false
+      },
+      {
+        "type": "requestWillBeSentExtraInfo",
+        "requestId": "33409.2",
+        "associatedCookies": [],
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate, br, zstd",
+          "Connection": "keep-alive",
+          "Host": "127.0.0.1:8766",
+          "Origin": "http://127.0.0.1:8765",
+          "Referer": "http://127.0.0.1:8765/",
+          "Sec-Fetch-Dest": "empty",
+          "Sec-Fetch-Mode": "cors",
+          "Sec-Fetch-Site": "same-site",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36",
+          "sec-ch-ua": "\"Chromium\";v=\"148\", \"HeadlessChrome\";v=\"148\", \"Not/A)Brand\";v=\"99\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Linux\""
+        },
+        "connectTiming": {
+          "requestTime": 5391.718429
+        },
+        "clientSecurityState": {
+          "initiatorIsSecureContext": true,
+          "initiatorIPAddressSpace": "Loopback",
+          "localNetworkAccessRequestPolicy": "PermissionBlock"
+        },
+        "siteHasCookieInOtherPartition": false
+      },
+      {
+        "type": "requestWillBeSent",
+        "requestId": "33409.3",
+        "url": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/76ac0c12-1f61-4340-96a0-b0704dd96dc0.mp4?x-id=PutObje",
+        "method": "PUT",
+        "headers": {
+          "sec-ch-ua-platform": "\"Linux\"",
+          "Referer": "http://127.0.0.1:8765/",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36",
+          "sec-ch-ua": "\"Chromium\";v=\"148\", \"HeadlessChrome\";v=\"148\", \"Not/A)Brand\";v=\"99\"",
+          "Content-Type": "video/mp4",
+          "sec-ch-ua-mobile": "?0"
+        }
+      },
+      {
+        "type": "requestWillBeSent",
+        "requestId": "0F3C0716217785B52C5EA8699312F15C",
+        "url": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/76ac0c12-1f61-4340-96a0-b0704dd96dc0.mp4?x-id=PutObje",
+        "method": "OPTIONS",
+        "headers": {
+          "Accept": "*/*",
+          "Access-Control-Request-Headers": "content-type",
+          "Access-Control-Request-Method": "PUT",
+          "Origin": "http://127.0.0.1:8765",
+          "Sec-Fetch-Mode": "cors",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36"
+        }
+      },
+      {
+        "type": "requestWillBeSentExtraInfo",
+        "requestId": "0F3C0716217785B52C5EA8699312F15C",
+        "associatedCookies": [],
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate, br, zstd",
+          "Access-Control-Request-Headers": "content-type",
+          "Access-Control-Request-Method": "PUT",
+          "Connection": "keep-alive",
+          "Host": "f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com",
+          "Origin": "http://127.0.0.1:8765",
+          "Referer": "http://127.0.0.1:8765/",
+          "Sec-Fetch-Dest": "empty",
+          "Sec-Fetch-Mode": "cors",
+          "Sec-Fetch-Site": "cross-site",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36"
+        },
+        "connectTiming": {
+          "requestTime": 5391.726433
+        },
+        "clientSecurityState": {
+          "initiatorIsSecureContext": true,
+          "initiatorIPAddressSpace": "Loopback",
+          "localNetworkAccessRequestPolicy": "PermissionBlock"
+        },
+        "siteHasCookieInOtherPartition": false
+      },
+      {
+        "type": "Fetch",
+        "requestId": "33409.3",
+        "timestamp": 5392.093795,
+        "errorText": "net::ERR_FAILED",
+        "canceled": false,
+        "corsErrorStatus": {
+          "corsError": "PreflightMissingAllowOriginHeader",
+          "failedParameter": ""
+        }
+      },
+      {
+        "type": "requestWillBeSentExtraInfo",
+        "requestId": "33409.4",
+        "associatedCookies": [],
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate, br, zstd",
+          "Connection": "keep-alive",
+          "Host": "127.0.0.1:8766",
+          "Origin": "http://127.0.0.1:8765",
+          "Referer": "http://127.0.0.1:8765/",
+          "Sec-Fetch-Dest": "empty",
+          "Sec-Fetch-Mode": "cors",
+          "Sec-Fetch-Site": "same-site",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36",
+          "sec-ch-ua": "\"Chromium\";v=\"148\", \"HeadlessChrome\";v=\"148\", \"Not/A)Brand\";v=\"99\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Linux\""
+        },
+        "connectTiming": {
+          "requestTime": 5392.095415
+        },
+        "clientSecurityState": {
+          "initiatorIsSecureContext": true,
+          "initiatorIPAddressSpace": "Loopback",
+          "localNetworkAccessRequestPolicy": "PermissionBlock"
+        },
+        "siteHasCookieInOtherPartition": false
+      },
+      {
+        "type": "requestWillBeSent",
+        "requestId": "33409.5",
+        "url": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/76ac0c12-1f61-4340-96a0-b0704dd96dc0.mp4?x-id=PutObje",
+        "method": "PUT",
+        "headers": {
+          "X-Upload-Token": "380041f2d8be47c6a4e3a79ccc7db5381396e4b3d9fa4394ab9a11da499e6e51",
+          "sec-ch-ua-platform": "\"Linux\"",
+          "Referer": "http://127.0.0.1:8765/",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36",
+          "sec-ch-ua": "\"Chromium\";v=\"148\", \"HeadlessChrome\";v=\"148\", \"Not/A)Brand\";v=\"99\"",
+          "Content-Type": "video/mp4",
+          "sec-ch-ua-mobile": "?0"
+        }
+      },
+      {
+        "type": "requestWillBeSent",
+        "requestId": "82DEF6BED5B111969CDF95BD2D9A2C7C",
+        "url": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/76ac0c12-1f61-4340-96a0-b0704dd96dc0.mp4?x-id=PutObje",
+        "method": "OPTIONS",
+        "headers": {
+          "Accept": "*/*",
+          "Access-Control-Request-Headers": "content-type,x-upload-token",
+          "Access-Control-Request-Method": "PUT",
+          "Origin": "http://127.0.0.1:8765",
+          "Sec-Fetch-Mode": "cors",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36"
+        }
+      },
+      {
+        "type": "requestWillBeSentExtraInfo",
+        "requestId": "82DEF6BED5B111969CDF95BD2D9A2C7C",
+        "associatedCookies": [],
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate, br, zstd",
+          "Access-Control-Request-Headers": "content-type,x-upload-token",
+          "Access-Control-Request-Method": "PUT",
+          "Connection": "keep-alive",
+          "Host": "f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com",
+          "Origin": "http://127.0.0.1:8765",
+          "Referer": "http://127.0.0.1:8765/",
+          "Sec-Fetch-Dest": "empty",
+          "Sec-Fetch-Mode": "cors",
+          "Sec-Fetch-Site": "cross-site",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36"
+        },
+        "connectTiming": {
+          "requestTime": 5392.104194
+        },
+        "clientSecurityState": {
+          "initiatorIsSecureContext": true,
+          "initiatorIPAddressSpace": "Loopback",
+          "localNetworkAccessRequestPolicy": "PermissionBlock"
+        },
+        "siteHasCookieInOtherPartition": false
+      },
+      {
+        "type": "Fetch",
+        "requestId": "33409.5",
+        "timestamp": 5392.188693,
+        "errorText": "net::ERR_FAILED",
+        "canceled": false,
+        "corsErrorStatus": {
+          "corsError": "PreflightMissingAllowOriginHeader",
+          "failedParameter": ""
+        }
+      },
+      {
+        "type": "requestWillBeSentExtraInfo",
+        "requestId": "33409.6",
+        "associatedCookies": [],
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate, br, zstd",
+          "Connection": "keep-alive",
+          "Host": "127.0.0.1:8766",
+          "Origin": "http://127.0.0.1:8765",
+          "Referer": "http://127.0.0.1:8765/",
+          "Sec-Fetch-Dest": "empty",
+          "Sec-Fetch-Mode": "cors",
+          "Sec-Fetch-Site": "same-site",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36",
+          "sec-ch-ua": "\"Chromium\";v=\"148\", \"HeadlessChrome\";v=\"148\", \"Not/A)Brand\";v=\"99\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Linux\""
+        },
+        "connectTiming": {
+          "requestTime": 5392.189985
+        },
+        "clientSecurityState": {
+          "initiatorIsSecureContext": true,
+          "initiatorIPAddressSpace": "Loopback",
+          "localNetworkAccessRequestPolicy": "PermissionBlock"
+        },
+        "siteHasCookieInOtherPartition": false
+      },
+      {
+        "type": "requestWillBeSent",
+        "requestId": "33409.7",
+        "url": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/76ac0c12-1f61-4340-96a0-b0704dd96dc0.mp4?x-id=PutObje",
+        "method": "PUT",
+        "headers": {
+          "sec-ch-ua-platform": "\"Linux\"",
+          "Referer": "http://127.0.0.1:8765/",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36",
+          "sec-ch-ua": "\"Chromium\";v=\"148\", \"HeadlessChrome\";v=\"148\", \"Not/A)Brand\";v=\"99\"",
+          "Content-Type": "video/mp4",
+          "sec-ch-ua-mobile": "?0"
+        }
+      },
+      {
+        "type": "requestWillBeSent",
+        "requestId": "F072225188700E7C85139D3D3C5EBAEB",
+        "url": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/76ac0c12-1f61-4340-96a0-b0704dd96dc0.mp4?x-id=PutObje",
+        "method": "OPTIONS",
+        "headers": {
+          "Accept": "*/*",
+          "Access-Control-Request-Headers": "content-type",
+          "Access-Control-Request-Method": "PUT",
+          "Origin": "http://127.0.0.1:8765",
+          "Sec-Fetch-Mode": "cors",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36"
+        }
+      },
+      {
+        "type": "requestWillBeSentExtraInfo",
+        "requestId": "F072225188700E7C85139D3D3C5EBAEB",
+        "associatedCookies": [],
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate, br, zstd",
+          "Access-Control-Request-Headers": "content-type",
+          "Access-Control-Request-Method": "PUT",
+          "Connection": "keep-alive",
+          "Host": "f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com",
+          "Origin": "http://127.0.0.1:8765",
+          "Referer": "http://127.0.0.1:8765/",
+          "Sec-Fetch-Dest": "empty",
+          "Sec-Fetch-Mode": "cors",
+          "Sec-Fetch-Site": "cross-site",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36"
+        },
+        "connectTiming": {
+          "requestTime": 5392.19679
+        },
+        "clientSecurityState": {
+          "initiatorIsSecureContext": true,
+          "initiatorIPAddressSpace": "Loopback",
+          "localNetworkAccessRequestPolicy": "PermissionBlock"
+        },
+        "siteHasCookieInOtherPartition": false
+      },
+      {
+        "type": "XHR",
+        "requestId": "33409.7",
+        "timestamp": 5392.28852,
+        "errorText": "net::ERR_FAILED",
+        "canceled": false,
+        "corsErrorStatus": {
+          "corsError": "PreflightMissingAllowOriginHeader",
+          "failedParameter": ""
+        }
+      },
+      {
+        "type": "requestWillBeSentExtraInfo",
+        "requestId": "33409.8",
+        "associatedCookies": [],
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate, br, zstd",
+          "Connection": "keep-alive",
+          "Host": "127.0.0.1:8766",
+          "Origin": "http://127.0.0.1:8765",
+          "Referer": "http://127.0.0.1:8765/",
+          "Sec-Fetch-Dest": "empty",
+          "Sec-Fetch-Mode": "cors",
+          "Sec-Fetch-Site": "same-site",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36",
+          "sec-ch-ua": "\"Chromium\";v=\"148\", \"HeadlessChrome\";v=\"148\", \"Not/A)Brand\";v=\"99\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Linux\""
+        },
+        "connectTiming": {
+          "requestTime": 5392.289047
+        },
+        "clientSecurityState": {
+          "initiatorIsSecureContext": true,
+          "initiatorIPAddressSpace": "Loopback",
+          "localNetworkAccessRequestPolicy": "PermissionBlock"
+        },
+        "siteHasCookieInOtherPartition": false
+      },
+      {
+        "type": "requestWillBeSent",
+        "requestId": "33409.9",
+        "url": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/76ac0c12-1f61-4340-96a0-b0704dd96dc0.mp4?x-id=PutObje",
+        "method": "PUT",
+        "headers": {
+          "X-Upload-Token": "380041f2d8be47c6a4e3a79ccc7db5381396e4b3d9fa4394ab9a11da499e6e51",
+          "sec-ch-ua-platform": "\"Linux\"",
+          "Referer": "http://127.0.0.1:8765/",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36",
+          "sec-ch-ua": "\"Chromium\";v=\"148\", \"HeadlessChrome\";v=\"148\", \"Not/A)Brand\";v=\"99\"",
+          "Content-Type": "video/mp4",
+          "sec-ch-ua-mobile": "?0"
+        }
+      },
+      {
+        "type": "requestWillBeSent",
+        "requestId": "B53641929FB12950673EB76F2DDD947F",
+        "url": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/76ac0c12-1f61-4340-96a0-b0704dd96dc0.mp4?x-id=PutObje",
+        "method": "OPTIONS",
+        "headers": {
+          "Accept": "*/*",
+          "Access-Control-Request-Headers": "content-type,x-upload-token",
+          "Access-Control-Request-Method": "PUT",
+          "Origin": "http://127.0.0.1:8765",
+          "Sec-Fetch-Mode": "cors",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36"
+        }
+      },
+      {
+        "type": "requestWillBeSentExtraInfo",
+        "requestId": "B53641929FB12950673EB76F2DDD947F",
+        "associatedCookies": [],
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate, br, zstd",
+          "Access-Control-Request-Headers": "content-type,x-upload-token",
+          "Access-Control-Request-Method": "PUT",
+          "Connection": "keep-alive",
+          "Host": "f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com",
+          "Origin": "http://127.0.0.1:8765",
+          "Referer": "http://127.0.0.1:8765/",
+          "Sec-Fetch-Dest": "empty",
+          "Sec-Fetch-Mode": "cors",
+          "Sec-Fetch-Site": "cross-site",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36"
+        },
+        "connectTiming": {
+          "requestTime": 5392.295857
+        },
+        "clientSecurityState": {
+          "initiatorIsSecureContext": true,
+          "initiatorIPAddressSpace": "Loopback",
+          "localNetworkAccessRequestPolicy": "PermissionBlock"
+        },
+        "siteHasCookieInOtherPartition": false
+      },
+      {
+        "type": "XHR",
+        "requestId": "33409.9",
+        "timestamp": 5392.376151,
+        "errorText": "net::ERR_FAILED",
+        "canceled": false,
+        "corsErrorStatus": {
+          "corsError": "PreflightMissingAllowOriginHeader",
+          "failedParameter": ""
+        }
+      }
+    ],
+    "failed": [
+      {
+        "url": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/76ac0c12-1f61-4340-96a0-b0704dd96dc0.mp4?x-id=PutObje",
+        "method": "PUT",
+        "errorText": "net::ERR_FAILED",
+        "failure": {
+          "errorText": "net::ERR_FAILED"
+        }
+      },
+      {
+        "url": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/76ac0c12-1f61-4340-96a0-b0704dd96dc0.mp4?x-id=PutObje",
+        "method": "PUT",
+        "errorText": "net::ERR_FAILED",
+        "failure": {
+          "errorText": "net::ERR_FAILED"
+        }
+      },
+      {
+        "url": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/76ac0c12-1f61-4340-96a0-b0704dd96dc0.mp4?x-id=PutObje",
+        "method": "PUT",
+        "errorText": "net::ERR_FAILED",
+        "failure": {
+          "errorText": "net::ERR_FAILED"
+        }
+      },
+      {
+        "url": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/76ac0c12-1f61-4340-96a0-b0704dd96dc0.mp4?x-id=PutObje",
+        "method": "PUT",
+        "errorText": "net::ERR_FAILED",
+        "failure": {
+          "errorText": "net::ERR_FAILED"
+        }
+      }
+    ],
+    "pageOrigin": "http://127.0.0.1:8765"
+  },
+  "browserMedium": {
+    "result": {
+      "bodyInfo": {
+        "constructor": "File",
+        "isFile": true,
+        "isBlob": true,
+        "size": 30223729,
+        "type": "video/mp4",
+        "name": "probe_30m_b.mp4",
+        "lastModified": 1784913294410
+      },
+      "fetchNoToken": {
+        "ok": false,
+        "error": "Failed to fetch",
+        "name": "TypeError",
+        "ms": 431
+      },
+      "fetchWithToken": {
+        "ok": false,
+        "error": "Failed to fetch",
+        "name": "TypeError",
+        "ms": 107
+      },
+      "xhrNoToken": {
+        "ok": false,
+        "status": 0,
+        "readyState": 4,
+        "ms": 119,
+        "error": "xhr.onerror"
+      },
+      "xhrWithToken": {
+        "ok": false,
+        "status": 0,
+        "readyState": 4,
+        "ms": 107,
+        "error": "xhr.onerror"
+      },
+      "events": [
+        {
+          "stage": "permissions",
+          "origin": "http://127.0.0.1:8765",
+          "protocol": "http:",
+          "isSecureContext": true,
+          "crossOriginIsolated": false,
+          "serviceWorker": true,
+          "ts": 1784913294411
+        },
+        {
+          "stage": "csp_meta",
+          "present": false,
+          "content": null,
+          "ts": 1784913294411
+        },
+        {
+          "stage": "body_inspect",
+          "bodyInfo": {
+            "constructor": "File",
+            "isFile": true,
+            "isBlob": true,
+            "size": 30223729,
+            "type": "video/mp4",
+            "name": "probe_30m_b.mp4",
+            "lastModified": 1784913294410
+          },
+          "ts": 1784913294411
+        },
+        {
+          "stage": "fetch_put_begin",
+          "withToken": false,
+          "body": {
+            "constructor": "File",
+            "isFile": true,
+            "isBlob": true,
+            "size": 30223729,
+            "type": "video/mp4",
+            "name": "probe_30m_b.mp4",
+            "lastModified": 1784913294410
+          },
+          "headers": [
+            "Content-Type"
+          ],
+          "ts": 1784913294411
+        },
+        {
+          "stage": "fetch_put_error",
+          "ms": 431,
+          "name": "TypeError",
+          "message": "Failed to fetch",
+          "constructor": "TypeError",
+          "stack": "TypeError: Failed to fetch\n    at runFetchPut (http://127.0.0.1:8765/:32:23)\n    at async window.runRootcause (http://127.0.0.1:8765/:74:24)\n    at async <anonymous>:329:30",
+          "ts": 1784913294843
+        },
+        {
+          "stage": "fetch_put_begin",
+          "withToken": true,
+          "body": {
+            "constructor": "File",
+            "isFile": true,
+            "isBlob": true,
+            "size": 30223729,
+            "type": "video/mp4",
+            "name": "probe_30m_b.mp4",
+            "lastModified": 1784913294984
+          },
+          "headers": [
+            "Content-Type",
+            "X-Upload-Token"
+          ],
+          "ts": 1784913294985
+        },
+        {
+          "stage": "fetch_put_error",
+          "ms": 107,
+          "name": "TypeError",
+          "message": "Failed to fetch",
+          "constructor": "TypeError",
+          "stack": "TypeError: Failed to fetch\n    at runFetchPut (http://127.0.0.1:8765/:32:23)\n    at async window.runRootcause (http://127.0.0.1:8765/:75:26)\n    at async <anonymous>:329:30",
+          "ts": 1784913295091
+        },
+        {
+          "stage": "xhr_put_begin",
+          "withToken": false,
+          "body": {
+            "constructor": "File",
+            "size": 30223729,
+            "type": "video/mp4",
+            "name": "probe_30m_b.mp4"
+          },
+          "ts": 1784913295184
+        },
+        {
+          "stage": "xhr_put_error",
+          "ms": 119,
+          "status": 0,
+          "readyState": 4,
+          "ts": 1784913295303
+        },
+        {
+          "stage": "xhr_put_begin",
+          "withToken": true,
+          "body": {
+            "constructor": "File",
+            "size": 30223729,
+            "type": "video/mp4",
+            "name": "probe_30m_b.mp4"
+          },
+          "ts": 1784913295438
+        },
+        {
+          "stage": "xhr_put_error",
+          "ms": 107,
+          "status": 0,
+          "readyState": 4,
+          "ts": 1784913295545
+        }
+      ]
+    },
+    "cdpEvents": [
+      {
+        "type": "requestWillBeSentExtraInfo",
+        "requestId": "FC34DDA2DA7801C9018C3284A713109B",
+        "associatedCookies": [],
+        "headers": {
+          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+          "Accept-Encoding": "gzip, deflate, br, zstd",
+          "Connection": "keep-alive",
+          "Host": "127.0.0.1:8765",
+          "Sec-Fetch-Dest": "document",
+          "Sec-Fetch-Mode": "navigate",
+          "Sec-Fetch-Site": "none",
+          "Sec-Fetch-User": "?1",
+          "Upgrade-Insecure-Requests": "1",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36",
+          "sec-ch-ua": "\"Chromium\";v=\"148\", \"HeadlessChrome\";v=\"148\", \"Not/A)Brand\";v=\"99\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Linux\""
+        },
+        "connectTiming": {
+          "requestTime": 5395.148132
+        },
+        "siteHasCookieInOtherPartition": false
+      },
+      {
+        "type": "requestWillBeSentExtraInfo",
+        "requestId": "33484.2",
+        "associatedCookies": [],
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate, br, zstd",
+          "Connection": "keep-alive",
+          "Host": "127.0.0.1:8767",
+          "Origin": "http://127.0.0.1:8765",
+          "Referer": "http://127.0.0.1:8765/",
+          "Sec-Fetch-Dest": "empty",
+          "Sec-Fetch-Mode": "cors",
+          "Sec-Fetch-Site": "same-site",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36",
+          "sec-ch-ua": "\"Chromium\";v=\"148\", \"HeadlessChrome\";v=\"148\", \"Not/A)Brand\";v=\"99\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Linux\""
+        },
+        "connectTiming": {
+          "requestTime": 5395.173149
+        },
+        "clientSecurityState": {
+          "initiatorIsSecureContext": true,
+          "initiatorIPAddressSpace": "Loopback",
+          "localNetworkAccessRequestPolicy": "PermissionBlock"
+        },
+        "siteHasCookieInOtherPartition": false
+      },
+      {
+        "type": "requestWillBeSent",
+        "requestId": "33484.3",
+        "url": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/c51b0c4d-7226-4040-9821-659b6b6ea5b2.mp4?x-id=PutObje",
+        "method": "PUT",
+        "headers": {
+          "sec-ch-ua-platform": "\"Linux\"",
+          "Referer": "http://127.0.0.1:8765/",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36",
+          "sec-ch-ua": "\"Chromium\";v=\"148\", \"HeadlessChrome\";v=\"148\", \"Not/A)Brand\";v=\"99\"",
+          "Content-Type": "video/mp4",
+          "sec-ch-ua-mobile": "?0"
+        }
+      },
+      {
+        "type": "requestWillBeSent",
+        "requestId": "3ED2C108C8E8FE12B96F02BE0698A43C",
+        "url": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/c51b0c4d-7226-4040-9821-659b6b6ea5b2.mp4?x-id=PutObje",
+        "method": "OPTIONS",
+        "headers": {
+          "Accept": "*/*",
+          "Access-Control-Request-Headers": "content-type",
+          "Access-Control-Request-Method": "PUT",
+          "Origin": "http://127.0.0.1:8765",
+          "Sec-Fetch-Mode": "cors",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36"
+        }
+      },
+      {
+        "type": "requestWillBeSentExtraInfo",
+        "requestId": "3ED2C108C8E8FE12B96F02BE0698A43C",
+        "associatedCookies": [],
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate, br, zstd",
+          "Access-Control-Request-Headers": "content-type",
+          "Access-Control-Request-Method": "PUT",
+          "Connection": "keep-alive",
+          "Host": "f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com",
+          "Origin": "http://127.0.0.1:8765",
+          "Referer": "http://127.0.0.1:8765/",
+          "Sec-Fetch-Dest": "empty",
+          "Sec-Fetch-Mode": "cors",
+          "Sec-Fetch-Site": "cross-site",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36"
+        },
+        "connectTiming": {
+          "requestTime": 5395.308361
+        },
+        "clientSecurityState": {
+          "initiatorIsSecureContext": true,
+          "initiatorIPAddressSpace": "Loopback",
+          "localNetworkAccessRequestPolicy": "PermissionBlock"
+        },
+        "siteHasCookieInOtherPartition": false
+      },
+      {
+        "type": "Fetch",
+        "requestId": "33484.3",
+        "timestamp": 5395.737954,
+        "errorText": "net::ERR_FAILED",
+        "canceled": false,
+        "corsErrorStatus": {
+          "corsError": "PreflightMissingAllowOriginHeader",
+          "failedParameter": ""
+        }
+      },
+      {
+        "type": "requestWillBeSentExtraInfo",
+        "requestId": "33484.4",
+        "associatedCookies": [],
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate, br, zstd",
+          "Connection": "keep-alive",
+          "Host": "127.0.0.1:8767",
+          "Origin": "http://127.0.0.1:8765",
+          "Referer": "http://127.0.0.1:8765/",
+          "Sec-Fetch-Dest": "empty",
+          "Sec-Fetch-Mode": "cors",
+          "Sec-Fetch-Site": "same-site",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36",
+          "sec-ch-ua": "\"Chromium\";v=\"148\", \"HeadlessChrome\";v=\"148\", \"Not/A)Brand\";v=\"99\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Linux\""
+        },
+        "connectTiming": {
+          "requestTime": 5395.739475
+        },
+        "clientSecurityState": {
+          "initiatorIsSecureContext": true,
+          "initiatorIPAddressSpace": "Loopback",
+          "localNetworkAccessRequestPolicy": "PermissionBlock"
+        },
+        "siteHasCookieInOtherPartition": false
+      },
+      {
+        "type": "requestWillBeSent",
+        "requestId": "33484.5",
+        "url": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/c51b0c4d-7226-4040-9821-659b6b6ea5b2.mp4?x-id=PutObje",
+        "method": "PUT",
+        "headers": {
+          "X-Upload-Token": "3d66b6a3cb7d43368696d8aed1a067844d4669ea942c453c8e8766ec362ad512",
+          "sec-ch-ua-platform": "\"Linux\"",
+          "Referer": "http://127.0.0.1:8765/",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36",
+          "sec-ch-ua": "\"Chromium\";v=\"148\", \"HeadlessChrome\";v=\"148\", \"Not/A)Brand\";v=\"99\"",
+          "Content-Type": "video/mp4",
+          "sec-ch-ua-mobile": "?0"
+        }
+      },
+      {
+        "type": "requestWillBeSent",
+        "requestId": "CB168FF3D6987C597739CA629C51AEF8",
+        "url": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/c51b0c4d-7226-4040-9821-659b6b6ea5b2.mp4?x-id=PutObje",
+        "method": "OPTIONS",
+        "headers": {
+          "Accept": "*/*",
+          "Access-Control-Request-Headers": "content-type,x-upload-token",
+          "Access-Control-Request-Method": "PUT",
+          "Origin": "http://127.0.0.1:8765",
+          "Sec-Fetch-Mode": "cors",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36"
+        }
+      },
+      {
+        "type": "requestWillBeSentExtraInfo",
+        "requestId": "CB168FF3D6987C597739CA629C51AEF8",
+        "associatedCookies": [],
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate, br, zstd",
+          "Access-Control-Request-Headers": "content-type,x-upload-token",
+          "Access-Control-Request-Method": "PUT",
+          "Connection": "keep-alive",
+          "Host": "f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com",
+          "Origin": "http://127.0.0.1:8765",
+          "Referer": "http://127.0.0.1:8765/",
+          "Sec-Fetch-Dest": "empty",
+          "Sec-Fetch-Mode": "cors",
+          "Sec-Fetch-Site": "cross-site",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36"
+        },
+        "connectTiming": {
+          "requestTime": 5395.881282
+        },
+        "clientSecurityState": {
+          "initiatorIsSecureContext": true,
+          "initiatorIPAddressSpace": "Loopback",
+          "localNetworkAccessRequestPolicy": "PermissionBlock"
+        },
+        "siteHasCookieInOtherPartition": false
+      },
+      {
+        "type": "Fetch",
+        "requestId": "33484.5",
+        "timestamp": 5395.986764,
+        "errorText": "net::ERR_FAILED",
+        "canceled": false,
+        "corsErrorStatus": {
+          "corsError": "PreflightMissingAllowOriginHeader",
+          "failedParameter": ""
+        }
+      },
+      {
+        "type": "requestWillBeSentExtraInfo",
+        "requestId": "33484.6",
+        "associatedCookies": [],
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate, br, zstd",
+          "Connection": "keep-alive",
+          "Host": "127.0.0.1:8767",
+          "Origin": "http://127.0.0.1:8765",
+          "Referer": "http://127.0.0.1:8765/",
+          "Sec-Fetch-Dest": "empty",
+          "Sec-Fetch-Mode": "cors",
+          "Sec-Fetch-Site": "same-site",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36",
+          "sec-ch-ua": "\"Chromium\";v=\"148\", \"HeadlessChrome\";v=\"148\", \"Not/A)Brand\";v=\"99\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Linux\""
+        },
+        "connectTiming": {
+          "requestTime": 5395.988057
+        },
+        "clientSecurityState": {
+          "initiatorIsSecureContext": true,
+          "initiatorIPAddressSpace": "Loopback",
+          "localNetworkAccessRequestPolicy": "PermissionBlock"
+        },
+        "siteHasCookieInOtherPartition": false
+      },
+      {
+        "type": "requestWillBeSent",
+        "requestId": "33484.7",
+        "url": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/c51b0c4d-7226-4040-9821-659b6b6ea5b2.mp4?x-id=PutObje",
+        "method": "PUT",
+        "headers": {
+          "sec-ch-ua-platform": "\"Linux\"",
+          "Referer": "http://127.0.0.1:8765/",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36",
+          "sec-ch-ua": "\"Chromium\";v=\"148\", \"HeadlessChrome\";v=\"148\", \"Not/A)Brand\";v=\"99\"",
+          "Content-Type": "video/mp4",
+          "sec-ch-ua-mobile": "?0"
+        }
+      },
+      {
+        "type": "requestWillBeSent",
+        "requestId": "F76D5DC29C7BD8B6F80ECD05FE4E285C",
+        "url": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/c51b0c4d-7226-4040-9821-659b6b6ea5b2.mp4?x-id=PutObje",
+        "method": "OPTIONS",
+        "headers": {
+          "Accept": "*/*",
+          "Access-Control-Request-Headers": "content-type",
+          "Access-Control-Request-Method": "PUT",
+          "Origin": "http://127.0.0.1:8765",
+          "Sec-Fetch-Mode": "cors",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36"
+        }
+      },
+      {
+        "type": "requestWillBeSentExtraInfo",
+        "requestId": "F76D5DC29C7BD8B6F80ECD05FE4E285C",
+        "associatedCookies": [],
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate, br, zstd",
+          "Access-Control-Request-Headers": "content-type",
+          "Access-Control-Request-Method": "PUT",
+          "Connection": "keep-alive",
+          "Host": "f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com",
+          "Origin": "http://127.0.0.1:8765",
+          "Referer": "http://127.0.0.1:8765/",
+          "Sec-Fetch-Dest": "empty",
+          "Sec-Fetch-Mode": "cors",
+          "Sec-Fetch-Site": "cross-site",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36"
+        },
+        "connectTiming": {
+          "requestTime": 5396.081215
+        },
+        "clientSecurityState": {
+          "initiatorIsSecureContext": true,
+          "initiatorIPAddressSpace": "Loopback",
+          "localNetworkAccessRequestPolicy": "PermissionBlock"
+        },
+        "siteHasCookieInOtherPartition": false
+      },
+      {
+        "type": "XHR",
+        "requestId": "33484.7",
+        "timestamp": 5396.199331,
+        "errorText": "net::ERR_FAILED",
+        "canceled": false,
+        "corsErrorStatus": {
+          "corsError": "PreflightMissingAllowOriginHeader",
+          "failedParameter": ""
+        }
+      },
+      {
+        "type": "requestWillBeSentExtraInfo",
+        "requestId": "33484.8",
+        "associatedCookies": [],
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate, br, zstd",
+          "Connection": "keep-alive",
+          "Host": "127.0.0.1:8767",
+          "Origin": "http://127.0.0.1:8765",
+          "Referer": "http://127.0.0.1:8765/",
+          "Sec-Fetch-Dest": "empty",
+          "Sec-Fetch-Mode": "cors",
+          "Sec-Fetch-Site": "same-site",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36",
+          "sec-ch-ua": "\"Chromium\";v=\"148\", \"HeadlessChrome\";v=\"148\", \"Not/A)Brand\";v=\"99\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Linux\""
+        },
+        "connectTiming": {
+          "requestTime": 5396.199838
+        },
+        "clientSecurityState": {
+          "initiatorIsSecureContext": true,
+          "initiatorIPAddressSpace": "Loopback",
+          "localNetworkAccessRequestPolicy": "PermissionBlock"
+        },
+        "siteHasCookieInOtherPartition": false
+      },
+      {
+        "type": "requestWillBeSent",
+        "requestId": "B073A9D7383E2B0F2B3D2AB418E062A8",
+        "url": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/c51b0c4d-7226-4040-9821-659b6b6ea5b2.mp4?x-id=PutObje",
+        "method": "OPTIONS",
+        "headers": {
+          "Accept": "*/*",
+          "Access-Control-Request-Headers": "content-type,x-upload-token",
+          "Access-Control-Request-Method": "PUT",
+          "Origin": "http://127.0.0.1:8765",
+          "Sec-Fetch-Mode": "cors",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36"
+        }
+      },
+      {
+        "type": "requestWillBeSent",
+        "requestId": "33484.9",
+        "url": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/c51b0c4d-7226-4040-9821-659b6b6ea5b2.mp4?x-id=PutObje",
+        "method": "PUT",
+        "headers": {
+          "X-Upload-Token": "3d66b6a3cb7d43368696d8aed1a067844d4669ea942c453c8e8766ec362ad512",
+          "sec-ch-ua-platform": "\"Linux\"",
+          "Referer": "http://127.0.0.1:8765/",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36",
+          "sec-ch-ua": "\"Chromium\";v=\"148\", \"HeadlessChrome\";v=\"148\", \"Not/A)Brand\";v=\"99\"",
+          "Content-Type": "video/mp4",
+          "sec-ch-ua-mobile": "?0"
+        }
+      },
+      {
+        "type": "requestWillBeSentExtraInfo",
+        "requestId": "B073A9D7383E2B0F2B3D2AB418E062A8",
+        "associatedCookies": [],
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate, br, zstd",
+          "Access-Control-Request-Headers": "content-type,x-upload-token",
+          "Access-Control-Request-Method": "PUT",
+          "Connection": "keep-alive",
+          "Host": "f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com",
+          "Origin": "http://127.0.0.1:8765",
+          "Referer": "http://127.0.0.1:8765/",
+          "Sec-Fetch-Dest": "empty",
+          "Sec-Fetch-Mode": "cors",
+          "Sec-Fetch-Site": "cross-site",
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36"
+        },
+        "connectTiming": {
+          "requestTime": 5396.334956
+        },
+        "clientSecurityState": {
+          "initiatorIsSecureContext": true,
+          "initiatorIPAddressSpace": "Loopback",
+          "localNetworkAccessRequestPolicy": "PermissionBlock"
+        },
+        "siteHasCookieInOtherPartition": false
+      },
+      {
+        "type": "XHR",
+        "requestId": "33484.9",
+        "timestamp": 5396.443879,
+        "errorText": "net::ERR_FAILED",
+        "canceled": false,
+        "corsErrorStatus": {
+          "corsError": "PreflightMissingAllowOriginHeader",
+          "failedParameter": ""
+        }
+      }
+    ],
+    "failed": [
+      {
+        "url": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/c51b0c4d-7226-4040-9821-659b6b6ea5b2.mp4?x-id=PutObje",
+        "method": "PUT",
+        "errorText": "net::ERR_FAILED",
+        "failure": {
+          "errorText": "net::ERR_FAILED"
+        }
+      },
+      {
+        "url": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/c51b0c4d-7226-4040-9821-659b6b6ea5b2.mp4?x-id=PutObje",
+        "method": "PUT",
+        "errorText": "net::ERR_FAILED",
+        "failure": {
+          "errorText": "net::ERR_FAILED"
+        }
+      },
+      {
+        "url": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/c51b0c4d-7226-4040-9821-659b6b6ea5b2.mp4?x-id=PutObje",
+        "method": "PUT",
+        "errorText": "net::ERR_FAILED",
+        "failure": {
+          "errorText": "net::ERR_FAILED"
+        }
+      },
+      {
+        "url": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/c51b0c4d-7226-4040-9821-659b6b6ea5b2.mp4?x-id=PutObje",
+        "method": "PUT",
+        "errorText": "net::ERR_FAILED",
+        "failure": {
+          "errorText": "net::ERR_FAILED"
+        }
+      }
+    ],
+    "pageOrigin": "http://127.0.0.1:8765"
+  },
+  "netlifySecurityHeaders": {
+    "status": 200,
+    "headers": {
+      "accept-ranges": "bytes",
+      "age": "4706",
+      "cache-control": "public,max-age=0,must-revalidate",
+      "cache-status": "\"Netlify Edge\"; hit",
+      "connection": "close",
+      "content-length": "518",
+      "content-type": "text/html; charset=UTF-8",
+      "date": "Fri, 24 Jul 2026 17:14:57 GMT",
+      "etag": "\"489c19a76c2a8b27aad146cd3985019f-ssl\"",
+      "server": "Netlify",
+      "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+      "x-nf-request-id": "01KYAHZ0HVVJ8NT4XMM9KJEFGJ"
+    }
+  },
+  "serviceWorkerNote": "public/sw.js registers but fetch handler is no-op passthrough"
+}

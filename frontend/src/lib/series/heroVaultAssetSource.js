@@ -6,8 +6,110 @@
  */
 
 import { loadHeroVaultItems } from '../hero/heroIntelligence.js';
-import { filterReadyVaultAssets, isReadyVaultAsset, assetIdOf } from './episodeVaultResolver.js';
+import { mediaPathAssetId } from '../content/persistentTitleMap.js';
+import {
+    filterReadyVaultAssets,
+    isReadyVaultAsset,
+    assetIdOf,
+    isVideoAsset,
+    isImageAsset
+} from './episodeVaultResolver.js';
 import { withVaultSeriesIdentity } from './vaultSeriesInference.js';
+
+/**
+ * Same-id JPEG/PNG rows must donate a still to the MP4 row (All Episodes posters).
+ * @param {Record<string, unknown>} existing
+ * @param {Record<string, unknown>} incoming
+ */
+function mergeSameIdVaultPoster(existing, incoming) {
+    const existingUrl = String(existing?.url || existing?.mediaUrl || existing?.src || '').trim();
+    const incomingUrl = String(incoming?.url || incoming?.mediaUrl || incoming?.src || '').trim();
+    const existingVideo = isVideoAsset(existingUrl, String(existing?.type || ''));
+    const incomingVideo = isVideoAsset(incomingUrl, String(incoming?.type || ''));
+    const video = existingVideo ? existing : incomingVideo ? incoming : existing;
+    const other = video === existing ? incoming : existing;
+    const videoThumb = String(
+        video?.thumbnailUrl || video?.thumbnail_url || video?.thumbnail || video?.posterUrl || ''
+    ).trim();
+    if (videoThumb && !isVideoAsset(videoThumb, '')) return video;
+
+    const otherUrl = String(other?.url || other?.mediaUrl || other?.src || '').trim();
+    const otherIsImage =
+        isImageAsset(otherUrl, String(other?.type || '')) ||
+        isImageAsset(String(other?.thumbnailUrl || ''), '');
+    const still = String(
+        other?.thumbnailUrl ||
+            other?.thumbnail_url ||
+            other?.thumbnail ||
+            other?.posterUrl ||
+            (otherIsImage ? otherUrl : '') ||
+            ''
+    ).trim();
+    if (!still || isVideoAsset(still, '')) return video;
+    return { ...video, thumbnailUrl: still, thumbnail: still };
+}
+
+/**
+ * @param {Record<string, unknown>} item
+ */
+function playbackKeyOf(item) {
+    const url = String(item?.url || item?.mediaUrl || item?.src || '').trim();
+    return mediaPathAssetId({ ...item, url, mediaUrl: url }) || '';
+}
+
+/**
+ * Catalog feed row and vault personal-id row for the same R2 MP4 must share one still.
+ * Keeps both ids (picker / binding) but stamps a usable thumb onto every twin that lacks one.
+ * @param {Record<string, unknown>[]} items
+ * @returns {Record<string, unknown>[]}
+ */
+function mergePlaybackAliasPosters(items) {
+    /** @type {Map<string, Record<string, unknown>[]>} */
+    const groups = new Map();
+    for (const item of items) {
+        const key = playbackKeyOf(item).toLowerCase();
+        if (!key) continue;
+        const list = groups.get(key) || [];
+        list.push(item);
+        groups.set(key, list);
+    }
+    if (!groups.size) return items;
+
+    /** @type {WeakMap<Record<string, unknown>, string>} */
+    const donated = new WeakMap();
+    for (const list of groups.values()) {
+        if (list.length < 2) continue;
+        let still = '';
+        for (const item of list) {
+            const thumb = String(
+                item?.thumbnailUrl || item?.thumbnail_url || item?.thumbnail || item?.posterUrl || ''
+            ).trim();
+            if (thumb && !isVideoAsset(thumb, '')) {
+                still = thumb;
+                break;
+            }
+            const url = String(item?.url || item?.mediaUrl || item?.src || '').trim();
+            if (isImageAsset(url, String(item?.type || ''))) {
+                still = url;
+                break;
+            }
+        }
+        if (!still) continue;
+        for (const item of list) {
+            const thumb = String(
+                item?.thumbnailUrl || item?.thumbnail_url || item?.thumbnail || item?.posterUrl || ''
+            ).trim();
+            if (thumb && !isVideoAsset(thumb, '')) continue;
+            donated.set(item, still);
+        }
+    }
+    if (!donated.size) return items;
+    return items.map((item) => {
+        const still = donated.get(item);
+        if (!still) return item;
+        return { ...item, thumbnailUrl: still, thumbnail: still };
+    });
+}
 
 /**
  * Collect ready Hero Vault assets only (shared source).
@@ -46,12 +148,16 @@ export function getReadyHeroVaultAssets(options = {}) {
     const byId = new Map();
     for (const item of ready) {
         const id = assetIdOf(item);
-        if (!id || byId.has(id)) continue;
-        // Hero Vault identity first: attach seriesIdentity without mutating storage
+        if (!id) continue;
         const withIdentity = withVaultSeriesIdentity(item) || item;
-        byId.set(id, withIdentity);
+        const prev = byId.get(id);
+        if (!prev) {
+            byId.set(id, withIdentity);
+            continue;
+        }
+        byId.set(id, mergeSameIdVaultPoster(prev, withIdentity));
     }
-    return [...byId.values()];
+    return mergePlaybackAliasPosters([...byId.values()]);
 }
 
 /**

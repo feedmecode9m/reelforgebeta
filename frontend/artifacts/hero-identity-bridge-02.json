@@ -1,0 +1,11 @@
+{
+  "mission": "HERO-ID-BRIDGE-02",
+  "apiUrl": "http://127.0.0.1:8080",
+  "episodeId": "ep-neon-s01e02",
+  "reelId": "d493448d-b98a-446e-bb9f-ad70b1b60de2",
+  "boundEpisodeId": "ep-neon-s01e02",
+  "resolvedReelId": "d493448d-b98a-446e-bb9f-ad70b1b60de2",
+  "resolvedMediaUrl": "http://localhost:8080/videos/d493448d-b98a-446e-bb9f-ad70b1b60de2.mp4",
+  "allPass": true,
+  "failures": []
+}

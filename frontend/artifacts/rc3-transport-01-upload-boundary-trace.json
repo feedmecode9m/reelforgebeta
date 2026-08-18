@@ -1,0 +1,51 @@
+{
+  "mission": "RC3-TRANSPORT-01",
+  "generatedAt": "2026-07-19T19:17:02.709831+00:00",
+  "asset_reference": {
+    "condo": "362155056 bytes",
+    "probe101MiB": 105906176
+  },
+  "probes": {
+    "A_direct_railway_101MiB": {
+      "url": "https://reelforge-deploy-production.up.railway.app/api/reels",
+      "http": 502,
+      "time_s": 300.218897,
+      "size_upload": 20643840,
+      "server": "railway-hikari",
+      "body": "upstream error",
+      "headers_file": "/tmp/rc3-probeA-headers.txt"
+    },
+    "B_direct_railway_tiny": {
+      "http": 202,
+      "time_s": 0.430555,
+      "size_upload": 3508,
+      "reelId": "dfd40855-a16e-445a-9f6b-b9f5c44d4852",
+      "status": "pending",
+      "note": "proves Actix create_reel reachable for small bodies; cleaned up after"
+    },
+    "C_netlify_proxy_101MiB": {
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels",
+      "http": 502,
+      "time_s": 300.966162,
+      "size_upload": 17367040,
+      "server": "Netlify",
+      "age": "300",
+      "body": "upstream error",
+      "x-nf-request-id": "01KXXWN3YJT6S4X8C9ZRRP0K68",
+      "x-railway-edge": "sin1"
+    },
+    "prior_condo_via_browser_netlify": {
+      "source": "frontend/artifacts/rc1-large-hero-upload-characterization.json",
+      "http": 502,
+      "elapsedMs": 300105,
+      "reelId": null
+    }
+  },
+  "actix_payload_config_bytes": 104857600,
+  "interpretation": {
+    "netlify_26s_proxy_timeout": "NOT observed (proxy held ~300s)",
+    "railway_5min_body_upload_limit": "MATCHED on direct and proxied large POSTs",
+    "actix_100MiB_limit": "NOT active failure mode here (body incomplete ~17-20MiB at cutoff; would expect Actix JSON/413 if limit hit)",
+    "backend_handler_on_large": "not proven entered; tiny upload proves handler works when body completes"
+  }
+}

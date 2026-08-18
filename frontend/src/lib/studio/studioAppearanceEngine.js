@@ -116,8 +116,9 @@ export const APPEARANCE_PROFILES = [
     },
     {
         id: 'command-center',
-        name: 'Command Center',
-        description: 'Boardroom navy with emerald signals — KPI-first executive view.',
+        name: 'Production Command Center',
+        description:
+            'Single-pane operational dashboard — Sentinel, security, production, publishing, teams, hero intelligence, operations, and notifications.',
         mood: 'Strategic · KPI-first',
         swatches: ['#0a1628', '#10b981', '#1e3a5f', '#d1fae5'],
         tokens: {

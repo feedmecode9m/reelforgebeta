@@ -1,0 +1,27 @@
+{
+  "generatedAt": "2026-08-12T14:53:41.601Z",
+  "site": "http://127.0.0.1:4177",
+  "assetId": "3894107e-ae44-43c5-af72-b3f5d5e0ad90",
+  "failures": [],
+  "notes": [
+    "catalog populated (total>0)",
+    "Romance shelf has card",
+    "title Forbidden Hearts",
+    "art present",
+    "Coming Soon not dominating when inventory exists",
+    "reload Romance remains",
+    "reload title remains",
+    "Suspense placement",
+    "Suspense reload",
+    "Cyber-Action placement",
+    "Cyber-Action reload",
+    "inference → Romance",
+    "generic stays out of genre shelves",
+    "inventory present",
+    "baseline catalog loaded",
+    "without overlay, Romance may be absent before reload (document gap)",
+    "immediacy: romanceBeforeReload=false, hasAI=false",
+    "after reload Romance present"
+  ],
+  "pass": true
+}

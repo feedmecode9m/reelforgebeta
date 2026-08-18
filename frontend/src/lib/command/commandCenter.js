@@ -15,6 +15,19 @@ import { buildCreatorCopilotBrief } from '../copilot/creatorCopilot.js';
 import { masterAnalysis } from '../sentinel/sentinelAssistant.js';
 import { buildHeroCommandBrief } from '../hero/heroIntelligence.js';
 
+/** Canonical product vocabulary — keep UI / search / validators in sync. */
+export const PRODUCTION_COMMAND_CENTER_VOCAB = Object.freeze({
+    productName: 'Production Command Center',
+    tagline:
+        'Single-pane operational dashboard — Sentinel, security, production, publishing, teams, hero intelligence, operations, and notifications.',
+    aggregates: Object.freeze({
+        sentinel: 'Sentinel',
+        hero: 'Hero Intelligence',
+        operations: 'Operations',
+        notifications: 'Notifications'
+    })
+});
+
 export const COMMAND_SECTIONS = /** @type {const} */ ([
     'Production',
     'Content',
@@ -33,16 +46,30 @@ export const COMMAND_STATUS_SECTIONS = /** @type {const} */ ([
     'System Status'
 ]);
 
-/** Phase 37 — single-pane dashboard sections */
+/**
+ * Phase 37+ — single-pane dashboard sections.
+ * Primary domains match PRODUCTION_COMMAND_CENTER_VOCAB.tagline; trailing ids are extended ops panes.
+ */
 export const COMMAND_DASHBOARD_SECTIONS = /** @type {const} */ ([
     { id: 'executive-overview', title: 'Executive Overview' },
+    { id: 'sentinel', title: 'Sentinel' },
     { id: 'security', title: 'Security' },
     { id: 'production', title: 'Production' },
     { id: 'publishing', title: 'Publishing' },
     { id: 'teams', title: 'Teams' },
-    { id: 'revenue', title: 'Revenue' }
+    { id: 'hero-intelligence', title: 'Hero Intelligence' },
+    { id: 'operations', title: 'Operations' },
+    { id: 'notifications', title: 'Notifications' },
+    { id: 'revenue', title: 'Revenue' },
+    { id: 'marketplace', title: 'Marketplace' },
+    { id: 'enterprise', title: 'Enterprise' },
+    { id: 'reports', title: 'Reports' }
 ]);
 
+/** @returns {readonly string[]} */
+export function listCommandDashboardSectionIds() {
+    return COMMAND_DASHBOARD_SECTIONS.map((section) => section.id);
+}
 /**
  * @typedef {Object} TodaysFocusItem
  * @property {string} id
@@ -441,8 +468,15 @@ export function buildPlatformOperationsBrief(seriesId, feedReels = []) {
             id: 'executive-overview',
             title: 'Executive Overview',
             headline: `${sentinel.readinessScore}% platform readiness`,
-            detail: sentinel.executiveSummary,
+            detail: sentinel.executiveSummary || PRODUCTION_COMMAND_CENTER_VOCAB.tagline,
             metric: `${brief.todaysFocus.length} focus items`
+        },
+        {
+            id: 'sentinel',
+            title: 'Sentinel',
+            headline: `${sentinel.readinessScore}% Sentinel readiness`,
+            detail: sentinel.executiveSummary || 'Live Sentinel master analysis across security, workflow, and publishing.',
+            metric: `${(sentinel.topIssues || []).length} active signals`
         },
         {
             id: 'security',
@@ -479,6 +513,29 @@ export function buildPlatformOperationsBrief(seriesId, feedReels = []) {
             metric: `${brief.snapshot.notifications.unreadCount} unread notifications`
         },
         {
+            id: 'hero-intelligence',
+            title: 'Hero Intelligence',
+            headline: hero.primary?.seriesTitle || 'Hero Intelligence',
+            detail: `${hero.primary?.readinessPercent ?? 0}% hero readiness · ${hero.primary?.biggestBlocker || 'No blocker'}`,
+            metric: `${Array.isArray(hero.secondary) ? hero.secondary.length : 0} intelligence tiles`
+        },
+        {
+            id: 'operations',
+            title: 'Operations',
+            headline: `${operations.dailyActiveViewers ?? 0} daily active viewers`,
+            detail: `${operations.publishingVelocity ?? 0} publishing velocity · ${operations.studioProductivity ?? 0} studio productivity`,
+            metric: 'Live operations snapshot'
+        },
+        {
+            id: 'notifications',
+            title: 'Notifications',
+            headline: `${brief.snapshot.notifications.unreadCount} unread`,
+            detail:
+                brief.snapshot.notifications.recent?.[0]?.message ||
+                'No recent operational alerts',
+            metric: `${brief.snapshot.notifications.recent?.length || 0} recent`
+        },
+        {
             id: 'revenue',
             title: 'Revenue',
             headline: 'Executive revenue dashboard',
@@ -508,6 +565,12 @@ export function buildPlatformOperationsBrief(seriesId, feedReels = []) {
         }
     ];
 
+    // Guard: section ids must stay aligned with COMMAND_DASHBOARD_SECTIONS vocab.
+    const expectedIds = listCommandDashboardSectionIds();
+    const actualIds = dashboardSections.map((section) => section.id);
+    if (expectedIds.join('|') !== actualIds.join('|')) {
+        console.warn('[COMMAND_CENTER] dashboard section vocab drift', { expectedIds, actualIds });
+    }
     return {
         ...brief,
         sentinel,
@@ -572,9 +635,11 @@ export function initCommandCenter() {
     commandCenterInitialized = true;
 
     window.__reelforgeCommandCenter = {
+        PRODUCTION_COMMAND_CENTER_VOCAB,
         COMMAND_SECTIONS,
         COMMAND_STATUS_SECTIONS,
         COMMAND_DASHBOARD_SECTIONS,
+        listCommandDashboardSectionIds,
         buildCommandCenterSnapshot,
         buildCommandCenterBrief,
         buildPlatformOperationsBrief,

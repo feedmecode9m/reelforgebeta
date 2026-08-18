@@ -1,0 +1,112 @@
+{
+  "evidence": {
+    "shelfCounts": {
+      "Trending": 1,
+      "Romance": 0,
+      "Cyber-Action": 0,
+      "Suspense": 0
+    },
+    "flat": [
+      {
+        "shelf": "Trending",
+        "id": "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee",
+        "personal_video_id": "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee",
+        "title": "01 ARRIVAL OPEN v1",
+        "url": "http://localhost:8080/videos/73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee.mp4",
+        "type": "video",
+        "isPlaceholder": false,
+        "onTrend": false
+      }
+    ],
+    "dupClusters": [],
+    "shelfHeadings": [
+      {
+        "text": "Featured",
+        "parent": "Featured"
+      },
+      {
+        "text": "Trending",
+        "parent": "Featured"
+      }
+    ],
+    "cards": [
+      {
+        "reelId": "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee",
+        "titles": [
+          "01 ARRIVAL OPEN v1",
+          "01 ARRIVAL OPEN v1"
+        ],
+        "section": "Featured"
+      },
+      {
+        "reelId": "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee",
+        "titles": [
+          "01 ARRIVAL OPEN v1",
+          "01 ARRIVAL OPEN v1"
+        ],
+        "section": "Trending"
+      }
+    ],
+    "browseCards": 0,
+    "presentationSlots": 0,
+    "trendingCards": [
+      {
+        "titles": [
+          "01 ARRIVAL OPEN v1",
+          "01 ARRIVAL OPEN v1"
+        ],
+        "allText": "PRODUCTION\nWIDESCREEN\n01 ARRIVAL OPEN v1\n▶\n01 ARRIVAL OPEN v1\nTRENDING\nSTUDIO\nPRODUCTION"
+      }
+    ],
+    "feedKeys": [
+      "Trending",
+      "Romance",
+      "Cyber-Action",
+      "Suspense"
+    ],
+    "titleMap": {},
+    "videoVaultCount": 0
+  },
+  "consoleLogs": [
+    "[BG7S_SHELF_FILL] {shelf: Romance, realCount: 0, displayCount: 0, fillerCount: 0, branch: omit_empty_shelf_global_inventory}",
+    "[BG7S_SHELF_FILL] {shelf: Cyber-Action, realCount: 0, displayCount: 0, fillerCount: 0, branch: omit_empty_shelf_global_inventory}",
+    "[BG7S_SHELF_FILL] {shelf: Suspense, realCount: 0, displayCount: 0, fillerCount: 0, branch: omit_empty_shelf_global_inventory}",
+    "[BG7S_SHELF_DOM] {stage: ReelshortExperience:domPerShelf, shelfRealDomCounts: Object, shelfDisplayDomCounts: Object, feedShelfCounts: Object, timestamp: 2026-08-13T17:50:49.575Z}",
+    "[BG7N_STAGE] {stage: normalizedFeed, count: 1, first: 73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee, last: 73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee, timestamp: 2026-08-13T17:50:49.590Z}",
+    "[BG7P_SHELF_DISTRIBUTION] {stage: normalizedFeed, feedKeys: Array(4), shelfCounts: Object, totalCards: 1, timestamp: 2026-08-13T17:50:49.590Z}",
+    "[BG7N_STAGE] {stage: ReelshortExperience:props:normalizedFeed, count: 1, first: 73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee, last: 73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee, timestamp: 2026-08-13T17:50:49.663Z}",
+    "[VIEWER_SHELF_COMPOSITION] {policy: featured_promo_remount_browse_residual, featuredId: 73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee, featuredTitle: 01 ARRIVAL OPEN v1, shelfIdentityCount: 1, browseIdentityCount: 0}",
+    "[BG7S_SHELF_FILL] {shelf: Trending, realCount: 1, displayCount: 1, fillerCount: 0, branch: bg7k_real_assets_no_padding}",
+    "[BG7S_SHELF_FILL] {shelf: Trending, realCount: 1, displayCount: 1, fillerCount: 0, branch: bg7k_real_assets_no_padding}",
+    "[BG7S_SHELF_FILL] {shelf: Romance, realCount: 0, displayCount: 0, fillerCount: 0, branch: omit_empty_shelf_global_inventory}",
+    "[BG7S_SHELF_FILL] {shelf: Cyber-Action, realCount: 0, displayCount: 0, fillerCount: 0, branch: omit_empty_shelf_global_inventory}",
+    "[BG7S_SHELF_FILL] {shelf: Suspense, realCount: 0, displayCount: 0, fillerCount: 0, branch: omit_empty_shelf_global_inventory}",
+    "[BG7S_SHELF_DOM] {stage: ReelshortExperience:domPerShelf, shelfRealDomCounts: Object, shelfDisplayDomCounts: Object, feedShelfCounts: Object, timestamp: 2026-08-13T17:50:51.124Z}",
+    "[CANONICAL_FEED_UPSERT] {stage: AI_CLEANUP_AGENT.distributeVideoToFeed, action: update, id: 73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee, shelf: Trending, removedTwins: 1}",
+    "[BG7N_STAGE] {stage: normalizedFeed, count: 1, first: 73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee, last: 73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee, timestamp: 2026-08-13T17:50:51.246Z}",
+    "[BG7P_SHELF_DISTRIBUTION] {stage: normalizedFeed, feedKeys: Array(4), shelfCounts: Object, totalCards: 1, timestamp: 2026-08-13T17:50:51.247Z}",
+    "[BG7N_STAGE] {stage: normalizedFeed, count: 1, first: 73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee, last: 73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee, timestamp: 2026-08-13T17:50:51.249Z}",
+    "[BG7P_SHELF_DISTRIBUTION] {stage: normalizedFeed, feedKeys: Array(4), shelfCounts: Object, totalCards: 1, timestamp: 2026-08-13T17:50:51.249Z}",
+    "[BG7N_STAGE] {stage: ReelshortExperience:props:normalizedFeed, count: 1, first: 73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee, last: 73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee, timestamp: 2026-08-13T17:50:51.251Z}",
+    "[VIEWER_SHELF_COMPOSITION] {policy: featured_promo_remount_browse_residual, featuredId: 73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee, featuredTitle: 01 ARRIVAL OPEN v1, shelfIdentityCount: 1, browseIdentityCount: 0}",
+    "[BG7S_SHELF_FILL] {shelf: Trending, realCount: 1, displayCount: 1, fillerCount: 0, branch: bg7k_real_assets_no_padding}",
+    "[BG7S_SHELF_FILL] {shelf: Trending, realCount: 1, displayCount: 1, fillerCount: 0, branch: bg7k_real_assets_no_padding}",
+    "[BG7S_SHELF_FILL] {shelf: Romance, realCount: 0, displayCount: 0, fillerCount: 0, branch: omit_empty_shelf_global_inventory}",
+    "[BG7S_SHELF_FILL] {shelf: Cyber-Action, realCount: 0, displayCount: 0, fillerCount: 0, branch: omit_empty_shelf_global_inventory}",
+    "[BG7S_SHELF_FILL] {shelf: Suspense, realCount: 0, displayCount: 0, fillerCount: 0, branch: omit_empty_shelf_global_inventory}",
+    "[BG7S_SHELF_DOM] {stage: ReelshortExperience:domPerShelf, shelfRealDomCounts: Object, shelfDisplayDomCounts: Object, feedShelfCounts: Object, timestamp: 2026-08-13T17:50:52.388Z}",
+    "[CANONICAL_FEED_UPSERT] {stage: AI_CLEANUP_AGENT.distributeVideoToFeed, action: update, id: 73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee, shelf: Trending, removedTwins: 1}",
+    "[BG7N_STAGE] {stage: normalizedFeed, count: 1, first: 73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee, last: 73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee, timestamp: 2026-08-13T17:50:52.530Z}",
+    "[BG7P_SHELF_DISTRIBUTION] {stage: normalizedFeed, feedKeys: Array(4), shelfCounts: Object, totalCards: 1, timestamp: 2026-08-13T17:50:52.530Z}",
+    "[BG7N_STAGE] {stage: normalizedFeed, count: 1, first: 73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee, last: 73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee, timestamp: 2026-08-13T17:50:52.533Z}",
+    "[BG7P_SHELF_DISTRIBUTION] {stage: normalizedFeed, feedKeys: Array(4), shelfCounts: Object, totalCards: 1, timestamp: 2026-08-13T17:50:52.533Z}",
+    "[BG7N_STAGE] {stage: ReelshortExperience:props:normalizedFeed, count: 1, first: 73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee, last: 73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee, timestamp: 2026-08-13T17:50:52.535Z}",
+    "[VIEWER_SHELF_COMPOSITION] {policy: featured_promo_remount_browse_residual, featuredId: 73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee, featuredTitle: 01 ARRIVAL OPEN v1, shelfIdentityCount: 1, browseIdentityCount: 0}",
+    "[BG7S_SHELF_FILL] {shelf: Trending, realCount: 1, displayCount: 1, fillerCount: 0, branch: bg7k_real_assets_no_padding}",
+    "[BG7S_SHELF_FILL] {shelf: Trending, realCount: 1, displayCount: 1, fillerCount: 0, branch: bg7k_real_assets_no_padding}",
+    "[BG7S_SHELF_FILL] {shelf: Romance, realCount: 0, displayCount: 0, fillerCount: 0, branch: omit_empty_shelf_global_inventory}",
+    "[BG7S_SHELF_FILL] {shelf: Cyber-Action, realCount: 0, displayCount: 0, fillerCount: 0, branch: omit_empty_shelf_global_inventory}",
+    "[BG7S_SHELF_FILL] {shelf: Suspense, realCount: 0, displayCount: 0, fillerCount: 0, branch: omit_empty_shelf_global_inventory}",
+    "[BG7S_SHELF_DOM] {stage: ReelshortExperience:domPerShelf, shelfRealDomCounts: Object, shelfDisplayDomCounts: Object, feedShelfCounts: Object, timestamp: 2026-08-13T17:50:53.823Z}"
+  ]
+}

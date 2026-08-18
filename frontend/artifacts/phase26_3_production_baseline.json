@@ -1,0 +1,281 @@
+{
+  "mission": "PHASE-26.3 production baseline",
+  "generatedAt": "2026-08-12T19:35:54.436Z",
+  "freshHome": {
+    "bundle": "https://strong-lolly-a9fcb4.netlify.app/assets/index-4M0W7yoT.js",
+    "shelvesHeading": [
+      "Trending",
+      "Romance"
+    ],
+    "shelfSections": [
+      {
+        "title": "Trending",
+        "cards": 4,
+        "presentation": 0
+      },
+      {
+        "title": "Romance",
+        "cards": 2,
+        "presentation": 0
+      }
+    ],
+    "lsKeys": [
+      "reelforge_theater_framing",
+      "reelforge_notifications",
+      "reelforge_series_metadata",
+      "reelforge_hero_record",
+      "reelforge_creator_marketplace",
+      "reelforge_creator_home_feed",
+      "reelforge_series_api_migrated",
+      "reelforge_creator_profiles",
+      "reelforge_discovery_feed_state",
+      "reelforge_hero_manager_config",
+      "reelforge_homepage_discovery_feed",
+      "reelforge_hero_reel",
+      "reelforge_sync_device_id",
+      "reelforge_monetization_hub",
+      "reelforge_observability_latency",
+      "reelforge_security_events",
+      "reelforge_publishing_profile",
+      "reelforge_universal_search_index",
+      "reelforge_release_schedule",
+      "personal_video_vault",
+      "heroBackgroundState",
+      "reelforge_workflow_tasks",
+      "reelforge_discovery_index",
+      "reelforge_series_api_offline_cache",
+      "reelforge_publishing_profile_updated_at",
+      "reelforge_security_policy_state",
+      "daily_engagement_state",
+      "reelforge_feed"
+    ],
+    "vaultLen": 2708,
+    "titlesLen": 0,
+    "thumbIds": null,
+    "bodySnippet": "LOOK@ZAKANDA PRESENTS\nSign In\nVic G 01_ARRIVAL_OPEN_v1\n\nTrending local experience in Los Angeles captured from the creator vault.\n\nVic-G and the team arrive in Los Angeles, setting the stage for the production ahead. The episode captures the first moments in LA, the anticipation surrounding the project, and the beginning of the journey behind the music video A grounded documentary spotlight: Vic G LA Story.\n\nCREATOR COLLECTION EPISODE 1 - ARRIVAL\n\nWatch Now\nLearn More\nFEATURED COLLECTION\nDOCUMEN"
+  },
+  "unlocked": true,
+  "beforeDrop": {
+    "zone": {
+      "tag": "DIV",
+      "class": "personal-media-grid",
+      "aria": null
+    },
+    "dropText": "SHELF CATEGORY (UPLOADS)\n📁 Trending\n📁 Cyber-Action\n📁 Romance\n📁 Suspense\nYour Thumbnails (0)\n\nClick thumbnail to remove • Drag & drop to add\n\n🗑️ DELETE SELECTED (0)\n🗑️ BATCH DELETE ALL\n🖼️\nDrop i",
+    "pending": false
+  },
+  "normalDrop": {
+    "log": [
+      {
+        "type": "dragenter",
+        "defaultPrevented": true,
+        "ok": false
+      },
+      {
+        "type": "dragover",
+        "defaultPrevented": true,
+        "ok": false
+      },
+      {
+        "type": "drop",
+        "defaultPrevented": true,
+        "ok": false
+      }
+    ],
+    "hasPending": true,
+    "pendingText": "✅ ACCEPT\n❌ REJECT\n\nphase263-normal.mp4 • 0.0 MB",
+    "acceptVisible": true,
+    "zoneText": "✅ ACCEPT\n❌ REJECT\n\nphase263-normal.mp4 • 0.0 MB"
+  },
+  "acceptClick": {
+    "clicked": true
+  },
+  "afterAccept": {
+    "uploadStatus": "upload surface — POST /api/reels accepts video/thumbnail payloads — must require authe",
+    "pendingGone": true,
+    "acceptGone": true
+  },
+  "afterWait": {
+    "vaultText": "SHELF CATEGORY (UPLOADS)\n📁 Trending\n📁 Cyber-Action\n📁 Romance\n📁 Suspense\nYour Thumbnails (0)\n\nClick thumbnail to remove • Drag & drop to add\n\n🗑️ DELETE SELECTED (0)\n🗑️ BATCH DELETE ALL\n🖼️\nDrop image here to add\nSupports: JPG, PNG, WEBP",
+    "cards": 7,
+    "lsVault": "[{\"id\":\"13d42b04-95e6-45b9-897c-57235f37a0dc\",\"name\":\"phase263-normal.mp4\",\"title\":\"phase263-normal.mp4\",\"fileName\":\"13d42b04-95e6-45b9-897c-57235f37a0dc.mp4\",\"type\":\"video/mp4\",\"size\":2326,\"addedAt\":",
+    "lsVaultCount": 6
+  },
+  "uploadNetwork": [
+    {
+      "method": "POST",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels",
+      "at": 1786563319900,
+      "status": 202
+    },
+    {
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels/13d42b04-95e6-45b9-897c-57235f37a0dc",
+      "at": 1786563321358,
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels/13d42b04-95e6-45b9-897c-57235f37a0dc",
+      "at": 1786563322556,
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels/13d42b04-95e6-45b9-897c-57235f37a0dc",
+      "at": 1786563323739,
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/status",
+      "at": 1786563328983
+    },
+    {
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/state",
+      "at": 1786563330176
+    },
+    {
+      "method": "POST",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push",
+      "at": 1786563330935
+    },
+    {
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/status",
+      "at": 1786563343986
+    },
+    {
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/state",
+      "at": 1786563345617
+    },
+    {
+      "method": "POST",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push",
+      "at": 1786563346643
+    },
+    {
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/status",
+      "at": 1786563350284
+    },
+    {
+      "method": "GET",
+      "url": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb-67f37338df65.mp4",
+      "at": 1786563350447
+    },
+    {
+      "method": "GET",
+      "url": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb-67f37338df65.mp4",
+      "at": 1786563350553
+    },
+    {
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/state",
+      "at": 1786563350557
+    },
+    {
+      "method": "POST",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push",
+      "at": 1786563351011
+    },
+    {
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels?t=1786563351303",
+      "at": 1786563351311,
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels?t=1786563352250",
+      "at": 1786563352253,
+      "status": 200
+    }
+  ],
+  "zeroDrop": {
+    "log": [
+      {
+        "type": "dragenter",
+        "defaultPrevented": true,
+        "ok": false
+      },
+      {
+        "type": "dragover",
+        "defaultPrevented": true,
+        "ok": false
+      },
+      {
+        "type": "drop",
+        "defaultPrevented": true,
+        "ok": false
+      }
+    ],
+    "hasPending": true,
+    "pendingText": "✅ ACCEPT\n❌ REJECT\n\nphase263-zero.mp4 • 0.0 MB",
+    "acceptVisible": true,
+    "zoneText": "✅ ACCEPT\n❌ REJECT\n\nphase263-zero.mp4 • 0.0 MB"
+  },
+  "nearMiss": {
+    "bodyDropDefaultPrevented": false,
+    "pending": true,
+    "toast": true
+  },
+  "homeAfter": {
+    "shelfSections": [
+      {
+        "title": "Trending",
+        "cards": 5,
+        "presentation": 0
+      },
+      {
+        "title": "Romance",
+        "cards": 2,
+        "presentation": 0
+      }
+    ],
+    "lsKeys": [
+      "reelforge_theater_framing",
+      "reelforge_notifications",
+      "reelforge_hero_record",
+      "reelforge_creator_profiles",
+      "reelforge_hero_manager_config",
+      "reelforge_homepage_discovery_feed",
+      "reelforge_hero_reel",
+      "reelforge_content_intelligence_draft",
+      "reelforge_release_schedule",
+      "personal_video_vault",
+      "reelforge_studio_appearance",
+      "reelforge_workflow_tasks",
+      "reelforge_security_policy_state",
+      "daily_engagement_state",
+      "reelforge_feed",
+      "reelforge_viewer_id",
+      "reelforge_creator_marketplace",
+      "reelforge_series_metadata",
+      "reelforge_creator_home_feed",
+      "reelforge_guide_me_mode",
+      "reelforge_series_api_migrated",
+      "reelforge_discovery_feed_state",
+      "reelforge_admin_session_token",
+      "reelforge_sync_device_id",
+      "reelforge_monetization_hub",
+      "reelforge_observability_latency",
+      "reelforge_security_events",
+      "reelforge_publishing_profile",
+      "reelforge_global_search_index",
+      "reelforge_universal_search_index",
+      "reelforge_studio_theme",
+      "reelforge_studio_workspace_tab",
+      "heroBackgroundState",
+      "reelforge_platform_metrics",
+      "reelforge_discovery_index",
+      "reelforge_series_api_offline_cache",
+      "reelforge_publishing_profile_updated_at"
+    ],
+    "vaultCount": 7,
+    "titlesSample": [],
+    "thumbIds": null
+  }
+}

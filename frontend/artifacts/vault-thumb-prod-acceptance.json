@@ -1,0 +1,46 @@
+{
+  "generatedAt": "2026-08-15T04:32:27.693Z",
+  "frontend": "https://strong-lolly-a9fcb4.netlify.app",
+  "browser": "chromium headless",
+  "checks": {
+    "A_existingVideos": {
+      "cardCount": 3,
+      "cardsWithImage": 3,
+      "jpegPngWebp": 3,
+      "pendingFaceCount": 0,
+      "pass": true
+    },
+    "B_srcSafety": {
+      "mp4ImgCount": 0,
+      "sampleSrc": [
+        "https://strong-lolly-a9fcb4.netlify.app/thumbs/03ef898a-989f-42c3-bdbb-67f37338df65.jpg",
+        "https://strong-lolly-a9fcb4.netlify.app/thumbs/75475b32-e161-4cb8-980e-36ab09d9777f.jpg",
+        "https://strong-lolly-a9fcb4.netlify.app/thumbs/f727b62e-af4e-4e06-9c36-8312ddb735a8.jpg"
+      ],
+      "pass": true
+    },
+    "C_refresh": {
+      "beforeImages": 3,
+      "afterImages": 3,
+      "pass": true
+    },
+    "D_sharedPosterCards": {
+      "sharedPosterGroups": 0,
+      "pass": true
+    },
+    "E_playback": {
+      "hasVideo": true,
+      "src": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb-67f37338df65.mp4",
+      "isMp4": true,
+      "readyState": 3,
+      "pass": true
+    }
+  },
+  "productionBundle": "index-YoGUUdot.js",
+  "api": {
+    "videoCount": 16,
+    "withThumbnailUrl": 16,
+    "pass": true
+  },
+  "verdict": "PASS"
+}

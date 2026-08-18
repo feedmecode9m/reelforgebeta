@@ -3,7 +3,8 @@
     import {
         buildPlatformOperationsBrief,
         emitCommandCenterDiagnostics,
-        initCommandCenter
+        initCommandCenter,
+        PRODUCTION_COMMAND_CENTER_VOCAB
     } from '../../lib/command/commandCenter.js';
     import {
         registerCommandCenterRefreshListener,
@@ -140,11 +141,8 @@ import GlobalSearchBar from '../discovery/GlobalSearchBar.svelte';
 >
     <header class="production-command-center-shell__header">
         <div>
-            <h3>Production Command Center</h3>
-            <p>
-                Single-pane operational dashboard — Sentinel, security, production, publishing, teams, hero intelligence,
-                operations, and notifications.
-            </p>
+            <h3>{PRODUCTION_COMMAND_CENTER_VOCAB.productName}</h3>
+            <p>{PRODUCTION_COMMAND_CENTER_VOCAB.tagline}</p>
         </div>
         <div class="production-command-center-shell__header-actions">
             <GlobalSearchBar />
@@ -181,22 +179,22 @@ import GlobalSearchBar from '../discovery/GlobalSearchBar.svelte';
 
         <section class="production-command-center-shell__aggregates" data-command-platform-aggregates>
             <article data-command-sentinel-summary>
-                <span>Sentinel Assistant</span>
+                <span>{PRODUCTION_COMMAND_CENTER_VOCAB.aggregates.sentinel}</span>
                 <strong>{brief.sentinel.readinessScore}% readiness</strong>
                 <p>{brief.sentinel.executiveSummary}</p>
             </article>
             <article data-command-hero-intelligence>
-                <span>Hero Intelligence</span>
+                <span>{PRODUCTION_COMMAND_CENTER_VOCAB.aggregates.hero}</span>
                 <strong>{brief.hero.primary.seriesTitle}</strong>
                 <p>{brief.hero.primary.readinessPercent}% · {brief.hero.primary.biggestBlocker}</p>
             </article>
             <article data-command-operations-dashboard>
-                <span>Operations Dashboard</span>
+                <span>{PRODUCTION_COMMAND_CENTER_VOCAB.aggregates.operations}</span>
                 <strong>{brief.operations.dailyActiveViewers} viewers</strong>
                 <p>{brief.operations.publishingVelocity} publishing velocity · {brief.operations.studioProductivity} productivity</p>
             </article>
             <article data-command-notifications-summary>
-                <span>Notifications</span>
+                <span>{PRODUCTION_COMMAND_CENTER_VOCAB.aggregates.notifications}</span>
                 <strong>{brief.notifications.unreadCount} unread</strong>
                 <p>{brief.notifications.recent[0]?.message || 'No recent alerts'}</p>
             </article>
@@ -276,6 +274,41 @@ import GlobalSearchBar from '../discovery/GlobalSearchBar.svelte';
 
                         {#if section.id === 'reports'}
                             <ExecutiveReportsDashboard seriesId={selectedSeriesId} {feedReels} />
+                        {/if}
+
+                        {#if section.id === 'sentinel'}
+                            <ul class="production-command-center-shell__mini-list" data-command-sentinel-signals>
+                                <li>{brief.sentinel.readinessScore}% Sentinel readiness</li>
+                                <li>{brief.securityScore}/100 security · threat {brief.threatLevel}</li>
+                                <li>{(brief.sentinel.topIssues || []).length} top issues tracked</li>
+                            </ul>
+                        {/if}
+
+                        {#if section.id === 'hero-intelligence'}
+                            <ul class="production-command-center-shell__mini-list" data-command-hero-signals>
+                                <li>{brief.hero.primary?.seriesTitle || 'Series'} · {brief.hero.primary?.readinessPercent ?? 0}%</li>
+                                <li>Blocker: {brief.hero.primary?.biggestBlocker || 'None'}</li>
+                                {#each (brief.hero.secondary || []).slice(0, 3) as tile (tile.id)}
+                                    <li>{tile.label}: {tile.value}</li>
+                                {/each}
+                            </ul>
+                        {/if}
+
+                        {#if section.id === 'operations'}
+                            <ul class="production-command-center-shell__mini-list" data-command-operations-signals>
+                                <li>{brief.operations.dailyActiveViewers ?? 0} daily active viewers</li>
+                                <li>{brief.operations.publishingVelocity ?? 0} publishing velocity</li>
+                                <li>{brief.operations.studioProductivity ?? 0} studio productivity</li>
+                            </ul>
+                        {/if}
+
+                        {#if section.id === 'notifications'}
+                            <ul class="production-command-center-shell__mini-list" data-command-notifications-signals>
+                                <li>{brief.notifications.unreadCount} unread</li>
+                                {#each (brief.notifications.recent || []).slice(0, 3) as note, noteIndex (note.id || noteIndex)}
+                                    <li>{note.message || note.title || 'Alert'}</li>
+                                {/each}
+                            </ul>
                         {/if}
 
                         {#if section.id === 'production'}

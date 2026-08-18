@@ -1,0 +1,112 @@
+{
+  "mission": "PHASE-26.3 — Production Product Baseline Reconciliation",
+  "generatedAt": "2026-08-12T19:40:00.000Z",
+  "mode": "AUDIT_ONLY",
+  "codeChanges": "none",
+  "commitPushDeploy": "none",
+  "stop": "STOP FOR REVIEW — no Phase 27, no implementation",
+
+  "productionBaseline": {
+    "effectiveCommit": "45c400c1ee96592aa9bef7bf5b967971345c5ac9",
+    "commitEvidence": "Netlify commit_ref is null (CLI dir deploy). Deploy title PHASE-26.2 release; ancestry includes Phase 25 c532201; Phase 26.2 markers present in live bundle.",
+    "deployIdPublished": "6a7cc6d48b118e273309647c",
+    "deployIdPhase262": "6a7cc69d978a1a6495ee6689",
+    "deployNote": "Gate 5 BG-7A.1 redeploy published after Phase 26.2 at 19:17:56Z; both serve identical index-4M0W7yoT.js",
+    "productionUrl": "https://strong-lolly-a9fcb4.netlify.app",
+    "servedBundle": "index-4M0W7yoT.js",
+    "bundleSha256": "4ebfdb0958841b815ad26274d5a1a4a98d530abc74c618f3a5c7c01b3b161908",
+    "phase262Markers": {
+      "write-circuit-open": 2,
+      "scheduleHydrateNotifications": 1,
+      "COMMAND_CENTER_REFRESH": 2
+    },
+    "phase25Markers": {
+      "primaryCategoryAuthority": 4,
+      "note": "Phase 25 parent commit c532201 is in tree shipped by 45c400c Netlify rebuild"
+    },
+    "serviceWorker": false,
+    "staleAppCacheRisk": "LOW for JS bundle (no SW). localStorage is aggressively rehydrated by app/sync after clear — browser state is not a pure cold start."
+  },
+
+  "topicInventory": {
+    "apiReelsCount": 26,
+    "apiCategories": { "Trending": 25, "HERO": 1 },
+    "apiTypes": { "image": "majority including 6 mp4-named rows mislabeled image", "video": "includes newly uploaded 13d42b04" },
+    "canonicalShelves": ["Trending", "Romance", "Cyber-Action", "Suspense"],
+    "freshBrowserRenderedShelves": ["Trending", "Romance"],
+    "freshBrowserCardCounts": { "Trending": 5, "Romance": 2 },
+    "reelforge_feed_after_boot": {
+      "Trending": ["3894107e", "d2aafde7", "201ec6ee", "13d42b04", "03ef898a"],
+      "Romance": ["9a1251a2", "615e0eae"],
+      "Cyber-Action": [],
+      "Suspense": []
+    },
+    "romanceExactCause": "creatorCategory/studioCategory/category='Drama' → normalizeDiscoveryShelf('Drama')='Romance' → classifyContent source=metadata. Series metadata contains many genre=Drama entries; two feed-eligible personal videos land on Romance.",
+    "cyberActionSuspenseDisappearancePoint": "DISTRIBUTION/UI omit — distributeToShelves leaves buckets empty; shouldRenderShelf() requires getShelfDisplayItems().length>0; fillShelfPresentation omits Coming Soon when global inventory>0. Not deleted from FEED_SHELVES keys in store (empty arrays remain).",
+    "notBrowserOnly": "After localStorage.clear()+reload, Trending+Romance still render. Vault/feed keys are rewritten by sync/hydration from backend+series mirrors."
+  },
+
+  "mp4Journey": {
+    "file": "phase263-normal.mp4 (~2.3KB)",
+    "dragenter": true,
+    "dragover": true,
+    "drop": true,
+    "fileRecognized": true,
+    "pendingUI": true,
+    "acceptVisible": true,
+    "acceptRequired": true,
+    "acceptStartsUpload": true,
+    "uploadMediaInvoked": true,
+    "path": "POST /api/reels → 202 (below signed threshold; not R2 signed PUT)",
+    "signing": false,
+    "put": false,
+    "finalize": "N/A for small multipart path; poll GET /api/reels/{id} → ready",
+    "canonicalReelId": "13d42b04-95e6-45b9-897c-57235f37a0dc",
+    "vaultPersistence": true,
+    "hydration": true,
+    "feedDistribution": true,
+    "refreshPreserves": true,
+    "exactFailurePoint": null,
+    "userPerceptionNote": "DROP does not upload. Quiet pending ACCEPT UI can look like no-op, especially >24MB skipBlobPreview."
+  },
+
+  "fileCases": {
+    "normalUnder24MB": "PASS full journey",
+    "between24And500MB": "STATIC — skipBlobPreview=true; status text asks ACCEPT; no auto-upload; signed path when size>=SIGNED_UPLOADS_MIN_BYTES (prod 4194304)",
+    "zeroByte": "UX DEFECT — stages pending ACCEPT (0.0 MB); no zero-byte reject implemented (P26-D1 not done)"
+  },
+
+  "dropZoneUX": {
+    "visibleCopy": "DROP VIDEO HERE (MP4/MOV) / Max 500MB • Signed upload for large files",
+    "communicatesTwoStep": false,
+    "missing": "Does not say ACCEPT required before upload",
+    "nearMiss": "No document-level preventDefault; body drop not handled as vault feedback (probe left pending from prior zero drop — do not treat as zone success)"
+  },
+
+  "classifications": {
+    "onlyTwoTopicsVisible": "CLASSIFICATION/DISTRIBUTION",
+    "mediaVaultAppearsUnresponsive": "UX DEFECT",
+    "mp4HandlerBroken": "NOT REPRODUCED",
+    "phase262CausedTopicLoss": "NOT REPRODUCED",
+    "backendCatalogSparseCategories": "DATA/CATALOG STATE",
+    "mp4TypedAsImageInApi": "DATA/CATALOG STATE",
+    "zeroByteAcceptable": "UX DEFECT",
+    "buildMismatch": "NOT REPRODUCED"
+  },
+
+  "recommendedNextSurgicalPhase": {
+    "id": "PHASE-26.4",
+    "title": "Vault drop intent UX + zero-byte gate (product clarity)",
+    "why": "Exact defects identified: ACCEPT-gated drop is not communicated; zero-byte files reach ACCEPT; empty shelves omitted by design while API lacks explicit shelf categories — topic symptom is distribution/data, not Phase 26.2.",
+    "outOfScopeUnlessSeparateMission": [
+      "Backend type=image for .mp4 rows",
+      "Backfill explicit shelf categories on API",
+      "Gate 5 validator repair (Phase 26.2 release tooling)"
+    ]
+  },
+
+  "artifacts": [
+    "frontend/artifacts/phase26_3_production_baseline.json",
+    "frontend/artifacts/phase26_3_baseline_reconciliation.json"
+  ]
+}

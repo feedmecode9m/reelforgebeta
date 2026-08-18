@@ -1,0 +1,30 @@
+{
+  "large_r2": {
+    "sign": {
+      "http": 200,
+      "ms": 1430,
+      "reelId": "6060c258-a3f6-40ba-b642-c758562c7cb7"
+    },
+    "put": {
+      "http": 200,
+      "ok": true,
+      "ms": 449307,
+      "stderr": ""
+    },
+    "finalize": {
+      "http": 202,
+      "id": "6060c258-a3f6-40ba-b642-c758562c7cb7",
+      "status": "pending"
+    },
+    "poll": {
+      "status": "ready",
+      "attempts": 1,
+      "videoUrl": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/6060c258-a3f6-40ba-b642-c758562c7cb7.mp4"
+    }
+  },
+  "ts": "2026-07-24T15:58:36Z",
+  "file": {
+    "path": "/tmp/trace_large_30m.mp4",
+    "sizeBytes": 30223729
+  }
+}

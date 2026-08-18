@@ -4,6 +4,8 @@
  * Opt-in: DEV, DEBUG_THEATER, or ?debug=theater
  */
 
+import { logMobilePlayTrace } from '../device/mobileExperienceDiagnostics.js';
+
 /** @param {HTMLVideoElement | null | undefined} el */
 export function snapshotTheaterVideo(el) {
     if (!el) {
@@ -141,6 +143,33 @@ export function attachTheaterPlaybackDiagnostics(videoEl, opts = {}) {
             extra.mediaErrorMessage = el.error?.message ?? null;
         }
         logTheaterPlaybackPhase(phase, videoEl, extra);
+        if (
+            phase === 'loadedmetadata' ||
+            phase === 'canplay' ||
+            phase === 'error' ||
+            phase === 'stalled' ||
+            phase === 'waiting'
+        ) {
+            const phaseMap = {
+                loadedmetadata: 'VIDEO_LOADED_METADATA',
+                canplay: 'VIDEO_CANPLAY',
+                error: 'VIDEO_ERROR',
+                stalled: 'VIDEO_STALLED',
+                waiting: 'VIDEO_WAITING'
+            };
+            logMobilePlayTrace(phaseMap[phase], {
+                assetId: String(getReelId() || '').trim(),
+                resolver: `theaterPlaybackDiagnostics.${phase}`,
+                source: 'theater-video-lifecycle',
+                reason:
+                    phase === 'error'
+                        ? String(extra.mediaErrorMessage || extra.mediaErrorCode || 'media-error')
+                        : phase,
+                viewerOpen: true,
+                videoMounted: true,
+                videoEl
+            });
+        }
     };
 
     const phases = [

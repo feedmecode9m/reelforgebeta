@@ -1,0 +1,292 @@
+{
+  "mission": "LOCAL-MOBILE-EXPERIENCE-HARDENING-1",
+  "gate": 1,
+  "generatedAt": "2026-08-16T21:06:24.740Z",
+  "mobileMq": "(max-width: 640px), (hover: none) and (pointer: coarse)",
+  "surfaces": [
+    {
+      "file": "src/Viewer.svelte",
+      "bytes": 8315,
+      "buttonCount": 0,
+      "divOnClick": 0,
+      "hasMobileDetect": false,
+      "hasSafeArea": false,
+      "touchAction": false,
+      "overflowXMention": false,
+      "hoverRuleSamples": [],
+      "findings": [
+        {
+          "severity": "warn",
+          "id": "no-mobile-detect",
+          "detail": "No explicit mobile presentation / 640px coarse media query markers"
+        },
+        {
+          "severity": "warn",
+          "id": "no-safe-area",
+          "detail": "No env(safe-area-inset-*) usage in this surface"
+        }
+      ],
+      "ok": [
+        "no-div-onclick"
+      ]
+    },
+    {
+      "file": "src/components/theater/TheaterExperience.svelte",
+      "bytes": 76055,
+      "buttonCount": 9,
+      "divOnClick": 1,
+      "hasMobileDetect": true,
+      "hasSafeArea": true,
+      "touchAction": true,
+      "overflowXMention": true,
+      "hoverRuleSamples": [
+        ".theater-series-btn:hover {",
+        ".theater-framing-btn:hover {",
+        ".theater-close-btn:hover {",
+        ".theater-reupload-btn:hover {",
+        ".theater-close-btn-bottom:hover {"
+      ],
+      "findings": [
+        {
+          "severity": "critical",
+          "id": "div-onclick",
+          "detail": "1 <div on:click=> handlers — prefer <button>"
+        },
+        {
+          "severity": "warn",
+          "id": "fixed-wide",
+          "detail": "Large fixed widths may break <480px",
+          "samples": [
+            {
+              "prop": "width: 900px",
+              "value": 900
+            }
+          ]
+        }
+      ],
+      "ok": [
+        "mobile-presentation-markers",
+        "safe-area",
+        "mobile-play-chrome-present",
+        "play-activation-guardrails"
+      ]
+    },
+    {
+      "file": "src/components/experiences/VaultExperience.svelte",
+      "bytes": 171335,
+      "buttonCount": 20,
+      "divOnClick": 1,
+      "hasMobileDetect": false,
+      "hasSafeArea": false,
+      "touchAction": false,
+      "overflowXMention": false,
+      "hoverRuleSamples": [],
+      "findings": [
+        {
+          "severity": "warn",
+          "id": "no-mobile-detect",
+          "detail": "No explicit mobile presentation / 640px coarse media query markers"
+        },
+        {
+          "severity": "warn",
+          "id": "no-safe-area",
+          "detail": "No env(safe-area-inset-*) usage in this surface"
+        },
+        {
+          "severity": "critical",
+          "id": "div-onclick",
+          "detail": "1 <div on:click=> handlers — prefer <button>"
+        },
+        {
+          "severity": "warn",
+          "id": "fixed-wide",
+          "detail": "Large fixed widths may break <480px",
+          "samples": [
+            {
+              "prop": "width:1200px",
+              "value": 1200
+            }
+          ]
+        }
+      ],
+      "ok": []
+    },
+    {
+      "file": "src/components/series/SeriesPublicPage.svelte",
+      "bytes": 35417,
+      "buttonCount": 3,
+      "divOnClick": 0,
+      "hasMobileDetect": false,
+      "hasSafeArea": false,
+      "touchAction": false,
+      "overflowXMention": false,
+      "hoverRuleSamples": [
+        ".series-public__cta:hover:not(:disabled) {",
+        ".series-public__row-play:hover {"
+      ],
+      "findings": [
+        {
+          "severity": "warn",
+          "id": "no-mobile-detect",
+          "detail": "No explicit mobile presentation / 640px coarse media query markers"
+        },
+        {
+          "severity": "warn",
+          "id": "no-safe-area",
+          "detail": "No env(safe-area-inset-*) usage in this surface"
+        },
+        {
+          "severity": "warn",
+          "id": "fixed-wide",
+          "detail": "Large fixed widths may break <480px",
+          "samples": [
+            {
+              "prop": "width: 920px",
+              "value": 920
+            }
+          ]
+        }
+      ],
+      "ok": [
+        "no-div-onclick"
+      ]
+    },
+    {
+      "file": "src/components/series/SeasonAccordion.svelte",
+      "bytes": 12503,
+      "buttonCount": 2,
+      "divOnClick": 0,
+      "hasMobileDetect": false,
+      "hasSafeArea": false,
+      "touchAction": false,
+      "overflowXMention": false,
+      "hoverRuleSamples": [
+        ".season-accordion__header:hover {",
+        ".season-accordion__header--viewer:hover {"
+      ],
+      "findings": [
+        {
+          "severity": "warn",
+          "id": "no-mobile-detect",
+          "detail": "No explicit mobile presentation / 640px coarse media query markers"
+        }
+      ],
+      "ok": [
+        "no-div-onclick"
+      ]
+    },
+    {
+      "file": "src/components/series/EpisodeChip.svelte",
+      "bytes": 18462,
+      "buttonCount": 1,
+      "divOnClick": 0,
+      "hasMobileDetect": false,
+      "hasSafeArea": false,
+      "touchAction": false,
+      "overflowXMention": false,
+      "hoverRuleSamples": [
+        ".episode-chip:hover:not(:disabled) {",
+        ".episode-chip.viewer:hover:not(:disabled) {"
+      ],
+      "findings": [
+        {
+          "severity": "warn",
+          "id": "no-mobile-detect",
+          "detail": "No explicit mobile presentation / 640px coarse media query markers"
+        },
+        {
+          "severity": "warn",
+          "id": "chip-touch-target",
+          "detail": "EpisodeChip may lack 44px min touch target"
+        }
+      ],
+      "ok": [
+        "no-div-onclick"
+      ]
+    },
+    {
+      "file": "src/components/vertical/ReelshortExperience.svelte",
+      "bytes": 56185,
+      "buttonCount": 2,
+      "divOnClick": 0,
+      "hasMobileDetect": true,
+      "hasSafeArea": false,
+      "touchAction": false,
+      "overflowXMention": true,
+      "hoverRuleSamples": [
+        ".row-nav:hover {",
+        "button.reel-card:hover {",
+        ".reel-card:hover .savvy-hover {"
+      ],
+      "findings": [
+        {
+          "severity": "warn",
+          "id": "no-safe-area",
+          "detail": "No env(safe-area-inset-*) usage in this surface"
+        },
+        {
+          "severity": "warn",
+          "id": "fixed-wide",
+          "detail": "Large fixed widths may break <480px",
+          "samples": [
+            {
+              "prop": "width: 900px",
+              "value": 900
+            }
+          ]
+        }
+      ],
+      "ok": [
+        "mobile-presentation-markers",
+        "no-div-onclick",
+        "identity-feed-map",
+        "trending-shelf"
+      ]
+    },
+    {
+      "file": "src/components/experiences/StudioExperience.svelte",
+      "bytes": 102027,
+      "buttonCount": 30,
+      "divOnClick": 1,
+      "hasMobileDetect": false,
+      "hasSafeArea": false,
+      "touchAction": false,
+      "overflowXMention": false,
+      "hoverRuleSamples": [],
+      "findings": [
+        {
+          "severity": "critical",
+          "id": "div-onclick",
+          "detail": "1 <div on:click=> handlers — prefer <button>"
+        }
+      ],
+      "ok": [
+        "mobile-presentation-markers"
+      ]
+    }
+  ],
+  "summary": {
+    "critical": 3,
+    "warn": 14,
+    "ok": 13
+  },
+  "hardening": {
+    "mission": "LOCAL-MOBILE-EXPERIENCE-HARDENING-1",
+    "theaterPlayReopened": false,
+    "diagnostics": [
+      "MOBILE_IDENTITY_TRACE",
+      "MOBILE_SHELF_TRACE"
+    ],
+    "fixes": [
+      "viewer card series/S-E identity line",
+      "mobile shelf trace for Trending",
+      "skip hover preview on coarse pointers",
+      "EpisodeChip 44px touch target",
+      "SeriesPublicPage safe-area padding"
+    ],
+    "notedNonIssues": [
+      "Theater backdrop div on:click is overlay dismiss (not a control)",
+      "Vault pending-preview div stopPropagation is role=group"
+    ]
+  }
+}

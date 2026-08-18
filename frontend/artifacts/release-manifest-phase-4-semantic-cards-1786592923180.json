@@ -1,0 +1,68 @@
+{
+  "release_process_version": "1.0",
+  "milestone": "PHASE-4-SEMANTIC-CARDS",
+  "git_commit": "881c428",
+  "git_commit_full": "881c4289dc42180a0d0283d17789ab288ec2f693",
+  "git_branch": "main",
+  "bundle_hash": "index-GHjzxDYw.js",
+  "bundle_hash_previous": "index-B_skNQ2_.js",
+  "release_tooling_hash": "8a5487df47d5a572f1be6179d780d768c59b933ec2200d076fa533dd9575d4f9",
+  "netlify_deployment_id": null,
+  "netlify_url": "https://strong-lolly-a9fcb4.netlify.app",
+  "railway_url": "https://reelforge-deploy-production.up.railway.app",
+  "backend_deployment_id": null,
+  "tool_versions": {
+    "node": "v24.5.0",
+    "npm": "10.9.8",
+    "rustc": "rustc 1.97.0 (2d8144b78 2026-07-07)",
+    "cargo": "cargo 1.97.0 (c980f4866 2026-06-30)",
+    "netlify_cli": "netlify-cli/27.1.1 linux-x64 node-v24.5.0",
+    "railway_cli": "railway 5.34.2"
+  },
+  "gates": {
+    "1_build": "PASS",
+    "2_credentials": "PASS",
+    "3_deploy": "PASS",
+    "4_bundle_verification": "PASS",
+    "5_production_smoke": "PASS",
+    "6_regression": "PASS",
+    "7_release_signoff": "PASS"
+  },
+  "tests": {
+    "hero": "PASS",
+    "vault": "SKIPPED",
+    "feed": "FAIL",
+    "delete": "SKIPPED"
+  },
+  "rollback": {
+    "required": false,
+    "frontend_bundle": "index-CZtO-gw1.js",
+    "backend_commit": "881c4289dc42180a0d0283d17789ab288ec2f693",
+    "railway_deployment_id": null,
+    "netlify_deploy": null,
+    "netlify_url": "https://strong-lolly-a9fcb4.netlify.app",
+    "notes": "Documentation only — not an automatic rollback. Redeploy previous bundle via Netlify if required."
+  },
+  "resume": {
+    "supported": true,
+    "start_gate": 1,
+    "resumed": false,
+    "resumed_at": null,
+    "prior_manifest_timestamp": "2026-08-13T03:02:09.944Z",
+    "fingerprint": {
+      "processVersion": "1.0",
+      "gitCommit": "881c428",
+      "gitCommitFull": "881c4289dc42180a0d0283d17789ab288ec2f693",
+      "bundleHash": "index-GHjzxDYw.js",
+      "toolingHash": "8a5487df47d5a572f1be6179d780d768c59b933ec2200d076fa533dd9575d4f9"
+    }
+  },
+  "verdict": "RELEASE APPROVED",
+  "timestamp": "2026-08-13T03:48:43.177Z",
+  "artifacts": {
+    "gate_state": "frontend/artifacts/.release-gate-state.json",
+    "validation": "frontend/artifacts/bg-7a1-production-release-validation.json",
+    "regression": "frontend/artifacts/bg-6a-production-ui.json",
+    "manifest": "frontend/artifacts/release-manifest-phase-4-semantic-cards-1786592923180.json"
+  }
+}

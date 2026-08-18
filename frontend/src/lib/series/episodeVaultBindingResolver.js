@@ -21,6 +21,7 @@ import {
     isImageAsset,
     extractKeywords
 } from './episodeVaultResolver.js';
+import { mediaPathAssetId } from '../content/persistentTitleMap.js';
 
 /**
  * @typedef {'manual' | 'auto' | null} EpisodeVaultBindingMode
@@ -90,9 +91,10 @@ function titleOf(item) {
 /**
  * Build a matched result from a ready vault record (manual pick).
  * @param {Record<string, unknown>} asset
+ * @param {Record<string, unknown>[]} [ready]
  * @returns {Extract<EpisodeMediaResolveResult, { matched: true }>}
  */
-export function resolveResultFromReadyAsset(asset) {
+export function resolveResultFromReadyAsset(asset, ready = []) {
     const mediaUrl = mediaUrlOf(asset);
     const mime = String(asset?.type || '');
     const type = isVideoAsset(mediaUrl, mime)
@@ -101,7 +103,36 @@ export function resolveResultFromReadyAsset(asset) {
           ? /** @type {'image'} */ ('image')
           : /** @type {'video'} */ ('video');
     let thumbnail = thumbOf(asset);
+    if (thumbnail && isVideoAsset(thumbnail)) thumbnail = '';
     if (!thumbnail && type === 'image') thumbnail = mediaUrl;
+    if (!thumbnail && type === 'video') {
+        const id = assetIdOf(asset);
+        const playbackId = mediaPathAssetId({
+            ...asset,
+            url: mediaUrl,
+            mediaUrl
+        });
+        const want = new Set(
+            [id, playbackId].map((value) => String(value || '').trim().toLowerCase()).filter(Boolean)
+        );
+        for (const item of Array.isArray(ready) ? ready : []) {
+            const itemId = assetIdOf(item);
+            const u = mediaUrlOf(item);
+            const t = thumbOf(item);
+            const still = t && !isVideoAsset(t) ? t : isImageAsset(u, String(item.type || '')) ? u : '';
+            if (!still) continue;
+            const itemPlayback = mediaPathAssetId({ ...item, url: u, mediaUrl: u });
+            if (
+                want.has(String(itemId || '').toLowerCase()) ||
+                (itemPlayback && want.has(itemPlayback.toLowerCase())) ||
+                want.has(String(item.personal_video_id || item.videoId || '').trim().toLowerCase()) ||
+                [...want].some((wid) => still.toLowerCase().includes(wid))
+            ) {
+                thumbnail = still;
+                break;
+            }
+        }
+    }
 
     return {
         matched: true,
@@ -169,7 +200,7 @@ export function resolveEpisodeMedia(input = {}) {
     if (manualId) {
         const manualAsset = ready.find((item) => assetIdOf(item) === manualId) || null;
         if (manualAsset && isReadyVaultAsset(manualAsset)) {
-            return resolveResultFromReadyAsset(manualAsset);
+            return resolveResultFromReadyAsset(manualAsset, ready);
         }
         // Manual id stale / not ready → ignore stale mediaAssetId; auto-only path.
         staleManualCleared = true;
@@ -183,7 +214,7 @@ export function resolveEpisodeMedia(input = {}) {
             const boundAsset = ready.find((item) => assetIdOf(item) === boundId) || null;
             if (boundAsset && isReadyVaultAsset(boundAsset)) {
                 return {
-                    ...resolveResultFromReadyAsset(boundAsset),
+                    ...resolveResultFromReadyAsset(boundAsset, ready),
                     matchTier: 'bound',
                     bindingMode: 'auto',
                     bindingLabel: 'Auto matched'
@@ -225,14 +256,18 @@ export function episodeChipPresentation(episode, result) {
             mediaUrl: result.mediaUrl || ''
         };
     }
+    const fallbackThumb = String(
+        episode?.thumbnailUrl || episode?.thumbnail_url || episode?.thumbnail || episode?.posterUrl || ''
+    ).trim();
+    const fallbackMedia = String(episode?.mediaUrl || episode?.url || '').trim();
     return {
         mediaAssetId: null,
-        thumbnailUrl: '',
+        thumbnailUrl: fallbackThumb,
         matchTier: null,
         bindingLabel: 'Asset unavailable',
         playable: false,
         bindingMode: null,
-        mediaUrl: ''
+        mediaUrl: fallbackMedia
     };
 }
 

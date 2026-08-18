@@ -1,0 +1,238 @@
+{
+  "mission": "NETLIFY-UPLOAD-DIAGNOSTICS-01",
+  "timestamp": "2026-07-24T17:02:31.121Z",
+  "previewUrl": "http://127.0.0.1:4173/",
+  "apiUrl": "https://reelforge-deploy-production.up.railway.app",
+  "file": {
+    "path": "/tmp/netlify-upload-diag-1784912540427/diag_large_30m.mp4",
+    "sizeBytes": 30223729
+  },
+  "elapsedMs": 10007,
+  "diagEntries": [
+    {
+      "marker": "UPLOAD_SIGN_START",
+      "timestamp": "2026-07-24T17:02:25.406Z",
+      "elapsedMs": 1,
+      "runtime": "browser",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36",
+      "onLine": true,
+      "connection": {
+        "available": true,
+        "effectiveType": "4g",
+        "downlink": 9.9,
+        "rtt": 0,
+        "saveData": false,
+        "type": null
+      },
+      "startedAt": 1784912545405,
+      "fileName": "diag_large_30m.mp4",
+      "fileSize": 30223729,
+      "contentLength": 30223729,
+      "retryNumber": 0,
+      "uploadId": null,
+      "reelId": null,
+      "finalizeAttempted": false,
+      "finalizeBlockedReason": null,
+      "endpoint": "/api/uploads/sign",
+      "minBytes": 25000000,
+      "abortControllerPresent": false,
+      "signalAborted": false,
+      "signalReason": null
+    },
+    {
+      "marker": "UPLOAD_SIGN_SUCCESS",
+      "timestamp": "2026-07-24T17:02:25.661Z",
+      "elapsedMs": 255,
+      "runtime": "browser",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36",
+      "onLine": true,
+      "connection": {
+        "available": true,
+        "effectiveType": "4g",
+        "downlink": 9.9,
+        "rtt": 0,
+        "saveData": false,
+        "type": null
+      },
+      "startedAt": 1784912545405,
+      "fileName": "diag_large_30m.mp4",
+      "fileSize": 30223729,
+      "contentLength": 30223729,
+      "retryNumber": 0,
+      "uploadId": "8c776dd1-9e6d-4a9e-a39e-ab6921a56b1b",
+      "reelId": "29bfdeb9-e7b3-42ca-9320-b0ebdb05c5fb",
+      "finalizeAttempted": false,
+      "finalizeBlockedReason": null,
+      "endpoint": "/api/uploads/sign",
+      "httpStatus": 200,
+      "responseHeaders": {
+        "access-control-allow-credentials": "true",
+        "access-control-expose-headers": "accept-ranges, content-range, content-type, content-length",
+        "connection": "keep-alive",
+        "content-encoding": "gzip",
+        "content-type": "application/json",
+        "date": "Fri, 24 Jul 2026 17:02:25 GMT",
+        "server": "railway-hikari",
+        "transfer-encoding": "chunked",
+        "vary": "Origin, Access-Control-Request-Method, Access-Control-Request-Headers, accept-encoding",
+        "x-hikari-trace": "mia1.0twb",
+        "x-railway-edge": "mia1",
+        "x-railway-request-id": "JBnrbP5nR6m9dPia9o6EoQ"
+      },
+      "cfRay": null,
+      "xAmzRequestId": null,
+      "uploadUrlHost": "f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com",
+      "abortControllerPresent": false,
+      "signalAborted": false,
+      "signalReason": null
+    },
+    {
+      "marker": "UPLOAD_PUT_BEGIN",
+      "timestamp": "2026-07-24T17:02:25.661Z",
+      "elapsedMs": 256,
+      "runtime": "browser",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36",
+      "onLine": true,
+      "connection": {
+        "available": true,
+        "effectiveType": "4g",
+        "downlink": 9.9,
+        "rtt": 0,
+        "saveData": false,
+        "type": null
+      },
+      "startedAt": 1784912545405,
+      "fileName": "diag_large_30m.mp4",
+      "fileSize": 30223729,
+      "contentLength": 30223729,
+      "retryNumber": 0,
+      "uploadId": "8c776dd1-9e6d-4a9e-a39e-ab6921a56b1b",
+      "reelId": "29bfdeb9-e7b3-42ca-9320-b0ebdb05c5fb",
+      "finalizeAttempted": false,
+      "finalizeBlockedReason": null,
+      "uploadUrl": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/29bfdeb9-e7b3-42ca-9320-b0ebdb05c5fb.mp4?x-id=PutObject&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=78cda6740ff1d947f6b67f9cfcfc3d49%2F20260724%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260724T170225Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=content-type%3Bhost&X-Amz-Signature=b1b9606e8018a25b1f3a7d93d305ae5a02aa32e84639168c5f8a5b959c2a8267",
+      "requestHeaders": {
+        "Content-Type": "video/mp4",
+        "X-Upload-Token": "[present]"
+      },
+      "progressMeasurable": false,
+      "progressNote": "fetch()+File body has no upload progress events without changing transport",
+      "abortControllerSource": null,
+      "abortControllerPresent": false,
+      "signalAborted": false,
+      "signalReason": null
+    },
+    {
+      "marker": "UPLOAD_ERROR",
+      "timestamp": "2026-07-24T17:02:26.192Z",
+      "elapsedMs": 787,
+      "runtime": "browser",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36",
+      "onLine": true,
+      "connection": {
+        "available": true,
+        "effectiveType": "4g",
+        "downlink": 9.9,
+        "rtt": 0,
+        "saveData": false,
+        "type": null
+      },
+      "startedAt": 1784912545405,
+      "fileName": "diag_large_30m.mp4",
+      "fileSize": 30223729,
+      "contentLength": 30223729,
+      "retryNumber": 0,
+      "uploadId": "8c776dd1-9e6d-4a9e-a39e-ab6921a56b1b",
+      "reelId": "29bfdeb9-e7b3-42ca-9320-b0ebdb05c5fb",
+      "finalizeAttempted": false,
+      "finalizeBlockedReason": "PUT fetch threw before finalize",
+      "stage": "put",
+      "uploadUrl": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/29bfdeb9-e7b3-42ca-9320-b0ebdb05c5fb.mp4?x-id=PutObject&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=78cda6740ff1d947f6b67f9cfcfc3d49%2F20260724%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260724T170225Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=content-type%3Bhost&X-Amz-Signature=b1b9606e8018a25b1f3a7d93d305ae5a02aa32e84639168c5f8a5b959c2a8267",
+      "abortControllerPresent": false,
+      "signalAborted": false,
+      "signalReason": null,
+      "exceptionConstructor": "TypeError",
+      "exceptionName": "TypeError",
+      "exceptionMessage": "Failed to fetch",
+      "stackTrace": "TypeError: Failed to fetch\n    at window.fetch (http://127.0.0.1:4173/assets/index-C905aj1H.js:1:21161)\n    at YH.window.fetch (http://127.0.0.1:4173/assets/index-C905aj1H.js:7:49745)\n    at window.fetch (http://127.0.0.1:4173/assets/index-C905aj1H.js:9:26441)\n    at ZD (http://127.0.0.1:4173/assets/index-C905aj1H.js:7:19599)\n    at async HTMLDivElement.Cn (http://127.0.0.1:4173/assets/index-C905aj1H.js:55:22759)",
+      "classification": {
+        "isAbortError": false,
+        "isNetworkError": true,
+        "isTypeError": true,
+        "isDomException": false,
+        "isTimeout": false
+      },
+      "inferredCause": "network_failure"
+    }
+  ],
+  "consoleLogs": [
+    {
+      "ts": 1784912545406,
+      "type": "info",
+      "text": "[UPLOAD_STARTED] {vault: video, name: diag_large_30m.mp4, type: video/mp4, size: 30223729, ts: 2026-07-24T17:02:25.404Z}"
+    },
+    {
+      "ts": 1784912545407,
+      "type": "info",
+      "text": "[UPLOAD_SIGN_START] {marker: UPLOAD_SIGN_START, timestamp: 2026-07-24T17:02:25.406Z, elapsedMs: 1, runtime: browser, userAgent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36…Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36}"
+    },
+    {
+      "ts": 1784912545662,
+      "type": "info",
+      "text": "[UPLOAD_SIGN_SUCCESS] {marker: UPLOAD_SIGN_SUCCESS, timestamp: 2026-07-24T17:02:25.661Z, elapsedMs: 255, runtime: browser, userAgent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36…Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36}"
+    },
+    {
+      "ts": 1784912545662,
+      "type": "info",
+      "text": "[UPLOAD_PUT_BEGIN] {marker: UPLOAD_PUT_BEGIN, timestamp: 2026-07-24T17:02:25.661Z, elapsedMs: 256, runtime: browser, userAgent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36…Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36}"
+    },
+    {
+      "ts": 1784912546195,
+      "type": "info",
+      "text": "[UPLOAD_ERROR] {marker: UPLOAD_ERROR, timestamp: 2026-07-24T17:02:26.192Z, elapsedMs: 787, runtime: browser, userAgent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36…Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36}"
+    },
+    {
+      "ts": 1784912546195,
+      "type": "error",
+      "text": "[UPLOAD_FAILED] {vault: video, name: diag_large_30m.mp4, error: Failed to fetch, ts: 2026-07-24T17:02:26.193Z}"
+    }
+  ],
+  "network": {
+    "sign": [
+      {
+        "kind": "request",
+        "url": "http://127.0.0.1:4173/api/uploads/sign",
+        "ts": 1784912545410
+      },
+      {
+        "kind": "response",
+        "status": 200,
+        "ok": true,
+        "ts": 1784912545639,
+        "url": "http://127.0.0.1:4173/api/uploads/sign"
+      }
+    ],
+    "put": [
+      {
+        "kind": "request",
+        "url": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/29bfdeb9-e7b3-42ca-9320-b0ebdb05c",
+        "ts": 1784912545663
+      }
+    ],
+    "finalize": [],
+    "failed": [
+      {
+        "url": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/29bfdeb9-e7b3-42ca-9320-b0ebdb05c",
+        "method": "PUT",
+        "errorText": "net::ERR_FAILED",
+        "ts": 1784912546194
+      }
+    ]
+  },
+  "abortControllerAudit": {
+    "uploadVideoSignedUsesAbortController": false,
+    "source": "frontend/src/lib/api/media.js uploadVideoSigned — fetch() calls have no signal option",
+    "fetchWithRetryNotUsedOnSignedPath": true,
+    "healthCheckAbortSignalTimeoutOnly": "frontend/src/lib/api.js checkBackendHealth AbortSignal.timeout(5000) — unrelated to upload PUT"
+  }
+}

@@ -1,0 +1,446 @@
+{
+  "mission": "PRODUCT-08B-RECONNECT-CAPTURE",
+  "eventId": "08C-after-cadence",
+  "releaseContext": "RC1-2026-07-18-001",
+  "generatedAt": "2026-07-19T13:08:39.395Z",
+  "frontendUrl": "https://strong-lolly-a9fcb4.netlify.app/",
+  "waitMs": 120000,
+  "captureStartAt": "2026-07-19T13:08:39.692Z",
+  "captureEndAt": "2026-07-19T13:10:26.203Z",
+  "clocks": {
+    "note": "browserLocalISO = wall clock in page; performanceNowMs + timeOrigin correlate DOM to Network within same document",
+    "captureStartBrowserLocalISO": "2026-07-19T13:08:46.598Z",
+    "captureStartPerformance": {
+      "browserLocalISO": "2026-07-19T13:08:46.598Z",
+      "performanceNowMs": 6894.9000000003725,
+      "timeOrigin": 1784466519703.7
+    }
+  },
+  "worksheet": {
+    "bannerAppeared": "2026-07-19T13:08:52.567Z",
+    "firstSyncPush200": null,
+    "bannerDisappeared": "2026-07-19T13:08:55.919Z",
+    "syncPushCount": 0,
+    "firstRequestTimestamp": null,
+    "lastRequestTimestamp": null,
+    "firstToLastDurationMs": null,
+    "bannerDurationMs": 3352,
+    "pattern": "inconclusive",
+    "wsState": "failed"
+  },
+  "derived": {
+    "bannerToFirstSyncPush200Ms": null,
+    "averageIntervalMs": null,
+    "longestGapMs": null,
+    "shortestGapMs": null,
+    "gapsMs": [],
+    "payloadBytesSample": null,
+    "statusCodes": []
+  },
+  "network": {
+    "syncPushAll": [
+      {
+        "id": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push|1784466526773|0.6797884913617371",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push",
+        "method": "POST",
+        "startedAt": "2026-07-19T13:08:46.772Z",
+        "browserLocalISO": "2026-07-19T13:08:46.772Z",
+        "performanceNowMs": 7068.9000000003725,
+        "timeOrigin": 1784466519703.7,
+        "requestBodyBytes": 18549,
+        "status": 200,
+        "finishedAt": "2026-07-19T13:08:46.905Z",
+        "durationMs": 133,
+        "failed": false,
+        "failureText": null
+      },
+      {
+        "id": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push|1784466527691|0.018608406645519326",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push",
+        "method": "POST",
+        "startedAt": "2026-07-19T13:08:47.690Z",
+        "browserLocalISO": "2026-07-19T13:08:47.690Z",
+        "performanceNowMs": 7987.300000000745,
+        "timeOrigin": 1784466519703.7,
+        "requestBodyBytes": 18105,
+        "status": 200,
+        "finishedAt": "2026-07-19T13:08:47.961Z",
+        "durationMs": 271,
+        "failed": false,
+        "failureText": null
+      },
+      {
+        "id": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push|1784466543623|0.6247895011756133",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push",
+        "method": "POST",
+        "startedAt": "2026-07-19T13:09:03.621Z",
+        "browserLocalISO": "2026-07-19T13:09:03.621Z",
+        "performanceNowMs": 23918.300000000745,
+        "timeOrigin": 1784466519703.7,
+        "requestBodyBytes": 18168,
+        "status": 200,
+        "finishedAt": "2026-07-19T13:09:03.822Z",
+        "durationMs": 201,
+        "failed": false,
+        "failureText": null
+      },
+      {
+        "id": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push|1784466556351|0.44827209875809093",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push",
+        "method": "POST",
+        "startedAt": "2026-07-19T13:09:16.349Z",
+        "browserLocalISO": "2026-07-19T13:09:16.349Z",
+        "performanceNowMs": 36646.40000000037,
+        "timeOrigin": 1784466519703.7,
+        "requestBodyBytes": 18140,
+        "status": 200,
+        "finishedAt": "2026-07-19T13:09:16.455Z",
+        "durationMs": 106,
+        "failed": false,
+        "failureText": null
+      },
+      {
+        "id": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push|1784466571357|0.0943826386260499",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push",
+        "method": "POST",
+        "startedAt": "2026-07-19T13:09:31.356Z",
+        "browserLocalISO": "2026-07-19T13:09:31.356Z",
+        "performanceNowMs": 51652.60000000149,
+        "timeOrigin": 1784466519703.7,
+        "requestBodyBytes": 18140,
+        "status": 200,
+        "finishedAt": "2026-07-19T13:09:31.512Z",
+        "durationMs": 156,
+        "failed": false,
+        "failureText": null
+      },
+      {
+        "id": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push|1784466586344|0.1639138772715668",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push",
+        "method": "POST",
+        "startedAt": "2026-07-19T13:09:46.343Z",
+        "browserLocalISO": "2026-07-19T13:09:46.343Z",
+        "performanceNowMs": 66639.80000000075,
+        "timeOrigin": 1784466519703.7,
+        "requestBodyBytes": 18140,
+        "status": 200,
+        "finishedAt": "2026-07-19T13:09:46.464Z",
+        "durationMs": 121,
+        "failed": false,
+        "failureText": null
+      },
+      {
+        "id": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push|1784466601290|0.4247770744279875",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push",
+        "method": "POST",
+        "startedAt": "2026-07-19T13:10:01.288Z",
+        "browserLocalISO": "2026-07-19T13:10:01.288Z",
+        "performanceNowMs": 81585.5,
+        "timeOrigin": 1784466519703.7,
+        "requestBodyBytes": 18140,
+        "status": 200,
+        "finishedAt": "2026-07-19T13:10:01.384Z",
+        "durationMs": 96,
+        "failed": false,
+        "failureText": null
+      },
+      {
+        "id": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push|1784466616324|0.05993071669910022",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push",
+        "method": "POST",
+        "startedAt": "2026-07-19T13:10:16.322Z",
+        "browserLocalISO": "2026-07-19T13:10:16.322Z",
+        "performanceNowMs": 96619,
+        "timeOrigin": 1784466519703.7,
+        "requestBodyBytes": 18140,
+        "status": 200,
+        "finishedAt": "2026-07-19T13:10:16.421Z",
+        "durationMs": 99,
+        "failed": false,
+        "failureText": null
+      }
+    ],
+    "syncPushInEventWindow": []
+  },
+  "websocket": {
+    "urlExpected": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+    "frames": [
+      {
+        "ts": "2026-07-19T13:08:49.227Z",
+        "kind": "attempt",
+        "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center"
+      },
+      {
+        "ts": "2026-07-19T13:08:49.227Z",
+        "kind": "open_or_established",
+        "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center"
+      },
+      {
+        "ts": "2026-07-19T13:08:49.506Z",
+        "kind": "error",
+        "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center"
+      },
+      {
+        "ts": "2026-07-19T13:08:49.514Z",
+        "kind": "close",
+        "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+        "closeCode": "unavailable",
+        "closeReason": "unavailable"
+      }
+    ],
+    "attempts": [
+      {
+        "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+        "openedAt": "2026-07-19T13:08:49.227Z",
+        "closedAt": "2026-07-19T13:08:49.514Z",
+        "errorAt": "2026-07-19T13:08:49.506Z",
+        "closeCode": "unavailable",
+        "closeReason": "unavailable",
+        "frames": [],
+        "correlatedWithBanner": true,
+        "attemptAt": "2026-07-19T13:08:49.227Z"
+      }
+    ]
+  },
+  "observer": {
+    "startedAt": "2026-07-19T13:08:46.579Z",
+    "events": [
+      {
+        "kind": "observer_ready",
+        "browserLocalISO": "2026-07-19T13:08:46.579Z",
+        "performanceNowMs": 6876.10000000149,
+        "timeOrigin": 1784466519703.7,
+        "note": "Waiting for Backend reconnecting... / Reconnecting to backend…",
+        "ts": "2026-07-19T13:08:46.579Z"
+      },
+      {
+        "kind": "reelforge_backend_reconnecting",
+        "browserLocalISO": "2026-07-19T13:08:52.565Z",
+        "performanceNowMs": 12862.400000000373,
+        "timeOrigin": 1784466519703.7,
+        "message": "Backend reconnecting...",
+        "ts": "2026-07-19T13:08:52.565Z"
+      },
+      {
+        "kind": "operation_status_appeared",
+        "browserLocalISO": "2026-07-19T13:08:52.567Z",
+        "performanceNowMs": 12863.5,
+        "timeOrigin": 1784466519703.7,
+        "text": "Backend reconnecting...",
+        "ts": "2026-07-19T13:08:52.567Z"
+      },
+      {
+        "kind": "reelforge_backend_reconnecting",
+        "browserLocalISO": "2026-07-19T13:08:52.644Z",
+        "performanceNowMs": 12940.60000000149,
+        "timeOrigin": 1784466519703.7,
+        "message": "Backend reconnecting...",
+        "ts": "2026-07-19T13:08:52.644Z"
+      },
+      {
+        "kind": "reelforge_backend_reconnecting",
+        "browserLocalISO": "2026-07-19T13:08:52.765Z",
+        "performanceNowMs": 13061.400000000373,
+        "timeOrigin": 1784466519703.7,
+        "message": "Backend reconnecting...",
+        "ts": "2026-07-19T13:08:52.765Z"
+      },
+      {
+        "kind": "reelforge_backend_reconnecting",
+        "browserLocalISO": "2026-07-19T13:08:53.077Z",
+        "performanceNowMs": 13374.400000000373,
+        "timeOrigin": 1784466519703.7,
+        "message": "Backend reconnecting...",
+        "ts": "2026-07-19T13:08:53.077Z"
+      },
+      {
+        "kind": "reelforge_backend_reconnecting",
+        "browserLocalISO": "2026-07-19T13:08:53.177Z",
+        "performanceNowMs": 13473.5,
+        "timeOrigin": 1784466519703.7,
+        "message": "Backend reconnecting...",
+        "ts": "2026-07-19T13:08:53.177Z"
+      },
+      {
+        "kind": "reelforge_backend_reconnecting",
+        "browserLocalISO": "2026-07-19T13:08:53.205Z",
+        "performanceNowMs": 13501.60000000149,
+        "timeOrigin": 1784466519703.7,
+        "message": "Backend reconnecting...",
+        "ts": "2026-07-19T13:08:53.205Z"
+      },
+      {
+        "kind": "reelforge_backend_reconnecting",
+        "browserLocalISO": "2026-07-19T13:08:53.476Z",
+        "performanceNowMs": 13772.900000000373,
+        "timeOrigin": 1784466519703.7,
+        "message": "Backend reconnecting...",
+        "ts": "2026-07-19T13:08:53.476Z"
+      },
+      {
+        "kind": "reelforge_backend_reconnecting",
+        "browserLocalISO": "2026-07-19T13:08:53.477Z",
+        "performanceNowMs": 13773.800000000745,
+        "timeOrigin": 1784466519703.7,
+        "message": "Backend reconnecting...",
+        "ts": "2026-07-19T13:08:53.477Z"
+      },
+      {
+        "kind": "reelforge_backend_reconnecting",
+        "browserLocalISO": "2026-07-19T13:08:53.500Z",
+        "performanceNowMs": 13797.400000000373,
+        "timeOrigin": 1784466519703.7,
+        "message": "Backend reconnecting...",
+        "ts": "2026-07-19T13:08:53.500Z"
+      },
+      {
+        "kind": "reelforge_backend_reconnecting",
+        "browserLocalISO": "2026-07-19T13:08:55.677Z",
+        "performanceNowMs": 15974.400000000373,
+        "timeOrigin": 1784466519703.7,
+        "message": "Backend reconnecting...",
+        "ts": "2026-07-19T13:08:55.677Z"
+      },
+      {
+        "kind": "operation_status_disappeared",
+        "browserLocalISO": "2026-07-19T13:08:55.919Z",
+        "performanceNowMs": 16215.700000001118,
+        "timeOrigin": 1784466519703.7,
+        "previous": "Backend reconnecting...",
+        "next": "",
+        "ts": "2026-07-19T13:08:55.919Z"
+      },
+      {
+        "kind": "health_banner_appeared",
+        "browserLocalISO": "2026-07-19T13:08:58.599Z",
+        "performanceNowMs": 18896.300000000745,
+        "timeOrigin": 1784466519703.7,
+        "text": "Reconnecting to backend…",
+        "ts": "2026-07-19T13:08:58.599Z"
+      },
+      {
+        "kind": "health_banner_disappeared",
+        "browserLocalISO": "2026-07-19T13:09:00.678Z",
+        "performanceNowMs": 20974.900000000373,
+        "timeOrigin": 1784466519703.7,
+        "previous": "Reconnecting to backend…",
+        "next": "",
+        "ts": "2026-07-19T13:09:00.678Z"
+      },
+      {
+        "kind": "reelforge_backend_reconnecting",
+        "browserLocalISO": "2026-07-19T13:09:02.203Z",
+        "performanceNowMs": 22499.5,
+        "timeOrigin": 1784466519703.7,
+        "message": "Backend reconnecting...",
+        "ts": "2026-07-19T13:09:02.203Z"
+      }
+    ],
+    "operationStatus": {
+      "appearedAt": "2026-07-19T13:08:52.567Z",
+      "disappearedAt": "2026-07-19T13:08:55.919Z",
+      "lastText": null,
+      "appearedPerformanceNowMs": 12863.5,
+      "appearedTimeOrigin": 1784466519703.7,
+      "disappearedPerformanceNowMs": 16215.60000000149,
+      "disappearedTimeOrigin": 1784466519703.7
+    },
+    "healthBanner": {
+      "appearedAt": "2026-07-19T13:08:58.599Z",
+      "disappearedAt": "2026-07-19T13:09:00.678Z",
+      "lastText": null
+    },
+    "reconnectEvents": [
+      {
+        "browserLocalISO": "2026-07-19T13:08:52.565Z",
+        "performanceNowMs": 12862.300000000745,
+        "timeOrigin": 1784466519703.7,
+        "message": "Backend reconnecting...",
+        "ts": "2026-07-19T13:08:52.565Z"
+      },
+      {
+        "browserLocalISO": "2026-07-19T13:08:52.644Z",
+        "performanceNowMs": 12940.60000000149,
+        "timeOrigin": 1784466519703.7,
+        "message": "Backend reconnecting...",
+        "ts": "2026-07-19T13:08:52.644Z"
+      },
+      {
+        "browserLocalISO": "2026-07-19T13:08:52.765Z",
+        "performanceNowMs": 13061.400000000373,
+        "timeOrigin": 1784466519703.7,
+        "message": "Backend reconnecting...",
+        "ts": "2026-07-19T13:08:52.765Z"
+      },
+      {
+        "browserLocalISO": "2026-07-19T13:08:53.077Z",
+        "performanceNowMs": 13374.400000000373,
+        "timeOrigin": 1784466519703.7,
+        "message": "Backend reconnecting...",
+        "ts": "2026-07-19T13:08:53.077Z"
+      },
+      {
+        "browserLocalISO": "2026-07-19T13:08:53.177Z",
+        "performanceNowMs": 13473.5,
+        "timeOrigin": 1784466519703.7,
+        "message": "Backend reconnecting...",
+        "ts": "2026-07-19T13:08:53.177Z"
+      },
+      {
+        "browserLocalISO": "2026-07-19T13:08:53.205Z",
+        "performanceNowMs": 13501.5,
+        "timeOrigin": 1784466519703.7,
+        "message": "Backend reconnecting...",
+        "ts": "2026-07-19T13:08:53.205Z"
+      },
+      {
+        "browserLocalISO": "2026-07-19T13:08:53.476Z",
+        "performanceNowMs": 13772.800000000745,
+        "timeOrigin": 1784466519703.7,
+        "message": "Backend reconnecting...",
+        "ts": "2026-07-19T13:08:53.476Z"
+      },
+      {
+        "browserLocalISO": "2026-07-19T13:08:53.477Z",
+        "performanceNowMs": 13773.800000000745,
+        "timeOrigin": 1784466519703.7,
+        "message": "Backend reconnecting...",
+        "ts": "2026-07-19T13:08:53.477Z"
+      },
+      {
+        "browserLocalISO": "2026-07-19T13:08:53.500Z",
+        "performanceNowMs": 13797.400000000373,
+        "timeOrigin": 1784466519703.7,
+        "message": "Backend reconnecting...",
+        "ts": "2026-07-19T13:08:53.500Z"
+      },
+      {
+        "browserLocalISO": "2026-07-19T13:08:55.677Z",
+        "performanceNowMs": 15974.300000000745,
+        "timeOrigin": 1784466519703.7,
+        "message": "Backend reconnecting...",
+        "ts": "2026-07-19T13:08:55.677Z"
+      },
+      {
+        "browserLocalISO": "2026-07-19T13:09:02.203Z",
+        "performanceNowMs": 22499.5,
+        "timeOrigin": 1784466519703.7,
+        "message": "Backend reconnecting...",
+        "ts": "2026-07-19T13:09:02.203Z"
+      }
+    ],
+    "stoppedAt": "2026-07-19T13:10:26.199Z"
+  },
+  "confidence": "Low",
+  "exitCriterionMatch": null,
+  "notes": [
+    "Pattern inconclusive; do not scope PRODUCT-08B yet."
+  ],
+  "pass": false,
+  "eventWindowDefinition": "operation-status appear → disappear",
+  "healthBanner": {
+    "appearedAt": "2026-07-19T13:08:58.599Z",
+    "disappearedAt": "2026-07-19T13:09:00.678Z",
+    "note": "Recorded separately from exact operation-status Backend reconnecting..."
+  }
+}

@@ -17,10 +17,28 @@
  */
 
 import { resolveMediaUrl } from '../api/reelContract.js';
+import { mediaPathAssetId } from '../content/persistentTitleMap.js';
+import { isVaultVideoMediaUrl } from '../vault/normalizeVaultAsset.js';
 
 const UUID_RE =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const IMAGE_EXT_RE = /\.(png|jpe?g|webp|gif)(\?|$)/i;
+const VIDEO_EXT_RE = /\.(mp4|mov|webm|m4v|avi|mkv)(\?|$)/i;
+
+/**
+ * @param {string} raw
+ * @returns {boolean}
+ */
+function isUsableEpisodePosterUrl(raw) {
+    const trimmed = cleanUrl(raw);
+    if (!trimmed) return false;
+    if (trimmed.startsWith('blob:') || trimmed.startsWith('data:')) return false;
+    if (isVaultVideoMediaUrl(trimmed) || VIDEO_EXT_RE.test(trimmed)) return false;
+    if (/\/videos\//i.test(trimmed) && !IMAGE_EXT_RE.test(trimmed) && !/\/thumbs\//i.test(trimmed)) {
+        return false;
+    }
+    return true;
+}
 
 /**
  * @param {unknown} value
@@ -90,6 +108,135 @@ function thumbOf(item) {
 }
 
 /**
+ * Catalog reel id, vault id, and R2 /prod/{uuid}.mp4 stem for the same file.
+ * @param {Record<string, unknown> | null | undefined} episode
+ * @param {string} [primaryId]
+ * @returns {string[]}
+ */
+function posterLookupIds(episode, primaryId = '') {
+    const seen = new Set();
+    /** @type {string[]} */
+    const out = [];
+    const push = (value) => {
+        const id = cleanUrl(value);
+        if (!id || seen.has(id.toLowerCase())) return;
+        seen.add(id.toLowerCase());
+        out.push(id);
+    };
+    push(primaryId);
+    if (episode && typeof episode === 'object') {
+        push(episode.mediaAssetId);
+        push(episode.reelId);
+        push(episode.heroVaultAssetId);
+        push(episode.id);
+        push(
+            mediaPathAssetId({
+                ...episode,
+                url: episode.mediaUrl || episode.url || episode.src,
+                mediaUrl: episode.mediaUrl || episode.url || episode.src
+            })
+        );
+    }
+    return out;
+}
+
+/**
+ * @param {Record<string, unknown>[]} ready
+ * @param {string | string[]} mediaIds
+ * @returns {string}
+ */
+function stillFromReadyVault(ready, mediaIds) {
+    const ids = (Array.isArray(mediaIds) ? mediaIds : [mediaIds])
+        .map((value) => cleanUrl(value))
+        .filter(Boolean);
+    if (!ids.length) return '';
+    const items = Array.isArray(ready) ? ready : [];
+    const idSet = new Set(ids.map((id) => id.toLowerCase()));
+
+    for (const id of ids) {
+        const bound = items.find((asset) => assetIdOf(asset) === id) || null;
+        const boundThumb = thumbOf(bound);
+        if (isUsableEpisodePosterUrl(boundThumb)) return boundThumb;
+    }
+
+    for (const item of items) {
+        const itemId = assetIdOf(item);
+        const thumb = thumbOf(item);
+        const primary = cleanUrl(item?.url || item?.mediaUrl || item?.src || '');
+        const playbackId = mediaPathAssetId({
+            ...item,
+            url: primary,
+            mediaUrl: primary
+        });
+        const candidate = isUsableEpisodePosterUrl(thumb)
+            ? thumb
+            : isUsableEpisodePosterUrl(primary)
+              ? primary
+              : '';
+        if (!candidate) continue;
+        const linkedId = cleanUrl(item?.personal_video_id || item?.videoId || item?.video_id);
+        if (
+            idSet.has(itemId.toLowerCase()) ||
+            (linkedId && idSet.has(linkedId.toLowerCase())) ||
+            (playbackId && idSet.has(playbackId.toLowerCase())) ||
+            ids.some(
+                (id) =>
+                    candidate.toLowerCase().includes(id.toLowerCase()) ||
+                    primary.toLowerCase().includes(id.toLowerCase())
+            )
+        ) {
+            return candidate;
+        }
+    }
+    return '';
+}
+
+/**
+ * @param {string} mediaId
+ * @returns {string}
+ */
+function stillFromPersonalThumbnails(mediaIds) {
+    const ids = (Array.isArray(mediaIds) ? mediaIds : [mediaIds])
+        .map((value) => cleanUrl(value))
+        .filter(Boolean);
+    if (!ids.length || typeof localStorage === 'undefined') return '';
+    try {
+        const parsed = JSON.parse(localStorage.getItem('personal_thumbnails') || '[]');
+        if (!Array.isArray(parsed)) return '';
+        const idSet = new Set(ids.map((id) => id.toLowerCase()));
+        for (const row of parsed) {
+            if (!row) continue;
+            if (typeof row === 'string') {
+                const raw = cleanUrl(row);
+                if (
+                    isUsableEpisodePosterUrl(raw) &&
+                    ids.some((id) => raw.toLowerCase().includes(id.toLowerCase()))
+                ) {
+                    return raw;
+                }
+                continue;
+            }
+            const pid = cleanUrl(row.personal_video_id || row.videoId);
+            const rid = cleanUrl(row.id || row.assetId);
+            const url = cleanUrl(row.url || row.thumbnailUrl || row.thumbnail);
+            const pathId = mediaPathAssetId({ ...row, url, mediaUrl: url });
+            if (
+                !idSet.has(pid.toLowerCase()) &&
+                !idSet.has(rid.toLowerCase()) &&
+                !(pathId && idSet.has(pathId.toLowerCase())) &&
+                !ids.some((id) => url.toLowerCase().includes(id.toLowerCase()))
+            ) {
+                continue;
+            }
+            if (isUsableEpisodePosterUrl(url)) return url;
+        }
+    } catch {
+        /* ignore */
+    }
+    return '';
+}
+
+/**
  * @param {Record<string, unknown> | null | undefined} item
  */
 function assetIdOf(item) {
@@ -148,22 +295,43 @@ export function posterPathFromMediaAssetId(mediaAssetId, knownThumbHint = '') {
  */
 export function resolveViewerEpisodePosterUrl(input = {}) {
     const episode = input.episode && typeof input.episode === 'object' ? input.episode : null;
-    const chipThumb = cleanUrl(input.chipThumbnailUrl);
-    if (chipThumb) return finalizePosterUrl(chipThumb);
-
-    const epThumb = thumbOf(episode);
-    if (epThumb) return finalizePosterUrl(epThumb);
-
+    const ready = Array.isArray(input.readyVaultAssets) ? input.readyVaultAssets : [];
     const mediaId = cleanUrl(
         episode?.mediaAssetId || episode?.reelId || episode?.heroVaultAssetId || ''
     );
-    if (!mediaId) return '';
+    const lookupIds = posterLookupIds(episode, mediaId);
+    // Prefer R2 /prod/{uuid} (catalog thumb path) over a vault-only personal id.
+    const playbackId = episode
+        ? mediaPathAssetId({
+              ...episode,
+              url: episode.mediaUrl || episode.url || episode.src,
+              mediaUrl: episode.mediaUrl || episode.url || episode.src
+          })
+        : '';
+    const inventId = cleanUrl(playbackId) || mediaId || lookupIds[0] || '';
 
-    const ready = Array.isArray(input.readyVaultAssets) ? input.readyVaultAssets : [];
-    const bound = ready.find((asset) => assetIdOf(asset) === mediaId) || null;
-    const fromVault = thumbOf(bound);
-    if (fromVault) return finalizePosterUrl(fromVault);
+    const chipThumb = cleanUrl(input.chipThumbnailUrl);
+    if (isUsableEpisodePosterUrl(chipThumb)) return finalizePosterUrl(chipThumb);
+
+    const epThumb = thumbOf(episode);
+    if (isUsableEpisodePosterUrl(epThumb)) return finalizePosterUrl(epThumb);
+
+    if (!lookupIds.length) return '';
+
+    const fromPool = stillFromReadyVault(ready, lookupIds);
+    if (fromPool) return finalizePosterUrl(fromPool);
+
+    const fromThumbsVault = stillFromPersonalThumbnails(lookupIds);
+    if (fromThumbsVault) return finalizePosterUrl(fromThumbsVault);
+
+    for (const id of lookupIds) {
+        const bound = ready.find((asset) => assetIdOf(asset) === id) || null;
+        const fromVault = thumbOf(bound);
+        if (isUsableEpisodePosterUrl(fromVault)) return finalizePosterUrl(fromVault);
+    }
 
     // Only invent identity path when no real inventory art exists for this media id.
-    return finalizePosterUrl(posterPathFromMediaAssetId(mediaId));
+    return finalizePosterUrl(
+        posterPathFromMediaAssetId(inventId, fromPool || fromThumbsVault || epThumb)
+    );
 }

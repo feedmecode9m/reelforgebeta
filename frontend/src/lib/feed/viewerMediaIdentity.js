@@ -54,6 +54,9 @@ export function isUnsafeViewerCardTitle(value) {
     if (UUID_LIKE.test(raw)) return true;
     if (UUID_LIKE.test(stripViewerMediaExtension(raw))) return true;
     if (UPLOAD_TEMP.test(raw)) return true;
+    // Finder "copy <UUID>" duplicates — blank on mobile All Episodes / Trending
+    if (/^copy\s+[0-9a-f]{8}/i.test(raw)) return true;
+    if (/\bcopy\s+[0-9a-f]{8}-[0-9a-f-]{27,}/i.test(raw)) return true;
     const stem = stripViewerMediaExtension(raw);
     if (IMG_CAMERA.test(stem) || IMG_CAMERA.test(raw.replace(MEDIA_EXT, '').trim())) return true;
     // ALL_CAPS_SNAKE storage labels

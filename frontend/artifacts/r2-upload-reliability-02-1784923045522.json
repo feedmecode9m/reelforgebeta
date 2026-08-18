@@ -1,0 +1,1170 @@
+{
+  "mission": "R2-UPLOAD-RELIABILITY-02",
+  "timestamp": "2026-07-24T19:57:25.521Z",
+  "environment": {
+    "apiUrl": "https://reelforge-deploy-production.up.railway.app",
+    "netlifyOrigin": "https://strong-lolly-a9fcb4.netlify.app",
+    "localOrigin": "http://127.0.0.1:8781",
+    "sizeTiersMb": [
+      50,
+      250
+    ],
+    "uploadTimeoutMs": 7200000,
+    "probes": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "browserMaxMb": 50
+  },
+  "flow": {
+    "signEndpoint": "https://reelforge-deploy-production.up.railway.app/api/uploads/sign",
+    "ttlSeconds": 3600,
+    "maxBytes": 536870912,
+    "signedHeaders": "content-type;host",
+    "putUrlSingleUse": false,
+    "frontendHelper": "uploadVideoSigned() in frontend/src/lib/api/media.js",
+    "r2Implementation": "presigned_put_url() in backend/src/storage/r2.rs"
+  },
+  "fixtures": {
+    "50": {
+      "path": "/tmp/r2-reliability-02-1784921841080/probe_50m.mp4",
+      "sizeBytes": 50108442
+    },
+    "250": {
+      "path": "/tmp/r2-reliability-02-1784921904599/probe_250m.mp4",
+      "sizeBytes": 262144000
+    }
+  },
+  "results": [
+    {
+      "probe": "A",
+      "transport": "node_https_put",
+      "freshSign": true,
+      "uploadId": "97db8b6c-87b7-439a-8fd6-5d3dc5936a58",
+      "storageKey": "96ffca35-3d86-4c51-b3f2-564a5e08a273.mp4",
+      "signRequestTimestamp": "2026-07-24T19:37:21.241Z",
+      "signCompletedTimestamp": "2026-07-24T19:37:21.607Z",
+      "uploadStartTimestamp": "2026-07-24T19:37:21.607Z",
+      "uploadEndTimestamp": "2026-07-24T19:37:45.062Z",
+      "signElapsedMs": 365,
+      "uploadElapsedMs": 23455,
+      "elapsedSec": 23.45,
+      "outcome": "complete",
+      "httpStatus": 200,
+      "bytesSent": 50108442,
+      "bytesAcknowledged": 0,
+      "failureReason": null,
+      "responseHeaders": {
+        "etag": "\"dd2de738c49b224ed5fc8de2a927757b\"",
+        "cf-ray": "a205610ebbc62dbf-ATL",
+        "x-amz-request-id": null,
+        "content-type": "text/plain;charset=UTF-8"
+      },
+      "progressSamples": [
+        {
+          "elapsedMs": 5000,
+          "bytesSent": 4718592
+        },
+        {
+          "elapsedMs": 10000,
+          "bytesSent": 13762560
+        },
+        {
+          "elapsedMs": 15000,
+          "bytesSent": 27787264
+        },
+        {
+          "elapsedMs": 20000,
+          "bytesSent": 42663936
+        },
+        {
+          "elapsedMs": 23455,
+          "bytesSent": 50108442
+        }
+      ],
+      "classification": "success",
+      "sizeTierMb": 50
+    },
+    {
+      "probe": "B",
+      "transport": "curl_put",
+      "freshSign": true,
+      "uploadId": "ab0e1285-b2fa-430f-9ba3-e63c32853cfa",
+      "storageKey": "2258e1f5-f82b-4547-90e2-da6c79a84c82.mp4",
+      "signRequestTimestamp": "2026-07-24T19:37:45.064Z",
+      "signCompletedTimestamp": "2026-07-24T19:37:45.488Z",
+      "uploadStartTimestamp": "2026-07-24T19:37:45.488Z",
+      "uploadEndTimestamp": "2026-07-24T19:38:03.280Z",
+      "signElapsedMs": 424,
+      "uploadElapsedMs": 17792,
+      "elapsedSec": 17.79,
+      "outcome": "complete",
+      "httpStatus": 200,
+      "bytesSent": 50108442,
+      "bytesAcknowledged": null,
+      "failureReason": null,
+      "responseHeaders": {
+        "cf-ray": "a205619ebe7cc243-ATL",
+        "x-amz-request-id": null,
+        "etag": "\"dd2de738c49b224ed5fc8de2a927757b\""
+      },
+      "curlMeta": {
+        "exitCode": 0,
+        "stderr": "",
+        "timeTotalSec": 17.750191,
+        "speedUpload": 2822980,
+        "httpVersion": "1.1"
+      },
+      "classification": "success",
+      "sizeTierMb": 50
+    },
+    {
+      "probe": "C",
+      "transport": "browser_xhr_netlify_origin",
+      "freshSign": true,
+      "pageOrigin": "https://strong-lolly-a9fcb4.netlify.app",
+      "uploadId": "e59cc419-3d95-4f7c-a187-0eea83a67f98",
+      "storageKey": "78be405f-3763-4501-a4ba-53399f6972ac.mp4",
+      "signRequestTimestamp": "2026-07-24T19:38:03.280Z",
+      "signCompletedTimestamp": "2026-07-24T19:38:03.576Z",
+      "uploadStartTimestamp": "2026-07-24T19:38:03.713Z",
+      "uploadEndTimestamp": "2026-07-24T19:38:23.280Z",
+      "signElapsedMs": 295,
+      "uploadElapsedMs": 17533,
+      "elapsedSec": 17.53,
+      "outcome": "complete",
+      "httpStatus": 200,
+      "bytesSent": 0,
+      "bytesAcknowledged": null,
+      "failureReason": null,
+      "responseHeaders": "content-length: 0\r\ncontent-type: text/plain;charset=UTF-8\r\netag: \"988b49b2aa35ff717dc00b132d6b42de\"\r\n",
+      "corsError": null,
+      "playwrightFailed": [],
+      "cdpFailed": [],
+      "progressSamples": [
+        {
+          "elapsedMs": 5000,
+          "bytesSent": 0,
+          "total": 50108442,
+          "readyState": 1,
+          "status": 0
+        },
+        {
+          "elapsedMs": 10000,
+          "bytesSent": 0,
+          "total": 50108442,
+          "readyState": 1,
+          "status": 0
+        },
+        {
+          "elapsedMs": 15001,
+          "bytesSent": 0,
+          "total": 50108442,
+          "readyState": 1,
+          "status": 0
+        },
+        {
+          "elapsedMs": 17533,
+          "bytesSent": 0,
+          "total": 50108442,
+          "readyState": 4,
+          "status": 200
+        }
+      ],
+      "classification": "success",
+      "sizeTierMb": 50
+    },
+    {
+      "probe": "D",
+      "transport": "browser_xhr_localhost_origin",
+      "freshSign": true,
+      "pageOrigin": "http://127.0.0.1:8781",
+      "uploadId": "9f588c72-28f9-4da5-b752-d2ab24f96ac2",
+      "storageKey": "ba4121a1-cfc5-4872-8ae6-2415eddbea10.mp4",
+      "signRequestTimestamp": "2026-07-24T19:38:23.280Z",
+      "signCompletedTimestamp": "2026-07-24T19:38:23.660Z",
+      "uploadStartTimestamp": "2026-07-24T19:38:23.799Z",
+      "uploadEndTimestamp": "2026-07-24T19:38:24.598Z",
+      "signElapsedMs": 380,
+      "uploadElapsedMs": 172,
+      "elapsedSec": 0.17,
+      "outcome": "error",
+      "httpStatus": null,
+      "bytesSent": 0,
+      "bytesAcknowledged": null,
+      "failureReason": "xhr.onerror",
+      "responseHeaders": null,
+      "corsError": "PreflightMissingAllowOriginHeader",
+      "playwrightFailed": [
+        {
+          "url": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/ba4121a1-cfc5-4872-8ae6-2415eddbea10.mp4?x-id=PutObje",
+          "errorText": "net::ERR_FAILED"
+        }
+      ],
+      "cdpFailed": [
+        {
+          "errorText": "net::ERR_FAILED",
+          "canceled": false,
+          "corsError": "PreflightMissingAllowOriginHeader"
+        }
+      ],
+      "progressSamples": [
+        {
+          "elapsedMs": 172,
+          "bytesSent": 0,
+          "total": 50108442,
+          "readyState": 4,
+          "status": 0
+        }
+      ],
+      "classification": "cors_blocked",
+      "sizeTierMb": 50
+    },
+    {
+      "probe": "A",
+      "transport": "node_https_put",
+      "freshSign": true,
+      "uploadId": "e3d4dce9-a661-4939-a503-821bffa8ffd3",
+      "storageKey": "a23e83a0-56fe-48f5-a988-01e8e414b598.mp4",
+      "signRequestTimestamp": "2026-07-24T19:38:24.657Z",
+      "signCompletedTimestamp": "2026-07-24T19:38:24.802Z",
+      "uploadStartTimestamp": "2026-07-24T19:38:24.802Z",
+      "uploadEndTimestamp": "2026-07-24T19:55:35.682Z",
+      "signElapsedMs": 145,
+      "uploadElapsedMs": 1030880,
+      "elapsedSec": 1030.88,
+      "outcome": "error",
+      "httpStatus": null,
+      "bytesSent": 67633152,
+      "bytesAcknowledged": null,
+      "failureReason": "read ENETUNREACH",
+      "responseHeaders": {},
+      "progressSamples": [
+        {
+          "elapsedMs": 5001,
+          "bytesSent": 17498112
+        },
+        {
+          "elapsedMs": 10001,
+          "bytesSent": 31326208
+        },
+        {
+          "elapsedMs": 15001,
+          "bytesSent": 45940736
+        },
+        {
+          "elapsedMs": 20002,
+          "bytesSent": 60882944
+        },
+        {
+          "elapsedMs": 25005,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 30005,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 35007,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 40012,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 45017,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 50022,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 55028,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 60028,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 65032,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 70037,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 75042,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 80048,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 85052,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 90053,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 95057,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 100062,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 105067,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 110071,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 115076,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 120076,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 125081,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 130086,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 135091,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 140095,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 145100,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 150101,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 155106,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 160111,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 165117,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 170122,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 175125,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 180126,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 185126,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 190132,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 195137,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 200143,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 205148,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 210148,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 215153,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 220159,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 225164,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 230169,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 235174,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 240175,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 245180,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 250185,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 255190,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 260191,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 265196,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 270196,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 275201,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 280207,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 285212,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 290217,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 295222,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 300222,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 305227,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 310232,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 315233,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 320238,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 325239,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 330239,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 335244,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 340250,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 345255,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 350260,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 355264,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 360265,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 365269,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 370275,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 375279,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 380284,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 385289,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 390290,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 395295,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 400299,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 405304,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 410309,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 415312,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 420313,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 425318,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 430323,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 435328,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 440333,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 445338,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 450339,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 455343,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 460348,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 465353,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 470358,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 475363,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 480364,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 485369,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 490375,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 495380,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 500385,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 505389,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 510390,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 515395,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 520400,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 525406,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 530410,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 535415,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 540416,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 545420,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 550425,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 555430,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 560431,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 565435,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 570436,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 575440,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 580445,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 585451,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 590456,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 595461,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 600462,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 605466,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 610471,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 615476,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 620481,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 625486,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 630487,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 635492,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 640496,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 645501,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 650506,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 655512,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 660512,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 665516,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 670518,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 675524,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 680528,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 685534,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 690534,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 695538,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 700542,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 705547,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 710552,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 715557,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 720558,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 725563,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 730569,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 735574,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 740579,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 745584,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 750584,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 755589,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 760594,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 765599,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 770604,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 775609,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 780610,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 785614,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 790620,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 795625,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 800629,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 805634,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 810635,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 815641,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 820646,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 825650,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 830655,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 835660,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 840661,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 845666,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 850667,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 855672,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 860675,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 865679,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 870681,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 875685,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 880691,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 885696,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 890701,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 895706,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 900707,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 905711,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 910716,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 915721,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 920726,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 925732,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 930734,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 935739,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 940744,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 945749,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 950754,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 955759,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 960759,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 965764,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 970769,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 975774,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 980780,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 985785,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 990787,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 995792,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 1000797,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 1005802,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 1010807,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 1015812,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 1020814,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 1025819,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 1030824,
+          "bytesSent": 67633152
+        },
+        {
+          "elapsedMs": 1030880,
+          "bytesSent": 67633152
+        }
+      ],
+      "classification": "midstream_connection_drop",
+      "sizeTierMb": 250
+    },
+    {
+      "probe": "B",
+      "transport": "curl_put",
+      "freshSign": true,
+      "uploadId": "33e3deea-dba5-4885-b235-b0abe9de8abf",
+      "storageKey": "d22ebe37-642e-4575-88f5-de929c456b77.mp4",
+      "signRequestTimestamp": "2026-07-24T19:55:35.683Z",
+      "signCompletedTimestamp": "2026-07-24T19:55:35.984Z",
+      "uploadStartTimestamp": "2026-07-24T19:55:35.984Z",
+      "uploadEndTimestamp": "2026-07-24T19:57:25.519Z",
+      "signElapsedMs": 301,
+      "uploadElapsedMs": 109534,
+      "elapsedSec": 109.53,
+      "outcome": "complete",
+      "httpStatus": 200,
+      "bytesSent": 262144000,
+      "bytesAcknowledged": null,
+      "failureReason": null,
+      "responseHeaders": {
+        "cf-ray": "a2057bbf5966bd32-ATL",
+        "x-amz-request-id": null,
+        "etag": "\"ab3248888d6f10ef30a084fac6a1e2fd\""
+      },
+      "curlMeta": {
+        "exitCode": 0,
+        "stderr": "",
+        "timeTotalSec": 109.338426,
+        "speedUpload": 2397546,
+        "httpVersion": "1.1"
+      },
+      "classification": "success",
+      "sizeTierMb": 250
+    },
+    {
+      "probe": "C",
+      "transport": "browser_xhr_netlify_origin",
+      "freshSign": false,
+      "sizeTierMb": 250,
+      "outcome": "skipped",
+      "failureReason": "Browser probe skipped above 50MB (runtime); use RELIABILITY_BROWSER_MAX_MB to override",
+      "classification": "skipped"
+    },
+    {
+      "probe": "D",
+      "transport": "browser_xhr_localhost_origin",
+      "freshSign": false,
+      "sizeTierMb": 250,
+      "outcome": "skipped",
+      "failureReason": "Browser probe skipped above 50MB (runtime); use RELIABILITY_BROWSER_MAX_MB to override",
+      "classification": "skipped"
+    }
+  ],
+  "failureClassification": [
+    {
+      "class": "success",
+      "count": 4,
+      "note": "Upload completed with HTTP 2xx"
+    },
+    {
+      "class": "cors_blocked",
+      "count": 1,
+      "note": "Browser blocked at CORS preflight (Path A)"
+    },
+    {
+      "class": "midstream_connection_drop",
+      "count": 1,
+      "note": "Bytes sent but no successful HTTP response"
+    },
+    {
+      "class": "skipped",
+      "count": 2,
+      "note": "See probe row"
+    }
+  ],
+  "tierSummaries": [
+    {
+      "tierMb": 50,
+      "summary": "- Probe A (node_https_put): **complete** HTTP 200, 50108442 bytes, 23.45s\n- Probe B (curl_put): **complete** HTTP 200, 50108442 bytes, 17.79s\n- Probe C (browser_xhr_netlify_origin): **complete** HTTP 200, 0 bytes, 17.53s\n- Probe D (browser_xhr_localhost_origin): **error** HTTP n/a, 0 bytes, 0.17s"
+    },
+    {
+      "tierMb": 250,
+      "summary": "- Probe A (node_https_put): **error** HTTP n/a, 67633152 bytes, 1030.88s\n- Probe B (curl_put): **complete** HTTP 200, 262144000 bytes, 109.53s\n- Probe C (browser_xhr_netlify_origin): **skipped** HTTP n/a, 0 bytes, undefineds\n- Probe D (browser_xhr_localhost_origin): **skipped** HTTP n/a, 0 bytes, undefineds"
+    }
+  ],
+  "executiveSummary": "4/8 probes succeeded. Failures: Probe D 50MB (cors_blocked); Probe A 250MB (midstream_connection_drop).",
+  "recommendation": "Apply `r2-cors.json` to the live R2 bucket before re-testing Probe D. Investigate mid-stream 502/drops with parallel fresh-URL runs from user uplink; consider resumable uploads only if reproduced with byte progress evidence.",
+  "answers": {
+    "freshUrlEliminatesFailures": "No — 2 probe(s) still failed with fresh URLs: D@50MB(cors_blocked), A@250MB(midstream_connection_drop)",
+    "browserOnly": "Mixed — both browser and CLI saw failures.",
+    "netlifyOnly": "No — local failed, Netlify browser succeeded.",
+    "sizeCorrelation": "50MB: 3/4 succeeded; 250MB: 1/4 succeeded",
+    "resumableJustified": "Possibly — mid-stream failures observed on fresh URLs; collect user-network HAR before committing to multipart."
+  }
+}

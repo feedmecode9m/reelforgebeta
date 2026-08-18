@@ -1,0 +1,36 @@
+{
+  "mission": "PRODUCT-08B-SYNC-FEEDBACK-CONTAINMENT-VERIFY",
+  "generatedAt": "2026-07-19T11:01:56.158Z",
+  "event2Baseline": {
+    "pushes": 157,
+    "windowMs": 277164,
+    "averageIntervalMs": 1777,
+    "source": "artifacts/product-08b-reconnect-capture-event2.json"
+  },
+  "model": {
+    "pushDebounceMs": 1200,
+    "syncIntervalMs": 15000,
+    "note": "Simulation mirrors apply → sync-schedule → scheduleSyncPush → performSync"
+  },
+  "beforeGuard": {
+    "pushCount": 201,
+    "scheduledCount": 805,
+    "suppressedCount": 0,
+    "stillPending": true,
+    "cycles": 200
+  },
+  "afterGuard": {
+    "pushCount": 2,
+    "scheduledCount": 1,
+    "suppressedCount": 8,
+    "stillPending": false,
+    "cycles": 1
+  },
+  "expectations": {
+    "beforeAmplifies": true,
+    "afterStopsLoop": true,
+    "afterSuppressesApplyEvents": true,
+    "legitimateUserSchedulePreserved": true
+  },
+  "pass": true
+}

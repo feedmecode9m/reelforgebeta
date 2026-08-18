@@ -1,11 +1,2060 @@
 {
-  "generatedAt": "2026-08-13T06:38:53.450Z",
+  "generatedAt": "2026-08-17T18:07:12.453Z",
   "frontend": "https://strong-lolly-a9fcb4.netlify.app",
   "backend": "https://reelforge-deploy-production.up.railway.app",
   "knownReel": "03f66631-6038-4ff3-8374-444f4c21eaf6",
-  "phases": {},
-  "network": [],
-  "console": [],
+  "phases": {
+    "feed": {
+      "name": "feed",
+      "checks": {
+        "cardInApi": false,
+        "knownReelInDom": false,
+        "thumbLoads": false,
+        "noPlaceholderOnly": true,
+        "videoReachable": false
+      },
+      "apiReels": {
+        "status": 200,
+        "count": 38
+      },
+      "knownReelInApi": false,
+      "dom": {
+        "knownReelInDom": false,
+        "legacyInDom": [],
+        "imgCount": 7,
+        "imgsMatchingKnown": [],
+        "videoCount": 1,
+        "videosMatchingKnown": [],
+        "placeholderCount": 0,
+        "titleMatches": []
+      },
+      "mediaHead": {
+        "knownVideo": 404,
+        "knownThumb": 404
+      },
+      "pass": false
+    }
+  },
+  "network": [
+    {
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels?t=1786990034544",
+      "status": 200
+    },
+    {
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels?t=1786990035025",
+      "status": 200
+    },
+    {
+      "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/03ef898a-989f-42c3-bdbb-67f37338df65.jpg",
+      "status": 200
+    },
+    {
+      "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/75475b32-e161-4cb8-980e-36ab09d9777f.jpg",
+      "status": 200
+    },
+    {
+      "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/3a3f2ab7-e8c9-4b36-b772-579c7f83a512.jpg",
+      "status": 200
+    },
+    {
+      "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/d7f82b72-51ca-4282-8f2d-197e42240839.jpg",
+      "status": 200
+    },
+    {
+      "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/f727b62e-af4e-4e06-9c36-8312ddb735a8.jpg",
+      "status": 200
+    },
+    {
+      "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/61d252dd-2ff8-4308-aabf-fda8abdf91b2.jpg",
+      "status": 200
+    },
+    {
+      "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/03ef898a-989f-42c3-bdbb-67f37338df65.jpg",
+      "status": 200
+    },
+    {
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels?t=1786990154104",
+      "status": 200
+    },
+    {
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels?t=1786990154417",
+      "status": 200
+    },
+    {
+      "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/f727b62e-af4e-4e06-9c36-8312ddb735a8.jpg",
+      "status": 200
+    },
+    {
+      "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/61d252dd-2ff8-4308-aabf-fda8abdf91b2.jpg",
+      "status": 200
+    },
+    {
+      "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/3a3f2ab7-e8c9-4b36-b772-579c7f83a512.jpg",
+      "status": 200
+    },
+    {
+      "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/75475b32-e161-4cb8-980e-36ab09d9777f.jpg",
+      "status": 200
+    },
+    {
+      "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/d7f82b72-51ca-4282-8f2d-197e42240839.jpg",
+      "status": 200
+    },
+    {
+      "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/03ef898a-989f-42c3-bdbb-67f37338df65.jpg",
+      "status": 200
+    },
+    {
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels?t=1786990160847",
+      "status": 200
+    },
+    {
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels?t=1786990161257",
+      "status": 200
+    },
+    {
+      "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/f727b62e-af4e-4e06-9c36-8312ddb735a8.jpg",
+      "status": 200
+    },
+    {
+      "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/75475b32-e161-4cb8-980e-36ab09d9777f.jpg",
+      "status": 200
+    },
+    {
+      "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/61d252dd-2ff8-4308-aabf-fda8abdf91b2.jpg",
+      "status": 200
+    },
+    {
+      "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/d7f82b72-51ca-4282-8f2d-197e42240839.jpg",
+      "status": 200
+    },
+    {
+      "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/3a3f2ab7-e8c9-4b36-b772-579c7f83a512.jpg",
+      "status": 200
+    }
+  ],
+  "console": [
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:14.008Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: none}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:14.009Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: none}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"engine_initialized\",\"seriesId\":\"series-vic-g\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":3,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":0,\"creatorRecommendations\":6,\"securityAlerts\":0,\"sentinelRecommendations\":6},\"timestamp\":1786990034134}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:14.370Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: none}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:14.373Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: none}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"release_schedule_change\",\"seriesId\":\"series-vic-g\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":3,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":0,\"sentinelRecommendations\":6},\"timestamp\":1786990034662}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:14.814Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: none}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:14.816Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: none}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][VAULT][STORE] {timestamp: 2026-08-17T18:07:14.817Z, store: personalVideos, oldLength: 5, newLength: 5, idsAdded: Array(0)}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][VAULT][STORE] {timestamp: 2026-08-17T18:07:14.823Z, store: personalVideos, oldLength: 5, newLength: 5, idsAdded: Array(0)}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][VAULT][STORE] {timestamp: 2026-08-17T18:07:15.483Z, store: personalVideos, oldLength: 5, newLength: 5, idsAdded: Array(0)}"
+    },
+    {
+      "level": "log",
+      "text": "[syncFromVault] Loaded 38 reels from [backend] (19 playable video, thumbs → placeholders)"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][VAULT][STORE] {timestamp: 2026-08-17T18:07:15.546Z, store: personalVideos, oldLength: 5, newLength: 5, idsAdded: Array(0)}"
+    },
+    {
+      "level": "log",
+      "text": "[syncFromVault] Video vault merged (local + backend): 5 + 5 => 5"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][MEDIA] {timestamp: 2026-08-17T18:07:15.690Z, event: mounted, mounted: true, src: https://strong-lolly-a9fcb4.netlify.app/thumbs/f727b62e-af4e-4e06-9c36-8312ddb735a8.jpg, resolvedSrc: https://strong-lolly-a9fcb4.netlify.app/thumbs/f727b62e-af4e-4e06-9c36-8312ddb735a8.jpg}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][MEDIA] {timestamp: 2026-08-17T18:07:15.690Z, event: mounted, mounted: true, src: https://strong-lolly-a9fcb4.netlify.app/thumbs/f727b62e-af4e-4e06-9c36-8312ddb735a8.jpg, resolvedSrc: https://strong-lolly-a9fcb4.netlify.app/thumbs/f727b62e-af4e-4e06-9c36-8312ddb735a8.jpg}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][MEDIA] {timestamp: 2026-08-17T18:07:15.690Z, event: mounted, mounted: true, src: https://strong-lolly-a9fcb4.netlify.app/thumbs/75475b32-e161-4cb8-980e-36ab09d9777f.jpg, resolvedSrc: https://strong-lolly-a9fcb4.netlify.app/thumbs/75475b32-e161-4cb8-980e-36ab09d9777f.jpg}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][MEDIA] {timestamp: 2026-08-17T18:07:15.690Z, event: mounted, mounted: true, src: https://strong-lolly-a9fcb4.netlify.app/thumbs/61d252dd-2ff8-4308-aabf-fda8abdf91b2.jpg, resolvedSrc: https://strong-lolly-a9fcb4.netlify.app/thumbs/61d252dd-2ff8-4308-aabf-fda8abdf91b2.jpg}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][MEDIA] {timestamp: 2026-08-17T18:07:15.690Z, event: mounted, mounted: true, src: https://strong-lolly-a9fcb4.netlify.app/thumbs/d7f82b72-51ca-4282-8f2d-197e42240839.jpg, resolvedSrc: https://strong-lolly-a9fcb4.netlify.app/thumbs/d7f82b72-51ca-4282-8f2d-197e42240839.jpg}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][MEDIA] {timestamp: 2026-08-17T18:07:15.690Z, event: mounted, mounted: true, src: https://strong-lolly-a9fcb4.netlify.app/thumbs/3a3f2ab7-e8c9-4b36-b772-579c7f83a512.jpg, resolvedSrc: https://strong-lolly-a9fcb4.netlify.app/thumbs/3a3f2ab7-e8c9-4b36-b772-579c7f83a512.jpg}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][MEDIA] {timestamp: 2026-08-17T18:07:15.690Z, event: mounted, mounted: true, src: https://strong-lolly-a9fcb4.netlify.app/thumbs/03ef898a-989f-42c3-bdbb-67f37338df65.jpg, resolvedSrc: https://strong-lolly-a9fcb4.netlify.app/thumbs/03ef898a-989f-42c3-bdbb-67f37338df65.jpg}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:15.756Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:15.758Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:15.792Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:15.793Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][MEDIA] {timestamp: 2026-08-17T18:07:15.795Z, event: mounted, mounted: true, src: https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb-67f37338df65.mp4, resolvedSrc: https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb-67f37338df65.mp4}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990036043}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990036265}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990036466}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][MEDIA] {timestamp: 2026-08-17T18:07:16.696Z, event: loadedmetadata, mounted: false, src: https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb-67f37338df65.mp4, resolvedSrc: https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb-67f37338df65.mp4}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][MEDIA] {timestamp: 2026-08-17T18:07:16.883Z, event: loadeddata, mounted: false, src: https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb-67f37338df65.mp4, resolvedSrc: https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb-67f37338df65.mp4}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:21.798Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:21.799Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990042002}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990042180}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:22.365Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:22.367Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990042525}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990042722}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:24.370Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:24.372Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990044555}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990044740}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:26.316Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:26.318Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990046535}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990046722}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:27.078Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:27.080Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:28.111Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:28.113Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990048281}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990048456}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:29.595Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:29.597Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990049757}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990049946}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:30.051Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:30.053Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990050221}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990050400}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:32.192Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:32.193Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990052362}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990052550}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:34.945Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:34.947Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990055114}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990055300}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:36.770Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:36.772Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990056943}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990057124}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:38.626Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:38.629Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990058794}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990058999}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:40.514Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:40.517Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990060703}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990060898}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:41.207Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:41.209Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:42.439Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:42.440Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990062628}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990062827}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:44.266Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:44.268Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990064456}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990064652}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:44.779Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:44.782Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990064949}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990065149}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:46.579Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:46.582Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990066769}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990066952}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:48.748Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:48.750Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990068938}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990069130}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:49.794Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:49.796Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:50.758Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:50.760Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786990070923}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":3,\"sentinelRecommendations\":6},\"timestamp\":1786990071136}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:52.528Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:52.530Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":3,\"sentinelRecommendations\":6},\"timestamp\":1786990072708}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":3,\"sentinelRecommendations\":6},\"timestamp\":1786990072894}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:54.497Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:54.499Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":3,\"sentinelRecommendations\":6},\"timestamp\":1786990074675}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":3,\"sentinelRecommendations\":6},\"timestamp\":1786990074857}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:56.572Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:56.574Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":3,\"sentinelRecommendations\":6},\"timestamp\":1786990076745}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":3,\"sentinelRecommendations\":6},\"timestamp\":1786990076945}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:58.488Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:58.490Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":3,\"sentinelRecommendations\":6},\"timestamp\":1786990078682}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":3,\"sentinelRecommendations\":6},\"timestamp\":1786990078880}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:59.515Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:07:59.517Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"release_schedule_change\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":3,\"sentinelRecommendations\":6},\"timestamp\":1786990079655}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:00.309Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:00.311Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":3,\"sentinelRecommendations\":6},\"timestamp\":1786990080504}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":3,\"sentinelRecommendations\":6},\"timestamp\":1786990080699}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:02.400Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:02.402Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":3,\"sentinelRecommendations\":6},\"timestamp\":1786990082576}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":3,\"sentinelRecommendations\":6},\"timestamp\":1786990082760}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:04.752Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:04.754Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990084947}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990085128}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:06.849Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:06.851Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990087049}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990087241}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:08.648Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:08.650Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990088828}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990089016}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:10.542Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:10.550Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990090711}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990090916}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:12.314Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:12.316Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990092496}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990092703}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:13.034Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:13.035Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:14.115Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:14.117Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990094378}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990094580}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:14.907Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:14.909Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990095106}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990095280}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:16.713Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:16.715Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990096906}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990097095}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:19.491Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:19.493Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":3,\"sentinelRecommendations\":6},\"timestamp\":1786990099689}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":3,\"sentinelRecommendations\":6},\"timestamp\":1786990099881}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:21.571Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:21.573Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990101764}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990101955}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:22.524Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:22.526Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:23.830Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:23.832Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990103996}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990104197}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:25.750Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:25.752Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990105927}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990106120}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:27.595Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:27.596Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990107778}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990107979}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:29.485Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:29.487Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:29.615Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:29.617Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"release_schedule_change\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990109776}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:34.957Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:34.958Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":3,\"sentinelRecommendations\":6},\"timestamp\":1786990115157}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":3,\"sentinelRecommendations\":6},\"timestamp\":1786990115347}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:36.916Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:36.918Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990117118}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990117315}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:38.822Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:38.823Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990119002}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990119192}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:40.615Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:40.616Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990120796}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990120991}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:42.402Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:42.403Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990122578}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990122783}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:43.108Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:43.110Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:44.328Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:44.331Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990124489}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990124688}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:44.922Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:44.924Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990125115}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990125311}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:46.841Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:46.844Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990127031}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990127219}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:48.750Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:48.751Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990128924}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990129120}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:50.575Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:50.577Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":3,\"sentinelRecommendations\":6},\"timestamp\":1786990130752}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":3,\"sentinelRecommendations\":6},\"timestamp\":1786990130945}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:52.834Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:52.836Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990133004}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990133214}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:53.578Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:53.580Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:54.693Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:54.694Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990134861}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990135082}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:56.559Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:56.561Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990136743}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990136940}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:58.445Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:58.447Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990138640}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990138828}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:59.568Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:08:59.570Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"release_schedule_change\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990139718}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:00.268Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:00.269Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990140453}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990140657}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:03.253Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:03.255Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990143433}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990143627}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:05.178Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:05.180Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":3,\"sentinelRecommendations\":6},\"timestamp\":1786990145355}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":3,\"sentinelRecommendations\":6},\"timestamp\":1786990145548}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:07.250Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:07.252Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":3,\"sentinelRecommendations\":6},\"timestamp\":1786990147443}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":3,\"sentinelRecommendations\":6},\"timestamp\":1786990147645}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:07.978Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:07.979Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:09.116Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:09.118Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990149275}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990149474}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:10.958Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:10.961Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990151156}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990151356}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:12.957Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:12.959Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990153143}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990153339}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:13.525Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:13.527Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][MEDIA] {timestamp: 2026-08-17T18:09:13.543Z, event: mounted, mounted: true, src: https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb-67f37338df65.mp4, resolvedSrc: https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb-67f37338df65.mp4}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"engine_initialized\",\"seriesId\":\"series-vic-g\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":3,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990153678}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:13.906Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:13.909Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"release_schedule_change\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990154192}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][VAULT][STORE] {timestamp: 2026-08-17T18:09:14.275Z, store: personalVideos, oldLength: 5, newLength: 5, idsAdded: Array(0)}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][VAULT][STORE] {timestamp: 2026-08-17T18:09:14.279Z, store: personalVideos, oldLength: 5, newLength: 5, idsAdded: Array(0)}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][MEDIA] {timestamp: 2026-08-17T18:09:14.489Z, event: loadedmetadata, mounted: false, src: https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb-67f37338df65.mp4, resolvedSrc: https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb-67f37338df65.mp4}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][VAULT][STORE] {timestamp: 2026-08-17T18:09:14.599Z, store: personalVideos, oldLength: 5, newLength: 5, idsAdded: Array(0)}"
+    },
+    {
+      "level": "log",
+      "text": "[syncFromVault] Loaded 38 reels from [backend] (19 playable video, thumbs → placeholders)"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][VAULT][STORE] {timestamp: 2026-08-17T18:09:14.656Z, store: personalVideos, oldLength: 5, newLength: 5, idsAdded: Array(0)}"
+    },
+    {
+      "level": "log",
+      "text": "[syncFromVault] Video vault merged (local + backend): 5 + 5 => 5"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][MEDIA] {timestamp: 2026-08-17T18:09:14.799Z, event: mounted, mounted: true, src: https://strong-lolly-a9fcb4.netlify.app/thumbs/f727b62e-af4e-4e06-9c36-8312ddb735a8.jpg, resolvedSrc: https://strong-lolly-a9fcb4.netlify.app/thumbs/f727b62e-af4e-4e06-9c36-8312ddb735a8.jpg}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][MEDIA] {timestamp: 2026-08-17T18:09:14.800Z, event: mounted, mounted: true, src: https://strong-lolly-a9fcb4.netlify.app/thumbs/f727b62e-af4e-4e06-9c36-8312ddb735a8.jpg, resolvedSrc: https://strong-lolly-a9fcb4.netlify.app/thumbs/f727b62e-af4e-4e06-9c36-8312ddb735a8.jpg}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][MEDIA] {timestamp: 2026-08-17T18:09:14.800Z, event: mounted, mounted: true, src: https://strong-lolly-a9fcb4.netlify.app/thumbs/75475b32-e161-4cb8-980e-36ab09d9777f.jpg, resolvedSrc: https://strong-lolly-a9fcb4.netlify.app/thumbs/75475b32-e161-4cb8-980e-36ab09d9777f.jpg}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][MEDIA] {timestamp: 2026-08-17T18:09:14.800Z, event: mounted, mounted: true, src: https://strong-lolly-a9fcb4.netlify.app/thumbs/61d252dd-2ff8-4308-aabf-fda8abdf91b2.jpg, resolvedSrc: https://strong-lolly-a9fcb4.netlify.app/thumbs/61d252dd-2ff8-4308-aabf-fda8abdf91b2.jpg}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][MEDIA] {timestamp: 2026-08-17T18:09:14.800Z, event: mounted, mounted: true, src: https://strong-lolly-a9fcb4.netlify.app/thumbs/d7f82b72-51ca-4282-8f2d-197e42240839.jpg, resolvedSrc: https://strong-lolly-a9fcb4.netlify.app/thumbs/d7f82b72-51ca-4282-8f2d-197e42240839.jpg}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][MEDIA] {timestamp: 2026-08-17T18:09:14.800Z, event: mounted, mounted: true, src: https://strong-lolly-a9fcb4.netlify.app/thumbs/3a3f2ab7-e8c9-4b36-b772-579c7f83a512.jpg, resolvedSrc: https://strong-lolly-a9fcb4.netlify.app/thumbs/3a3f2ab7-e8c9-4b36-b772-579c7f83a512.jpg}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][MEDIA] {timestamp: 2026-08-17T18:09:14.800Z, event: mounted, mounted: true, src: https://strong-lolly-a9fcb4.netlify.app/thumbs/03ef898a-989f-42c3-bdbb-67f37338df65.jpg, resolvedSrc: https://strong-lolly-a9fcb4.netlify.app/thumbs/03ef898a-989f-42c3-bdbb-67f37338df65.jpg}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:14.887Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:14.889Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:14.930Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:14.932Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][MEDIA] {timestamp: 2026-08-17T18:09:14.959Z, event: loadeddata, mounted: false, src: https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb-67f37338df65.mp4, resolvedSrc: https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb-67f37338df65.mp4}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990155103}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990155290}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990155500}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:19.910Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:19.914Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][MEDIA] {timestamp: 2026-08-17T18:09:19.923Z, event: mounted, mounted: true, src: https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb-67f37338df65.mp4, resolvedSrc: https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb-67f37338df65.mp4}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"engine_initialized\",\"seriesId\":\"series-vic-g\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":3,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990160041}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][MEDIA] {timestamp: 2026-08-17T18:09:20.078Z, event: loadedmetadata, mounted: false, src: https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb-67f37338df65.mp4, resolvedSrc: https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb-67f37338df65.mp4}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:20.329Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:20.332Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][MEDIA] {timestamp: 2026-08-17T18:09:20.476Z, event: loadeddata, mounted: false, src: https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb-67f37338df65.mp4, resolvedSrc: https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/03ef898a-989f-42c3-bdbb-67f37338df65.mp4}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"release_schedule_change\",\"seriesId\":\"series-vic-g\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":3,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990160845}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990161033}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][VAULT][STORE] {timestamp: 2026-08-17T18:09:21.110Z, store: personalVideos, oldLength: 5, newLength: 5, idsAdded: Array(0)}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][VAULT][STORE] {timestamp: 2026-08-17T18:09:21.114Z, store: personalVideos, oldLength: 5, newLength: 5, idsAdded: Array(0)}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990161199}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][VAULT][STORE] {timestamp: 2026-08-17T18:09:21.431Z, store: personalVideos, oldLength: 5, newLength: 5, idsAdded: Array(0)}"
+    },
+    {
+      "level": "log",
+      "text": "[syncFromVault] Loaded 38 reels from [backend] (19 playable video, thumbs → placeholders)"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][VAULT][STORE] {timestamp: 2026-08-17T18:09:21.469Z, store: personalVideos, oldLength: 5, newLength: 5, idsAdded: Array(0)}"
+    },
+    {
+      "level": "log",
+      "text": "[syncFromVault] Video vault merged (local + backend): 5 + 5 => 5"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][MEDIA] {timestamp: 2026-08-17T18:09:21.568Z, event: mounted, mounted: true, src: https://strong-lolly-a9fcb4.netlify.app/thumbs/f727b62e-af4e-4e06-9c36-8312ddb735a8.jpg, resolvedSrc: https://strong-lolly-a9fcb4.netlify.app/thumbs/f727b62e-af4e-4e06-9c36-8312ddb735a8.jpg}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][MEDIA] {timestamp: 2026-08-17T18:09:21.568Z, event: mounted, mounted: true, src: https://strong-lolly-a9fcb4.netlify.app/thumbs/f727b62e-af4e-4e06-9c36-8312ddb735a8.jpg, resolvedSrc: https://strong-lolly-a9fcb4.netlify.app/thumbs/f727b62e-af4e-4e06-9c36-8312ddb735a8.jpg}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][MEDIA] {timestamp: 2026-08-17T18:09:21.569Z, event: mounted, mounted: true, src: https://strong-lolly-a9fcb4.netlify.app/thumbs/75475b32-e161-4cb8-980e-36ab09d9777f.jpg, resolvedSrc: https://strong-lolly-a9fcb4.netlify.app/thumbs/75475b32-e161-4cb8-980e-36ab09d9777f.jpg}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][MEDIA] {timestamp: 2026-08-17T18:09:21.569Z, event: mounted, mounted: true, src: https://strong-lolly-a9fcb4.netlify.app/thumbs/61d252dd-2ff8-4308-aabf-fda8abdf91b2.jpg, resolvedSrc: https://strong-lolly-a9fcb4.netlify.app/thumbs/61d252dd-2ff8-4308-aabf-fda8abdf91b2.jpg}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][MEDIA] {timestamp: 2026-08-17T18:09:21.569Z, event: mounted, mounted: true, src: https://strong-lolly-a9fcb4.netlify.app/thumbs/d7f82b72-51ca-4282-8f2d-197e42240839.jpg, resolvedSrc: https://strong-lolly-a9fcb4.netlify.app/thumbs/d7f82b72-51ca-4282-8f2d-197e42240839.jpg}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][MEDIA] {timestamp: 2026-08-17T18:09:21.569Z, event: mounted, mounted: true, src: https://strong-lolly-a9fcb4.netlify.app/thumbs/3a3f2ab7-e8c9-4b36-b772-579c7f83a512.jpg, resolvedSrc: https://strong-lolly-a9fcb4.netlify.app/thumbs/3a3f2ab7-e8c9-4b36-b772-579c7f83a512.jpg}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][MEDIA] {timestamp: 2026-08-17T18:09:21.569Z, event: mounted, mounted: true, src: https://strong-lolly-a9fcb4.netlify.app/thumbs/03ef898a-989f-42c3-bdbb-67f37338df65.jpg, resolvedSrc: https://strong-lolly-a9fcb4.netlify.app/thumbs/03ef898a-989f-42c3-bdbb-67f37338df65.jpg}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:21.622Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:21.624Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:21.653Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:21.656Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990161841}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990162046}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:23.638Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:23.641Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990163867}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990164066}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:25.576Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:25.578Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990165763}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990165960}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:27.588Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:27.591Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990167790}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990167985}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:29.411Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:29.413Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990169591}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990169791}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:31.313Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:31.315Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990171505}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990171706}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:33.877Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:33.879Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990174085}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990174291}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:35.836Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:35.838Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990176014}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990176212}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:37.029Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:37.031Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:37.076Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:37.078Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"release_schedule_change\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990177189}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990177389}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:38.814Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:38.816Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990179008}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990179196}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:41.455Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:41.457Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990181652}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990181848}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:43.411Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:43.413Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990183590}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990183798}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:44.101Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:44.103Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:45.277Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:45.279Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990185452}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990185643}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:47.663Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:47.665Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990187881}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990188088}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:49.801Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:49.803Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990189989}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990190204}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:50.671Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:50.674Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"release_schedule_change\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990190826}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:51.639Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:51.641Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990191823}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990192014}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:53.483Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:53.484Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990193670}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990193867}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:55.269Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:55.271Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990195459}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990195649}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:57.072Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:57.074Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990197256}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990197460}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:57.776Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:57.777Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:58.871Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:09:58.873Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990199045}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990199240}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:10:00.735Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:10:00.737Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990200936}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990201142}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:10:03.486Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:10:03.489Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990203686}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990203899}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:10:05.421Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:10:05.423Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990205621}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:10:05.696Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:10:05.699Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"release_schedule_change\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990205862}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:10:06.054Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:10:06.056Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:10:07.160Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:10:07.161Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990207343}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990207540}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:10:08.164Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:10:08.167Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990208376}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990208587}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:10:10.142Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:10:10.144Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990210345}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990210548}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:10:11.975Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:10:11.977Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990212154}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990212355}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:10:13.807Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:10:13.808Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990213998}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990214201}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:10:14.508Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:10:14.511Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:10:15.647Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:10:15.649Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990215845}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990216047}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:10:17.653Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "info",
+      "text": "[RENDER_GATE][HERO] {timestamp: 2026-08-17T18:10:17.655Z, heroManagerConfig: Object, heroManagerConfigPersisted: Object, heroUsesImageBackground: false, backgroundSource: custom_video}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990217857}"
+    },
+    {
+      "level": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-journey-gate-v2\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":4,\"sentinelRecommendations\":6},\"timestamp\":1786990218047}"
+    }
+  ],
   "classification": {},
-  "fatalError": "page.goto: net::ERR_TIMED_OUT at https://strong-lolly-a9fcb4.netlify.app/\nCall log:\n  - navigating to \"https://strong-lolly-a9fcb4.netlify.app/\", waiting until \"domcontentloaded\"\n\n    at /home/youloose2dafish/projects/reelforge/frontend/scripts/mission-bg-6a-production-ui-validate.mjs:147:10\n    at async phase1Feed (/home/youloose2dafish/projects/reelforge/frontend/scripts/mission-bg-6a-production-ui-validate.mjs:146:3)\n    at async main (/home/youloose2dafish/projects/reelforge/frontend/scripts/mission-bg-6a-production-ui-validate.mjs:577:5)"
+  "fatalError": "page.waitForSelector: Timeout 60000ms exceeded.\nCall log:\n  - waiting for locator('.ghost-trigger') to be visible\n\n    at unlockStudio (/home/youloose2dafish/projects/reelforge/frontend/scripts/mission-bg-6a-production-ui-validate.mjs:69:14)\n    at async phase2Vault (/home/youloose2dafish/projects/reelforge/frontend/scripts/mission-bg-6a-production-ui-validate.mjs:206:3)\n    at async main (/home/youloose2dafish/projects/reelforge/frontend/scripts/mission-bg-6a-production-ui-validate.mjs:578:5)"
 }

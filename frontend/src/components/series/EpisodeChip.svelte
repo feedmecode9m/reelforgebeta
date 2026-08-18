@@ -4,8 +4,11 @@
     import { resolveVaultCardProjection } from '../../lib/content/vaultCardProjection.js';
     import {
         resolveLinkedAssetDisplayTitle,
+        isUnsafeHeroFilenameTitle,
         UNTITLED_CREATOR_EXPERIENCE
     } from '../../lib/hero/heroTitleIntelligence.js';
+    import { isUnsafeViewerCardTitle } from '../../lib/feed/viewerMediaIdentity.js';
+    import { isVaultVideoMediaUrl } from '../../lib/vault/normalizeVaultAsset.js';
 
     const dispatch = createEventDispatcher();
 
@@ -112,20 +115,43 @@
 
     /**
      * Viewer: Hero Vault Master Edit label (same authority as vault cards).
+     * Never paint Finder "copy UUID" / filename stems — blank until a real title exists.
      * Admin: preserve package title for creator tooling.
      */
     $: displayTitle = (() => {
         void titleEpoch;
         if (viewerMode) {
             const projected = String(vaultCard?.title || '').trim();
-            if (projected && projected !== UNTITLED_CREATOR_EXPERIENCE) return projected;
+            if (
+                projected &&
+                projected !== UNTITLED_CREATOR_EXPERIENCE &&
+                !isUnsafeViewerCardTitle(projected) &&
+                !isUnsafeHeroFilenameTitle(projected)
+            ) {
+                return projected;
+            }
             const linked = resolveLinkedAssetDisplayTitle(linkedReelId, {
                 episodeTitle: String(title || '').trim(),
                 assetTitle: String(title || '').trim()
             });
-            if (linked && linked !== UNTITLED_CREATOR_EXPERIENCE) return linked;
+            if (
+                linked &&
+                linked !== UNTITLED_CREATOR_EXPERIENCE &&
+                !isUnsafeViewerCardTitle(linked) &&
+                !isUnsafeHeroFilenameTitle(linked)
+            ) {
+                return linked;
+            }
             const t = String(title || '').trim();
-            if (!t || /^episode\s+\d+$/i.test(t) || /^untitled/i.test(t)) return '';
+            if (
+                !t ||
+                /^episode\s+\d+$/i.test(t) ||
+                /^untitled/i.test(t) ||
+                isUnsafeViewerCardTitle(t) ||
+                isUnsafeHeroFilenameTitle(t)
+            ) {
+                return '';
+            }
             return t;
         }
         return String(title || '').trim();
@@ -141,15 +167,44 @@
     $: showUnavailable = !isPlayable;
     /**
      * Final <img> URL through the same media/backend resolver as MediaRenderer/Theater posters.
-     * Absolute URLs passthrough; relative `/thumbs/*` join configured media origin.
+     * Never use an MP4/playback URL as poster (blank on iOS All Episodes).
      */
-    $: posterSource = String(
-        (viewerMode && vaultCard?.posterUrl) || thumbnailUrl || ''
-    ).trim();
+    $: posterSource = (() => {
+        const candidates = viewerMode
+            ? [vaultCard?.posterUrl, thumbnailUrl]
+            : [thumbnailUrl, vaultCard?.posterUrl];
+        for (const candidate of candidates) {
+            const next = String(candidate || '').trim();
+            if (!next || next.startsWith('blob:') || next.startsWith('data:')) continue;
+            if (isVaultVideoMediaUrl(next)) continue;
+            return next;
+        }
+        return '';
+    })();
     $: resolvedPosterUrl = posterSource
         ? resolveMediaForRender(posterSource, 'poster', 'EpisodeChip:viewerPoster') || posterSource
         : '';
     $: hasPoster = Boolean(resolvedPosterUrl);
+
+    let posterExtFallbackTried = false;
+    $: if (resolvedPosterUrl) posterExtFallbackTried = false;
+
+    /**
+     * @param {Event} event
+     */
+    function handlePosterError(event) {
+        const img = /** @type {HTMLImageElement} */ (event.currentTarget);
+        const src = String(img?.src || '');
+        if (!src || posterExtFallbackTried) return;
+        posterExtFallbackTried = true;
+        if (/\.jpg(\?|#|$)/i.test(src)) {
+            img.src = src.replace(/\.jpg(\?|#|$)/i, '.png$1');
+            return;
+        }
+        if (/\.png(\?|#|$)/i.test(src)) {
+            img.src = src.replace(/\.png(\?|#|$)/i, '.jpg$1');
+        }
+    }
     $: displayBindingLabel = bindingLabel
         ? bindingLabel
         : readyBound
@@ -202,7 +257,14 @@
                 aria-hidden="true"
             >
                 {#if hasPoster}
-                    <img class="episode-card__img" src={resolvedPosterUrl} alt="" loading="lazy" />
+                    <img
+                        class="episode-card__img"
+                        src={resolvedPosterUrl}
+                        alt=""
+                        loading="eager"
+                        decoding="async"
+                        on:error={handlePosterError}
+                    />
                 {:else}
                     <span class="episode-card__ep-num">{epPad}</span>
                 {/if}
@@ -368,6 +430,9 @@
         border-radius: 10px;
         background: rgba(255, 255, 255, 0.03);
         overflow: hidden;
+        min-height: 44px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
     }
     .episode-chip.viewer:hover:not(:disabled) {
         border-color: rgba(255, 255, 255, 0.12);

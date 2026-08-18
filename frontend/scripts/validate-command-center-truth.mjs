@@ -43,11 +43,22 @@ assertRuntime(
 );
 assertRuntime(
     'command center section tabs visible',
-    (await page.locator('[data-command-dashboard-section]').count()) >= 6,
+    (await page.locator('[data-command-dashboard-section]').count()) >= 13,
     stats
 );
 
-for (const sectionId of ['executive-overview', 'security', 'production', 'publishing', 'teams', 'revenue']) {
+for (const sectionId of [
+    'executive-overview',
+    'sentinel',
+    'security',
+    'production',
+    'publishing',
+    'teams',
+    'hero-intelligence',
+    'operations',
+    'notifications',
+    'revenue'
+]) {
     await openCommandCenterSection(page, sectionId);
     assertRuntime(
         `command center section ${sectionId} renders`,

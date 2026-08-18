@@ -1,0 +1,442 @@
+{
+  "generatedAt": "2026-08-12T04:38:43.689Z",
+  "deployId": "6a7bf88eb5d5c1cff461e7b6",
+  "commit": "16e0e553e96ac64c559e1363c8686f13d25db1cd",
+  "productionUrl": "https://strong-lolly-a9fcb4.netlify.app",
+  "uniqueDeployUrl": "https://6a7bf88eb5d5c1cff461e7b6--strong-lolly-a9fcb4.netlify.app",
+  "results": {
+    "smoke": [
+      {
+        "ok": true,
+        "label": "GET / 200"
+      },
+      {
+        "ok": true,
+        "label": "bundle index-krqkFp4E.js"
+      },
+      {
+        "ok": true,
+        "label": "reels 24"
+      },
+      {
+        "ok": true,
+        "label": "health ok"
+      }
+    ],
+    "bundle": [
+      {
+        "ok": true,
+        "label": "empty-rail marker"
+      },
+      {
+        "ok": true,
+        "label": "inventory marker"
+      },
+      {
+        "ok": true,
+        "label": "rotation marker"
+      },
+      {
+        "ok": true,
+        "label": "semantic existing-category marker"
+      },
+      {
+        "ok": true,
+        "label": "strong keyword table present"
+      },
+      {
+        "ok": true,
+        "label": "image vault gate"
+      }
+    ],
+    "trending": [
+      {
+        "ok": true,
+        "label": "UUID/camera dumps stay Trending (18 checked)"
+      },
+      {
+        "ok": true,
+        "label": "Trending candidates=24"
+      }
+    ],
+    "semantic": [
+      {
+        "ok": true,
+        "label": "Romance: NO GENUINE CANDIDATE IN CURRENT PRODUCTION INVENTORY"
+      },
+      {
+        "ok": true,
+        "label": "Suspense: NO GENUINE CANDIDATE IN CURRENT PRODUCTION INVENTORY"
+      },
+      {
+        "ok": true,
+        "label": "Cyber-Action: NO GENUINE CANDIDATE IN CURRENT PRODUCTION INVENTORY"
+      }
+    ],
+    "rails": [
+      {
+        "ok": true,
+        "label": "feed Trending=24"
+      },
+      {
+        "ok": true,
+        "label": "empty Romance omitted"
+      },
+      {
+        "ok": true,
+        "label": "empty Cyber-Action omitted"
+      },
+      {
+        "ok": true,
+        "label": "empty Suspense omitted"
+      }
+    ],
+    "rotation": [
+      {
+        "ok": true,
+        "label": "rotation stable"
+      }
+    ],
+    "prog": [
+      {
+        "ok": true,
+        "label": "poster initial Trending"
+      },
+      {
+        "ok": true,
+        "label": "metadata → Romance"
+      },
+      {
+        "ok": true,
+        "label": "poster→MP4 one card + Romance kept"
+      }
+    ],
+    "id": [
+      {
+        "ok": true,
+        "label": "MP4→poster one card"
+      },
+      {
+        "ok": true,
+        "label": "filename-similar different IDs separate"
+      }
+    ],
+    "visual": [
+      {
+        "ok": true,
+        "label": "fresh real cards=6"
+      },
+      {
+        "ok": true,
+        "label": "fresh Coming Soon=0"
+      },
+      {
+        "ok": true,
+        "label": "no empty shelf sections"
+      },
+      {
+        "ok": true,
+        "label": "real poster art visible"
+      },
+      {
+        "ok": true,
+        "label": "vault-seeded real=24"
+      },
+      {
+        "ok": true,
+        "label": "vault-seeded Coming Soon=0"
+      },
+      {
+        "ok": true,
+        "label": "reload rotation/composition stable"
+      }
+    ],
+    "hero": [
+      {
+        "ok": true,
+        "label": "hero/media videos=1 imgs=24"
+      }
+    ],
+    "theater": [
+      {
+        "ok": true,
+        "label": "theater open videos=1"
+      }
+    ]
+  },
+  "visual": {
+    "fresh": {
+      "shelfCount": 1,
+      "shelves": [
+        {
+          "title": "Trending",
+          "realCount": 6,
+          "comingSoonCount": 0,
+          "realArtCount": 6,
+          "sample": [
+            {
+              "id": "3894107e-ae44-43c5-af72-b3f5d5e0ad90",
+              "src": "https://strong-lolly-a9fcb4.netlify.app/thumbs/3894107e-ae44-43c5-af72-b3f5d5e0ad90.jpg",
+              "realArt": true
+            },
+            {
+              "id": "d2aafde7-d7ba-492c-a860-20b51f7f4033",
+              "src": "https://strong-lolly-a9fcb4.netlify.app/thumbs/d2aafde7-d7ba-492c-a860-20b51f7f4033.jpg",
+              "realArt": true
+            },
+            {
+              "id": "9a1251a2-d6a6-42e5-9fcd-4eca17dcd6ef",
+              "src": "https://strong-lolly-a9fcb4.netlify.app/thumbs/9a1251a2-d6a6-42e5-9fcd-4eca17dcd6ef.jpg",
+              "realArt": true
+            }
+          ]
+        }
+      ],
+      "realTotal": 6,
+      "comingSoonTotal": 0,
+      "videos": 1,
+      "imgs": 6
+    },
+    "withVault": {
+      "shelfCount": 1,
+      "shelves": [
+        {
+          "title": "Trending",
+          "realCount": 24,
+          "comingSoonCount": 0,
+          "realArtCount": 24,
+          "sample": [
+            {
+              "id": "3894107e-ae44-43c5-af72-b3f5d5e0ad90",
+              "src": "https://strong-lolly-a9fcb4.netlify.app/thumbs/3894107e-ae44-43c5-af72-b3f5d5e0ad90.jpg",
+              "realArt": true
+            },
+            {
+              "id": "d2aafde7-d7ba-492c-a860-20b51f7f4033",
+              "src": "https://strong-lolly-a9fcb4.netlify.app/thumbs/d2aafde7-d7ba-492c-a860-20b51f7f4033.jpg",
+              "realArt": true
+            },
+            {
+              "id": "9a1251a2-d6a6-42e5-9fcd-4eca17dcd6ef",
+              "src": "https://strong-lolly-a9fcb4.netlify.app/thumbs/9a1251a2-d6a6-42e5-9fcd-4eca17dcd6ef.jpg",
+              "realArt": true
+            }
+          ]
+        }
+      ],
+      "realTotal": 24,
+      "comingSoonTotal": 0,
+      "videos": 1,
+      "imgs": 24
+    },
+    "theater": {
+      "ok": true,
+      "videos": 1
+    }
+  },
+  "verdicts": {
+    "DEPLOY": "PASS",
+    "PRODUCTION_SMOKE": "PASS",
+    "SEMANTIC_CLASSIFIER": "PASS",
+    "ROMANCE": "NO GENUINE CANDIDATE",
+    "SUSPENSE": "NO GENUINE CANDIDATE",
+    "CYBER-ACTION": "NO GENUINE CANDIDATE",
+    "TRENDING_FALLBACK": "PASS",
+    "PROGRESSIVE_RECLASSIFICATION": "PASS",
+    "IDENTITY_SAFETY": "PASS",
+    "EMPTY-RAIL_POLICY": "PASS",
+    "ROTATION": "PASS",
+    "POSTER→MP4": "PASS",
+    "MP4→POSTER": "PASS",
+    "HERO_REGRESSION": "PASS",
+    "THEATER_REGRESSION": "PASS",
+    "BUILD": "PASS"
+  },
+  "bundle": "index-krqkFp4E.js",
+  "liveClassification": [
+    {
+      "id": "03ef898a-989f-42c3-bdbb-67f37338df65",
+      "name": "01 ARRIVAL OPEN v1",
+      "cat": "Trending",
+      "source": "fallback",
+      "genericTitle": false
+    },
+    {
+      "id": "e1f08f0f-954f-4c39-848b-9f3fc72b5d02",
+      "name": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+      "cat": "Trending",
+      "source": "fallback",
+      "genericTitle": true
+    },
+    {
+      "id": "9cb18bee-c035-42e8-88ff-f3ab5bdc0e24",
+      "name": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+      "cat": "Trending",
+      "source": "fallback",
+      "genericTitle": true
+    },
+    {
+      "id": "d01cbfca-88f7-434f-a495-f39e8abfbe1a",
+      "name": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+      "cat": "Trending",
+      "source": "fallback",
+      "genericTitle": true
+    },
+    {
+      "id": "5db69d19-1592-4b2f-ba53-599fb6cb900d",
+      "name": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+      "cat": "Trending",
+      "source": "fallback",
+      "genericTitle": true
+    },
+    {
+      "id": "aa032c74-279f-4bb9-b5b2-747e06cf5c4e",
+      "name": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+      "cat": "Trending",
+      "source": "fallback",
+      "genericTitle": true
+    },
+    {
+      "id": "83f4c7ef-6f91-45a4-afe2-878f4833c9c3",
+      "name": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+      "cat": "Trending",
+      "source": "fallback",
+      "genericTitle": true
+    },
+    {
+      "id": "9437c739-9418-4347-a106-8d07c43ba2c2",
+      "name": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+      "cat": "Trending",
+      "source": "fallback",
+      "genericTitle": true
+    },
+    {
+      "id": "3d58f832-11ef-4a8a-9ca2-3f2fe8054956",
+      "name": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+      "cat": "Trending",
+      "source": "fallback",
+      "genericTitle": true
+    },
+    {
+      "id": "75e18a53-47a8-429f-bf92-3ea212e8305f",
+      "name": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+      "cat": "Trending",
+      "source": "fallback",
+      "genericTitle": true
+    },
+    {
+      "id": "5b6e7761-6b9f-4031-8adc-7afa2a42d180",
+      "name": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+      "cat": "Trending",
+      "source": "fallback",
+      "genericTitle": true
+    },
+    {
+      "id": "27fa1ac9-cf19-43c3-9e5a-7f373aac9f34",
+      "name": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+      "cat": "Trending",
+      "source": "fallback",
+      "genericTitle": true
+    },
+    {
+      "id": "d8343381-ecb9-460b-9694-7442e423df80",
+      "name": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+      "cat": "Trending",
+      "source": "fallback",
+      "genericTitle": true
+    },
+    {
+      "id": "ae81943b-0cae-479b-9c82-40d6ee4b5e7f",
+      "name": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+      "cat": "Trending",
+      "source": "fallback",
+      "genericTitle": true
+    },
+    {
+      "id": "ad192428-ca93-4915-be89-4e9aa5b806e1",
+      "name": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+      "cat": "Trending",
+      "source": "fallback",
+      "genericTitle": true
+    },
+    {
+      "id": "c1f90b7c-e5ed-476e-bcb5-021127ab0ee4",
+      "name": "94E28916-619A-4356-88E7-90D1C71CAC2D.PNG",
+      "cat": "Trending",
+      "source": "fallback",
+      "genericTitle": true
+    },
+    {
+      "id": "201ec6ee-6822-4bda-9295-080beb6f4e35",
+      "name": "07 AMP JAM V1",
+      "cat": "Trending",
+      "source": "fallback",
+      "genericTitle": false
+    },
+    {
+      "id": "615e0eae-47b4-468a-b6dd-a6846b464846",
+      "name": "MICROS STIRRED V1",
+      "cat": "Trending",
+      "source": "fallback",
+      "genericTitle": false
+    },
+    {
+      "id": "9a1251a2-d6a6-42e5-9fcd-4eca17dcd6ef",
+      "name": "MICROS Motherland V1(1)",
+      "cat": "Trending",
+      "source": "fallback",
+      "genericTitle": false
+    },
+    {
+      "id": "d2aafde7-d7ba-492c-a860-20b51f7f4033",
+      "name": "03 CLUB POOM POOM V1",
+      "cat": "Trending",
+      "source": "fallback",
+      "genericTitle": false
+    },
+    {
+      "id": "1551c33d-a535-41c0-ac41-bf3dab0e63f2",
+      "name": "Img 0110",
+      "cat": "Trending",
+      "source": "fallback",
+      "genericTitle": true
+    },
+    {
+      "id": "3894107e-ae44-43c5-af72-b3f5d5e0ad90",
+      "name": "condo v1 2",
+      "cat": "Trending",
+      "source": "fallback",
+      "genericTitle": false
+    },
+    {
+      "id": "b82062ed-7be9-4e3a-8193-f5d66b98f237",
+      "name": "IMG_0113.JPEG",
+      "cat": "Trending",
+      "source": "fallback",
+      "genericTitle": true
+    },
+    {
+      "id": "caa1a16f-be03-4c2b-9840-9fce9a809c00",
+      "name": "IMG_0121.JPEG",
+      "cat": "Trending",
+      "source": "fallback",
+      "genericTitle": true
+    }
+  ],
+  "liveShelfCountsFromClassifier": {
+    "Trending": 24,
+    "Romance": 0,
+    "Cyber-Action": 0,
+    "Suspense": 0
+  },
+  "romanceStatus": "NO GENUINE CANDIDATE IN CURRENT PRODUCTION INVENTORY",
+  "suspenseStatus": "NO GENUINE CANDIDATE IN CURRENT PRODUCTION INVENTORY",
+  "cyberStatus": "NO GENUINE CANDIDATE IN CURRENT PRODUCTION INVENTORY",
+  "feedShelfCounts": {
+    "Trending": 24,
+    "Romance": 0,
+    "Cyber-Action": 0,
+    "Suspense": 0
+  },
+  "overall": "PRODUCTION ACCEPTANCE PASS"
+}

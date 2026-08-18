@@ -1,0 +1,140 @@
+{
+  "notes": [
+    "SPA HTTP 200",
+    "live bundle index-CU8MeNww.js",
+    "Theater opened",
+    "Play button present",
+    "Play button is topmost at tap point",
+    "direct video.play() works"
+  ],
+  "failures": [
+    "video still paused after Play (readyState=4, t=4.200048, err=null)"
+  ],
+  "snaps": {
+    "bundle": "https://strong-lolly-a9fcb4.netlify.app/assets/index-CU8MeNww.js",
+    "openResult": {
+      "ok": true,
+      "pick": {
+        "id": "3a3f2ab7-e8c9-4b36-b772-579c7f83a512",
+        "name": "MICROS Motherland V1 2(1)",
+        "url": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/3a3f2ab7-e8c9-4b36-b772-579c7f83a512.mp4"
+      },
+      "hasOpenFn": false,
+      "cardCount": 7,
+      "theaterOpen": false
+    },
+    "openedVia": ".viewer-featured [data-reel-id]",
+    "theaterOpened": true,
+    "before": {
+      "hasVideo": true,
+      "paused": false,
+      "ended": false,
+      "readyState": 4,
+      "networkState": 2,
+      "currentSrc": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/f727b62e-af4e-4e06-9c36-8312ddb735a8.playback.mp4",
+      "error": null,
+      "hasPlayBtn": true,
+      "playBtnText": "Pause",
+      "controlsVisible": true,
+      "controlsOpacity": "1",
+      "controlsPointer": "auto",
+      "theaterMobileClass": true,
+      "playBtnBox": {
+        "x": 59.390625,
+        "y": 526.03125,
+        "width": 65.5,
+        "height": 40,
+        "top": 526.03125,
+        "right": 124.890625,
+        "bottom": 566.03125,
+        "left": 59.390625
+      },
+      "videoBox": {
+        "x": 40,
+        "y": 192.9375,
+        "width": 310,
+        "height": 385.109375,
+        "top": 192.9375,
+        "right": 350,
+        "bottom": 578.046875,
+        "left": 40
+      }
+    },
+    "hitTest": {
+      "x": 92.140625,
+      "y": 546.03125,
+      "topTag": "BUTTON",
+      "topClass": "theater-mobile-play svelte-abtcgk",
+      "isPlay": true
+    },
+    "after": {
+      "hasVideo": true,
+      "paused": true,
+      "ended": false,
+      "readyState": 4,
+      "currentTime": 4.200048,
+      "muted": true,
+      "currentSrc": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/f727b62e-af4e-4e06-9c36-8312ddb735a8.playback.mp4",
+      "error": null,
+      "playBtnText": "Play",
+      "theaterManagerHasEl": false
+    },
+    "directPlay": {
+      "ok": true,
+      "beforePaused": true,
+      "afterPaused": false,
+      "currentTime": 4.262211,
+      "readyState": 4,
+      "currentSrc": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/f727b62e-af4e-4e06-9c36-8312ddb735a8.playback.mp4",
+      "playErr": null,
+      "sourceChildren": [
+        {
+          "src": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/f727b62e-af4e-4e06-9c36-8312ddb735a8.playback.mp4",
+          "type": "video/mp4"
+        }
+      ]
+    },
+    "consoleSample": [
+      "[HERO_PLAYBACK_RESOLVE] {inputUrl: null, resolvedUrl: null, source: unavailable:empty, stripped: false}",
+      "[HERO_PLAYBACK_RESOLVE] {inputUrl: null, resolvedUrl: null, source: poster:empty, stripped: false}",
+      "[HERO_CAROUSEL] {\"slideCount\":2,\"transitionStyle\":\"fade\",\"durationMs\":8000,\"priority\":\"video\",\"autoplayEnabled\":true,\"timestamp\":1786912247897}",
+      "[THEATER_CONTROLS] {deviceType: mobile, isMobile: true, controlsVisible: true, volumeVisible: true, menuVisible: true}",
+      "[HERO_VISIBILITY] {\"selector\":\".hero-background\",\"display\":\"block\",\"opacity\":\"1\",\"zIndex\":\"0\",\"timestamp\":1786912247941}",
+      "[HERO_VISIBILITY] {\"selector\":\".hero-overlay\",\"display\":\"block\",\"opacity\":\"1\",\"zIndex\":\"auto\",\"timestamp\":1786912247941}",
+      "[HERO_VISIBILITY] {\"selector\":\".hero-media\",\"display\":\"block\",\"opacity\":\"1\",\"zIndex\":\"auto\",\"timestamp\":1786912247941}",
+      "[THEATER PROFILE] {timestamp: 1786912247952, profile: netflix, caller: at IW (https://strong-lolly-a9fcb4.netlify.app/assets/index-CU8MeNww.js:6:480), from: null, to: netflix}",
+      "[PLATFORM_AUDIT] {\"subsystem\":\"Media Pipeline\",\"status\":\"degraded\",\"timestamp\":1786912247953,\"dataSource\":\"postgres+filesystem via POST /api/reels\",\"dependencies\":[\"ffmpeg\",\"ffprobe\",\"\"],\"diagnostics\":[\"[MediaRenderer]\",\"[MEDIA URL]\",\"[ingest-poll]\",\"[mediaBootstrap]\"],\"failureModes\":[\"ingest-timeou",
+      "[PLATFORM_AUDIT] {\"subsystem\":\"Viewer Feed\",\"status\":\"healthy\",\"timestamp\":1786912247953,\"dataSource\":\"GET /api/reels + reelforge_feed localStorage\",\"dependencies\":[\"mediaBootstrap\",\"normalizeReel\",\"ReelshortExperience\"],\"diagnostics\":[\"[THEATER OPEN]\",\"[ws] CREATED/DELETED\",\"[Vault]\"],\"failureModes",
+      "[PLATFORM_AUDIT] {\"subsystem\":\"Theater Experience\",\"status\":\"healthy\",\"timestamp\":1786912247953,\"dataSource\":\"activeReel store + findReelInFeed\",\"dependencies\":[\"TheaterExperience\",\"theaterPlayback\",\"MediaRenderer\"],\"diagnostics\":[\"[THEATER OPEN/CLOSE/STATE/PROFILE/MEDIA]\",\"[theater-handshake]\",\"?de",
+      "[PLATFORM_AUDIT] {\"subsystem\":\"Episode Store\",\"status\":\"degraded\",\"timestamp\":1786912247953,\"dataSource\":\"embedded in seriesCatalog (no standalone store)\",\"dependencies\":[\"seriesStore.getEpisodeById\",\"getNextEpisode\"],\"diagnostics\":[\"[INTELLIGENCE_SOURCE] Next Episode field\"],\"failureModes\":[\"drawer",
+      "[PLATFORM_AUDIT] {\"subsystem\":\"Publishing Profiles\",\"status\":\"healthy\",\"timestamp\":1786912247953,\"dataSource\":\"reelforge_publishing_profile + publishingProfiles.js\",\"dependencies\":[\"publishingProfileStore\",\"TheaterExperience chrome flags\"],\"diagnostics\":[\"[THEATER PROFILE]\"],\"failureModes\":[\"profile",
+      "[PLATFORM_AUDIT] {\"subsystem\":\"Diagnostics Layer\",\"status\":\"healthy\",\"timestamp\":1786912247954,\"dataSource\":\"console tags (unstructured)\",\"dependencies\":[\"theaterDiagnostics\",\"intelligenceSourceDiagnostics\",\"theaterPlayback handshake\",\"platformAudit\"],\"diagnostics\":[\"[PLATFORM_AUDIT]\",\"[THEATER *]\",",
+      "[HERO_IDENTITY_BRIDGE] {episodeId: ep-vic-g-s01e03, resolvedReelId: , foundInFeed: false, hasVideoUrl: false, reason: missing_playable_media}",
+      "[HERO_IDENTITY_BRIDGE] {episodeId: ep-vic-g-s01e03, resolvedReelId: , foundInFeed: false, hasVideoUrl: false, reason: missing_playable_media}",
+      "[HERO_IDENTITY_BRIDGE] {episodeId: ep-vic-g-s01e03, resolvedReelId: , foundInFeed: false, hasVideoUrl: false, reason: missing_playable_media}",
+      "[HERO_IDENTITY_BRIDGE] {episodeId: ep-vic-g-s01e03, resolvedReelId: , foundInFeed: false, hasVideoUrl: false, reason: missing_playable_media}",
+      "[HERO_IDENTITY_BRIDGE] {episodeId: ep-vic-g-s01e03, resolvedReelId: , foundInFeed: false, hasVideoUrl: false, reason: missing_playable_media}",
+      "[HERO_IDENTITY_BRIDGE] {episodeId: ep-vic-g-s01e03, resolvedReelId: , foundInFeed: false, hasVideoUrl: false, reason: missing_playable_media}",
+      "[EPISODE_PLAYABILITY_BLOCKED] {episodeId: series-journey-gate-v2-s1e11, seriesId: series-journey-gate-v2, reason: draft, reelId: null, ts: 2026-08-16T20:30:48.563Z}",
+      "[HERO_IDENTITY_BRIDGE] {episodeId: series-journey-gate-v2-s1e11, resolvedReelId: , foundInFeed: false, hasVideoUrl: false, reason: missing_playable_media}",
+      "[EPISODE_PLAYABILITY_BLOCKED] {episodeId: series-journey-gate-v2-s1e11, seriesId: series-journey-gate-v2, reason: draft, reelId: null, ts: 2026-08-16T20:30:48.564Z}",
+      "[HERO_IDENTITY_BRIDGE] {episodeId: series-journey-gate-v2-s1e11, resolvedReelId: , foundInFeed: false, hasVideoUrl: false, reason: missing_playable_media}",
+      "[EPISODE_PLAYABILITY_BLOCKED] {episodeId: series-journey-gate-v2-s1e11, seriesId: series-journey-gate-v2, reason: draft, reelId: null, ts: 2026-08-16T20:30:48.565Z}",
+      "[HERO_IDENTITY_BRIDGE] {episodeId: series-journey-gate-v2-s1e11, resolvedReelId: , foundInFeed: false, hasVideoUrl: false, reason: missing_playable_media}",
+      "[EPISODE_PLAYABILITY_BLOCKED] {episodeId: series-journey-gate-v2-s1e11, seriesId: series-journey-gate-v2, reason: draft, reelId: null, ts: 2026-08-16T20:30:48.570Z}",
+      "[HERO_IDENTITY_BRIDGE] {episodeId: series-journey-gate-v2-s1e11, resolvedReelId: , foundInFeed: false, hasVideoUrl: false, reason: missing_playable_media}",
+      "[EPISODE_PLAYABILITY_BLOCKED] {episodeId: series-journey-gate-v2-s1e11, seriesId: series-journey-gate-v2, reason: draft, reelId: null, ts: 2026-08-16T20:30:48.570Z}",
+      "[HERO_IDENTITY_BRIDGE] {episodeId: series-journey-gate-v2-s1e11, resolvedReelId: , foundInFeed: false, hasVideoUrl: false, reason: missing_playable_media}",
+      "[EPISODE_PLAYABILITY_BLOCKED] {episodeId: series-journey-gate-v2-s1e11, seriesId: series-journey-gate-v2, reason: draft, reelId: null, ts: 2026-08-16T20:30:48.571Z}",
+      "[HERO_IDENTITY_BRIDGE] {episodeId: series-journey-gate-v2-s1e11, resolvedReelId: , foundInFeed: false, hasVideoUrl: false, reason: missing_playable_media}",
+      "[EPISODE_PLAYABILITY_BLOCKED] {episodeId: series-journey-gate-v2-s1e11, seriesId: series-journey-gate-v2, reason: draft, reelId: null, ts: 2026-08-16T20:30:48.571Z}",
+      "[HERO_IDENTITY_BRIDGE] {episodeId: series-journey-gate-v2-s1e11, resolvedReelId: , foundInFeed: false, hasVideoUrl: false, reason: missing_playable_media}",
+      "Keys returned: [id, name, fileName, type, url, thumbnailUrl, thumbnailPath, category, status, validated, createdAt, playbackUrl, playbackStatus, playbackFileSize, playbackProfile, title, created_at]",
+      "Keys returned: [id, name, fileName, type, url, thumbnailUrl, thumbnailPath, category, status, validated, createdAt, playbackUrl, playbackStatus, playbackFileSize, playbackProfile, title, created_at]",
+      "Keys returned: [id, name, fileName, type, url, thumbnailUrl, thumbnailPath, category, status, validated, createdAt, playbackUrl, playbackStatus, playbackFileSize, playbackProfile, title, created_at]",
+      "[VIDEO_STORE_TRACE] {stage: syncFromVault:playable_catalog, inputCount: 38, outputCount: 19, inputIds: Array(38), outputIds: Array(19)}",
+      "[syncFromVault] Loaded 38 reels from [backend] (19 playable video, thumbs → placeholders)",
+      "[BG7S_SHELF_FILL] {shelf: Trending, realCount: 6, displayCount: 6, fillerCount: 0, branch: bg7k_real_assets_no_padding}"
+    ]
+  }
+}

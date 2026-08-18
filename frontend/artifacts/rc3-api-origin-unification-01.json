@@ -1,0 +1,41 @@
+{
+  "mission": "RC3-API-ORIGIN-UNIFICATION-01",
+  "startedAt": "2026-07-20T12:54:16.234Z",
+  "env": {
+    "mode": "development",
+    "expected": {
+      "apiBaseUrl": "",
+      "backendUrl": "http://localhost:8080",
+      "wsTargetPrefix": "ws://127.0.0.1:5173"
+    }
+  },
+  "resolved": {
+    "apiBaseUrl": "",
+    "backendUrl": "http://localhost:8080",
+    "useSameOriginApi": false,
+    "wsTargets": [
+      "wss://127.0.0.1/?token=RcLbSZfuV29u",
+      "ws://127.0.0.1:5173/ws/control-center"
+    ],
+    "bannedConsoleHits": []
+  },
+  "verification": {
+    "curls": {
+      "front_api_health": {
+        "cmd": "curl http://127.0.0.1:5173/api/health",
+        "http": 200
+      },
+      "back_api_health": {
+        "cmd": "curl http://127.0.0.1:8080/api/health",
+        "http": 200
+      }
+    },
+    "banned_console_snippets": [
+      "Backend unavailable",
+      "NetworkError",
+      "railway.app",
+      "reelforge-deploy-production"
+    ]
+  },
+  "endedAt": "2026-07-20T12:54:33.530Z"
+}

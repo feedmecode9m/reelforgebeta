@@ -1,0 +1,59 @@
+{
+  "ts": "2026-07-20T15:36:58.962Z",
+  "appUrl": "http://127.0.0.1:5173/",
+  "heroFile": "/tmp/hero-background.mp4",
+  "postApiReelsCount": 1,
+  "before": {
+    "ts": "2026-07-20T15:36:36.239Z",
+    "apiReelsCount": 41,
+    "localStorage": {
+      "personal_video_vault_count": 15,
+      "reelforge_hero_reel_present": false,
+      "reelforge_hero_manager_config_present": false,
+      "reelforge_hero_video_present": false,
+      "reelforge_hero_image_present": false
+    },
+    "hero": {
+      "heroVaultItemsCount": 0,
+      "heroAssetId": "",
+      "heroReelId": "",
+      "heroReelFileName": "",
+      "heroReelUrl": ""
+    },
+    "dom": {
+      "videoVaultItemCount": 15
+    }
+  },
+  "after": {
+    "ts": "2026-07-20T15:36:58.876Z",
+    "apiReelsCount": 42,
+    "hero": {
+      "heroVaultItemsCount": 1,
+      "heroAssetId": "c337add5-cf14-4388-931e-1f2e843171e2",
+      "heroReelId": "c337add5-cf14-4388-931e-1f2e843171e2",
+      "heroReelFileName": "c337add5-cf14-4388-931e-1f2e843171e2.mp4",
+      "heroReelUrl": "/videos/c337add5-cf14-4388-931e-1f2e843171e2.mp4"
+    },
+    "localStorage": {
+      "personal_video_vault_count": 16,
+      "reelforge_hero_reel_present": true,
+      "reelforge_hero_manager_config_present": true
+    },
+    "videoVault": {
+      "matchingHeroEntriesCount": 1,
+      "matchingHeroEntries": [
+        {
+          "id": "c337add5-cf14-4388-931e-1f2e843171e2",
+          "fileName": "c337add5-cf14-4388-931e-1f2e843171e2.mp4",
+          "url": "/videos/c337add5-cf14-4388-931e-1f2e843171e2.mp4",
+          "name": "Hero Background"
+        }
+      ],
+      "duplicateKeyPairsCount": 0,
+      "duplicateKeyPairs": []
+    },
+    "dom": {
+      "videoVaultItemCount": 16
+    }
+  }
+}

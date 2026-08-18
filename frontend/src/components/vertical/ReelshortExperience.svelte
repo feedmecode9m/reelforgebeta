@@ -143,6 +143,8 @@
     import { durableImageVaultUrl } from '../../lib/viewer/vaultUtils.js';
     import { LEGACY_HERO_REEL_KEY } from '../../lib/hero/heroRecord.js';
     import { resolveVaultCardProjection } from '../../lib/content/vaultCardProjection.js';
+    import { logMobileShelfTrace, logMobilePlayTrace } from '../../lib/device/mobileExperienceDiagnostics.js';
+    import { detectMobilePresentation } from '../../lib/device/mobilePresentation.js';
     import ViewerSemanticCard from '../viewer/ViewerSemanticCard.svelte';
     import {
         buildViewerSemanticShell,
@@ -150,7 +152,7 @@
         collectRealViewerReels
     } from '../../lib/feed/viewerSemanticShell.js';
     import { composeViewerShelfLayouts } from '../../lib/feed/viewerShelfComposition.js';
-    import { categoryAliasStore, displayDiscoveryShelf } from '../../lib/feed/discoveryTaxonomy.js';
+    import { categoryAliasStore, displayDiscoveryShelf, listViewerPrimaryRailTabs, shelfVisibleForViewerRail } from '../../lib/feed/discoveryTaxonomy.js';
     import { resolveViewerAssetId } from '../../lib/feed/viewerIdentityDedupe.js';
     import { logViewerMediaIdentityDiagnostics } from '../../lib/feed/viewerMediaIdentity.js';
     import '../../viewer/cinematicCardTokens.css';
@@ -199,6 +201,41 @@
     let rowRefs = {};
     /** @type {HTMLElement | null} */
     let feedSectionRoot = null;
+    /** Primary rail: home | new-releases | trending | suspense — chrome only; cards unchanged. */
+    let activeViewerRailKey = 'home';
+    let discoverySearchOpen = false;
+    let discoverySearchQuery = '';
+
+    $: viewerRailTabs = listViewerPrimaryRailTabs($categoryAliasStore);
+
+    /**
+     * @param {string} key
+     */
+    function selectViewerRailTab(key) {
+        activeViewerRailKey = String(key || 'home');
+        discoverySearchOpen = false;
+    }
+
+    function toggleDiscoverySearch() {
+        discoverySearchOpen = !discoverySearchOpen;
+        if (!discoverySearchOpen) discoverySearchQuery = '';
+    }
+
+    /**
+     * Title filter only — does not alter card/poster rendering.
+     * @param {unknown} reel
+     */
+    function matchesDiscoverySearch(reel) {
+        const q = String(discoverySearchQuery || '')
+            .trim()
+            .toLowerCase();
+        if (!q) return true;
+        const row = reel && typeof reel === 'object' ? /** @type {Record<string, unknown>} */ (reel) : {};
+        const hay = [row.title, row.name, row.seriesName, row.seriesTitle, row.seriesLabel]
+            .map((v) => String(v || '').toLowerCase())
+            .join(' ');
+        return hay.includes(q);
+    }
 
     $: if (section === 'feed') {
         logBg7nStage('ReelshortExperience:props:feed', $feed);
@@ -408,6 +445,17 @@
             globalRealCount: countGlobalRealFeedCards()
         });
         if (category === 'Trending' && typeof window !== 'undefined') {
+            const failure =
+                display.length > 0
+                    ? null
+                    : filteredReal.length === 0 &&
+                        (Array.isArray($feed?.Trending) ? $feed.Trending.length : 0) === 0
+                      ? 'A_or_hydration'
+                      : filteredReal.length === 0
+                        ? 'B_filtering'
+                        : display.length === 0
+                          ? 'C_shelf_filler'
+                          : 'D_render_condition';
             console.info('[TRENDING_RENDER_TRACE]', {
                 rawTrendingInputCount: Array.isArray($feed?.Trending) ? $feed.Trending.length : 0,
                 normalizedTrendingCount: Array.isArray($normalizedFeed?.Trending)
@@ -419,18 +467,25 @@
                 hydratedReelCount: Array.isArray(hydrated) ? hydrated.length : 0,
                 filteredCount: filteredReal.length,
                 displayShelfCount: Array.isArray(display) ? display.length : 0,
-                failure:
-                    display.length > 0
-                        ? null
-                        : filteredReal.length === 0 &&
-                            (Array.isArray($feed?.Trending) ? $feed.Trending.length : 0) === 0
-                          ? 'A_or_hydration'
-                          : filteredReal.length === 0
-                            ? 'B_filtering'
-                            : display.length === 0
-                              ? 'C_shelf_filler'
-                              : 'D_render_condition',
+                failure,
                 ts: new Date().toISOString()
+            });
+            const trendingRow =
+                (typeof document !== 'undefined' &&
+                    (feedSectionRoot || document.querySelector('.reelshort-feed-root'))?.querySelector(
+                        '[data-viewer-discovery-row="Trending"]'
+                    )) ||
+                null;
+            const domCount = trendingRow
+                ? trendingRow.querySelectorAll('[data-viewer-semantic-card], .reel-card').length
+                : null;
+            logMobileShelfTrace({
+                shelf: 'Trending',
+                rawCount: Array.isArray($feed?.Trending) ? $feed.Trending.length : 0,
+                hydratedCount: Array.isArray(hydrated) ? hydrated.length : 0,
+                visibleCount: Array.isArray(display) ? display.length : 0,
+                domCount,
+                failureStage: failure
             });
         }
         return display;
@@ -529,9 +584,47 @@
     }
 
     function activateReel(reel, category) {
-        logTheaterOpen(reel, { source: 'feed-card-click', category });
-        onRecordAccess(reel.id);
+        const assetId = String(reel?.id || '').trim();
+        const mediaUrl = String(
+            reel?.url || reel?.playbackUrl || reel?.mediaUrl || reel?.videoUrl || ''
+        ).trim();
+        // Log before diagnostics — logTheaterOpen used to throw on iOS LAN HTTP (randomUUID).
+        logMobilePlayTrace('ACTIVATE_REEL', {
+            assetId,
+            title: String(reel?.title || reel?.name || '').trim(),
+            mediaUrl,
+            resolver: 'ReelshortExperience.activateReel',
+            source: 'feed-card-click',
+            category: String(category || ''),
+            playCalled: false
+        });
+        try {
+            logTheaterOpen(reel, { source: 'feed-card-click', category });
+        } catch (err) {
+            const message =
+                err && typeof err === 'object' && 'message' in err ? String(err.message) : String(err);
+            logMobilePlayTrace('HANDOFF_ERROR', {
+                assetId,
+                resolver: 'logTheaterOpen',
+                source: 'feed-card-click',
+                reason: message.slice(0, 180),
+                playCalled: false
+            });
+        }
+        try {
+            onRecordAccess(reel.id);
+        } catch {
+            /* access analytics must not block Theater */
+        }
         onOpenTheater(reel);
+        logMobilePlayTrace('HANDOFF_ON_OPEN_THEATER', {
+            assetId,
+            title: String(reel?.title || reel?.name || '').trim(),
+            mediaUrl,
+            resolver: 'ReelshortExperience.onOpenTheater',
+            source: 'feed-card-click',
+            category: String(category || '')
+        });
     }
 
     function traceFeedCardRender(reel, category, branch, mediaSrc) {
@@ -573,7 +666,14 @@
                 title: featuredProjection.title,
                 category: featuredCategory,
                 posterUrl: featuredResolved.poster || featuredProjection.posterUrl,
-                description: featuredProjection.description
+                description: featuredProjection.description,
+                seriesLine: featuredProjection.seriesLine,
+                seasonNumber: /** @type {any} */ (featuredReel)?.seasonNumber,
+                episodeNumber: /** @type {any} */ (featuredReel)?.episodeNumber,
+                seriesLabel:
+                    /** @type {any} */ (featuredReel)?.seriesLabel ||
+                    /** @type {any} */ (featuredReel)?.seriesName ||
+                    /** @type {any} */ (featuredReel)?.seriesTitle
             },
             featuredResolved
         )}
@@ -581,12 +681,14 @@
             <h2 class="viewer-featured__heading">Featured</h2>
             <ViewerSemanticCard
                 reel={/** @type {Record<string, unknown>} */ (featuredReel)}
+                projection={featuredProjection}
                 shell={featuredShell}
                 resolvedMedia={featuredResolved}
                 variant="featured"
                 previewActive={String(feedHoverPreviewId) === String(featuredReel.id)}
                 onActivate={(r) => activateReel(r, featuredCategory)}
                 onMediaPointerEnter={() => {
+                    if (detectMobilePresentation() || !prefersHoverPreview()) return;
                     if (hasPlayableVideo(featuredReel) && featuredReel.url && !$feedCardVideoFallbacks.has(featuredReel.id)) {
                         startFeedCardPreview(featuredReel.id);
                     }
@@ -646,11 +748,53 @@
         </section>
     {/if}
 
+    <nav class="viewer-discovery-rail" data-viewer-discovery-rail aria-label="Discovery shelves">
+        <div class="viewer-discovery-rail__tabs" role="tablist">
+            {#each viewerRailTabs as tab (tab.key)}
+                <button
+                    type="button"
+                    role="tab"
+                    class="viewer-discovery-rail__tab"
+                    class:is-active={activeViewerRailKey === tab.key}
+                    aria-selected={activeViewerRailKey === tab.key}
+                    data-rail-key={tab.key}
+                    data-rail-shelf={tab.shelfId || 'home'}
+                    on:click={() => selectViewerRailTab(tab.key)}
+                >{tab.label}</button>
+            {/each}
+        </div>
+        <button
+            type="button"
+            class="viewer-discovery-rail__search"
+            aria-label={discoverySearchOpen ? 'Close search' : 'Search catalog'}
+            aria-pressed={discoverySearchOpen}
+            on:click={toggleDiscoverySearch}
+        >
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="7" />
+                <path d="M20 20l-3.5-3.5" stroke-linecap="round" />
+            </svg>
+        </button>
+    </nav>
+    {#if discoverySearchOpen}
+        <div class="viewer-discovery-search">
+            <label class="viewer-discovery-search__label" for="viewer-discovery-search-input">Search</label>
+            <input
+                id="viewer-discovery-search-input"
+                class="viewer-discovery-search__input"
+                type="search"
+                placeholder="Search titles…"
+                bind:value={discoverySearchQuery}
+                autocomplete="off"
+            />
+        </div>
+    {/if}
+
     {#each Object.keys($feed).filter((cat) => cat !== 'Auto-Detect') as category}
         {@const config = UIAgent.getStudioConfigs(category)}
         {@const displayName = displayDiscoveryShelf(category, $categoryAliasStore)}
         {@const headingLabel = String(displayName || config.label || category)}
-        {#if shouldRenderShelf(category)}
+        {#if shelfVisibleForViewerRail(category, activeViewerRailKey) && shouldRenderShelf(category)}
         <section class="shelf" data-viewer-discovery-row={category}>
             <h2 style="border-left: 4px solid {config.color}; color: {config.color};">{headingLabel}</h2>
             <div class="row-shell">
@@ -669,7 +813,7 @@
                     on:mouseleave={UIAgent.stopScroll}
                     on:wheel={(event) => handleRowWheel(event, category)}
                 >
-                    {#each getShelfDisplayItems(category) as reel, i (reelListKey(reel, category, i))}
+                    {#each getShelfDisplayItems(category).filter((reel) => matchesDiscoverySearch(reel)) as reel, i (reelListKey(reel, category, i))}
                         {#if reel.isPresentationOnly}
                             <div
                                 class="reel-card presentation-slot viewer-sem-card--row"
@@ -700,18 +844,28 @@
                                 title: cardProjection.title,
                                 category,
                                 posterUrl: cardResolved.poster || cardProjection.posterUrl,
-                                description: cardProjection.description
+                                description: cardProjection.description,
+                                seriesLine: cardProjection.seriesLine,
+                                seasonNumber: /** @type {any} */ (reel)?.seasonNumber,
+                                episodeNumber: /** @type {any} */ (reel)?.episodeNumber,
+                                seriesLabel:
+                                    /** @type {any} */ (reel)?.seriesLabel ||
+                                    /** @type {any} */ (reel)?.seriesName ||
+                                    /** @type {any} */ (reel)?.seriesTitle
                             },
                             cardResolved
                         )}
                         <ViewerSemanticCard
                             reel={/** @type {Record<string, unknown>} */ (reel)}
+                            projection={cardProjection}
                             shell={rowShell}
                             resolvedMedia={cardResolved}
                             variant="row"
                             previewActive={String(feedHoverPreviewId) === String(reel.id)}
                             onActivate={(r) => activateReel(r, category)}
                             onMediaPointerEnter={() => {
+                                // Hover preview is desktop-only — coarse pointers scroll, not hover.
+                                if (detectMobilePresentation() || !prefersHoverPreview()) return;
                                 if (hasPlayableVideo(reel) && reel.url && !$feedCardVideoFallbacks.has(reel.id)) {
                                     startFeedCardPreview(reel.id);
                                 }
@@ -786,11 +940,11 @@
         {/if}
     {/each}
 
-    {#if browseItems.length > 0}
-        <section class="viewer-browse" data-viewer-browse-grid aria-label="Browse">
-            <h2 class="viewer-browse__heading">Browse</h2>
+    {#if browseItems.length > 0 && (activeViewerRailKey === 'home' || activeViewerRailKey === 'new-releases')}
+        <section class="viewer-browse" data-viewer-browse-grid aria-label="Browse all series">
+            <h2 class="viewer-browse__heading">Browse all series</h2>
             <div class="viewer-browse__grid">
-                {#each browseItems as item (item.reel.id)}
+                {#each browseItems.filter((item) => matchesDiscoverySearch(item.reel)) as item (item.reel.id)}
                     {@const gridReel = item.reel}
                     {@const gridCategory = item.shelf}
                     {@const gridResolved = item.resolvedMedia || resolveCardMedia(
@@ -806,18 +960,27 @@
                             title: gridProjection.title,
                             category: gridCategory,
                             posterUrl: gridResolved.poster || gridProjection.posterUrl,
-                            description: gridProjection.description
+                            description: gridProjection.description,
+                            seriesLine: gridProjection.seriesLine,
+                            seasonNumber: /** @type {any} */ (gridReel)?.seasonNumber,
+                            episodeNumber: /** @type {any} */ (gridReel)?.episodeNumber,
+                            seriesLabel:
+                                /** @type {any} */ (gridReel)?.seriesLabel ||
+                                /** @type {any} */ (gridReel)?.seriesName ||
+                                /** @type {any} */ (gridReel)?.seriesTitle
                         },
                         gridResolved
                     )}
                     <ViewerSemanticCard
                         reel={/** @type {Record<string, unknown>} */ (gridReel)}
+                        projection={gridProjection}
                         shell={gridShell}
                         resolvedMedia={gridResolved}
                         variant="grid"
                         previewActive={String(feedHoverPreviewId) === String(gridReel.id)}
                         onActivate={(r) => activateReel(r, gridCategory)}
                         onMediaPointerEnter={() => {
+                            if (detectMobilePresentation() || !prefersHoverPreview()) return;
                             if (hasPlayableVideo(gridReel) && gridReel.url && !$feedCardVideoFallbacks.has(gridReel.id)) {
                                 startFeedCardPreview(gridReel.id);
                             }
@@ -913,21 +1076,126 @@
         padding: 1.25rem 2rem 0.5rem;
         margin-bottom: 1.5rem;
     }
-    .viewer-featured__heading,
-    .viewer-browse__heading {
+    .viewer-discovery-rail {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.35rem 1.25rem 0.65rem;
+        margin: 0 0 0.35rem;
+        position: sticky;
+        top: 0;
+        z-index: 8;
+        background: linear-gradient(180deg, rgba(5, 6, 10, 0.96) 0%, rgba(5, 6, 10, 0.88) 70%, rgba(5, 6, 10, 0) 100%);
+        /* Sticky chrome must not steal taps from cards underneath the fade zone. */
+        pointer-events: none;
+    }
+    .viewer-discovery-rail__tabs,
+    .viewer-discovery-rail__search {
+        pointer-events: auto;
+    }
+    .viewer-discovery-rail__tabs {
+        display: flex;
+        align-items: center;
+        gap: 1.15rem;
+        flex: 1;
+        min-width: 0;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    .viewer-discovery-rail__tabs::-webkit-scrollbar {
+        display: none;
+    }
+    .viewer-discovery-rail__tab {
+        flex-shrink: 0;
+        border: 0;
+        background: transparent;
+        color: rgba(244, 241, 234, 0.55);
+        font-size: 0.95rem;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        padding: 0.45rem 0.1rem 0.55rem;
+        min-height: 44px;
+        cursor: pointer;
+        touch-action: manipulation;
+        position: relative;
+        white-space: nowrap;
+    }
+    .viewer-discovery-rail__tab.is-active {
+        color: #fff;
+    }
+    .viewer-discovery-rail__tab.is-active::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0.15rem;
+        height: 3px;
+        border-radius: 2px;
+        background: #ffcc00;
+    }
+    .viewer-discovery-rail__search {
+        flex-shrink: 0;
+        width: 2.75rem;
+        height: 2.75rem;
+        border: 0;
+        border-radius: 999px;
+        background: transparent;
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        touch-action: manipulation;
+    }
+    .viewer-discovery-search {
+        padding: 0 1.25rem 0.85rem;
+    }
+    .viewer-discovery-search__label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+    }
+    .viewer-discovery-search__input {
+        width: 100%;
+        min-height: 2.75rem;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: rgba(255, 255, 255, 0.06);
+        color: #fff;
+        padding: 0.55rem 1rem;
+        font-size: 0.95rem;
+    }
+    .viewer-featured__heading {
         margin: 0 0 0.85rem;
         font-size: 0.78rem;
         letter-spacing: 0.16em;
         text-transform: uppercase;
         color: rgba(244, 241, 234, 0.72);
     }
+    .viewer-browse__heading {
+        margin: 0 0 0.85rem;
+        font-size: 1.15rem;
+        letter-spacing: 0.01em;
+        text-transform: none;
+        font-weight: 700;
+        color: #fff;
+    }
     .viewer-browse {
-        padding: 0.5rem 2rem 3rem;
+        padding: 0.5rem 1.25rem 3rem;
     }
     .viewer-browse__grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-        gap: 1.1rem;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.85rem;
+    }
+    @media (min-width: 900px) {
+        .viewer-browse__grid {
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1.1rem;
+        }
     }
     .viewer-presentation-shell {
         border-radius: var(--rf-cine-radius, 28px) !important;
@@ -1328,14 +1596,24 @@
     }
     @media (orientation: portrait) and (max-width: 640px) {
         :global(.reelshort-theater) {
-            max-height: 100vh;
-            /* Keep framing/menu + volume chrome from being clipped on mobile. */
-            overflow-x: hidden;
-            overflow-y: auto;
+            max-width: none !important;
+            max-height: 100dvh;
+            width: 100%;
+            aspect-ratio: auto;
+            overflow: hidden;
         }
     }
 
     @media (max-width: 640px), (hover: none) and (pointer: coarse) {
+        :global(.reelshort-theater) {
+            max-width: none !important;
+            width: 100% !important;
+            height: 100% !important;
+            max-height: 100dvh !important;
+            aspect-ratio: auto;
+            margin: 0;
+            overflow: hidden;
+        }
         :global(.reelshort-theater .theater-header) {
             position: sticky;
             top: 0;

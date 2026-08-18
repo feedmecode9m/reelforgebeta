@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "frontendUrl": "https://strong-lolly-a9fcb4.netlify.app",
+  "bundle": "index-GHjzxDYw.js",
+  "cards": 1,
+  "meta": "Catalog videos 1 · Cards 1 · Identity registry gaps 5",
+  "gap": "Exact identity matches not currently in /api/reels (no invented cards):\n      d2aafde7, 615e0eae, 9a1251a2, 3894107e, 201ec6ee…",
+  "titles": [
+    "01 ARRIVAL OPEN v1"
+  ],
+  "categoryPatch": 0,
+  "catalogWrites": 0,
+  "pageErrors": [],
+  "exactRegistryCount": 6
+}

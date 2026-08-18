@@ -86,6 +86,7 @@ export function isManufacturedViewerTitle(value) {
     if (/^coming soon$/i.test(raw)) return true;
     if (/^episode\s+\d+$/i.test(raw)) return true;
     if (/^suggested\s*:/i.test(raw)) return true;
+    if (/^copy\s+[0-9a-f]{8}/i.test(raw)) return true;
     if (isUnsafeHeroFilenameTitle(raw)) return true;
     return false;
 }

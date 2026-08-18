@@ -1,0 +1,224 @@
+{
+  "generatedAt": "2026-08-12T04:16:40.584Z",
+  "productionUrl": "https://strong-lolly-a9fcb4.netlify.app",
+  "deployId": "6a7bf3075efc3ae675eebe9b",
+  "commit": "c5c383d330da042625bdb918692011d3a1de1705",
+  "results": {
+    "smoke": [
+      {
+        "ok": true,
+        "label": "GET / 200"
+      },
+      {
+        "ok": true,
+        "label": "bundle index-DE1PB0EB.js"
+      },
+      {
+        "ok": true,
+        "label": "GET /api/reels 200 count=24"
+      },
+      {
+        "ok": true,
+        "label": "GET /health ok"
+      }
+    ],
+    "bundle": [
+      {
+        "ok": true,
+        "label": "empty-rail marker"
+      },
+      {
+        "ok": true,
+        "label": "inventory marker"
+      },
+      {
+        "ok": true,
+        "label": "rotation marker"
+      },
+      {
+        "ok": true,
+        "label": "image vault gate"
+      }
+    ],
+    "enrich": [
+      {
+        "ok": true,
+        "label": "poster→MP4 same card playable poster kept"
+      },
+      {
+        "ok": true,
+        "label": "MP4→poster same card playable art attached"
+      },
+      {
+        "ok": true,
+        "label": "filename-similar no merge"
+      },
+      {
+        "ok": true,
+        "label": "filename not durable"
+      }
+    ],
+    "dist": [
+      {
+        "ok": true,
+        "label": "Trending=24"
+      },
+      {
+        "ok": true,
+        "label": "empty Romance omit Coming Soon"
+      },
+      {
+        "ok": true,
+        "label": "empty Cyber-Action omit Coming Soon"
+      },
+      {
+        "ok": true,
+        "label": "empty Suspense omit Coming Soon"
+      },
+      {
+        "ok": true,
+        "label": "rotation stable"
+      }
+    ],
+    "visual": [
+      {
+        "ok": true,
+        "label": "fresh comingSoon=0 real=6"
+      },
+      {
+        "ok": true,
+        "label": "vault-seeded real cards=24"
+      },
+      {
+        "ok": true,
+        "label": "vault-seeded Coming Soon=0"
+      },
+      {
+        "ok": true,
+        "label": "real poster art visible"
+      },
+      {
+        "ok": true,
+        "label": "no empty shelf sections rendered"
+      },
+      {
+        "ok": true,
+        "label": "reload card identity order stable"
+      }
+    ],
+    "hero": [
+      {
+        "ok": true,
+        "label": "hero/media present videos=1 imgs=24"
+      }
+    ],
+    "theater": [
+      {
+        "ok": true,
+        "label": "theater/open path ok videos=1"
+      }
+    ]
+  },
+  "visual": {
+    "fresh": {
+      "shelfCount": 1,
+      "shelves": [
+        {
+          "title": "Trending",
+          "realCount": 6,
+          "comingSoonCount": 0,
+          "realArtCount": 6,
+          "sample": [
+            {
+              "id": "3894107e-ae44-43c5-af72-b3f5d5e0ad90",
+              "src": "https://strong-lolly-a9fcb4.netlify.app/thumbs/3894107e-ae44-43c5-af72-b3f5d5e0ad90.jpg",
+              "realArt": true
+            },
+            {
+              "id": "d2aafde7-d7ba-492c-a860-20b51f7f4033",
+              "src": "https://strong-lolly-a9fcb4.netlify.app/thumbs/d2aafde7-d7ba-492c-a860-20b51f7f4033.jpg",
+              "realArt": true
+            },
+            {
+              "id": "9a1251a2-d6a6-42e5-9fcd-4eca17dcd6ef",
+              "src": "https://strong-lolly-a9fcb4.netlify.app/thumbs/9a1251a2-d6a6-42e5-9fcd-4eca17dcd6ef.jpg",
+              "realArt": true
+            },
+            {
+              "id": "615e0eae-47b4-468a-b6dd-a6846b464846",
+              "src": "https://strong-lolly-a9fcb4.netlify.app/thumbs/615e0eae-47b4-468a-b6dd-a6846b464846.jpg",
+              "realArt": true
+            }
+          ]
+        }
+      ],
+      "realTotal": 6,
+      "comingSoonTotal": 0,
+      "videoCount": 1,
+      "imgCount": 6
+    },
+    "withVault": {
+      "shelfCount": 1,
+      "shelves": [
+        {
+          "title": "Trending",
+          "realCount": 24,
+          "comingSoonCount": 0,
+          "realArtCount": 24,
+          "sample": [
+            {
+              "id": "3894107e-ae44-43c5-af72-b3f5d5e0ad90",
+              "src": "https://strong-lolly-a9fcb4.netlify.app/thumbs/3894107e-ae44-43c5-af72-b3f5d5e0ad90.jpg",
+              "realArt": true
+            },
+            {
+              "id": "d2aafde7-d7ba-492c-a860-20b51f7f4033",
+              "src": "https://strong-lolly-a9fcb4.netlify.app/thumbs/d2aafde7-d7ba-492c-a860-20b51f7f4033.jpg",
+              "realArt": true
+            },
+            {
+              "id": "9a1251a2-d6a6-42e5-9fcd-4eca17dcd6ef",
+              "src": "https://strong-lolly-a9fcb4.netlify.app/thumbs/9a1251a2-d6a6-42e5-9fcd-4eca17dcd6ef.jpg",
+              "realArt": true
+            },
+            {
+              "id": "615e0eae-47b4-468a-b6dd-a6846b464846",
+              "src": "https://strong-lolly-a9fcb4.netlify.app/thumbs/615e0eae-47b4-468a-b6dd-a6846b464846.jpg",
+              "realArt": true
+            }
+          ]
+        }
+      ],
+      "realTotal": 24,
+      "comingSoonTotal": 0,
+      "videoCount": 1,
+      "imgCount": 24
+    },
+    "theater": {
+      "ok": true,
+      "videos": 1
+    }
+  },
+  "verdicts": {
+    "DEPLOY": "PASS",
+    "PRODUCTION_SMOKE": "PASS",
+    "SMART_CATALOG": "PASS",
+    "POSTER_CARD_POPULATION": "PASS",
+    "POSTER→MP4": "PASS",
+    "MP4→POSTER": "PASS",
+    "CATEGORY_DISTRIBUTION": "PASS",
+    "EMPTY-RAIL_POLICY": "PASS",
+    "ROTATION": "PASS",
+    "HERO_REGRESSION": "PASS",
+    "THEATER_REGRESSION": "PASS"
+  },
+  "bundle": "index-DE1PB0EB.js",
+  "feedShelfCounts": {
+    "Trending": 24,
+    "Romance": 0,
+    "Cyber-Action": 0,
+    "Suspense": 0
+  },
+  "uniqueIds": 24,
+  "overall": "PRODUCTION ACCEPTANCE PASS"
+}

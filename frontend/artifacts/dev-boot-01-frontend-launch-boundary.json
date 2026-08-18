@@ -1,0 +1,26 @@
+{
+  "mission":"DEV-BOOT-01",
+  "started_at":"2026-07-20T07:58:27-04:00",
+  "pid":49124,
+  "config":{
+    "backend_port":8080,
+    "frontend_port":5173,
+    "backend_start_timeout_sec":180,
+    "healthcheck_interval_sec":1,
+    "force_restart":0,
+    "auto_start_db":1
+  },
+  "events":[
+    {"t_ms":1784548712584,"t":"2026-07-20T07:58:32-04:00","kind":"script.start","msg":"start-dev.sh main execution began","project_root":"/home/youloose2dafish/projects/reelforge"}
+,    {"t_ms":1784548722117,"t":"2026-07-20T07:58:42-04:00","kind":"backend.start.launch","msg":"launching backend via cargo run","cwd":"/home/youloose2dafish/projects/reelforge/backend","command":"cargo run"}
+,    {"t_ms":1784548722269,"t":"2026-07-20T07:58:42-04:00","kind":"backend.start.launched","msg":"backend launcher started","backend_pid":"50067","started_backend":1}
+,    {"t_ms":1784548722314,"t":"2026-07-20T07:58:42-04:00","kind":"backend.ready.loop","msg":"backend readiness iteration","expected":{"curl_rc":0,"http_code":"200"},"actual":{"probe_curl_rc":7,"probe_http_code":"000"},"state":{"elapsed_sec":0,"timeout_sec":180,"healthcheck_interval_sec":1,"backend_pid":"50067"}}
+,    {"t_ms":1784548722342,"t":"2026-07-20T07:58:42-04:00","kind":"backend.ready.pending","msg":"backend not healthy yet; sleeping","sleep_sec":1,"decision":"continue"}
+,    {"t_ms":1784548728397,"t":"2026-07-20T07:58:48-04:00","kind":"backend.ready.loop","msg":"backend readiness iteration","expected":{"curl_rc":0,"http_code":"200"},"actual":{"probe_curl_rc":28,"probe_http_code":"000"},"state":{"elapsed_sec":1,"timeout_sec":180,"healthcheck_interval_sec":1,"backend_pid":"50067"}}
+,    {"t_ms":1784548733430,"t":"2026-07-20T07:58:53-04:00","kind":"backend.ready.pending","msg":"backend not healthy yet; sleeping","sleep_sec":1,"decision":"continue"}
+,    {"t_ms":1784548739487,"t":"2026-07-20T07:58:59-04:00","kind":"backend.ready.loop","msg":"backend readiness iteration","expected":{"curl_rc":0,"http_code":"200"},"actual":{"probe_curl_rc":28,"probe_http_code":"000"},"state":{"elapsed_sec":2,"timeout_sec":180,"healthcheck_interval_sec":1,"backend_pid":"50067"}}
+,    {"t_ms":1784548744524,"t":"2026-07-20T07:59:04-04:00","kind":"signal.cleanup","msg":"cleanup_on_signal invoked","signal":"INT/TERM"}
+,    {"t_ms":1784548746595,"t":"2026-07-20T07:59:06-04:00","kind":"script.exit","msg":"start-dev.sh exiting","exit_code":130,"backend_pid":"50067","frontend_pid":""}
+  ],
+  "ended_at":"2026-07-20T07:59:06-04:00"
+}

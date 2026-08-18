@@ -1,0 +1,11 @@
+{
+  "generatedAt": "2026-08-12T15:30:28.280Z",
+  "baseline": "b94352d",
+  "pass": true,
+  "notes": [
+    "Romance clear→Trending immediate",
+    "Suspense meta after Romance clear",
+    "Phase 17 Romance still immediate",
+    "explicitCategory stale strip"
+  ]
+}

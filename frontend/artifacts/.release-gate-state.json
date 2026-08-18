@@ -1,53 +1,53 @@
 {
-  "milestone": "phase-6-5-viewer-media-identity",
-  "started_at": "2026-08-13T15:25:07Z",
+  "milestone": "LOCAL-VIEWER-DISCOVERY-RAIL-2",
+  "started_at": "2026-08-17T18:06:08Z",
   "netlify_url": "https://strong-lolly-a9fcb4.netlify.app",
   "railway_url": "https://reelforge-deploy-production.up.railway.app",
   "gates": {
     "1_build": {
       "status": "PASS",
-      "at": "2026-08-13T15:25:20.372Z",
-      "bundle_hash": "index-DiCfoWLd.js"
+      "at": "2026-08-17T18:06:23.927Z",
+      "bundle_hash": "index-3QJZfCZ9.js"
     },
     "2_credentials": {
       "status": "PASS",
-      "at": "2026-08-13T15:25:24.289Z"
+      "at": "2026-08-17T18:06:24.745Z"
     },
     "3_deploy": {
       "status": "PASS",
-      "at": "2026-08-13T15:26:13.903Z",
+      "at": "2026-08-17T18:07:09.048Z",
       "deployment_id": ""
     },
     "4_bundle_verification": {
       "status": "PASS",
-      "at": "2026-08-13T15:26:14.242Z",
-      "bundle_hash": "index-rpCBblmt.js",
-      "previous_bundle": "index-B_skNQ2_.js"
+      "at": "2026-08-17T18:07:09.371Z",
+      "bundle_hash": "index-0PRUZE5a.js",
+      "previous_bundle": "index-BL8hsq5M.js"
     },
     "5_production_smoke": {
       "status": "PASS",
-      "at": "2026-08-13T15:27:17.877Z"
+      "at": "2026-08-17T18:07:11.819Z"
     },
     "6_regression": {
       "status": "PASS",
-      "at": "2026-08-13T15:30:24.540Z"
+      "at": "2026-08-17T18:10:20.501Z"
     },
     "7_release_signoff": {
       "status": "PASS",
-      "at": "2026-08-13T15:30:24.641Z",
-      "report_expected": "frontend/phase-6-5-viewer-media-identity_DEPLOYMENT_SIGNOFF.md"
+      "at": "2026-08-17T18:10:20.617Z",
+      "report_expected": "frontend/LOCAL-VIEWER-DISCOVERY-RAIL-2_DEPLOYMENT_SIGNOFF.md"
     }
   },
   "verdict": "RELEASE APPROVED",
   "rollback": {
     "required": false,
-    "frontend_bundle": "index-Ck1tRQou.js",
-    "backend_commit": "525dff50c6b496cbaf9b454271071275efd9a665",
-    "backend_commit_short": "3221dda",
+    "frontend_bundle": "index-0PRUZE5a.js",
+    "backend_commit": "87d53b52ce561b353683c3bf17933383f291be03",
+    "backend_commit_short": "87d53b5",
     "railway_deployment_id": null,
-    "netlify_deploy": "6a7d618448653896010455fe",
+    "netlify_deploy": null,
     "netlify_url": "https://strong-lolly-a9fcb4.netlify.app",
-    "captured_at": "2026-08-13T15:25:21.164Z",
+    "captured_at": "2026-08-17T18:06:24.261Z",
     "notes": "Documentation only — not an automatic rollback. Redeploy previous bundle via Netlify if required."
   }
 }

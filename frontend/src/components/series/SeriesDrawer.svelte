@@ -3,7 +3,8 @@
     import { getSeriesById, getReelSeriesMetadata } from '../../lib/series/seriesStore.js';
     import {
         buildSeriesViewFromRelated,
-        resolveRelatedEpisodes
+        resolveRelatedEpisodes,
+        resolveFamilySeriesTitle
     } from '../../lib/series/resolveRelatedEpisodes.js';
     import { getReadyHeroVaultAssets } from '../../lib/series/heroVaultAssetSource.js';
     import {
@@ -109,7 +110,25 @@
         : creatorFacingDescription(series?.description);
     $: officialSeriesGenre = viewerMode ? '' : creatorFacingGenre(series?.genre);
     $: effectiveSeriesId = series?.id || seriesId || '';
-    $: seriesLabelText = String(series?.title || '').trim();
+    $: seriesLabelText = resolveFamilySeriesTitle({
+        relatedTitle: series?.title || relatedResult?.seriesTitle,
+        catalogTitle: catalogSeries?.title,
+        familyLabels: [
+            ...(relatedResult?.members || []).map((m) => m.seriesLabel),
+            ...((series?.seasons || []).flatMap((s) =>
+                (s.episodes || []).map((e) => /** @type {{ seriesLabel?: string }} */ (e).seriesLabel)
+            ) || [])
+        ],
+        identityFranchise: relatedResult?.identity?.franchise,
+        identityEntity: relatedResult?.identity?.entity,
+        creatorConfirmedCatalog: Boolean(
+            catalogSeries?.confirmedByCreator === true ||
+                (Array.isArray(catalogSeries?.tags) &&
+                    catalogSeries.tags.some((tag) =>
+                        /creator-(?:package|confirmed)/i.test(String(tag || ''))
+                    ))
+        )
+    });
     $: hasViewerBody = viewerMode && episodeCount > 0;
     $: seriesMetaLine =
         seasonCount > 0 && episodeCount > 0
@@ -654,7 +673,7 @@
         min-height: 0;
         overflow-y: auto;
         overflow-x: hidden;
-        padding: 0.75rem 0.75rem 1.25rem;
+        padding: 0.75rem 0.75rem max(1.75rem, calc(0.85rem + env(safe-area-inset-bottom, 0px)));
         display: flex;
         flex-direction: column;
         gap: 0.75rem;

@@ -1,0 +1,139 @@
+{
+  "mission": "RA-02",
+  "release_id": "RC1-2026-07-18-001",
+  "generatedAt": "2026-07-18T19:25:31.573Z",
+  "frontendUrl": "https://strong-lolly-a9fcb4.netlify.app/",
+  "apiUrl": "https://reelforge-deploy-production.up.railway.app",
+  "scenarios": [
+    {
+      "name": "perf.health",
+      "ok": true,
+      "classification": "pass",
+      "status": 200,
+      "ms": 876,
+      "ts": "2026-07-18T19:25:32.846Z"
+    },
+    {
+      "name": "perf.api_reels",
+      "ok": true,
+      "classification": "pass",
+      "status": 200,
+      "ms": 93,
+      "ts": "2026-07-18T19:25:32.846Z"
+    },
+    {
+      "name": "perf.bundle_identity",
+      "ok": true,
+      "classification": "pass",
+      "bundle": "assets/index-DQeGd3cl.js",
+      "expected": "assets/index-DQeGd3cl.js",
+      "ts": "2026-07-18T19:25:32.847Z"
+    },
+    {
+      "name": "stress.hero_seed_from_catalog",
+      "ok": true,
+      "classification": "pass",
+      "heroAssetId": "f9299f26-7bea-4873-ad72-cf18120dbd98",
+      "ts": "2026-07-18T19:25:33.648Z"
+    },
+    {
+      "name": "stress.fresh_restore_cycle_1",
+      "ok": true,
+      "classification": "pass",
+      "reason": "RESTORE_SUCCESS",
+      "heroReelId": "f9299f26-7bea-4873-ad72-cf18120dbd98",
+      "ts": "2026-07-18T19:26:16.789Z"
+    },
+    {
+      "name": "stress.fresh_restore_cycle_2",
+      "ok": true,
+      "classification": "pass",
+      "reason": "RESTORE_SUCCESS",
+      "heroReelId": "f9299f26-7bea-4873-ad72-cf18120dbd98",
+      "ts": "2026-07-18T19:26:58.762Z"
+    },
+    {
+      "name": "stress.fresh_restore_cycle_3",
+      "ok": true,
+      "classification": "pass",
+      "reason": "RESTORE_SUCCESS",
+      "heroReelId": "f9299f26-7bea-4873-ad72-cf18120dbd98",
+      "ts": "2026-07-18T19:27:40.200Z"
+    },
+    {
+      "name": "stress.catalog_bootstrap_second_context",
+      "ok": true,
+      "classification": "pass",
+      "vaultA": 3,
+      "vaultB": 3,
+      "ts": "2026-07-18T19:28:28.965Z"
+    },
+    {
+      "name": "stress.hard_refresh_cycles",
+      "ok": true,
+      "classification": "pass",
+      "cycles": 3,
+      "ts": "2026-07-18T19:29:22.909Z"
+    },
+    {
+      "name": "stress.no_sync_storm_on_core_api",
+      "ok": true,
+      "classification": "pass",
+      "coreApiFailureCount": 0,
+      "notificationAbortsIgnored": 22,
+      "sample": [],
+      "ts": "2026-07-18T19:29:22.909Z"
+    },
+    {
+      "name": "contract.readiness_board_renders",
+      "ok": true,
+      "classification": "pass",
+      "count": 1,
+      "ts": "2026-07-18T19:29:39.314Z"
+    },
+    {
+      "name": "contract.episode_attach_panel_visible",
+      "ok": true,
+      "classification": "pass",
+      "count": 1,
+      "ts": "2026-07-18T19:29:39.314Z"
+    },
+    {
+      "name": "contract.action_router_dom",
+      "ok": true,
+      "classification": "pass",
+      "actionButtons": 6,
+      "ts": "2026-07-18T19:29:39.314Z"
+    },
+    {
+      "name": "contract.episode_attachment_local_read",
+      "ok": true,
+      "classification": "pass",
+      "reelId": "40137565-aada-4baf-8eeb-2e42c7032cc0",
+      "ts": "2026-07-18T19:29:39.316Z"
+    }
+  ],
+  "performance": {
+    "bundle": "assets/index-DQeGd3cl.js",
+    "health": {
+      "status": 200,
+      "ms": 876,
+      "ok": true
+    },
+    "reels": {
+      "status": 200,
+      "ms": 93,
+      "ok": true
+    }
+  },
+  "regression": {},
+  "summary": {
+    "scenariosPassed": 14,
+    "scenariosTotal": 14,
+    "rcBlockers": 0,
+    "release_id": "RC1-2026-07-18-001"
+  },
+  "pass": true,
+  "rc1_recommendation": "Proceed to Gate 8 RC1-STABLE sign-off after npm regression scripts",
+  "notes": "Run npm regression suite separately: test:hero-playwright, test:hero-confirmation, test:episode-attachment, mission-ra-01-shared-state-verify.mjs"
+}

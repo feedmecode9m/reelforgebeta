@@ -1,0 +1,130 @@
+{
+  "url": "http://127.0.0.1:5173/",
+  "recommendedActionKeys": [],
+  "recommendedActionKeyDupes": [],
+  "focusIds": [],
+  "focusDupes": [],
+  "hasPCC": false,
+  "resources": [
+    {
+      "name": "http://127.0.0.1:5173/src/lib/content/vaultCardProjection.js",
+      "dur": 167
+    },
+    {
+      "name": "http://127.0.0.1:5173/src/components/viewer/ViewerSemanticCard.svelte",
+      "dur": 168
+    },
+    {
+      "name": "http://127.0.0.1:5173/src/lib/feed/viewerSemanticShell.js",
+      "dur": 165
+    },
+    {
+      "name": "http://127.0.0.1:5173/src/lib/feed/viewerShelfComposition.js",
+      "dur": 165
+    },
+    {
+      "name": "http://127.0.0.1:5173/src/lib/feed/viewerIdentityDedupe.js",
+      "dur": 170
+    },
+    {
+      "name": "http://127.0.0.1:5173/src/viewer/cinematicCardTokens.css",
+      "dur": 171
+    },
+    {
+      "name": "http://127.0.0.1:5173/src/components/vertical/ReelshortExperience.svelte",
+      "dur": 172
+    },
+    {
+      "name": "http://127.0.0.1:5173/src/components/publishing/TheaterSeriesMetadata.svelte",
+      "dur": 172
+    },
+    {
+      "name": "http://127.0.0.1:5173/src/stores/heroStore.js",
+      "dur": 167
+    },
+    {
+      "name": "http://127.0.0.1:5173/src/components/hero/HeroCommandCenter.svelte",
+      "dur": 168
+    },
+    {
+      "name": "http://127.0.0.1:5173/src/lib/hero/heroAssetBridge.js",
+      "dur": 168
+    },
+    {
+      "name": "http://127.0.0.1:5173/src/lib/hero/heroViewerTruth.js",
+      "dur": 175
+    },
+    {
+      "name": "http://127.0.0.1:5173/src/lib/hero/heroPresentationAuthority.js",
+      "dur": 183
+    },
+    {
+      "name": "http://127.0.0.1:5173/src/lib/hero/heroAuthorityRuntime.js",
+      "dur": 175
+    },
+    {
+      "name": "http://127.0.0.1:5173/src/lib/hero/heroServerAuthorityEngine.js",
+      "dur": 176
+    },
+    {
+      "name": "http://127.0.0.1:5173/src/lib/dropAffordance.js",
+      "dur": 173
+    },
+    {
+      "name": "http://127.0.0.1:5173/src/lib/diagnostics/vaultForensics.js",
+      "dur": 174
+    },
+    {
+      "name": "http://127.0.0.1:5173/src/components/experiences/HeroExperience.svelte",
+      "dur": 179
+    },
+    {
+      "name": "http://127.0.0.1:5173/src/components/account/AccountMenu.svelte",
+      "dur": 175
+    },
+    {
+      "name": "http://127.0.0.1:5173/src/components/navigation/ConsumerHeader.svelte",
+      "dur": 175
+    },
+    {
+      "name": "http://127.0.0.1:5173/src/components/navigation/ConsumerFooter.svelte",
+      "dur": 175
+    },
+    {
+      "name": "http://127.0.0.1:5173/src/lib/api/teamApi.js",
+      "dur": 163
+    },
+    {
+      "name": "http://127.0.0.1:5173/src/lib/api/syncApi.js",
+      "dur": 161
+    },
+    {
+      "name": "http://127.0.0.1:5173/src/lib/sync/syncMerge.js",
+      "dur": 166
+    },
+    {
+      "name": "http://127.0.0.1:5173/src/lib/series/workflowEngine.js",
+      "dur": 168
+    },
+    {
+      "name": "http://127.0.0.1:5173/src/lib/series/actionEngine.js",
+      "dur": 168
+    },
+    {
+      "name": "http://127.0.0.1:5173/src/lib/studio/studioHelpRegistry.js",
+      "dur": 166
+    },
+    {
+      "name": "http://127.0.0.1:5173/src/lib/api/workflowApi.js",
+      "dur": 167
+    },
+    {
+      "name": "http://127.0.0.1:5173/src/lib/api/pipelineApi.js",
+      "dur": 166
+    },
+    {
+      "name": "http://127.0.0.1:5173/src/lib/api/r2MultipartUpload.js",
+      "dur": 165
+    }
+  ]
+}

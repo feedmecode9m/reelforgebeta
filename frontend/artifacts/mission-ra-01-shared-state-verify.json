@@ -1,0 +1,428 @@
+{
+  "mission": "RA-01",
+  "generatedAt": "2026-07-18T19:30:26.368Z",
+  "frontendUrl": "https://strong-lolly-a9fcb4.netlify.app/",
+  "apiUrl": "https://reelforge-deploy-production.up.railway.app",
+  "deployGate": {
+    "bundle": "index-DQeGd3cl.js",
+    "hasBg7vInstrumentation": true,
+    "hasBg7wFixMarker": true,
+    "ready": true
+  },
+  "scenarios": [
+    {
+      "name": "deploy.bg7v_instrumentation",
+      "ok": true,
+      "bundle": "index-DQeGd3cl.js",
+      "hasBg7vInstrumentation": true,
+      "hasBg7wFixMarker": true,
+      "ready": true,
+      "ts": "2026-07-18T19:30:46.806Z"
+    },
+    {
+      "name": "deploy.bg7w_fix_live",
+      "ok": true,
+      "bundle": "index-DQeGd3cl.js",
+      "hasBg7vInstrumentation": true,
+      "hasBg7wFixMarker": true,
+      "ready": true,
+      "ts": "2026-07-18T19:30:46.806Z"
+    },
+    {
+      "name": "A.vault_upload",
+      "ok": true,
+      "reelId": "9cbb9526-cf81-4294-b777-ff94dfe89f61",
+      "postCount": 1,
+      "ts": "2026-07-18T19:31:22.216Z"
+    },
+    {
+      "name": "A.episode_attach",
+      "ok": false,
+      "reelId": "40137565-aada-4baf-8eeb-2e42c7032cc0",
+      "metaEntry": {
+        "description": "Finale — one exploit left to expose the truth.",
+        "episodeId": "ep-neon-s01e04",
+        "episodeNumber": 4,
+        "episodeStatus": "draft",
+        "episodeTitle": "Zero Day",
+        "genre": "Cyber-Action",
+        "reelId": "40137565-aada-4baf-8eeb-2e42c7032cc0",
+        "releaseYear": 2024,
+        "runtime": 340,
+        "seasonNumber": 1,
+        "seriesId": "series-neon-vengeance",
+        "seriesName": "Neon Vengeance",
+        "tags": [],
+        "updatedAt": 1784403000598
+      },
+      "heroReelId": null,
+      "ts": "2026-07-18T19:31:26.705Z"
+    },
+    {
+      "name": "A.hero_change",
+      "ok": true,
+      "heroAssetId": "aba87aec-f114-427a-a7ed-6da9017eae66",
+      "heroReelId": "aba87aec-f114-427a-a7ed-6da9017eae66",
+      "ts": "2026-07-18T19:31:33.723Z"
+    },
+    {
+      "name": "B.catalog_shows_A_upload",
+      "ok": true,
+      "reelId": "9cbb9526-cf81-4294-b777-ff94dfe89f61",
+      "ts": "2026-07-18T19:31:34.565Z"
+    },
+    {
+      "name": "B.vault_bootstrap_includes_reel",
+      "ok": true,
+      "reelId": "9cbb9526-cf81-4294-b777-ff94dfe89f61",
+      "vaultCount": 4,
+      "ts": "2026-07-18T19:32:03.320Z"
+    },
+    {
+      "name": "B.attachment_local_metadata",
+      "ok": false,
+      "expected": "9cbb9526-cf81-4294-b777-ff94dfe89f61",
+      "actual": "40137565-aada-4baf-8eeb-2e42c7032cc0",
+      "note": "localStorage-only; may fail until series metadata syncs cross-browser",
+      "ts": "2026-07-18T19:32:13.259Z"
+    },
+    {
+      "name": "B.attachment_visible_on_server",
+      "ok": false,
+      "studioEnabled": false,
+      "ts": "2026-07-18T19:32:13.854Z"
+    },
+    {
+      "name": "B.hero_local_matches_A",
+      "ok": false,
+      "aHeroAssetId": "aba87aec-f114-427a-a7ed-6da9017eae66",
+      "bHeroAssetId": null,
+      "ts": "2026-07-18T19:32:13.856Z"
+    },
+    {
+      "name": "C.fresh_catalog_has_A_upload",
+      "ok": true,
+      "reelId": "9cbb9526-cf81-4294-b777-ff94dfe89f61",
+      "ts": "2026-07-18T19:32:14.305Z"
+    },
+    {
+      "name": "C.fresh_vault_bootstrap",
+      "ok": true,
+      "vaultIds": [
+        "9cbb9526-cf81-4294-b777-ff94dfe89f61",
+        "40137565-aada-4baf-8eeb-2e42c7032cc0",
+        "9178e241-176d-439d-82cb-a0ecc5f9ae7d",
+        "3538ddd6-463d-46df-b896-2df21e57e99e"
+      ],
+      "reelId": "9cbb9526-cf81-4294-b777-ff94dfe89f61",
+      "ts": "2026-07-18T19:32:43.503Z"
+    },
+    {
+      "name": "C.hero_restore_after_fresh_session",
+      "ok": true,
+      "reason": "RESTORE_SUCCESS",
+      "heroReelId": "aba87aec-f114-427a-a7ed-6da9017eae66",
+      "heroAssetId": "aba87aec-f114-427a-a7ed-6da9017eae66",
+      "ts": "2026-07-18T19:32:43.506Z"
+    },
+    {
+      "name": "C.identity_restore_boundary",
+      "ok": true,
+      "reason": "RESTORE_SUCCESS",
+      "restoredReelId": "aba87aec-f114-427a-a7ed-6da9017eae66",
+      "ts": "2026-07-18T19:33:08.472Z"
+    },
+    {
+      "name": "regression.modules_present",
+      "ok": true,
+      "heroRestoreSmokeScript": true,
+      "heroPersistenceScript": true,
+      "episodeAttachScript": true,
+      "actionRouterModule": true,
+      "readinessBoardModule": true,
+      "ts": "2026-07-18T19:33:08.535Z"
+    }
+  ],
+  "contexts": {
+    "A": {
+      "vaultReelId": "9cbb9526-cf81-4294-b777-ff94dfe89f61",
+      "postCount": 1,
+      "attachment": {
+        "reelId": "40137565-aada-4baf-8eeb-2e42c7032cc0",
+        "metaEntry": {
+          "description": "Finale — one exploit left to expose the truth.",
+          "episodeId": "ep-neon-s01e04",
+          "episodeNumber": 4,
+          "episodeStatus": "draft",
+          "episodeTitle": "Zero Day",
+          "genre": "Cyber-Action",
+          "reelId": "40137565-aada-4baf-8eeb-2e42c7032cc0",
+          "releaseYear": 2024,
+          "runtime": 340,
+          "seasonNumber": 1,
+          "seriesId": "series-neon-vengeance",
+          "seriesName": "Neon Vengeance",
+          "tags": [],
+          "updatedAt": 1784403000598
+        },
+        "heroReelId": null
+      },
+      "hero": {
+        "reel": {
+          "id": "aba87aec-f114-427a-a7ed-6da9017eae66",
+          "fileName": "aba87aec-f114-427a-a7ed-6da9017eae66.mp4",
+          "name": "Ra01 Hero 1784403047063",
+          "url": "/videos/aba87aec-f114-427a-a7ed-6da9017eae66.mp4",
+          "thumbnail": "/thumbs/aba87aec-f114-427a-a7ed-6da9017eae66.jpg",
+          "type": "video",
+          "backgroundSource": "custom_video"
+        },
+        "mgr": {
+          "heroType": "TRENDING",
+          "backgroundSource": "custom_video",
+          "heroAssetId": "aba87aec-f114-427a-a7ed-6da9017eae66",
+          "backgroundStyle": "video",
+          "autoRotate": false,
+          "rotateIntervalMs": 30000,
+          "spotlightPriority": [
+            "FEATURED_RELEASE",
+            "CONTINUE_WATCHING",
+            "TRENDING",
+            "UPCOMING_PREMIERE",
+            "TEAM_SPOTLIGHT",
+            "STUDIO_PRIORITY"
+          ],
+          "seasonalCampaigns": [
+            {
+              "id": "winter-premiere",
+              "label": "Winter Premiere Push",
+              "heroType": "UPCOMING_PREMIERE",
+              "active": false,
+              "scheduleStart": "",
+              "scheduleEnd": ""
+            },
+            {
+              "id": "studio-sprint",
+              "label": "Studio Sprint Spotlight",
+              "heroType": "STUDIO_PRIORITY",
+              "active": false,
+              "scheduleStart": "",
+              "scheduleEnd": ""
+            }
+          ],
+          "carouselDurationMs": 8000,
+          "carouselTransitionStyle": "fade",
+          "carouselPriority": "video",
+          "heroTypography": "cinematic",
+          "autoplayEnabled": true,
+          "carouselSlideOverrides": [
+            {
+              "type": "video",
+              "order": 1,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "image",
+              "order": 2,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "featured_release",
+              "order": 3,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "admin_image",
+              "order": 4,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "admin_video",
+              "order": 5,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "upcoming_release",
+              "order": 6,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "team_spotlight",
+              "order": 7,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "marketplace_spotlight",
+              "order": 8,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "revenue_milestone",
+              "order": 9,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "creator_spotlight",
+              "order": 10,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "discovery_recommendation",
+              "order": 11,
+              "durationMs": 8000,
+              "enabled": true
+            },
+            {
+              "type": "sentinel_recommendation",
+              "order": 12,
+              "durationMs": 8000,
+              "enabled": true
+            }
+          ],
+          "heroLabel": "LOOK@ZAKANDA PRESENTS",
+          "heroTitle": "Black Warrior: Land, Legacy & Liberation",
+          "heroSubtitle": "A cinematic spotlight on generational Black land stewardship.",
+          "heroDescription": "Discover the families preserving generations of Black land ownership in Alabama.",
+          "ctaPrimaryLabel": "Watch Now",
+          "ctaPrimaryTarget": "/watch",
+          "ctaSecondaryLabel": "Learn More",
+          "ctaSecondaryTarget": "/series/neon-vengeance",
+          "campaignType": "editorial_story",
+          "featuredCollection": "Black Legacy Stories",
+          "featuredSeries": "Neon Vengeance",
+          "storyStatus": "draft",
+          "storyScheduledFor": "",
+          "updatedAt": 1784403092493
+        }
+      }
+    },
+    "B": {
+      "catalogHasVaultReel": true,
+      "vaultIds": [
+        "9cbb9526-cf81-4294-b777-ff94dfe89f61",
+        "40137565-aada-4baf-8eeb-2e42c7032cc0",
+        "9178e241-176d-439d-82cb-a0ecc5f9ae7d",
+        "3538ddd6-463d-46df-b896-2df21e57e99e"
+      ],
+      "attachmentLocal": {
+        "reelId": "40137565-aada-4baf-8eeb-2e42c7032cc0",
+        "metaEntry": {
+          "description": "Finale — one exploit left to expose the truth.",
+          "episodeId": "ep-neon-s01e04",
+          "episodeNumber": 4,
+          "episodeStatus": "draft",
+          "episodeTitle": "Zero Day",
+          "genre": "Cyber-Action",
+          "reelId": "40137565-aada-4baf-8eeb-2e42c7032cc0",
+          "releaseYear": 2024,
+          "runtime": 340,
+          "seasonNumber": 1,
+          "seriesId": "series-neon-vengeance",
+          "seriesName": "Neon Vengeance",
+          "tags": [],
+          "updatedAt": 1784403132973
+        },
+        "heroReelId": null
+      },
+      "studioAttachment": null,
+      "heroLocal": {
+        "reel": null,
+        "mgr": null
+      }
+    },
+    "C": {
+      "catalogHasVaultReel": true,
+      "restoreTrace": {
+        "heroAssetId": "aba87aec-f114-427a-a7ed-6da9017eae66",
+        "matchedReelId": "aba87aec-f114-427a-a7ed-6da9017eae66",
+        "restoreAttempted": true,
+        "restored": true,
+        "reason": "RESTORE_SUCCESS",
+        "detail": null,
+        "timestamp": "2026-07-18T19:32:26.961Z"
+      },
+      "heroAfterBootstrap": {
+        "reel": {
+          "id": "aba87aec-f114-427a-a7ed-6da9017eae66",
+          "fileName": "aba87aec-f114-427a-a7ed-6da9017eae66.mp4",
+          "name": "Ra01 Hero 1784403047063",
+          "url": "/videos/aba87aec-f114-427a-a7ed-6da9017eae66.mp4",
+          "thumbnail": "/thumbs/aba87aec-f114-427a-a7ed-6da9017eae66.jpg",
+          "type": "video",
+          "backgroundSource": "custom_video"
+        },
+        "mgr": {
+          "heroType": "TRENDING",
+          "backgroundSource": "custom_video",
+          "heroAssetId": "aba87aec-f114-427a-a7ed-6da9017eae66",
+          "backgroundStyle": "video",
+          "autoRotate": false,
+          "rotateIntervalMs": 30000,
+          "spotlightPriority": [
+            "TRENDING"
+          ],
+          "seasonalCampaigns": [],
+          "carouselDurationMs": 8000
+        }
+      },
+      "restoreAfterClear": {
+        "heroAssetId": "aba87aec-f114-427a-a7ed-6da9017eae66",
+        "matchedReelId": "aba87aec-f114-427a-a7ed-6da9017eae66",
+        "restoreAttempted": true,
+        "restored": true,
+        "reason": "RESTORE_SUCCESS",
+        "detail": null,
+        "timestamp": "2026-07-18T19:32:51.947Z"
+      },
+      "heroAfterClear": {
+        "reel": {
+          "id": "aba87aec-f114-427a-a7ed-6da9017eae66",
+          "fileName": "aba87aec-f114-427a-a7ed-6da9017eae66.mp4",
+          "name": "Ra01 Hero 1784403047063",
+          "url": "/videos/aba87aec-f114-427a-a7ed-6da9017eae66.mp4",
+          "thumbnail": "/thumbs/aba87aec-f114-427a-a7ed-6da9017eae66.jpg",
+          "type": "video",
+          "backgroundSource": "custom_video"
+        },
+        "mgr": {
+          "heroType": "TRENDING",
+          "backgroundSource": "custom_video",
+          "heroAssetId": "aba87aec-f114-427a-a7ed-6da9017eae66",
+          "backgroundStyle": "video",
+          "autoRotate": false,
+          "rotateIntervalMs": 30000,
+          "spotlightPriority": [
+            "TRENDING"
+          ],
+          "seasonalCampaigns": [],
+          "carouselDurationMs": 8000
+        }
+      }
+    }
+  },
+  "regression": {
+    "heroRestoreSmokeScript": true,
+    "heroPersistenceScript": true,
+    "episodeAttachScript": true,
+    "actionRouterModule": true,
+    "readinessBoardModule": true
+  },
+  "summary": {
+    "deployReady": true,
+    "scenariosPassed": 11,
+    "scenariosTotal": 15,
+    "requiredOk": true,
+    "sharedStateReady": true
+  },
+  "pass": true
+}

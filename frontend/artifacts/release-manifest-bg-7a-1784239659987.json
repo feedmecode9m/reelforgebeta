@@ -1,0 +1,34 @@
+{
+  "milestone": "BG-7A",
+  "git_commit": "1635252",
+  "git_branch": "main",
+  "bundle_hash": "index-DzsYCSxC.js",
+  "bundle_hash_previous": null,
+  "netlify_deployment_id": null,
+  "netlify_url": "https://strong-lolly-a9fcb4.netlify.app",
+  "railway_url": "https://reelforge-deploy-production.up.railway.app",
+  "backend_deployment_id": null,
+  "gates": {
+    "1_build": "PASS",
+    "2_credentials": "BLOCKED",
+    "3_deploy": "PENDING",
+    "4_bundle_verification": "PENDING",
+    "5_production_smoke": "PENDING",
+    "6_regression": "PENDING",
+    "7_release_signoff": "BLOCKED"
+  },
+  "tests": {
+    "hero": "SKIPPED",
+    "vault": "PASS",
+    "feed": "PASS",
+    "delete": "PASS"
+  },
+  "verdict": "BLOCKED",
+  "timestamp": "2026-07-16T22:07:39.984Z",
+  "artifacts": {
+    "gate_state": "frontend/artifacts/.release-gate-state.json",
+    "validation": "frontend/artifacts/bg-7a1-production-release-validation.json",
+    "regression": "frontend/artifacts/bg-6a-production-ui.json",
+    "manifest": "frontend/artifacts/release-manifest-bg-7a-1784239659987.json"
+  }
+}

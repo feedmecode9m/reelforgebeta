@@ -1,0 +1,76 @@
+{
+  "mission": "BG-NOTIFICATION-LOOP-01",
+  "timestamp": "2026-07-25T23:13:58.296Z",
+  "deployId": "6a6541e1a77bc9e6fb16cd62",
+  "bundle": {
+    "src": "https://strong-lolly-a9fcb4.netlify.app/assets/index-Cegt24HB.js",
+    "hasNotifyFalse": true,
+    "hasRefreshInFlight": false
+  },
+  "notificationProbe": {
+    "observeMs": 15000,
+    "statusRequests": 3,
+    "listRequests": 3,
+    "totalNotificationRequests": 6,
+    "stormDetected": false,
+    "calls": [
+      {
+        "at": 1785021106670,
+        "kind": "status",
+        "method": "GET",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "status": 200
+      },
+      {
+        "at": 1785021106889,
+        "kind": "status",
+        "method": "GET",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "status": 200
+      },
+      {
+        "at": 1785021106922,
+        "kind": "list",
+        "method": "GET",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "status": 200
+      },
+      {
+        "at": 1785021107138,
+        "kind": "status",
+        "method": "GET",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "status": 200
+      },
+      {
+        "at": 1785021107160,
+        "kind": "list",
+        "method": "GET",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "status": 200
+      },
+      {
+        "at": 1785021107391,
+        "kind": "list",
+        "method": "GET",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "status": 200
+      }
+    ]
+  },
+  "consoleThreats": [
+    "[THREAT_EVENT] {\"phase\":\"engine_initialized\",\"version\":\"2.0.0\",\"storageKey\":\"reelforge_security_events\",\"timestamp\":1785021103144}",
+    "[THREAT_EVENT] {\"category\":\"api\",\"type\":\"failure_burst\",\"url\":\"/api/workflow/status\",\"method\":\"GET\",\"error\":\"Failed to fetch\",\"count\":3,\"signalKey\":\"api:failure\",\"timestamp\":1785021103664}",
+    "[THREAT_EVENT] {\"category\":\"api\",\"type\":\"endpoint_burst\",\"url\":\"/api/notifications/status\",\"method\":\"GET\",\"count\":12,\"signalKey\":\"api:endpoint\",\"timestamp\":1785021103676}",
+    "[THREAT_EVENT] {\"category\":\"workflow\",\"type\":\"task_spam\",\"count\":4,\"signalKey\":\"workflow:spam\",\"timestamp\":1785021103708}",
+    "[THREAT_EVENT] {\"category\":\"workflow\",\"type\":\"mutation_burst\",\"count\":4,\"signalKey\":\"workflow:mutation\",\"timestamp\":1785021103734}",
+    "[THREAT_EVENT] {\"phase\":\"engine_initialized\",\"version\":\"2.0.0\",\"storageKey\":\"reelforge_security_events\",\"timestamp\":1785021103996}",
+    "[THREAT_EVENT] {\"category\":\"api\",\"type\":\"endpoint_burst\",\"url\":\"/api/notifications?userId=user-owner-1\",\"method\":\"GET\",\"count\":12,\"signalKey\":\"api:endpoint\",\"timestamp\":1785021107137}",
+    "[SECURITY_EVENT_INGEST] {\"path\":\"/api/security/events\",\"method\":\"POST\",\"source\":\"threat_detection\",\"eventType\":\"endpoint_burst\",\"timestamp\":1785021107388}"
+  ],
+  "uploadObservation": {
+    "uploadStageLogs": [],
+    "uploadNetwork": []
+  },
+  "pass": false
+}

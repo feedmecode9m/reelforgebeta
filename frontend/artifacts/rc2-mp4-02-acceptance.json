@@ -1,0 +1,186 @@
+{
+  "mission": "RC2-MP4-02 — MP4 Vault + Hero acceptance verification",
+  "baselineId": "RC1-2026-07-19-POST-08C",
+  "generatedAt": "2026-07-19T14:28:37.454Z",
+  "frontendUrl": "https://strong-lolly-a9fcb4.netlify.app/",
+  "probe": {
+    "path": "/tmp/rc2-probe-good.mp4",
+    "bytes": 124946
+  },
+  "deployment": {
+    "bundle": "/assets/index-Btl25zBV.js"
+  },
+  "network": {
+    "posts": [
+      {
+        "at": "2026-07-19T14:29:02.160Z",
+        "status": 202,
+        "identity": {
+          "id": "085d5f3b-a18d-4cee-b656-dc21250ff0c3",
+          "status": "pending",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/085d5f3b-a18d-4cee-b656-dc21250ff0c3.mp4",
+          "thumbnailUrl": null
+        },
+        "bodyKeys": [
+          "id",
+          "status",
+          "videoUrl",
+          "thumbnailUrl",
+          "pollUrl"
+        ]
+      },
+      {
+        "at": "2026-07-19T14:29:14.058Z",
+        "status": 202,
+        "identity": {
+          "id": "192293f7-c784-46af-aa45-1bb15b6a4cc6",
+          "status": "pending",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4",
+          "thumbnailUrl": null
+        },
+        "bodyKeys": [
+          "id",
+          "status",
+          "videoUrl",
+          "thumbnailUrl",
+          "pollUrl"
+        ]
+      }
+    ]
+  },
+  "steps": {
+    "baseline": {
+      "at": "2026-07-19T14:28:53.381Z",
+      "vaultIdsBefore": [
+        "9cbb9526-cf81-4294-b777-ff94dfe89f61",
+        "40137565-aada-4baf-8eeb-2e42c7032cc0",
+        "9178e241-176d-439d-82cb-a0ecc5f9ae7d",
+        "3538ddd6-463d-46df-b896-2df21e57e99e"
+      ],
+      "heroStorage": {
+        "reel": null,
+        "mgr": null
+      }
+    },
+    "step1_upload": {
+      "at": "2026-07-19T14:28:53.424Z",
+      "target": ".video-vault-drop",
+      "drop": {
+        "ok": true
+      },
+      "postStatus": 202,
+      "identity": {
+        "id": "085d5f3b-a18d-4cee-b656-dc21250ff0c3",
+        "status": "pending",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/085d5f3b-a18d-4cee-b656-dc21250ff0c3.mp4",
+        "thumbnailUrl": null
+      }
+    },
+    "step2_ingest": {
+      "at": "2026-07-19T14:29:08.567Z",
+      "note": "Frontend createReel polls GET /api/reels/{id} internally and resolves only on ready (throws on failed)",
+      "vaultResolved": true
+    },
+    "step4_vaultUuid": {
+      "at": "2026-07-19T14:29:08.567Z",
+      "vaultId": "085d5f3b-a18d-4cee-b656-dc21250ff0c3",
+      "presentInVault": true,
+      "vaultIdsAfter": [
+        "085d5f3b-a18d-4cee-b656-dc21250ff0c3",
+        "9cbb9526-cf81-4294-b777-ff94dfe89f61",
+        "40137565-aada-4baf-8eeb-2e42c7032cc0",
+        "9178e241-176d-439d-82cb-a0ecc5f9ae7d",
+        "3538ddd6-463d-46df-b896-2df21e57e99e"
+      ]
+    },
+    "step3_readyCatalog": {
+      "at": "2026-07-19T14:29:11.534Z",
+      "catalogStatus": 200,
+      "containsVaultId": true
+    },
+    "step5_vaultCard": {
+      "at": "2026-07-19T14:29:11.545Z",
+      "count": 5,
+      "matchedNewCard": true
+    },
+    "step6_contentCardHeroAffordance": {
+      "at": "2026-07-19T14:29:11.550Z",
+      "scopePresent": true,
+      "useAsHeroButtons": 0
+    },
+    "step6_heroAssign": {
+      "at": "2026-07-19T14:29:12.106Z",
+      "target": ".hero-drop-zone",
+      "drop": {
+        "ok": true
+      },
+      "mechanism": "hero_replace_auto_accept"
+    },
+    "step7_heroSave": {
+      "at": "2026-07-19T14:29:15.134Z",
+      "heroPostStatus": 202,
+      "heroPostIdentity": {
+        "id": "192293f7-c784-46af-aa45-1bb15b6a4cc6",
+        "status": "pending",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4",
+        "thumbnailUrl": null
+      },
+      "heroAssetId": "192293f7-c784-46af-aa45-1bb15b6a4cc6",
+      "heroReel": {
+        "id": "192293f7-c784-46af-aa45-1bb15b6a4cc6",
+        "url": "/videos/192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4",
+        "fileName": "192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4"
+      },
+      "backgroundSource": "custom_video",
+      "committed": true
+    },
+    "step7_heroRender": {
+      "at": "2026-07-19T14:29:17.158Z",
+      "src": "https://strong-lolly-a9fcb4.netlify.app/videos/192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4",
+      "idFromSrc": "192293f7-c784-46af-aa45-1bb15b6a4cc6",
+      "present": true
+    },
+    "step8_persistence": {
+      "at": "2026-07-19T14:29:26.605Z",
+      "heroAssetIdAfterReload": "192293f7-c784-46af-aa45-1bb15b6a4cc6",
+      "rendered": {
+        "src": "https://strong-lolly-a9fcb4.netlify.app/videos/192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4",
+        "idFromSrc": "192293f7-c784-46af-aa45-1bb15b6a4cc6",
+        "present": true
+      },
+      "vaultIdContainsUploaded": true
+    }
+  },
+  "continuity": {
+    "vaultUploadId": "085d5f3b-a18d-4cee-b656-dc21250ff0c3",
+    "vaultUrl": "https://strong-lolly-a9fcb4.netlify.app/videos/085d5f3b-a18d-4cee-b656-dc21250ff0c3.mp4",
+    "heroUploadId": "192293f7-c784-46af-aa45-1bb15b6a4cc6",
+    "heroAssetId": "192293f7-c784-46af-aa45-1bb15b6a4cc6",
+    "heroRenderIdBeforeReload": "192293f7-c784-46af-aa45-1bb15b6a4cc6",
+    "heroAssetIdAfterReload": "192293f7-c784-46af-aa45-1bb15b6a4cc6",
+    "heroRenderIdAfterReload": "192293f7-c784-46af-aa45-1bb15b6a4cc6",
+    "vaultUuidSurvivesReload": true,
+    "heroIdSurvivesReload": true,
+    "heroRenderMatchesAssetAfterReload": true
+  },
+  "classification": {
+    "perStep": {
+      "step1_upload_202": true,
+      "step2_pending_to_ready": true,
+      "step3_ready_catalog": true,
+      "step4_vault_uuid": true,
+      "step5_vault_card": true,
+      "step6_use_as_hero_available": true,
+      "step7_hero_saved": true,
+      "step8_hero_persists": true
+    },
+    "firstFailure": null,
+    "allPass": true,
+    "result": "working",
+    "heroAffordanceNote": "Content-vault cards expose no \"Use as Hero\" button; hero is set via the separate Hero Replace dropzone (heroAssetRegistry sources only the committed hero reel)"
+  },
+  "notes": [
+    "Probe: 8s H.264 + AAC, yuv420p, 640x360 — passes -ss 1 thumbnail extraction.",
+    "Hero set via Hero Replace dropzone (product mechanism), not a content-vault card button."
+  ]
+}

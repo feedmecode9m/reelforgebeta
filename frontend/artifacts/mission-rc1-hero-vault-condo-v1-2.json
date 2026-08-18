@@ -1,0 +1,21 @@
+{
+  "mission": "RC1-HERO-VAULT-CONDO-V1-2",
+  "release_id": "RC1-2026-07-18-001",
+  "generatedAt": "2026-07-18T19:56:51.867Z",
+  "frontendUrl": "https://strong-lolly-a9fcb4.netlify.app/",
+  "apiUrl": "https://reelforge-deploy-production.up.railway.app",
+  "videoPath": "/home/youloose2dafish/Downloads/condo_v1_2.mp4",
+  "videoSizeBytes": 362155056,
+  "deployGate": {
+    "bundle": "assets/index-DQeGd3cl.js",
+    "expectedBundle": "assets/index-DQeGd3cl.js",
+    "hasBg7vMarker": true,
+    "ok": true
+  },
+  "browserA": {},
+  "catalog": {},
+  "browserB": {},
+  "classification": "environment",
+  "pass": false,
+  "error": "page.evaluate: Target page, context or browser has been closed"
+}

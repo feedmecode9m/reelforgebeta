@@ -1,0 +1,59 @@
+{
+  "state": {
+    "record": {
+      "mode": "asset",
+      "assetId": "4bff26c9-29bb-4cd4-ac56-e5cc9b0d0590",
+      "mediaUrl": "http://localhost:8080/videos/4bff26c9-29bb-4cd4-ac56-e5cc9b0d0590.mp4",
+      "mediaKind": "video",
+      "title": "Black Warrior: Land, Legacy & Liberation",
+      "source": "server_presentation",
+      "revision": 3
+    },
+    "manager": {
+      "heroAssetId": "4bff26c9-29bb-4cd4-ac56-e5cc9b0d0590",
+      "backgroundSource": "custom_video",
+      "backgroundStyle": "video",
+      "mediaUrl": "http://localhost:8080/videos/4bff26c9-29bb-4cd4-ac56-e5cc9b0d0590.mp4",
+      "heroTitle": "Black Warrior: Land, Legacy & Liberation"
+    },
+    "reel": {
+      "id": "4bff26c9-29bb-4cd4-ac56-e5cc9b0d0590",
+      "url": "http://localhost:8080/videos/4bff26c9-29bb-4cd4-ac56-e5cc9b0d0590.mp4",
+      "name": "Black Warrior: Land, Legacy & Liberation"
+    },
+    "durableLock": true,
+    "replacePanel": null
+  },
+  "logs": [
+    "[HERO_CLASSIFY] {stage: heroAssetBridge.normalizeHeroAssetRecord, assetId: 4bff26c9-29bb-4cd4-ac56-e5cc9b0d0590, assetType: mp4, mime: video/mp4, mediaUrl: http://localhost:8080/videos/4bff26c9-29bb-4cd4-ac56-e5cc9b0d0590.mp4}",
+    "[HERO_CLASSIFY] {stage: heroAssetBridge.normalizeHeroAssetRecord, assetId: 65934555-716d-4d7d-97d7-bcd884cbb72c, assetType: mp4, mime: video/mp4, mediaUrl: http://localhost:8080/videos/65934555-716d-4d7d-97d7-bcd884cbb72c.mp4}",
+    "[HERO_REGISTRY_TRACE] {stage: heroAssetBridge:buildHeroAssetRegistry, vaultItemsCount: 4, registryCount: 4, firstFive: Array(4), img0113Present: false}",
+    "[HERO_CAROUSEL] {\"slideCount\":7,\"transitionStyle\":\"slide\",\"durationMs\":8000,\"priority\":\"video\",\"autoplayEnabled\":true,\"timestamp\":1786646441356}",
+    "[HERO_SLIDE] {\"id\":\"slide-admin-video:4bff26c9-29bb-4cd4-ac56-e5cc9b0d0590\",\"type\":\"admin_video\",\"title\":\"Admin Video Campaign\",\"durationMs\":8000,\"priority\":5,\"timestamp\":1786646441356}",
+    "[HERO_SLIDE] {\"id\":\"slide-market:service-editing-001\",\"type\":\"marketplace_spotlight\",\"title\":\"Marketplace Spotlight\",\"durationMs\":8000,\"priority\":8,\"timestamp\":1786646441356}",
+    "[HERO_CAMPAIGN] {\"activeCampaignId\":null,\"activeCampaignLabel\":null,\"scheduled\":false,\"scheduleStart\":null,\"scheduleEnd\":null,\"timestamp\":1786646441357}",
+    "[HERO_CAROUSEL_RENDER] {assetId: 73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee, type: video, mediaLoaded: true}",
+    "[HERO_LOAD] {key: reelforge_hero_manager_config, backgroundSource: custom_video, heroAssetId: 4bff26c9-29bb-4cd4-ac56-e5cc9b0d0590, ts: 2026-08-13T18:40:41.564Z}",
+    "[HERO_CONFIG_BOOT_TRACE] {ts: 2026-08-13T18:40:41.564Z, site: loadHeroManagerConfig, caller: at loadHeroManagerConfig (http://127.0.0.1:5173/sr…/hero/heroIntelligence.js?t=1786645867948:792:20), storageRawBeforeParse: {\"heroType\":\"TEAM_SPOTLIGHT\",\"backgroundSource\":\"c…ac56-e5cc9b0d0590.mp4\",\"updatedAt\":1786646437944}, parsedHeroAssetId: 4bff26c9-29bb-4cd4-ac56-e5cc9b0d0590}",
+    "[HERO_IDENTITY_RESOLUTION] {episodeId: series-validation-1781016646994-e1, attemptedSources: Array(8), matchedSource: , matchedReelId: , matchedVideoUrl: }",
+    "[HERO_IDENTITY_BRIDGE] {episodeId: series-validation-1781016646994-e1, resolvedReelId: , foundInFeed: false, hasVideoUrl: false, reason: missing_playable_media}",
+    "[HERO_IDENTITY_RESOLUTION] {episodeId: ep-01-arrival-open-s01e01-v1, attemptedSources: Array(12), matchedSource: uploadRegistry.reelId, matchedReelId: 73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee, matchedVideoUrl: http://localhost:8080/videos/73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee.mp4}",
+    "[HERO_IDENTITY_BRIDGE] {episodeId: ep-01-arrival-open-s01e01-v1, resolvedReelId: 73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee, foundInFeed: true, hasVideoUrl: true, reason: null}",
+    "[HERO_IDENTITY_RESOLUTION] {episodeId: ep-01-arrival-open-s01e01-v1, attemptedSources: Array(12), matchedSource: uploadRegistry.reelId, matchedReelId: 73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee, matchedVideoUrl: http://localhost:8080/videos/73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee.mp4}",
+    "[HERO_IDENTITY_BRIDGE] {episodeId: ep-01-arrival-open-s01e01-v1, resolvedReelId: 73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee, foundInFeed: true, hasVideoUrl: true, reason: null}",
+    "[HERO_IDENTITY_RESOLUTION] {episodeId: series-validation-1781016646994-e1, attemptedSources: Array(8), matchedSource: , matchedReelId: , matchedVideoUrl: }",
+    "[HERO_IDENTITY_BRIDGE] {episodeId: series-validation-1781016646994-e1, resolvedReelId: , foundInFeed: false, hasVideoUrl: false, reason: missing_playable_media}",
+    "[HERO_IDENTITY_RESOLUTION] {episodeId: series-validation-1781016646994-e1, attemptedSources: Array(8), matchedSource: , matchedReelId: , matchedVideoUrl: }",
+    "[HERO_IDENTITY_BRIDGE] {episodeId: series-validation-1781016646994-e1, resolvedReelId: , foundInFeed: false, hasVideoUrl: false, reason: missing_playable_media}",
+    "[HERO_IDENTITY_RESOLUTION] {episodeId: series-validation-1781016646994-e1, attemptedSources: Array(8), matchedSource: , matchedReelId: , matchedVideoUrl: }",
+    "[HERO_IDENTITY_BRIDGE] {episodeId: series-validation-1781016646994-e1, resolvedReelId: , foundInFeed: false, hasVideoUrl: false, reason: missing_playable_media}",
+    "[HERO_IDENTITY_RESOLUTION] {episodeId: series-validation-1781016646994-e1, attemptedSources: Array(8), matchedSource: , matchedReelId: , matchedVideoUrl: }",
+    "[HERO_IDENTITY_BRIDGE] {episodeId: series-validation-1781016646994-e1, resolvedReelId: , foundInFeed: false, hasVideoUrl: false, reason: missing_playable_media}",
+    "[HERO_LOAD] {key: reelforge_hero_manager_config, backgroundSource: custom_video, heroAssetId: 4bff26c9-29bb-4cd4-ac56-e5cc9b0d0590, ts: 2026-08-13T18:40:41.572Z}",
+    "[HERO_CONFIG_BOOT_TRACE] {ts: 2026-08-13T18:40:41.572Z, site: loadHeroManagerConfig, caller: at loadHeroManagerConfig (http://127.0.0.1:5173/sr…/hero/heroIntelligence.js?t=1786645867948:792:20), storageRawBeforeParse: {\"heroType\":\"TEAM_SPOTLIGHT\",\"backgroundSource\":\"c…ac56-e5cc9b0d0590.mp4\",\"updatedAt\":1786646437944}, parsedHeroAssetId: 4bff26c9-29bb-4cd4-ac56-e5cc9b0d0590}",
+    "[HERO_BLOCKER] {\"seriesId\":\"series-validation-1781016646994\",\"blocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":1,\"openTasks\":1,\"readiness\":25,\"timestamp\":1786646441630}",
+    "[HERO_RECOMMENDATION] {\"seriesId\":\"series-validation-1781016646994\",\"id\":\"missing-asset-series-validation-1781016646994-e1\",\"title\":\"Upload S1:E01 reel\",\"priority\":\"CRITICAL\",\"impact\":35,\"timestamp\":1786646441630}",
+    "[HERO_RECOMMENDATION] {\"seriesId\":\"series-validation-1781016646994\",\"id\":\"missing-season-structure-s2\",\"title\":\"Fix season structure\",\"priority\":\"CRITICAL\",\"impact\":1,\"timestamp\":1786646441630}",
+    "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-validation-1781016646994\",\"readinessPercent\":25,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":1,\"openTasks\":1,\"publishingVelocity\":0,\"unreadNotifications\":200,\"timestamp\":1786646441631}"
+  ]
+}

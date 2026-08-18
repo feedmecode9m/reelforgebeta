@@ -7,6 +7,12 @@
    */
   import '../../viewer/cinematicCardTokens.css';
   import { buildViewerSemanticShell } from '../../lib/feed/viewerSemanticShell.js';
+  import {
+    describeElementUnderPoint,
+    logMobileIdentityTrace,
+    logMobilePlayTrace
+  } from '../../lib/device/mobileExperienceDiagnostics.js';
+  import { onMount } from 'svelte';
 
   /** @type {Record<string, unknown> | null} */
   export let reel = null;
@@ -59,6 +65,32 @@
   $: posterUrl = String(
     resolvedMedia?.poster || resolvedShell?.resolvedMedia?.poster || resolvedShell?.artworkUrl || ''
   );
+  $: seriesLine = String(resolvedShell?.seriesLine || projection?.seriesLine || '').trim();
+  $: episodeIdentity = String(resolvedShell?.episodeIdentity || '').trim();
+
+  let identityTracedFor = '';
+  $: if (resolvedShell?.assetId && String(resolvedShell.assetId) !== identityTracedFor) {
+    identityTracedFor = String(resolvedShell.assetId);
+    logMobileIdentityTrace({
+      assetId: resolvedShell.assetId,
+      vaultTitle: String(projection?.title || '').trim() || String(resolvedShell.title || '').trim(),
+      displayedTitle: String(resolvedShell.title || '').trim(),
+      seriesLine,
+      catalogTitle: String(reel?.title || reel?.name || '').trim()
+    });
+  }
+
+  onMount(() => {
+    if (resolvedShell?.assetId) {
+      logMobileIdentityTrace({
+        assetId: resolvedShell.assetId,
+        vaultTitle: String(projection?.title || '').trim() || String(resolvedShell.title || '').trim(),
+        displayedTitle: String(resolvedShell.title || '').trim(),
+        seriesLine,
+        catalogTitle: String(reel?.title || reel?.name || '').trim()
+      });
+    }
+  });
 </script>
 
 {#if resolvedShell}
@@ -79,13 +111,64 @@
     data-poster-url={posterUrl}
     data-identity-deduped={resolvedMedia || resolvedShell?.resolvedMedia ? '1' : '0'}
     aria-label={hasTitle ? `Play ${resolvedShell.title}` : 'Play media'}
-    on:click={() => {
-      if (interactive && reel) onActivate(/** @type {Record<string, unknown>} */ (reel));
+    on:click={(e) => {
+      if (!interactive || !reel) return;
+      const assetId = String(resolvedShell?.assetId || reel.id || '').trim();
+      const mediaUrl = String(
+        resolvedMedia?.mediaUrl ||
+          reel.url ||
+          reel.playbackUrl ||
+          reel.mediaUrl ||
+          reel.videoUrl ||
+          ''
+      ).trim();
+      logMobilePlayTrace('CLICK', {
+        assetId,
+        title: String(resolvedShell?.title || reel.title || reel.name || '').trim(),
+        mediaUrl,
+        resolver: 'ViewerSemanticCard.onActivate',
+        source: 'viewer-semantic-card',
+        hitTop: describeElementUnderPoint(/** @type {HTMLElement} */ (e.currentTarget)),
+        viewerOpen: false,
+        videoMounted: false,
+        playCalled: false
+      });
+      const hasCallback = typeof onActivate === 'function';
+      logMobilePlayTrace('HANDOFF_INVOKE', {
+        assetId,
+        title: String(resolvedShell?.title || reel.title || reel.name || '').trim(),
+        mediaUrl,
+        resolver: 'ViewerSemanticCard.onActivate.call',
+        source: 'viewer-semantic-card',
+        reason: hasCallback ? 'callback' : 'missing-callback',
+        playCalled: false
+      });
+      try {
+        if (!hasCallback) return;
+        onActivate(/** @type {Record<string, unknown>} */ (reel));
+      } catch (err) {
+        const message =
+          err && typeof err === 'object' && 'message' in err ? String(err.message) : String(err);
+        logMobilePlayTrace('HANDOFF_ERROR', {
+          assetId,
+          resolver: 'ViewerSemanticCard.onActivate',
+          source: 'viewer-semantic-card',
+          reason: message.slice(0, 180),
+          playCalled: false
+        });
+      }
     }}
     on:keydown={(e) => {
       if (!interactive || !reel) return;
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
+        logMobilePlayTrace('KEY_ACTIVATE', {
+          assetId: String(resolvedShell?.assetId || reel.id || '').trim(),
+          title: String(resolvedShell?.title || reel.title || reel.name || '').trim(),
+          mediaUrl: String(reel.url || reel.playbackUrl || reel.mediaUrl || '').trim(),
+          resolver: 'ViewerSemanticCard.keydown',
+          source: 'viewer-semantic-card'
+        });
         onActivate(/** @type {Record<string, unknown>} */ (reel));
       }
     }}
@@ -137,13 +220,18 @@
         {/if}
       </div>
 
-      <div class="viewer-sem-card__info" data-viewer-sem-hierarchy>
+        <div class="viewer-sem-card__info" data-viewer-sem-hierarchy>
         {#if hasTitle && titlePlacement === 'info'}
           <h3 class="viewer-sem-card__title" data-viewer-sem-title data-vault-card-title>
             {resolvedShell.title}
           </h3>
         {:else if !hasTitle}
           <p class="viewer-sem-card__title-empty" data-viewer-sem-title-empty aria-hidden="true"></p>
+        {/if}
+        {#if seriesLine}
+          <p class="viewer-sem-card__identity" data-viewer-sem-identity data-viewer-sem-series>
+            {seriesLine}
+          </p>
         {/if}
         <div class="viewer-sem-card__meta">
           {#if resolvedShell.shelf}
@@ -363,6 +451,17 @@
     color: var(--rf-cine-muted);
     letter-spacing: 0.02em;
   }
+  .viewer-sem-card__identity {
+    margin: 0.2rem 0 0.35rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgba(244, 241, 234, 0.62);
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
   .viewer-sem-card__meta {
     display: flex;
     flex-wrap: wrap;
@@ -394,6 +493,15 @@
     }
     .viewer-sem-card__frame {
       border-radius: var(--rf-cine-radius-sm);
+    }
+    .viewer-sem-card {
+      min-height: 44px;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .viewer-sem-card__play {
+      width: 2.75rem;
+      height: 2.75rem;
     }
   }
 </style>

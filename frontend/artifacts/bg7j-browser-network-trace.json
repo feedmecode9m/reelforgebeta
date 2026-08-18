@@ -1,0 +1,23 @@
+{
+  "ts": "2026-07-23T13:38:54.629Z",
+  "netlify": "https://strong-lolly-a9fcb4.netlify.app",
+  "uploadResult": {
+    "signStatus": 200,
+    "uploadUrlHost": "f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com",
+    "putStatus": null,
+    "putError": "TypeError: Failed to fetch",
+    "uploadId": "bdfb36c6-d3a1-4870-8ebc-8027993b0f29"
+  },
+  "network": [
+    {
+      "url": "https://strong-lolly-a9fcb4.netlify.app/api/uploads/sign",
+      "status": 200,
+      "method": "POST",
+      "acao": "https://strong-lolly-a9fcb4.netlify.app"
+    },
+    {
+      "failed": "https://f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com/reelforge-media/prod/5fcc30ef-87a6-491f-8a20-57ae7a85782e.mp4?x-id=PutObject&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Am",
+      "error": "net::ERR_FAILED"
+    }
+  ]
+}

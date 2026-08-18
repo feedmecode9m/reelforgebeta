@@ -110,6 +110,9 @@ export function isUnsafeHeroFilenameTitle(value) {
     if (MEDIA_EXT.test(text)) return true;
     if (UUID_LIKE.test(text)) return true;
     if (UPLOAD_TEMP.test(text)) return true;
+    // Finder "copy <UUID>" / duplicate export stems — never audience titles
+    if (/^copy\s+[0-9a-f]{8}/i.test(text)) return true;
+    if (/\bcopy\s+[0-9a-f]{8}-[0-9a-f-]{27,}/i.test(text)) return true;
     // MICROS_STIRR_2026_FINAL style
     if (/^[A-Z0-9]+([_-][A-Z0-9]+){1,}$/.test(text) && text.includes('_')) return true;
     if (/^\d{6,}$/.test(text)) return true;

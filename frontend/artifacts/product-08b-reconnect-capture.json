@@ -1,0 +1,295 @@
+{
+  "mission": "PRODUCT-08B-RECONNECT-CAPTURE",
+  "releaseContext": "RC1-2026-07-18-001",
+  "generatedAt": "2026-07-19T10:37:59.937Z",
+  "frontendUrl": "https://strong-lolly-a9fcb4.netlify.app/",
+  "waitMs": 180000,
+  "captureStartAt": "2026-07-19T10:38:00.228Z",
+  "captureEndAt": "2026-07-19T10:41:16.990Z",
+  "worksheet": {
+    "bannerAppeared": "2026-07-19T10:38:14.940Z",
+    "firstSyncPush200": null,
+    "bannerDisappeared": null,
+    "syncPushCount": 0,
+    "firstRequestTimestamp": null,
+    "lastRequestTimestamp": null,
+    "firstToLastDurationMs": null,
+    "bannerDurationMs": 182050,
+    "pattern": "inconclusive",
+    "wsState": "failed",
+    "bannerStillVisibleAtCaptureEnd": "2026-07-19T10:41:16.990Z"
+  },
+  "derived": {
+    "bannerToFirstSyncPush200Ms": null,
+    "averageIntervalMs": null,
+    "longestGapMs": null,
+    "shortestGapMs": null,
+    "gapsMs": [],
+    "payloadBytesSample": null,
+    "statusCodes": []
+  },
+  "network": {
+    "syncPushAll": [
+      {
+        "id": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push|1784457489063|0.3405569881221694",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push",
+        "method": "POST",
+        "startedAt": "2026-07-19T10:38:09.063Z",
+        "requestBodyBytes": 18549,
+        "status": 200,
+        "finishedAt": "2026-07-19T10:38:09.195Z",
+        "durationMs": 132,
+        "failed": false,
+        "failureText": null
+      },
+      {
+        "id": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push|1784457490714|0.9879353230586522",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push",
+        "method": "POST",
+        "startedAt": "2026-07-19T10:38:10.714Z",
+        "requestBodyBytes": 18105,
+        "status": 200,
+        "finishedAt": "2026-07-19T10:38:10.950Z",
+        "durationMs": 236,
+        "failed": false,
+        "failureText": null
+      }
+    ],
+    "syncPushInEventWindow": []
+  },
+  "websocket": {
+    "urlExpected": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+    "frames": [
+      {
+        "ts": "2026-07-19T10:38:11.186Z",
+        "kind": "attempt",
+        "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center"
+      },
+      {
+        "ts": "2026-07-19T10:38:11.186Z",
+        "kind": "open_or_established",
+        "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center"
+      },
+      {
+        "ts": "2026-07-19T10:38:11.257Z",
+        "kind": "error",
+        "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center"
+      },
+      {
+        "ts": "2026-07-19T10:38:11.257Z",
+        "kind": "close",
+        "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+        "closeCode": "unavailable",
+        "closeReason": "unavailable"
+      }
+    ],
+    "attempts": [
+      {
+        "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+        "openedAt": "2026-07-19T10:38:11.186Z",
+        "closedAt": "2026-07-19T10:38:11.257Z",
+        "errorAt": "2026-07-19T10:38:11.257Z",
+        "closeCode": "unavailable",
+        "closeReason": "unavailable",
+        "frames": [],
+        "correlatedWithBanner": true,
+        "attemptAt": "2026-07-19T10:38:11.186Z"
+      }
+    ]
+  },
+  "observer": {
+    "startedAt": "2026-07-19T10:38:08.937Z",
+    "events": [
+      {
+        "ts": "2026-07-19T10:38:08.937Z",
+        "kind": "observer_ready",
+        "note": "Waiting for Backend reconnecting... / Reconnecting to backend…"
+      },
+      {
+        "ts": "2026-07-19T10:38:14.938Z",
+        "kind": "reelforge_backend_reconnecting",
+        "message": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-19T10:38:14.940Z",
+        "kind": "operation_status_appeared",
+        "text": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-19T10:38:14.949Z",
+        "kind": "reelforge_backend_reconnecting",
+        "message": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-19T10:38:15.058Z",
+        "kind": "reelforge_backend_reconnecting",
+        "message": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-19T10:38:15.159Z",
+        "kind": "reelforge_backend_reconnecting",
+        "message": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-19T10:38:15.160Z",
+        "kind": "reelforge_backend_reconnecting",
+        "message": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-19T10:38:15.163Z",
+        "kind": "reelforge_backend_reconnecting",
+        "message": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-19T10:38:15.164Z",
+        "kind": "reelforge_backend_reconnecting",
+        "message": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-19T10:38:15.187Z",
+        "kind": "reelforge_backend_reconnecting",
+        "message": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-19T10:38:15.226Z",
+        "kind": "reelforge_backend_reconnecting",
+        "message": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-19T10:38:15.462Z",
+        "kind": "reelforge_backend_reconnecting",
+        "message": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-19T10:38:15.463Z",
+        "kind": "reelforge_backend_reconnecting",
+        "message": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-19T10:38:15.812Z",
+        "kind": "reelforge_backend_reconnecting",
+        "message": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-19T10:38:17.664Z",
+        "kind": "reelforge_backend_reconnecting",
+        "message": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-19T10:38:21.460Z",
+        "kind": "health_banner_appeared",
+        "text": "Reconnecting to backend…"
+      },
+      {
+        "ts": "2026-07-19T10:38:22.664Z",
+        "kind": "health_banner_disappeared",
+        "previous": "Reconnecting to backend…",
+        "next": ""
+      },
+      {
+        "ts": "2026-07-19T10:38:28.446Z",
+        "kind": "reelforge_backend_reconnecting",
+        "message": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-19T10:38:29.271Z",
+        "kind": "reelforge_backend_reconnecting",
+        "message": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-19T10:38:29.274Z",
+        "kind": "reelforge_backend_reconnecting",
+        "message": "Backend reconnecting..."
+      }
+    ],
+    "operationStatus": {
+      "appearedAt": "2026-07-19T10:38:14.940Z",
+      "disappearedAt": null,
+      "lastText": "Backend reconnecting..."
+    },
+    "healthBanner": {
+      "appearedAt": "2026-07-19T10:38:21.460Z",
+      "disappearedAt": "2026-07-19T10:38:22.664Z",
+      "lastText": null
+    },
+    "reconnectEvents": [
+      {
+        "ts": "2026-07-19T10:38:14.938Z",
+        "message": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-19T10:38:14.949Z",
+        "message": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-19T10:38:15.058Z",
+        "message": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-19T10:38:15.159Z",
+        "message": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-19T10:38:15.160Z",
+        "message": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-19T10:38:15.163Z",
+        "message": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-19T10:38:15.164Z",
+        "message": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-19T10:38:15.187Z",
+        "message": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-19T10:38:15.226Z",
+        "message": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-19T10:38:15.462Z",
+        "message": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-19T10:38:15.463Z",
+        "message": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-19T10:38:15.812Z",
+        "message": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-19T10:38:17.664Z",
+        "message": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-19T10:38:28.446Z",
+        "message": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-19T10:38:29.271Z",
+        "message": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-19T10:38:29.274Z",
+        "message": "Backend reconnecting..."
+      }
+    ]
+  },
+  "confidence": "Low",
+  "exitCriterionMatch": null,
+  "notes": [
+    "Operation-status still visible at capture end; bannerDisappeared left null; sync window uses capture end.",
+    "Pattern inconclusive; do not scope PRODUCT-08B yet."
+  ],
+  "pass": false,
+  "eventWindowDefinition": "operation-status appear → capture end (natural disappear not observed)",
+  "healthBanner": {
+    "appearedAt": "2026-07-19T10:38:21.460Z",
+    "disappearedAt": "2026-07-19T10:38:22.664Z",
+    "note": "Recorded separately from exact operation-status Backend reconnecting..."
+  }
+}

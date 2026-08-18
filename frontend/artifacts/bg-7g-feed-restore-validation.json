@@ -1,0 +1,190 @@
+{
+  "generatedAt": "2026-07-17T06:37:24.962Z",
+  "frontend": "https://strong-lolly-a9fcb4.netlify.app",
+  "checks": {
+    "apiTrendingVideosGte5": true,
+    "apiHeroEq2": true,
+    "apiImagesEq2": true,
+    "feedHasRealVideos": true,
+    "noDemoPlaceholders": true,
+    "noViaPlaceholder": true,
+    "realVideoElementsInDom": true,
+    "noDemoFeedInjectedConsole": true
+  },
+  "api": {
+    "status": 200,
+    "count": 9,
+    "hero": 2,
+    "trendingVideos": 5,
+    "images": 2,
+    "feedReelIds": [
+      "cac3e78d-de34-4d85-a4fe-264af2af76b5",
+      "5c955b46-7efe-492b-a9b8-882919b0506a",
+      "1c434d38-c7de-4380-8c42-d86817fd1baa",
+      "c465172f-34cd-4113-962a-a29043ef345f",
+      "5f8ba15d-6614-49ad-94e4-9f834a24de8d"
+    ]
+  },
+  "localStorage": {
+    "feedKeys": [
+      "Trending",
+      "Romance",
+      "Cyber-Action",
+      "Suspense"
+    ],
+    "flatFeedCount": 5,
+    "videoFeedCount": 5,
+    "placeholderCount": 0,
+    "demoInjected": false,
+    "videoFeedSample": [
+      {
+        "id": "5f8ba15d-6614-49ad-94e4-9f834a24de8d",
+        "url": "/videos/5f8ba15d-6614-49ad-94e4-9f834a24de8d.mp4",
+        "category": "Trending",
+        "isPlaceholder": false,
+        "isPersonalVideo": true
+      },
+      {
+        "id": "c465172f-34cd-4113-962a-a29043ef345f",
+        "url": "/videos/c465172f-34cd-4113-962a-a29043ef345f.mp4",
+        "category": "Trending",
+        "isPlaceholder": false,
+        "isPersonalVideo": true
+      },
+      {
+        "id": "1c434d38-c7de-4380-8c42-d86817fd1baa",
+        "url": "/videos/1c434d38-c7de-4380-8c42-d86817fd1baa.mp4",
+        "category": "Trending",
+        "isPlaceholder": false,
+        "isPersonalVideo": true
+      },
+      {
+        "id": "5c955b46-7efe-492b-a9b8-882919b0506a",
+        "url": "/videos/5c955b46-7efe-492b-a9b8-882919b0506a.mp4",
+        "category": "Trending",
+        "isPlaceholder": false,
+        "isPersonalVideo": true
+      },
+      {
+        "id": "cac3e78d-de34-4d85-a4fe-264af2af76b5",
+        "url": "/videos/cac3e78d-de34-4d85-a4fe-264af2af76b5.mp4",
+        "category": "Trending",
+        "isPlaceholder": false,
+        "isPersonalVideo": true
+      }
+    ],
+    "placeholderSample": [],
+    "videoEls": [
+      {
+        "src": "https://strong-lolly-a9fcb4.netlify.app/videos/hero-background.mp4",
+        "readyState": 4
+      },
+      {
+        "src": "https://strong-lolly-a9fcb4.netlify.app/videos/5f8ba15d-6614-49ad-94e4-9f834a24de8d.mp4",
+        "readyState": 4
+      },
+      {
+        "src": "https://strong-lolly-a9fcb4.netlify.app/videos/c465172f-34cd-4113-962a-a29043ef345f.mp4",
+        "readyState": 4
+      },
+      {
+        "src": "https://strong-lolly-a9fcb4.netlify.app/videos/1c434d38-c7de-4380-8c42-d86817fd1baa.mp4",
+        "readyState": 4
+      },
+      {
+        "src": "https://strong-lolly-a9fcb4.netlify.app/videos/5c955b46-7efe-492b-a9b8-882919b0506a.mp4",
+        "readyState": 4
+      },
+      {
+        "src": "https://strong-lolly-a9fcb4.netlify.app/videos/cac3e78d-de34-4d85-a4fe-264af2af76b5.mp4",
+        "readyState": 4
+      }
+    ],
+    "viaPlaceholderInDom": false,
+    "personalVideoVault": 5
+  },
+  "dom": {
+    "videoElementCount": 6,
+    "realVideoSrcs": 6,
+    "viaPlaceholderInDom": false
+  },
+  "console": [
+    {
+      "type": "info",
+      "text": "[MEDIA_PLACEHOLDER_LOGIC_FIXED] {primaryMediaLoaded: true, placeholderHiddenWhenLoaded: true, duplicateRenderingResolved: true}"
+    },
+    {
+      "type": "log",
+      "text": "[PLATFORM_AUDIT] {\"subsystem\":\"Theater Experience\",\"status\":\"healthy\",\"timestamp\":1784270253797,\"dataSource\":\"activeReel store + findReelInFeed\",\"dependencies\":[\"TheaterExperience\",\"theaterPlayback\",\"MediaRenderer\"],\"diagnostics\":[\"[THEATER OPEN/CLOSE/STATE/PROFILE/MEDIA]\",\"[theater-handshake]\",\"?debug=theater\"],\"failureModes\":[\"autoplay-blocked\",\"placeholder-no-vault\",\"stale-reel-payload\"],\"readinessScore\":82}"
+    },
+    {
+      "type": "startGroup",
+      "text": "[Vault Field Audit] GET /api/reels response (syncFromVault) (9 items)"
+    },
+    {
+      "type": "startGroup",
+      "text": "[Vault Field Audit] GET /api/reels response (syncFromVault)[0]"
+    },
+    {
+      "type": "startGroup",
+      "text": "[Vault Field Audit] GET /api/reels response (syncFromVault)[1]"
+    },
+    {
+      "type": "startGroup",
+      "text": "[Vault Field Audit] GET /api/reels response (syncFromVault)[2]"
+    },
+    {
+      "type": "info",
+      "text": "[VAULT_SYNC] {action: syncFromVault:pre-upgrade, backendReels: 9, personal_thumbnails: 0, ts: 2026-07-17T06:37:35.480Z}"
+    },
+    {
+      "type": "info",
+      "text": "[VAULT_SYNC] {action: syncFromVault:post-reload, personal_thumbnails: 0, collectionStore: 0, ts: 2026-07-17T06:37:35.483Z}"
+    },
+    {
+      "type": "log",
+      "text": "[syncFromVault] Loaded 9 reels from [backend] (7 playable video, thumbs → placeholders)"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: cac3e78d-de34-4d85-a4fe-264af2af76b5, url: /videos/cac3e78d-de34-4d85-a4fe-264af2af76b5.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 5c955b46-7efe-492b-a9b8-882919b0506a, url: /videos/5c955b46-7efe-492b-a9b8-882919b0506a.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 1c434d38-c7de-4380-8c42-d86817fd1baa, url: /videos/1c434d38-c7de-4380-8c42-d86817fd1baa.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: c465172f-34cd-4113-962a-a29043ef345f, url: /videos/c465172f-34cd-4113-962a-a29043ef345f.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 5f8ba15d-6614-49ad-94e4-9f834a24de8d, url: /videos/5f8ba15d-6614-49ad-94e4-9f834a24de8d.mp4, mime: video/mp4, classification: video}"
+    },
+    {
+      "type": "info",
+      "text": "[STORE_UPDATE] {store: personalVideos, source: syncFromVault, count: 5, ts: 2026-07-17T06:37:35.489Z}"
+    },
+    {
+      "type": "info",
+      "text": "[STORE_WRITE] {store: personal_video_vault, source: syncFromVault, count: 5, ts: 2026-07-17T06:37:35.489Z}"
+    },
+    {
+      "type": "info",
+      "text": "[HERO_STORE_WRITE] {stage: syncFromVault:video-vault-persist, key: personal_video_vault, count: 5, heroAssetId: , ts: 2026-07-17T06:37:35.489Z}"
+    },
+    {
+      "type": "log",
+      "text": "[syncFromVault] Video vault merged (local + backend): 5 + 5 => 5"
+    },
+    {
+      "type": "info",
+      "text": "[PIPELINE] VIEWER_BOOTSTRAP {timestamp: 2026-07-17T06:37:36.340Z, phase: post-syncFromVault}"
+    }
+  ],
+  "pass": true
+}

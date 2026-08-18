@@ -1,0 +1,53 @@
+{
+  "release_process_version": "1.0",
+  "milestone": "BG-7A",
+  "git_commit": "1635252",
+  "git_commit_full": "1635252aa41db557afb0d1bf610673187412d493",
+  "git_branch": "main",
+  "bundle_hash": "index-DzsYCSxC.js",
+  "bundle_hash_previous": "index-B_skNQ2_.js",
+  "netlify_deployment_id": null,
+  "netlify_url": "https://strong-lolly-a9fcb4.netlify.app",
+  "railway_url": "https://reelforge-deploy-production.up.railway.app",
+  "backend_deployment_id": null,
+  "tool_versions": {
+    "node": "v24.5.0",
+    "npm": "9.2.0",
+    "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25)",
+    "cargo": "cargo 1.96.0 (30a34c682 2026-05-25)",
+    "netlify_cli": "netlify-cli/26.1.0 linux-x64 node-v24.5.0",
+    "railway_cli": "railway 5.26.2"
+  },
+  "gates": {
+    "1_build": "PASS",
+    "2_credentials": "BLOCKED",
+    "3_deploy": "PENDING",
+    "4_bundle_verification": "PENDING",
+    "5_production_smoke": "PENDING",
+    "6_regression": "PENDING",
+    "7_release_signoff": "BLOCKED"
+  },
+  "tests": {
+    "hero": "SKIPPED",
+    "vault": "PASS",
+    "feed": "PASS",
+    "delete": "PASS"
+  },
+  "rollback": {
+    "required": false,
+    "frontend_bundle": "index-B_skNQ2_.js",
+    "backend_commit": "1635252aa41db557afb0d1bf610673187412d493",
+    "railway_deployment_id": null,
+    "netlify_deploy": null,
+    "netlify_url": "https://strong-lolly-a9fcb4.netlify.app",
+    "notes": "Documentation only — not an automatic rollback. Redeploy previous bundle via Netlify if required."
+  },
+  "verdict": "BLOCKED",
+  "timestamp": "2026-07-16T22:11:51.836Z",
+  "artifacts": {
+    "gate_state": "frontend/artifacts/.release-gate-state.json",
+    "validation": "frontend/artifacts/bg-7a1-production-release-validation.json",
+    "regression": "frontend/artifacts/bg-6a-production-ui.json",
+    "manifest": "frontend/artifacts/release-manifest-bg-7a-1784239911838.json"
+  }
+}

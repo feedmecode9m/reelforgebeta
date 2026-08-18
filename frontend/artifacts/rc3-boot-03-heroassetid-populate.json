@@ -1,0 +1,192 @@
+{
+  "mission": "RC3-BOOT-03",
+  "goal": "After first config creation (heroAssetId=\"\"), observe what populates heroAssetId",
+  "productionUrl": "https://strong-lolly-a9fcb4.netlify.app/",
+  "generatedAt": "2026-07-20T05:07:55.608Z",
+  "assetUsed": {
+    "type": "image/png",
+    "path": "/tmp/rc3-boot-03-hero.png"
+  },
+  "evidence": {
+    "bundle": "/assets/index-Btl25zBV.js",
+    "keyWrites": [
+      {
+        "id": 8001,
+        "ts": "2026-07-20T05:08:08.368Z",
+        "perfNowMs": 2868.600000000559,
+        "storageType": "localStorage",
+        "op": "setItem",
+        "key": "reelforge_hero_manager_config",
+        "prev": {
+          "present": false,
+          "heroAssetId": null,
+          "backgroundSource": null,
+          "reelId": null,
+          "rawLength": 0
+        },
+        "next": {
+          "present": true,
+          "heroAssetId": "",
+          "backgroundSource": "selection",
+          "rawLength": 2162
+        },
+        "stack": [
+          "Error: RC3-BOOT-03 stack",
+          "at record (<anonymous>:58:21)",
+          "at proto.setItem (<anonymous>:88:7)",
+          "at Ba (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:9:62863)",
+          "at $4 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:9:86880)",
+          "at HTMLInputElement.X (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:25:41949)"
+        ],
+        "trigger": "user_action:toggle_auto_rotate"
+      },
+      {
+        "id": 8001,
+        "ts": "2026-07-20T05:08:15.401Z",
+        "perfNowMs": 9901.600000000559,
+        "storageType": "localStorage",
+        "op": "setItem",
+        "key": "reelforge_hero_manager_config",
+        "prev": {
+          "present": true,
+          "heroAssetId": "",
+          "backgroundSource": "selection",
+          "rawLength": 2162
+        },
+        "next": {
+          "present": true,
+          "heroAssetId": "c4b0b4d6-3089-46ea-bddb-b86811d29f70",
+          "backgroundSource": "custom_image",
+          "rawLength": 2201
+        },
+        "stack": [
+          "Error: RC3-BOOT-03 stack",
+          "at record (<anonymous>:58:21)",
+          "at proto.setItem (<anonymous>:88:7)",
+          "at Ba (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:9:62863)",
+          "at pn (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:19:20427)"
+        ],
+        "trigger": "user_action:hero_replace_select_file"
+      }
+    ],
+    "reelWrites": [
+      {
+        "id": 8001,
+        "ts": "2026-07-20T05:08:15.400Z",
+        "perfNowMs": 9900.799999999814,
+        "storageType": "localStorage",
+        "op": "setItem",
+        "key": "reelforge_hero_reel",
+        "prev": {
+          "present": false,
+          "heroAssetId": null,
+          "backgroundSource": null,
+          "reelId": null,
+          "rawLength": 0
+        },
+        "next": {
+          "present": true,
+          "reelId": "c4b0b4d6-3089-46ea-bddb-b86811d29f70",
+          "url": "/thumbs/c4b0b4d6-3089-46ea-bddb-b86811d29f70.png",
+          "rawLength": 231
+        },
+        "stack": [
+          "Error: RC3-BOOT-03 stack",
+          "at record (<anonymous>:58:21)",
+          "at proto.setItem (<anonymous>:88:7)",
+          "at Wu (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:9:49342)",
+          "at pn (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:19:20384)"
+        ],
+        "trigger": "user_action:hero_replace_select_file"
+      }
+    ],
+    "errors": [
+      {
+        "ts": "2026-07-20T05:08:06.978Z",
+        "message": "",
+        "filename": ""
+      },
+      {
+        "ts": "2026-07-20T05:08:07.087Z",
+        "message": "",
+        "filename": ""
+      },
+      {
+        "ts": "2026-07-20T05:08:08.593Z",
+        "message": "Uncaught TypeError: Cannot read properties of null (reading 'closest')",
+        "filename": "https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js"
+      },
+      {
+        "ts": "2026-07-20T05:08:08.699Z",
+        "message": "Uncaught TypeError: Cannot read properties of null (reading 'closest')",
+        "filename": "https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js"
+      },
+      {
+        "ts": "2026-07-20T05:08:08.824Z",
+        "message": "Uncaught TypeError: Cannot read properties of null (reading 'closest')",
+        "filename": "https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js"
+      },
+      {
+        "ts": "2026-07-20T05:08:08.868Z",
+        "message": "Uncaught TypeError: Cannot read properties of null (reading 'closest')",
+        "filename": "https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js"
+      },
+      {
+        "ts": "2026-07-20T05:08:10.606Z",
+        "message": "",
+        "filename": ""
+      },
+      {
+        "ts": "2026-07-20T05:08:11.059Z",
+        "message": "Uncaught TypeError: Cannot read properties of null (reading 'closest')",
+        "filename": "https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js"
+      },
+      {
+        "ts": "2026-07-20T05:08:11.465Z",
+        "message": "",
+        "filename": ""
+      }
+    ]
+  },
+  "derived": {
+    "createdEmptyAt": {
+      "ts": "2026-07-20T05:08:08.368Z",
+      "trigger": "user_action:toggle_auto_rotate",
+      "stack": [
+        "Error: RC3-BOOT-03 stack",
+        "at record (<anonymous>:58:21)",
+        "at proto.setItem (<anonymous>:88:7)",
+        "at Ba (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:9:62863)",
+        "at $4 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:9:86880)",
+        "at HTMLInputElement.X (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:25:41949)"
+      ],
+      "next": {
+        "present": true,
+        "heroAssetId": "",
+        "backgroundSource": "selection",
+        "rawLength": 2162
+      }
+    },
+    "populatedAt": {
+      "ts": "2026-07-20T05:08:15.401Z",
+      "trigger": "user_action:hero_replace_select_file",
+      "stack": [
+        "Error: RC3-BOOT-03 stack",
+        "at record (<anonymous>:58:21)",
+        "at proto.setItem (<anonymous>:88:7)",
+        "at Ba (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:9:62863)",
+        "at pn (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:19:20427)"
+      ],
+      "next": {
+        "present": true,
+        "heroAssetId": "c4b0b4d6-3089-46ea-bddb-b86811d29f70",
+        "backgroundSource": "custom_image",
+        "rawLength": 2201
+      }
+    },
+    "populatedByTrigger": "user_action:hero_replace_select_file",
+    "populatedHeroAssetId": "c4b0b4d6-3089-46ea-bddb-b86811d29f70",
+    "verdict": "POPULATED_BY_HERO_REPLACE_ACCEPT",
+    "reasoning": "Observed initial creation via HeroManagerPanel, then later non-empty heroAssetId write after Hero Replace accept flow."
+  }
+}

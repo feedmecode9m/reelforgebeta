@@ -1,0 +1,222 @@
+{
+  "mission": "PHASE-26 Media Vault End-to-End Integrity Audit",
+  "generatedAt": "2026-08-12T18:50:00.000Z",
+  "head": "c532201572b0ba202eb3df7fb758bb884496efea",
+  "productionBaseline": "Phase 22 deployed (8804ffc / index-Cu_7jFHY.js); Phase 25 local-only (c532201) not deployed",
+  "mode": "AUDIT_FIRST",
+  "codeChanges": "none",
+  "commitPushDeploy": "none",
+  "verdict": "UPLOAD_DND_HANDLERS_LIVE; USER_REPORTED_DEAD_DROP_NOT_REPRODUCED_AS_HANDLER_FAILURE",
+  "criticalRootCause": {
+    "reportedSymptom": "DROP VIDEO HERE (MP4/MOV) does not respond to an MP4 drag",
+    "classification": "NOT_A_BROKEN_DROP_HANDLER",
+    "evidence": {
+      "productionProbe": "artifacts/phase26-dnd-probe.json",
+      "method": "Unlock via /studio → Content tab → synthetic DataTransfer drop on [aria-label*=Video drop zone]",
+      "result": "hasPending=true, hasAccept=true, zoneText shows ACCEPT/REJECT + filename",
+      "staticAnalysis": "handleVaultVideoDrop → stagePendingVaultVideo only; MIME accepts video/*, .mp4/.mov, octet-stream+.mp4; placeholder pointer-events:none; vault-file-input pointer-events:none"
+    },
+    "likelyUserFacingCauses": [
+      {
+        "id": "ACCEPT_GATE_EXPECTATION",
+        "severity": "HIGH",
+        "detail": "Drop never uploads. Preview/ACCEPT only. Large files (>24MB) skip blob preview — quieter UI than video preview."
+      },
+      {
+        "id": "CONTENT_TAB_MOUNT",
+        "severity": "HIGH",
+        "detail": "VaultExperience only mounts when StudioWorkspaceLayout activeTab === 'Content'. Wrong tab = no drop zone handlers."
+      },
+      {
+        "id": "NEAR_MISS_NO_DOCUMENT_DND",
+        "severity": "MEDIUM",
+        "detail": "No document-level dragover preventDefault; drops outside zone may open file / navigate with no vault feedback."
+      },
+      {
+        "id": "POST_ACCEPT_SIGNED_UPLOAD_HISTORY",
+        "severity": "MEDIUM",
+        "detail": "Historical large-file signed PUT failures can be conflated with 'drop does nothing' after Accept."
+      }
+    ]
+  },
+  "pipelineMap": {
+    "fileSelectOrDrop": "VaultExperience.openVaultVideoFilePicker / handleVaultVideoFileInput / handleVaultVideoDrop",
+    "validation": "extension+MIME in drop/file handlers; CONFIG.MAX_VIDEO_SIZE 500MB in stagePendingVaultVideo + processVaultVideoFile",
+    "previewAccept": "stagePendingVaultVideo → pendingVaultVideo store → ACCEPT acceptPendingVideo",
+    "upload": "processVaultVideoFile → uploadMedia (media.js)",
+    "signedPath": "shouldUseSignedVideoUpload (≥ SIGNED_UPLOADS_MIN_BYTES default 4MiB) → sign → PUT → /api/reels/finalize → poll ready",
+    "multipartPath": "POST /api/reels when below signed threshold and Netlify-safe",
+    "vaultPersist": "personalVideos + persistPersonalVault → localStorage personal_video_vault",
+    "hydrateMerge": "viewerContext.mergeVideoVaultEntries (preserve pending/uploading/interrupted/failed when backendReachable)",
+    "catalogFeed": "AI_CLEANUP_AGENT.distributeVideoToFeed after successful upload (canonical backend id)",
+    "playback": "Viewer/Theater consume catalog/feed reel url; Theater ownership frozen"
+  },
+  "writerReaderMap": {
+    "personal_video_vault": {
+      "writers": ["VaultExperience.stagePending/processVaultVideoFile/persistPersonalVault", "viewerContext.syncFromVault/mergeVideoVaultEntries", "mediaBootstrap", "deletionSync.pruneGhostVideoVaultEntries"],
+      "readers": ["VaultExperience.vaultDisplayVideos", "syncFromVault", "distributeVideoToFeed", "harnesses listVaultReelIds"]
+    },
+    "reel_titles_persistent": {
+      "writers": ["persistentTitles.saveTitle→mergeTitleIntoPersistentMap", "HeroManagerPanel merge fallback", "persistentTitleMap.js"],
+      "readers": ["title overlay / vault projection / creator readiness"]
+    },
+    "api_reels": {
+      "writers": ["media.js uploadMedia / signed finalize"],
+      "readers": ["syncFromVault backend projection", "catalog hydration"]
+    },
+    "mediaUrls": {
+      "writers": ["upload finalize response url", "toRelativeMediaPath normalization"],
+      "readers": ["vault cards", "feed redistribute", "Viewer/Theater"]
+    },
+    "posterUrls": {
+      "writers": ["thumbnail vault upload", "reel thumbnail fields"],
+      "readers": ["resolveUserPosterUrl / vault projection / hero poster validators"]
+    },
+    "canonicalIds": {
+      "temporary": ["local-pending-*", "local-upload-*"],
+      "durable": "backend reel id from create/finalize",
+      "resolver": "resolveMediaAssetId"
+    }
+  },
+  "scorecard": {
+    "UPLOAD": {
+      "MP4_click": "PASS_CODEPATH",
+      "MP4_drag_drop": "PASS_LIVE_PROBE",
+      "MOV_drag_drop": "PASS_STATIC_MIME",
+      "poster_upload": "PASS_CODEPATH",
+      "limit_500MB": "PASS",
+      "preview_ACCEPT": "PASS_LIVE_PROBE",
+      "signed_upload": "PASS_STATIC_PATH",
+      "retry": "PASS_CODEPATH_LOCKS"
+    },
+    "VAULT": {
+      "browse": "PASS_CODEPATH",
+      "hydration": "PASS_MERGE_PRESERVE_PENDING",
+      "pending_state": "PASS",
+      "interrupted_state": "PASS",
+      "failed_state": "PASS",
+      "refresh_equivalence": "PASS_WITH_INTERRUPT_MARK",
+      "duplicate_prevention": "PASS_BG7X_AND_DEDUPE"
+    },
+    "BACKEND_CATALOG": {
+      "api_reels_sync": "PASS_CODEPATH",
+      "canonical_identity": "PASS_DESIGN",
+      "local_backend_convergence": "PASS_MERGE",
+      "retry_idempotency": "PASS_UPLOAD_LOCKS"
+    },
+    "MEDIA_INTEGRITY": {
+      "poster_to_mp4": "PASS_CODEPATH_SAME_CANONICAL_INTENT",
+      "mp4_to_poster": "PASS_CODEPATH_SAME_CANONICAL_INTENT",
+      "poster_preservation": "PASS_STATIC",
+      "mp4_preservation": "PASS_STATIC"
+    },
+    "FEED": {
+      "vault_to_feed_drag": "PARTIAL_AUTO_DISTRIBUTE_ONLY",
+      "canonical_identity_preserved": "PASS_DISTRIBUTE_USES_BACKEND_ID",
+      "shelf_classification": "PASS_CODEPATH"
+    },
+    "PLAYBACK": {
+      "Viewer": "PASS_CONTRACT_STATIC",
+      "Theater": "PASS_CONTRACT_STATIC_OWNERSHIP_FROZEN",
+      "duplicate_playback_prevention": "PASS_PRIOR_THEATER_EXCLUSIVE"
+    },
+    "METADATA": {
+      "title": "PASS",
+      "description": "PASS",
+      "tags": "PASS",
+      "category": "PASS",
+      "authored_clears": "PASS",
+      "phase22_title_map": "PASS",
+      "phase25_readiness": "PASS"
+    },
+    "REGRESSION": {
+      "phase17_25_validators": "PASS",
+      "build": "PASS",
+      "diff_check": "PASS",
+      "frozen_boundaries": "PASS"
+    }
+  },
+  "defects": [
+    {
+      "id": "P26-D1",
+      "severity": "MEDIUM",
+      "title": "Zero-byte videos are not rejected",
+      "file": "frontend/src/components/experiences/VaultExperience.svelte",
+      "function": "stagePendingVaultVideo / processVaultVideoFile",
+      "mechanism": "Only MAX_VIDEO_SIZE upper bound is checked; size===0 accepted (live probe showed 0.0 MB pending).",
+      "minimalFix": "Reject file.size < 1 (or < small threshold) before staging/upload with status message.",
+      "regressionRisk": "LOW"
+    },
+    {
+      "id": "P26-D2",
+      "severity": "MEDIUM",
+      "title": "Dual elements share class video-vault-drop",
+      "file": "frontend/src/components/experiences/VaultExperience.svelte",
+      "function": "markup ~3350 and ~3436",
+      "mechanism": "Upload zone and delete zone both use .video-vault-drop; querySelector hits first (upload). OS files on delete forward to video drop — OK — but aria/text confusion and harness ambiguity remain.",
+      "minimalFix": "Rename delete zone class to video-vault-delete-drop; keep aria-labels distinct (already mostly distinct).",
+      "regressionRisk": "LOW-MEDIUM (update harnesses selecting .video-vault-drop)"
+    },
+    {
+      "id": "P26-D3",
+      "severity": "MEDIUM",
+      "title": "Vault→feed shelf drag is not a drop target path",
+      "file": "frontend/src/lib/viewer/aiCleanupAgent.js + StudioExperience copy",
+      "function": "distributeVideoToFeed; Media Vault subtitle",
+      "mechanism": "UI says drag media into the feed; feed shelves have no parseVaultPayload drop handlers. Insertion is auto on successful upload. Vault drag payloads serve Hero/delete primarily.",
+      "minimalFix": "Either document/auto-distribute-only UX copy, or add explicit shelf drop that reuses canonical id without creating a second reel.",
+      "regressionRisk": "MEDIUM if adding drop targets"
+    },
+    {
+      "id": "P26-D4",
+      "severity": "MEDIUM",
+      "title": "Studio unlock harness still depends on removed .ghost-trigger",
+      "file": "frontend/tests/helpers/studio-navigation.mjs",
+      "function": "unlockStudio",
+      "mechanism": "Consumer home no longer exposes .ghost-trigger; production unlock is /studio password gate. Harnesses timeout unless updated.",
+      "minimalFix": "Navigate /studio, fill password, wait for control center; keep ghost as optional fallback.",
+      "regressionRisk": "LOW"
+    },
+    {
+      "id": "P26-D5",
+      "severity": "LOW",
+      "title": "No studio-scoped document dragover preventDefault",
+      "file": "frontend/src/components/experiences/StudioExperience.svelte / VaultExperience.svelte",
+      "function": "n/a (missing)",
+      "mechanism": "Near-miss drops outside vault zones can trigger browser default file open with no vault feedback.",
+      "minimalFix": "While controlCenterOpen, document dragover/drop preventDefault without starting uploads.",
+      "regressionRisk": "LOW"
+    }
+  ],
+  "validatorsRun": [
+    "validate:title-map-merge",
+    "validate:creator-metadata-readiness",
+    "validate:creator-metadata-ux",
+    "validate:creator-metadata-authoring",
+    "validate:creator-metadata-clear",
+    "validate:creator-category-clear",
+    "validate:creator-metadata-coverage",
+    "validate:vault-card-projection",
+    "validate:catalog-metadata-enrichment",
+    "validate:catalog-semantic-classification",
+    "validate:catalog-smart-population",
+    "validate:hero-background",
+    "validate:hero-presentation",
+    "validate:hero-poster-url",
+    "validate:creator-experience-polish",
+    "npm run build",
+    "git diff --check"
+  ],
+  "frozenBoundariesHonored": [
+    "backend",
+    "Theater ownership",
+    "Hero ownership",
+    "series authority",
+    "Vic G",
+    "identity generation",
+    "classifier vocabulary",
+    "distribution semantics",
+    "rotation",
+    "deployment configuration"
+  ]
+}

@@ -1,0 +1,1057 @@
+{
+  "capturedAt": "2026-07-25T01:26:28.450Z",
+  "snap": {
+    "storage": {
+      "feed": 47,
+      "pt": 0,
+      "pv": 20,
+      "deleted": 0
+    },
+    "repeatedCardGroups": [
+      {
+        "key": "bg7h-transport-test",
+        "count": 2
+      },
+      {
+        "key": "vh03-playwright-thumb.jpg",
+        "count": 2
+      },
+      {
+        "key": "bg7k-test",
+        "count": 2
+      },
+      {
+        "key": "bg7k-prod-thumb.jpg",
+        "count": 5
+      },
+      {
+        "key": "IMG_0121.JPEG",
+        "count": 2
+      }
+    ],
+    "imageFeedCards": [
+      {
+        "cat": "Trending",
+        "id": "bd444390-343e-49a5-aabe-ff0e1de270b7",
+        "name": "PU01-ThumbProbe",
+        "type": "image",
+        "url": "/thumbs/bd444390-343e-49a5-aabe-ff0e1de270b7.jpg",
+        "thumb": "/thumbs/bd444390-343e-49a5-aabe-ff0e1de270b7.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": false
+      },
+      {
+        "cat": "Trending",
+        "id": "9a48cf44-1a5b-4a8d-9c52-126c0c1795b5",
+        "name": "PU01C-Thumb2",
+        "type": "image",
+        "url": "/thumbs/9a48cf44-1a5b-4a8d-9c52-126c0c1795b5.jpg",
+        "thumb": "/thumbs/9a48cf44-1a5b-4a8d-9c52-126c0c1795b5.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": false
+      },
+      {
+        "cat": "Trending",
+        "id": "0b983310-293c-44d0-8c3c-9310f36982bd",
+        "name": "PU01C-Thumb3",
+        "type": "image",
+        "url": "/thumbs/0b983310-293c-44d0-8c3c-9310f36982bd.jpg",
+        "thumb": "/thumbs/0b983310-293c-44d0-8c3c-9310f36982bd.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": false
+      },
+      {
+        "cat": "Trending",
+        "id": "5d64b611-a677-4db1-9e9e-cd34782c0caa",
+        "name": "PS01-09",
+        "type": "image",
+        "url": "/thumbs/5d64b611-a677-4db1-9e9e-cd34782c0caa.jpg",
+        "thumb": "/thumbs/5d64b611-a677-4db1-9e9e-cd34782c0caa.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": false
+      },
+      {
+        "cat": "Trending",
+        "id": "46f97e75-fcb5-4ace-b500-ae146898e284",
+        "name": "VAULT_TEST_THUMB_20260723T165708Z.jpg",
+        "type": "image",
+        "url": "/thumbs/46f97e75-fcb5-4ace-b500-ae146898e284.jpg",
+        "thumb": "/thumbs/46f97e75-fcb5-4ace-b500-ae146898e284.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": false
+      },
+      {
+        "cat": "Trending",
+        "id": "1aaaa063-a877-4268-8aeb-7343831c1752",
+        "name": "Vault Test Hero 20260723t165708z",
+        "type": "image",
+        "url": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/1aaaa063-a877-4268-8aeb-7343831c1752.mp4",
+        "thumb": "/thumbs/1aaaa063-a877-4268-8aeb-7343831c1752.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": false
+      },
+      {
+        "cat": "Trending",
+        "id": "e8ea86bb-716f-48bd-9638-e2e56f67f7aa",
+        "name": "VAULT_TEST_THUMB_20260723T172348Z.jpg",
+        "type": "image",
+        "url": "/thumbs/e8ea86bb-716f-48bd-9638-e2e56f67f7aa.jpg",
+        "thumb": "/thumbs/e8ea86bb-716f-48bd-9638-e2e56f67f7aa.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": false
+      },
+      {
+        "cat": "Trending",
+        "id": "c656af89-108b-4403-a09a-5e0120a0b084",
+        "name": "VAULT_TEST_THUMB_20260724T024830Z.jpg",
+        "type": "image",
+        "url": "/thumbs/c656af89-108b-4403-a09a-5e0120a0b084.jpg",
+        "thumb": "/thumbs/c656af89-108b-4403-a09a-5e0120a0b084.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": false
+      },
+      {
+        "cat": "Trending",
+        "id": "2966b48d-4f5f-4554-a6cf-c89796a2fc44",
+        "name": "VAULT_TEST_THUMB_20260724T032320Z.jpg",
+        "type": "image",
+        "url": "/thumbs/2966b48d-4f5f-4554-a6cf-c89796a2fc44.jpg",
+        "thumb": "/thumbs/2966b48d-4f5f-4554-a6cf-c89796a2fc44.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": false
+      },
+      {
+        "cat": "Trending",
+        "id": "d121fb4f-b330-4f63-9477-0a2548718e60",
+        "name": "VAULT_TEST_THUMB_20260724T033440Z.jpg",
+        "type": "image",
+        "url": "/thumbs/d121fb4f-b330-4f63-9477-0a2548718e60.jpg",
+        "thumb": "/thumbs/d121fb4f-b330-4f63-9477-0a2548718e60.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": false
+      },
+      {
+        "cat": "Trending",
+        "id": "284a4dfc-666f-44f7-99df-14cb3cbb63a2",
+        "name": "VAULT_TEST_THUMB_20260724T033610Z.jpg",
+        "type": "image",
+        "url": "/thumbs/284a4dfc-666f-44f7-99df-14cb3cbb63a2.jpg",
+        "thumb": "/thumbs/284a4dfc-666f-44f7-99df-14cb3cbb63a2.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": false
+      },
+      {
+        "cat": "Trending",
+        "id": "abb2152c-a63e-415e-9eea-19e31e4a8799",
+        "name": "VAULT_TEST_THUMB_20260724T034000Z.jpg",
+        "type": "image",
+        "url": "/thumbs/abb2152c-a63e-415e-9eea-19e31e4a8799.jpg",
+        "thumb": "/thumbs/abb2152c-a63e-415e-9eea-19e31e4a8799.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": false
+      },
+      {
+        "cat": "Trending",
+        "id": "c4ea71cf-1d04-4e18-9d0a-76385524aa18",
+        "name": "vh03-playwright-thumb.jpg",
+        "type": "image",
+        "url": "/thumbs/c4ea71cf-1d04-4e18-9d0a-76385524aa18.jpg",
+        "thumb": "/thumbs/c4ea71cf-1d04-4e18-9d0a-76385524aa18.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": false
+      },
+      {
+        "cat": "Trending",
+        "id": "aa4f01b0-2b08-4e39-93cb-6bfce1776e97",
+        "name": "VAULT_TEST_THUMB_20260724T050143Z.jpg",
+        "type": "image",
+        "url": "/thumbs/aa4f01b0-2b08-4e39-93cb-6bfce1776e97.jpg",
+        "thumb": "/thumbs/aa4f01b0-2b08-4e39-93cb-6bfce1776e97.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": false
+      },
+      {
+        "cat": "Trending",
+        "id": "723642c0-fb56-4b67-a6aa-4c61efcf4064",
+        "name": "VAULT_TEST_THUMB_20260724T050939Z.jpg",
+        "type": "image",
+        "url": "/thumbs/723642c0-fb56-4b67-a6aa-4c61efcf4064.jpg",
+        "thumb": "/thumbs/723642c0-fb56-4b67-a6aa-4c61efcf4064.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": false
+      },
+      {
+        "cat": "Trending",
+        "id": "d1539feb-54c9-47e8-b40d-9318b9f87fb2",
+        "name": "vh03-playwright-thumb.jpg",
+        "type": "image",
+        "url": "/thumbs/d1539feb-54c9-47e8-b40d-9318b9f87fb2.jpg",
+        "thumb": "/thumbs/d1539feb-54c9-47e8-b40d-9318b9f87fb2.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": false
+      },
+      {
+        "cat": "Trending",
+        "id": "118c6695-14ef-4466-b3c0-dcf172b34f6e",
+        "name": "bg7k-test",
+        "type": "image",
+        "url": "/thumbs/118c6695-14ef-4466-b3c0-dcf172b34f6e.png",
+        "thumb": "/thumbs/118c6695-14ef-4466-b3c0-dcf172b34f6e.png",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": false
+      },
+      {
+        "cat": "Trending",
+        "id": "9ef63eb1-f0f4-404c-9a87-bdc2a898558b",
+        "name": "bg7k-test",
+        "type": "image",
+        "url": "/thumbs/9ef63eb1-f0f4-404c-9a87-bdc2a898558b.png",
+        "thumb": "/thumbs/9ef63eb1-f0f4-404c-9a87-bdc2a898558b.png",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": false
+      },
+      {
+        "cat": "Trending",
+        "id": "e9a359dc-4d94-4a41-ae78-fe49e0798f2d",
+        "name": "bg7k-prod-thumb.jpg",
+        "type": "image",
+        "url": "/thumbs/e9a359dc-4d94-4a41-ae78-fe49e0798f2d.jpg",
+        "thumb": "/thumbs/e9a359dc-4d94-4a41-ae78-fe49e0798f2d.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": false
+      },
+      {
+        "cat": "Trending",
+        "id": "2fdd1918-b323-4e16-b323-7a8dc180f917",
+        "name": "bg7k-prod-thumb.jpg",
+        "type": "image",
+        "url": "/thumbs/2fdd1918-b323-4e16-b323-7a8dc180f917.jpg",
+        "thumb": "/thumbs/2fdd1918-b323-4e16-b323-7a8dc180f917.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": false
+      },
+      {
+        "cat": "Trending",
+        "id": "55725261-40fb-4f2e-8006-0d38721cd274",
+        "name": "bg7k-prod-thumb.jpg",
+        "type": "image",
+        "url": "/thumbs/55725261-40fb-4f2e-8006-0d38721cd274.jpg",
+        "thumb": "/thumbs/55725261-40fb-4f2e-8006-0d38721cd274.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": false
+      },
+      {
+        "cat": "Trending",
+        "id": "6a96ae14-856d-4f40-9113-d03403b7e57f",
+        "name": "bg7k-prod-thumb.jpg",
+        "type": "image",
+        "url": "/thumbs/6a96ae14-856d-4f40-9113-d03403b7e57f.jpg",
+        "thumb": "/thumbs/6a96ae14-856d-4f40-9113-d03403b7e57f.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": false
+      },
+      {
+        "cat": "Trending",
+        "id": "1d422a2f-2694-4649-9989-26c7dba7b0f3",
+        "name": "bg7k-prod-thumb.jpg",
+        "type": "image",
+        "url": "/thumbs/1d422a2f-2694-4649-9989-26c7dba7b0f3.jpg",
+        "thumb": "/thumbs/1d422a2f-2694-4649-9989-26c7dba7b0f3.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": false
+      },
+      {
+        "cat": "Trending",
+        "id": "b0493d4c-2d26-4dea-8c85-4af3d000af00",
+        "name": "IMG_0121.JPEG",
+        "type": "image",
+        "url": "/thumbs/b0493d4c-2d26-4dea-8c85-4af3d000af00.jpeg",
+        "thumb": "/thumbs/b0493d4c-2d26-4dea-8c85-4af3d000af00.jpeg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": false
+      },
+      {
+        "cat": "Trending",
+        "id": "d9da1aa4-30bb-41b6-b1ef-5ae866c6e906",
+        "name": "IMG_0121.JPEG",
+        "type": "image",
+        "url": "/thumbs/d9da1aa4-30bb-41b6-b1ef-5ae866c6e906.jpeg",
+        "thumb": "/thumbs/d9da1aa4-30bb-41b6-b1ef-5ae866c6e906.jpeg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": false
+      },
+      {
+        "cat": "Trending",
+        "id": "7187b728-a73b-4727-bb5a-3554706e2855",
+        "name": "IMG_0113.JPEG",
+        "type": "image",
+        "url": "/thumbs/7187b728-a73b-4727-bb5a-3554706e2855.jpeg",
+        "thumb": "/thumbs/7187b728-a73b-4727-bb5a-3554706e2855.jpeg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": false
+      }
+    ],
+    "mp4NamedFeedCards": [
+      {
+        "cat": "Trending",
+        "id": "dff70497-d198-4ff5-84a4-1b7265d2f8eb",
+        "name": "PD06F-Regression",
+        "type": "video",
+        "url": "/videos/dff70497-d198-4ff5-84a4-1b7265d2f8eb.mp4",
+        "thumb": "/thumbs/dff70497-d198-4ff5-84a4-1b7265d2f8eb.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": true,
+        "personal_video_id": "dff70497-d198-4ff5-84a4-1b7265d2f8eb"
+      },
+      {
+        "cat": "Trending",
+        "id": "eb4684cd-74ad-4763-ada8-347134ac1228",
+        "name": "PD07-Regression",
+        "type": "video",
+        "url": "/videos/eb4684cd-74ad-4763-ada8-347134ac1228.mp4",
+        "thumb": "/thumbs/eb4684cd-74ad-4763-ada8-347134ac1228.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": true,
+        "personal_video_id": "eb4684cd-74ad-4763-ada8-347134ac1228"
+      },
+      {
+        "cat": "Trending",
+        "id": "49716f87-c489-4bd0-af7c-c50015e9b480",
+        "name": "PU01-VideoProbe",
+        "type": "video",
+        "url": "/videos/49716f87-c489-4bd0-af7c-c50015e9b480.mp4",
+        "thumb": "/thumbs/49716f87-c489-4bd0-af7c-c50015e9b480.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": true,
+        "personal_video_id": "49716f87-c489-4bd0-af7c-c50015e9b480"
+      },
+      {
+        "cat": "Trending",
+        "id": "9c696259-99a3-411f-a1f5-f6a3fc3fb92a",
+        "name": "PS01-01",
+        "type": "video",
+        "url": "/videos/9c696259-99a3-411f-a1f5-f6a3fc3fb92a.mp4",
+        "thumb": "/thumbs/9c696259-99a3-411f-a1f5-f6a3fc3fb92a.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": true,
+        "personal_video_id": "9c696259-99a3-411f-a1f5-f6a3fc3fb92a"
+      },
+      {
+        "cat": "Trending",
+        "id": "96eccf6f-0165-47eb-a3c7-55db88bb29b2",
+        "name": "PS01-02",
+        "type": "video",
+        "url": "/videos/96eccf6f-0165-47eb-a3c7-55db88bb29b2.mp4",
+        "thumb": "/thumbs/96eccf6f-0165-47eb-a3c7-55db88bb29b2.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": true,
+        "personal_video_id": "96eccf6f-0165-47eb-a3c7-55db88bb29b2"
+      },
+      {
+        "cat": "Trending",
+        "id": "99070858-4567-4ef0-9ba5-9412aeb31120",
+        "name": "PS01-04",
+        "type": "video",
+        "url": "/videos/99070858-4567-4ef0-9ba5-9412aeb31120.mp4",
+        "thumb": "/thumbs/99070858-4567-4ef0-9ba5-9412aeb31120.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": true,
+        "personal_video_id": "99070858-4567-4ef0-9ba5-9412aeb31120"
+      },
+      {
+        "cat": "Trending",
+        "id": "b2efa08f-a1e5-4135-bf58-bc5539f9f920",
+        "name": "PS01-05",
+        "type": "video",
+        "url": "/videos/b2efa08f-a1e5-4135-bf58-bc5539f9f920.mp4",
+        "thumb": "/thumbs/b2efa08f-a1e5-4135-bf58-bc5539f9f920.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": true,
+        "personal_video_id": "b2efa08f-a1e5-4135-bf58-bc5539f9f920"
+      },
+      {
+        "cat": "Trending",
+        "id": "a29c0119-c570-4f5f-b522-fc2405696892",
+        "name": "PS01-06",
+        "type": "video",
+        "url": "/videos/a29c0119-c570-4f5f-b522-fc2405696892.mp4",
+        "thumb": "/thumbs/a29c0119-c570-4f5f-b522-fc2405696892.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": true,
+        "personal_video_id": "a29c0119-c570-4f5f-b522-fc2405696892"
+      },
+      {
+        "cat": "Trending",
+        "id": "6d4e8087-0ffa-4077-a1b9-4c69858ac2de",
+        "name": "PS01-07",
+        "type": "video",
+        "url": "/videos/6d4e8087-0ffa-4077-a1b9-4c69858ac2de.mp4",
+        "thumb": "/thumbs/6d4e8087-0ffa-4077-a1b9-4c69858ac2de.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": true,
+        "personal_video_id": "6d4e8087-0ffa-4077-a1b9-4c69858ac2de"
+      },
+      {
+        "cat": "Trending",
+        "id": "e6573dc5-f5cc-4f2e-b74f-4f09980b260e",
+        "name": "PS01-08",
+        "type": "video",
+        "url": "/videos/e6573dc5-f5cc-4f2e-b74f-4f09980b260e.mp4",
+        "thumb": "/thumbs/e6573dc5-f5cc-4f2e-b74f-4f09980b260e.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": true,
+        "personal_video_id": "e6573dc5-f5cc-4f2e-b74f-4f09980b260e"
+      },
+      {
+        "cat": "Trending",
+        "id": "eb081031-a03f-4f21-957e-9c196617225f",
+        "name": "PS01-RENAME-TARGET",
+        "type": "video",
+        "url": "/videos/eb081031-a03f-4f21-957e-9c196617225f.mp4",
+        "thumb": "/thumbs/eb081031-a03f-4f21-957e-9c196617225f.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": true,
+        "personal_video_id": "eb081031-a03f-4f21-957e-9c196617225f"
+      },
+      {
+        "cat": "Trending",
+        "id": "61c56ffe-f17b-42cd-b338-00fca6799c83",
+        "name": "PS02-04",
+        "type": "video",
+        "url": "/videos/61c56ffe-f17b-42cd-b338-00fca6799c83.mp4",
+        "thumb": "/thumbs/61c56ffe-f17b-42cd-b338-00fca6799c83.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": true,
+        "personal_video_id": "61c56ffe-f17b-42cd-b338-00fca6799c83"
+      },
+      {
+        "cat": "Trending",
+        "id": "4e67d1b3-f6c9-4ac4-bd75-7807978d26f3",
+        "name": "PS02-05",
+        "type": "video",
+        "url": "/videos/4e67d1b3-f6c9-4ac4-bd75-7807978d26f3.mp4",
+        "thumb": "/thumbs/4e67d1b3-f6c9-4ac4-bd75-7807978d26f3.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": true,
+        "personal_video_id": "4e67d1b3-f6c9-4ac4-bd75-7807978d26f3"
+      },
+      {
+        "cat": "Trending",
+        "id": "b8bd9cee-899a-45b6-8671-5bd5165aaaf1",
+        "name": "probe10",
+        "type": "video",
+        "url": "/videos/b8bd9cee-899a-45b6-8671-5bd5165aaaf1.mp4",
+        "thumb": "/thumbs/b8bd9cee-899a-45b6-8671-5bd5165aaaf1.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": true,
+        "personal_video_id": "b8bd9cee-899a-45b6-8671-5bd5165aaaf1"
+      },
+      {
+        "cat": "Trending",
+        "id": "010ff031-cd44-41ad-8d61-fd3cf3ac054a",
+        "name": "010ff031-cd44-41ad-8d61-fd3cf3ac054a",
+        "type": "video",
+        "url": "/videos/010ff031-cd44-41ad-8d61-fd3cf3ac054a.mp4",
+        "thumb": "/thumbs/010ff031-cd44-41ad-8d61-fd3cf3ac054a.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": true,
+        "personal_video_id": "010ff031-cd44-41ad-8d61-fd3cf3ac054a"
+      },
+      {
+        "cat": "Trending",
+        "id": "bbfe2e70-404a-4635-97ca-7fbd0196030b",
+        "name": "bg7h-transport-test",
+        "type": "video",
+        "url": "/videos/bbfe2e70-404a-4635-97ca-7fbd0196030b.mp4",
+        "thumb": "/thumbs/bbfe2e70-404a-4635-97ca-7fbd0196030b.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": true,
+        "personal_video_id": "bbfe2e70-404a-4635-97ca-7fbd0196030b"
+      },
+      {
+        "cat": "Trending",
+        "id": "cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7",
+        "name": "bg7h-transport-test",
+        "type": "video",
+        "url": "/videos/cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7.mp4",
+        "thumb": "/thumbs/cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": true,
+        "personal_video_id": "cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7"
+      },
+      {
+        "cat": "Trending",
+        "id": "0c335922-ef31-450b-b4d3-9d24a08210cf",
+        "name": "8de95c34-a61a-4d24-988b-ba0c115624c9",
+        "type": "video",
+        "url": "/videos/8de95c34-a61a-4d24-988b-ba0c115624c9.mp4",
+        "thumb": "/thumbs/0c335922-ef31-450b-b4d3-9d24a08210cf.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": true,
+        "personal_video_id": "0c335922-ef31-450b-b4d3-9d24a08210cf"
+      },
+      {
+        "cat": "Trending",
+        "id": "6060c258-a3f6-40ba-b642-c758562c7cb7",
+        "name": "PIPELINE-TRACE-LARGE",
+        "type": "video",
+        "url": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/6060c258-a3f6-40ba-b642-c758562c7cb7.mp4",
+        "thumb": "/thumbs/6060c258-a3f6-40ba-b642-c758562c7cb7.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": true,
+        "personal_video_id": "6060c258-a3f6-40ba-b642-c758562c7cb7"
+      },
+      {
+        "cat": "Trending",
+        "id": "8e40f3ca-e220-40f7-a636-b828b4008f68",
+        "name": "8e40f3ca-e220-40f7-a636-b828b4008f68",
+        "type": "video",
+        "url": "/videos/8e40f3ca-e220-40f7-a636-b828b4008f68.mp4",
+        "thumb": "/thumbs/8e40f3ca-e220-40f7-a636-b828b4008f68.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": true,
+        "personal_video_id": "8e40f3ca-e220-40f7-a636-b828b4008f68"
+      },
+      {
+        "cat": "Trending",
+        "id": "995c7491-f056-42eb-a252-4f416eaa487a",
+        "name": "Bg7g3 Probe 15mb",
+        "type": "video",
+        "url": "/videos/995c7491-f056-42eb-a252-4f416eaa487a.mp4",
+        "thumb": "/thumbs/995c7491-f056-42eb-a252-4f416eaa487a.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": false
+      },
+      {
+        "cat": "Trending",
+        "id": "1aaaa063-a877-4268-8aeb-7343831c1752",
+        "name": "Vault Test Hero 20260723t165708z",
+        "type": "image",
+        "url": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/1aaaa063-a877-4268-8aeb-7343831c1752.mp4",
+        "thumb": "/thumbs/1aaaa063-a877-4268-8aeb-7343831c1752.jpg",
+        "isPersonalThumbnail": false,
+        "isPlaceholder": false,
+        "isPersonalVideo": false
+      }
+    ],
+    "personalThumbs": [],
+    "personalVideos": [
+      {
+        "id": "8e40f3ca-e220-40f7-a636-b828b4008f68",
+        "name": "8e40f3ca-e220-40f7-a636-b828b4008f68",
+        "url": "/videos/8e40f3ca-e220-40f7-a636-b828b4008f68.mp4"
+      },
+      {
+        "id": "6060c258-a3f6-40ba-b642-c758562c7cb7",
+        "name": "PIPELINE-TRACE-LARGE",
+        "url": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/6060c258-a3f6-40ba-b642-c758562c7cb7.mp4"
+      },
+      {
+        "id": "0c335922-ef31-450b-b4d3-9d24a08210cf",
+        "name": "8de95c34-a61a-4d24-988b-ba0c115624c9",
+        "url": "/videos/8de95c34-a61a-4d24-988b-ba0c115624c9.mp4"
+      },
+      {
+        "id": "cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7",
+        "name": "bg7h-transport-test",
+        "url": "/videos/cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7.mp4"
+      },
+      {
+        "id": "bbfe2e70-404a-4635-97ca-7fbd0196030b",
+        "name": "bg7h-transport-test",
+        "url": "/videos/bbfe2e70-404a-4635-97ca-7fbd0196030b.mp4"
+      },
+      {
+        "id": "010ff031-cd44-41ad-8d61-fd3cf3ac054a",
+        "name": "010ff031-cd44-41ad-8d61-fd3cf3ac054a",
+        "url": "/videos/010ff031-cd44-41ad-8d61-fd3cf3ac054a.mp4"
+      },
+      {
+        "id": "b8bd9cee-899a-45b6-8671-5bd5165aaaf1",
+        "name": "probe10",
+        "url": "/videos/b8bd9cee-899a-45b6-8671-5bd5165aaaf1.mp4"
+      },
+      {
+        "id": "4e67d1b3-f6c9-4ac4-bd75-7807978d26f3",
+        "name": "PS02-05",
+        "url": "/videos/4e67d1b3-f6c9-4ac4-bd75-7807978d26f3.mp4"
+      },
+      {
+        "id": "61c56ffe-f17b-42cd-b338-00fca6799c83",
+        "name": "PS02-04",
+        "url": "/videos/61c56ffe-f17b-42cd-b338-00fca6799c83.mp4"
+      },
+      {
+        "id": "eb081031-a03f-4f21-957e-9c196617225f",
+        "name": "PS01-RENAME-TARGET",
+        "url": "/videos/eb081031-a03f-4f21-957e-9c196617225f.mp4"
+      },
+      {
+        "id": "e6573dc5-f5cc-4f2e-b74f-4f09980b260e",
+        "name": "PS01-08",
+        "url": "/videos/e6573dc5-f5cc-4f2e-b74f-4f09980b260e.mp4"
+      },
+      {
+        "id": "6d4e8087-0ffa-4077-a1b9-4c69858ac2de",
+        "name": "PS01-07",
+        "url": "/videos/6d4e8087-0ffa-4077-a1b9-4c69858ac2de.mp4"
+      },
+      {
+        "id": "a29c0119-c570-4f5f-b522-fc2405696892",
+        "name": "PS01-06",
+        "url": "/videos/a29c0119-c570-4f5f-b522-fc2405696892.mp4"
+      },
+      {
+        "id": "b2efa08f-a1e5-4135-bf58-bc5539f9f920",
+        "name": "PS01-05",
+        "url": "/videos/b2efa08f-a1e5-4135-bf58-bc5539f9f920.mp4"
+      },
+      {
+        "id": "99070858-4567-4ef0-9ba5-9412aeb31120",
+        "name": "PS01-04",
+        "url": "/videos/99070858-4567-4ef0-9ba5-9412aeb31120.mp4"
+      },
+      {
+        "id": "96eccf6f-0165-47eb-a3c7-55db88bb29b2",
+        "name": "PS01-02",
+        "url": "/videos/96eccf6f-0165-47eb-a3c7-55db88bb29b2.mp4"
+      },
+      {
+        "id": "9c696259-99a3-411f-a1f5-f6a3fc3fb92a",
+        "name": "PS01-01",
+        "url": "/videos/9c696259-99a3-411f-a1f5-f6a3fc3fb92a.mp4"
+      },
+      {
+        "id": "49716f87-c489-4bd0-af7c-c50015e9b480",
+        "name": "PU01-VideoProbe",
+        "url": "/videos/49716f87-c489-4bd0-af7c-c50015e9b480.mp4"
+      },
+      {
+        "id": "eb4684cd-74ad-4763-ada8-347134ac1228",
+        "name": "PD07-Regression",
+        "url": "/videos/eb4684cd-74ad-4763-ada8-347134ac1228.mp4"
+      },
+      {
+        "id": "dff70497-d198-4ff5-84a4-1b7265d2f8eb",
+        "name": "PD06F-Regression",
+        "url": "/videos/dff70497-d198-4ff5-84a4-1b7265d2f8eb.mp4"
+      }
+    ]
+  },
+  "catalogAnalysis": {
+    "total": 47,
+    "byType": {
+      "image": 27,
+      "video": 20
+    },
+    "bg7kProdThumb": [
+      {
+        "id": "1d422a2f-2694-4649-9989-26c7dba7b0f3",
+        "name": "bg7k-prod-thumb.jpg",
+        "fileName": "1d422a2f-2694-4649-9989-26c7dba7b0f3.jpg",
+        "type": "image",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/1d422a2f-2694-4649-9989-26c7dba7b0f3.jpg",
+        "thumbnailUrl": "https://strong-lolly-a9fcb4.netlify.app/thumbs/1d422a2f-2694-4649-9989-26c7dba7b0f3.jpg",
+        "thumbnailPath": "/thumbs/1d422a2f-2694-4649-9989-26c7dba7b0f3.jpg",
+        "category": "Trending",
+        "status": "ready",
+        "validated": true,
+        "createdAt": "2026-07-25T00:18:02.011715+00:00"
+      },
+      {
+        "id": "6a96ae14-856d-4f40-9113-d03403b7e57f",
+        "name": "bg7k-prod-thumb.jpg",
+        "fileName": "6a96ae14-856d-4f40-9113-d03403b7e57f.jpg",
+        "type": "image",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/6a96ae14-856d-4f40-9113-d03403b7e57f.jpg",
+        "thumbnailUrl": "https://strong-lolly-a9fcb4.netlify.app/thumbs/6a96ae14-856d-4f40-9113-d03403b7e57f.jpg",
+        "thumbnailPath": "/thumbs/6a96ae14-856d-4f40-9113-d03403b7e57f.jpg",
+        "category": "Trending",
+        "status": "ready",
+        "validated": true,
+        "createdAt": "2026-07-25T00:11:10.171775+00:00"
+      },
+      {
+        "id": "55725261-40fb-4f2e-8006-0d38721cd274",
+        "name": "bg7k-prod-thumb.jpg",
+        "fileName": "55725261-40fb-4f2e-8006-0d38721cd274.jpg",
+        "type": "image",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/55725261-40fb-4f2e-8006-0d38721cd274.jpg",
+        "thumbnailUrl": "https://strong-lolly-a9fcb4.netlify.app/thumbs/55725261-40fb-4f2e-8006-0d38721cd274.jpg",
+        "thumbnailPath": "/thumbs/55725261-40fb-4f2e-8006-0d38721cd274.jpg",
+        "category": "Trending",
+        "status": "ready",
+        "validated": true,
+        "createdAt": "2026-07-25T00:07:08.271332+00:00"
+      },
+      {
+        "id": "2fdd1918-b323-4e16-b323-7a8dc180f917",
+        "name": "bg7k-prod-thumb.jpg",
+        "fileName": "2fdd1918-b323-4e16-b323-7a8dc180f917.jpg",
+        "type": "image",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/2fdd1918-b323-4e16-b323-7a8dc180f917.jpg",
+        "thumbnailUrl": "https://strong-lolly-a9fcb4.netlify.app/thumbs/2fdd1918-b323-4e16-b323-7a8dc180f917.jpg",
+        "thumbnailPath": "/thumbs/2fdd1918-b323-4e16-b323-7a8dc180f917.jpg",
+        "category": "Trending",
+        "status": "ready",
+        "validated": true,
+        "createdAt": "2026-07-25T00:05:05.379202+00:00"
+      },
+      {
+        "id": "e9a359dc-4d94-4a41-ae78-fe49e0798f2d",
+        "name": "bg7k-prod-thumb.jpg",
+        "fileName": "e9a359dc-4d94-4a41-ae78-fe49e0798f2d.jpg",
+        "type": "image",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/e9a359dc-4d94-4a41-ae78-fe49e0798f2d.jpg",
+        "thumbnailUrl": "https://strong-lolly-a9fcb4.netlify.app/thumbs/e9a359dc-4d94-4a41-ae78-fe49e0798f2d.jpg",
+        "thumbnailPath": "/thumbs/e9a359dc-4d94-4a41-ae78-fe49e0798f2d.jpg",
+        "category": "Trending",
+        "status": "ready",
+        "validated": true,
+        "createdAt": "2026-07-25T00:03:35.912781+00:00"
+      }
+    ],
+    "bg7kTest": [
+      {
+        "id": "9ef63eb1-f0f4-404c-9a87-bdc2a898558b",
+        "name": "bg7k-test",
+        "fileName": "9ef63eb1-f0f4-404c-9a87-bdc2a898558b.png",
+        "type": "image",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/9ef63eb1-f0f4-404c-9a87-bdc2a898558b.png",
+        "thumbnailUrl": "https://strong-lolly-a9fcb4.netlify.app/thumbs/9ef63eb1-f0f4-404c-9a87-bdc2a898558b.png",
+        "thumbnailPath": "/thumbs/9ef63eb1-f0f4-404c-9a87-bdc2a898558b.png",
+        "category": "Trending",
+        "status": "ready",
+        "validated": true,
+        "createdAt": "2026-07-24T23:27:36.789902+00:00"
+      },
+      {
+        "id": "118c6695-14ef-4466-b3c0-dcf172b34f6e",
+        "name": "bg7k-test",
+        "fileName": "118c6695-14ef-4466-b3c0-dcf172b34f6e.png",
+        "type": "image",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/thumbs/118c6695-14ef-4466-b3c0-dcf172b34f6e.png",
+        "thumbnailUrl": "https://strong-lolly-a9fcb4.netlify.app/thumbs/118c6695-14ef-4466-b3c0-dcf172b34f6e.png",
+        "thumbnailPath": "/thumbs/118c6695-14ef-4466-b3c0-dcf172b34f6e.png",
+        "category": "Trending",
+        "status": "ready",
+        "validated": true,
+        "createdAt": "2026-07-24T23:27:33.471145+00:00"
+      }
+    ],
+    "videoOnly": [
+      {
+        "id": "8e40f3ca-e220-40f7-a636-b828b4008f68",
+        "name": "8e40f3ca-e220-40f7-a636-b828b4008f68",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/8e40f3ca-e220-40f7-a636-b828b4008f68.mp4"
+      },
+      {
+        "id": "0c335922-ef31-450b-b4d3-9d24a08210cf",
+        "name": "8de95c34-a61a-4d24-988b-ba0c115624c9",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/8de95c34-a61a-4d24-988b-ba0c115624c9.mp4"
+      },
+      {
+        "id": "cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7",
+        "name": "bg7h-transport-test",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7.mp4"
+      },
+      {
+        "id": "bbfe2e70-404a-4635-97ca-7fbd0196030b",
+        "name": "bg7h-transport-test",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/bbfe2e70-404a-4635-97ca-7fbd0196030b.mp4"
+      },
+      {
+        "id": "010ff031-cd44-41ad-8d61-fd3cf3ac054a",
+        "name": "010ff031-cd44-41ad-8d61-fd3cf3ac054a",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/010ff031-cd44-41ad-8d61-fd3cf3ac054a.mp4"
+      },
+      {
+        "id": "995c7491-f056-42eb-a252-4f416eaa487a",
+        "name": "Bg7g3 Probe 15mb",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/995c7491-f056-42eb-a252-4f416eaa487a.mp4"
+      },
+      {
+        "id": "b8bd9cee-899a-45b6-8671-5bd5165aaaf1",
+        "name": "probe10",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/b8bd9cee-899a-45b6-8671-5bd5165aaaf1.mp4"
+      },
+      {
+        "id": "4e67d1b3-f6c9-4ac4-bd75-7807978d26f3",
+        "name": "PS02-05",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/4e67d1b3-f6c9-4ac4-bd75-7807978d26f3.mp4"
+      },
+      {
+        "id": "61c56ffe-f17b-42cd-b338-00fca6799c83",
+        "name": "PS02-04",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/61c56ffe-f17b-42cd-b338-00fca6799c83.mp4"
+      },
+      {
+        "id": "eb081031-a03f-4f21-957e-9c196617225f",
+        "name": "PS01-RENAME-TARGET",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/eb081031-a03f-4f21-957e-9c196617225f.mp4"
+      },
+      {
+        "id": "e6573dc5-f5cc-4f2e-b74f-4f09980b260e",
+        "name": "PS01-08",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/e6573dc5-f5cc-4f2e-b74f-4f09980b260e.mp4"
+      },
+      {
+        "id": "6d4e8087-0ffa-4077-a1b9-4c69858ac2de",
+        "name": "PS01-07",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/6d4e8087-0ffa-4077-a1b9-4c69858ac2de.mp4"
+      },
+      {
+        "id": "a29c0119-c570-4f5f-b522-fc2405696892",
+        "name": "PS01-06",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/a29c0119-c570-4f5f-b522-fc2405696892.mp4"
+      },
+      {
+        "id": "b2efa08f-a1e5-4135-bf58-bc5539f9f920",
+        "name": "PS01-05",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/b2efa08f-a1e5-4135-bf58-bc5539f9f920.mp4"
+      },
+      {
+        "id": "99070858-4567-4ef0-9ba5-9412aeb31120",
+        "name": "PS01-04",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/99070858-4567-4ef0-9ba5-9412aeb31120.mp4"
+      },
+      {
+        "id": "96eccf6f-0165-47eb-a3c7-55db88bb29b2",
+        "name": "PS01-02",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/96eccf6f-0165-47eb-a3c7-55db88bb29b2.mp4"
+      },
+      {
+        "id": "9c696259-99a3-411f-a1f5-f6a3fc3fb92a",
+        "name": "PS01-01",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/9c696259-99a3-411f-a1f5-f6a3fc3fb92a.mp4"
+      },
+      {
+        "id": "49716f87-c489-4bd0-af7c-c50015e9b480",
+        "name": "PU01-VideoProbe",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/49716f87-c489-4bd0-af7c-c50015e9b480.mp4"
+      },
+      {
+        "id": "eb4684cd-74ad-4763-ada8-347134ac1228",
+        "name": "PD07-Regression",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/eb4684cd-74ad-4763-ada8-347134ac1228.mp4"
+      },
+      {
+        "id": "dff70497-d198-4ff5-84a4-1b7265d2f8eb",
+        "name": "PD06F-Regression",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/videos/dff70497-d198-4ff5-84a4-1b7265d2f8eb.mp4"
+      }
+    ],
+    "imageOnly": 25,
+    "misclassifiedMp4AsImage": [
+      {
+        "id": "6060c258-a3f6-40ba-b642-c758562c7cb7",
+        "name": "PIPELINE-TRACE-LARGE",
+        "url": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/6060c258-a3f6-40ba-b642-c758562c7cb7.mp4"
+      },
+      {
+        "id": "1aaaa063-a877-4268-8aeb-7343831c1752",
+        "name": "Vault Test Hero 20260723t165708z",
+        "url": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/1aaaa063-a877-4268-8aeb-7343831c1752.mp4"
+      }
+    ]
+  },
+  "keyLogs": [
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:15.584Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[VAULT_REFRESH_RESTORE] {vaultType: thumbnail, assetId: null, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}",
+    "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:start, personal_thumbnails: 0, ts: 2026-07-25T01:26:18.831Z}",
+    "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:clear, personal_thumbnails: 0, ts: 2026-07-25T01:26:18.831Z}",
+    "[VAULT-DELETE-TRACE] syncFromVault:bootstrap_reload {source: GET /api/reels, catalogCount: 47, ids: Array(20), ts: 2026-07-25T01:26:21.833Z}",
+    "[BG7K_CATALOG_RECEIVE] {count: 47, sampleIds: Array(8), source: syncFromVault:GET /api/reels, timestamp: 2026-07-25T01:26:21.833Z}",
+    "[Vault Field Audit] GET /api/reels response (syncFromVault) (47 items)",
+    "[Vault Field Audit] GET /api/reels response (syncFromVault)[0]",
+    "[Vault Field Audit] GET /api/reels response (syncFromVault)[1]",
+    "[Vault Field Audit] GET /api/reels response (syncFromVault)[2]",
+    "[VAULT_SYNC] {action: syncFromVault:pre-upgrade, backendReels: 47, personal_thumbnails: 0, ts: 2026-07-25T01:26:21.835Z}",
+    "[VAULT_REFRESH_RESTORE] {vaultType: thumbnail, assetId: null, fileName: null, storageLocation: personal_thumbnails, backendEndpoint: null}",
+    "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:start, personal_thumbnails: 0, ts: 2026-07-25T01:26:21.835Z}",
+    "[VAULT_RELOAD] {action: reloadVaultStoresFromStorage:clear, personal_thumbnails: 0, ts: 2026-07-25T01:26:21.835Z}",
+    "[VAULT_SYNC] {action: syncFromVault:post-reload, personal_thumbnails: 0, collectionStore: 0, ts: 2026-07-25T01:26:21.837Z}",
+    "[STARTUP_RECONCILE] {action: noop, examined: 0, purgedCount: 0, remaining: 0, backendThumbReels: 25}",
+    "[BG7L_FEED_DECISION] {reelId: 7187b728-a73b-4727-bb5a-3554706e2855, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}",
+    "[BG7L_FEED_DECISION] {reelId: d9da1aa4-30bb-41b6-b1ef-5ae866c6e906, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}",
+    "[BG7L_FEED_DECISION] {reelId: b0493d4c-2d26-4dea-8c85-4af3d000af00, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}",
+    "[BG7L_FEED_DECISION] {reelId: 1d422a2f-2694-4649-9989-26c7dba7b0f3, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}",
+    "[BG7L_FEED_DECISION] {reelId: 6a96ae14-856d-4f40-9113-d03403b7e57f, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}",
+    "[BG7L_FEED_DECISION] {reelId: 55725261-40fb-4f2e-8006-0d38721cd274, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}",
+    "[BG7L_FEED_DECISION] {reelId: 2fdd1918-b323-4e16-b323-7a8dc180f917, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}",
+    "[BG7L_FEED_DECISION] {reelId: e9a359dc-4d94-4a41-ae78-fe49e0798f2d, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}",
+    "[BG7L_FEED_DECISION] {reelId: 9ef63eb1-f0f4-404c-9a87-bdc2a898558b, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}",
+    "[BG7L_FEED_DECISION] {reelId: 118c6695-14ef-4466-b3c0-dcf172b34f6e, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}",
+    "[BG7L_FEED_DECISION] {reelId: 8e40f3ca-e220-40f7-a636-b828b4008f68, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}",
+    "[BG7L_FEED_DECISION] {reelId: d1539feb-54c9-47e8-b40d-9318b9f87fb2, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}",
+    "[BG7L_FEED_DECISION] {reelId: 6060c258-a3f6-40ba-b642-c758562c7cb7, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}",
+    "[BG7L_FEED_DECISION] {reelId: 723642c0-fb56-4b67-a6aa-4c61efcf4064, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}",
+    "[BG7L_FEED_DECISION] {reelId: aa4f01b0-2b08-4e39-93cb-6bfce1776e97, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}",
+    "[BG7L_FEED_DECISION] {reelId: c4ea71cf-1d04-4e18-9d0a-76385524aa18, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}",
+    "[BG7L_FEED_DECISION] {reelId: abb2152c-a63e-415e-9eea-19e31e4a8799, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}",
+    "[BG7L_FEED_DECISION] {reelId: 284a4dfc-666f-44f7-99df-14cb3cbb63a2, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}",
+    "[BG7L_FEED_DECISION] {reelId: d121fb4f-b330-4f63-9477-0a2548718e60, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}",
+    "[BG7L_FEED_DECISION] {reelId: 2966b48d-4f5f-4554-a6cf-c89796a2fc44, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}",
+    "[BG7L_FEED_DECISION] {reelId: c656af89-108b-4403-a09a-5e0120a0b084, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}",
+    "[BG7L_FEED_DECISION] {reelId: e8ea86bb-716f-48bd-9638-e2e56f67f7aa, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}",
+    "[BG7L_FEED_DECISION] {reelId: 1aaaa063-a877-4268-8aeb-7343831c1752, category: HERO, mediaType: video, eligible: true, rejectionReason: hero_video_card}",
+    "[BG7L_FEED_DECISION] {reelId: 46f97e75-fcb5-4ace-b500-ae146898e284, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}",
+    "[BG7L_FEED_DECISION] {reelId: 0c335922-ef31-450b-b4d3-9d24a08210cf, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}",
+    "[BG7L_FEED_DECISION] {reelId: cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}",
+    "[BG7L_FEED_DECISION] {reelId: bbfe2e70-404a-4635-97ca-7fbd0196030b, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}",
+    "[BG7L_FEED_DECISION] {reelId: 010ff031-cd44-41ad-8d61-fd3cf3ac054a, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}",
+    "[BG7L_FEED_DECISION] {reelId: 995c7491-f056-42eb-a252-4f416eaa487a, category: HERO, mediaType: video, eligible: true, rejectionReason: hero_video_card}",
+    "[BG7L_FEED_DECISION] {reelId: b8bd9cee-899a-45b6-8671-5bd5165aaaf1, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}",
+    "[BG7L_FEED_DECISION] {reelId: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, category: Cyber-Action, mediaType: video, eligible: true, rejectionReason: video_card}",
+    "[BG7L_FEED_DECISION] {reelId: 61c56ffe-f17b-42cd-b338-00fca6799c83, category: Cyber-Action, mediaType: video, eligible: true, rejectionReason: video_card}",
+    "[BG7L_FEED_DECISION] {reelId: eb081031-a03f-4f21-957e-9c196617225f, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}",
+    "[BG7L_FEED_DECISION] {reelId: 5d64b611-a677-4db1-9e9e-cd34782c0caa, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}",
+    "[BG7L_FEED_DECISION] {reelId: e6573dc5-f5cc-4f2e-b74f-4f09980b260e, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}",
+    "[BG7L_FEED_DECISION] {reelId: 6d4e8087-0ffa-4077-a1b9-4c69858ac2de, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}",
+    "[BG7L_FEED_DECISION] {reelId: a29c0119-c570-4f5f-b522-fc2405696892, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}",
+    "[BG7L_FEED_DECISION] {reelId: b2efa08f-a1e5-4135-bf58-bc5539f9f920, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}",
+    "[BG7L_FEED_DECISION] {reelId: 99070858-4567-4ef0-9ba5-9412aeb31120, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}",
+    "[BG7L_FEED_DECISION] {reelId: 96eccf6f-0165-47eb-a3c7-55db88bb29b2, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}",
+    "[BG7L_FEED_DECISION] {reelId: 9c696259-99a3-411f-a1f5-f6a3fc3fb92a, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}",
+    "[BG7L_FEED_DECISION] {reelId: 0b983310-293c-44d0-8c3c-9310f36982bd, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}",
+    "[BG7L_FEED_DECISION] {reelId: 9a48cf44-1a5b-4a8d-9c52-126c0c1795b5, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}",
+    "[BG7L_FEED_DECISION] {reelId: 49716f87-c489-4bd0-af7c-c50015e9b480, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}",
+    "[BG7L_FEED_DECISION] {reelId: bd444390-343e-49a5-aabe-ff0e1de270b7, category: Trending, mediaType: image, eligible: true, rejectionReason: thumbnail_card}",
+    "[BG7L_FEED_DECISION] {reelId: eb4684cd-74ad-4763-ada8-347134ac1228, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}",
+    "[BG7L_FEED_DECISION] {reelId: dff70497-d198-4ff5-84a4-1b7265d2f8eb, category: Trending, mediaType: video, eligible: true, rejectionReason: video_card}",
+    "[BUILD_HOME_FEED] {catalogCount: 47, cardCount: 47, source: syncFromVault:backend, ts: 2026-07-25T01:26:21.848Z}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:21.850Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:21.865Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[syncFromVault] Loaded 47 reels from [backend] (22 playable video, thumbs → placeholders)",
+    "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 8e40f3ca-e220-40f7-a636-b828b4008f68, url: /videos/8e40f3ca-e220-40f7-a636-b828b4008f68.mp4, mime: video/mp4, classification: video}",
+    "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 6060c258-a3f6-40ba-b642-c758562c7cb7, url: https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/6060c258-a3f6-40ba-b642-c758562c7cb7.mp4, mime: video/mp4, classification: video}",
+    "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 0c335922-ef31-450b-b4d3-9d24a08210cf, url: /videos/8de95c34-a61a-4d24-988b-ba0c115624c9.mp4, mime: video/mp4, classification: video}",
+    "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7, url: /videos/cfa72ff1-0e07-4d6d-aafc-59a7d6ebabc7.mp4, mime: video/mp4, classification: video}",
+    "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: bbfe2e70-404a-4635-97ca-7fbd0196030b, url: /videos/bbfe2e70-404a-4635-97ca-7fbd0196030b.mp4, mime: video/mp4, classification: video}",
+    "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 010ff031-cd44-41ad-8d61-fd3cf3ac054a, url: /videos/010ff031-cd44-41ad-8d61-fd3cf3ac054a.mp4, mime: video/mp4, classification: video}",
+    "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: b8bd9cee-899a-45b6-8671-5bd5165aaaf1, url: /videos/b8bd9cee-899a-45b6-8671-5bd5165aaaf1.mp4, mime: video/mp4, classification: video}",
+    "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 4e67d1b3-f6c9-4ac4-bd75-7807978d26f3, url: /videos/4e67d1b3-f6c9-4ac4-bd75-7807978d26f3.mp4, mime: video/mp4, classification: video}",
+    "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 61c56ffe-f17b-42cd-b338-00fca6799c83, url: /videos/61c56ffe-f17b-42cd-b338-00fca6799c83.mp4, mime: video/mp4, classification: video}",
+    "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: eb081031-a03f-4f21-957e-9c196617225f, url: /videos/eb081031-a03f-4f21-957e-9c196617225f.mp4, mime: video/mp4, classification: video}",
+    "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: e6573dc5-f5cc-4f2e-b74f-4f09980b260e, url: /videos/e6573dc5-f5cc-4f2e-b74f-4f09980b260e.mp4, mime: video/mp4, classification: video}",
+    "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 6d4e8087-0ffa-4077-a1b9-4c69858ac2de, url: /videos/6d4e8087-0ffa-4077-a1b9-4c69858ac2de.mp4, mime: video/mp4, classification: video}",
+    "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: a29c0119-c570-4f5f-b522-fc2405696892, url: /videos/a29c0119-c570-4f5f-b522-fc2405696892.mp4, mime: video/mp4, classification: video}",
+    "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: b2efa08f-a1e5-4135-bf58-bc5539f9f920, url: /videos/b2efa08f-a1e5-4135-bf58-bc5539f9f920.mp4, mime: video/mp4, classification: video}",
+    "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 99070858-4567-4ef0-9ba5-9412aeb31120, url: /videos/99070858-4567-4ef0-9ba5-9412aeb31120.mp4, mime: video/mp4, classification: video}",
+    "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 96eccf6f-0165-47eb-a3c7-55db88bb29b2, url: /videos/96eccf6f-0165-47eb-a3c7-55db88bb29b2.mp4, mime: video/mp4, classification: video}",
+    "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 9c696259-99a3-411f-a1f5-f6a3fc3fb92a, url: /videos/9c696259-99a3-411f-a1f5-f6a3fc3fb92a.mp4, mime: video/mp4, classification: video}",
+    "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: 49716f87-c489-4bd0-af7c-c50015e9b480, url: /videos/49716f87-c489-4bd0-af7c-c50015e9b480.mp4, mime: video/mp4, classification: video}",
+    "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: eb4684cd-74ad-4763-ada8-347134ac1228, url: /videos/eb4684cd-74ad-4763-ada8-347134ac1228.mp4, mime: video/mp4, classification: video}",
+    "[VIDEO_VAULT_INSERT] {source: syncFromVault, id: dff70497-d198-4ff5-84a4-1b7265d2f8eb, url: /videos/dff70497-d198-4ff5-84a4-1b7265d2f8eb.mp4, mime: video/mp4, classification: video}",
+    "[STORE_UPDATE] {store: personalVideos, source: syncFromVault, count: 20, ts: 2026-07-25T01:26:21.869Z}",
+    "[STORE_WRITE] {store: personal_video_vault, source: syncFromVault, count: 20, ts: 2026-07-25T01:26:21.869Z}",
+    "[HERO_STORE_WRITE] {stage: syncFromVault:video-vault-persist, key: personal_video_vault, count: 20, heroAssetId: , ts: 2026-07-25T01:26:21.869Z}",
+    "[syncFromVault] Video vault merged (local + backend): 20 + 20 => 20",
+    "[BG7L_FEED_SUMMARY] {backendCatalogCount: 47, heroVideoCount: 4, imageCount: 25, eligibleVideoCount: 22, eligibleImageCount: 25}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:21.915Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.137Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.152Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.166Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.168Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.177Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.186Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.187Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.196Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.207Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.208Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.223Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.238Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.239Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.255Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.270Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.272Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.289Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.301Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.302Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.315Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.326Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.327Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.341Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.350Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.351Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.360Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.369Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.370Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.379Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.393Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.395Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.410Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.424Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.426Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.440Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.455Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.456Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.471Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.486Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.487Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.503Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.519Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.521Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.535Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.550Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.551Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.567Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.583Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.585Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.600Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.614Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.616Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.632Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.647Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.649Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.663Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}",
+    "[THUMB_STORE_WRITE] {timestamp: 2026-07-25T01:26:22.677Z, function: safeStorageSet, store: reelforge_feed, previousCount: 1, newCount: 1}"
+  ]
+}

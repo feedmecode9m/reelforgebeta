@@ -1,0 +1,76 @@
+{
+  "mission": "RC2-MP4-01 — Canonical Vault Update Trace",
+  "baselineId": "RC1-2026-07-19-POST-08C",
+  "reelId": "f6c4070d-3668-4e69-a9fe-dc7f4fde1345",
+  "sourceChanges": false,
+  "observations": {
+    "postAccepted": {
+      "status": 202,
+      "handler": "createReel",
+      "nextStep": "pollIngestionUntilReady"
+    },
+    "reelStatusEndpoint": {
+      "path": "/api/reels/f6c4070d-3668-4e69-a9fe-dc7f4fde1345",
+      "status": 200,
+      "reelStatus": "failed",
+      "validated": false,
+      "fileName": "f6c4070d-3668-4e69-a9fe-dc7f4fde1345.mp4",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/videos/f6c4070d-3668-4e69-a9fe-dc7f4fde1345.mp4",
+      "errorOwner": "backend ingestion worker thumbnail extraction",
+      "error": "ffmpeg failed while opening the MJPEG encoder; no thumbnail output was written"
+    },
+    "readyCatalog": {
+      "path": "/api/reels",
+      "status": 200,
+      "reelPresent": false,
+      "reason": "The catalog returns only status=ready and validated=true reels"
+    },
+    "frontendFlow": {
+      "canonicalReelConstructed": false,
+      "personalVideosUpdateCalledForReel": false,
+      "personalVideoVaultWrittenForReel": false,
+      "syncFromVaultResponsible": false,
+      "overwriteObserved": false,
+      "explanation": "pollIngestionUntilReady throws on status=failed, so uploadMedia rejects before handleVaultVideoDrop constructs or stores a vault entry"
+    }
+  },
+  "answers": {
+    "202ResponseHandlerExecutes": true,
+    "canonicalReelObjectConstructed": false,
+    "personalVideosSetOrUpdateCalled": false,
+    "writeOverwrittenBySync": false,
+    "syncFromVaultRemovesReel": false,
+    "backendCatalogQueriedAfterUpload": true,
+    "readyCatalogContainsUuid": false
+  },
+  "firstLossBoundary": {
+    "component": "backend ingestion worker",
+    "operation": "ffmpeg thumbnail extraction",
+    "transition": "pending -> failed",
+    "before": "POST /api/reels returns 202 and a persistent pending reel",
+    "after": "GET /api/reels/{id} reports failed; no ready canonical reel is returned to the frontend",
+    "downstream": "createReel rejects; VaultExperience never reaches personalVideos.update or persistPersonalVault"
+  },
+  "classification": {
+    "result": "ingestion_failure",
+    "frontendVaultRegressionProven": false,
+    "previousIntakeClassification": "invalidated",
+    "reason": "The intake treated the POST 202 network response as completion without awaiting asynchronous ingestion"
+  },
+  "ffmpegRootCause": {
+    "workerCommand": "ffmpeg -hide_banner -loglevel error -y -ss 1 -i <video> -frames:v 1 -q:v 2 <thumb>.jpg",
+    "gate": "backend/src/ingestion/worker.rs marks reel ready only if extract_thumbnail_at_1s succeeds; on failure it calls mark_failed",
+    "seekConstant": "extract_thumbnail_at_1s (backend/src/ingestion/ffmpeg.rs) hardcodes -ss 1 (t=1s)",
+    "probeDuration": "1.000s (25 frames @ 25fps)",
+    "finding": "Seeking to t=1s in a video whose duration is exactly 1.0s lands at/after EOF, so no frame is decoded and no thumbnail is written",
+    "reproduction": {
+      "ss1_on_1s_video": "empty output, no file written (ffmpeg 6.1.1 exit 0 + 'Output file is empty'); production ffmpeg build surfaced the same empty-output as nonzero exit with mjpeg full-range encoder error",
+      "ss0_on_1s_video": "thumbnail written OK",
+      "ss1_on_3s_limited_range": "thumbnail written OK",
+      "ss1_on_3s_full_range": "thumbnail written OK"
+    },
+    "conclusion": "The observed ingestion failure is a TEST-ARTIFACT of the 1-second synthetic probe, not a defect triggered by realistic uploads. Normal multi-second MP4s (both limited and full range) thumbnail successfully.",
+    "latentBackendDefect": "extract_thumbnail_at_1s has no fallback seek when the video is shorter than 1s (or the seek lands past EOF). Any sub-1s clip fails ingestion entirely. Low real-world impact; robustness gap only.",
+    "missionImpact": "The RC2-INTAKE probe MP4 was too short to exercise the Vault/Hero pipeline. A re-run requires a probe >= ~3s so the upload reaches the ready catalog."
+  }
+}

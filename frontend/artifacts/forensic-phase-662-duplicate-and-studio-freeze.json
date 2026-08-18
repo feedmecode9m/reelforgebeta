@@ -1,0 +1,144 @@
+{
+  "mission": "READ-ONLY forensic audit — hard-refresh duplicates + Studio choppiness",
+  "generatedAt": "2026-08-13T17:55:00.000Z",
+  "mode": "EVIDENCE_ONLY",
+  "codeChanges": "none",
+  "commit": "none",
+  "deploy": "none",
+  "localCatalog": {
+    "apiReels": 26,
+    "videos": 1,
+    "videoId": "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee",
+    "videoName": "01 ARRIVAL OPEN v1",
+    "category": "Trending",
+    "url": "http://localhost:8080/videos/73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee.mp4"
+  },
+  "problem1_duplicates": {
+    "verdict": "LIVE_HARD_REFRESH: feed data is single-row; visible duplicates are layout projection + per-card double title labels. Latent cross-shelf feed remount exists in distributeToShelves.",
+    "liveHardRefresh": {
+      "artifact": "artifacts/forensic-hard-refresh-duplicates.json",
+      "reelforge_feed_shelfCounts": { "Trending": 1, "Romance": 0, "Cyber-Action": 0, "Suspense": 0 },
+      "dupClustersById": [],
+      "browseCards": 0,
+      "domCards": [
+        {
+          "section": "Featured",
+          "reelId": "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee",
+          "titlesOnCard": ["01 ARRIVAL OPEN v1", "01 ARRIVAL OPEN v1"],
+          "classification": "LAYOUT_PROJECTION_FEATURED_REMOUNT"
+        },
+        {
+          "section": "Trending",
+          "reelId": "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee",
+          "titlesOnCard": ["01 ARRIVAL OPEN v1", "01 ARRIVAL OPEN v1"],
+          "classification": "CANONICAL_SHELF_CARD"
+        }
+      ],
+      "console": {
+        "VIEWER_SHELF_COMPOSITION": "featured_promo_remount_browse_residual; shelfIdentityCount=1; browseIdentityCount=0",
+        "CANONICAL_FEED_UPSERT": "action=update; removedTwins=1 (primary match strip+replace, not evidence of twin)"
+      }
+    },
+    "pipelineTrace": [
+      {
+        "stage": "localStorage hydration",
+        "file": "viewerContext.js",
+        "finding": "feed store starts writable({}); durable key reelforge_feed is written by syncFromVault, not used as authoritative boot hydrate before sync."
+      },
+      {
+        "stage": "syncFromVault",
+        "file": "viewerContext.js ~1247-1389",
+        "finding": "GET /api/reels → buildHomeFeed → prune → feed.set(tombstoneSafeFeed). Backend-reachable path does NOT call distributeVideoToFeed here."
+      },
+      {
+        "stage": "buildHomeFeed",
+        "file": "buildHomeFeed.js",
+        "finding": "Video dedupe is exact raw URL string only (seenVideoUrls). Does not normalize absolute vs relative. Does not call collapseSameShelfDuplicateIdentities."
+      },
+      {
+        "stage": "distributeToShelves",
+        "file": "categoryDistribution.js:111-127",
+        "finding": "INTENTIONAL FEED DATA REMOUNT: when primary shelf !== Trending, identity is pushed to primary AND copied onto Trending with _onTrendingAsDiscovery. Creates cross-shelf duplicate feed records for same assetId."
+      },
+      {
+        "stage": "distributeVideoToFeed",
+        "file": "aiCleanupAgent.js",
+        "finding": "Phase 6.6.2 upsert via findCanonicalFeedMatch; runs later via syncVideoVaultToFeed (~200ms after mount). Collapses same-identity matches when vault sync runs."
+      },
+      {
+        "stage": "viewerShelfComposition",
+        "file": "viewerShelfComposition.js",
+        "finding": "Featured remounts first unique identity (layout). Browse = residual only. Live: browseIdentityCount=0."
+      },
+      {
+        "stage": "ViewerSemanticCard",
+        "file": "ViewerSemanticCard.svelte:119-135",
+        "finding": "Renders title twice per card: data-viewer-sem-title-overlay AND data-viewer-sem-title. DOM titles array length 2 for one identity."
+      }
+    ],
+    "exactDuplicateRecords_live": [],
+    "identityKeys_live": {
+      "assetId": "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee",
+      "personal_video_id": "73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee",
+      "normalizedMediaUrl": "/videos/73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee.mp4"
+    },
+    "whereDuplicatesEnter": {
+      "feed_data_same_shelf": "Not observed live after hard refresh settle. Risk remains if buildHomeFeed URL-string dedupe misses absolute/relative twins before upsert, or if upsert skipped.",
+      "feed_data_cross_shelf": "categoryDistribution.js remount path (primary≠Trending).",
+      "layout_projection": "composeViewerShelfLayouts Featured remount + Trending shelf card (same identity, two DOM cards).",
+      "label_duplication_on_card": "ViewerSemanticCard overlay title + below-card title."
+    },
+    "feed_vs_layout": {
+      "live_feed_twins": false,
+      "live_layout_projection_twins": true,
+      "live_per_card_double_labels": true
+    }
+  },
+  "problem2_studio_choppiness": {
+    "verdict": "Freeze/choppiness trigger is ProductionCommandCenter + StudioWorkspaceLayout shared refresh fan-out amplified by a reactive schedule on every feedReels tick, dual listeners, 5s interval, and id-less recommendedActions merge that can collide on title keys.",
+    "exactFreezeTrigger": {
+      "primary": "StudioWorkspaceLayout.svelte reactive: `$: selectedSeriesId, feedReels, scheduleCommandCenterRefresh('workspace-reactive');`",
+      "amplifiers": [
+        "ProductionCommandCenter + StudioWorkspaceLayout both registerCommandCenterRefreshListener → every flush rebuilds brief twice",
+        "startCommandCenterRefreshInterval 5000ms owner production-command-center",
+        "Domain events: workflow-tasks-updated, teams-updated, notifications-updated, pipeline-updated, release-schedule-updated",
+        "refreshBrief dispatches reelforge:command-center-updated",
+        "$: refreshKey, ... evaluateNotificationTriggers → can emit notifications-updated → reschedule"
+      ],
+      "keyed_loop": {
+        "file": "ProductionCommandCenter.svelte:327",
+        "expression": "{#each brief.recommendedActions as action (action.id || action.title)}",
+        "id_stripped_at": "sentinelAssistant.js analyzeProduction nextActions map (no id) + analyzeWorkflows nextActions map (no id)",
+        "merge": "masterAnalysis nextActions = production.nextActions + workflows.nextActions",
+        "collision_proof": {
+          "when_titles_match": "duplicate Svelte keys e.g. Attach reel to E01 twice → CASE_B",
+          "when_casing_differs": "no key crash but near-duplicate actions Attach reel vs Attach Reel (CASE_A) — observed generator pair actionEngine vs series/workflowEngine"
+        }
+      },
+      "network_storm_sample_6s": [
+        "GET /api/notifications/status (repeated)",
+        "GET /api/notifications (repeated)",
+        "GET /api/sync/status + /api/sync/state (repeated)",
+        "POST /api/sync/push (repeated)",
+        "POST /api/analytics",
+        "GET /api/analytics/status"
+      ],
+      "workflow_log": "[WORKFLOW_DB_WRITE] write-circuit-open fallback; taskCount:3"
+    },
+    "component_file": {
+      "mount": "frontend/src/components/studio/ProductionCommandCenter.svelte",
+      "nested": "frontend/src/components/studio/StudioWorkspaceLayout.svelte",
+      "refresh_bus": "frontend/src/lib/command/commandCenterRefresh.js",
+      "actions_source": "frontend/src/lib/sentinel/sentinelAssistant.js",
+      "title_generators": [
+        "frontend/src/lib/series/actionEngine.js → 'Attach reel to E0N'",
+        "frontend/src/lib/series/workflowEngine.js → 'Attach Reel to E0N'"
+      ]
+    },
+    "minimal_isolated_fix_NOT_IMPLEMENTED": [
+      "1) Remove or gate `$: selectedSeriesId, feedReels, scheduleCommandCenterRefresh('workspace-reactive')` so feedReels identity churn cannot schedule on every reactive tick.",
+      "2) Preserve stable unique `id` on sentinel nextActions (do not strip recommendation/task ids) and key PCC each on `action.id` only.",
+      "3) Dedupe master nextActions by id/title before recommendedActions render."
+    ]
+  }
+}

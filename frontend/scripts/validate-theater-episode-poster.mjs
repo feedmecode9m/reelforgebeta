@@ -276,6 +276,97 @@ async function main() {
             'chip poster unchanged'
         );
 
+        const mp4AsChip = `https://cdn.example/videos/${mediaA}.mp4`;
+        const skippedVideoPoster = resolveViewerEpisodePosterUrl({
+            episode: epA,
+            chipThumbnailUrl: mp4AsChip,
+            readyVaultAssets: []
+        });
+        assert(
+            skippedVideoPoster.includes(`/thumbs/${mediaA}.jpg`),
+            `MP4 chip thumb is not used as <img> (got ${skippedVideoPoster})`
+        );
+
+        const pngPeer = `https://cdn.example/thumbs/${mediaA}.png`;
+        const fromImagePeer = resolveViewerEpisodePosterUrl({
+            episode: { mediaAssetId: mediaA },
+            chipThumbnailUrl: mp4AsChip,
+            readyVaultAssets: [
+                {
+                    id: mediaA,
+                    type: 'video',
+                    url: mp4AsChip
+                },
+                {
+                    id: `${mediaA}-still`,
+                    type: 'image',
+                    url: pngPeer,
+                    personal_video_id: mediaA
+                }
+            ]
+        });
+        assert(fromImagePeer === pngPeer, `vault JPEG/PNG peer wins over MP4 (got ${fromImagePeer})`);
+
+        const catalogUuid = '03ef898a-989f-42c3-bdbb-67f37338df65';
+        const vaultPersonalId = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
+        const catalogThumb = `https://strong-lolly-a9fcb4.netlify.app/thumbs/${catalogUuid}.jpg`;
+        const r2Mp4 = `https://pub.example.r2.dev/prod/${catalogUuid}.mp4`;
+        const fromPlaybackAlias = resolveViewerEpisodePosterUrl({
+            episode: {
+                episodeId: 'ep-arrival',
+                title: 'Vic G Arrival',
+                episodeNumber: 1,
+                mediaAssetId: vaultPersonalId,
+                reelId: vaultPersonalId,
+                mediaUrl: r2Mp4,
+                status: 'published'
+            },
+            chipThumbnailUrl: '',
+            readyVaultAssets: [
+                {
+                    id: vaultPersonalId,
+                    type: 'video',
+                    status: 'ready',
+                    url: r2Mp4
+                },
+                {
+                    id: catalogUuid,
+                    type: 'video',
+                    status: 'ready',
+                    url: r2Mp4,
+                    thumbnailUrl: catalogThumb
+                }
+            ]
+        });
+        assert(
+            fromPlaybackAlias === catalogThumb,
+            `R2 /prod UUID donates catalog still to vault-personal MP4 (got ${fromPlaybackAlias})`
+        );
+        const inventedFromR2 = resolveViewerEpisodePosterUrl({
+            episode: {
+                episodeId: 'ep-r2-only',
+                title: 'Club Poom',
+                episodeNumber: 2,
+                mediaAssetId: vaultPersonalId,
+                reelId: vaultPersonalId,
+                mediaUrl: r2Mp4,
+                status: 'published'
+            },
+            chipThumbnailUrl: '',
+            readyVaultAssets: [
+                {
+                    id: vaultPersonalId,
+                    type: 'video',
+                    status: 'ready',
+                    url: r2Mp4
+                }
+            ]
+        });
+        assert(
+            inventedFromR2.includes(`/thumbs/${catalogUuid}.jpg`),
+            `invent poster uses R2 playback UUID not vault id (got ${inventedFromR2})`
+        );
+
         const vaultBThumb = 'https://cdn.example/thumbs/vault-b.jpg';
         const fromVault = resolveViewerEpisodePosterUrl({
             episode: epB,
@@ -317,6 +408,14 @@ async function main() {
             'EpisodeChip uses resolveMediaForRender for poster img'
         );
         assert(/resolvedPosterUrl/.test(chipSrc), 'EpisodeChip renders resolvedPosterUrl');
+        assert(
+            /loading="eager"/.test(chipSrc) && /handlePosterError/.test(chipSrc),
+            'viewer All Episodes posters load eagerly with jpg/png fallback'
+        );
+        assert(
+            /isVaultVideoMediaUrl/.test(chipSrc),
+            'EpisodeChip rejects MP4 URLs as poster images'
+        );
 
         const accordion = read('src/components/series/SeasonAccordion.svelte');
         assert(/resolveViewerEpisodePosterUrl/.test(accordion), 'SeasonAccordion uses viewer poster');

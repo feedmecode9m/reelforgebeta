@@ -1,0 +1,4750 @@
+{
+  "mission": "RC3-RECONNECT-01",
+  "goal": "Event source attribution for Backend reconnecting... (evidence only; no fixes)",
+  "generatedAt": "2026-07-20T03:59:37.353Z",
+  "frontendUrl": "https://strong-lolly-a9fcb4.netlify.app/",
+  "waitMs": 90000,
+  "captureStartAt": "2026-07-20T03:59:37.630Z",
+  "captureEndAt": "2026-07-20T04:00:07.680Z",
+  "bundle": "/assets/index-Btl25zBV.js",
+  "healthAtStart": {
+    "status": 200,
+    "body": {
+      "status": "ok",
+      "timestamp": 1784519989683,
+      "service": "reelforge-backend",
+      "database": "connected",
+      "reels_source": "postgres-ingestion-v2",
+      "services": {
+        "db": "connected",
+        "storage": "ready",
+        "ingestion": "enabled",
+        "storage_detail": {
+          "media_root": "/app/public",
+          "videos_path": "/app/public/videos",
+          "thumbs_path": "/app/public/thumbs",
+          "writable": true,
+          "volume_mounted": true,
+          "ephemeral_storage_risk": false
+        }
+      }
+    }
+  },
+  "occurrences": [
+    {
+      "id": 1,
+      "browserLocalISO": "2026-07-20T03:59:55.533Z",
+      "performanceNowMs": 17891.599999999977,
+      "timeOrigin": 1784519977641.6,
+      "navigatorOnLine": true,
+      "eventSource": "notifyBackendReconnecting()",
+      "customEventName": "reelforge:backend-reconnecting",
+      "callStack": "Error: RC3-RECONNECT-01 notify stack\n    at onReconnectEvent (eval at evaluate (:303:30), <anonymous>:210:19)\n    at rc3DispatchEvent (<anonymous>:277:31)\n    at mg (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:1:11681)\n    at Ml (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:1:13238)\n    at async $7 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:23068)\n    at async x7 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:23465)\n    at async tc (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:32924)\n    at async o (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:17:725)",
+      "detailMessage": "Backend reconnecting...",
+      "priorUploadStatus": "",
+      "syncRunning": false,
+      "stackFingerprint": {
+        "fetchWithRetry": false,
+        "notifyBackendReconnecting": false,
+        "syncFromVault": false,
+        "checkBackendHealth": false,
+        "uploadVideo": false,
+        "studioSync": false,
+        "websocket": false
+      },
+      "backendConnectionStatus": {
+        "state": "online",
+        "lastOkAt": 1784519992178,
+        "lastAttemptAt": 1784519992178,
+        "lastError": ""
+      },
+      "lastHealth": {
+        "url": "/api/health",
+        "startedAt": "2026-07-20T03:59:50.043Z",
+        "status": 200,
+        "finishedAt": "2026-07-20T03:59:51.127Z"
+      },
+      "lastSuccessfulApiCall": {
+        "url": "/api/notifications?userId=user-owner-1",
+        "status": 200,
+        "at": "2026-07-20T03:59:52.178Z"
+      },
+      "lastFailedApiCall": {
+        "url": "/api/notifications/status",
+        "status": "network_error",
+        "at": "2026-07-20T03:59:55.529Z",
+        "error": "signal timed out"
+      },
+      "websocketState": {
+        "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+        "readyState": 3,
+        "readyStateLabel": "CLOSED"
+      },
+      "websocketAll": [
+        {
+          "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+          "readyState": 3,
+          "readyStateLabel": "CLOSED"
+        }
+      ],
+      "currentUploadStatus": "",
+      "operationStatusText": "",
+      "bannerText": "",
+      "activeUpload": false,
+      "heroUploadActive": false,
+      "retryCount": null,
+      "clearedAt": "2026-07-20T03:59:56.304Z",
+      "clearEvent": "reelforge:backend-connection:online",
+      "finalState": {
+        "uploadStatus": "Backend reconnecting...",
+        "backendConnectionStatus": {
+          "state": "online",
+          "lastOkAt": 1784519996303,
+          "lastAttemptAt": 1784519996303,
+          "lastError": ""
+        }
+      },
+      "classification": "API retry path",
+      "operationStatusAppearedViaDom": true
+    },
+    {
+      "id": 2,
+      "browserLocalISO": "2026-07-20T03:59:55.545Z",
+      "performanceNowMs": 17904.400000000023,
+      "timeOrigin": 1784519977641.6,
+      "navigatorOnLine": true,
+      "eventSource": "notifyBackendReconnecting()",
+      "customEventName": "reelforge:backend-reconnecting",
+      "callStack": "Error: RC3-RECONNECT-01 notify stack\n    at onReconnectEvent (eval at evaluate (:303:30), <anonymous>:210:19)\n    at rc3DispatchEvent (<anonymous>:277:31)\n    at mg (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:1:11681)\n    at Ml (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:1:13238)\n    at async $7 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:23068)\n    at async x7 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:23465)\n    at async tc (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:32924)\n    at async o (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:17:725)",
+      "detailMessage": "Backend reconnecting...",
+      "priorUploadStatus": "Backend reconnecting...",
+      "syncRunning": false,
+      "stackFingerprint": {
+        "fetchWithRetry": false,
+        "notifyBackendReconnecting": false,
+        "syncFromVault": false,
+        "checkBackendHealth": false,
+        "uploadVideo": false,
+        "studioSync": false,
+        "websocket": false
+      },
+      "backendConnectionStatus": {
+        "state": "offline",
+        "lastOkAt": 1784519992178,
+        "lastAttemptAt": 1784519995534,
+        "lastError": "signal timed out"
+      },
+      "lastHealth": {
+        "url": "/api/health",
+        "startedAt": "2026-07-20T03:59:50.043Z",
+        "status": 200,
+        "finishedAt": "2026-07-20T03:59:51.127Z"
+      },
+      "lastSuccessfulApiCall": {
+        "url": "/api/notifications?userId=user-owner-1",
+        "status": 200,
+        "at": "2026-07-20T03:59:52.178Z"
+      },
+      "lastFailedApiCall": {
+        "url": "/api/notifications/status",
+        "status": "network_error",
+        "at": "2026-07-20T03:59:55.543Z",
+        "error": "signal timed out"
+      },
+      "websocketState": {
+        "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+        "readyState": 3,
+        "readyStateLabel": "CLOSED"
+      },
+      "websocketAll": [
+        {
+          "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+          "readyState": 3,
+          "readyStateLabel": "CLOSED"
+        }
+      ],
+      "currentUploadStatus": "Backend reconnecting...",
+      "operationStatusText": "Backend reconnecting...",
+      "bannerText": "Backend unavailable — signal timed out. Showing saved content when possible.",
+      "activeUpload": false,
+      "heroUploadActive": false,
+      "retryCount": null,
+      "clearedAt": "2026-07-20T03:59:56.304Z",
+      "clearEvent": "reelforge:backend-connection:online",
+      "finalState": {
+        "uploadStatus": "Backend reconnecting...",
+        "backendConnectionStatus": {
+          "state": "online",
+          "lastOkAt": 1784519996303,
+          "lastAttemptAt": 1784519996303,
+          "lastError": ""
+        }
+      },
+      "classification": "API retry path"
+    },
+    {
+      "id": 3,
+      "browserLocalISO": "2026-07-20T03:59:55.833Z",
+      "performanceNowMs": 18191.599999999977,
+      "timeOrigin": 1784519977641.6,
+      "navigatorOnLine": true,
+      "eventSource": "notifyBackendReconnecting()",
+      "customEventName": "reelforge:backend-reconnecting",
+      "callStack": "Error: RC3-RECONNECT-01 notify stack\n    at onReconnectEvent (eval at evaluate (:303:30), <anonymous>:210:19)\n    at rc3DispatchEvent (<anonymous>:277:31)\n    at mg (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:1:11681)\n    at Ml (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:1:13238)\n    at async $7 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:23068)\n    at async x7 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:23465)\n    at async tc (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:32924)",
+      "detailMessage": "Backend reconnecting...",
+      "priorUploadStatus": "Backend reconnecting...",
+      "syncRunning": false,
+      "stackFingerprint": {
+        "fetchWithRetry": false,
+        "notifyBackendReconnecting": false,
+        "syncFromVault": false,
+        "checkBackendHealth": false,
+        "uploadVideo": false,
+        "studioSync": false,
+        "websocket": false
+      },
+      "backendConnectionStatus": {
+        "state": "offline",
+        "lastOkAt": 1784519992178,
+        "lastAttemptAt": 1784519995546,
+        "lastError": "signal timed out"
+      },
+      "lastHealth": {
+        "url": "/api/health",
+        "startedAt": "2026-07-20T03:59:50.043Z",
+        "status": 200,
+        "finishedAt": "2026-07-20T03:59:51.127Z"
+      },
+      "lastSuccessfulApiCall": {
+        "url": "/api/notifications?userId=user-owner-1",
+        "status": 200,
+        "at": "2026-07-20T03:59:52.178Z"
+      },
+      "lastFailedApiCall": {
+        "url": "/api/notifications/status",
+        "status": "network_error",
+        "at": "2026-07-20T03:59:55.831Z",
+        "error": "signal timed out"
+      },
+      "websocketState": {
+        "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+        "readyState": 3,
+        "readyStateLabel": "CLOSED"
+      },
+      "websocketAll": [
+        {
+          "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+          "readyState": 3,
+          "readyStateLabel": "CLOSED"
+        }
+      ],
+      "currentUploadStatus": "Backend reconnecting...",
+      "operationStatusText": "Backend reconnecting...",
+      "bannerText": "Backend unavailable — signal timed out. Showing saved content when possible.",
+      "activeUpload": false,
+      "heroUploadActive": false,
+      "retryCount": null,
+      "clearedAt": "2026-07-20T03:59:56.304Z",
+      "clearEvent": "reelforge:backend-connection:online",
+      "finalState": {
+        "uploadStatus": "Backend reconnecting...",
+        "backendConnectionStatus": {
+          "state": "online",
+          "lastOkAt": 1784519996303,
+          "lastAttemptAt": 1784519996303,
+          "lastError": ""
+        }
+      },
+      "classification": "API retry path"
+    },
+    {
+      "id": 4,
+      "browserLocalISO": "2026-07-20T03:59:55.835Z",
+      "performanceNowMs": 18194.199999999953,
+      "timeOrigin": 1784519977641.6,
+      "navigatorOnLine": true,
+      "eventSource": "notifyBackendReconnecting()",
+      "customEventName": "reelforge:backend-reconnecting",
+      "callStack": "Error: RC3-RECONNECT-01 notify stack\n    at onReconnectEvent (eval at evaluate (:303:30), <anonymous>:210:19)\n    at rc3DispatchEvent (<anonymous>:277:31)\n    at mg (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:1:11681)\n    at Ml (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:1:13238)\n    at async e6 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:2:42541)\n    at async Og (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:2:43006)\n    at async u6 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:2:46218)",
+      "detailMessage": "Backend reconnecting...",
+      "priorUploadStatus": "Backend reconnecting...",
+      "syncRunning": false,
+      "stackFingerprint": {
+        "fetchWithRetry": false,
+        "notifyBackendReconnecting": false,
+        "syncFromVault": false,
+        "checkBackendHealth": false,
+        "uploadVideo": false,
+        "studioSync": false,
+        "websocket": false
+      },
+      "backendConnectionStatus": {
+        "state": "offline",
+        "lastOkAt": 1784519992178,
+        "lastAttemptAt": 1784519995833,
+        "lastError": "signal timed out"
+      },
+      "lastHealth": {
+        "url": "/api/health",
+        "startedAt": "2026-07-20T03:59:50.043Z",
+        "status": 200,
+        "finishedAt": "2026-07-20T03:59:51.127Z"
+      },
+      "lastSuccessfulApiCall": {
+        "url": "/api/notifications?userId=user-owner-1",
+        "status": 200,
+        "at": "2026-07-20T03:59:52.178Z"
+      },
+      "lastFailedApiCall": {
+        "url": "/api/workflow/status",
+        "status": "network_error",
+        "at": "2026-07-20T03:59:55.834Z",
+        "error": "signal timed out"
+      },
+      "websocketState": {
+        "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+        "readyState": 3,
+        "readyStateLabel": "CLOSED"
+      },
+      "websocketAll": [
+        {
+          "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+          "readyState": 3,
+          "readyStateLabel": "CLOSED"
+        }
+      ],
+      "currentUploadStatus": "Backend reconnecting...",
+      "operationStatusText": "Backend reconnecting...",
+      "bannerText": "Backend unavailable — signal timed out. Showing saved content when possible.",
+      "activeUpload": false,
+      "heroUploadActive": false,
+      "retryCount": null,
+      "clearedAt": "2026-07-20T03:59:56.304Z",
+      "clearEvent": "reelforge:backend-connection:online",
+      "finalState": {
+        "uploadStatus": "Backend reconnecting...",
+        "backendConnectionStatus": {
+          "state": "online",
+          "lastOkAt": 1784519996303,
+          "lastAttemptAt": 1784519996303,
+          "lastError": ""
+        }
+      },
+      "classification": "API retry path"
+    },
+    {
+      "id": 5,
+      "browserLocalISO": "2026-07-20T03:59:56.291Z",
+      "performanceNowMs": 18650,
+      "timeOrigin": 1784519977641.6,
+      "navigatorOnLine": true,
+      "eventSource": "notifyBackendReconnecting()",
+      "customEventName": "reelforge:backend-reconnecting",
+      "callStack": "Error: RC3-RECONNECT-01 notify stack\n    at onReconnectEvent (eval at evaluate (:303:30), <anonymous>:210:19)\n    at rc3DispatchEvent (<anonymous>:277:31)\n    at mg (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:1:11681)\n    at Ml (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:1:13238)\n    at async $7 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:23068)\n    at async x7 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:23465)\n    at async tc (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:32924)\n    at async o (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:17:725)",
+      "detailMessage": "Backend reconnecting...",
+      "priorUploadStatus": "Backend reconnecting...",
+      "syncRunning": false,
+      "stackFingerprint": {
+        "fetchWithRetry": false,
+        "notifyBackendReconnecting": false,
+        "syncFromVault": false,
+        "checkBackendHealth": false,
+        "uploadVideo": false,
+        "studioSync": false,
+        "websocket": false
+      },
+      "backendConnectionStatus": {
+        "state": "offline",
+        "lastOkAt": 1784519992178,
+        "lastAttemptAt": 1784519995836,
+        "lastError": "signal timed out"
+      },
+      "lastHealth": {
+        "url": "/api/health",
+        "startedAt": "2026-07-20T03:59:50.043Z",
+        "status": 200,
+        "finishedAt": "2026-07-20T03:59:51.127Z"
+      },
+      "lastSuccessfulApiCall": {
+        "url": "/api/notifications?userId=user-owner-1",
+        "status": 200,
+        "at": "2026-07-20T03:59:52.178Z"
+      },
+      "lastFailedApiCall": {
+        "url": "/api/notifications/status",
+        "status": "network_error",
+        "at": "2026-07-20T03:59:56.290Z",
+        "error": "signal timed out"
+      },
+      "websocketState": {
+        "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+        "readyState": 3,
+        "readyStateLabel": "CLOSED"
+      },
+      "websocketAll": [
+        {
+          "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+          "readyState": 3,
+          "readyStateLabel": "CLOSED"
+        }
+      ],
+      "currentUploadStatus": "Backend reconnecting...",
+      "operationStatusText": "Backend reconnecting...",
+      "bannerText": "Backend unavailable — signal timed out. Showing saved content when possible.",
+      "activeUpload": false,
+      "heroUploadActive": false,
+      "retryCount": null,
+      "clearedAt": "2026-07-20T03:59:56.304Z",
+      "clearEvent": "reelforge:backend-connection:online",
+      "finalState": {
+        "uploadStatus": "Backend reconnecting...",
+        "backendConnectionStatus": {
+          "state": "online",
+          "lastOkAt": 1784519996303,
+          "lastAttemptAt": 1784519996303,
+          "lastError": ""
+        }
+      },
+      "classification": "API retry path"
+    },
+    {
+      "id": 6,
+      "browserLocalISO": "2026-07-20T03:59:58.031Z",
+      "performanceNowMs": 20389.900000000023,
+      "timeOrigin": 1784519977641.6,
+      "navigatorOnLine": true,
+      "eventSource": "notifyBackendReconnecting()",
+      "customEventName": "reelforge:backend-reconnecting",
+      "callStack": "Error: RC3-RECONNECT-01 notify stack\n    at onReconnectEvent (eval at evaluate (:303:30), <anonymous>:210:19)\n    at rc3DispatchEvent (<anonymous>:277:31)\n    at mg (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:1:11681)\n    at Ml (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:1:13238)\n    at async Eg (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:2:12559)\n    at async CP (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:2:13010)\n    at async w6 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:2:53795)\n    at async fu (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:2:53949)",
+      "detailMessage": "Backend reconnecting...",
+      "priorUploadStatus": "",
+      "syncRunning": false,
+      "stackFingerprint": {
+        "fetchWithRetry": false,
+        "notifyBackendReconnecting": false,
+        "syncFromVault": false,
+        "checkBackendHealth": false,
+        "uploadVideo": false,
+        "studioSync": false,
+        "websocket": false
+      },
+      "backendConnectionStatus": {
+        "state": "online",
+        "lastOkAt": 1784519996306,
+        "lastAttemptAt": 1784519996306,
+        "lastError": ""
+      },
+      "lastHealth": {
+        "url": "/api/health",
+        "startedAt": "2026-07-20T03:59:50.043Z",
+        "status": 200,
+        "finishedAt": "2026-07-20T03:59:51.127Z"
+      },
+      "lastSuccessfulApiCall": {
+        "url": "/api/notifications?userId=user-owner-1",
+        "status": 200,
+        "at": "2026-07-20T03:59:56.306Z"
+      },
+      "lastFailedApiCall": {
+        "url": "/api/sync/status",
+        "status": "network_error",
+        "at": "2026-07-20T03:59:58.029Z",
+        "error": "signal timed out"
+      },
+      "websocketState": {
+        "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+        "readyState": 3,
+        "readyStateLabel": "CLOSED"
+      },
+      "websocketAll": [
+        {
+          "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+          "readyState": 3,
+          "readyStateLabel": "CLOSED"
+        }
+      ],
+      "currentUploadStatus": "",
+      "operationStatusText": "",
+      "bannerText": "Back online — connection restored.",
+      "activeUpload": false,
+      "heroUploadActive": false,
+      "retryCount": null,
+      "clearedAt": "2026-07-20T04:00:00.716Z",
+      "clearEvent": "reelforge:backend-connection:online",
+      "finalState": {
+        "uploadStatus": "Backend reconnecting...",
+        "backendConnectionStatus": {
+          "state": "online",
+          "lastOkAt": 1784520000715,
+          "lastAttemptAt": 1784520000715,
+          "lastError": ""
+        }
+      },
+      "classification": "API retry path",
+      "operationStatusAppearedViaDom": true
+    },
+    {
+      "id": 7,
+      "browserLocalISO": "2026-07-20T04:00:05.630Z",
+      "performanceNowMs": 27989.099999999977,
+      "timeOrigin": 1784519977641.6,
+      "navigatorOnLine": true,
+      "eventSource": "notifyBackendReconnecting()",
+      "customEventName": "reelforge:backend-reconnecting",
+      "callStack": "Error: RC3-RECONNECT-01 notify stack\n    at onReconnectEvent (eval at evaluate (:303:30), <anonymous>:210:19)\n    at rc3DispatchEvent (<anonymous>:277:31)\n    at mg (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:1:11681)\n    at Ml (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:1:13238)\n    at async $7 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:23068)\n    at async x7 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:23465)\n    at async tc (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:32924)\n    at async o (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:17:725)",
+      "detailMessage": "Backend reconnecting...",
+      "priorUploadStatus": "",
+      "syncRunning": false,
+      "stackFingerprint": {
+        "fetchWithRetry": false,
+        "notifyBackendReconnecting": false,
+        "syncFromVault": false,
+        "checkBackendHealth": false,
+        "uploadVideo": false,
+        "studioSync": false,
+        "websocket": false
+      },
+      "backendConnectionStatus": {
+        "state": "online",
+        "lastOkAt": 1784520004876,
+        "lastAttemptAt": 1784520004876,
+        "lastError": ""
+      },
+      "lastHealth": {
+        "url": "/api/health",
+        "startedAt": "2026-07-20T03:59:50.043Z",
+        "status": 200,
+        "finishedAt": "2026-07-20T03:59:51.127Z"
+      },
+      "lastSuccessfulApiCall": {
+        "url": "/api/notifications?userId=user-owner-1",
+        "status": 200,
+        "at": "2026-07-20T04:00:04.876Z"
+      },
+      "lastFailedApiCall": {
+        "url": "/api/notifications/status",
+        "status": "network_error",
+        "at": "2026-07-20T04:00:05.628Z",
+        "error": "signal timed out"
+      },
+      "websocketState": {
+        "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+        "readyState": 3,
+        "readyStateLabel": "CLOSED"
+      },
+      "websocketAll": [
+        {
+          "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+          "readyState": 3,
+          "readyStateLabel": "CLOSED"
+        }
+      ],
+      "currentUploadStatus": "",
+      "operationStatusText": "",
+      "bannerText": "",
+      "activeUpload": false,
+      "heroUploadActive": false,
+      "retryCount": null,
+      "clearedAt": "2026-07-20T04:00:06.756Z",
+      "clearEvent": "reelforge:backend-connection:online",
+      "finalState": {
+        "uploadStatus": "Backend reconnecting...",
+        "backendConnectionStatus": {
+          "state": "online",
+          "lastOkAt": 1784520006756,
+          "lastAttemptAt": 1784520006756,
+          "lastError": ""
+        }
+      },
+      "classification": "API retry path",
+      "operationStatusAppearedViaDom": true
+    }
+  ],
+  "timeline": "2026-07-20T03:59:55.533Z\n\nnotifyBackendReconnecting()\n\n↓\n\nreason/fingerprint: {\"fetchWithRetry\":false,\"notifyBackendReconnecting\":false,\"syncFromVault\":false,\"checkBackendHealth\":false,\"uploadVideo\":false,\"studioSync\":false,\"websocket\":false}\n\n↓\n\nbackendConnectionStatus: {\"state\":\"online\",\"lastOkAt\":1784519992178,\"lastAttemptAt\":1784519992178,\"lastError\":\"\"}\n\n↓\n\nhealth: {\"url\":\"/api/health\",\"startedAt\":\"2026-07-20T03:59:50.043Z\",\"status\":200,\"finishedAt\":\"2026-07-20T03:59:51.127Z\"} | lastOk: {\"url\":\"/api/notifications?userId=user-owner-1\",\"status\":200,\"at\":\"2026-07-20T03:59:52.178Z\"}\n\n↓\n\nclear: reelforge:backend-connection:online @ 2026-07-20T03:59:56.304Z\n\n↓\n\nfinal: {\"uploadStatus\":\"Backend reconnecting...\",\"backendConnectionStatus\":{\"state\":\"online\",\"lastOkAt\":1784519996303,\"lastAttemptAt\":1784519996303,\"lastError\":\"\"}} | classification: API retry path",
+  "classification": "API retry path",
+  "confidence": "High",
+  "zeroEventsDocumented": false,
+  "harnessArmed": true,
+  "playwrightNetwork": {
+    "health": [
+      {
+        "at": "2026-07-20T03:59:47.484Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/health",
+        "phase": "request"
+      },
+      {
+        "at": "2026-07-20T03:59:47.834Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/health",
+        "phase": "request"
+      },
+      {
+        "at": "2026-07-20T03:59:48.678Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/health",
+        "status": 200,
+        "phase": "response"
+      },
+      {
+        "at": "2026-07-20T03:59:50.024Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/health",
+        "status": 200,
+        "phase": "response"
+      },
+      {
+        "at": "2026-07-20T03:59:50.046Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/health",
+        "phase": "request"
+      },
+      {
+        "at": "2026-07-20T03:59:51.130Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/health",
+        "status": 200,
+        "phase": "response"
+      }
+    ],
+    "apiOk": [
+      {
+        "at": "2026-07-20T03:59:48.945Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:48.946Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/status",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:48.952Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:48.954Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels?t=1784519988676",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:48.982Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:49.136Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:49.137Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:49.138Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:49.140Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:49.140Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/state",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:49.179Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:49.187Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:49.249Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:49.257Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:49.297Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:49.452Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:49.454Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:49.454Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:49.456Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:49.457Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:49.700Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:49.722Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:49.726Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:49.729Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:49.729Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:49.963Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:50.023Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:50.024Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/health",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:50.056Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:50.058Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:50.082Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:50.159Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:50.160Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:50.194Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:50.385Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:50.387Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:50.389Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:50.389Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:50.415Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:50.488Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:50.540Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:50.543Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:50.579Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:50.689Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:50.691Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:50.691Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:50.718Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:50.731Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:50.817Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:50.820Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:50.862Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:50.881Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:50.897Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:50.968Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:51.033Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:51.083Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:51.100Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:51.130Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/health",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:51.147Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:51.206Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:51.210Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:51.270Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels?t=1784519991128",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:51.499Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:51.499Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:51.513Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:51.515Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:51.516Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:51.517Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:52.137Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/status",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:52.174Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:52.180Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T03:59:56.305Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:56.307Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T03:59:56.308Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T04:00:00.717Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/security/events",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T04:00:00.720Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T04:00:04.407Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T04:00:04.408Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/tasks",
+        "status": 201
+      },
+      {
+        "at": "2026-07-20T04:00:04.879Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications?userId=user-owner-1",
+        "status": 200
+      },
+      {
+        "at": "2026-07-20T04:00:06.759Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/status",
+        "status": 200
+      }
+    ],
+    "apiFail": [],
+    "reelsPost": [],
+    "syncPush": [
+      {
+        "at": "2026-07-20T03:59:47.933Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push",
+        "phase": "request"
+      },
+      {
+        "at": "2026-07-20T03:59:48.051Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push",
+        "status": 200,
+        "phase": "response"
+      },
+      {
+        "at": "2026-07-20T03:59:49.185Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push",
+        "phase": "request"
+      },
+      {
+        "at": "2026-07-20T03:59:49.454Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/push",
+        "status": 200,
+        "phase": "response"
+      }
+    ],
+    "ws": [
+      {
+        "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+        "openedAt": "2026-07-20T03:59:51.551Z",
+        "closedAt": "2026-07-20T03:59:51.852Z",
+        "code": null
+      }
+    ]
+  },
+  "observer": {
+    "mission": "RC3-RECONNECT-01",
+    "startedAt": "2026-07-20T03:59:47.812Z",
+    "events": [
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:47.827Z",
+        "performanceNowMs": 10185.699999999953,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:47.898Z",
+        "performanceNowMs": 10256.599999999977,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:47.931Z",
+        "performanceNowMs": 10289.599999999977,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:47.953Z",
+        "performanceNowMs": 10312.29999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:47.955Z",
+        "performanceNowMs": 10313.79999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:47.956Z",
+        "performanceNowMs": 10315.29999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:47.958Z",
+        "performanceNowMs": 10316.900000000023,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.027Z",
+        "performanceNowMs": 10385.79999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.029Z",
+        "performanceNowMs": 10388,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.048Z",
+        "performanceNowMs": 10407.29999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.050Z",
+        "performanceNowMs": 10408.5,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.096Z",
+        "performanceNowMs": 10454.5,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.097Z",
+        "performanceNowMs": 10456.099999999977,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.099Z",
+        "performanceNowMs": 10457.900000000023,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.154Z",
+        "performanceNowMs": 10513.099999999977,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.174Z",
+        "performanceNowMs": 10532.699999999953,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.176Z",
+        "performanceNowMs": 10534.599999999977,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.191Z",
+        "performanceNowMs": 10549.79999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.192Z",
+        "performanceNowMs": 10551.400000000023,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.318Z",
+        "performanceNowMs": 10676.699999999953,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.319Z",
+        "performanceNowMs": 10678.29999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.320Z",
+        "performanceNowMs": 10679,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.321Z",
+        "performanceNowMs": 10679.79999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.417Z",
+        "performanceNowMs": 10775.5,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.423Z",
+        "performanceNowMs": 10781.699999999953,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.456Z",
+        "performanceNowMs": 10814.900000000023,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.539Z",
+        "performanceNowMs": 10897.699999999953,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.617Z",
+        "performanceNowMs": 10975.79999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.654Z",
+        "performanceNowMs": 11013.099999999977,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.655Z",
+        "performanceNowMs": 11014,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.675Z",
+        "performanceNowMs": 11034.400000000023,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.678Z",
+        "performanceNowMs": 11036.79999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.679Z",
+        "performanceNowMs": 11037.599999999977,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.936Z",
+        "performanceNowMs": 11294.79999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.943Z",
+        "performanceNowMs": 11301.400000000023,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.943Z",
+        "performanceNowMs": 11302.29999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.950Z",
+        "performanceNowMs": 11309.199999999953,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.951Z",
+        "performanceNowMs": 11309.900000000023,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:48.980Z",
+        "performanceNowMs": 11338.79999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:49.134Z",
+        "performanceNowMs": 11493,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:49.135Z",
+        "performanceNowMs": 11494.199999999953,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:49.136Z",
+        "performanceNowMs": 11495.199999999953,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:49.137Z",
+        "performanceNowMs": 11495.900000000023,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:49.138Z",
+        "performanceNowMs": 11496.699999999953,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:49.173Z",
+        "performanceNowMs": 11532.29999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:49.184Z",
+        "performanceNowMs": 11542.900000000023,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:49.247Z",
+        "performanceNowMs": 11606.099999999977,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:49.255Z",
+        "performanceNowMs": 11613.599999999977,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:49.295Z",
+        "performanceNowMs": 11654.199999999953,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:49.449Z",
+        "performanceNowMs": 11808.400000000023,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:49.450Z",
+        "performanceNowMs": 11809.400000000023,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:49.451Z",
+        "performanceNowMs": 11810,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:49.452Z",
+        "performanceNowMs": 11810.79999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:49.454Z",
+        "performanceNowMs": 11812.400000000023,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:49.698Z",
+        "performanceNowMs": 12056.599999999977,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:49.720Z",
+        "performanceNowMs": 12078.79999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:49.721Z",
+        "performanceNowMs": 12080.099999999977,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:49.724Z",
+        "performanceNowMs": 12082.599999999977,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:49.725Z",
+        "performanceNowMs": 12083.599999999977,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:49.961Z",
+        "performanceNowMs": 12319.400000000023,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:50.021Z",
+        "performanceNowMs": 12380.099999999977,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:50.053Z",
+        "performanceNowMs": 12412.099999999977,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:50.055Z",
+        "performanceNowMs": 12413.699999999953,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:50.080Z",
+        "performanceNowMs": 12439.099999999977,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:50.157Z",
+        "performanceNowMs": 12515.79999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:50.158Z",
+        "performanceNowMs": 12516.5,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:50.191Z",
+        "performanceNowMs": 12550.29999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:50.383Z",
+        "performanceNowMs": 12742.099999999977,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:50.386Z",
+        "performanceNowMs": 12744.79999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:50.387Z",
+        "performanceNowMs": 12745.79999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:50.388Z",
+        "performanceNowMs": 12746.79999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:50.413Z",
+        "performanceNowMs": 12772.400000000023,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:50.486Z",
+        "performanceNowMs": 12845.199999999953,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:50.539Z",
+        "performanceNowMs": 12898,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:50.542Z",
+        "performanceNowMs": 12900.79999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:50.577Z",
+        "performanceNowMs": 12936.199999999953,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:50.687Z",
+        "performanceNowMs": 13045.900000000023,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:50.688Z",
+        "performanceNowMs": 13046.900000000023,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:50.689Z",
+        "performanceNowMs": 13047.599999999977,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:50.715Z",
+        "performanceNowMs": 13074.099999999977,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:50.729Z",
+        "performanceNowMs": 13087.79999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:50.815Z",
+        "performanceNowMs": 13174,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:50.818Z",
+        "performanceNowMs": 13177,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:50.860Z",
+        "performanceNowMs": 13219.099999999977,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:50.879Z",
+        "performanceNowMs": 13238.199999999953,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:50.894Z",
+        "performanceNowMs": 13253.199999999953,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:50.966Z",
+        "performanceNowMs": 13325.099999999977,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:51.032Z",
+        "performanceNowMs": 13391,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:51.081Z",
+        "performanceNowMs": 13440.400000000023,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:51.098Z",
+        "performanceNowMs": 13457,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:51.128Z",
+        "performanceNowMs": 13486.699999999953,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:51.145Z",
+        "performanceNowMs": 13504.29999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:51.204Z",
+        "performanceNowMs": 13562.400000000023,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:51.209Z",
+        "performanceNowMs": 13567.79999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:51.269Z",
+        "performanceNowMs": 13627.400000000023,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:51.493Z",
+        "performanceNowMs": 13852.29999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:51.495Z",
+        "performanceNowMs": 13853.5,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:51.511Z",
+        "performanceNowMs": 13870.099999999977,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:51.513Z",
+        "performanceNowMs": 13872.400000000023,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:51.515Z",
+        "performanceNowMs": 13873.5,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:51.515Z",
+        "performanceNowMs": 13874.29999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:52.133Z",
+        "performanceNowMs": 14492.29999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:52.172Z",
+        "performanceNowMs": 14531.199999999953,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:52.178Z",
+        "performanceNowMs": 14537.29999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "occurrence_recorded",
+        "browserLocalISO": "2026-07-20T03:59:55.533Z",
+        "performanceNowMs": 17892,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "id": 1,
+        "classification": "API retry path",
+        "eventSource": "notifyBackendReconnecting()",
+        "stackFingerprint": {
+          "fetchWithRetry": false,
+          "notifyBackendReconnecting": false,
+          "syncFromVault": false,
+          "checkBackendHealth": false,
+          "uploadVideo": false,
+          "studioSync": false,
+          "websocket": false
+        }
+      },
+      {
+        "kind": "custom_event_dispatch",
+        "browserLocalISO": "2026-07-20T03:59:55.533Z",
+        "performanceNowMs": 17892.400000000023,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "message": "Backend reconnecting...",
+        "priorUploadStatus": "",
+        "via": "addEventListener_capture"
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:55.534Z",
+        "performanceNowMs": 17892.599999999977,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "offline",
+        "lastError": "signal timed out"
+      },
+      {
+        "kind": "operation_status_appeared",
+        "browserLocalISO": "2026-07-20T03:59:55.535Z",
+        "performanceNowMs": 17893.699999999953,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "text": "Backend reconnecting...",
+        "prior": ""
+      },
+      {
+        "kind": "occurrence_recorded",
+        "browserLocalISO": "2026-07-20T03:59:55.546Z",
+        "performanceNowMs": 17904.400000000023,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "id": 2,
+        "classification": "API retry path",
+        "eventSource": "notifyBackendReconnecting()",
+        "stackFingerprint": {
+          "fetchWithRetry": false,
+          "notifyBackendReconnecting": false,
+          "syncFromVault": false,
+          "checkBackendHealth": false,
+          "uploadVideo": false,
+          "studioSync": false,
+          "websocket": false
+        }
+      },
+      {
+        "kind": "custom_event_dispatch",
+        "browserLocalISO": "2026-07-20T03:59:55.546Z",
+        "performanceNowMs": 17904.699999999953,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "message": "Backend reconnecting...",
+        "priorUploadStatus": "Backend reconnecting...",
+        "via": "addEventListener_capture"
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:55.546Z",
+        "performanceNowMs": 17904.900000000023,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "offline",
+        "lastError": "signal timed out"
+      },
+      {
+        "kind": "occurrence_recorded",
+        "browserLocalISO": "2026-07-20T03:59:55.833Z",
+        "performanceNowMs": 18191.699999999953,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "id": 3,
+        "classification": "API retry path",
+        "eventSource": "notifyBackendReconnecting()",
+        "stackFingerprint": {
+          "fetchWithRetry": false,
+          "notifyBackendReconnecting": false,
+          "syncFromVault": false,
+          "checkBackendHealth": false,
+          "uploadVideo": false,
+          "studioSync": false,
+          "websocket": false
+        }
+      },
+      {
+        "kind": "custom_event_dispatch",
+        "browserLocalISO": "2026-07-20T03:59:55.833Z",
+        "performanceNowMs": 18191.900000000023,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "message": "Backend reconnecting...",
+        "priorUploadStatus": "Backend reconnecting...",
+        "via": "addEventListener_capture"
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:55.833Z",
+        "performanceNowMs": 18192.199999999953,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "offline",
+        "lastError": "signal timed out"
+      },
+      {
+        "kind": "occurrence_recorded",
+        "browserLocalISO": "2026-07-20T03:59:55.835Z",
+        "performanceNowMs": 18194.29999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "id": 4,
+        "classification": "API retry path",
+        "eventSource": "notifyBackendReconnecting()",
+        "stackFingerprint": {
+          "fetchWithRetry": false,
+          "notifyBackendReconnecting": false,
+          "syncFromVault": false,
+          "checkBackendHealth": false,
+          "uploadVideo": false,
+          "studioSync": false,
+          "websocket": false
+        }
+      },
+      {
+        "kind": "custom_event_dispatch",
+        "browserLocalISO": "2026-07-20T03:59:55.836Z",
+        "performanceNowMs": 18194.400000000023,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "message": "Backend reconnecting...",
+        "priorUploadStatus": "Backend reconnecting...",
+        "via": "addEventListener_capture"
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:55.836Z",
+        "performanceNowMs": 18194.79999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "offline",
+        "lastError": "signal timed out"
+      },
+      {
+        "kind": "occurrence_recorded",
+        "browserLocalISO": "2026-07-20T03:59:56.291Z",
+        "performanceNowMs": 18650,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "id": 5,
+        "classification": "API retry path",
+        "eventSource": "notifyBackendReconnecting()",
+        "stackFingerprint": {
+          "fetchWithRetry": false,
+          "notifyBackendReconnecting": false,
+          "syncFromVault": false,
+          "checkBackendHealth": false,
+          "uploadVideo": false,
+          "studioSync": false,
+          "websocket": false
+        }
+      },
+      {
+        "kind": "custom_event_dispatch",
+        "browserLocalISO": "2026-07-20T03:59:56.291Z",
+        "performanceNowMs": 18650.099999999977,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "message": "Backend reconnecting...",
+        "priorUploadStatus": "Backend reconnecting...",
+        "via": "addEventListener_capture"
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:56.291Z",
+        "performanceNowMs": 18650.400000000023,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "offline",
+        "lastError": "signal timed out"
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:56.304Z",
+        "performanceNowMs": 18662.5,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "operation_status_disappeared",
+        "browserLocalISO": "2026-07-20T03:59:56.304Z",
+        "performanceNowMs": 18663.199999999953,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "previous": "Backend reconnecting...",
+        "next": ""
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:56.305Z",
+        "performanceNowMs": 18664.29999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:56.306Z",
+        "performanceNowMs": 18665,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "occurrence_recorded",
+        "browserLocalISO": "2026-07-20T03:59:58.031Z",
+        "performanceNowMs": 20390,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "id": 6,
+        "classification": "API retry path",
+        "eventSource": "notifyBackendReconnecting()",
+        "stackFingerprint": {
+          "fetchWithRetry": false,
+          "notifyBackendReconnecting": false,
+          "syncFromVault": false,
+          "checkBackendHealth": false,
+          "uploadVideo": false,
+          "studioSync": false,
+          "websocket": false
+        }
+      },
+      {
+        "kind": "custom_event_dispatch",
+        "browserLocalISO": "2026-07-20T03:59:58.031Z",
+        "performanceNowMs": 20390.199999999953,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "message": "Backend reconnecting...",
+        "priorUploadStatus": "",
+        "via": "addEventListener_capture"
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T03:59:58.032Z",
+        "performanceNowMs": 20390.5,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "offline",
+        "lastError": "signal timed out"
+      },
+      {
+        "kind": "operation_status_appeared",
+        "browserLocalISO": "2026-07-20T03:59:58.032Z",
+        "performanceNowMs": 20391.29999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "text": "Backend reconnecting...",
+        "prior": ""
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T04:00:00.716Z",
+        "performanceNowMs": 23074.599999999977,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "operation_status_disappeared",
+        "browserLocalISO": "2026-07-20T04:00:00.717Z",
+        "performanceNowMs": 23075.5,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "previous": "Backend reconnecting...",
+        "next": ""
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T04:00:00.718Z",
+        "performanceNowMs": 23076.79999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T04:00:04.405Z",
+        "performanceNowMs": 26764.29999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T04:00:04.407Z",
+        "performanceNowMs": 26766,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T04:00:04.876Z",
+        "performanceNowMs": 27235.400000000023,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "occurrence_recorded",
+        "browserLocalISO": "2026-07-20T04:00:05.630Z",
+        "performanceNowMs": 27989.199999999953,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "id": 7,
+        "classification": "API retry path",
+        "eventSource": "notifyBackendReconnecting()",
+        "stackFingerprint": {
+          "fetchWithRetry": false,
+          "notifyBackendReconnecting": false,
+          "syncFromVault": false,
+          "checkBackendHealth": false,
+          "uploadVideo": false,
+          "studioSync": false,
+          "websocket": false
+        }
+      },
+      {
+        "kind": "custom_event_dispatch",
+        "browserLocalISO": "2026-07-20T04:00:05.630Z",
+        "performanceNowMs": 27989.29999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "message": "Backend reconnecting...",
+        "priorUploadStatus": "",
+        "via": "addEventListener_capture"
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T04:00:05.631Z",
+        "performanceNowMs": 27989.79999999993,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "offline",
+        "lastError": "signal timed out"
+      },
+      {
+        "kind": "operation_status_appeared",
+        "browserLocalISO": "2026-07-20T04:00:05.632Z",
+        "performanceNowMs": 27990.599999999977,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "text": "Backend reconnecting...",
+        "prior": ""
+      },
+      {
+        "kind": "backend_connection",
+        "browserLocalISO": "2026-07-20T04:00:06.756Z",
+        "performanceNowMs": 29115.199999999953,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "state": "online",
+        "lastError": null
+      },
+      {
+        "kind": "operation_status_disappeared",
+        "browserLocalISO": "2026-07-20T04:00:06.757Z",
+        "performanceNowMs": 29116.199999999953,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "previous": "Backend reconnecting...",
+        "next": ""
+      }
+    ],
+    "occurrences": [
+      {
+        "id": 1,
+        "browserLocalISO": "2026-07-20T03:59:55.533Z",
+        "performanceNowMs": 17891.599999999977,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "eventSource": "notifyBackendReconnecting()",
+        "customEventName": "reelforge:backend-reconnecting",
+        "callStack": "Error: RC3-RECONNECT-01 notify stack\n    at onReconnectEvent (eval at evaluate (:303:30), <anonymous>:210:19)\n    at rc3DispatchEvent (<anonymous>:277:31)\n    at mg (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:1:11681)\n    at Ml (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:1:13238)\n    at async $7 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:23068)\n    at async x7 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:23465)\n    at async tc (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:32924)\n    at async o (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:17:725)",
+        "detailMessage": "Backend reconnecting...",
+        "priorUploadStatus": "",
+        "syncRunning": false,
+        "stackFingerprint": {
+          "fetchWithRetry": false,
+          "notifyBackendReconnecting": false,
+          "syncFromVault": false,
+          "checkBackendHealth": false,
+          "uploadVideo": false,
+          "studioSync": false,
+          "websocket": false
+        },
+        "backendConnectionStatus": {
+          "state": "online",
+          "lastOkAt": 1784519992178,
+          "lastAttemptAt": 1784519992178,
+          "lastError": ""
+        },
+        "lastHealth": {
+          "url": "/api/health",
+          "startedAt": "2026-07-20T03:59:50.043Z",
+          "status": 200,
+          "finishedAt": "2026-07-20T03:59:51.127Z"
+        },
+        "lastSuccessfulApiCall": {
+          "url": "/api/notifications?userId=user-owner-1",
+          "status": 200,
+          "at": "2026-07-20T03:59:52.178Z"
+        },
+        "lastFailedApiCall": {
+          "url": "/api/notifications/status",
+          "status": "network_error",
+          "at": "2026-07-20T03:59:55.529Z",
+          "error": "signal timed out"
+        },
+        "websocketState": {
+          "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+          "readyState": 3,
+          "readyStateLabel": "CLOSED"
+        },
+        "websocketAll": [
+          {
+            "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+            "readyState": 3,
+            "readyStateLabel": "CLOSED"
+          }
+        ],
+        "currentUploadStatus": "",
+        "operationStatusText": "",
+        "bannerText": "",
+        "activeUpload": false,
+        "heroUploadActive": false,
+        "retryCount": null,
+        "clearedAt": "2026-07-20T03:59:56.304Z",
+        "clearEvent": "reelforge:backend-connection:online",
+        "finalState": {
+          "uploadStatus": "Backend reconnecting...",
+          "backendConnectionStatus": {
+            "state": "online",
+            "lastOkAt": 1784519996303,
+            "lastAttemptAt": 1784519996303,
+            "lastError": ""
+          }
+        },
+        "classification": "API retry path",
+        "operationStatusAppearedViaDom": true
+      },
+      {
+        "id": 2,
+        "browserLocalISO": "2026-07-20T03:59:55.545Z",
+        "performanceNowMs": 17904.400000000023,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "eventSource": "notifyBackendReconnecting()",
+        "customEventName": "reelforge:backend-reconnecting",
+        "callStack": "Error: RC3-RECONNECT-01 notify stack\n    at onReconnectEvent (eval at evaluate (:303:30), <anonymous>:210:19)\n    at rc3DispatchEvent (<anonymous>:277:31)\n    at mg (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:1:11681)\n    at Ml (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:1:13238)\n    at async $7 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:23068)\n    at async x7 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:23465)\n    at async tc (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:32924)\n    at async o (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:17:725)",
+        "detailMessage": "Backend reconnecting...",
+        "priorUploadStatus": "Backend reconnecting...",
+        "syncRunning": false,
+        "stackFingerprint": {
+          "fetchWithRetry": false,
+          "notifyBackendReconnecting": false,
+          "syncFromVault": false,
+          "checkBackendHealth": false,
+          "uploadVideo": false,
+          "studioSync": false,
+          "websocket": false
+        },
+        "backendConnectionStatus": {
+          "state": "offline",
+          "lastOkAt": 1784519992178,
+          "lastAttemptAt": 1784519995534,
+          "lastError": "signal timed out"
+        },
+        "lastHealth": {
+          "url": "/api/health",
+          "startedAt": "2026-07-20T03:59:50.043Z",
+          "status": 200,
+          "finishedAt": "2026-07-20T03:59:51.127Z"
+        },
+        "lastSuccessfulApiCall": {
+          "url": "/api/notifications?userId=user-owner-1",
+          "status": 200,
+          "at": "2026-07-20T03:59:52.178Z"
+        },
+        "lastFailedApiCall": {
+          "url": "/api/notifications/status",
+          "status": "network_error",
+          "at": "2026-07-20T03:59:55.543Z",
+          "error": "signal timed out"
+        },
+        "websocketState": {
+          "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+          "readyState": 3,
+          "readyStateLabel": "CLOSED"
+        },
+        "websocketAll": [
+          {
+            "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+            "readyState": 3,
+            "readyStateLabel": "CLOSED"
+          }
+        ],
+        "currentUploadStatus": "Backend reconnecting...",
+        "operationStatusText": "Backend reconnecting...",
+        "bannerText": "Backend unavailable — signal timed out. Showing saved content when possible.",
+        "activeUpload": false,
+        "heroUploadActive": false,
+        "retryCount": null,
+        "clearedAt": "2026-07-20T03:59:56.304Z",
+        "clearEvent": "reelforge:backend-connection:online",
+        "finalState": {
+          "uploadStatus": "Backend reconnecting...",
+          "backendConnectionStatus": {
+            "state": "online",
+            "lastOkAt": 1784519996303,
+            "lastAttemptAt": 1784519996303,
+            "lastError": ""
+          }
+        },
+        "classification": "API retry path"
+      },
+      {
+        "id": 3,
+        "browserLocalISO": "2026-07-20T03:59:55.833Z",
+        "performanceNowMs": 18191.599999999977,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "eventSource": "notifyBackendReconnecting()",
+        "customEventName": "reelforge:backend-reconnecting",
+        "callStack": "Error: RC3-RECONNECT-01 notify stack\n    at onReconnectEvent (eval at evaluate (:303:30), <anonymous>:210:19)\n    at rc3DispatchEvent (<anonymous>:277:31)\n    at mg (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:1:11681)\n    at Ml (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:1:13238)\n    at async $7 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:23068)\n    at async x7 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:23465)\n    at async tc (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:32924)",
+        "detailMessage": "Backend reconnecting...",
+        "priorUploadStatus": "Backend reconnecting...",
+        "syncRunning": false,
+        "stackFingerprint": {
+          "fetchWithRetry": false,
+          "notifyBackendReconnecting": false,
+          "syncFromVault": false,
+          "checkBackendHealth": false,
+          "uploadVideo": false,
+          "studioSync": false,
+          "websocket": false
+        },
+        "backendConnectionStatus": {
+          "state": "offline",
+          "lastOkAt": 1784519992178,
+          "lastAttemptAt": 1784519995546,
+          "lastError": "signal timed out"
+        },
+        "lastHealth": {
+          "url": "/api/health",
+          "startedAt": "2026-07-20T03:59:50.043Z",
+          "status": 200,
+          "finishedAt": "2026-07-20T03:59:51.127Z"
+        },
+        "lastSuccessfulApiCall": {
+          "url": "/api/notifications?userId=user-owner-1",
+          "status": 200,
+          "at": "2026-07-20T03:59:52.178Z"
+        },
+        "lastFailedApiCall": {
+          "url": "/api/notifications/status",
+          "status": "network_error",
+          "at": "2026-07-20T03:59:55.831Z",
+          "error": "signal timed out"
+        },
+        "websocketState": {
+          "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+          "readyState": 3,
+          "readyStateLabel": "CLOSED"
+        },
+        "websocketAll": [
+          {
+            "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+            "readyState": 3,
+            "readyStateLabel": "CLOSED"
+          }
+        ],
+        "currentUploadStatus": "Backend reconnecting...",
+        "operationStatusText": "Backend reconnecting...",
+        "bannerText": "Backend unavailable — signal timed out. Showing saved content when possible.",
+        "activeUpload": false,
+        "heroUploadActive": false,
+        "retryCount": null,
+        "clearedAt": "2026-07-20T03:59:56.304Z",
+        "clearEvent": "reelforge:backend-connection:online",
+        "finalState": {
+          "uploadStatus": "Backend reconnecting...",
+          "backendConnectionStatus": {
+            "state": "online",
+            "lastOkAt": 1784519996303,
+            "lastAttemptAt": 1784519996303,
+            "lastError": ""
+          }
+        },
+        "classification": "API retry path"
+      },
+      {
+        "id": 4,
+        "browserLocalISO": "2026-07-20T03:59:55.835Z",
+        "performanceNowMs": 18194.199999999953,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "eventSource": "notifyBackendReconnecting()",
+        "customEventName": "reelforge:backend-reconnecting",
+        "callStack": "Error: RC3-RECONNECT-01 notify stack\n    at onReconnectEvent (eval at evaluate (:303:30), <anonymous>:210:19)\n    at rc3DispatchEvent (<anonymous>:277:31)\n    at mg (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:1:11681)\n    at Ml (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:1:13238)\n    at async e6 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:2:42541)\n    at async Og (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:2:43006)\n    at async u6 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:2:46218)",
+        "detailMessage": "Backend reconnecting...",
+        "priorUploadStatus": "Backend reconnecting...",
+        "syncRunning": false,
+        "stackFingerprint": {
+          "fetchWithRetry": false,
+          "notifyBackendReconnecting": false,
+          "syncFromVault": false,
+          "checkBackendHealth": false,
+          "uploadVideo": false,
+          "studioSync": false,
+          "websocket": false
+        },
+        "backendConnectionStatus": {
+          "state": "offline",
+          "lastOkAt": 1784519992178,
+          "lastAttemptAt": 1784519995833,
+          "lastError": "signal timed out"
+        },
+        "lastHealth": {
+          "url": "/api/health",
+          "startedAt": "2026-07-20T03:59:50.043Z",
+          "status": 200,
+          "finishedAt": "2026-07-20T03:59:51.127Z"
+        },
+        "lastSuccessfulApiCall": {
+          "url": "/api/notifications?userId=user-owner-1",
+          "status": 200,
+          "at": "2026-07-20T03:59:52.178Z"
+        },
+        "lastFailedApiCall": {
+          "url": "/api/workflow/status",
+          "status": "network_error",
+          "at": "2026-07-20T03:59:55.834Z",
+          "error": "signal timed out"
+        },
+        "websocketState": {
+          "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+          "readyState": 3,
+          "readyStateLabel": "CLOSED"
+        },
+        "websocketAll": [
+          {
+            "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+            "readyState": 3,
+            "readyStateLabel": "CLOSED"
+          }
+        ],
+        "currentUploadStatus": "Backend reconnecting...",
+        "operationStatusText": "Backend reconnecting...",
+        "bannerText": "Backend unavailable — signal timed out. Showing saved content when possible.",
+        "activeUpload": false,
+        "heroUploadActive": false,
+        "retryCount": null,
+        "clearedAt": "2026-07-20T03:59:56.304Z",
+        "clearEvent": "reelforge:backend-connection:online",
+        "finalState": {
+          "uploadStatus": "Backend reconnecting...",
+          "backendConnectionStatus": {
+            "state": "online",
+            "lastOkAt": 1784519996303,
+            "lastAttemptAt": 1784519996303,
+            "lastError": ""
+          }
+        },
+        "classification": "API retry path"
+      },
+      {
+        "id": 5,
+        "browserLocalISO": "2026-07-20T03:59:56.291Z",
+        "performanceNowMs": 18650,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "eventSource": "notifyBackendReconnecting()",
+        "customEventName": "reelforge:backend-reconnecting",
+        "callStack": "Error: RC3-RECONNECT-01 notify stack\n    at onReconnectEvent (eval at evaluate (:303:30), <anonymous>:210:19)\n    at rc3DispatchEvent (<anonymous>:277:31)\n    at mg (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:1:11681)\n    at Ml (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:1:13238)\n    at async $7 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:23068)\n    at async x7 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:23465)\n    at async tc (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:32924)\n    at async o (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:17:725)",
+        "detailMessage": "Backend reconnecting...",
+        "priorUploadStatus": "Backend reconnecting...",
+        "syncRunning": false,
+        "stackFingerprint": {
+          "fetchWithRetry": false,
+          "notifyBackendReconnecting": false,
+          "syncFromVault": false,
+          "checkBackendHealth": false,
+          "uploadVideo": false,
+          "studioSync": false,
+          "websocket": false
+        },
+        "backendConnectionStatus": {
+          "state": "offline",
+          "lastOkAt": 1784519992178,
+          "lastAttemptAt": 1784519995836,
+          "lastError": "signal timed out"
+        },
+        "lastHealth": {
+          "url": "/api/health",
+          "startedAt": "2026-07-20T03:59:50.043Z",
+          "status": 200,
+          "finishedAt": "2026-07-20T03:59:51.127Z"
+        },
+        "lastSuccessfulApiCall": {
+          "url": "/api/notifications?userId=user-owner-1",
+          "status": 200,
+          "at": "2026-07-20T03:59:52.178Z"
+        },
+        "lastFailedApiCall": {
+          "url": "/api/notifications/status",
+          "status": "network_error",
+          "at": "2026-07-20T03:59:56.290Z",
+          "error": "signal timed out"
+        },
+        "websocketState": {
+          "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+          "readyState": 3,
+          "readyStateLabel": "CLOSED"
+        },
+        "websocketAll": [
+          {
+            "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+            "readyState": 3,
+            "readyStateLabel": "CLOSED"
+          }
+        ],
+        "currentUploadStatus": "Backend reconnecting...",
+        "operationStatusText": "Backend reconnecting...",
+        "bannerText": "Backend unavailable — signal timed out. Showing saved content when possible.",
+        "activeUpload": false,
+        "heroUploadActive": false,
+        "retryCount": null,
+        "clearedAt": "2026-07-20T03:59:56.304Z",
+        "clearEvent": "reelforge:backend-connection:online",
+        "finalState": {
+          "uploadStatus": "Backend reconnecting...",
+          "backendConnectionStatus": {
+            "state": "online",
+            "lastOkAt": 1784519996303,
+            "lastAttemptAt": 1784519996303,
+            "lastError": ""
+          }
+        },
+        "classification": "API retry path"
+      },
+      {
+        "id": 6,
+        "browserLocalISO": "2026-07-20T03:59:58.031Z",
+        "performanceNowMs": 20389.900000000023,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "eventSource": "notifyBackendReconnecting()",
+        "customEventName": "reelforge:backend-reconnecting",
+        "callStack": "Error: RC3-RECONNECT-01 notify stack\n    at onReconnectEvent (eval at evaluate (:303:30), <anonymous>:210:19)\n    at rc3DispatchEvent (<anonymous>:277:31)\n    at mg (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:1:11681)\n    at Ml (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:1:13238)\n    at async Eg (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:2:12559)\n    at async CP (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:2:13010)\n    at async w6 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:2:53795)\n    at async fu (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:2:53949)",
+        "detailMessage": "Backend reconnecting...",
+        "priorUploadStatus": "",
+        "syncRunning": false,
+        "stackFingerprint": {
+          "fetchWithRetry": false,
+          "notifyBackendReconnecting": false,
+          "syncFromVault": false,
+          "checkBackendHealth": false,
+          "uploadVideo": false,
+          "studioSync": false,
+          "websocket": false
+        },
+        "backendConnectionStatus": {
+          "state": "online",
+          "lastOkAt": 1784519996306,
+          "lastAttemptAt": 1784519996306,
+          "lastError": ""
+        },
+        "lastHealth": {
+          "url": "/api/health",
+          "startedAt": "2026-07-20T03:59:50.043Z",
+          "status": 200,
+          "finishedAt": "2026-07-20T03:59:51.127Z"
+        },
+        "lastSuccessfulApiCall": {
+          "url": "/api/notifications?userId=user-owner-1",
+          "status": 200,
+          "at": "2026-07-20T03:59:56.306Z"
+        },
+        "lastFailedApiCall": {
+          "url": "/api/sync/status",
+          "status": "network_error",
+          "at": "2026-07-20T03:59:58.029Z",
+          "error": "signal timed out"
+        },
+        "websocketState": {
+          "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+          "readyState": 3,
+          "readyStateLabel": "CLOSED"
+        },
+        "websocketAll": [
+          {
+            "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+            "readyState": 3,
+            "readyStateLabel": "CLOSED"
+          }
+        ],
+        "currentUploadStatus": "",
+        "operationStatusText": "",
+        "bannerText": "Back online — connection restored.",
+        "activeUpload": false,
+        "heroUploadActive": false,
+        "retryCount": null,
+        "clearedAt": "2026-07-20T04:00:00.716Z",
+        "clearEvent": "reelforge:backend-connection:online",
+        "finalState": {
+          "uploadStatus": "Backend reconnecting...",
+          "backendConnectionStatus": {
+            "state": "online",
+            "lastOkAt": 1784520000715,
+            "lastAttemptAt": 1784520000715,
+            "lastError": ""
+          }
+        },
+        "classification": "API retry path",
+        "operationStatusAppearedViaDom": true
+      },
+      {
+        "id": 7,
+        "browserLocalISO": "2026-07-20T04:00:05.630Z",
+        "performanceNowMs": 27989.099999999977,
+        "timeOrigin": 1784519977641.6,
+        "navigatorOnLine": true,
+        "eventSource": "notifyBackendReconnecting()",
+        "customEventName": "reelforge:backend-reconnecting",
+        "callStack": "Error: RC3-RECONNECT-01 notify stack\n    at onReconnectEvent (eval at evaluate (:303:30), <anonymous>:210:19)\n    at rc3DispatchEvent (<anonymous>:277:31)\n    at mg (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:1:11681)\n    at Ml (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:1:13238)\n    at async $7 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:23068)\n    at async x7 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:23465)\n    at async tc (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:32924)\n    at async o (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:17:725)",
+        "detailMessage": "Backend reconnecting...",
+        "priorUploadStatus": "",
+        "syncRunning": false,
+        "stackFingerprint": {
+          "fetchWithRetry": false,
+          "notifyBackendReconnecting": false,
+          "syncFromVault": false,
+          "checkBackendHealth": false,
+          "uploadVideo": false,
+          "studioSync": false,
+          "websocket": false
+        },
+        "backendConnectionStatus": {
+          "state": "online",
+          "lastOkAt": 1784520004876,
+          "lastAttemptAt": 1784520004876,
+          "lastError": ""
+        },
+        "lastHealth": {
+          "url": "/api/health",
+          "startedAt": "2026-07-20T03:59:50.043Z",
+          "status": 200,
+          "finishedAt": "2026-07-20T03:59:51.127Z"
+        },
+        "lastSuccessfulApiCall": {
+          "url": "/api/notifications?userId=user-owner-1",
+          "status": 200,
+          "at": "2026-07-20T04:00:04.876Z"
+        },
+        "lastFailedApiCall": {
+          "url": "/api/notifications/status",
+          "status": "network_error",
+          "at": "2026-07-20T04:00:05.628Z",
+          "error": "signal timed out"
+        },
+        "websocketState": {
+          "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+          "readyState": 3,
+          "readyStateLabel": "CLOSED"
+        },
+        "websocketAll": [
+          {
+            "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+            "readyState": 3,
+            "readyStateLabel": "CLOSED"
+          }
+        ],
+        "currentUploadStatus": "",
+        "operationStatusText": "",
+        "bannerText": "",
+        "activeUpload": false,
+        "heroUploadActive": false,
+        "retryCount": null,
+        "clearedAt": "2026-07-20T04:00:06.756Z",
+        "clearEvent": "reelforge:backend-connection:online",
+        "finalState": {
+          "uploadStatus": "Backend reconnecting...",
+          "backendConnectionStatus": {
+            "state": "online",
+            "lastOkAt": 1784520006756,
+            "lastAttemptAt": 1784520006756,
+            "lastError": ""
+          }
+        },
+        "classification": "API retry path",
+        "operationStatusAppearedViaDom": true
+      }
+    ],
+    "networkHints": {
+      "health": [
+        {
+          "url": "/api/health",
+          "startedAt": "2026-07-20T03:59:47.832Z",
+          "status": 200,
+          "finishedAt": "2026-07-20T03:59:50.022Z"
+        },
+        {
+          "url": "/api/health",
+          "startedAt": "2026-07-20T03:59:50.043Z",
+          "status": 200,
+          "finishedAt": "2026-07-20T03:59:51.127Z"
+        }
+      ],
+      "apiOk": [
+        {
+          "url": "/api/notifications/status",
+          "status": 200,
+          "at": "2026-07-20T03:59:50.538Z"
+        },
+        {
+          "url": "/api/workflow/tasks",
+          "status": 201,
+          "at": "2026-07-20T03:59:50.541Z"
+        },
+        {
+          "url": "/api/workflow/tasks",
+          "status": 201,
+          "at": "2026-07-20T03:59:50.577Z"
+        },
+        {
+          "url": "/api/notifications/status",
+          "status": 200,
+          "at": "2026-07-20T03:59:50.687Z"
+        },
+        {
+          "url": "/api/workflow/tasks",
+          "status": 201,
+          "at": "2026-07-20T03:59:50.688Z"
+        },
+        {
+          "url": "/api/workflow/tasks",
+          "status": 201,
+          "at": "2026-07-20T03:59:50.688Z"
+        },
+        {
+          "url": "/api/notifications/status",
+          "status": 200,
+          "at": "2026-07-20T03:59:50.715Z"
+        },
+        {
+          "url": "/api/workflow/tasks",
+          "status": 201,
+          "at": "2026-07-20T03:59:50.729Z"
+        },
+        {
+          "url": "/api/notifications/status",
+          "status": 200,
+          "at": "2026-07-20T03:59:50.814Z"
+        },
+        {
+          "url": "/api/workflow/tasks",
+          "status": 201,
+          "at": "2026-07-20T03:59:50.818Z"
+        },
+        {
+          "url": "/api/workflow/tasks",
+          "status": 201,
+          "at": "2026-07-20T03:59:50.860Z"
+        },
+        {
+          "url": "/api/workflow/tasks",
+          "status": 201,
+          "at": "2026-07-20T03:59:50.879Z"
+        },
+        {
+          "url": "/api/notifications/status",
+          "status": 200,
+          "at": "2026-07-20T03:59:50.894Z"
+        },
+        {
+          "url": "/api/workflow/tasks",
+          "status": 201,
+          "at": "2026-07-20T03:59:50.965Z"
+        },
+        {
+          "url": "/api/workflow/tasks",
+          "status": 201,
+          "at": "2026-07-20T03:59:51.031Z"
+        },
+        {
+          "url": "/api/workflow/tasks",
+          "status": 201,
+          "at": "2026-07-20T03:59:51.081Z"
+        },
+        {
+          "url": "/api/workflow/tasks",
+          "status": 201,
+          "at": "2026-07-20T03:59:51.097Z"
+        },
+        {
+          "url": "/api/health",
+          "status": 200,
+          "at": "2026-07-20T03:59:51.127Z"
+        },
+        {
+          "url": "/api/workflow/tasks",
+          "status": 201,
+          "at": "2026-07-20T03:59:51.145Z"
+        },
+        {
+          "url": "/api/workflow/tasks",
+          "status": 201,
+          "at": "2026-07-20T03:59:51.203Z"
+        },
+        {
+          "url": "/api/notifications?userId=user-owner-1",
+          "status": 200,
+          "at": "2026-07-20T03:59:51.208Z"
+        },
+        {
+          "url": "/api/reels?t=1784519991128",
+          "status": 200,
+          "at": "2026-07-20T03:59:51.268Z"
+        },
+        {
+          "url": "/api/workflow/tasks",
+          "status": 201,
+          "at": "2026-07-20T03:59:51.493Z"
+        },
+        {
+          "url": "/api/workflow/tasks",
+          "status": 201,
+          "at": "2026-07-20T03:59:51.494Z"
+        },
+        {
+          "url": "/api/notifications?userId=user-owner-1",
+          "status": 200,
+          "at": "2026-07-20T03:59:51.511Z"
+        },
+        {
+          "url": "/api/notifications/status",
+          "status": 200,
+          "at": "2026-07-20T03:59:51.513Z"
+        },
+        {
+          "url": "/api/workflow/tasks",
+          "status": 201,
+          "at": "2026-07-20T03:59:51.514Z"
+        },
+        {
+          "url": "/api/notifications?userId=user-owner-1",
+          "status": 200,
+          "at": "2026-07-20T03:59:51.515Z"
+        },
+        {
+          "url": "/api/workflow/status",
+          "status": 200,
+          "at": "2026-07-20T03:59:52.133Z"
+        },
+        {
+          "url": "/api/notifications/status",
+          "status": 200,
+          "at": "2026-07-20T03:59:52.171Z"
+        },
+        {
+          "url": "/api/notifications?userId=user-owner-1",
+          "status": 200,
+          "at": "2026-07-20T03:59:52.178Z"
+        },
+        {
+          "url": "/api/workflow/tasks",
+          "status": 201,
+          "at": "2026-07-20T03:59:56.303Z"
+        },
+        {
+          "url": "/api/workflow/tasks",
+          "status": 201,
+          "at": "2026-07-20T03:59:56.305Z"
+        },
+        {
+          "url": "/api/notifications?userId=user-owner-1",
+          "status": 200,
+          "at": "2026-07-20T03:59:56.306Z"
+        },
+        {
+          "url": "/api/security/events",
+          "status": 201,
+          "at": "2026-07-20T04:00:00.715Z"
+        },
+        {
+          "url": "/api/notifications?userId=user-owner-1",
+          "status": 200,
+          "at": "2026-07-20T04:00:00.718Z"
+        },
+        {
+          "url": "/api/workflow/tasks",
+          "status": 201,
+          "at": "2026-07-20T04:00:04.405Z"
+        },
+        {
+          "url": "/api/workflow/tasks",
+          "status": 201,
+          "at": "2026-07-20T04:00:04.407Z"
+        },
+        {
+          "url": "/api/notifications?userId=user-owner-1",
+          "status": 200,
+          "at": "2026-07-20T04:00:04.876Z"
+        },
+        {
+          "url": "/api/sync/status",
+          "status": 200,
+          "at": "2026-07-20T04:00:06.755Z"
+        }
+      ],
+      "apiFail": [
+        {
+          "url": "/api/notifications/status",
+          "status": "network_error",
+          "at": "2026-07-20T03:59:55.529Z",
+          "error": "signal timed out"
+        },
+        {
+          "url": "/api/notifications/status",
+          "status": "network_error",
+          "at": "2026-07-20T03:59:55.543Z",
+          "error": "signal timed out"
+        },
+        {
+          "url": "/api/notifications/status",
+          "status": "network_error",
+          "at": "2026-07-20T03:59:55.831Z",
+          "error": "signal timed out"
+        },
+        {
+          "url": "/api/workflow/status",
+          "status": "network_error",
+          "at": "2026-07-20T03:59:55.834Z",
+          "error": "signal timed out"
+        },
+        {
+          "url": "/api/notifications/status",
+          "status": "network_error",
+          "at": "2026-07-20T03:59:56.290Z",
+          "error": "signal timed out"
+        },
+        {
+          "url": "/api/sync/status",
+          "status": "network_error",
+          "at": "2026-07-20T03:59:58.029Z",
+          "error": "signal timed out"
+        },
+        {
+          "url": "/api/notifications/status",
+          "status": "network_error",
+          "at": "2026-07-20T04:00:05.628Z",
+          "error": "signal timed out"
+        }
+      ],
+      "reelsPost": [],
+      "syncPush": [
+        {
+          "url": "/api/sync/push",
+          "startedAt": "2026-07-20T03:59:47.926Z",
+          "status": 200,
+          "finishedAt": "2026-07-20T03:59:48.049Z"
+        },
+        {
+          "url": "/api/sync/push",
+          "startedAt": "2026-07-20T03:59:49.179Z",
+          "status": 200,
+          "finishedAt": "2026-07-20T03:59:49.450Z"
+        }
+      ]
+    },
+    "websocket": {
+      "snapshots": [
+        {
+          "browserLocalISO": "2026-07-20T03:59:51.415Z",
+          "performanceNowMs": 13773.400000000023,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "kind": "construct",
+          "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center"
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:51.851Z",
+          "performanceNowMs": 14209.599999999977,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "kind": "error",
+          "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+          "readyState": 3
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:51.851Z",
+          "performanceNowMs": 14209.79999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "kind": "close",
+          "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+          "readyState": 3,
+          "code": 1006,
+          "reason": ""
+        }
+      ],
+      "lastReadyState": {
+        "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+        "readyState": 3,
+        "readyStateLabel": "CLOSED"
+      }
+    },
+    "connection": {
+      "last": {
+        "state": "online",
+        "lastOkAt": 1784520006756,
+        "lastAttemptAt": 1784520006756,
+        "lastError": ""
+      },
+      "history": [
+        {
+          "browserLocalISO": "2026-07-20T03:59:47.827Z",
+          "performanceNowMs": 10185.699999999953,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519987826,
+            "lastAttemptAt": 1784519987826,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:47.898Z",
+          "performanceNowMs": 10256.599999999977,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519987897,
+            "lastAttemptAt": 1784519987897,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:47.931Z",
+          "performanceNowMs": 10289.599999999977,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519987931,
+            "lastAttemptAt": 1784519987931,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:47.953Z",
+          "performanceNowMs": 10312.29999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519987953,
+            "lastAttemptAt": 1784519987953,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:47.955Z",
+          "performanceNowMs": 10313.79999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519987955,
+            "lastAttemptAt": 1784519987955,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:47.956Z",
+          "performanceNowMs": 10315.29999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519987956,
+            "lastAttemptAt": 1784519987956,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:47.958Z",
+          "performanceNowMs": 10316.900000000023,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519987958,
+            "lastAttemptAt": 1784519987958,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.027Z",
+          "performanceNowMs": 10385.79999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988027,
+            "lastAttemptAt": 1784519988027,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.029Z",
+          "performanceNowMs": 10388,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988029,
+            "lastAttemptAt": 1784519988029,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.048Z",
+          "performanceNowMs": 10407.29999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988048,
+            "lastAttemptAt": 1784519988048,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.050Z",
+          "performanceNowMs": 10408.5,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988049,
+            "lastAttemptAt": 1784519988049,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.096Z",
+          "performanceNowMs": 10454.5,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988095,
+            "lastAttemptAt": 1784519988095,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.097Z",
+          "performanceNowMs": 10456.099999999977,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988097,
+            "lastAttemptAt": 1784519988097,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.099Z",
+          "performanceNowMs": 10457.900000000023,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988099,
+            "lastAttemptAt": 1784519988099,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.154Z",
+          "performanceNowMs": 10513.099999999977,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988154,
+            "lastAttemptAt": 1784519988154,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.174Z",
+          "performanceNowMs": 10532.699999999953,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988174,
+            "lastAttemptAt": 1784519988174,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.176Z",
+          "performanceNowMs": 10534.599999999977,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988175,
+            "lastAttemptAt": 1784519988175,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.191Z",
+          "performanceNowMs": 10549.79999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988191,
+            "lastAttemptAt": 1784519988191,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.192Z",
+          "performanceNowMs": 10551.400000000023,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988192,
+            "lastAttemptAt": 1784519988192,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.318Z",
+          "performanceNowMs": 10676.699999999953,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988318,
+            "lastAttemptAt": 1784519988318,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.319Z",
+          "performanceNowMs": 10678.29999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988319,
+            "lastAttemptAt": 1784519988319,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.320Z",
+          "performanceNowMs": 10679,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988320,
+            "lastAttemptAt": 1784519988320,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.321Z",
+          "performanceNowMs": 10679.79999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988321,
+            "lastAttemptAt": 1784519988321,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.417Z",
+          "performanceNowMs": 10775.5,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988416,
+            "lastAttemptAt": 1784519988416,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.423Z",
+          "performanceNowMs": 10781.699999999953,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988423,
+            "lastAttemptAt": 1784519988423,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.456Z",
+          "performanceNowMs": 10814.900000000023,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988456,
+            "lastAttemptAt": 1784519988456,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.539Z",
+          "performanceNowMs": 10897.599999999977,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988539,
+            "lastAttemptAt": 1784519988539,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.617Z",
+          "performanceNowMs": 10975.79999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988617,
+            "lastAttemptAt": 1784519988617,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.654Z",
+          "performanceNowMs": 11013.099999999977,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988654,
+            "lastAttemptAt": 1784519988654,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.655Z",
+          "performanceNowMs": 11014,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988655,
+            "lastAttemptAt": 1784519988655,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.675Z",
+          "performanceNowMs": 11034.400000000023,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988675,
+            "lastAttemptAt": 1784519988675,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.678Z",
+          "performanceNowMs": 11036.79999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988678,
+            "lastAttemptAt": 1784519988678,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.679Z",
+          "performanceNowMs": 11037.599999999977,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988679,
+            "lastAttemptAt": 1784519988679,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.936Z",
+          "performanceNowMs": 11294.79999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988936,
+            "lastAttemptAt": 1784519988936,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.943Z",
+          "performanceNowMs": 11301.400000000023,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988942,
+            "lastAttemptAt": 1784519988942,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.943Z",
+          "performanceNowMs": 11302.29999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988943,
+            "lastAttemptAt": 1784519988943,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.950Z",
+          "performanceNowMs": 11309.099999999977,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988950,
+            "lastAttemptAt": 1784519988950,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.951Z",
+          "performanceNowMs": 11309.900000000023,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988951,
+            "lastAttemptAt": 1784519988951,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:48.980Z",
+          "performanceNowMs": 11338.79999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519988980,
+            "lastAttemptAt": 1784519988980,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:49.134Z",
+          "performanceNowMs": 11493,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519989134,
+            "lastAttemptAt": 1784519989134,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:49.135Z",
+          "performanceNowMs": 11494.199999999953,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519989135,
+            "lastAttemptAt": 1784519989135,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:49.136Z",
+          "performanceNowMs": 11495.199999999953,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519989136,
+            "lastAttemptAt": 1784519989136,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:49.137Z",
+          "performanceNowMs": 11495.900000000023,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519989137,
+            "lastAttemptAt": 1784519989137,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:49.138Z",
+          "performanceNowMs": 11496.699999999953,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519989138,
+            "lastAttemptAt": 1784519989138,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:49.173Z",
+          "performanceNowMs": 11532.29999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519989173,
+            "lastAttemptAt": 1784519989173,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:49.184Z",
+          "performanceNowMs": 11542.900000000023,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519989184,
+            "lastAttemptAt": 1784519989184,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:49.247Z",
+          "performanceNowMs": 11606.099999999977,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519989247,
+            "lastAttemptAt": 1784519989247,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:49.255Z",
+          "performanceNowMs": 11613.599999999977,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519989255,
+            "lastAttemptAt": 1784519989255,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:49.295Z",
+          "performanceNowMs": 11654.199999999953,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519989295,
+            "lastAttemptAt": 1784519989295,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:49.449Z",
+          "performanceNowMs": 11808.400000000023,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519989449,
+            "lastAttemptAt": 1784519989449,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:49.450Z",
+          "performanceNowMs": 11809.400000000023,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519989450,
+            "lastAttemptAt": 1784519989450,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:49.451Z",
+          "performanceNowMs": 11810,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519989451,
+            "lastAttemptAt": 1784519989451,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:49.452Z",
+          "performanceNowMs": 11810.79999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519989452,
+            "lastAttemptAt": 1784519989452,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:49.453Z",
+          "performanceNowMs": 11812.400000000023,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519989453,
+            "lastAttemptAt": 1784519989453,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:49.698Z",
+          "performanceNowMs": 12056.5,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519989698,
+            "lastAttemptAt": 1784519989698,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:49.720Z",
+          "performanceNowMs": 12078.699999999953,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519989720,
+            "lastAttemptAt": 1784519989720,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:49.721Z",
+          "performanceNowMs": 12080.099999999977,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519989721,
+            "lastAttemptAt": 1784519989721,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:49.724Z",
+          "performanceNowMs": 12082.599999999977,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519989724,
+            "lastAttemptAt": 1784519989724,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:49.725Z",
+          "performanceNowMs": 12083.599999999977,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519989725,
+            "lastAttemptAt": 1784519989725,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:49.961Z",
+          "performanceNowMs": 12319.400000000023,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519989960,
+            "lastAttemptAt": 1784519989960,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:50.021Z",
+          "performanceNowMs": 12380.099999999977,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519990021,
+            "lastAttemptAt": 1784519990021,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:50.053Z",
+          "performanceNowMs": 12412.099999999977,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519990053,
+            "lastAttemptAt": 1784519990053,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:50.055Z",
+          "performanceNowMs": 12413.699999999953,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519990055,
+            "lastAttemptAt": 1784519990055,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:50.080Z",
+          "performanceNowMs": 12439.099999999977,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519990080,
+            "lastAttemptAt": 1784519990080,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:50.157Z",
+          "performanceNowMs": 12515.79999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519990157,
+            "lastAttemptAt": 1784519990157,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:50.158Z",
+          "performanceNowMs": 12516.5,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519990157,
+            "lastAttemptAt": 1784519990157,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:50.191Z",
+          "performanceNowMs": 12550.29999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519990191,
+            "lastAttemptAt": 1784519990191,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:50.383Z",
+          "performanceNowMs": 12742.099999999977,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519990383,
+            "lastAttemptAt": 1784519990383,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:50.386Z",
+          "performanceNowMs": 12744.79999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519990386,
+            "lastAttemptAt": 1784519990386,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:50.387Z",
+          "performanceNowMs": 12745.79999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519990387,
+            "lastAttemptAt": 1784519990387,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:50.388Z",
+          "performanceNowMs": 12746.79999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519990388,
+            "lastAttemptAt": 1784519990388,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:50.413Z",
+          "performanceNowMs": 12772.400000000023,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519990413,
+            "lastAttemptAt": 1784519990413,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:50.486Z",
+          "performanceNowMs": 12845.199999999953,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519990486,
+            "lastAttemptAt": 1784519990486,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:50.539Z",
+          "performanceNowMs": 12897.900000000023,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519990539,
+            "lastAttemptAt": 1784519990539,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:50.542Z",
+          "performanceNowMs": 12900.79999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519990541,
+            "lastAttemptAt": 1784519990541,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:50.577Z",
+          "performanceNowMs": 12936.199999999953,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519990577,
+            "lastAttemptAt": 1784519990577,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:50.687Z",
+          "performanceNowMs": 13045.900000000023,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519990687,
+            "lastAttemptAt": 1784519990687,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:50.688Z",
+          "performanceNowMs": 13046.900000000023,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519990688,
+            "lastAttemptAt": 1784519990688,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:50.689Z",
+          "performanceNowMs": 13047.599999999977,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519990689,
+            "lastAttemptAt": 1784519990689,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:50.715Z",
+          "performanceNowMs": 13074.099999999977,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519990715,
+            "lastAttemptAt": 1784519990715,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:50.729Z",
+          "performanceNowMs": 13087.79999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519990729,
+            "lastAttemptAt": 1784519990729,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:50.815Z",
+          "performanceNowMs": 13174,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519990815,
+            "lastAttemptAt": 1784519990815,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:50.818Z",
+          "performanceNowMs": 13177,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519990818,
+            "lastAttemptAt": 1784519990818,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:50.860Z",
+          "performanceNowMs": 13219.099999999977,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519990860,
+            "lastAttemptAt": 1784519990860,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:50.879Z",
+          "performanceNowMs": 13238.199999999953,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519990879,
+            "lastAttemptAt": 1784519990879,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:50.894Z",
+          "performanceNowMs": 13253.099999999977,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519990894,
+            "lastAttemptAt": 1784519990894,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:50.966Z",
+          "performanceNowMs": 13325.099999999977,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519990966,
+            "lastAttemptAt": 1784519990966,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:51.032Z",
+          "performanceNowMs": 13391,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519991032,
+            "lastAttemptAt": 1784519991032,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:51.081Z",
+          "performanceNowMs": 13440.400000000023,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519991081,
+            "lastAttemptAt": 1784519991081,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:51.098Z",
+          "performanceNowMs": 13457,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519991098,
+            "lastAttemptAt": 1784519991098,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:51.128Z",
+          "performanceNowMs": 13486.699999999953,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519991127,
+            "lastAttemptAt": 1784519991127,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:51.145Z",
+          "performanceNowMs": 13504.29999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519991145,
+            "lastAttemptAt": 1784519991145,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:51.204Z",
+          "performanceNowMs": 13562.400000000023,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519991203,
+            "lastAttemptAt": 1784519991203,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:51.209Z",
+          "performanceNowMs": 13567.79999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519991209,
+            "lastAttemptAt": 1784519991209,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:51.269Z",
+          "performanceNowMs": 13627.400000000023,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519991268,
+            "lastAttemptAt": 1784519991268,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:51.493Z",
+          "performanceNowMs": 13852.29999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519991493,
+            "lastAttemptAt": 1784519991493,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:51.495Z",
+          "performanceNowMs": 13853.5,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519991494,
+            "lastAttemptAt": 1784519991494,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:51.511Z",
+          "performanceNowMs": 13870.099999999977,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519991511,
+            "lastAttemptAt": 1784519991511,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:51.513Z",
+          "performanceNowMs": 13872.400000000023,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519991513,
+            "lastAttemptAt": 1784519991513,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:51.515Z",
+          "performanceNowMs": 13873.5,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519991515,
+            "lastAttemptAt": 1784519991515,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:51.515Z",
+          "performanceNowMs": 13874.29999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519991515,
+            "lastAttemptAt": 1784519991515,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:52.133Z",
+          "performanceNowMs": 14492.199999999953,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519992133,
+            "lastAttemptAt": 1784519992133,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:52.172Z",
+          "performanceNowMs": 14531.199999999953,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519992172,
+            "lastAttemptAt": 1784519992172,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:52.178Z",
+          "performanceNowMs": 14537.199999999953,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519992178,
+            "lastAttemptAt": 1784519992178,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:55.534Z",
+          "performanceNowMs": 17892.599999999977,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "offline",
+            "lastOkAt": 1784519992178,
+            "lastAttemptAt": 1784519995534,
+            "lastError": "signal timed out"
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:55.546Z",
+          "performanceNowMs": 17904.900000000023,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "offline",
+            "lastOkAt": 1784519992178,
+            "lastAttemptAt": 1784519995546,
+            "lastError": "signal timed out"
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:55.833Z",
+          "performanceNowMs": 18192.199999999953,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "offline",
+            "lastOkAt": 1784519992178,
+            "lastAttemptAt": 1784519995833,
+            "lastError": "signal timed out"
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:55.836Z",
+          "performanceNowMs": 18194.79999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "offline",
+            "lastOkAt": 1784519992178,
+            "lastAttemptAt": 1784519995836,
+            "lastError": "signal timed out"
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:56.291Z",
+          "performanceNowMs": 18650.400000000023,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "offline",
+            "lastOkAt": 1784519992178,
+            "lastAttemptAt": 1784519996291,
+            "lastError": "signal timed out"
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:56.304Z",
+          "performanceNowMs": 18662.5,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519996303,
+            "lastAttemptAt": 1784519996303,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:56.305Z",
+          "performanceNowMs": 18664.29999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519996305,
+            "lastAttemptAt": 1784519996305,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:56.306Z",
+          "performanceNowMs": 18665,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784519996306,
+            "lastAttemptAt": 1784519996306,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T03:59:58.032Z",
+          "performanceNowMs": 20390.5,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "offline",
+            "lastOkAt": 1784519996306,
+            "lastAttemptAt": 1784519998031,
+            "lastError": "signal timed out"
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T04:00:00.716Z",
+          "performanceNowMs": 23074.5,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784520000715,
+            "lastAttemptAt": 1784520000715,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T04:00:00.718Z",
+          "performanceNowMs": 23076.79999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784520000718,
+            "lastAttemptAt": 1784520000718,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T04:00:04.405Z",
+          "performanceNowMs": 26764.29999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784520004405,
+            "lastAttemptAt": 1784520004405,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T04:00:04.407Z",
+          "performanceNowMs": 26766,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784520004407,
+            "lastAttemptAt": 1784520004407,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T04:00:04.876Z",
+          "performanceNowMs": 27235.400000000023,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784520004876,
+            "lastAttemptAt": 1784520004876,
+            "lastError": ""
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T04:00:05.631Z",
+          "performanceNowMs": 27989.79999999993,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "offline",
+            "lastOkAt": 1784520004876,
+            "lastAttemptAt": 1784520005631,
+            "lastError": "signal timed out"
+          }
+        },
+        {
+          "browserLocalISO": "2026-07-20T04:00:06.756Z",
+          "performanceNowMs": 29115.199999999953,
+          "timeOrigin": 1784519977641.6,
+          "navigatorOnLine": true,
+          "detail": {
+            "state": "online",
+            "lastOkAt": 1784520006756,
+            "lastAttemptAt": 1784520006756,
+            "lastError": ""
+          }
+        }
+      ]
+    },
+    "classification": "API retry path",
+    "notes": [],
+    "armed": true
+  },
+  "worksheet": {
+    "timestamp": "2026-07-20T03:59:55.533Z",
+    "eventSource": "notifyBackendReconnecting()",
+    "callStackTop": [
+      "Error: RC3-RECONNECT-01 notify stack",
+      "at onReconnectEvent (eval at evaluate (:303:30), <anonymous>:210:19)",
+      "at rc3DispatchEvent (<anonymous>:277:31)",
+      "at mg (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:1:11681)",
+      "at Ml (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:1:13238)",
+      "at async $7 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:23068)",
+      "at async x7 (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:23465)",
+      "at async tc (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:7:32924)",
+      "at async o (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:17:725)"
+    ],
+    "customEventName": "reelforge:backend-reconnecting",
+    "backendConnectionStatus": {
+      "state": "online",
+      "lastOkAt": 1784519992178,
+      "lastAttemptAt": 1784519992178,
+      "lastError": ""
+    },
+    "navigatorOnLine": true,
+    "healthResult": {
+      "url": "/api/health",
+      "startedAt": "2026-07-20T03:59:50.043Z",
+      "status": 200,
+      "finishedAt": "2026-07-20T03:59:51.127Z"
+    },
+    "lastSuccessfulApiCall": {
+      "url": "/api/notifications?userId=user-owner-1",
+      "status": 200,
+      "at": "2026-07-20T03:59:52.178Z"
+    },
+    "websocketState": {
+      "url": "wss://strong-lolly-a9fcb4.netlify.app/ws/control-center",
+      "readyState": 3,
+      "readyStateLabel": "CLOSED"
+    },
+    "currentUploadStatus": null,
+    "activeUpload": false,
+    "heroUploadActive": false,
+    "syncRunning": false,
+    "retryCount": null,
+    "clearedAt": "2026-07-20T03:59:56.304Z",
+    "clearEvent": "reelforge:backend-connection:online",
+    "finalState": {
+      "uploadStatus": "Backend reconnecting...",
+      "backendConnectionStatus": {
+        "state": "online",
+        "lastOkAt": 1784519996303,
+        "lastAttemptAt": 1784519996303,
+        "lastError": ""
+      }
+    },
+    "classification": "API retry path"
+  },
+  "staticProducerInventory": {
+    "P1_api_retry": "api.js fetchWithRetry catch → notifyBackendReconnecting",
+    "P2_sync_retry": "viewerContext syncFromVault unhealthy → uploadStatus + notify",
+    "P3_consumer": "viewerContext onBackendReconnecting (not independent)",
+    "health_banner_different_string": "Reconnecting to backend…"
+  },
+  "notes": [],
+  "pass": true,
+  "correlation": {
+    "hasEvent": true,
+    "failDeltaMs": 4,
+    "correlated": true
+  }
+}

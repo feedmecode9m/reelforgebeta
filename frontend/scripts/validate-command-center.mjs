@@ -11,11 +11,18 @@ const FRONTEND = process.env.REELFORGE_URL || 'http://127.0.0.1:4190';
 
 const DASHBOARD_SECTIONS = [
     'executive-overview',
+    'sentinel',
     'security',
     'production',
     'publishing',
     'teams',
-    'revenue'
+    'hero-intelligence',
+    'operations',
+    'notifications',
+    'revenue',
+    'marketplace',
+    'enterprise',
+    'reports'
 ];
 
 let failed = false;
@@ -54,6 +61,12 @@ assert('commandCenter.js exists', existsSync(libPath));
 const componentSrc = readFileSync(componentPath, 'utf8');
 const libSrc = readFileSync(libPath, 'utf8');
 
+assert('PRODUCTION_COMMAND_CENTER_VOCAB exported', libSrc.includes('PRODUCTION_COMMAND_CENTER_VOCAB'));
+assert('single-pane tagline in vocab', libSrc.includes('Single-pane operational dashboard'));
+assert('sentinel dashboard section', libSrc.includes("id: 'sentinel'"));
+assert('hero-intelligence dashboard section', libSrc.includes("id: 'hero-intelligence'"));
+assert('operations dashboard section', libSrc.includes("id: 'operations'"));
+assert('notifications dashboard section', libSrc.includes("id: 'notifications'"));
 assert('buildPlatformOperationsBrief exported', libSrc.includes('export function buildPlatformOperationsBrief'));
 assert('COMMAND_DASHBOARD_SECTIONS exported', libSrc.includes('COMMAND_DASHBOARD_SECTIONS'));
 assert('aggregates sentinel assistant', libSrc.includes('masterAnalysis'));
@@ -67,7 +80,7 @@ assert('command center integrates revenue dashboard', componentSrc.includes('Rev
 assert('sentinel summary block', componentSrc.includes('data-command-sentinel-summary'));
 assert('operations dashboard block', componentSrc.includes('data-command-operations-dashboard'));
 assert('hero intelligence block', componentSrc.includes('data-command-hero-intelligence'));
-
+assert('header uses shared vocab', componentSrc.includes('PRODUCTION_COMMAND_CENTER_VOCAB'));
 const browser = await chromium.launch({
     headless: true,
     executablePath:
@@ -151,7 +164,7 @@ assert('KPI threat level visible', await page.locator('[data-command-threat-leve
 assert('top risks KPI visible', await page.locator('[data-command-top-risks]').isVisible());
 assert('recommended actions KPI visible', await page.locator('[data-command-recommended-actions]').isVisible());
 
-assert('dashboard section tabs render', (await page.locator('[data-command-dashboard-section]').count()) === 6);
+assert('dashboard section tabs render', (await page.locator('[data-command-dashboard-section]').count()) === DASHBOARD_SECTIONS.length);
 for (const sectionId of DASHBOARD_SECTIONS) {
     await page.click(`[data-command-dashboard-section="${sectionId}"]`);
     await page.waitForTimeout(250);
@@ -197,7 +210,7 @@ const unit = await page.evaluate(() => {
     };
 });
 
-assert('unit brief composes six dashboard sections', unit.dashboardCount === 6);
+assert('unit brief composes dashboard sections', unit.dashboardCount === DASHBOARD_SECTIONS.length);
 assert('unit brief composes readiness', typeof unit.readiness === 'number');
 assert('unit brief composes threat level', Boolean(unit.threatLevel));
 assert('unit brief composes security score', typeof unit.securityScore === 'number');

@@ -1,0 +1,259 @@
+{
+  "mission": "RC1-BASELINE-FREEZE",
+  "baselineId": "RC1-2026-07-19-POST-08C",
+  "frozenAt": "2026-07-19T13:25:00.477Z",
+  "status": "FROZEN",
+  "purpose": "Canonical production reference after closing PRODUCT-08A/08B/08C. Future regressions compare against this snapshot.",
+  "closedTracks": {
+    "RC1": "Frozen baseline",
+    "PRODUCT-08A": "Closed \u2014 immutable transport finding (large hero upload 502 @ ~300s)",
+    "PRODUCT-08B": "Closed \u2014 Pattern B sync amplification contained",
+    "PRODUCT-08C": "Closed \u2014 reconnect operation-status recovery clear"
+  },
+  "deploymentIdentity": {
+    "productionUrl": "https://strong-lolly-a9fcb4.netlify.app/",
+    "uniqueDeployUrl": "https://6a5ccbdadee7087394e540da--strong-lolly-a9fcb4.netlify.app",
+    "bundle": "assets/index-Btl25zBV.js",
+    "bundleSha256": "0c1528275b45cf96e9610c84af511a3437549b128188941d6bf2b2bde31dc6bc",
+    "deployId": "6a5ccbdadee7087394e540da",
+    "deployState": "ready",
+    "deployTitle": "PRODUCT-08C: clear reconnect operation status on recovery",
+    "deployCreatedAt": "2026-07-19T13:06:35.000Z",
+    "deployPublishedAt": "2026-07-19T13:07:01.826Z",
+    "deployTimeSeconds": 26,
+    "deploySource": "cli",
+    "gitCommitOnOriginMain": "ce2d276bd01a652bce8cfd95fd46cb178aa38c85",
+    "gitCommitMessage": "PRODUCT-08B: contain sync feedback loop in studioSync",
+    "gitCommitTimestamp": "2026-07-19 08:31:13 -0400",
+    "gitCommitRefOnDeploy": null,
+    "note": "Production bundle includes 08B (committed ce2d276) + 08C viewerContext lifecycle (deployed via CLI; local working tree modified, not yet a separate git commit on origin/main).",
+    "markers": {
+      "SYNC_SCHEDULE_SUPPRESSED": 2,
+      "reelforge:backend-connection": 2,
+      "08C_reconnectRecoveryPresent": true
+    }
+  },
+  "coreRuntimeHealth": {
+    "healthUrl": "https://strong-lolly-a9fcb4.netlify.app/api/health",
+    "healthHttpStatus": 200,
+    "healthLatencySeconds": 1.777048,
+    "healthBody": {
+      "status": "ok",
+      "service": "reelforge-backend",
+      "database": "connected",
+      "reels_source": "postgres-ingestion-v2",
+      "services": {
+        "db": "connected",
+        "storage": "ready",
+        "ingestion": "enabled"
+      }
+    },
+    "catalogUrl": "https://strong-lolly-a9fcb4.netlify.app/api/reels",
+    "catalogHttpStatus": 200,
+    "catalogLatencySeconds": 0.343971,
+    "catalogCount": 17,
+    "feedCardCountObserved": 30,
+    "capturedAt": "2026-07-19T13:25:00.477Z"
+  },
+  "mediaIdentity": {
+    "hero": {
+      "id": "3538ddd6-463d-46df-b896-2df21e57e99e",
+      "fileName": "3538ddd6-463d-46df-b896-2df21e57e99e.mp4",
+      "url": "https://strong-lolly-a9fcb4.netlify.app/videos/3538ddd6-463d-46df-b896-2df21e57e99e.mp4",
+      "type": "video",
+      "inCatalog": true,
+      "observedInUi": "https://strong-lolly-a9fcb4.netlify.app/videos/3538ddd6-463d-46df-b896-2df21e57e99e.mp4"
+    },
+    "catalogVideoCount": 15,
+    "catalogThumbCount": 2,
+    "uiThumbCountObserved": 2,
+    "consistency": {
+      "sampleSize": 12,
+      "idPresentWithUrl": 12,
+      "idInFileNameAndUrl_allCatalog": 17,
+      "catalogSize": 17,
+      "sample": [
+        {
+          "id": "aba87aec-f114-427a-a7ed-6da9017eae66",
+          "fileName": "aba87aec-f114-427a-a7ed-6da9017eae66.mp4",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/aba87aec-f114-427a-a7ed-6da9017eae66.mp4",
+          "type": "video",
+          "idInFileName": true,
+          "idInUrl": true
+        },
+        {
+          "id": "9cbb9526-cf81-4294-b777-ff94dfe89f61",
+          "fileName": "9cbb9526-cf81-4294-b777-ff94dfe89f61.mp4",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/9cbb9526-cf81-4294-b777-ff94dfe89f61.mp4",
+          "type": "video",
+          "idInFileName": true,
+          "idInUrl": true
+        },
+        {
+          "id": "9f6ea9c9-2cf3-4a0a-8c29-dcee40e243dd",
+          "fileName": "9f6ea9c9-2cf3-4a0a-8c29-dcee40e243dd.mp4",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/9f6ea9c9-2cf3-4a0a-8c29-dcee40e243dd.mp4",
+          "type": "video",
+          "idInFileName": true,
+          "idInUrl": true
+        },
+        {
+          "id": "dbf24a89-7636-4313-9a45-248d0bbeef8c",
+          "fileName": "dbf24a89-7636-4313-9a45-248d0bbeef8c.mp4",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/dbf24a89-7636-4313-9a45-248d0bbeef8c.mp4",
+          "type": "video",
+          "idInFileName": true,
+          "idInUrl": true
+        },
+        {
+          "id": "f9299f26-7bea-4873-ad72-cf18120dbd98",
+          "fileName": "f9299f26-7bea-4873-ad72-cf18120dbd98.mp4",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/f9299f26-7bea-4873-ad72-cf18120dbd98.mp4",
+          "type": "video",
+          "idInFileName": true,
+          "idInUrl": true
+        },
+        {
+          "id": "40137565-aada-4baf-8eeb-2e42c7032cc0",
+          "fileName": "40137565-aada-4baf-8eeb-2e42c7032cc0.mp4",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/40137565-aada-4baf-8eeb-2e42c7032cc0.mp4",
+          "type": "video",
+          "idInFileName": true,
+          "idInUrl": true
+        },
+        {
+          "id": "fb0e2473-f2b9-40bf-97d7-b781095b5347",
+          "fileName": "fb0e2473-f2b9-40bf-97d7-b781095b5347.mp4",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/fb0e2473-f2b9-40bf-97d7-b781095b5347.mp4",
+          "type": "video",
+          "idInFileName": true,
+          "idInUrl": true
+        },
+        {
+          "id": "a4e45b23-a984-457b-9c86-4b994db584c9",
+          "fileName": "a4e45b23-a984-457b-9c86-4b994db584c9.mp4",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/a4e45b23-a984-457b-9c86-4b994db584c9.mp4",
+          "type": "video",
+          "idInFileName": true,
+          "idInUrl": true
+        },
+        {
+          "id": "9178e241-176d-439d-82cb-a0ecc5f9ae7d",
+          "fileName": "9178e241-176d-439d-82cb-a0ecc5f9ae7d.mp4",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/9178e241-176d-439d-82cb-a0ecc5f9ae7d.mp4",
+          "type": "video",
+          "idInFileName": true,
+          "idInUrl": true
+        },
+        {
+          "id": "356f0466-6dfb-4a17-974a-14d0f627e688",
+          "fileName": "356f0466-6dfb-4a17-974a-14d0f627e688.mp4",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/356f0466-6dfb-4a17-974a-14d0f627e688.mp4",
+          "type": "video",
+          "idInFileName": true,
+          "idInUrl": true
+        },
+        {
+          "id": "aa0691a3-69da-46d6-9ffd-a7f20cf7c976",
+          "fileName": "aa0691a3-69da-46d6-9ffd-a7f20cf7c976.mp4",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/aa0691a3-69da-46d6-9ffd-a7f20cf7c976.mp4",
+          "type": "video",
+          "idInFileName": true,
+          "idInUrl": true
+        },
+        {
+          "id": "5ab6c2ad-f457-4bb2-ba4e-0992b863f14d",
+          "fileName": "5ab6c2ad-f457-4bb2-ba4e-0992b863f14d.mp4",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/videos/5ab6c2ad-f457-4bb2-ba4e-0992b863f14d.mp4",
+          "type": "video",
+          "idInFileName": true,
+          "idInUrl": true
+        }
+      ]
+    }
+  },
+  "syncBaseline": {
+    "sourceArtifact": "frontend/artifacts/rc1-post-close-verify.json",
+    "corroborationArtifact": "frontend/artifacts/product-08b-reconnect-capture-event4.json",
+    "observeStartAt": "2026-07-19T13:14:57.062Z",
+    "observeEndAt": "2026-07-19T13:19:57.065Z",
+    "pushCount": 20,
+    "push200Count": 20,
+    "firstTimestamp": "2026-07-19T13:15:07.022Z",
+    "lastTimestamp": "2026-07-19T13:19:49.119Z",
+    "averageIntervalMs": 14847,
+    "minGapMs": 12157,
+    "maxGapMs": 15143,
+    "gapsUnder5s": 0,
+    "patternB": false,
+    "expectedCadenceMs": 15000,
+    "preFixReference": {
+      "event2": {
+        "pushes": 157,
+        "averageIntervalMs": 1777,
+        "pattern": "B"
+      },
+      "event4_after_08B": {
+        "pushes": 20,
+        "averageIntervalMs": 14851,
+        "shortestGapMs": 13428,
+        "longestGapMs": 15239
+      }
+    }
+  },
+  "recoveryBaseline": {
+    "sourceArtifacts": [
+      "frontend/artifacts/product-08c-lifecycle-capture.json",
+      "frontend/artifacts/product-08b-reconnect-capture-event08C-after.json",
+      "frontend/artifacts/rc1-post-close-verify.json"
+    ],
+    "before08C": {
+      "opAppearedAt": "2026-07-19T12:55:00.743Z",
+      "bannerClearedAt": "2026-07-19T12:55:08.948Z",
+      "opDisappearedAt": null,
+      "opStillVisibleAtEnd": true,
+      "result": "stale operation status indefinitely"
+    },
+    "after08C": {
+      "reconnectEventAt": "2026-07-19T13:07:34.437Z",
+      "opAppearedAt": "2026-07-19T13:07:34.438Z",
+      "opDisappearedAt": "2026-07-19T13:07:40.145Z",
+      "visibleDurationMs": 5707,
+      "result": "operation status clears after recovery (~3-6s)"
+    },
+    "postClose": {
+      "reconnectProbeAt": "2026-07-19T13:15:17.062Z",
+      "recoveryOnlineAt": "2026-07-19T13:15:17.154Z",
+      "opStillVisibleAtEnd": false,
+      "result": "no indefinite stale op status at session end"
+    },
+    "bannerRecovery": "BackendHealthBanner clears independently (working before/after 08C)",
+    "operationStatusRecovery": "uploadStatus reconnect-loading clears on backend-connection online when still owned by reconnect write"
+  },
+  "knownLimitations": {
+    "unmeasuredSurfaces": [
+      "Vault rendering (headless nav inconclusive in RC1-POST-CLOSE)",
+      "Delete controls visibility (headless selectors inconclusive)",
+      "WebSocket /ws/control-center stability (observed failed in captures; out of closed 08B/08C scope)"
+    ],
+    "deferredItems": [
+      "WS reconnect UX",
+      "Any remaining transient Backend unavailable banner copy during signal timeout",
+      "Commit of 08C viewerContext.js change onto origin/main (deployed via CLI; git HEAD still ce2d276)"
+    ],
+    "nonGoals": [
+      "No upload/hero pipeline changes",
+      "No api.js / wsReelEvents.js / studioSync.js further changes in this freeze",
+      "No backend changes",
+      "No remediation during baseline freeze"
+    ]
+  },
+  "evidenceIndex": {
+    "08A": "frontend/artifacts/rc1-large-hero-upload-characterization.json (transport 502)",
+    "08B_before": "frontend/artifacts/product-08b-reconnect-capture-event2.json",
+    "08B_after": "frontend/artifacts/product-08b-reconnect-capture-event4.json",
+    "08C_before": "frontend/artifacts/product-08c-lifecycle-capture.json",
+    "08C_after": "frontend/artifacts/product-08b-reconnect-capture-event08C-after.json",
+    "postClose": "frontend/artifacts/rc1-post-close-verify.json"
+  }
+}

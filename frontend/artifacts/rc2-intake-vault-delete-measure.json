@@ -1,0 +1,208 @@
+{
+  "mission": "RC2-INTAKE-VAULT-DELETE",
+  "baselineId": "RC1-2026-07-19-POST-08C",
+  "generatedAt": "2026-07-19T13:47:42.840Z",
+  "frontendUrl": "https://strong-lolly-a9fcb4.netlify.app/",
+  "confirmDialogs": [
+    {
+      "type": "confirm",
+      "message": "\u26a0\ufe0f Permanently delete 1 selected videos?",
+      "at": "2026-07-19T13:48:14.066Z"
+    }
+  ],
+  "network": {
+    "deleteRequests": []
+  },
+  "notes": [],
+  "bundle": "/assets/index-Btl25zBV.js",
+  "adminGate": {
+    "before": {
+      "ghost": true
+    },
+    "afterUnlockStudioHelper": {
+      "sessionToken": "dev_local_session",
+      "loginPanel": false,
+      "workspaceTabs": [
+        "overview",
+        "production",
+        "content",
+        "teams",
+        "analytics",
+        "automation",
+        "system"
+      ]
+    }
+  },
+  "contentTab": "opened",
+  "vaultRendering": {
+    "contentPanelPresent": true,
+    "vaultSectionMounted": true,
+    "heading": "Media Vault",
+    "badge": "\ud83c\udfac PERSONAL CONTENT STUDIO",
+    "thumbHeading": "Your Thumbnails (0)",
+    "videoHeading": "Video Vault (4)",
+    "thumbCardCount": 0,
+    "videoCardCount": 4,
+    "placeholderCardCount": 0,
+    "dropPlaceholders": [
+      "\ud83d\uddbc\ufe0f Drop image here to add Supports: JPG, PNG, WEBP",
+      "\ud83c\udfac DROP VIDEO HERE (MP4/MOV) Max 50MB \u2022 Appears instantly",
+      "\ud83d\uddd1\ufe0f DROP VAULT ITEM HERE TO DELETE Supports dragged thumbnail/video cards"
+    ],
+    "identityMapping": [],
+    "videoIdentity": [
+      {
+        "i": 0,
+        "src": "https://strong-lolly-a9fcb4.netlify.app/videos/9cbb9526-cf81-4294-b777-ff94dfe89f61.mp4",
+        "idFromSrc": "9cbb9526-cf81-4294-b777-ff94dfe89f61",
+        "idAttr": null
+      },
+      {
+        "i": 1,
+        "src": "https://strong-lolly-a9fcb4.netlify.app/videos/40137565-aada-4baf-8eeb-2e42c7032cc0.mp4",
+        "idFromSrc": "40137565-aada-4baf-8eeb-2e42c7032cc0",
+        "idAttr": null
+      },
+      {
+        "i": 2,
+        "src": "https://strong-lolly-a9fcb4.netlify.app/videos/9178e241-176d-439d-82cb-a0ecc5f9ae7d.mp4",
+        "idFromSrc": "9178e241-176d-439d-82cb-a0ecc5f9ae7d",
+        "idAttr": null
+      },
+      {
+        "i": 3,
+        "src": "https://strong-lolly-a9fcb4.netlify.app/videos/3538ddd6-463d-46df-b896-2df21e57e99e.mp4",
+        "idFromSrc": "3538ddd6-463d-46df-b896-2df21e57e99e",
+        "idAttr": null
+      }
+    ],
+    "storage": {
+      "thumbs": {
+        "count": 0,
+        "ids": []
+      },
+      "videos": {
+        "count": 4,
+        "ids": [
+          "9cbb9526-cf81-4294-b777-ff94dfe89f61",
+          "40137565-aada-4baf-8eeb-2e42c7032cc0",
+          "9178e241-176d-439d-82cb-a0ecc5f9ae7d",
+          "3538ddd6-463d-46df-b896-2df21e57e99e"
+        ]
+      }
+    }
+  },
+  "deleteControls": {
+    "perItemDeleteCount": 4,
+    "perItemDeleteArias": [
+      "Delete video 9cbb9526-cf81-4294-b777-ff94dfe89f61",
+      "Delete video 40137565-aada-4baf-8eeb-2e42c7032cc0",
+      "Delete video 9178e241-176d-439d-82cb-a0ecc5f9ae7d",
+      "Delete video Bg7g Live Trace"
+    ],
+    "batchButtons": [
+      {
+        "text": "\ud83d\uddd1\ufe0f DELETE SELECTED THUMBS (0)",
+        "disabled": true,
+        "dataVault": "thumbnail"
+      },
+      {
+        "text": "\ud83d\uddd1\ufe0f BATCH DELETE ALL",
+        "disabled": false,
+        "dataVault": null
+      },
+      {
+        "text": "\ud83d\uddd1\ufe0f DELETE SELECTED VIDEOS (0)",
+        "disabled": true,
+        "dataVault": "video"
+      },
+      {
+        "text": "\ud83d\uddd1\ufe0f BATCH DELETE ALL",
+        "disabled": false,
+        "dataVault": null
+      }
+    ],
+    "checkboxes": [
+      {
+        "disabled": false,
+        "checked": false,
+        "label": "Select"
+      },
+      {
+        "disabled": false,
+        "checked": false,
+        "label": "Select"
+      },
+      {
+        "disabled": false,
+        "checked": false,
+        "label": "Select"
+      },
+      {
+        "disabled": false,
+        "checked": false,
+        "label": "Select"
+      }
+    ],
+    "selectable": 4,
+    "orphans": 0,
+    "selection": {
+      "checked": 1,
+      "disabled": true,
+      "text": "\ud83d\uddd1\ufe0f DELETE SELECTED THUMBS (0)"
+    },
+    "videoSelection": {
+      "checked": 1,
+      "disabled": false,
+      "text": "\ud83d\uddd1\ufe0f DELETE SELECTED VIDEOS (1)"
+    }
+  },
+  "entryPath": {
+    "productionUrl": "https://strong-lolly-a9fcb4.netlify.app/",
+    "steps": [
+      "fresh localStorage clear + reload",
+      "ghost-trigger opens Control Center",
+      "admin gate (ADMIN ACCESS REQUIRED)",
+      "unlock studio (helper / local fallback; /admin/auth returns 404 on Netlify)",
+      "workspace Content tab",
+      "measure Media Vault + delete controls; confirm() dismissed; no DELETE executed"
+    ]
+  },
+  "destructiveDeletesExecuted": false,
+  "deleteApiCalls": 0,
+  "sourceOwnership": {
+    "uiOwner": "frontend/src/components/experiences/VaultExperience.svelte",
+    "hostShell": "StudioExperience.svelte -> ProductionCommandCenter/StudioWorkspaceLayout Content tab",
+    "entry": "Viewer.svelte -> StudioLauncher ghost-trigger -> adminMode gate",
+    "stateStores": [
+      "personalThumbnailCollection (personal_thumbnails)",
+      "personalVideos (personal_video_vault)"
+    ],
+    "persistence": "localStorage + syncFromVault upgrade from GET /api/reels",
+    "deleteApi": "DELETE /api/reels/{id} via lib/api/media.js deleteReelById",
+    "perItemRemove": "handleThumbnailRemove -> AI_CLEANUP_AGENT.handleThumbnailRemove",
+    "batchSelected": "batchDeleteSelectedThumbnails / batchDeleteSelectedVideos",
+    "batchAll": "batchDeleteThumbnails / batchDeleteVideos"
+  },
+  "classification": {
+    "subject": "Vault rendering / delete controls",
+    "type": "MEASURED DEFECT qualification",
+    "reproducible": true,
+    "vaultMountsAfterCorrectEntryPath": true,
+    "deleteControlsVisible": true,
+    "thumbnailVaultEmpty": true,
+    "videoVaultPopulated": true,
+    "deleteConfirmFiresForSelectedVideos": true,
+    "deleteApiNotCalledWhenConfirmDismissed": true,
+    "rc1UnmeasuredCause": "headless path missed admin unlock + Content workspace tab",
+    "failureClassPrimary": "None for vault mount/delete visibility \u2014 prior inconclusive was measurement gap",
+    "failureClassSecondaryCandidate": "2 Data identity / hydration \u2014 catalog has image reels but personal_thumbnails=0 (needs separate acceptance if product expects vault thumb sync)",
+    "confidence": "High",
+    "proposedMissionDisposition": "INTAKE COMPLETE \u2014 not a vault/delete render defect; optional follow-on for thumbnail vault hydration"
+  },
+  "acceptanceCriteriaIfFollowOnThumbnailHydration": [
+    "After fresh session + admin unlock + Content tab, personal_thumbnails count matches eligible catalog image reels (or explicitly documented exclusion rules)",
+    "Vault thumbnail cards render with id/url consistency",
+    "Delete selected thumbs enables when selection non-empty"
+  ]
+}

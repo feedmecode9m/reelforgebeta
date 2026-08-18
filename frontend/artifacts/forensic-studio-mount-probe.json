@@ -1,0 +1,712 @@
+{
+  "unlockAttempts": [
+    "ProductionWidescreen 01 ARRIVAL OPEN v1 ▶  01 ARRIVAL OPEN v1 Trending studio   ",
+    "ProductionWidescreen 01 ARRIVAL OPEN v1 ▶  01 ARRIVAL OPEN v1 Trending studio   "
+  ],
+  "afterNav": {
+    "url": "http://127.0.0.1:5173/",
+    "unlockCandidates": [
+      "ProductionWidescreen 01 ARRIVAL OPEN v1 ▶  01 ARRIVAL OPEN v1 Trending studio   production",
+      "ProductionWidescreen 01 ARRIVAL OPEN v1 ▶  01 ARRIVAL OPEN v1 Trending studio   production"
+    ],
+    "hasPCC": false,
+    "hasWorkspace": false,
+    "bodySnippet": "LOOK@ZAKANDA PRESENTS\nSign In\nLOOK@ZAKANDA PRESENTS\nBlack Warrior: Land, Legacy & Liberation\n\nCREATOR COLLECTION Neon Vengeance\n\nWatch Now\nLearn More\nFEATURED COLLECTION\nDOCUMENTARY\nBlack Agriculture\n\nBlack Agriculture stories curated for documentary discovery.\n\nVIEWER INTELLIGENCE\n\nExploring Black Agriculture\n\nExplore Collection\n🔔\n200\nFEATURED\nPRODUCTION\nWIDESCREEN\n01 ARRIVAL OPEN v1\n▶\n01 ARRIVAL OPEN v1\nTRENDING\nSTUDIO\nPRODUCTION\nTRENDING\n‹\nPRODUCTION\nWIDESCREEN\n01 ARRIVAL OPEN v1\n▶\n01 ARRIVA"
+  },
+  "storm": {
+    "ccEvents": 0,
+    "elapsedMs": 2019,
+    "hasCommandCenterApi": true
+  },
+  "svelteWarn": [
+    {
+      "type": "log",
+      "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"\",\"currentReadiness\":0,\"projectedReadiness\":0,\"targetReadiness\":80,\"estimatedTime\":0,\"biggestBlocker\":\"No blockers detected — series is on track.\",\"analysis\":{\"readiness\":{\"score\":0,\"metadata\":0,\"assets\":0,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":0,\"pendingTasks\":0,\"inProgressTasks\":0,\"criticalTasks\":0,\"estimatedMinutes\":0},\"release\":{\"episodesSch"
+    },
+    {
+      "type": "log",
+      "text": "[WORKFLOW_DB_WRITE] {\"source\":\"fallback\",\"reason\":\"missing_authorization\",\"circuit\":\"open\",\"tokenPresent\":false,\"timestamp\":1786643493911}"
+    },
+    {
+      "type": "log",
+      "text": "[WORKFLOW_ENGINE] {\"seriesId\":\"\",\"taskCount\":0,\"created\":0,\"completed\":0,\"readinessBefore\":0,\"readinessAfter\":0,\"actionRecommendations\":0,\"usesMockData\":false,\"helpAvailable\":true,\"timestamp\":1786643493911}"
+    },
+    {
+      "type": "log",
+      "text": "[SECURITY_RISK] {\"id\":\"workflow-task-mutations\",\"severity\":\"High\",\"domain\":\"workflowApis\",\"title\":\"Workflow task write APIs\",\"timestamp\":1786643494147}"
+    },
+    {
+      "type": "log",
+      "text": "[SECURITY_SCORE] {\"score\":85,\"grade\":\"Strong\",\"categories\":{\"Critical\":4,\"High\":9,\"Medium\":5,\"Low\":2},\"domainScores\":{\"uploadEndpoints\":88,\"mediaRoutes\":64,\"notificationRoutes\":96,\"workflowApis\":92,\"teamApis\":92,\"authentication\":64,\"permissions\":80,\"localStorageUsage\":96,\"apiExposure\":94,\"environmentVariables\":82},\"checksRun\":23,\"passingChecks\":3,\"version\":\"1.0.0\",\"timestamp\":1786643494147}"
+    },
+    {
+      "type": "log",
+      "text": "[THREAT_SCORE] {\"score\":100,\"activeThreats\":0,\"categoryCounts\":{\"upload\":0,\"workflow\":0,\"notification\":0,\"team\":0,\"api\":0},\"eventCount\":0,\"timestamp\":1786643494148}"
+    },
+    {
+      "type": "log",
+      "text": "[COPILOT_ANALYSIS] {\"seriesId\":null,\"currentReadiness\":0,\"projectedReadiness\":36,\"targetReadiness\":80,\"estimatedTime\":9,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"analysis\":{\"readiness\":{\"score\":0,\"metadata\":0,\"assets\":0,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":0,\"pendingTasks\":0,\"inProgressTasks\":0,\"criticalTasks\":0,\"estimatedMinutes\":0},\"release\":{\"episodesScheduled\":0,\""
+    },
+    {
+      "type": "log",
+      "text": "[WORKFLOW_TASK_CREATED] {\"taskId\":\"missing-asset-ep-vic-g-s01e01\",\"seriesId\":null,\"episodeId\":\"ep-vic-g-s01e01\",\"taskType\":\"MISSING_ASSET\",\"priority\":1,\"estimatedImpact\":12,\"timestamp\":1786643494160}"
+    },
+    {
+      "type": "log",
+      "text": "[WORKFLOW_TASK_CREATED] {\"taskId\":\"missing-asset-ep-vic-g-s01e02\",\"seriesId\":null,\"episodeId\":\"ep-vic-g-s01e02\",\"taskType\":\"MISSING_ASSET\",\"priority\":1,\"estimatedImpact\":12,\"timestamp\":1786643494161}"
+    },
+    {
+      "type": "log",
+      "text": "[WORKFLOW_TASK_CREATED] {\"taskId\":\"missing-asset-ep-vic-g-s01e03\",\"seriesId\":null,\"episodeId\":\"ep-vic-g-s01e03\",\"taskType\":\"MISSING_ASSET\",\"priority\":1,\"estimatedImpact\":12,\"timestamp\":1786643494161}"
+    },
+    {
+      "type": "log",
+      "text": "[WORKFLOW_DB_WRITE] {\"source\":\"fallback\",\"reason\":\"write-circuit-open\",\"timestamp\":1786643494162}"
+    },
+    {
+      "type": "log",
+      "text": "[WORKFLOW_ENGINE] {\"seriesId\":null,\"taskCount\":3,\"created\":3,\"completed\":0,\"readinessBefore\":0,\"readinessAfter\":36,\"actionRecommendations\":3,\"usesMockData\":false,\"helpAvailable\":true,\"timestamp\":1786643494165}"
+    },
+    {
+      "type": "log",
+      "text": "[COPILOT_ANALYSIS] {\"seriesId\":null,\"currentReadiness\":0,\"projectedReadiness\":36,\"targetReadiness\":80,\"estimatedTime\":9,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"analysis\":{\"readiness\":{\"score\":0,\"metadata\":0,\"assets\":0,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":3,\"pendingTasks\":3,\"inProgressTasks\":0,\"criticalTasks\":3,\"estimatedMinutes\":9},\"release\":{\"episodesScheduled\":0,\""
+    },
+    {
+      "type": "log",
+      "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"series-vic-g\",\"currentReadiness\":0,\"projectedReadiness\":36,\"targetReadiness\":80,\"estimatedTime\":9,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"analysis\":{\"readiness\":{\"score\":0,\"metadata\":0,\"assets\":0,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":0,\"pendingTasks\":0,\"inProgressTasks\":0,\"criticalTasks\":0,\"estimatedMinutes\":0},\"release\":{\"episodesSche"
+    },
+    {
+      "type": "log",
+      "text": "[WORKFLOW_ENGINE] {\"seriesId\":\"series-vic-g\",\"taskCount\":0,\"created\":0,\"completed\":0,\"readinessBefore\":0,\"readinessAfter\":36,\"actionRecommendations\":3,\"usesMockData\":false,\"helpAvailable\":true,\"timestamp\":1786643494183}"
+    },
+    {
+      "type": "log",
+      "text": "[STUDIO_ASSISTANT] {\"seriesId\":\"series-vic-g\",\"currentReadiness\":0,\"projectedReadiness\":36,\"openWorkflowTasks\":0,\"unreadNotifications\":1,\"missingAssets\":3,\"blockerCount\":3,\"insightCount\":6,\"timestamp\":1786643494250}"
+    },
+    {
+      "type": "log",
+      "text": "[MISSION_GENERATED] {\"seriesId\":\"series-vic-g\",\"todaysMission\":\"Attach 3 missing reels, then attach reel to e01.\",\"topPriority\":\"Attach reel to E01\",\"quickWin\":\"Attach reel to E03\",\"criticalRisk\":\"Upload S1:E01 reel\",\"projectedReadiness\":36,\"targetReadiness\":80,\"timestamp\":1786643494251}"
+    },
+    {
+      "type": "log",
+      "text": "[RISK_DETECTED] {\"seriesId\":\"series-vic-g\",\"insightId\":\"what-next\",\"label\":\"What should I do next?\",\"summary\":\"Attach reel to E01\",\"severity\":\"CRITICAL\",\"timestamp\":1786643494251}"
+    },
+    {
+      "type": "log",
+      "text": "[SEARCH_INDEX] {\"total\":49,\"byDomain\":{\"series\":1,\"episodes\":6,\"workflows\":1,\"notifications\":1,\"teams\":1,\"revenue_insights\":6,\"sentinel_recommendations\":8,\"guide_me_content\":18,\"daily_engagement_cards\":7},\"timestamp\":1786643494255}"
+    },
+    {
+      "type": "log",
+      "text": "[WORKFLOW_DB_READ] {\"path\":\"/api/workflow/status\",\"source\":\"status\",\"timestamp\":1786643494270}"
+    },
+    {
+      "type": "log",
+      "text": "[WORKFLOW_DB_READ] {\"path\":\"/api/workflow/tasks\",\"method\":\"GET\",\"source\":\"tasks\",\"timestamp\":1786643494317}"
+    },
+    {
+      "type": "log",
+      "text": "[WORKFLOW_DB_READ] {\"source\":\"api\",\"taskCount\":32,\"timestamp\":1786643494318}"
+    },
+    {
+      "type": "log",
+      "text": "[SYNC_PULL] {\"deviceId\":\"477beb19-7be7-4991-b137-ee9e26ee45d9\",\"status\":\"syncing\",\"domains\":[\"seriesMetadata\",\"workflowTasks\",\"releaseSchedule\",\"publishingState\"],\"remoteUpdatedAt\":\"2026-08-13T17:51:27.774003Z\",\"timestamp\":1786643494319}"
+    },
+    {
+      "type": "log",
+      "text": "[SYNC_CONFLICT] {\"deviceId\":\"477beb19-7be7-4991-b137-ee9e26ee45d9\",\"status\":\"syncing\",\"domain\":\"workflowTasks\",\"key\":\"missing-asset-ep-vic-g-s01e01\",\"localUpdatedAt\":1786643494160,\"remoteUpdatedAt\":1786639318354,\"winner\":\"local\",\"timestamp\":1786643494320}"
+    },
+    {
+      "type": "log",
+      "text": "[SYNC_CONFLICT] {\"deviceId\":\"477beb19-7be7-4991-b137-ee9e26ee45d9\",\"status\":\"syncing\",\"domain\":\"workflowTasks\",\"key\":\"missing-asset-ep-vic-g-s01e02\",\"localUpdatedAt\":1786643494161,\"remoteUpdatedAt\":1786639318354,\"winner\":\"local\",\"timestamp\":1786643494320}"
+    },
+    {
+      "type": "log",
+      "text": "[SYNC_CONFLICT] {\"deviceId\":\"477beb19-7be7-4991-b137-ee9e26ee45d9\",\"status\":\"syncing\",\"domain\":\"workflowTasks\",\"key\":\"missing-asset-ep-vic-g-s01e03\",\"localUpdatedAt\":1786643494161,\"remoteUpdatedAt\":1786639318354,\"winner\":\"local\",\"timestamp\":1786643494320}"
+    },
+    {
+      "type": "log",
+      "text": "[SYNC_SCHEDULE_SUPPRESSED] {\"deviceId\":\"477beb19-7be7-4991-b137-ee9e26ee45d9\",\"status\":\"syncing\",\"reason\":\"remote-apply\",\"domain\":\"workflowTasks\",\"timestamp\":1786643494323}"
+    },
+    {
+      "type": "log",
+      "text": "[WORKFLOW_DB_WRITE] {\"source\":\"fallback\",\"reason\":\"write-circuit-open\",\"timestamp\":1786643494324}"
+    },
+    {
+      "type": "log",
+      "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"\",\"currentReadiness\":6,\"projectedReadiness\":42,\"targetReadiness\":80,\"estimatedTime\":12,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"analysis\":{\"readiness\":{\"score\":6,\"metadata\":25,\"assets\":0,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":3,\"pendingTasks\":3,\"inProgressTasks\":0,\"criticalTasks\":3,\"estimatedMinutes\":9},\"release\":{\"episodesScheduled\":0,\""
+    },
+    {
+      "type": "log",
+      "text": "[WORKFLOW_DB_WRITE] {\"source\":\"fallback\",\"reason\":\"write-circuit-open\",\"timestamp\":1786643495970}"
+    },
+    {
+      "type": "log",
+      "text": "[WORKFLOW_ENGINE] {\"seriesId\":\"\",\"taskCount\":3,\"created\":0,\"completed\":0,\"readinessBefore\":6,\"readinessAfter\":42,\"actionRecommendations\":4,\"usesMockData\":false,\"helpAvailable\":true,\"timestamp\":1786643495970}"
+    },
+    {
+      "type": "log",
+      "text": "[WORKFLOW_ENGINE] {\"seriesId\":\"\",\"taskCount\":3,\"created\":0,\"completed\":0,\"readinessBefore\":6,\"readinessAfter\":42,\"actionRecommendations\":4,\"usesMockData\":false,\"helpAvailable\":true,\"timestamp\":1786643495992}"
+    },
+    {
+      "type": "log",
+      "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"\",\"currentReadiness\":6,\"projectedReadiness\":42,\"targetReadiness\":80,\"estimatedTime\":12,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"analysis\":{\"readiness\":{\"score\":6,\"metadata\":25,\"assets\":0,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":3,\"pendingTasks\":3,\"inProgressTasks\":0,\"criticalTasks\":0,\"estimatedMinutes\":9},\"release\":{\"episodesScheduled\":0,\""
+    },
+    {
+      "type": "log",
+      "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"\",\"currentReadiness\":12,\"projectedReadiness\":45,\"targetReadiness\":80,\"estimatedTime\":14,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"analysis\":{\"readiness\":{\"score\":12,\"metadata\":20,\"assets\":20,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":3,\"pendingTasks\":3,\"inProgressTasks\":0,\"criticalTasks\":0,\"estimatedMinutes\":9},\"release\":{\"episodesScheduled\":"
+    },
+    {
+      "type": "log",
+      "text": "[THREAT_EVENT] {\"category\":\"workflow\",\"type\":\"task_spam\",\"count\":4,\"signalKey\":\"workflow:spam\",\"timestamp\":1786643496052}"
+    },
+    {
+      "type": "log",
+      "text": "[THREAT_SCORE] {\"score\":100,\"activeThreats\":0,\"categoryCounts\":{\"upload\":0,\"workflow\":1,\"notification\":0,\"team\":0,\"api\":0},\"eventCount\":1,\"timestamp\":1786643496052}"
+    },
+    {
+      "type": "log",
+      "text": "[THREAT_EVENT] {\"category\":\"workflow\",\"type\":\"mutation_burst\",\"count\":4,\"signalKey\":\"workflow:mutation\",\"timestamp\":1786643496054}"
+    },
+    {
+      "type": "log",
+      "text": "[THREAT_SCORE] {\"score\":100,\"activeThreats\":0,\"categoryCounts\":{\"upload\":0,\"workflow\":2,\"notification\":0,\"team\":0,\"api\":0},\"eventCount\":2,\"timestamp\":1786643496054}"
+    },
+    {
+      "type": "log",
+      "text": "[WORKFLOW_DB_WRITE] {\"source\":\"fallback\",\"reason\":\"write-circuit-open\",\"timestamp\":1786643496055}"
+    },
+    {
+      "type": "log",
+      "text": "[WORKFLOW_ENGINE] {\"seriesId\":\"\",\"taskCount\":3,\"created\":0,\"completed\":0,\"readinessBefore\":12,\"readinessAfter\":45,\"actionRecommendations\":5,\"usesMockData\":false,\"helpAvailable\":true,\"timestamp\":1786643496055}"
+    },
+    {
+      "type": "log",
+      "text": "[WORKFLOW_DB_WRITE] {\"source\":\"fallback\",\"reason\":\"write-circuit-open\",\"timestamp\":1786643496073}"
+    },
+    {
+      "type": "log",
+      "text": "[WORKFLOW_ENGINE] {\"seriesId\":\"series-01-arrival-open\",\"taskCount\":0,\"created\":0,\"completed\":0,\"readinessBefore\":35,\"readinessAfter\":60,\"actionRecommendations\":1,\"usesMockData\":false,\"helpAvailable\":true,\"timestamp\":1786643496074}"
+    },
+    {
+      "type": "log",
+      "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"series-01-arrival-open\",\"currentReadiness\":35,\"projectedReadiness\":60,\"targetReadiness\":80,\"estimatedTime\":2,\"biggestBlocker\":\"S1:E01 is ready but not published.\",\"analysis\":{\"readiness\":{\"score\":35,\"metadata\":0,\"assets\":100,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":0,\"pendingTasks\":0,\"inProgressTasks\":0,\"criticalTasks\":0,\"estimatedMinutes\":0},\"rel"
+    },
+    {
+      "type": "info",
+      "text": "[MEDIA_PLACEHOLDER_LOGIC_FIXED] {primaryMediaLoaded: true, placeholderHiddenWhenLoaded: true, duplicateRenderingResolved: true}"
+    },
+    {
+      "type": "log",
+      "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"series-validation-1781016646994\",\"currentReadiness\":25,\"projectedReadiness\":60,\"targetReadiness\":80,\"estimatedTime\":3,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"analysis\":{\"readiness\":{\"score\":25,\"metadata\":100,\"assets\":0,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":1,\"pendingTasks\":1,\"inProgressTasks\":0,\"criticalTasks\":0,\"estimatedMinutes\":3},\""
+    },
+    {
+      "type": "log",
+      "text": "[WORKFLOW_DB_WRITE] {\"source\":\"fallback\",\"reason\":\"write-circuit-open\",\"timestamp\":1786643497471}"
+    },
+    {
+      "type": "log",
+      "text": "[WORKFLOW_ENGINE] {\"seriesId\":\"series-validation-1781016646994\",\"taskCount\":1,\"created\":0,\"completed\":0,\"readinessBefore\":25,\"readinessAfter\":60,\"actionRecommendations\":2,\"usesMockData\":false,\"helpAvailable\":true,\"timestamp\":1786643497471}"
+    },
+    {
+      "type": "log",
+      "text": "[WORKFLOW_ENGINE] {\"seriesId\":\"series-validation-1781016646994\",\"taskCount\":1,\"created\":0,\"completed\":0,\"readinessBefore\":25,\"readinessAfter\":60,\"actionRecommendations\":2,\"usesMockData\":false,\"helpAvailable\":true,\"timestamp\":1786643497480}"
+    },
+    {
+      "type": "log",
+      "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"series-validation-1781016646994\",\"currentReadiness\":25,\"projectedReadiness\":60,\"targetReadiness\":80,\"estimatedTime\":3,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"analysis\":{\"readiness\":{\"score\":25,\"metadata\":100,\"assets\":0,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":1,\"pendingTasks\":1,\"inProgressTasks\":0,\"criticalTasks\":1,\"estimatedMinutes\":3},\""
+    },
+    {
+      "type": "log",
+      "text": "[WORKFLOW_DB_WRITE] {\"source\":\"fallback\",\"reason\":\"write-circuit-open\",\"timestamp\":1786643497488}"
+    },
+    {
+      "type": "log",
+      "text": "[WORKFLOW_ENGINE] {\"seriesId\":\"series-vic-g\",\"taskCount\":0,\"created\":0,\"completed\":0,\"readinessBefore\":0,\"readinessAfter\":36,\"actionRecommendations\":3,\"usesMockData\":false,\"helpAvailable\":true,\"timestamp\":1786643497488}"
+    },
+    {
+      "type": "log",
+      "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"series-vic-g\",\"currentReadiness\":0,\"projectedReadiness\":36,\"targetReadiness\":80,\"estimatedTime\":9,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"analysis\":{\"readiness\":{\"score\":0,\"metadata\":0,\"assets\":0,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":0,\"pendingTasks\":0,\"inProgressTasks\":0,\"criticalTasks\":0,\"estimatedMinutes\":0},\"release\":{\"episodesSche"
+    },
+    {
+      "type": "log",
+      "text": "[WORKFLOW_ENGINE] {\"seriesId\":\"series-01-arrival-open\",\"taskCount\":0,\"created\":0,\"completed\":0,\"readinessBefore\":0,\"readinessAfter\":35,\"actionRecommendations\":1,\"usesMockData\":false,\"helpAvailable\":true,\"timestamp\":1786643497496}"
+    },
+    {
+      "type": "log",
+      "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"series-01-arrival-open\",\"currentReadiness\":0,\"projectedReadiness\":35,\"targetReadiness\":80,\"estimatedTime\":3,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"analysis\":{\"readiness\":{\"score\":0,\"metadata\":0,\"assets\":0,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":0,\"pendingTasks\":0,\"inProgressTasks\":0,\"criticalTasks\":0,\"estimatedMinutes\":0},\"release\":{\"ep"
+    },
+    {
+      "type": "log",
+      "text": "[DISCOVERY_INDEX] {\"totalDocuments\":276,\"bySource\":{\"series_metadata\":20,\"episode\":5,\"workflow\":2,\"notification\":200,\"revenue\":3,\"hero_content\":5,\"marketplace\":16,\"security_event\":2,\"sentinel_recommendation\":23},\"timestamp\":1786643497504}"
+    },
+    {
+      "type": "log",
+      "text": "[WORKFLOW_ENGINE] {\"seriesId\":\"series-validation-1781016646994\",\"taskCount\":1,\"created\":0,\"completed\":0,\"readinessBefore\":25,\"readinessAfter\":60,\"actionRecommendations\":2,\"usesMockData\":false,\"helpAvailable\":true,\"timestamp\":1786643497513}"
+    },
+    {
+      "type": "log",
+      "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"series-validation-1781016646994\",\"currentReadiness\":25,\"projectedReadiness\":60,\"targetReadiness\":80,\"estimatedTime\":3,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"analysis\":{\"readiness\":{\"score\":25,\"metadata\":100,\"assets\":0,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":1,\"pendingTasks\":1,\"inProgressTasks\":0,\"criticalTasks\":1,\"estimatedMinutes\":3},\""
+    },
+    {
+      "type": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-validation-1781016646994\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":5,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786643497517}"
+    },
+    {
+      "type": "log",
+      "text": "[HOME_FEED_REFRESH] {\"reason\":\"workflow_completion\",\"updatedAt\":1786643497445,\"timestamp\":1786643497517}"
+    },
+    {
+      "type": "log",
+      "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"series-01-arrival-open\",\"currentReadiness\":35,\"projectedReadiness\":60,\"targetReadiness\":80,\"estimatedTime\":2,\"biggestBlocker\":\"S1:E01 is ready but not published.\",\"analysis\":{\"readiness\":{\"score\":35,\"metadata\":0,\"assets\":100,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":0,\"pendingTasks\":0,\"inProgressTasks\":0,\"criticalTasks\":0,\"estimatedMinutes\":0},\"rel"
+    },
+    {
+      "type": "log",
+      "text": "[WORKFLOW_ENGINE] {\"seriesId\":\"series-01-arrival-open\",\"taskCount\":0,\"created\":0,\"completed\":0,\"readinessBefore\":35,\"readinessAfter\":60,\"actionRecommendations\":1,\"usesMockData\":false,\"helpAvailable\":true,\"timestamp\":1786643498729}"
+    },
+    {
+      "type": "log",
+      "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"series-validation-1781016646994\",\"currentReadiness\":25,\"projectedReadiness\":60,\"targetReadiness\":80,\"estimatedTime\":3,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"analysis\":{\"readiness\":{\"score\":25,\"metadata\":100,\"assets\":0,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":1,\"pendingTasks\":1,\"inProgressTasks\":0,\"criticalTasks\":1,\"estimatedMinutes\":3},\""
+    },
+    {
+      "type": "log",
+      "text": "[WORKFLOW_ENGINE] {\"seriesId\":\"series-validation-1781016646994\",\"taskCount\":1,\"created\":0,\"completed\":0,\"readinessBefore\":25,\"readinessAfter\":60,\"actionRecommendations\":2,\"usesMockData\":false,\"helpAvailable\":true,\"timestamp\":1786643498813}"
+    },
+    {
+      "type": "log",
+      "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"series-vic-g\",\"currentReadiness\":0,\"projectedReadiness\":36,\"targetReadiness\":80,\"estimatedTime\":9,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"analysis\":{\"readiness\":{\"score\":0,\"metadata\":0,\"assets\":0,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":0,\"pendingTasks\":0,\"inProgressTasks\":0,\"criticalTasks\":0,\"estimatedMinutes\":0},\"release\":{\"episodesSche"
+    },
+    {
+      "type": "log",
+      "text": "[WORKFLOW_ENGINE] {\"seriesId\":\"series-01-arrival-open\",\"taskCount\":0,\"created\":0,\"completed\":0,\"readinessBefore\":0,\"readinessAfter\":35,\"actionRecommendations\":1,\"usesMockData\":false,\"helpAvailable\":true,\"timestamp\":1786643498828}"
+    },
+    {
+      "type": "log",
+      "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"series-01-arrival-open\",\"currentReadiness\":0,\"projectedReadiness\":35,\"targetReadiness\":80,\"estimatedTime\":3,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"analysis\":{\"readiness\":{\"score\":0,\"metadata\":0,\"assets\":0,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":0,\"pendingTasks\":0,\"inProgressTasks\":0,\"criticalTasks\":0,\"estimatedMinutes\":0},\"release\":{\"ep"
+    },
+    {
+      "type": "log",
+      "text": "[DISCOVERY_INDEX] {\"totalDocuments\":276,\"bySource\":{\"series_metadata\":20,\"episode\":5,\"workflow\":2,\"notification\":200,\"revenue\":3,\"hero_content\":5,\"marketplace\":16,\"security_event\":2,\"sentinel_recommendation\":23},\"timestamp\":1786643498835}"
+    },
+    {
+      "type": "log",
+      "text": "[WORKFLOW_ENGINE] {\"seriesId\":\"series-validation-1781016646994\",\"taskCount\":1,\"created\":0,\"completed\":0,\"readinessBefore\":25,\"readinessAfter\":60,\"actionRecommendations\":2,\"usesMockData\":false,\"helpAvailable\":true,\"timestamp\":1786643498838}"
+    },
+    {
+      "type": "log",
+      "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"series-validation-1781016646994\",\"currentReadiness\":25,\"projectedReadiness\":60,\"targetReadiness\":80,\"estimatedTime\":3,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"analysis\":{\"readiness\":{\"score\":25,\"metadata\":100,\"assets\":0,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":1,\"pendingTasks\":1,\"inProgressTasks\":0,\"criticalTasks\":1,\"estimatedMinutes\":3},\""
+    },
+    {
+      "type": "log",
+      "text": "[HOME_FEED] {\"reason\":\"workflow_completion\",\"seriesId\":\"series-validation-1781016646994\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":5,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1786643498842}"
+    },
+    {
+      "type": "log",
+      "text": "[HOME_FEED_REFRESH] {\"reason\":\"workflow_completion\",\"updatedAt\":1786643498758,\"timestamp\":1786643498842}"
+    },
+    {
+      "type": "log",
+      "text": "[STUDIO_ASSISTANT] {\"seriesId\":\"series-validation-1781016646994\",\"currentReadiness\":25,\"projectedReadiness\":60,\"openWorkflowTasks\":1,\"unreadNotifications\":200,\"missingAssets\":1,\"blockerCount\":2,\"insightCount\":6,\"timestamp\":1786643498853}"
+    },
+    {
+      "type": "log",
+      "text": "[MISSION_GENERATED] {\"seriesId\":\"series-validation-1781016646994\",\"todaysMission\":\"Attach 1 missing reel, then attach reel to e01.\",\"topPriority\":\"Attach reel to E01\",\"quickWin\":\"Complete a small metadata fix for a quick readiness gain\",\"criticalRisk\":\"Upload S1:E01 reel\",\"projectedReadiness\":60,\"targetReadiness\":80,\"timestamp\":1786643498853}"
+    },
+    {
+      "type": "log",
+      "text": "[RISK_DETECTED] {\"seriesId\":\"series-validation-1781016646994\",\"insightId\":\"what-next\",\"label\":\"What should I do next?\",\"summary\":\"Attach reel to E01\",\"severity\":\"CRITICAL\",\"timestamp\":1786643498853}"
+    },
+    {
+      "type": "log",
+      "text": "[SEARCH_INDEX] {\"total\":287,\"byDomain\":{\"reels\":1,\"series\":3,\"episodes\":22,\"tasks\":2,\"workflows\":3,\"notifications\":200,\"marketplace_listings\":7,\"creators\":7,\"teams\":1,\"revenue_insights\":6,\"security_incidents\":2,\"sentinel_recommendations\":8,\"guide_me_content\":18,\"daily_engagement_cards\":7},\"timestamp\":1786643498861}"
+    },
+    {
+      "type": "log",
+      "text": "[SEARCH_INDEX] {\"reason\":\"workflow_changed\",\"timestamp\":1786643498862}"
+    },
+    {
+      "type": "log",
+      "text": "[CREATOR_PROFILE] {\"reason\":\"workflow_updated\",\"creatorId\":\"creator-user-owner-1\",\"skills\":7,\"portfolioItems\":0,\"productionHistoryItems\":9,\"timestamp\":1786643498869}"
+    },
+    {
+      "type": "log",
+      "text": "[DISCOVERY_FEED] {\"reason\":\"workflow_updated\",\"seriesId\":\"series-validation-1781016646994\",\"cardCount\":12,\"sectionSizes\":{\"trendingCreators\":1,\"marketplaceOpportunities\":3,\"upcomingReleases\":1,\"revenueMilestones\":1,\"sentinelInsights\":2,\"teamHighlights\":1,\"productionWins\":1,\"dailyRecommendations\":2},\"topCard\":\"sentinel_insights\",\"timestamp\":1786643498875}"
+    },
+    {
+      "type": "log",
+      "text": "[DISCOVERY_REFRESH] {\"reason\":\"workflow_updated\",\"updatedAt\":1786643498875,\"cardCount\":12,\"timestamp\":1786643498876}"
+    },
+    {
+      "type": "log",
+      "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"series-01-arrival-open\",\"currentReadiness\":35,\"projectedReadiness\":60,\"targetReadiness\":80,\"estimatedTime\":2,\"biggestBlocker\":\"S1:E01 is ready but not published.\",\"analysis\":{\"readiness\":{\"score\":35,\"metadata\":0,\"assets\":100,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":0,\"pendingTasks\":0,\"inProgressTasks\":0,\"criticalTasks\":0,\"estimatedMinutes\":0},\"rel"
+    }
+  ],
+  "networkSample": [
+    {
+      "t": 1786643502321,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/src/lib/api/pipelineApi.js"
+    },
+    {
+      "t": 1786643507370,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/src/lib/api/analyticsApi.js"
+    },
+    {
+      "t": 1786643507422,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/src/lib/api/syncApi.js"
+    },
+    {
+      "t": 1786643507428,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/src/lib/api/workflowApi.js"
+    },
+    {
+      "t": 1786643507429,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/src/lib/api/pipelineApi.js"
+    },
+    {
+      "t": 1786643507925,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/analytics/status"
+    },
+    {
+      "t": 1786643507962,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/notifications/status"
+    },
+    {
+      "t": 1786643507962,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/notifications/status"
+    },
+    {
+      "t": 1786643508028,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/notifications"
+    },
+    {
+      "t": 1786643508028,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/notifications"
+    },
+    {
+      "t": 1786643508031,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/sync/status"
+    },
+    {
+      "t": 1786643508031,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/workflow/status"
+    },
+    {
+      "t": 1786643508134,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/sync/state"
+    },
+    {
+      "t": 1786643508135,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/workflow/tasks"
+    },
+    {
+      "t": 1786643508161,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/health"
+    },
+    {
+      "t": 1786643508179,
+      "method": "POST",
+      "url": "http://127.0.0.1:5173/api/sync/push"
+    },
+    {
+      "t": 1786643508182,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/reels"
+    },
+    {
+      "t": 1786643508243,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/health"
+    },
+    {
+      "t": 1786643508255,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/reels"
+    },
+    {
+      "t": 1786643511143,
+      "method": "GET",
+      "url": "http://localhost:8080/thumbs/73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee.jpg"
+    },
+    {
+      "t": 1786643513007,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/src/lib/api/analyticsApi.js"
+    },
+    {
+      "t": 1786643513058,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/src/lib/api/syncApi.js"
+    },
+    {
+      "t": 1786643513060,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/src/lib/api/workflowApi.js"
+    },
+    {
+      "t": 1786643513065,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/src/lib/api/pipelineApi.js"
+    },
+    {
+      "t": 1786643513468,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/analytics/status"
+    },
+    {
+      "t": 1786643513500,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/notifications/status"
+    },
+    {
+      "t": 1786643513500,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/notifications/status"
+    },
+    {
+      "t": 1786643513550,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/notifications"
+    },
+    {
+      "t": 1786643513550,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/notifications"
+    },
+    {
+      "t": 1786643513553,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/sync/status"
+    },
+    {
+      "t": 1786643513553,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/workflow/status"
+    },
+    {
+      "t": 1786643513671,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/sync/state"
+    },
+    {
+      "t": 1786643513672,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/workflow/tasks"
+    },
+    {
+      "t": 1786643513694,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/health"
+    },
+    {
+      "t": 1786643513701,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/reels"
+    },
+    {
+      "t": 1786643513710,
+      "method": "POST",
+      "url": "http://127.0.0.1:5173/api/sync/push"
+    },
+    {
+      "t": 1786643513766,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/health"
+    },
+    {
+      "t": 1786643513773,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/reels"
+    },
+    {
+      "t": 1786643515113,
+      "method": "GET",
+      "url": "http://localhost:8080/thumbs/73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee.jpg"
+    },
+    {
+      "t": 1786643519626,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/sync/status"
+    },
+    {
+      "t": 1786643519656,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/notifications/status"
+    },
+    {
+      "t": 1786643519713,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/sync/state"
+    },
+    {
+      "t": 1786643519736,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/notifications"
+    },
+    {
+      "t": 1786643519803,
+      "method": "POST",
+      "url": "http://127.0.0.1:5173/api/sync/push"
+    },
+    {
+      "t": 1786643520407,
+      "method": "GET",
+      "url": "http://localhost:8080/videos/73adb67a-6d97-43fd-8fc6-3a4b4ce0b3ee.playback.mp4"
+    },
+    {
+      "t": 1786643522612,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/notifications/status"
+    },
+    {
+      "t": 1786643522626,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/notifications"
+    },
+    {
+      "t": 1786643525337,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/notifications/status"
+    },
+    {
+      "t": 1786643525346,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/notifications"
+    },
+    {
+      "t": 1786643527141,
+      "method": "POST",
+      "url": "http://127.0.0.1:5173/api/analytics"
+    },
+    {
+      "t": 1786643528555,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/sync/status"
+    },
+    {
+      "t": 1786643528566,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/sync/state"
+    },
+    {
+      "t": 1786643528653,
+      "method": "POST",
+      "url": "http://127.0.0.1:5173/api/sync/push"
+    },
+    {
+      "t": 1786643528713,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/sync/status"
+    },
+    {
+      "t": 1786643528722,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/sync/state"
+    },
+    {
+      "t": 1786643528806,
+      "method": "POST",
+      "url": "http://127.0.0.1:5173/api/sync/push"
+    },
+    {
+      "t": 1786643529129,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/analytics/status"
+    },
+    {
+      "t": 1786643530164,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/sync/status"
+    },
+    {
+      "t": 1786643530174,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/sync/state"
+    },
+    {
+      "t": 1786643530267,
+      "method": "POST",
+      "url": "http://127.0.0.1:5173/api/sync/push"
+    }
+  ],
+  "networkDuring6s": [
+    {
+      "t": 1786643525337,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/notifications/status"
+    },
+    {
+      "t": 1786643525346,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/notifications"
+    },
+    {
+      "t": 1786643527141,
+      "method": "POST",
+      "url": "http://127.0.0.1:5173/api/analytics"
+    },
+    {
+      "t": 1786643528555,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/sync/status"
+    },
+    {
+      "t": 1786643528566,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/sync/state"
+    },
+    {
+      "t": 1786643528653,
+      "method": "POST",
+      "url": "http://127.0.0.1:5173/api/sync/push"
+    },
+    {
+      "t": 1786643528713,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/sync/status"
+    },
+    {
+      "t": 1786643528722,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/sync/state"
+    },
+    {
+      "t": 1786643528806,
+      "method": "POST",
+      "url": "http://127.0.0.1:5173/api/sync/push"
+    },
+    {
+      "t": 1786643529129,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/analytics/status"
+    },
+    {
+      "t": 1786643530164,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/sync/status"
+    },
+    {
+      "t": 1786643530174,
+      "method": "GET",
+      "url": "http://127.0.0.1:5173/api/sync/state"
+    },
+    {
+      "t": 1786643530267,
+      "method": "POST",
+      "url": "http://127.0.0.1:5173/api/sync/push"
+    }
+  ]
+}

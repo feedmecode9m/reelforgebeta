@@ -1,0 +1,516 @@
+{
+  "generatedAt": "2026-08-12T18:10:00.000Z",
+  "phase": "PHASE-23",
+  "type": "AUDIT_ONLY",
+  "productionBaseline": {
+    "commit": "8804ffc23c1335f324422da5afbe957645bd0e14",
+    "message": "fix(feed): preserve creator metadata on title-only saves",
+    "phase22ProductionAcceptance": "PASS"
+  },
+  "constraints": {
+    "codeModified": false,
+    "commitCreated": false,
+    "pushPerformed": false,
+    "deployPerformed": false
+  },
+  "primaryPipeline": [
+    "reel_titles_persistent",
+    "loadCreatorCatalogMetadata",
+    "hydrateCatalogItemWithCreatorMetadata",
+    "resolveCatalogMetadata",
+    "classifyContent",
+    "projectCatalogCard",
+    "distributeToShelves",
+    "UI"
+  ],
+  "secondaryAuthority": {
+    "key": "reelforge_series_metadata",
+    "role": "fill-hole only when corresponding primary authority key is absent",
+    "authoredEmptyIsAuthoritative": true
+  },
+
+  "1_writerMatrix": [
+    {
+      "id": "W1",
+      "file": "frontend/src/viewer/viewerContext.js",
+      "function": "createPersistentTitleStore.saveTitle",
+      "callers": [
+        "StudioExperience.updateReelTitle (Master Edit)",
+        "HeroManagerPanel.writePersistentTitle when persistentTitles injected",
+        "any consumer of persistentTitles.saveTitle"
+      ],
+      "fieldsWritten": ["title", "title_original", "savedAt"],
+      "mergeVsReplace": "MERGE (Phase 22 mergeTitleIntoPersistentMap)",
+      "descriptionTagsCategorySurvive": true,
+      "authorityFlagsSurvive": true,
+      "authoredEmptySurvive": true,
+      "canResurrectSeriesMetadata": false,
+      "severity": "PASS"
+    },
+    {
+      "id": "W2",
+      "file": "frontend/src/components/studio/HeroManagerPanel.svelte",
+      "function": "writePersistentTitle (fallback branch)",
+      "callers": ["Hero title persistence when persistentTitles store not injected"],
+      "fieldsWritten": ["title", "title_original", "savedAt"],
+      "mergeVsReplace": "MERGE (Phase 22 mergeTitleIntoPersistentMap + localStorage/storageSet)",
+      "descriptionTagsCategorySurvive": true,
+      "authorityFlagsSurvive": true,
+      "authoredEmptySurvive": true,
+      "canResurrectSeriesMetadata": false,
+      "severity": "PASS"
+    },
+    {
+      "id": "W3",
+      "file": "frontend/src/components/experiences/StudioExperience.svelte",
+      "function": "updateReelTitle",
+      "callers": ["Master Edit / Studio title UI"],
+      "fieldsWritten": ["title", "title_original via persistentTitles.saveTitle"],
+      "mergeVsReplace": "MERGE (delegates to W1; no direct localStorage write)",
+      "descriptionTagsCategorySurvive": true,
+      "authorityFlagsSurvive": true,
+      "authoredEmptySurvive": true,
+      "canResurrectSeriesMetadata": false,
+      "severity": "PASS"
+    },
+    {
+      "id": "W4",
+      "file": "frontend/src/lib/feed/creatorCatalogMetadata.js",
+      "function": "saveCreatorCatalogMetadata",
+      "callers": ["VaultExperience.saveVaultEpisodeEnrichment"],
+      "fieldsWritten": [
+        "title",
+        "title_original",
+        "description",
+        "tags",
+        "category",
+        "creatorCategory",
+        "savedAt"
+      ],
+      "mergeVsReplace": "MERGE ({...prior, ...fields})",
+      "descriptionTagsCategorySurvive": true,
+      "authorityFlagsSurvive": true,
+      "authoredEmptySurvive": true,
+      "canResurrectSeriesMetadata": false,
+      "notes": "Also best-effort clears/mirrors reelforge_series_metadata; optional category PATCH",
+      "severity": "PASS"
+    },
+    {
+      "id": "W5",
+      "file": "frontend/src/lib/content/persistentTitleMap.js",
+      "function": "mergePersistentTitleEntry / mergeTitleIntoPersistentMap",
+      "callers": ["W1", "W2"],
+      "fieldsWritten": ["title", "title_original", "savedAt over prior"],
+      "mergeVsReplace": "MERGE helper only",
+      "severity": "PASS"
+    },
+    {
+      "id": "W6",
+      "file": "frontend/src/lib/viewer/aiCleanupAgent.js",
+      "function": "performIntelligentCleanup orphan title prune",
+      "callers": ["AI cleanup"],
+      "fieldsWritten": ["orphan deletes on CONFIG.TITLES_KEY"],
+      "mergeVsReplace": "N/A — writes 'reel_titles' NOT 'reel_titles_persistent'",
+      "notes": "CONFIG.TITLES_KEY='reel_titles' vs TITLES_STORAGE_KEY='reel_titles_persistent'. Not a primary-authority writer.",
+      "severity": "PASS"
+    },
+    {
+      "id": "W7",
+      "file": "frontend/src/viewer/viewerContext.js",
+      "function": "createPersistentStore.set/update",
+      "callers": ["W1 store persistence"],
+      "fieldsWritten": ["entire map JSON for TITLES_STORAGE_KEY"],
+      "mergeVsReplace": "Persists map after entry-level merge; does not replace individual entry fields itself",
+      "severity": "PASS"
+    },
+    {
+      "id": "W8",
+      "searchScope": "frontend/src entire tree",
+      "function": "migration/import/direct localStorage writers of reel_titles_persistent",
+      "result": "NONE found beyond W1–W5/W7",
+      "checked": [
+        "localStorage.setItem(...reel_titles_persistent...)",
+        "setItem(REEL_TITLES_PERSISTENT_KEY)",
+        "setItem(CONFIG.TITLES_STORAGE_KEY)",
+        "setItem(TITLES_KEY())"
+      ],
+      "severity": "PASS"
+    }
+  ],
+
+  "2_readerMatrix": [
+    {
+      "id": "R1",
+      "file": "frontend/src/lib/feed/creatorCatalogMetadata.js",
+      "function": "loadCreatorCatalogMetadata",
+      "role": "PRIMARY reader + series fill-hole; emits primary*Authority flags",
+      "severity": "PASS"
+    },
+    {
+      "id": "R2",
+      "file": "frontend/src/lib/feed/creatorCatalogMetadata.js",
+      "function": "hydrateCatalogItemWithCreatorMetadata",
+      "role": "Stamps/clears classification inputs from primary authority",
+      "severity": "PASS"
+    },
+    {
+      "id": "R3",
+      "file": "frontend/src/lib/viewer/aiCleanupAgent.js",
+      "function": "applyPersistedTitlesOverlay (feed branch)",
+      "role": "Live feed reshelf; applies authored-empty clears then hydrate→classify",
+      "severity": "PASS"
+    },
+    {
+      "id": "R4",
+      "file": "frontend/src/lib/viewer/aiCleanupAgent.js",
+      "function": "applyPersistedTitlesOverlay (personalVideos branch)",
+      "role": "Vault list presentation overlay — non-empty title/description/tags only",
+      "severity": "LOW"
+    },
+    {
+      "id": "R5",
+      "file": "frontend/src/lib/feed/catalogInventory.js",
+      "function": "projectCatalogCard",
+      "role": "hydrate→classify→optional vault projection display overlay",
+      "severity": "PASS"
+    },
+    {
+      "id": "R6",
+      "file": "frontend/src/lib/feed/buildHomeFeed.js",
+      "function": "smartPopulation path",
+      "role": "hydrate→resolve→classify→project→distributeToShelves",
+      "severity": "PASS"
+    },
+    {
+      "id": "R7",
+      "file": "frontend/src/lib/content/vaultCardProjection.js",
+      "function": "resolveVaultCardProjection / resolveCreatorDescription",
+      "role": "Vault/Theater presentation description chain",
+      "severity": "LOW"
+    },
+    {
+      "id": "R8",
+      "file": "frontend/src/lib/series/creatorExperiencePresentation.js",
+      "function": "presentCreatorExperience",
+      "role": "Vault creator UX; loadCreatorCatalogMetadata for tags/category/clear states",
+      "severity": "PASS"
+    },
+    {
+      "id": "R9",
+      "file": "frontend/src/lib/content/contentIdentityResolver.js",
+      "function": "loadPersistentTitle / resolveLinkedAssetDisplayTitle",
+      "role": "Title identity; primary title outranks sticky",
+      "severity": "PASS"
+    },
+    {
+      "id": "R10",
+      "file": "frontend/src/lib/hero/heroTitleIntelligence.js",
+      "function": "lookupPersistentHeroTitle",
+      "role": "Hero title read-only",
+      "severity": "PASS"
+    },
+    {
+      "id": "R11",
+      "file": "frontend/src/lib/hero/heroIntelligence.js",
+      "function": "commitHeroAssetSelection title lookup",
+      "role": "Read-only title from reel_titles_persistent",
+      "severity": "PASS"
+    },
+    {
+      "id": "R12",
+      "file": "frontend/src/lib/viewer/aiCleanupAgent.js",
+      "function": "distributeVideoToFeed",
+      "role": "Hydrates vault row before classify; protected against stale personalVideos description",
+      "severity": "PASS"
+    }
+  ],
+
+  "3_primarySecondaryAuthorityMatrix": [
+    {
+      "field": "title",
+      "primary": "reel_titles_persistent.title|title_original",
+      "secondary": "reelforge_series_metadata.episodeTitle (fill-hole if !title && !primaryTitleAuthority)",
+      "clearSemantics": "ASYMMETRIC — empty save preserves prior.title (intentional title durability)",
+      "severity": "PASS"
+    },
+    {
+      "field": "description",
+      "primary": "reel_titles_persistent.description (key presence = authority)",
+      "secondary": "series.description fill-hole only when !primaryDescriptionAuthority",
+      "clearSemantics": "description:'' authoritative; blocks series fill",
+      "severity": "PASS"
+    },
+    {
+      "field": "tags",
+      "primary": "reel_titles_persistent.tags",
+      "secondary": "series.tags fill-hole only when !primaryTagsAuthority",
+      "clearSemantics": "tags:[] authoritative",
+      "severity": "PASS"
+    },
+    {
+      "field": "category",
+      "primary": "reel_titles_persistent.category|creatorCategory",
+      "secondary": "series.genre|creatorCategory fill-hole only when !primaryCategoryAuthority",
+      "clearSemantics": "category:'' / creatorCategory:'' authoritative",
+      "severity": "PASS"
+    },
+    {
+      "field": "creatorCategory",
+      "primary": "same keys as category on primary map",
+      "secondary": "series mirror",
+      "clearSemantics": "authored-empty clears projection fields in hydrate",
+      "severity": "PASS"
+    }
+  ],
+
+  "4_clearVsMissingMatrix": {
+    "rule": "MISSING != CLEARED",
+    "clearedSentinels": {
+      "description": "",
+      "tags": [],
+      "category": "",
+      "creatorCategory": ""
+    },
+    "authorityDetection": "Object.prototype.hasOwnProperty on primary entry keys",
+    "probes": {
+      "afterSave": "PASS",
+      "afterTitleOnlyEdit": "PASS (Phase 22 merge)",
+      "afterReload": "PASS",
+      "afterMirrorUpdateWhenPrimaryCleared": "PASS (load ignores mirror)",
+      "afterMirrorPoisonWhenPrimaryCleared": "PASS for load/hydrate/classify; display may still show series text (see finding F2)",
+      "afterFailedMirrorWrite": "PASS primary remains durable",
+      "afterFailedCategoryPATCH": "PASS local primary remains durable; PATCH is best-effort"
+    },
+    "titleClearAsymmetry": {
+      "behavior": "empty title preserves prior.title",
+      "defect": false,
+      "severity": "PASS"
+    },
+    "severity": "PASS"
+  },
+
+  "5_personalVideosOverlayResult": {
+    "function": "AI_CLEANUP_AGENT.applyPersistedTitlesOverlay → personalVideos.update",
+    "titleUpdatesApply": true,
+    "nonEmptyDescriptionTagsApply": true,
+    "authoredEmptyDescriptionTagsApply": false,
+    "categoryClearApplies": false,
+    "staleMetadataCanSurviveOnVaultRow": true,
+    "affectsShelfClassification": false,
+    "reasonNoShelfImpact": "Feed overlay branch clears + hydrate+classify; distributeVideoToFeed hydrates before classify",
+    "merelyPresentation": true,
+    "divergenceClass": "A",
+    "divergenceLabel": "harmless presentation divergence",
+    "severity": "LOW",
+    "notes": "Vault creator UX primarily reads loadCreatorCatalogMetadata for tags/category/clear states; package save also writes episodeEnrichment via applyPackageToVaultListByMediaAssetId"
+  },
+
+  "6_vaultDescriptionResolutionResult": {
+    "function": "resolveCreatorDescription (vaultCardProjection.js)",
+    "sourcesInOrder": [
+      "enrichment.description",
+      "reel.description",
+      "seriesMeta.description",
+      "heroDescription (active hero only)"
+    ],
+    "primaryAuthorityAware": false,
+    "primaryEmptyBlocksSeries": false,
+    "seriesCanResurrectInto": {
+      "classification": false,
+      "shelfPlacement": false,
+      "liveFeedDisplayDescription": true,
+      "vaultPresentation": true
+    },
+    "classificationSeparateFromDisplay": true,
+    "proof": "CLEAR_THEN_SERIES_POISON probe: hydrateDescription='', shelf=Trending, vaultDisplayDescription=series suspense text",
+    "projectCatalogCardInteraction": "After classify, projection.description = vault.description || hydrated description — can stamp series text onto card.description without changing card.category",
+    "divergenceClass": "A",
+    "severity": "LOW",
+    "notes": "Happy-path clear via saveCreatorCatalogMetadata also clears series mirror, so display resurrection requires mirror poison, failed mirror write, or independent series writer after clear"
+  },
+
+  "7_classificationInputResult": {
+    "inputs": [
+      "creatorCategory / studioCategory / category / shelfCategory (explicit path)",
+      "title / description / tags",
+      "ai_tags / keywords / discoveryTags (merged into tags bag)",
+      "seriesName / seriesTitle / episodeTitle",
+      "fileName (generic skipped)"
+    ],
+    "staleSuppression": {
+      "seriesMetadataViaLoad": "blocked when primary*Authority present",
+      "oldCreatorCategory": "deleted by hydrate when primary category cleared",
+      "explicitCategory": "deleted by hydrate on clear paths",
+      "ai_tags_keywords_discoveryTags": "deleted when primary tags cleared (hydrate + feed overlay)",
+      "cachedCardFields": "cleared by hydrate/overlay before classify on live path",
+      "localStoragePrimary": "authoritative after Phase 17–22"
+    },
+    "precedence": [
+      "explicit creator category",
+      "primary metadata evidence (title/description/tags)",
+      "remaining valid inference",
+      "Trending"
+    ],
+    "authoredEmptySuppressesSecondary": true,
+    "classifierVocabularyChanged": false,
+    "classifierScoringChanged": false,
+    "distributionChanged": false,
+    "severity": "PASS"
+  },
+
+  "8_liveVsReloadEquivalenceResult": {
+    "method": "saveCreatorCatalogMetadata (+ optional mergeTitle) → hydrate+classify vs reload same storage",
+    "probes": [
+      { "id": "title-only", "equal": true, "shelf": "Trending" },
+      { "id": "description-only", "equal": true, "shelf": "Romance" },
+      { "id": "tags-only", "equal": true, "shelf": "Cyber-Action" },
+      { "id": "explicit-category", "equal": true, "shelf": "Cyber-Action" },
+      { "id": "description-clear", "equal": true, "shelf": "Romance" },
+      { "id": "tags-clear", "equal": true, "shelf": "Romance" },
+      { "id": "category-clear", "equal": true, "shelf": "Romance" },
+      { "id": "all-optional-clear", "equal": true, "shelf": "Trending" },
+      { "id": "clear-then-title-only", "equal": true, "shelf": "Trending" },
+      { "id": "metadata-then-title-only", "equal": true, "shelf": "Romance" }
+    ],
+    "liveEqualsReloadFor": ["metadata", "classification", "shelf", "identity"],
+    "caveat": "Feed display description may diverge from hydrated metadata when series mirror is poisoned (F2); shelf/category remain equivalent",
+    "severity": "PASS"
+  },
+
+  "9_identityMediaResult": {
+    "canonicalIdUnchanged": true,
+    "posterUnchanged": true,
+    "thumbnailUnchanged": true,
+    "mp4UrlUnchanged": true,
+    "playableUnchanged": true,
+    "posterPlusMp4OneIdentity": true,
+    "noExtraCatalogRowFromMetadata": true,
+    "severity": "PASS"
+  },
+
+  "10_failureSafetyResult": [
+    {
+      "failure": "primary setItem throws",
+      "behavior": "saveCreatorCatalogMetadata catches; prior durable map preserved; function may still return intended (non-durable) fields",
+      "lastDurablePrimaryPreserved": true,
+      "uxRisk": "VaultExperience may treat truthy return as success (Phase 21 finding remains)",
+      "severity": "LOW"
+    },
+    {
+      "failure": "mirror setItem throws",
+      "behavior": "primary already written; mirror warn-only",
+      "lastDurablePrimaryPreserved": true,
+      "severity": "PASS"
+    },
+    {
+      "failure": "category PATCH fails",
+      "behavior": "local-only; console warn",
+      "lastDurablePrimaryPreserved": true,
+      "severity": "PASS"
+    },
+    {
+      "failure": "overlay throws",
+      "behavior": "VaultExperience catches; durable primary already saved",
+      "severity": "PASS"
+    },
+    {
+      "failure": "malformed primary metadata",
+      "behavior": "load/hydrate try/catch; empty/safe defaults",
+      "severity": "PASS"
+    },
+    {
+      "failure": "legacy metadata without authority flags",
+      "behavior": "hasOwnProperty false → series fill-hole allowed (legacy hole-fill, not clear)",
+      "severity": "PASS"
+    }
+  ],
+
+  "11_architecturalDriftFindings": [
+    {
+      "id": "F1",
+      "title": "personalVideos overlay skips authored-empty clears",
+      "severity": "LOW",
+      "class": "A_harmless_presentation_divergence",
+      "detail": "Feed path clears; vault row may retain stale description/tags text until package rewrite. Does not drive shelf classification."
+    },
+    {
+      "id": "F2",
+      "title": "resolveCreatorDescription / projectCatalogCard can display series description after primary clear",
+      "severity": "LOW",
+      "class": "A_harmless_presentation_divergence",
+      "detail": "Classification and shelf placement remain protected by hydrate. Display resurrection requires series mirror text still present (poison/failed mirror clear/independent series writer). Happy-path clear also clears mirror."
+    },
+    {
+      "id": "F3",
+      "title": "saveCreatorCatalogMetadata returns intended object even when primary setItem fails",
+      "severity": "LOW",
+      "class": "failure_ux_divergence",
+      "detail": "Durable prior preserved; optimistic save feedback may disagree with durable map until reload."
+    },
+    {
+      "id": "F4",
+      "title": "Phase 21 TITLE_MAP_ENTRY_REPLACE_WITHOUT_MERGE",
+      "severity": "PASS",
+      "class": "CLOSED_IN_PHASE_22",
+      "detail": "All title-only writers now merge-on-write; validated by validate:title-map-merge and production acceptance."
+    }
+  ],
+
+  "12_severitySummary": {
+    "writers": "PASS",
+    "readers": "PASS",
+    "authorityModel": "PASS",
+    "clearVsMissing": "PASS",
+    "personalVideosOverlay": "LOW",
+    "vaultDescriptionResolution": "LOW",
+    "classificationInputs": "PASS",
+    "liveVsReload": "PASS",
+    "identityMedia": "PASS",
+    "failureSafety": "PASS_WITH_LOW_UX_NOTES",
+    "frozenBoundaries": "PASS",
+    "highestSeverity": "LOW",
+    "latentBlockers": [],
+    "blockers": []
+  },
+
+  "13_filesThatWouldNeedModificationIfBlocker": {
+    "blockerExists": false,
+    "optionalHygieneOnlyIfProductRequiresDisplayParity": [
+      "frontend/src/lib/content/vaultCardProjection.js",
+      "frontend/src/lib/feed/catalogInventory.js",
+      "frontend/src/lib/viewer/aiCleanupAgent.js",
+      "frontend/src/lib/series/creatorExperiencePresentation.js",
+      "frontend/src/lib/feed/creatorCatalogMetadata.js"
+    ],
+    "note": "No Phase 24 required for catalog authority. Optional display-parity hygiene only if product elevates F1/F2 from LOW presentation drift to required invariants."
+  },
+
+  "14_recommendedNextPhase": {
+    "authorityBlockerFound": false,
+    "phase24SurgicalPatch": null,
+    "recommendation": "No authority fix phase required. Proceed to next product/architecture decision. Optional future hygiene for display-only series fallback after primary clear is not a Phase 24 blocker."
+  },
+
+  "9_frozenBoundaries": {
+    "backend": "untouched",
+    "theaterPlaybackOwnership": "untouched",
+    "heroOwnership": "untouched",
+    "classifierVocabulary": "untouched",
+    "distribution": "untouched",
+    "rotation": "untouched",
+    "identityKeyGeneration": "untouched",
+    "seriesAuthorityStore": "untouched (mirror role unchanged)",
+    "vicG": "untouched",
+    "deployConfiguration": "untouched",
+    "motherlandHeroVaultEnrichment": "OUT_OF_SCOPE / PRE-EXISTING — not caused by catalog authority changes",
+    "severity": "PASS"
+  },
+
+  "verdict": {
+    "PHASE_23_CATALOG_AUTHORITY_AUDIT": "PASS",
+    "NO_LATENT_BLOCKER": true,
+    "NO_CODE_CHANGES_REQUIRED": true,
+    "PHASE_22_AUTHORITY_MODEL": "VERIFIED",
+    "READY_FOR_NEXT_PRODUCT_ARCHITECTURE_DECISION": true
+  }
+}

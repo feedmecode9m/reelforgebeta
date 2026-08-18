@@ -1,0 +1,349 @@
+{
+  "mission": "RC3-TRANSPORT-02",
+  "generatedAt": "2026-07-19T19:21:15.138589+00:00",
+  "baseline": "RC1-2026-07-19-POST-08C + RC2 MP4 Acceptance PASS",
+  "asset": {
+    "path": "/home/youloose2dafish/Downloads/condo_v1_2.mp4",
+    "bytes": 362155056,
+    "name": "condo_v1_2.mp4"
+  },
+  "railwayAuth": "EXPIRED \u2014 application logs unavailable (tokenExpiresAt 2026-07-16T17:55:56Z)",
+  "timeline": [
+    {
+      "component": "measurement",
+      "timestamp": "2026-07-19T19:21:19.705117+00:00",
+      "event": "pre_snapshot",
+      "bytesTransferred": 0,
+      "response": null,
+      "headers": null,
+      "logEvidence": "catalog+storage snapshot"
+    },
+    {
+      "component": "browser/curl",
+      "timestamp": "2026-07-19T19:22:00.152778+00:00",
+      "event": "upload_start",
+      "bytesTransferred": 0,
+      "response": null,
+      "headers": null,
+      "logEvidence": "POST https://reelforge-deploy-production.up.railway.app/api/reels file=/home/youloose2dafish/Downloads/condo_v1_2.mp4 contentLength=362155056"
+    },
+    {
+      "component": "browser/curl",
+      "timestamp": "2026-07-19T19:27:21.055295+00:00",
+      "event": "upload_finished_or_aborted",
+      "bytesTransferred": 21037056,
+      "response": {
+        "http": "502",
+        "body": "upstream error"
+      },
+      "headers": {
+        "content-type": "text/plain; charset=utf-8",
+        "content-length": "14",
+        "x-hikari-trace": "lax1.ez9k",
+        "server": "railway-hikari",
+        "x-railway-edge": "lax1",
+        "date": "Sun, 19 Jul 2026 19:27:00 GMT"
+      },
+      "logEvidence": "curl write-out + response headers; TCP completion=False"
+    },
+    {
+      "component": "Railway edge",
+      "timestamp": "2026-07-19T19:27:21.055295+00:00",
+      "event": "response_observed",
+      "bytesTransferred": 21037056,
+      "response": {
+        "http": "502",
+        "body": "upstream error",
+        "server": "railway-hikari"
+      },
+      "headers": {
+        "content-type": "text/plain; charset=utf-8",
+        "content-length": "14",
+        "x-hikari-trace": "lax1.ez9k",
+        "server": "railway-hikari",
+        "x-railway-edge": "lax1",
+        "date": "Sun, 19 Jul 2026 19:27:00 GMT"
+      },
+      "logEvidence": "server=railway-hikari body=upstream error"
+    },
+    {
+      "component": "Actix create_reel",
+      "timestamp": null,
+      "event": "not_directly_observed",
+      "bytesTransferred": null,
+      "response": null,
+      "headers": null,
+      "logEvidence": "Railway CLI/API unauthorized (token expired 2026-07-16). No application log line available. Side-effects: newIds=[]; actix CORS markers on failure={'access-control-allow-credentials': False, 'accept-ranges': False, 'access-control-expose-headers': False}"
+    },
+    {
+      "component": "multipart/storage/ingest",
+      "timestamp": null,
+      "event": "not_observed",
+      "bytesTransferred": null,
+      "response": null,
+      "headers": null,
+      "logEvidence": "no new catalog ids; no proven temp object; no reel id"
+    }
+  ],
+  "polls": [
+    {
+      "n": 1,
+      "ts": "2026-07-19T19:22:19.628224+00:00",
+      "catalogHttp": 200,
+      "catalogCount": 19,
+      "newIdsVsPre": [],
+      "storageHttp": 200,
+      "videoCount": 19
+    },
+    {
+      "n": 2,
+      "ts": "2026-07-19T19:22:38.758751+00:00",
+      "catalogHttp": 200,
+      "catalogCount": 19,
+      "newIdsVsPre": [],
+      "storageHttp": 200,
+      "videoCount": 19
+    },
+    {
+      "n": 3,
+      "ts": "2026-07-19T19:22:58.074708+00:00",
+      "catalogHttp": 200,
+      "catalogCount": 19,
+      "newIdsVsPre": [],
+      "storageHttp": 200,
+      "videoCount": 19
+    },
+    {
+      "n": 4,
+      "ts": "2026-07-19T19:23:17.470384+00:00",
+      "catalogHttp": 200,
+      "catalogCount": 19,
+      "newIdsVsPre": [],
+      "storageHttp": 200,
+      "videoCount": 19
+    },
+    {
+      "n": 5,
+      "ts": "2026-07-19T19:23:36.796214+00:00",
+      "catalogHttp": 200,
+      "catalogCount": 19,
+      "newIdsVsPre": [],
+      "storageHttp": 200,
+      "videoCount": 19
+    },
+    {
+      "n": 6,
+      "ts": "2026-07-19T19:23:56.364650+00:00",
+      "catalogHttp": 200,
+      "catalogCount": 19,
+      "newIdsVsPre": [],
+      "storageHttp": 200,
+      "videoCount": 19
+    },
+    {
+      "n": 7,
+      "ts": "2026-07-19T19:24:15.663555+00:00",
+      "catalogHttp": 200,
+      "catalogCount": 19,
+      "newIdsVsPre": [],
+      "storageHttp": 200,
+      "videoCount": 19
+    },
+    {
+      "n": 8,
+      "ts": "2026-07-19T19:24:35.195396+00:00",
+      "catalogHttp": 200,
+      "catalogCount": 19,
+      "newIdsVsPre": [],
+      "storageHttp": 200,
+      "videoCount": 19
+    },
+    {
+      "n": 9,
+      "ts": "2026-07-19T19:24:54.480280+00:00",
+      "catalogHttp": 200,
+      "catalogCount": 19,
+      "newIdsVsPre": [],
+      "storageHttp": 200,
+      "videoCount": 19
+    },
+    {
+      "n": 10,
+      "ts": "2026-07-19T19:25:14.015930+00:00",
+      "catalogHttp": 200,
+      "catalogCount": 19,
+      "newIdsVsPre": [],
+      "storageHttp": 200,
+      "videoCount": 19
+    },
+    {
+      "n": 11,
+      "ts": "2026-07-19T19:25:33.487129+00:00",
+      "catalogHttp": 200,
+      "catalogCount": 19,
+      "newIdsVsPre": [],
+      "storageHttp": 200,
+      "videoCount": 19
+    },
+    {
+      "n": 12,
+      "ts": "2026-07-19T19:25:53.190619+00:00",
+      "catalogHttp": 200,
+      "catalogCount": 19,
+      "newIdsVsPre": [],
+      "storageHttp": 200,
+      "videoCount": 19
+    },
+    {
+      "n": 13,
+      "ts": "2026-07-19T19:26:13.566113+00:00",
+      "catalogHttp": 200,
+      "catalogCount": 19,
+      "newIdsVsPre": [],
+      "storageHttp": 200,
+      "videoCount": 19
+    },
+    {
+      "n": 14,
+      "ts": "2026-07-19T19:26:32.990065+00:00",
+      "catalogHttp": 200,
+      "catalogCount": 19,
+      "newIdsVsPre": [],
+      "storageHttp": 200,
+      "videoCount": 19
+    },
+    {
+      "n": 15,
+      "ts": "2026-07-19T19:26:52.301415+00:00",
+      "catalogHttp": 200,
+      "catalogCount": 19,
+      "newIdsVsPre": [],
+      "storageHttp": 200,
+      "videoCount": 19
+    }
+  ],
+  "pre": {
+    "label": "pre-upload",
+    "ts": "2026-07-19T19:21:19.705117+00:00",
+    "catalogHttp": 200,
+    "catalogCount": 19,
+    "catalogIds": [
+      "192293f7-c784-46af-aa45-1bb15b6a4cc6",
+      "085d5f3b-a18d-4cee-b656-dc21250ff0c3",
+      "aba87aec-f114-427a-a7ed-6da9017eae66",
+      "9cbb9526-cf81-4294-b777-ff94dfe89f61",
+      "9f6ea9c9-2cf3-4a0a-8c29-dcee40e243dd",
+      "dbf24a89-7636-4313-9a45-248d0bbeef8c",
+      "f9299f26-7bea-4873-ad72-cf18120dbd98",
+      "40137565-aada-4baf-8eeb-2e42c7032cc0",
+      "fb0e2473-f2b9-40bf-97d7-b781095b5347",
+      "a4e45b23-a984-457b-9c86-4b994db584c9",
+      "9178e241-176d-439d-82cb-a0ecc5f9ae7d",
+      "356f0466-6dfb-4a17-974a-14d0f627e688",
+      "aa0691a3-69da-46d6-9ffd-a7f20cf7c976",
+      "5ab6c2ad-f457-4bb2-ba4e-0992b863f14d",
+      "3538ddd6-463d-46df-b896-2df21e57e99e",
+      "d96e274d-5b7a-4387-9a15-4b6ba3efc3b9",
+      "3004f952-c60d-429b-a247-760ab636e059",
+      "4c840a16-77f7-4a2f-b81d-0dee37b3de18",
+      "f3d26ccd-2fff-46b7-8c57-14a87242e350"
+    ],
+    "storageHttp": 200,
+    "videoCount": 19,
+    "videosSample": [
+      "192293f7-c784-46af-aa45-1bb15b6a4cc6.mp4",
+      "085d5f3b-a18d-4cee-b656-dc21250ff0c3.mp4",
+      "aba87aec-f114-427a-a7ed-6da9017eae66.mp4",
+      "9cbb9526-cf81-4294-b777-ff94dfe89f61.mp4",
+      "9f6ea9c9-2cf3-4a0a-8c29-dcee40e243dd.mp4"
+    ]
+  },
+  "post": {
+    "ts": "2026-07-19T19:27:21.055295+00:00",
+    "catalogHttp": 200,
+    "catalogCount": 19,
+    "newIdsVsPre": [],
+    "storageHttp": 200,
+    "videoCount": 19
+  },
+  "curl": {
+    "writeOut": {
+      "http_code": "502",
+      "time_total": "300.317039",
+      "time_starttransfer": "300.316649",
+      "time_connect": "0.154496",
+      "size_upload": "21037056",
+      "size_download": "14",
+      "speed_upload": "70049",
+      "num_connects": "1",
+      "errormsg": ""
+    },
+    "stderrTail": "",
+    "exitCode": 0,
+    "wallClockSec": 300.34879183769226,
+    "headersRaw": "HTTP/2 502 \ncontent-type: text/plain; charset=utf-8\ncontent-length: 14\nx-hikari-trace: lax1.ez9k\nserver: railway-hikari\nx-railway-edge: lax1\ndate: Sun, 19 Jul 2026 19:27:00 GMT\n\n",
+    "bodyRaw": "upstream error",
+    "sizeUploadBytes": 21037056,
+    "contentLengthDeclared": 362155056,
+    "bytesRemaining": 341118000,
+    "uploadComplete": false
+  },
+  "headerComparison": {
+    "actixSuccessHeaderKeys": [
+      "accept-ranges",
+      "access-control-allow-credentials",
+      "access-control-expose-headers",
+      "content-length",
+      "content-type",
+      "date",
+      "server",
+      "vary",
+      "x-hikari-trace",
+      "x-railway-edge",
+      "x-railway-request-id",
+      "x-railway-upstream-zone"
+    ],
+    "condoFailureHeaderKeys": [
+      "content-length",
+      "content-type",
+      "date",
+      "server",
+      "x-hikari-trace",
+      "x-railway-edge"
+    ],
+    "actixMarkersPresentOnFailure": {
+      "access-control-allow-credentials": false,
+      "accept-ranges": false,
+      "access-control-expose-headers": false
+    },
+    "actixMarkersPresentOnSuccess": {
+      "access-control-allow-credentials": true,
+      "accept-ranges": true,
+      "access-control-expose-headers": true
+    },
+    "edgeHeadersOnFailure": {
+      "server": "railway-hikari",
+      "x-railway-edge": "lax1",
+      "x-hikari-trace": "lax1.ez9k"
+    },
+    "serverFailure": "railway-hikari",
+    "serverSuccess": "railway-hikari",
+    "bodyFailure": "upstream error",
+    "bodySuccessPrefix": "{\"id\":\"60b0f52a-ee90-4ce4-9fbe-b78b08043a99\",\"status\":\"pending\",\"videoUrl\":\"https://strong-lolly-a9fcb4.netlify.app/videos/60b0f52a-ee90-4ce4-9fbe-b78b08043a99.mp4\",\"thumbnailUrl\":null,\"pollUrl\":\"/api"
+  },
+  "boundaryAnswer": "B",
+  "verdict": "INSUFFICIENT EVIDENCE",
+  "actixFingerprint": {
+    "curlWriteOut": "202 0.442421 3506",
+    "headers": "HTTP/2 202 \naccept-ranges: bytes\naccess-control-allow-credentials: true\naccess-control-expose-headers: accept-ranges, content-length, content-range, content-type\ncontent-type: application/json\ndate: Sun, 19 Jul 2026 19:21:20 GMT\nserver: railway-hikari\nvary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers\nx-railway-request-id: NXMTUGMfRUulc6D02prcFg\nx-railway-upstream-zone: railway/us-west2\ncontent-length: 245\nx-hikari-trace: lax1.z1hw\nx-railway-edge: lax1\n\n",
+    "body": "{\"id\":\"60b0f52a-ee90-4ce4-9fbe-b78b08043a99\",\"status\":\"pending\",\"videoUrl\":\"https://strong-lolly-a9fcb4.netlify.app/videos/60b0f52a-ee90-4ce4-9fbe-b78b08043a99.mp4\",\"thumbnailUrl\":null,\"pollUrl\":\"/api/reels/60b0f52a-ee90-4ce4-9fbe-b78b08043a99\"}",
+    "elapsedSec": 0.4700334072113037,
+    "cleanedReelId": "60b0f52a-ee90-4ce4-9fbe-b78b08043a99"
+  },
+  "traceBytesApprox": 335932,
+  "boundaryAnswerText": "Railway edge receives partial body then terminates.",
+  "verdictNote": "Proven: Railway edge accepted a partial body (21037056/362155056 bytes) and returned HTTP 502 upstream error at ~300s with no Actix response fingerprint and no reel/storage side effects. Not proven: whether Actix create_reel was entered for the partial stream. Application logs required; Railway auth expired.",
+  "traceHead": "15:22:00.707637 == Info: Host reelforge-deploy-production.up.railway.app:443 was resolved.\n15:22:00.709128 == Info: IPv6: (none)\n15:22:00.709131 == Info: IPv4: 69.46.46.35\n15:22:00.709182 == Info:   Trying 69.46.46.35:443...\n15:22:00.774376 == Info: Connected to reelforge-deploy-production.up.railway.app (69.46.46.35) port 443\n15:22:00.775775 == Info: ALPN: curl offers h2,http/1.1\n15:22:00.776148 => Send SSL data, 5 bytes (0x5)\n0000: .....\n15:22:00.776272 == Info: TLSv1.3 (OUT), TLS handshake, Client hello (1):\n15:22:00.776277 => Send SSL data, 512 bytes (0x200)\n0000: ......#kH.I#.f#h<.Ps.....g..i.h..@..g. ...46..&+.I..P..W%/..&.).\n0040: ^:.~./..>.......,.0.........+./...$.(.k.#.'.g.....9.....3.....=.\n0080: <.5./.....u.../.-..*reelforge-deploy-production.up.railway.app..\n00c0: .......................................h2.http/1.1.........1....\n0100: .*.(.........................................+........-.....3.&.\n0140: $... j...,.:w..w)o8b..!..B..\" .....z|...........................\n0180: ................................................................\n01c0: ................................................................\n15:22:00.823526 == Info:  CAfile: /etc/ssl/certs/ca-certificates.crt\n15:22:00.823535 == Info:  CApath: /etc/ssl/certs\n15:22:00.839182 <= Recv SSL data, 5 bytes (0x5)\n0000: ....z\n15:22:00.839265 == Info: TLSv1.3 (IN), TLS handshake, Server hello (2):\n15:22:00.839271 <= Recv SSL data, 122 bytes (0x7a)\n0000: ...v...e.T...2j..p..Z...j.......&..0Q. ...46..&+.I..P..W%/..&.).\n0040: ^:.~./.......3.$... 2<.7o.R.s.r..T......[.<..4.2..b5.+....\n15:22:00.839880 <= Recv SSL data, 5 bytes (0x5)\n0000: .....\n15:22:00.839904 <= Recv SSL data, 5 bytes (0x5)\n0000: .....\n15:22:00.844952 <= Recv SSL data, 1 bytes (0x1)\n0000: .\n15:22:00.845045 == Info: TLSv1.3 (IN), TLS handshake, Encrypted Extensions (8):\n15:22:00.845050 <= Recv SSL data, 15 bytes (0xf)\n0000: .............h2\n15:22:00.845087 == Info: TLSv1.3 (IN), TLS handshake, Certificate (11):\n15:22:00.845091 <= Recv SSL",
+  "traceTail": "...........:...W.U....\nfcd6: .xu....#.9.E.ku....!9g... .yi....L.|.......C^...H?.....R`...g.Z.\nfd16: ..F!..K.....a.n..%4...e.Y..5.5..N.PE....:.......dusj/.....'.P<..\nfd56: ....Q..d_..I[.X.W.W..1.....>2..5.l../..Z.....V..^Y...@... .2C...\nfd96: 3'.....;....Xh......t.)/...&.c>!mY...r....1F....q<....sW.\"....`.\nfdd6: 7...R...[1os.7.>._.%.......\\d.f...e.....L..1p.Ym.}C.Pk...FQ.....\nfe16: ...V.85. ..D/.S.svE.R.b....]..ETQ.i.#7}HQ0O..A.W$....E#...8c=.N.\nfe56: ..-.6AX..I...e..S`#.;.D...$..65...O......x.....p...UUY.t.u4|Zfj.\nfe96: ....s.S.T).....v.o.F.b)..6.z..-.....B......a.5....kq...7...#..m.\nfed6: .h...(....h..B8.K< .....U..E=.e.I^.....o...._...B....sk.....m3..\nff16: &.W.*.\"........'.R0..]'....21.e....3.S....9.J..Cl.{.Y_....i.....\nff56: ...L..[..i1...1Y...............Qd.....<A[m.lCE.hV...N.....A.o.{%\nff96: .}\".........8....|....y+ .uw.B..-y.........!}.......&|4I........\nffd6: .g..(.\\/.kEQ..6..S7...5.sx.r..;8)/.w.>.O..\n15:27:00.937491 <= Recv SSL data, 5 bytes (0x5)\n0000: .....\n15:27:00.937609 <= Recv SSL data, 1 bytes (0x1)\n0000: .\n15:27:00.937670 <= Recv SSL data, 5 bytes (0x5)\n0000: .....\n15:27:00.937731 <= Recv SSL data, 1 bytes (0x1)\n0000: .\n15:27:00.937754 <= Recv header, 13 bytes (0xd)\n0000: HTTP/2 502 \n15:27:00.937847 <= Recv header, 41 bytes (0x29)\n0000: content-type: text/plain; charset=utf-8\n15:27:00.937862 <= Recv header, 20 bytes (0x14)\n0000: content-length: 14\n15:27:00.937872 <= Recv header, 27 bytes (0x1b)\n0000: x-hikari-trace: lax1.ez9k\n15:27:00.937883 <= Recv header, 24 bytes (0x18)\n0000: server: railway-hikari\n15:27:00.937892 <= Recv header, 22 bytes (0x16)\n0000: x-railway-edge: lax1\n15:27:00.937902 <= Recv header, 37 bytes (0x25)\n0000: date: Sun, 19 Jul 2026 19:27:00 GMT\n15:27:00.937918 == Info: HTTP error before end of send, stop sending\n15:27:00.937923 <= Recv header, 2 bytes (0x2)\n0000: \n15:27:00.937930 <= Recv data, 14 bytes (0xe)\n0000: upstream error\n15:27:00.938141 == Info: Connection #0 to host reelforge-deploy-production.up.railway.app left intact\n",
+  "completedAt": "2026-07-19T19:27:21.121715+00:00"
+}

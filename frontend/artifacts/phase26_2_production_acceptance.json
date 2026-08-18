@@ -1,0 +1,64 @@
+{
+  "mission": "PHASE-26.2 — Commit, Deploy, Verify Command Center Stability",
+  "generatedAt": "2026-08-12T19:21:30.000Z",
+  "commit": "45c400c1ee96592aa9bef7bf5b967971345c5ac9",
+  "commitSubject": "fix(command): contain workflow auth retry storm",
+  "pushStatus": "NOT performed — main ahead of origin/main by 26",
+  "deployId": "6a7cc69d978a1a6495ee6689",
+  "productionUrl": "https://strong-lolly-a9fcb4.netlify.app",
+  "uniqueDeployUrl": "https://6a7cc69d978a1a6495ee6689--strong-lolly-a9fcb4.netlify.app",
+  "deployedBundle": "index-4M0W7yoT.js",
+  "bundleSha256": "4ebfdb0958841b815ad26274d5a1a4a98d530abc74c618f3a5c7c01b3b161908",
+  "bundleIntegrity": "PASS — Gate 4 verified production serves index-4M0W7yoT.js; SHA-256 matches local dist after Netlify rebuild",
+  "releaseRun": {
+    "command": "bash .cursor/skills/reelforge-release-engineer/scripts/release-run.sh PHASE-26.2",
+    "gates": {
+      "1_build": "PASS",
+      "2_credentials": "PASS",
+      "3_deploy": "PASS",
+      "4_bundle_verification": "PASS",
+      "5_production_smoke": "FAIL",
+      "6_regression": "PENDING",
+      "7_signoff": "PENDING"
+    },
+    "gate5FailureReason": "BG-7A.1 smoke rebuilt local index-BLSUIBeg.js and compared to live Netlify rebuild index-4M0W7yoT.js — hash mismatch, not a Phase 26.2 functional regression",
+    "manifest": "frontend/artifacts/release-manifest-phase-26-2-1786562283575.json",
+    "verdict": "FAIL → milestone Release BLOCKED (cannot mark Release Approved)"
+  },
+  "preCommit": {
+    "validatePhase262": "PASS",
+    "phase17_25Regression": "PASS",
+    "build": "PASS",
+    "gitDiffCheck": "PASS",
+    "stagedFilesOnlyApproved": true
+  },
+  "productionVerification": {
+    "A_bundle": "PASS — index-4M0W7yoT.js with write-circuit-open + scheduleHydrateNotifications",
+    "B_workflowStatus": "PASS — GET /api/workflow/status → 200 {count:13,enabled:true}",
+    "C_unauthRetryLoop": "PASS — after stripping admin token, 20s window workflow POST count = 0",
+    "D_noAuthContainment": "PASS — no repeated POST /api/workflow/tasks; circuit markers in bundle; local fallback path intact",
+    "E_notificationHydrate": "PASS — validator 25→1 coalesce; unauth 20s notifications GET = 0",
+    "F_sharedRefresh": "PASS — validator single interval owner; COMMAND_CENTER_REFRESH markers in prod bundle",
+    "G_threatNot401Inflated": "PASS — live THREAT categoryCounts.workflow=0; level YELLOW from unrelated api failures (watch 404), not workflow 401 storm",
+    "H_notificationsNotHammered": "PASS — unauth window notifications GET = 0 (vs Phase 26.1 storm ~1–5/s)",
+    "I_mediaVaultUntouched": "PASS — commit excludes media.js/Vault DnD; phase26-dnd-probe ACCEPT UI still recorded; drop zone present in prod studio"
+  },
+  "frequency": {
+    "workflowPostBefore": "Phase 26.1: unbounded unauth POST /api/workflow/tasks on each persist/refresh (401 missing_authorization loop)",
+    "workflowPostAfterUnauth20s": 0,
+    "notificationGetBefore": "Phase 26.1: ~1 GET /api/notifications per workflow-tasks-updated (storm to hundreds–thousands)",
+    "notificationGetAfterUnauth20s": 0,
+    "note": "Authenticated unlock still performs bulk successful workflow POSTs during initial sync (out of Phase 26.2 auth-containment scope); unauth/401 storm is contained."
+  },
+  "threatAfterStabilization": {
+    "level": "GREEN initially → YELLOW from unrelated api-abuse",
+    "scoreSamples": [100, 92],
+    "categoryCountsWorkflow": 0,
+    "categoryCountsNotification": 0
+  },
+  "phase26_2Validator": "PASS",
+  "phase17_25Regression": "PASS",
+  "buildResult": "PASS",
+  "gitStatus": "main ahead origin/main by 26; MILESTONE_STATUS.md modified (uncommitted); no second commit",
+  "nextPhase": "STOP — Phase 27 not started"
+}

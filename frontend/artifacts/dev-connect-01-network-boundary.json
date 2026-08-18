@@ -1,0 +1,107 @@
+{
+  "mission": "DEV-CONNECT-01",
+  "generated_at": "2026-07-20T08:24:00-04:00",
+  "step1_api_base_url": {
+    "source_files": {
+      "frontend/.env.local": {
+        "VITE_API_URL": "https://reelforge-deploy-production.up.railway.app",
+        "VITE_API_BASE_URL": "https://reelforge-deploy-production.up.railway.app",
+        "VITE_BACKEND_URL": "https://reelforge-deploy-production.up.railway.app"
+      },
+      "frontend/.env": {
+        "VITE_BACKEND_URL": "http://localhost:8080",
+        "VITE_API_BASE_URL": "http://localhost:8080",
+        "VITE_API_URL": "https://reelforge-deploy-production.up.railway.app"
+      }
+    },
+    "runtime_env_from_vite_served_modules": {
+      "observed_at": "http://127.0.0.1:5173/src/lib/config.js",
+      "import_meta_env_subset": {
+        "DEV": true,
+        "PROD": false,
+        "MODE": "development",
+        "VITE_API_URL": "https://reelforge-deploy-production.up.railway.app",
+        "VITE_API_BASE_URL": "https://reelforge-deploy-production.up.railway.app",
+        "VITE_BACKEND_URL": "https://reelforge-deploy-production.up.railway.app",
+        "VITE_FORCE_DIRECT_BACKEND_API": null
+      }
+    },
+    "resolution_logic": {
+      "file": "frontend/src/lib/config.js",
+      "BACKEND_URL": {
+        "resolved_runtime_value": "https://reelforge-deploy-production.up.railway.app",
+        "fallback_value_when_unset_in_dev": "http://localhost:8080"
+      },
+      "API_BASE_URL": {
+        "resolved_runtime_value": "",
+        "reason": "DEV=true and VITE_FORCE_DIRECT_BACKEND_API !== 'true' => same-origin API (Vite proxy)",
+        "fallback_value_when_direct": "resolveConfiguredApiUrl() || BACKEND_URL"
+      }
+    }
+  },
+  "step2_first_failing_request_after_boot": {
+    "expected_first_connectivity_checks_in_code": [
+      {
+        "kind": "healthcheck",
+        "method": "GET",
+        "url": "/api/health (same-origin, proxied by Vite)",
+        "caller_file": "frontend/src/lib/api.js",
+        "caller_function": "checkBackendHealth",
+        "notes": "checkBackendHealth() probes ['/api/health','/health','/'] with AbortSignal.timeout(5000)."
+      },
+      {
+        "kind": "catalog_fetch",
+        "method": "GET",
+        "url": "/api/reels?t=<timestamp> (same-origin, proxied by Vite)",
+        "caller_file": "frontend/src/viewer/viewerContext.js",
+        "caller_function": "syncFromVault (uses fetchWithRetry)",
+        "notes": "Any thrown fetch error inside fetchWithRetry() sets backendConnectionStatus to offline with lastError=error.message."
+      }
+    ],
+    "observed_failure": {
+      "status": "not reproduced in this CLI session",
+      "note": "From CLI, both proxy and backend endpoints responded successfully; no browser-console capture is available here."
+    }
+  },
+  "step3_compare_targets_backend_cors_proxy": {
+    "browser_request_target_for_api_calls": "same-origin (API_BASE_URL == '') => http://<frontend_origin>/api/*",
+    "frontend_origin": "http://127.0.0.1:5173",
+    "vite_proxy": {
+      "file": "frontend/vite.config.js",
+      "proxy_routes": ["/api", "/health", "/admin", "/ws", "/videos", "/thumbs", "/ingest"],
+      "proxy_target": "http://127.0.0.1:8080"
+    },
+    "backend_listening": {
+      "expected": "0.0.0.0:8080",
+      "observed": "LISTEN 0.0.0.0:8080 (ss)"
+    },
+    "cors": {
+      "backend_dev_allowed_origins": [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173"
+      ],
+      "note": "When API_BASE_URL is '', requests are same-origin to Vite (:5173), so browser CORS does not apply; Vite proxy performs the cross-origin hop server-side."
+    },
+    "cli_evidence": {
+      "http_200_via_vite_proxy": [
+        {
+          "url": "http://127.0.0.1:5173/api/health",
+          "status": 200
+        }
+      ],
+      "http_200_direct_backend": [
+        {
+          "url": "http://127.0.0.1:8080/api/reels",
+          "status": 200
+        }
+      ]
+    }
+  },
+  "step4_failure_boundary_verdict": "INSUFFICIENT EVIDENCE",
+  "notes": [
+    "The frontend dev runtime is configured with production VITE_API_URL/VITE_BACKEND_URL via frontend/.env.local, which resolves BACKEND_URL to the Railway origin.",
+    "However, API_BASE_URL still resolves to same-origin ('') in dev, so API fetches should go through the Vite proxy to localhost:8080.",
+    "To pinpoint the exact failing request that produced the user-visible NetworkError banner, a browser console/network capture from the affected browser session is required."
+  ]
+}
+

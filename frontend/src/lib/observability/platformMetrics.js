@@ -224,11 +224,22 @@ function computeLocalSnapshot(seriesId) {
  * @param {MetricType} type
  * @param {Omit<MetricEvent, 'id' | 'type' | 'timestamp' | 'viewerId'>} [payload]
  */
+function safeMetricId() {
+    try {
+        if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+            return crypto.randomUUID();
+        }
+    } catch {
+        /* iOS LAN HTTP: randomUUID requires a secure context */
+    }
+    return `metric-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 export function recordMetric(type, payload = {}) {
     const store = loadStore();
     /** @type {MetricEvent} */
     const event = {
-        id: crypto.randomUUID(),
+        id: safeMetricId(),
         type,
         timestamp: Date.now(),
         viewerId: getOrCreateViewerId(),

@@ -1,0 +1,172 @@
+{
+  "mission": "RC1-POST-CLOSE",
+  "generatedAt": "2026-07-19T13:14:41.352Z",
+  "frontendUrl": "https://strong-lolly-a9fcb4.netlify.app/",
+  "syncObserveMs": 300000,
+  "deployment": {
+    "bundle": "/assets/index-Btl25zBV.js"
+  },
+  "freshSession": {
+    "navDurationMs": 15373,
+    "firstHealth200At": "2026-07-19T13:14:49.835Z",
+    "healthCount": 2,
+    "firstReels200At": "2026-07-19T13:14:50.008Z",
+    "reelsCount": 2,
+    "otherApi200Sample": [
+      {
+        "at": "2026-07-19T13:14:48.530Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "status": 200
+      },
+      {
+        "at": "2026-07-19T13:14:48.532Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/status",
+        "status": 200
+      },
+      {
+        "at": "2026-07-19T13:14:48.571Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/series/status",
+        "status": 200
+      },
+      {
+        "at": "2026-07-19T13:14:48.573Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/analytics/status",
+        "status": 200
+      },
+      {
+        "at": "2026-07-19T13:14:48.575Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/workflow/status",
+        "status": 200
+      },
+      {
+        "at": "2026-07-19T13:14:48.972Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/notifications/status",
+        "status": 200
+      },
+      {
+        "at": "2026-07-19T13:14:48.974Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/sync/status",
+        "status": 200
+      },
+      {
+        "at": "2026-07-19T13:14:48.974Z",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/series/status",
+        "status": 200
+      }
+    ],
+    "bootstrap": {
+      "title": "ReelForge",
+      "bodyTextSample": "×\n\nBackend unavailable — signal timed out. Showing saved content when possible.\n\n✕\n\nBackend reconnecting...\n\nREELFORGE\nLOOK@ZAKANDA PRESENTS\nNeon Vengeance\n\nMost Watched This Week\n\nDiscover the families preserving generations of Black land ownership in Alabama.\n\nWatch Now\nLearn More\nFEATURED COLLECTION\nDOCUMENTARY\nBlack Agriculture\n\nBlack Agriculture stories curated for documentary discovery.\n\nDis",
+      "feedCardCount": 30,
+      "thumbCount": 2,
+      "heroVideoPresent": true,
+      "heroVideoSrc": "https://strong-lolly-a9fcb4.netlify.app/videos/3538ddd6-463d-46df-b896-2df21e57e99e.mp4",
+      "heroImagePresent": true,
+      "heroImageSrc": "https://strong-lolly-a9fcb4.netlify.app/placeholders/media-fallback.svg",
+      "vaultControlPresent": false,
+      "deleteControlCount": 0,
+      "uploadControlCount": 1,
+      "opText": "Backend reconnecting...",
+      "bannerText": "Backend unavailable — signal timed out. Showing saved content when possible.",
+      "localStorageKeys": [
+        "personal_thumbnails",
+        "reelforge_theater_framing",
+        "reelforge_notifications",
+        "reelforge_series_metadata",
+        "reelforge_creator_marketplace",
+        "reelforge_creator_home_feed",
+        "personal_thumbnail_index",
+        "reelforge_series_api_migrated",
+        "reelforge_creator_profiles",
+        "reelforge_discovery_feed_state",
+        "reelforge_homepage_discovery_feed",
+        "reelforge_sync_device_id",
+        "reelforge_monetization_hub",
+        "reelforge_observability_latency",
+        "reelforge_security_events",
+        "reelforge_publishing_profile",
+        "reelforge_universal_search_index",
+        "reelforge_release_schedule",
+        "personal_video_vault",
+        "reelforge_workflow_tasks",
+        "reelforge_discovery_index",
+        "reelforge_publishing_profile_updated_at",
+        "daily_engagement_state",
+        "reelforge_feed"
+      ]
+    }
+  },
+  "syncStability": {
+    "observeStartAt": "2026-07-19T13:14:57.062Z",
+    "observeEndAt": "2026-07-19T13:19:57.065Z",
+    "pushCount": 20,
+    "push200Count": 20,
+    "firstTimestamp": "2026-07-19T13:15:07.022Z",
+    "lastTimestamp": "2026-07-19T13:19:49.119Z",
+    "averageIntervalMs": 14847,
+    "minGapMs": 12157,
+    "maxGapMs": 15143,
+    "gapsUnder5s": 0,
+    "gapsMs": [
+      12157,
+      15034,
+      14880,
+      14973,
+      15123,
+      14824,
+      15107,
+      15039,
+      14991,
+      14943,
+      15143,
+      14994,
+      15019,
+      15131,
+      14693,
+      15032,
+      15004,
+      14971,
+      15039
+    ],
+    "patternB": false
+  },
+  "reconnectLifecycle": {
+    "probeAt": "2026-07-19T13:15:17.062Z",
+    "reconnectEventAt": "2026-07-19T13:15:17.065Z",
+    "opAppearedAt": null,
+    "opDisappearedAt": null,
+    "bannerAppearedAt": null,
+    "bannerDisappearedAt": null,
+    "recoveryOnlineAt": "2026-07-19T13:15:17.154Z",
+    "opStillVisibleAtEnd": false,
+    "naturalReconnectEvents": 13
+  },
+  "uiSurfaces": {
+    "vaultClicked": null,
+    "vaultVisible": false,
+    "vaultImageCount": 0,
+    "studioClicked": null,
+    "deleteControlCount": 0,
+    "uploadInputCount": 1,
+    "heroVideoSrc": "https://strong-lolly-a9fcb4.netlify.app/videos/3538ddd6-463d-46df-b896-2df21e57e99e.mp4",
+    "thumbSrcSample": [],
+    "uniqueThumbSrcs": 0
+  },
+  "passFail": {
+    "deploymentIdentity": "PASS",
+    "freshSessionBootstrap": "PASS",
+    "syncStability": "PASS",
+    "reconnectLifecycle": "FAIL",
+    "vault": "INCONCLUSIVE",
+    "hero": "PASS",
+    "thumbnails": "PASS",
+    "deleteControls": "INCONCLUSIVE",
+    "uploadPath": "PASS"
+  },
+  "notes": [],
+  "bundleMarkers": {
+    "syncSuppressed": 2,
+    "backendConnection": 2,
+    "hasOnlineStandbyRecovery": true
+  }
+}

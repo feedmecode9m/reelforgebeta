@@ -38,15 +38,21 @@ export function logTheaterDiag(tag, data = {}) {
  * @param {Record<string, unknown>} [extra]
  */
 export function logTheaterOpen(reel, extra = {}) {
-    logTheaterDiag('[THEATER OPEN]', {
-        reelId: reel?.id ?? null,
-        reelTitle: reel?.title ?? reel?.name ?? null,
-        reelUrl: reel?.url ?? reel?.video_url ?? null,
-        isPlaceholder: Boolean(reel?.isPlaceholder),
-        ...extra
-    });
-    if (reel) {
-        recordTheaterOpen(reel, extra);
+    try {
+        logTheaterDiag('[THEATER OPEN]', {
+            reelId: reel?.id ?? null,
+            reelTitle: reel?.title ?? reel?.name ?? null,
+            reelUrl: reel?.url ?? reel?.video_url ?? null,
+            isPlaceholder: Boolean(reel?.isPlaceholder),
+            ...extra
+        });
+        if (reel) {
+            recordTheaterOpen(reel, extra);
+        }
+    } catch (err) {
+        // LOCAL-MOBILE-PLAYBACK-FIX-B1: telemetry must never abort Theater handoff
+        // (iOS LAN HTTP: crypto.randomUUID is not a secure-context API).
+        console.warn('[THEATER OPEN] diagnostics failed', err);
     }
 }
 

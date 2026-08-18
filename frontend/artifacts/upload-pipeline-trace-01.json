@@ -1,0 +1,78 @@
+{
+  "mission": "UPLOAD-PIPELINE-TRACE-01",
+  "ts": "2026-07-24T15:54:29Z",
+  "steps": {
+    "0_health": {
+      "http": 200,
+      "body": {
+        "status": "ok",
+        "timestamp": 1784908472217,
+        "service": "reelforge-backend",
+        "database": "connected",
+        "reels_source": "postgres-ingestion-v2",
+        "services": {
+          "db": "connected",
+          "storage": "ready",
+          "ingestion": "enabled",
+          "storage_detail": {
+            "media_root": "/app/public",
+            "videos_path": "/app/public/videos",
+            "thumbs_path": "/app/public/thumbs",
+            "writable": true,
+            "volume_mounted": true,
+            "ephemeral_storage_risk": false
+          }
+        }
+      }
+    },
+    "auth": {
+      "ok": true,
+      "http": 200
+    },
+    "3_sign": {
+      "http": 200,
+      "ok": true,
+      "reelId": "5c043b21-0d04-4c26-b5c6-8cf75d4a23e7",
+      "uploadUrlHost": "f4531bb32bae84de2da9f682afed23e9.r2.cloudflarestorage.com"
+    },
+    "4_r2_put_small": {
+      "http": 200,
+      "ok": true,
+      "body_head": ""
+    },
+    "5_finalize": {
+      "http": 202,
+      "ok": true,
+      "id": "5c043b21-0d04-4c26-b5c6-8cf75d4a23e7",
+      "status": "pending",
+      "body": {
+        "id": "5c043b21-0d04-4c26-b5c6-8cf75d4a23e7",
+        "status": "pending",
+        "videoUrl": "https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/5c043b21-0d04-4c26-b5c6-8cf75d4a23e7.mp4",
+        "thumbnailUrl": null,
+        "pollUrl": "/api/reels/5c043b21-0d04-4c26-b5c6-8cf75d4a23e7"
+      }
+    },
+    "small_multipart_netlify": {
+      "http": 202,
+      "ok": true,
+      "body": {
+        "id": "5ffb37e5-2b17-40f5-9bcd-bc6f01229b28",
+        "status": "pending",
+        "videoUrl": "https://strong-lolly-a9fcb4.netlify.app/videos/5ffb37e5-2b17-40f5-9bcd-bc6f01229b28.mp4",
+        "thumbnailUrl": null,
+        "pollUrl": "/api/reels/5ffb37e5-2b17-40f5-9bcd-bc6f01229b28"
+      },
+      "size": 6500
+    }
+  },
+  "bundle": "index-DxM0FwvJ.js",
+  "bundle_bytes": 495392,
+  "bundle_flags": {
+    "USE_SIGNED_UPLOADS": false,
+    "SIGNED_UPLOADS_MIN_BYTES": false,
+    "26214400": false,
+    "25*1024*1024": false
+  },
+  "catalog_count": 34
+}

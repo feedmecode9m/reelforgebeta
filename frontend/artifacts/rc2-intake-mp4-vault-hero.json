@@ -1,0 +1,253 @@
+{
+  "mission": "RC2-INTAKE-MP4-VAULT-HERO",
+  "baselineId": "RC1-2026-07-19-POST-08C",
+  "generatedAt": "2026-07-19T14:03:39.022Z",
+  "frontendUrl": "https://strong-lolly-a9fcb4.netlify.app/",
+  "deployment": {
+    "bundle": "/assets/index-Btl25zBV.js"
+  },
+  "phases": {
+    "baseline": {
+      "at": "2026-07-19T14:04:08.186Z",
+      "bundle": "/assets/index-Btl25zBV.js",
+      "heroStorage": {
+        "reel": null,
+        "mgr": null
+      },
+      "vaultIds": [
+        "9cbb9526-cf81-4294-b777-ff94dfe89f61",
+        "40137565-aada-4baf-8eeb-2e42c7032cc0",
+        "9178e241-176d-439d-82cb-a0ecc5f9ae7d",
+        "3538ddd6-463d-46df-b896-2df21e57e99e"
+      ],
+      "vaultCount": 4,
+      "heroUiAfterUnlock": {
+        "heroVideoSrc": "https://strong-lolly-a9fcb4.netlify.app/videos/3538ddd6-463d-46df-b896-2df21e57e99e.mp4",
+        "heroSectionPresent": true
+      },
+      "heroUiHome": {
+        "src": "https://strong-lolly-a9fcb4.netlify.app/videos/3538ddd6-463d-46df-b896-2df21e57e99e.mp4"
+      },
+      "vaultCards": 4
+    },
+    "upload": {
+      "at": "2026-07-19T14:04:08.635Z",
+      "fileName": "rc2-intake-1784469848226.mp4",
+      "fileBytes": 2303,
+      "uploadCompleted": true,
+      "uploadResponse": {
+        "at": "2026-07-19T14:04:13.767Z",
+        "method": "POST",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels",
+        "stage": "response",
+        "status": 202,
+        "identity": {
+          "id": "f6c4070d-3668-4e69-a9fe-dc7f4fde1345",
+          "fileName": null,
+          "url": null
+        },
+        "bodyKeys": [
+          "id",
+          "status",
+          "videoUrl",
+          "thumbnailUrl",
+          "pollUrl"
+        ]
+      },
+      "vaultIdsBefore": [
+        "9cbb9526-cf81-4294-b777-ff94dfe89f61",
+        "40137565-aada-4baf-8eeb-2e42c7032cc0",
+        "9178e241-176d-439d-82cb-a0ecc5f9ae7d",
+        "3538ddd6-463d-46df-b896-2df21e57e99e"
+      ],
+      "vaultIdsAfter": [
+        "9cbb9526-cf81-4294-b777-ff94dfe89f61",
+        "40137565-aada-4baf-8eeb-2e42c7032cc0",
+        "9178e241-176d-439d-82cb-a0ecc5f9ae7d",
+        "3538ddd6-463d-46df-b896-2df21e57e99e"
+      ],
+      "newVaultIds": [],
+      "vaultCardAfterUpload": {
+        "count": 4,
+        "sample": [
+          {
+            "i": 0,
+            "src": "https://strong-lolly-a9fcb4.netlify.app/videos/9cbb9526-cf81-4294-b777-ff94dfe89f61.mp4",
+            "idFromSrc": "9cbb9526-cf81-4294-b777-ff94dfe89f61",
+            "label": "🎬 9cbb9526-cf8... NaNMB ✕ Select",
+            "mentionsFile": false
+          },
+          {
+            "i": 1,
+            "src": "https://strong-lolly-a9fcb4.netlify.app/videos/40137565-aada-4baf-8eeb-2e42c7032cc0.mp4",
+            "idFromSrc": "40137565-aada-4baf-8eeb-2e42c7032cc0",
+            "label": "🎬 40137565-aad... NaNMB ✕ Select",
+            "mentionsFile": false
+          },
+          {
+            "i": 2,
+            "src": "https://strong-lolly-a9fcb4.netlify.app/videos/9178e241-176d-439d-82cb-a0ecc5f9ae7d.mp4",
+            "idFromSrc": "9178e241-176d-439d-82cb-a0ecc5f9ae7d",
+            "label": "🎬 9178e241-176... NaNMB ✕ Select",
+            "mentionsFile": false
+          },
+          {
+            "i": 3,
+            "src": "https://strong-lolly-a9fcb4.netlify.app/videos/3538ddd6-463d-46df-b896-2df21e57e99e.mp4",
+            "idFromSrc": "3538ddd6-463d-46df-b896-2df21e57e99e",
+            "label": "🎬 Bg7g Live Tr... NaNMB ✕ Select",
+            "mentionsFile": false
+          }
+        ]
+      },
+      "opStatus": null
+    },
+    "heroAssign": {
+      "at": "2026-07-19T14:04:17.765Z",
+      "targetId": "f6c4070d-3668-4e69-a9fe-dc7f4fde1345",
+      "method": "hero_asset_select",
+      "ok": false,
+      "select": {
+        "ok": false,
+        "reason": "no_select"
+      },
+      "heroStorage": {
+        "reel": null,
+        "mgr": null
+      },
+      "heroUi": {
+        "managerPresent": false,
+        "useAsHeroButtons": 0
+      }
+    },
+    "heroRenderAfterAssign": {
+      "at": "2026-07-19T14:04:19.289Z",
+      "src": "https://strong-lolly-a9fcb4.netlify.app/videos/3538ddd6-463d-46df-b896-2df21e57e99e.mp4",
+      "idFromSrc": "3538ddd6-463d-46df-b896-2df21e57e99e",
+      "videoPresent": true
+    },
+    "afterHardRefresh": {
+      "at": "2026-07-19T14:04:27.717Z",
+      "heroStorage": {
+        "reel": null,
+        "mgr": null
+      },
+      "vaultIds": [
+        "9cbb9526-cf81-4294-b777-ff94dfe89f61",
+        "40137565-aada-4baf-8eeb-2e42c7032cc0",
+        "9178e241-176d-439d-82cb-a0ecc5f9ae7d",
+        "3538ddd6-463d-46df-b896-2df21e57e99e"
+      ],
+      "rendered": {
+        "src": "https://strong-lolly-a9fcb4.netlify.app/videos/3538ddd6-463d-46df-b896-2df21e57e99e.mp4",
+        "idFromSrc": "3538ddd6-463d-46df-b896-2df21e57e99e",
+        "videoPresent": true
+      }
+    }
+  },
+  "network": {
+    "uploads": [
+      {
+        "at": "2026-07-19T14:04:08.711Z",
+        "method": "POST",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels",
+        "stage": "request",
+        "bytes": null
+      },
+      {
+        "at": "2026-07-19T14:04:13.767Z",
+        "method": "POST",
+        "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels",
+        "stage": "response",
+        "status": 202,
+        "identity": {
+          "id": "f6c4070d-3668-4e69-a9fe-dc7f4fde1345",
+          "fileName": null,
+          "url": null
+        },
+        "bodyKeys": [
+          "id",
+          "status",
+          "videoUrl",
+          "thumbnailUrl",
+          "pollUrl"
+        ]
+      }
+    ],
+    "reelsGets": [
+      {
+        "at": "2026-07-19T14:03:51.342Z",
+        "status": 200
+      },
+      {
+        "at": "2026-07-19T14:03:52.326Z",
+        "status": 200
+      },
+      {
+        "at": "2026-07-19T14:03:53.768Z",
+        "status": 200
+      },
+      {
+        "at": "2026-07-19T14:04:03.263Z",
+        "status": 200
+      },
+      {
+        "at": "2026-07-19T14:04:03.975Z",
+        "status": 200
+      },
+      {
+        "at": "2026-07-19T14:04:06.408Z",
+        "status": 200
+      },
+      {
+        "at": "2026-07-19T14:04:20.715Z",
+        "status": 200
+      },
+      {
+        "at": "2026-07-19T14:04:22.248Z",
+        "status": 200
+      }
+    ],
+    "other": []
+  },
+  "continuity": {
+    "uploadIdentity": {
+      "id": "f6c4070d-3668-4e69-a9fe-dc7f4fde1345",
+      "fileName": null,
+      "url": null
+    },
+    "assignedHeroAssetId": null,
+    "afterReloadHeroAssetId": null,
+    "afterReloadRenderId": "3538ddd6-463d-46df-b896-2df21e57e99e",
+    "uploadIdInVaultAfterReload": false,
+    "idSurvivesUploadToHero": false,
+    "idSurvivesReload": false,
+    "renderMatchesHeroId": false,
+    "urlContainsId": false,
+    "fileNameContainsId": false
+  },
+  "classification": {
+    "result": "regression",
+    "failures": [
+      "vault_missing_after_upload"
+    ],
+    "uploadOk": true,
+    "vaultOk": false,
+    "heroOk": false,
+    "persistOk": false,
+    "confidence": "High"
+  },
+  "notes": [
+    "Thumbnail path excluded by mission scope.",
+    "Confirm dialogs/deletes not exercised.",
+    "Tiny synthetic MP4 (1s 320x180) used to avoid 08A large-upload transport failure mode."
+  ],
+  "sourceOwnership": {
+    "upload": "VaultExperience.handleVaultVideoDrop → uploadMedia → POST /api/reels",
+    "vaultState": "personalVideos / personal_video_vault localStorage",
+    "heroAssign": "HeroManagerPanel.selectHeroVaultAsset / heroAssetId + backgroundSource",
+    "heroPersist": "reelforge_hero_manager_config + reelforge_hero_reel",
+    "heroResolve": "mediaBootstrap / viewerContext hero restore on mount",
+    "render": "HeroExperience stage video"
+  }
+}

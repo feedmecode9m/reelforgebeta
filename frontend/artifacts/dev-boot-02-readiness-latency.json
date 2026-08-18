@@ -1,0 +1,64 @@
+{
+  "mission": "DEV-BOOT-02",
+  "generated_at": "2026-07-20T08:07:10-04:00",
+  "target": {
+    "url": "http://127.0.0.1:8080/health"
+  },
+  "step1": {
+    "command": "curl -sS --max-time 5 -o /dev/null -w '%{http_code} %{time_total}\\n' http://127.0.0.1:8080/health",
+    "runs": [
+      { "run": 1, "ts": "2026-07-20T08:04:59-04:00", "stdout": "000 5.002310", "stderr": "curl: (28) Operation timed out after 5002 milliseconds with 0 bytes received", "exit_code": 28 },
+      { "run": 2, "ts": "2026-07-20T08:05:04-04:00", "stdout": "000 5.002825", "stderr": "curl: (28) Operation timed out after 5002 milliseconds with 0 bytes received", "exit_code": 28 },
+      { "run": 3, "ts": "2026-07-20T08:05:09-04:00", "stdout": "000 5.003113", "stderr": "curl: (28) Operation timed out after 5003 milliseconds with 0 bytes received", "exit_code": 28 },
+      { "run": 4, "ts": "2026-07-20T08:05:14-04:00", "stdout": "000 5.002820", "stderr": "curl: (28) Operation timed out after 5002 milliseconds with 0 bytes received", "exit_code": 28 },
+      { "run": 5, "ts": "2026-07-20T08:05:19-04:00", "stdout": "000 5.002588", "stderr": "curl: (28) Operation timed out after 5002 milliseconds with 0 bytes received", "exit_code": 28 },
+      { "run": 6, "ts": "2026-07-20T08:05:24-04:00", "stdout": "000 5.002875", "stderr": "curl: (28) Operation timed out after 5002 milliseconds with 0 bytes received", "exit_code": 28 },
+      { "run": 7, "ts": "2026-07-20T08:05:29-04:00", "stdout": "000 5.002318", "stderr": "curl: (28) Operation timed out after 5002 milliseconds with 0 bytes received", "exit_code": 28 },
+      { "run": 8, "ts": "2026-07-20T08:05:34-04:00", "stdout": "000 5.002660", "stderr": "curl: (28) Operation timed out after 5002 milliseconds with 0 bytes received", "exit_code": 28 },
+      { "run": 9, "ts": "2026-07-20T08:05:39-04:00", "stdout": "000 5.002575", "stderr": "curl: (28) Operation timed out after 5002 milliseconds with 0 bytes received", "exit_code": 28 },
+      { "run": 10, "ts": "2026-07-20T08:05:44-04:00", "stdout": "000 5.002362", "stderr": "curl: (28) Operation timed out after 5002 milliseconds with 0 bytes received", "exit_code": 28 },
+      { "run": 11, "ts": "2026-07-20T08:05:49-04:00", "stdout": "000 5.002646", "stderr": "curl: (28) Operation timed out after 5002 milliseconds with 0 bytes received", "exit_code": 28 },
+      { "run": 12, "ts": "2026-07-20T08:05:54-04:00", "stdout": "000 5.003164", "stderr": "curl: (28) Operation timed out after 5003 milliseconds with 0 bytes received", "exit_code": 28 },
+      { "run": 13, "ts": "2026-07-20T08:05:59-04:00", "stdout": "000 5.002533", "stderr": "curl: (28) Operation timed out after 5002 milliseconds with 0 bytes received", "exit_code": 28 },
+      { "run": 14, "ts": "2026-07-20T08:06:05-04:00", "stdout": "000 5.003090", "stderr": "curl: (28) Operation timed out after 5003 milliseconds with 0 bytes received", "exit_code": 28 },
+      { "run": 15, "ts": "2026-07-20T08:06:10-04:00", "stdout": "000 5.002245", "stderr": "curl: (28) Operation timed out after 5002 milliseconds with 0 bytes received", "exit_code": 28 },
+      { "run": 16, "ts": "2026-07-20T08:06:15-04:00", "stdout": "000 5.002927", "stderr": "curl: (28) Operation timed out after 5002 milliseconds with 0 bytes received", "exit_code": 28 },
+      { "run": 17, "ts": "2026-07-20T08:06:20-04:00", "stdout": "000 5.003088", "stderr": "curl: (28) Operation timed out after 5003 milliseconds with 0 bytes received", "exit_code": 28 },
+      { "run": 18, "ts": "2026-07-20T08:06:25-04:00", "stdout": "000 5.002593", "stderr": "curl: (28) Operation timed out after 5002 milliseconds with 0 bytes received", "exit_code": 28 },
+      { "run": 19, "ts": "2026-07-20T08:06:30-04:00", "stdout": "000 5.003026", "stderr": "curl: (28) Operation timed out after 5002 milliseconds with 0 bytes received", "exit_code": 28 },
+      { "run": 20, "ts": "2026-07-20T08:06:35-04:00", "stdout": "000 5.002216", "stderr": "curl: (28) Operation timed out after 5002 milliseconds with 0 bytes received", "exit_code": 28 }
+    ]
+  },
+  "step2": {
+    "command_exact": "curl -fsS --max-time 5 http://127.0.0.1:8080/health >/dev/null 2>&1",
+    "observed": {
+      "exit_code": 28,
+      "elapsed_ms": 5028,
+      "stdout": "",
+      "stderr": ""
+    }
+  },
+  "step3_compare": {
+    "interactive_curl_i": {
+      "command": "curl -i http://127.0.0.1:8080/health",
+      "observed": {
+        "exit_code": 0,
+        "elapsed_ms": 10019,
+        "first_status_line": "HTTP/1.1 200 OK"
+      }
+    },
+    "notes": [
+      "The interactive curl returned HTTP 200 but took ~10s end-to-end.",
+      "The readiness probe and backend_healthy() enforce --max-time 5, and both timed out at ~5.00s with curl exit code 28 and http_code 000."
+    ]
+  },
+  "step4_if_differ_identify_why": {
+    "difference": "interactive curl waits longer; readiness probe stops after 5s",
+    "host_port_env": {
+      "host": "127.0.0.1",
+      "port": 8080,
+      "note": "All probes used identical host/port; no proxy env vars were present in prior DEV-BOOT-01 checks."
+    }
+  },
+  "verdict": "HEALTH ENDPOINT IS GENUINELY SLOW"
+}

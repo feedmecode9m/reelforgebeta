@@ -1,0 +1,2985 @@
+{
+  "mission": "RC3-HERO-PIPELINE-01",
+  "baseline": [
+    "RC1-2026-07-19-POST-08C",
+    "RC2 MP4 Acceptance PASS"
+  ],
+  "generatedAt": "2026-07-20T04:18:16.566Z",
+  "frontendUrl": "https://strong-lolly-a9fcb4.netlify.app/",
+  "asset": {
+    "path": "/home/youloose2dafish/Downloads/condo_v1_2.mp4",
+    "name": "condo_v1_2.mp4",
+    "sizeBytes": 362155056
+  },
+  "bundle": "/assets/index-Btl25zBV.js",
+  "captureStartAt": "2026-07-20T04:18:16.682Z",
+  "captureEndAt": "2026-07-20T04:24:12.796Z",
+  "stages": {
+    "hero_drop_detected": {
+      "id": "hero_drop_detected",
+      "reached": true,
+      "timestamp": "2026-07-20T04:18:26.927Z",
+      "component": "HeroExperience.svelte",
+      "function": "handleHeroFileSelect / input change",
+      "assetId": null,
+      "status": "setInputFiles",
+      "durationMs": 26,
+      "evidence": "condo_v1_2.mp4",
+      "firstFailure": false,
+      "lastSuccessfulStage": false
+    },
+    "beginHeroAutoAccept": {
+      "id": "beginHeroAutoAccept",
+      "reached": true,
+      "timestamp": "2026-07-20T04:18:26.927Z",
+      "component": "HeroExperience.svelte",
+      "function": "beginHeroAutoAccept",
+      "assetId": null,
+      "status": "inferred_from_acceptHeroFile_start",
+      "durationMs": null,
+      "evidence": "acceptHeroFile start observed; beginHeroAutoAccept is sole auto-accept caller",
+      "firstFailure": false,
+      "lastSuccessfulStage": false
+    },
+    "acceptHeroFile": {
+      "id": "acceptHeroFile",
+      "reached": true,
+      "timestamp": "2026-07-20T04:18:26.931Z",
+      "component": "HeroExperience.svelte",
+      "function": "acceptHeroFile",
+      "assetId": null,
+      "status": "start",
+      "durationMs": null,
+      "evidence": "",
+      "firstFailure": false,
+      "lastSuccessfulStage": false
+    },
+    "validateVideoFile": {
+      "id": "validateVideoFile",
+      "reached": true,
+      "timestamp": "2026-07-20T04:18:26.941Z",
+      "component": "HeroExperience.svelte",
+      "function": "validateVideoFile",
+      "assetId": null,
+      "status": "passed",
+      "durationMs": 1004,
+      "evidence": "status transition Validating \u2192 Uploading",
+      "firstFailure": false,
+      "lastSuccessfulStage": false
+    },
+    "uploadStatus_changes": {
+      "id": "uploadStatus_changes",
+      "reached": true,
+      "timestamp": "2026-07-20T04:18:26.941Z",
+      "component": "uploadStatus store / GlobalOperationStatus",
+      "function": "uploadStatus.set",
+      "assetId": null,
+      "status": "timeline_recorded",
+      "durationMs": null,
+      "evidence": [
+        {
+          "ts": "2026-07-20T04:18:26.941Z",
+          "text": "Validating hero video..."
+        },
+        {
+          "ts": "2026-07-20T04:18:27.946Z",
+          "text": "Uploading hero video..."
+        },
+        {
+          "ts": "2026-07-20T04:18:29.955Z",
+          "text": "Backend reconnecting..."
+        },
+        {
+          "ts": "2026-07-20T04:18:33.966Z",
+          "text": "Synced with backend"
+        },
+        {
+          "ts": "2026-07-20T04:18:37.981Z",
+          "text": "Backend reconnecting..."
+        },
+        {
+          "ts": "2026-07-20T04:23:27.243Z",
+          "text": "Failed: Create reel failed (502)"
+        }
+      ],
+      "firstFailure": false,
+      "lastSuccessfulStage": false
+    },
+    "POST_api_reels": {
+      "id": "POST_api_reels",
+      "reached": true,
+      "timestamp": "2026-07-20T04:18:26.946Z",
+      "component": "media.js",
+      "function": "uploadVideo \u2192 createReel",
+      "assetId": null,
+      "status": "request_started",
+      "durationMs": 300190,
+      "evidence": "https://strong-lolly-a9fcb4.netlify.app/api/reels",
+      "firstFailure": false,
+      "lastSuccessfulStage": false
+    },
+    "HTTP_response": {
+      "id": "HTTP_response",
+      "reached": true,
+      "timestamp": "2026-07-20T04:23:27.136Z",
+      "component": "POST /api/reels",
+      "function": "createReel response",
+      "assetId": null,
+      "status": "502",
+      "durationMs": 300190,
+      "evidence": "upstream error",
+      "firstFailure": false,
+      "lastSuccessfulStage": true
+    },
+    "pollUrl_creation": {
+      "id": "pollUrl_creation",
+      "reached": false,
+      "timestamp": null,
+      "component": null,
+      "function": null,
+      "assetId": null,
+      "status": null,
+      "durationMs": null,
+      "evidence": "no pollUrl and no reel id in HTTP 502 body",
+      "firstFailure": true,
+      "lastSuccessfulStage": false
+    },
+    "poll_attempts": {
+      "id": "poll_attempts",
+      "reached": false,
+      "timestamp": null,
+      "component": null,
+      "function": null,
+      "assetId": null,
+      "status": null,
+      "durationMs": null,
+      "evidence": null,
+      "firstFailure": false,
+      "lastSuccessfulStage": false
+    },
+    "pending": {
+      "id": "pending",
+      "reached": false,
+      "timestamp": null,
+      "component": null,
+      "function": null,
+      "assetId": null,
+      "status": null,
+      "durationMs": null,
+      "evidence": "never entered \u2014 no accepted reel id",
+      "firstFailure": false,
+      "lastSuccessfulStage": false
+    },
+    "ready_or_failed": {
+      "id": "ready_or_failed",
+      "reached": false,
+      "timestamp": null,
+      "component": null,
+      "function": null,
+      "assetId": null,
+      "status": null,
+      "durationMs": null,
+      "evidence": "never entered \u2014 no reel id",
+      "firstFailure": false,
+      "lastSuccessfulStage": false
+    },
+    "saveHeroReel": {
+      "id": "saveHeroReel",
+      "reached": false,
+      "timestamp": null,
+      "component": null,
+      "function": null,
+      "assetId": null,
+      "status": null,
+      "durationMs": null,
+      "evidence": "localStorage reelforge_hero_reel remains null",
+      "firstFailure": false,
+      "lastSuccessfulStage": false
+    },
+    "saveHeroManagerConfig": {
+      "id": "saveHeroManagerConfig",
+      "reached": false,
+      "timestamp": null,
+      "component": null,
+      "function": null,
+      "assetId": null,
+      "status": null,
+      "durationMs": null,
+      "evidence": "localStorage reelforge_hero_manager_config remains null",
+      "firstFailure": false,
+      "lastSuccessfulStage": false
+    },
+    "hero_registry_rebuild": {
+      "id": "hero_registry_rebuild",
+      "reached": false,
+      "timestamp": null,
+      "component": null,
+      "function": null,
+      "assetId": null,
+      "status": null,
+      "durationMs": null,
+      "evidence": "no accept-complete log",
+      "firstFailure": false,
+      "lastSuccessfulStage": false
+    },
+    "HeroExperience_rerender": {
+      "id": "HeroExperience_rerender",
+      "reached": false,
+      "timestamp": null,
+      "component": null,
+      "function": null,
+      "assetId": null,
+      "status": null,
+      "durationMs": null,
+      "evidence": "no hero_video_committed log",
+      "firstFailure": false,
+      "lastSuccessfulStage": false
+    },
+    "processing_indicator_removed": {
+      "id": "processing_indicator_removed",
+      "reached": true,
+      "timestamp": "2026-07-20T04:23:27.243Z",
+      "component": "HeroExperience.svelte",
+      "function": "heroUploadProcessing / UX phase",
+      "assetId": null,
+      "status": "preview_pending",
+      "durationMs": null,
+      "evidence": "Upload Needs Attention",
+      "firstFailure": false,
+      "lastSuccessfulStage": false
+    },
+    "Hero_background_visible": {
+      "id": "Hero_background_visible",
+      "reached": false,
+      "timestamp": null,
+      "component": null,
+      "function": null,
+      "assetId": null,
+      "status": null,
+      "durationMs": null,
+      "evidence": "videoSrc null after accept attempt",
+      "firstFailure": false,
+      "lastSuccessfulStage": false
+    },
+    "hard_refresh": {
+      "id": "hard_refresh",
+      "reached": true,
+      "timestamp": "2026-07-20T04:23:47.251Z",
+      "component": "Playwright",
+      "function": "page.reload",
+      "assetId": null,
+      "status": "completed",
+      "durationMs": 440,
+      "evidence": "reload after failed upload",
+      "firstFailure": false,
+      "lastSuccessfulStage": false
+    },
+    "RESTORE_SUCCESS": {
+      "id": "RESTORE_SUCCESS",
+      "reached": false,
+      "timestamp": null,
+      "component": null,
+      "function": null,
+      "assetId": null,
+      "status": "not_applicable_no_saved_hero",
+      "durationMs": null,
+      "evidence": "not reached for this asset: no hero reel persisted; hard refresh had nothing to restore",
+      "firstFailure": false,
+      "lastSuccessfulStage": false
+    }
+  },
+  "stageOrder": [
+    "hero_drop_detected",
+    "beginHeroAutoAccept",
+    "acceptHeroFile",
+    "validateVideoFile",
+    "uploadStatus_changes",
+    "POST_api_reels",
+    "HTTP_response",
+    "pollUrl_creation",
+    "poll_attempts",
+    "pending",
+    "ready_or_failed",
+    "saveHeroReel",
+    "saveHeroManagerConfig",
+    "hero_registry_rebuild",
+    "HeroExperience_rerender",
+    "processing_indicator_removed",
+    "Hero_background_visible",
+    "hard_refresh",
+    "RESTORE_SUCCESS"
+  ],
+  "firstFailureStage": "pollUrl_creation",
+  "lastSuccessfulStage": "HTTP_response",
+  "verdict": "UPLOAD NEVER BECOMES READY",
+  "notes": [
+    "Measured on production bundle assets/index-Btl25zBV.js",
+    "Pipeline progressed through validateVideoFile and POST /api/reels",
+    "HTTP 502 after elapsedMs=300190 with body \"upstream error\"; reelId=null; pollUrl=null",
+    "First stage that does not transition: pollUrl_creation",
+    "Processing spinner cleared on failure (preview_pending / Upload Needs Attention)",
+    "No saveHeroReel / hero background / RESTORE_SUCCESS for this asset",
+    "Pre-upload console poll/restore noise excluded from stage attribution"
+  ],
+  "evidence": {
+    "consoleEvents": [
+      {
+        "ts": "2026-07-20T04:24:11.630Z",
+        "type": "log",
+        "text": "[RISK_DETECTED] {\"seriesId\":\"series-trending-shorts\",\"insightId\":\"missing-assets\",\"label\":\"Missing assets\",\"summary\":\"3 episodes need video assets.\",\"severity\":\"CRITICAL\",\"timestamp\":1784521451628}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.637Z",
+        "type": "log",
+        "text": "[SEARCH_INDEX] {\"total\":357,\"byDomain\":{\"reels\":19,\"series\":3,\"episodes\":28,\"tasks\":13,\"workflows\":3,\"notifications\":200,\"marketplace_listings\":7,\"creators\":7,\"teams\":1,\"revenue_insights\":6,\"security_incidents\":37,\"sentinel_recommendations\":8,\"guide_me_content\":18,\"daily_engagement_cards\":7},\"timestamp\":1784521451633}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.637Z",
+        "type": "log",
+        "text": "[SEARCH_INDEX] {\"reason\":\"notifications_changed\",\"timestamp\":1784521451633}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.637Z",
+        "type": "log",
+        "text": "[MARKETPLACE_LISTING] {\"count\":7,\"category\":\"all\",\"creatorId\":null,\"listingIds\":[\"service-editing-001\",\"service-voice_over-001\",\"service-music-001\",\"service-vfx-001\",\"service-thumbnail_design-001\",\"service-script_writing-001\",\"service-marketing-001\"],\"timestamp\":1784521451635}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.637Z",
+        "type": "log",
+        "text": "[MARKETPLACE_SEARCH] {\"query\":null,\"category\":\"all\",\"activeOnly\":true,\"resultCount\":7,\"timestamp\":1784521451635}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.637Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521451635}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.637Z",
+        "type": "log",
+        "text": "[CREATOR_FEED] {\"reason\":\"notifications_updated\",\"seriesId\":\"series-trending-shorts\",\"cardCount\":8,\"cardKinds\":[\"today_tasks\",\"revenue_snapshot\",\"marketplace_opportunities\",\"daily_engagement\",\"trending_series\",\"upcoming_releases\",\"security_alerts\",\"team_activity\"],\"topCard\":\"today_tasks\",\"timestamp\":1784521451636}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.638Z",
+        "type": "log",
+        "text": "[MARKETPLACE_LISTING] {\"count\":7,\"category\":\"all\",\"creatorId\":null,\"listingIds\":[\"service-editing-001\",\"service-voice_over-001\",\"service-music-001\",\"service-vfx-001\",\"service-thumbnail_design-001\",\"service-script_writing-001\",\"service-marketing-001\"],\"timestamp\":1784521451636}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.638Z",
+        "type": "log",
+        "text": "[MARKETPLACE_SEARCH] {\"query\":null,\"category\":\"all\",\"activeOnly\":true,\"resultCount\":7,\"timestamp\":1784521451636}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.638Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521451636}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.641Z",
+        "type": "log",
+        "text": "[DISCOVERY_FEED] {\"reason\":\"notifications_updated\",\"seriesId\":\"series-trending-shorts\",\"cardCount\":12,\"sectionSizes\":{\"trendingCreators\":1,\"marketplaceOpportunities\":3,\"upcomingReleases\":1,\"revenueMilestones\":1,\"sentinelInsights\":2,\"teamHighlights\":1,\"productionWins\":1,\"dailyRecommendations\":2},\"topCard\":\"sentinel_insights\",\"timestamp\":1784521451639}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.641Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"sentinel_insights:insight-1\",\"sectionId\":\"sentinel_insights\",\"title\":\"Insight 1\",\"score\":69,\"timestamp\":1784521451639}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.641Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"sentinel_insights:insight-2\",\"sectionId\":\"sentinel_insights\",\"title\":\"Insight 2\",\"score\":69,\"timestamp\":1784521451640}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.641Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"revenue_milestones:revenue-pulse\",\"sectionId\":\"revenue_milestones\",\"title\":\"Revenue Pulse\",\"score\":69,\"timestamp\":1784521451640}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.641Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"daily_recommendations:daily-studio-tip\",\"sectionId\":\"daily_recommendations\",\"title\":\"Daily Studio Tip\",\"score\":66,\"timestamp\":1784521451640}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.641Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"daily_recommendations:daily-creator-challenge\",\"sectionId\":\"daily_recommendations\",\"title\":\"Daily Creator Challenge\",\"score\":64,\"timestamp\":1784521451640}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.641Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"marketplace_opportunities:open-vfx-composite-gig\",\"sectionId\":\"marketplace_opportunities\",\"title\":\"Open VFX Composite Gig\",\"score\":64,\"timestamp\":1784521451640}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.641Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"marketplace_opportunities:editing-package\",\"sectionId\":\"marketplace_opportunities\",\"title\":\"Editing Package\",\"score\":60,\"timestamp\":1784521451640}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.641Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"marketplace_opportunities:voice-over-package\",\"sectionId\":\"marketplace_opportunities\",\"title\":\"Voice Over Package\",\"score\":60,\"timestamp\":1784521451640}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.642Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"upcoming_releases:no-scheduled-release\",\"sectionId\":\"upcoming_releases\",\"title\":\"No scheduled release\",\"score\":56,\"timestamp\":1784521451640}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.642Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"production_wins:no-production-wins-yet-today\",\"sectionId\":\"production_wins\",\"title\":\"No production wins yet today\",\"score\":50,\"timestamp\":1784521451640}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.642Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"trending_creators:build-creator-momentum\",\"sectionId\":\"trending_creators\",\"title\":\"Build creator momentum\",\"score\":44,\"timestamp\":1784521451640}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.642Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"team_highlights:no-recent-team-highlights\",\"sectionId\":\"team_highlights\",\"title\":\"No recent team highlights\",\"score\":38,\"timestamp\":1784521451640}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.642Z",
+        "type": "log",
+        "text": "[DISCOVERY_REFRESH] {\"reason\":\"notifications_updated\",\"updatedAt\":1784521451639,\"cardCount\":12,\"timestamp\":1784521451640}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.645Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":null,\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521451642,\"eventCount\":1,\"timestamp\":1784521451642}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.645Z",
+        "type": "log",
+        "text": "[OBSERVABILITY] {\"seriesId\":null,\"signals\":{\"api_latency\":387,\"database_latency\":389,\"workflow_throughput\":2,\"notification_throughput\":200,\"publishing_throughput\":0,\"viewer_engagement\":10},\"alertCount\":2,\"timestamp\":1784521451643}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.645Z",
+        "type": "log",
+        "text": "[HEALTH_SCORE] {\"seriesId\":null,\"healthScore\":64,\"apiLatencyMs\":387,\"databaseLatencyMs\":389,\"viewerEngagement\":10,\"timestamp\":1784521451643}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.645Z",
+        "type": "log",
+        "text": "[SYSTEM_ALERT] {\"seriesId\":null,\"level\":\"warning\",\"code\":\"HEALTH_DEGRADED\",\"message\":\"Platform health score 64% is degraded\",\"timestamp\":1784521451643}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.645Z",
+        "type": "log",
+        "text": "[SYSTEM_ALERT] {\"seriesId\":null,\"level\":\"warning\",\"code\":\"VIEWER_ENGAGEMENT_LOW\",\"message\":\"Viewer engagement signals are below expected levels\",\"timestamp\":1784521451643}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.645Z",
+        "type": "info",
+        "text": "[FETCH] {timestamp: 2026-07-20T04:24:11.643Z, function: fetchWithRetry, sourceFile: api.js, assetId: null, fileName: null}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.648Z",
+        "type": "info",
+        "text": "[FETCH] {timestamp: 2026-07-20T04:24:11.647Z, function: fetchWithRetry, sourceFile: api.js, assetId: null, fileName: null}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.817Z",
+        "type": "log",
+        "text": "[DISCOVERY_QUERY] {\"query\":\"trending popular episodes marketplace security\",\"tokenCount\":5,\"total\":40,\"tookMs\":50,\"timestamp\":1784521451815}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.817Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:3c78b8f4-69bb-4d2a-a6a6-8fcb95b9a377\",\"source\":\"notification\",\"score\":81.16,\"title\":\"asset_missing\",\"timestamp\":1784521451815}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.817Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:89a86489-e021-45cd-ac85-86f86e264cf7\",\"source\":\"notification\",\"score\":81.16,\"title\":\"asset_missing\",\"timestamp\":1784521451815}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.817Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:4f2f20a4-3542-449a-980c-d74de70fb5f5\",\"source\":\"notification\",\"score\":81.16,\"title\":\"asset_missing\",\"timestamp\":1784521451815}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.818Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:b01609e3-16e9-4f03-915c-1853c04d7912\",\"source\":\"notification\",\"score\":77.16,\"title\":\"asset_missing\",\"timestamp\":1784521451815}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.818Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:68a9d125-98a7-484b-9348-fd658938b690\",\"source\":\"notification\",\"score\":77.16,\"title\":\"asset_missing\",\"timestamp\":1784521451815}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.818Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:f3917c33-8c4d-4c7b-ae5a-e43276d1b4d7\",\"source\":\"notification\",\"score\":77.16,\"title\":\"asset_missing\",\"timestamp\":1784521451815}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.818Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:025fc704-4ce5-4d04-b700-95c4cebb9810\",\"source\":\"notification\",\"score\":77.16,\"title\":\"asset_missing\",\"timestamp\":1784521451815}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.818Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:741dfc6a-1529-4b11-94fc-e029b72feaee\",\"source\":\"notification\",\"score\":77.16,\"title\":\"asset_missing\",\"timestamp\":1784521451815}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.818Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:7affdd52-53c2-4d77-bac2-edd71a693994\",\"source\":\"notification\",\"score\":77.16,\"title\":\"asset_missing\",\"timestamp\":1784521451816}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.818Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:ac07db5c-48c5-4233-9a0b-9f7c99240e06\",\"source\":\"notification\",\"score\":77.16,\"title\":\"asset_missing\",\"timestamp\":1784521451816}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.818Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"cache\",\"seriesId\":\"series-trending-shorts\",\"dailyActiveViewers\":0,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":0,\"publishingVelocity\":0,\"generatedAt\":1784521451061,\"eventCount\":1,\"timestamp\":1784521451817}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.818Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521451817}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.819Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521451818}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.819Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"horizon_forecasts\",\"profileId\":\"series-trending-shorts\",\"horizonCount\":3,\"growthRate\":0.08,\"timestamp\":1784521451818}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.819Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"dashboard_brief\",\"seriesId\":\"series-trending-shorts\",\"aggregateNetMonthlyCents\":74521,\"mrrCents\":74521,\"arrCents\":894252,\"forecastCount\":3,\"timestamp\":1784521451818}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.819Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-vault-chronicles\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521451818,\"eventCount\":1,\"timestamp\":1784521451818}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.819Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-vault-chronicles\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521451819}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.820Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-vault-chronicles\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521451819}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.820Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"horizon_forecasts\",\"profileId\":\"series-vault-chronicles\",\"horizonCount\":3,\"growthRate\":0.08,\"timestamp\":1784521451819}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.820Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"dashboard_brief\",\"seriesId\":\"series-vault-chronicles\",\"aggregateNetMonthlyCents\":74521,\"mrrCents\":74521,\"arrCents\":894252,\"forecastCount\":3,\"timestamp\":1784521451819}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.820Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-neon-vengeance\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521451819,\"eventCount\":1,\"timestamp\":1784521451819}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.820Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-neon-vengeance\",\"grossMonthlyCents\":137842,\"netCreatorCents\":109171,\"monthlyViewers\":1500,\"episodes\":6,\"timestamp\":1784521451819}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.821Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-neon-vengeance\",\"grossMonthlyCents\":137842,\"netCreatorCents\":109171,\"monthlyViewers\":1500,\"episodes\":6,\"timestamp\":1784521451820}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.821Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"horizon_forecasts\",\"profileId\":\"series-neon-vengeance\",\"horizonCount\":3,\"growthRate\":0.08,\"timestamp\":1784521451820}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.821Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"dashboard_brief\",\"seriesId\":\"series-neon-vengeance\",\"aggregateNetMonthlyCents\":109171,\"mrrCents\":109171,\"arrCents\":1310052,\"forecastCount\":3,\"timestamp\":1784521451820}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.821Z",
+        "type": "log",
+        "text": "[MARKETPLACE_LISTING] {\"count\":7,\"category\":\"all\",\"creatorId\":null,\"listingIds\":[\"service-editing-001\",\"service-voice_over-001\",\"service-music-001\",\"service-vfx-001\",\"service-thumbnail_design-001\",\"service-script_writing-001\",\"service-marketing-001\"],\"timestamp\":1784521451821}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.822Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"cache\",\"seriesId\":\"series-trending-shorts\",\"dailyActiveViewers\":0,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":0,\"publishingVelocity\":0,\"generatedAt\":1784521451061,\"eventCount\":1,\"timestamp\":1784521451821}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.823Z",
+        "type": "log",
+        "text": "[WORKFLOW_ENGINE] {\"seriesId\":\"series-trending-shorts\",\"taskCount\":3,\"created\":0,\"completed\":0,\"readinessBefore\":0,\"readinessAfter\":36,\"actionRecommendations\":3,\"usesMockData\":false,\"helpAvailable\":true,\"timestamp\":1784521451822}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.824Z",
+        "type": "log",
+        "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"series-trending-shorts\",\"currentReadiness\":0,\"projectedReadiness\":36,\"targetReadiness\":80,\"estimatedTime\":9,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"analysis\":{\"readiness\":{\"score\":0,\"metadata\":0,\"assets\":0,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":3,\"pendingTasks\":3,\"inProgressTasks\":0,\"criticalTasks\":3,\"estimatedMinutes\":9},\"release\":{\"episodesScheduled\":0,\"episodesReady\":1,\"missingAssets\":0,\"daysUntilLaunch\":null,\"launchReadinessScore\":87},\"assets\":{\"totalEpisodes\":3,\"coveredEpisodes\":3,\"missingAssets\":3,\"coveragePercent\":100}},\"topPriorityCount\":3,\"quickWinCount\":0,\"criticalRiskCount\":3,\"recommendedActionCount\":3,\"timestamp\":1784521451823}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.824Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e01\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E01 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521451823}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.824Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e02\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E02 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521451823}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.824Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e03\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E03 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521451823}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.826Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-vault-chronicles\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521451825,\"eventCount\":1,\"timestamp\":1784521451825}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.826Z",
+        "type": "log",
+        "text": "[WORKFLOW_ENGINE] {\"seriesId\":\"series-vault-chronicles\",\"taskCount\":3,\"created\":0,\"completed\":0,\"readinessBefore\":0,\"readinessAfter\":36,\"actionRecommendations\":3,\"usesMockData\":false,\"helpAvailable\":true,\"timestamp\":1784521451825}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.826Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-vault-chronicles\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521451826,\"eventCount\":1,\"timestamp\":1784521451826}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.827Z",
+        "type": "log",
+        "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"series-vault-chronicles\",\"currentReadiness\":0,\"projectedReadiness\":36,\"targetReadiness\":80,\"estimatedTime\":9,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"analysis\":{\"readiness\":{\"score\":0,\"metadata\":0,\"assets\":0,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":3,\"pendingTasks\":3,\"inProgressTasks\":0,\"criticalTasks\":3,\"estimatedMinutes\":9},\"release\":{\"episodesScheduled\":0,\"episodesReady\":0,\"missingAssets\":1,\"daysUntilLaunch\":null,\"launchReadinessScore\":60},\"assets\":{\"totalEpisodes\":3,\"coveredEpisodes\":2,\"missingAssets\":3,\"coveragePercent\":67}},\"topPriorityCount\":3,\"quickWinCount\":0,\"criticalRiskCount\":3,\"recommendedActionCount\":3,\"timestamp\":1784521451826}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.827Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e01\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E01 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521451826}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.827Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e02\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E02 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521451827}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.828Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e03\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E03 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521451827}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.828Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-vault-chronicles\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521451827,\"eventCount\":1,\"timestamp\":1784521451827}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.829Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-vault-chronicles\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521451828,\"eventCount\":1,\"timestamp\":1784521451828}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.829Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-neon-vengeance\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521451828,\"eventCount\":1,\"timestamp\":1784521451828}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.829Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-neon-vengeance\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521451829,\"eventCount\":1,\"timestamp\":1784521451829}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.830Z",
+        "type": "log",
+        "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"series-neon-vengeance\",\"currentReadiness\":25,\"projectedReadiness\":61,\"targetReadiness\":80,\"estimatedTime\":18,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"analysis\":{\"readiness\":{\"score\":25,\"metadata\":100,\"assets\":0,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":5,\"pendingTasks\":5,\"inProgressTasks\":0,\"criticalTasks\":0,\"estimatedMinutes\":15},\"release\":{\"episodesScheduled\":0,\"episodesReady\":1,\"missingAssets\":0,\"daysUntilLaunch\":null,\"launchReadinessScore\":93},\"assets\":{\"totalEpisodes\":6,\"coveredEpisodes\":6,\"missingAssets\":6,\"coveragePercent\":100}},\"topPriorityCount\":5,\"quickWinCount\":0,\"criticalRiskCount\":5,\"recommendedActionCount\":6,\"timestamp\":1784521451830}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.831Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e01\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E01 reel\",\"impact\":6,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521451830}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.831Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e02\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E02 reel\",\"impact\":6,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521451830}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.831Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e03\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E03 reel\",\"impact\":6,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521451830}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.831Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e04\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E04 reel\",\"impact\":6,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521451830}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.831Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s02e01\",\"priority\":\"CRITICAL\",\"title\":\"Upload S2:E01 reel\",\"impact\":6,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521451830}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.831Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s02e02\",\"priority\":\"CRITICAL\",\"title\":\"Upload S2:E02 reel\",\"impact\":6,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521451830}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.831Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-neon-vengeance\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521451830,\"eventCount\":1,\"timestamp\":1784521451830}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.832Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-neon-vengeance\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521451831,\"eventCount\":1,\"timestamp\":1784521451831}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.832Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-neon-vengeance\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521451832,\"eventCount\":1,\"timestamp\":1784521451832}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.840Z",
+        "type": "log",
+        "text": "[DISCOVERY_INDEX] {\"totalDocuments\":330,\"bySource\":{\"series_metadata\":19,\"episode\":12,\"workflow\":13,\"notification\":200,\"revenue\":3,\"hero_content\":6,\"marketplace\":16,\"security_event\":37,\"sentinel_recommendation\":24},\"timestamp\":1784521451834}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.840Z",
+        "type": "log",
+        "text": "[MARKETPLACE_LISTING] {\"count\":7,\"category\":\"all\",\"creatorId\":null,\"listingIds\":[\"service-editing-001\",\"service-voice_over-001\",\"service-music-001\",\"service-vfx-001\",\"service-thumbnail_design-001\",\"service-script_writing-001\",\"service-marketing-001\"],\"timestamp\":1784521451834}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.840Z",
+        "type": "log",
+        "text": "[MARKETPLACE_SEARCH] {\"query\":null,\"category\":\"all\",\"activeOnly\":true,\"resultCount\":7,\"timestamp\":1784521451834}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.840Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"cache\",\"seriesId\":\"series-trending-shorts\",\"dailyActiveViewers\":0,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":0,\"publishingVelocity\":0,\"generatedAt\":1784521451061,\"eventCount\":1,\"timestamp\":1784521451834}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.840Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521451834}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.840Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521451835}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.840Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521451835}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.840Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521451835}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.841Z",
+        "type": "log",
+        "text": "[WORKFLOW_ENGINE] {\"seriesId\":\"series-trending-shorts\",\"taskCount\":3,\"created\":0,\"completed\":0,\"readinessBefore\":0,\"readinessAfter\":36,\"actionRecommendations\":3,\"usesMockData\":false,\"helpAvailable\":true,\"timestamp\":1784521451836}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.841Z",
+        "type": "log",
+        "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"series-trending-shorts\",\"currentReadiness\":0,\"projectedReadiness\":36,\"targetReadiness\":80,\"estimatedTime\":9,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"analysis\":{\"readiness\":{\"score\":0,\"metadata\":0,\"assets\":0,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":3,\"pendingTasks\":3,\"inProgressTasks\":0,\"criticalTasks\":3,\"estimatedMinutes\":9},\"release\":{\"episodesScheduled\":0,\"episodesReady\":1,\"missingAssets\":0,\"daysUntilLaunch\":null,\"launchReadinessScore\":87},\"assets\":{\"totalEpisodes\":3,\"coveredEpisodes\":3,\"missingAssets\":3,\"coveragePercent\":100}},\"topPriorityCount\":3,\"quickWinCount\":0,\"criticalRiskCount\":3,\"recommendedActionCount\":3,\"timestamp\":1784521451837}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.841Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e01\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E01 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521451837}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.841Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e02\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E02 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521451837}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.841Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e03\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E03 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521451837}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.841Z",
+        "type": "log",
+        "text": "[HOME_FEED] {\"reason\":\"notification\",\"seriesId\":\"series-trending-shorts\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1784521451839}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.841Z",
+        "type": "log",
+        "text": "[HOME_FEED_REFRESH] {\"reason\":\"notification\",\"updatedAt\":1784521451765,\"timestamp\":1784521451839}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.843Z",
+        "type": "log",
+        "text": "[MARKETPLACE_LISTING] {\"count\":7,\"category\":\"all\",\"creatorId\":null,\"listingIds\":[\"service-editing-001\",\"service-voice_over-001\",\"service-music-001\",\"service-vfx-001\",\"service-thumbnail_design-001\",\"service-script_writing-001\",\"service-marketing-001\"],\"timestamp\":1784521451842}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.843Z",
+        "type": "log",
+        "text": "[MARKETPLACE_SEARCH] {\"query\":null,\"category\":\"all\",\"activeOnly\":true,\"resultCount\":7,\"timestamp\":1784521451842}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.843Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521451842}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.843Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521451843}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.844Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521451843}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.844Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521451843}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.850Z",
+        "type": "log",
+        "text": "[STUDIO_ASSISTANT] {\"seriesId\":\"series-trending-shorts\",\"currentReadiness\":0,\"projectedReadiness\":36,\"openWorkflowTasks\":3,\"unreadNotifications\":200,\"missingAssets\":3,\"blockerCount\":3,\"insightCount\":6,\"timestamp\":1784521451849}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.850Z",
+        "type": "log",
+        "text": "[MISSION_GENERATED] {\"seriesId\":\"series-trending-shorts\",\"todaysMission\":\"Attach 3 missing reels, then attach reel to e01.\",\"topPriority\":\"Attach reel to E01\",\"quickWin\":\"Attach reel to E03\",\"criticalRisk\":\"Upload S1:E01 reel\",\"projectedReadiness\":36,\"targetReadiness\":80,\"timestamp\":1784521451849}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.850Z",
+        "type": "log",
+        "text": "[RISK_DETECTED] {\"seriesId\":\"series-trending-shorts\",\"riskTitle\":\"Upload S1:E01 reel\",\"severity\":\"CRITICAL\",\"releaseRisk\":\"No release risks detected \u2014 schedule looks stable.\",\"blockerCount\":3,\"timestamp\":1784521451849}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.850Z",
+        "type": "log",
+        "text": "[RISK_DETECTED] {\"seriesId\":\"series-trending-shorts\",\"insightId\":\"what-next\",\"label\":\"What should I do next?\",\"summary\":\"Attach reel to E01\",\"severity\":\"CRITICAL\",\"timestamp\":1784521451849}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.850Z",
+        "type": "log",
+        "text": "[RISK_DETECTED] {\"seriesId\":\"series-trending-shorts\",\"insightId\":\"biggest-blocker\",\"label\":\"Biggest blocker\",\"summary\":\"3 episodes missing assets\",\"severity\":\"CRITICAL\",\"timestamp\":1784521451849}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.850Z",
+        "type": "log",
+        "text": "[RISK_DETECTED] {\"seriesId\":\"series-trending-shorts\",\"insightId\":\"missing-assets\",\"label\":\"Missing assets\",\"summary\":\"3 episodes need video assets.\",\"severity\":\"CRITICAL\",\"timestamp\":1784521451849}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.858Z",
+        "type": "log",
+        "text": "[SEARCH_INDEX] {\"total\":357,\"byDomain\":{\"reels\":19,\"series\":3,\"episodes\":28,\"tasks\":13,\"workflows\":3,\"notifications\":200,\"marketplace_listings\":7,\"creators\":7,\"teams\":1,\"revenue_insights\":6,\"security_incidents\":37,\"sentinel_recommendations\":8,\"guide_me_content\":18,\"daily_engagement_cards\":7},\"timestamp\":1784521451854}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.858Z",
+        "type": "log",
+        "text": "[SEARCH_INDEX] {\"reason\":\"notifications_changed\",\"timestamp\":1784521451854}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.858Z",
+        "type": "log",
+        "text": "[MARKETPLACE_LISTING] {\"count\":7,\"category\":\"all\",\"creatorId\":null,\"listingIds\":[\"service-editing-001\",\"service-voice_over-001\",\"service-music-001\",\"service-vfx-001\",\"service-thumbnail_design-001\",\"service-script_writing-001\",\"service-marketing-001\"],\"timestamp\":1784521451857}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.859Z",
+        "type": "log",
+        "text": "[MARKETPLACE_SEARCH] {\"query\":null,\"category\":\"all\",\"activeOnly\":true,\"resultCount\":7,\"timestamp\":1784521451857}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.859Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521451857}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.859Z",
+        "type": "log",
+        "text": "[CREATOR_FEED] {\"reason\":\"notifications_updated\",\"seriesId\":\"series-trending-shorts\",\"cardCount\":8,\"cardKinds\":[\"today_tasks\",\"revenue_snapshot\",\"marketplace_opportunities\",\"daily_engagement\",\"trending_series\",\"upcoming_releases\",\"security_alerts\",\"team_activity\"],\"topCard\":\"today_tasks\",\"timestamp\":1784521451858}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.859Z",
+        "type": "log",
+        "text": "[MARKETPLACE_LISTING] {\"count\":7,\"category\":\"all\",\"creatorId\":null,\"listingIds\":[\"service-editing-001\",\"service-voice_over-001\",\"service-music-001\",\"service-vfx-001\",\"service-thumbnail_design-001\",\"service-script_writing-001\",\"service-marketing-001\"],\"timestamp\":1784521451858}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.859Z",
+        "type": "log",
+        "text": "[MARKETPLACE_SEARCH] {\"query\":null,\"category\":\"all\",\"activeOnly\":true,\"resultCount\":7,\"timestamp\":1784521451858}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.859Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521451859}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.864Z",
+        "type": "log",
+        "text": "[DISCOVERY_FEED] {\"reason\":\"notifications_updated\",\"seriesId\":\"series-trending-shorts\",\"cardCount\":12,\"sectionSizes\":{\"trendingCreators\":1,\"marketplaceOpportunities\":3,\"upcomingReleases\":1,\"revenueMilestones\":1,\"sentinelInsights\":2,\"teamHighlights\":1,\"productionWins\":1,\"dailyRecommendations\":2},\"topCard\":\"sentinel_insights\",\"timestamp\":1784521451862}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.864Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"sentinel_insights:insight-1\",\"sectionId\":\"sentinel_insights\",\"title\":\"Insight 1\",\"score\":69,\"timestamp\":1784521451863}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.864Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"sentinel_insights:insight-2\",\"sectionId\":\"sentinel_insights\",\"title\":\"Insight 2\",\"score\":69,\"timestamp\":1784521451863}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.864Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"revenue_milestones:revenue-pulse\",\"sectionId\":\"revenue_milestones\",\"title\":\"Revenue Pulse\",\"score\":69,\"timestamp\":1784521451863}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.864Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"daily_recommendations:daily-studio-tip\",\"sectionId\":\"daily_recommendations\",\"title\":\"Daily Studio Tip\",\"score\":66,\"timestamp\":1784521451863}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.865Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"daily_recommendations:daily-creator-challenge\",\"sectionId\":\"daily_recommendations\",\"title\":\"Daily Creator Challenge\",\"score\":64,\"timestamp\":1784521451863}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.865Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"marketplace_opportunities:open-vfx-composite-gig\",\"sectionId\":\"marketplace_opportunities\",\"title\":\"Open VFX Composite Gig\",\"score\":64,\"timestamp\":1784521451863}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.865Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"marketplace_opportunities:editing-package\",\"sectionId\":\"marketplace_opportunities\",\"title\":\"Editing Package\",\"score\":60,\"timestamp\":1784521451863}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.865Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"marketplace_opportunities:voice-over-package\",\"sectionId\":\"marketplace_opportunities\",\"title\":\"Voice Over Package\",\"score\":60,\"timestamp\":1784521451863}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.865Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"upcoming_releases:no-scheduled-release\",\"sectionId\":\"upcoming_releases\",\"title\":\"No scheduled release\",\"score\":56,\"timestamp\":1784521451863}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.865Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"production_wins:no-production-wins-yet-today\",\"sectionId\":\"production_wins\",\"title\":\"No production wins yet today\",\"score\":50,\"timestamp\":1784521451863}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.865Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"trending_creators:build-creator-momentum\",\"sectionId\":\"trending_creators\",\"title\":\"Build creator momentum\",\"score\":44,\"timestamp\":1784521451863}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.865Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"team_highlights:no-recent-team-highlights\",\"sectionId\":\"team_highlights\",\"title\":\"No recent team highlights\",\"score\":38,\"timestamp\":1784521451863}"
+      },
+      {
+        "ts": "2026-07-20T04:24:11.865Z",
+        "type": "log",
+        "text": "[DISCOVERY_REFRESH] {\"reason\":\"notifications_updated\",\"updatedAt\":1784521451862,\"cardCount\":12,\"timestamp\":1784521451863}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.038Z",
+        "type": "info",
+        "text": "[RESPONSE] {timestamp: 2026-07-20T04:24:12.036Z, function: fetchWithRetry, sourceFile: api.js, assetId: null, fileName: null}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.041Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":null,\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452037,\"eventCount\":1,\"timestamp\":1784521452037}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.041Z",
+        "type": "log",
+        "text": "[OBSERVABILITY] {\"seriesId\":null,\"signals\":{\"api_latency\":392,\"database_latency\":392,\"workflow_throughput\":2,\"notification_throughput\":200,\"publishing_throughput\":0,\"viewer_engagement\":10},\"alertCount\":2,\"timestamp\":1784521452038}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.041Z",
+        "type": "log",
+        "text": "[HEALTH_SCORE] {\"seriesId\":null,\"healthScore\":64,\"apiLatencyMs\":392,\"databaseLatencyMs\":392,\"viewerEngagement\":10,\"timestamp\":1784521452038}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.041Z",
+        "type": "log",
+        "text": "[SYSTEM_ALERT] {\"seriesId\":null,\"level\":\"warning\",\"code\":\"HEALTH_DEGRADED\",\"message\":\"Platform health score 64% is degraded\",\"timestamp\":1784521452038}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.041Z",
+        "type": "log",
+        "text": "[SYSTEM_ALERT] {\"seriesId\":null,\"level\":\"warning\",\"code\":\"VIEWER_ENGAGEMENT_LOW\",\"message\":\"Viewer engagement signals are below expected levels\",\"timestamp\":1784521452038}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.041Z",
+        "type": "info",
+        "text": "[FETCH] {timestamp: 2026-07-20T04:24:12.039Z, function: fetchWithRetry, sourceFile: api.js, assetId: null, fileName: null}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.043Z",
+        "type": "info",
+        "text": "[FETCH] {timestamp: 2026-07-20T04:24:12.042Z, function: fetchWithRetry, sourceFile: api.js, assetId: null, fileName: null}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.059Z",
+        "type": "info",
+        "text": "[RESPONSE] {timestamp: 2026-07-20T04:24:12.057Z, function: fetchWithRetry, sourceFile: api.js, assetId: null, fileName: null}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.212Z",
+        "type": "log",
+        "text": "[DISCOVERY_QUERY] {\"query\":\"trending popular episodes marketplace security\",\"tokenCount\":5,\"total\":40,\"tookMs\":50,\"timestamp\":1784521452211}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.213Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:3c78b8f4-69bb-4d2a-a6a6-8fcb95b9a377\",\"source\":\"notification\",\"score\":81.16,\"title\":\"asset_missing\",\"timestamp\":1784521452211}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.213Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:89a86489-e021-45cd-ac85-86f86e264cf7\",\"source\":\"notification\",\"score\":81.16,\"title\":\"asset_missing\",\"timestamp\":1784521452211}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.213Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:4f2f20a4-3542-449a-980c-d74de70fb5f5\",\"source\":\"notification\",\"score\":81.16,\"title\":\"asset_missing\",\"timestamp\":1784521452211}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.213Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:b01609e3-16e9-4f03-915c-1853c04d7912\",\"source\":\"notification\",\"score\":77.16,\"title\":\"asset_missing\",\"timestamp\":1784521452211}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.213Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:68a9d125-98a7-484b-9348-fd658938b690\",\"source\":\"notification\",\"score\":77.16,\"title\":\"asset_missing\",\"timestamp\":1784521452211}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.213Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:f3917c33-8c4d-4c7b-ae5a-e43276d1b4d7\",\"source\":\"notification\",\"score\":77.16,\"title\":\"asset_missing\",\"timestamp\":1784521452211}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.213Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:025fc704-4ce5-4d04-b700-95c4cebb9810\",\"source\":\"notification\",\"score\":77.16,\"title\":\"asset_missing\",\"timestamp\":1784521452211}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.213Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:741dfc6a-1529-4b11-94fc-e029b72feaee\",\"source\":\"notification\",\"score\":77.16,\"title\":\"asset_missing\",\"timestamp\":1784521452211}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.213Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:7affdd52-53c2-4d77-bac2-edd71a693994\",\"source\":\"notification\",\"score\":77.16,\"title\":\"asset_missing\",\"timestamp\":1784521452212}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.213Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:ac07db5c-48c5-4233-9a0b-9f7c99240e06\",\"source\":\"notification\",\"score\":77.16,\"title\":\"asset_missing\",\"timestamp\":1784521452212}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.214Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"cache\",\"seriesId\":\"series-trending-shorts\",\"dailyActiveViewers\":0,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":0,\"publishingVelocity\":0,\"generatedAt\":1784521451061,\"eventCount\":1,\"timestamp\":1784521452213}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.214Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452213}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.215Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452214}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.215Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"horizon_forecasts\",\"profileId\":\"series-trending-shorts\",\"horizonCount\":3,\"growthRate\":0.08,\"timestamp\":1784521452214}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.215Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"dashboard_brief\",\"seriesId\":\"series-trending-shorts\",\"aggregateNetMonthlyCents\":74521,\"mrrCents\":74521,\"arrCents\":894252,\"forecastCount\":3,\"timestamp\":1784521452214}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.215Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-vault-chronicles\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452214,\"eventCount\":1,\"timestamp\":1784521452214}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.215Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-vault-chronicles\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452214}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.215Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-vault-chronicles\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452215}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.215Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"horizon_forecasts\",\"profileId\":\"series-vault-chronicles\",\"horizonCount\":3,\"growthRate\":0.08,\"timestamp\":1784521452215}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.216Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"dashboard_brief\",\"seriesId\":\"series-vault-chronicles\",\"aggregateNetMonthlyCents\":74521,\"mrrCents\":74521,\"arrCents\":894252,\"forecastCount\":3,\"timestamp\":1784521452215}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.216Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-neon-vengeance\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452215,\"eventCount\":1,\"timestamp\":1784521452215}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.216Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-neon-vengeance\",\"grossMonthlyCents\":137842,\"netCreatorCents\":109171,\"monthlyViewers\":1500,\"episodes\":6,\"timestamp\":1784521452215}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.216Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-neon-vengeance\",\"grossMonthlyCents\":137842,\"netCreatorCents\":109171,\"monthlyViewers\":1500,\"episodes\":6,\"timestamp\":1784521452216}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.216Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"horizon_forecasts\",\"profileId\":\"series-neon-vengeance\",\"horizonCount\":3,\"growthRate\":0.08,\"timestamp\":1784521452216}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.217Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"dashboard_brief\",\"seriesId\":\"series-neon-vengeance\",\"aggregateNetMonthlyCents\":109171,\"mrrCents\":109171,\"arrCents\":1310052,\"forecastCount\":3,\"timestamp\":1784521452216}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.217Z",
+        "type": "log",
+        "text": "[MARKETPLACE_LISTING] {\"count\":7,\"category\":\"all\",\"creatorId\":null,\"listingIds\":[\"service-editing-001\",\"service-voice_over-001\",\"service-music-001\",\"service-vfx-001\",\"service-thumbnail_design-001\",\"service-script_writing-001\",\"service-marketing-001\"],\"timestamp\":1784521452217}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.218Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"cache\",\"seriesId\":\"series-trending-shorts\",\"dailyActiveViewers\":0,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":0,\"publishingVelocity\":0,\"generatedAt\":1784521451061,\"eventCount\":1,\"timestamp\":1784521452217}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.218Z",
+        "type": "log",
+        "text": "[WORKFLOW_ENGINE] {\"seriesId\":\"series-trending-shorts\",\"taskCount\":3,\"created\":0,\"completed\":0,\"readinessBefore\":0,\"readinessAfter\":36,\"actionRecommendations\":3,\"usesMockData\":false,\"helpAvailable\":true,\"timestamp\":1784521452217}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.220Z",
+        "type": "log",
+        "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"series-trending-shorts\",\"currentReadiness\":0,\"projectedReadiness\":36,\"targetReadiness\":80,\"estimatedTime\":9,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"analysis\":{\"readiness\":{\"score\":0,\"metadata\":0,\"assets\":0,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":3,\"pendingTasks\":3,\"inProgressTasks\":0,\"criticalTasks\":3,\"estimatedMinutes\":9},\"release\":{\"episodesScheduled\":0,\"episodesReady\":1,\"missingAssets\":0,\"daysUntilLaunch\":null,\"launchReadinessScore\":87},\"assets\":{\"totalEpisodes\":3,\"coveredEpisodes\":3,\"missingAssets\":3,\"coveragePercent\":100}},\"topPriorityCount\":3,\"quickWinCount\":0,\"criticalRiskCount\":3,\"recommendedActionCount\":3,\"timestamp\":1784521452219}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.220Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e01\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E01 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452219}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.220Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e02\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E02 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452219}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.220Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e03\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E03 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452219}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.221Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-vault-chronicles\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452220,\"eventCount\":1,\"timestamp\":1784521452220}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.221Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-vault-chronicles\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452221,\"eventCount\":1,\"timestamp\":1784521452221}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.222Z",
+        "type": "log",
+        "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"series-vault-chronicles\",\"currentReadiness\":0,\"projectedReadiness\":36,\"targetReadiness\":80,\"estimatedTime\":9,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"analysis\":{\"readiness\":{\"score\":0,\"metadata\":0,\"assets\":0,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":3,\"pendingTasks\":3,\"inProgressTasks\":0,\"criticalTasks\":3,\"estimatedMinutes\":9},\"release\":{\"episodesScheduled\":0,\"episodesReady\":0,\"missingAssets\":1,\"daysUntilLaunch\":null,\"launchReadinessScore\":60},\"assets\":{\"totalEpisodes\":3,\"coveredEpisodes\":2,\"missingAssets\":3,\"coveragePercent\":67}},\"topPriorityCount\":3,\"quickWinCount\":0,\"criticalRiskCount\":3,\"recommendedActionCount\":3,\"timestamp\":1784521452221}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.223Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e01\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E01 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452222}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.223Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e02\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E02 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452222}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.223Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e03\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E03 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452222}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.223Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-vault-chronicles\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452222,\"eventCount\":1,\"timestamp\":1784521452222}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.224Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-vault-chronicles\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452223,\"eventCount\":1,\"timestamp\":1784521452223}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.224Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-neon-vengeance\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452223,\"eventCount\":1,\"timestamp\":1784521452223}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.224Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-neon-vengeance\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452224,\"eventCount\":1,\"timestamp\":1784521452224}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.226Z",
+        "type": "log",
+        "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"series-neon-vengeance\",\"currentReadiness\":25,\"projectedReadiness\":61,\"targetReadiness\":80,\"estimatedTime\":18,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"analysis\":{\"readiness\":{\"score\":25,\"metadata\":100,\"assets\":0,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":5,\"pendingTasks\":5,\"inProgressTasks\":0,\"criticalTasks\":0,\"estimatedMinutes\":15},\"release\":{\"episodesScheduled\":0,\"episodesReady\":1,\"missingAssets\":0,\"daysUntilLaunch\":null,\"launchReadinessScore\":93},\"assets\":{\"totalEpisodes\":6,\"coveredEpisodes\":6,\"missingAssets\":6,\"coveragePercent\":100}},\"topPriorityCount\":5,\"quickWinCount\":0,\"criticalRiskCount\":5,\"recommendedActionCount\":6,\"timestamp\":1784521452224}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.226Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e01\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E01 reel\",\"impact\":6,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452225}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.226Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e02\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E02 reel\",\"impact\":6,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452225}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.226Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e03\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E03 reel\",\"impact\":6,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452225}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.226Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e04\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E04 reel\",\"impact\":6,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452225}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.226Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s02e01\",\"priority\":\"CRITICAL\",\"title\":\"Upload S2:E01 reel\",\"impact\":6,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452225}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.226Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s02e02\",\"priority\":\"CRITICAL\",\"title\":\"Upload S2:E02 reel\",\"impact\":6,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452225}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.227Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-neon-vengeance\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452225,\"eventCount\":1,\"timestamp\":1784521452225}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.227Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-neon-vengeance\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452226,\"eventCount\":1,\"timestamp\":1784521452226}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.227Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-neon-vengeance\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452227,\"eventCount\":1,\"timestamp\":1784521452227}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.234Z",
+        "type": "log",
+        "text": "[DISCOVERY_INDEX] {\"totalDocuments\":330,\"bySource\":{\"series_metadata\":19,\"episode\":12,\"workflow\":13,\"notification\":200,\"revenue\":3,\"hero_content\":6,\"marketplace\":16,\"security_event\":37,\"sentinel_recommendation\":24},\"timestamp\":1784521452229}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.234Z",
+        "type": "log",
+        "text": "[MARKETPLACE_LISTING] {\"count\":7,\"category\":\"all\",\"creatorId\":null,\"listingIds\":[\"service-editing-001\",\"service-voice_over-001\",\"service-music-001\",\"service-vfx-001\",\"service-thumbnail_design-001\",\"service-script_writing-001\",\"service-marketing-001\"],\"timestamp\":1784521452229}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.235Z",
+        "type": "log",
+        "text": "[MARKETPLACE_SEARCH] {\"query\":null,\"category\":\"all\",\"activeOnly\":true,\"resultCount\":7,\"timestamp\":1784521452229}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.235Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"cache\",\"seriesId\":\"series-trending-shorts\",\"dailyActiveViewers\":0,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":0,\"publishingVelocity\":0,\"generatedAt\":1784521451061,\"eventCount\":1,\"timestamp\":1784521452229}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.235Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452229}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.235Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452230}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.235Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452230}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.235Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452230}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.235Z",
+        "type": "log",
+        "text": "[WORKFLOW_ENGINE] {\"seriesId\":\"series-trending-shorts\",\"taskCount\":3,\"created\":0,\"completed\":0,\"readinessBefore\":0,\"readinessAfter\":36,\"actionRecommendations\":3,\"usesMockData\":false,\"helpAvailable\":true,\"timestamp\":1784521452231}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.235Z",
+        "type": "log",
+        "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"series-trending-shorts\",\"currentReadiness\":0,\"projectedReadiness\":36,\"targetReadiness\":80,\"estimatedTime\":9,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"analysis\":{\"readiness\":{\"score\":0,\"metadata\":0,\"assets\":0,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":3,\"pendingTasks\":3,\"inProgressTasks\":0,\"criticalTasks\":3,\"estimatedMinutes\":9},\"release\":{\"episodesScheduled\":0,\"episodesReady\":1,\"missingAssets\":0,\"daysUntilLaunch\":null,\"launchReadinessScore\":87},\"assets\":{\"totalEpisodes\":3,\"coveredEpisodes\":3,\"missingAssets\":3,\"coveragePercent\":100}},\"topPriorityCount\":3,\"quickWinCount\":0,\"criticalRiskCount\":3,\"recommendedActionCount\":3,\"timestamp\":1784521452232}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.236Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e01\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E01 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452232}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.236Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e02\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E02 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452232}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.236Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e03\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E03 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452232}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.236Z",
+        "type": "log",
+        "text": "[HOME_FEED] {\"reason\":\"notification\",\"seriesId\":\"series-trending-shorts\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1784521452234}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.236Z",
+        "type": "log",
+        "text": "[HOME_FEED_REFRESH] {\"reason\":\"notification\",\"updatedAt\":1784521452161,\"timestamp\":1784521452234}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.237Z",
+        "type": "info",
+        "text": "[RESPONSE] {timestamp: 2026-07-20T04:24:12.236Z, function: fetchWithRetry, sourceFile: api.js, assetId: null, fileName: null}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.238Z",
+        "type": "info",
+        "text": "[RESPONSE] {timestamp: 2026-07-20T04:24:12.236Z, function: fetchWithRetry, sourceFile: api.js, assetId: null, fileName: null}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.241Z",
+        "type": "log",
+        "text": "[MARKETPLACE_LISTING] {\"count\":7,\"category\":\"all\",\"creatorId\":null,\"listingIds\":[\"service-editing-001\",\"service-voice_over-001\",\"service-music-001\",\"service-vfx-001\",\"service-thumbnail_design-001\",\"service-script_writing-001\",\"service-marketing-001\"],\"timestamp\":1784521452240}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.241Z",
+        "type": "log",
+        "text": "[MARKETPLACE_SEARCH] {\"query\":null,\"category\":\"all\",\"activeOnly\":true,\"resultCount\":7,\"timestamp\":1784521452240}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.241Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452240}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.241Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452240}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.241Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452241}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.242Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452241}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.247Z",
+        "type": "log",
+        "text": "[STUDIO_ASSISTANT] {\"seriesId\":\"series-trending-shorts\",\"currentReadiness\":0,\"projectedReadiness\":36,\"openWorkflowTasks\":3,\"unreadNotifications\":200,\"missingAssets\":3,\"blockerCount\":3,\"insightCount\":6,\"timestamp\":1784521452246}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.248Z",
+        "type": "log",
+        "text": "[MISSION_GENERATED] {\"seriesId\":\"series-trending-shorts\",\"todaysMission\":\"Attach 3 missing reels, then attach reel to e01.\",\"topPriority\":\"Attach reel to E01\",\"quickWin\":\"Attach reel to E03\",\"criticalRisk\":\"Upload S1:E01 reel\",\"projectedReadiness\":36,\"targetReadiness\":80,\"timestamp\":1784521452246}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.248Z",
+        "type": "log",
+        "text": "[RISK_DETECTED] {\"seriesId\":\"series-trending-shorts\",\"riskTitle\":\"Upload S1:E01 reel\",\"severity\":\"CRITICAL\",\"releaseRisk\":\"No release risks detected \u2014 schedule looks stable.\",\"blockerCount\":3,\"timestamp\":1784521452247}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.248Z",
+        "type": "log",
+        "text": "[RISK_DETECTED] {\"seriesId\":\"series-trending-shorts\",\"insightId\":\"what-next\",\"label\":\"What should I do next?\",\"summary\":\"Attach reel to E01\",\"severity\":\"CRITICAL\",\"timestamp\":1784521452247}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.248Z",
+        "type": "log",
+        "text": "[RISK_DETECTED] {\"seriesId\":\"series-trending-shorts\",\"insightId\":\"biggest-blocker\",\"label\":\"Biggest blocker\",\"summary\":\"3 episodes missing assets\",\"severity\":\"CRITICAL\",\"timestamp\":1784521452247}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.248Z",
+        "type": "log",
+        "text": "[RISK_DETECTED] {\"seriesId\":\"series-trending-shorts\",\"insightId\":\"missing-assets\",\"label\":\"Missing assets\",\"summary\":\"3 episodes need video assets.\",\"severity\":\"CRITICAL\",\"timestamp\":1784521452247}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.254Z",
+        "type": "log",
+        "text": "[SEARCH_INDEX] {\"total\":357,\"byDomain\":{\"reels\":19,\"series\":3,\"episodes\":28,\"tasks\":13,\"workflows\":3,\"notifications\":200,\"marketplace_listings\":7,\"creators\":7,\"teams\":1,\"revenue_insights\":6,\"security_incidents\":37,\"sentinel_recommendations\":8,\"guide_me_content\":18,\"daily_engagement_cards\":7},\"timestamp\":1784521452251}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.254Z",
+        "type": "log",
+        "text": "[SEARCH_INDEX] {\"reason\":\"notifications_changed\",\"timestamp\":1784521452251}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.254Z",
+        "type": "log",
+        "text": "[MARKETPLACE_LISTING] {\"count\":7,\"category\":\"all\",\"creatorId\":null,\"listingIds\":[\"service-editing-001\",\"service-voice_over-001\",\"service-music-001\",\"service-vfx-001\",\"service-thumbnail_design-001\",\"service-script_writing-001\",\"service-marketing-001\"],\"timestamp\":1784521452252}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.254Z",
+        "type": "log",
+        "text": "[MARKETPLACE_SEARCH] {\"query\":null,\"category\":\"all\",\"activeOnly\":true,\"resultCount\":7,\"timestamp\":1784521452253}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.254Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452253}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.255Z",
+        "type": "log",
+        "text": "[CREATOR_FEED] {\"reason\":\"notifications_updated\",\"seriesId\":\"series-trending-shorts\",\"cardCount\":8,\"cardKinds\":[\"today_tasks\",\"revenue_snapshot\",\"marketplace_opportunities\",\"daily_engagement\",\"trending_series\",\"upcoming_releases\",\"security_alerts\",\"team_activity\"],\"topCard\":\"today_tasks\",\"timestamp\":1784521452253}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.255Z",
+        "type": "log",
+        "text": "[MARKETPLACE_LISTING] {\"count\":7,\"category\":\"all\",\"creatorId\":null,\"listingIds\":[\"service-editing-001\",\"service-voice_over-001\",\"service-music-001\",\"service-vfx-001\",\"service-thumbnail_design-001\",\"service-script_writing-001\",\"service-marketing-001\"],\"timestamp\":1784521452254}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.255Z",
+        "type": "log",
+        "text": "[MARKETPLACE_SEARCH] {\"query\":null,\"category\":\"all\",\"activeOnly\":true,\"resultCount\":7,\"timestamp\":1784521452254}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.255Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452254}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.259Z",
+        "type": "log",
+        "text": "[DISCOVERY_FEED] {\"reason\":\"notifications_updated\",\"seriesId\":\"series-trending-shorts\",\"cardCount\":12,\"sectionSizes\":{\"trendingCreators\":1,\"marketplaceOpportunities\":3,\"upcomingReleases\":1,\"revenueMilestones\":1,\"sentinelInsights\":2,\"teamHighlights\":1,\"productionWins\":1,\"dailyRecommendations\":2},\"topCard\":\"sentinel_insights\",\"timestamp\":1784521452257}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.259Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"sentinel_insights:insight-1\",\"sectionId\":\"sentinel_insights\",\"title\":\"Insight 1\",\"score\":69,\"timestamp\":1784521452258}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.259Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"sentinel_insights:insight-2\",\"sectionId\":\"sentinel_insights\",\"title\":\"Insight 2\",\"score\":69,\"timestamp\":1784521452258}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.259Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"revenue_milestones:revenue-pulse\",\"sectionId\":\"revenue_milestones\",\"title\":\"Revenue Pulse\",\"score\":69,\"timestamp\":1784521452258}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.259Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"daily_recommendations:daily-studio-tip\",\"sectionId\":\"daily_recommendations\",\"title\":\"Daily Studio Tip\",\"score\":66,\"timestamp\":1784521452258}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.259Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"daily_recommendations:daily-creator-challenge\",\"sectionId\":\"daily_recommendations\",\"title\":\"Daily Creator Challenge\",\"score\":64,\"timestamp\":1784521452258}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.259Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"marketplace_opportunities:open-vfx-composite-gig\",\"sectionId\":\"marketplace_opportunities\",\"title\":\"Open VFX Composite Gig\",\"score\":64,\"timestamp\":1784521452258}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.260Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"marketplace_opportunities:editing-package\",\"sectionId\":\"marketplace_opportunities\",\"title\":\"Editing Package\",\"score\":60,\"timestamp\":1784521452258}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.260Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"marketplace_opportunities:voice-over-package\",\"sectionId\":\"marketplace_opportunities\",\"title\":\"Voice Over Package\",\"score\":60,\"timestamp\":1784521452258}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.260Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"upcoming_releases:no-scheduled-release\",\"sectionId\":\"upcoming_releases\",\"title\":\"No scheduled release\",\"score\":56,\"timestamp\":1784521452258}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.260Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"production_wins:no-production-wins-yet-today\",\"sectionId\":\"production_wins\",\"title\":\"No production wins yet today\",\"score\":50,\"timestamp\":1784521452258}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.260Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"trending_creators:build-creator-momentum\",\"sectionId\":\"trending_creators\",\"title\":\"Build creator momentum\",\"score\":44,\"timestamp\":1784521452258}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.260Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"team_highlights:no-recent-team-highlights\",\"sectionId\":\"team_highlights\",\"title\":\"No recent team highlights\",\"score\":38,\"timestamp\":1784521452258}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.260Z",
+        "type": "log",
+        "text": "[DISCOVERY_REFRESH] {\"reason\":\"notifications_updated\",\"updatedAt\":1784521452257,\"cardCount\":12,\"timestamp\":1784521452258}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.262Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":null,\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452259,\"eventCount\":1,\"timestamp\":1784521452259}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.262Z",
+        "type": "log",
+        "text": "[OBSERVABILITY] {\"seriesId\":null,\"signals\":{\"api_latency\":398,\"database_latency\":400,\"workflow_throughput\":2,\"notification_throughput\":200,\"publishing_throughput\":0,\"viewer_engagement\":10},\"alertCount\":2,\"timestamp\":1784521452259}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.262Z",
+        "type": "log",
+        "text": "[HEALTH_SCORE] {\"seriesId\":null,\"healthScore\":64,\"apiLatencyMs\":398,\"databaseLatencyMs\":400,\"viewerEngagement\":10,\"timestamp\":1784521452260}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.262Z",
+        "type": "log",
+        "text": "[SYSTEM_ALERT] {\"seriesId\":null,\"level\":\"warning\",\"code\":\"HEALTH_DEGRADED\",\"message\":\"Platform health score 64% is degraded\",\"timestamp\":1784521452260}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.262Z",
+        "type": "log",
+        "text": "[SYSTEM_ALERT] {\"seriesId\":null,\"level\":\"warning\",\"code\":\"VIEWER_ENGAGEMENT_LOW\",\"message\":\"Viewer engagement signals are below expected levels\",\"timestamp\":1784521452260}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.263Z",
+        "type": "info",
+        "text": "[FETCH] {timestamp: 2026-07-20T04:24:12.260Z, function: fetchWithRetry, sourceFile: api.js, assetId: null, fileName: null}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.265Z",
+        "type": "info",
+        "text": "[FETCH] {timestamp: 2026-07-20T04:24:12.264Z, function: fetchWithRetry, sourceFile: api.js, assetId: null, fileName: null}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.305Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":null,\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452303,\"eventCount\":1,\"timestamp\":1784521452303}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.305Z",
+        "type": "log",
+        "text": "[OBSERVABILITY] {\"seriesId\":null,\"signals\":{\"api_latency\":398,\"database_latency\":400,\"workflow_throughput\":2,\"notification_throughput\":200,\"publishing_throughput\":0,\"viewer_engagement\":10},\"alertCount\":2,\"timestamp\":1784521452304}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.306Z",
+        "type": "log",
+        "text": "[HEALTH_SCORE] {\"seriesId\":null,\"healthScore\":64,\"apiLatencyMs\":398,\"databaseLatencyMs\":400,\"viewerEngagement\":10,\"timestamp\":1784521452305}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.306Z",
+        "type": "log",
+        "text": "[SYSTEM_ALERT] {\"seriesId\":null,\"level\":\"warning\",\"code\":\"HEALTH_DEGRADED\",\"message\":\"Platform health score 64% is degraded\",\"timestamp\":1784521452305}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.306Z",
+        "type": "log",
+        "text": "[SYSTEM_ALERT] {\"seriesId\":null,\"level\":\"warning\",\"code\":\"VIEWER_ENGAGEMENT_LOW\",\"message\":\"Viewer engagement signals are below expected levels\",\"timestamp\":1784521452305}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.307Z",
+        "type": "info",
+        "text": "[FETCH] {timestamp: 2026-07-20T04:24:12.305Z, function: fetchWithRetry, sourceFile: api.js, assetId: null, fileName: null}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.311Z",
+        "type": "info",
+        "text": "[RESPONSE] {timestamp: 2026-07-20T04:24:12.309Z, function: fetchWithRetry, sourceFile: api.js, assetId: null, fileName: null}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.312Z",
+        "type": "info",
+        "text": "[FETCH] {timestamp: 2026-07-20T04:24:12.311Z, function: fetchWithRetry, sourceFile: api.js, assetId: null, fileName: null}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.422Z",
+        "type": "info",
+        "text": "[RESPONSE] {timestamp: 2026-07-20T04:24:12.420Z, function: fetchWithRetry, sourceFile: api.js, assetId: null, fileName: null}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.477Z",
+        "type": "log",
+        "text": "[DISCOVERY_QUERY] {\"query\":\"trending popular episodes marketplace security\",\"tokenCount\":5,\"total\":40,\"tookMs\":46,\"timestamp\":1784521452474}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.477Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:3c78b8f4-69bb-4d2a-a6a6-8fcb95b9a377\",\"source\":\"notification\",\"score\":81.16,\"title\":\"asset_missing\",\"timestamp\":1784521452475}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.477Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:89a86489-e021-45cd-ac85-86f86e264cf7\",\"source\":\"notification\",\"score\":81.16,\"title\":\"asset_missing\",\"timestamp\":1784521452475}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.477Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:4f2f20a4-3542-449a-980c-d74de70fb5f5\",\"source\":\"notification\",\"score\":81.16,\"title\":\"asset_missing\",\"timestamp\":1784521452475}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.477Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:b01609e3-16e9-4f03-915c-1853c04d7912\",\"source\":\"notification\",\"score\":77.16,\"title\":\"asset_missing\",\"timestamp\":1784521452475}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.477Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:68a9d125-98a7-484b-9348-fd658938b690\",\"source\":\"notification\",\"score\":77.16,\"title\":\"asset_missing\",\"timestamp\":1784521452475}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.477Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:f3917c33-8c4d-4c7b-ae5a-e43276d1b4d7\",\"source\":\"notification\",\"score\":77.16,\"title\":\"asset_missing\",\"timestamp\":1784521452475}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.477Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:025fc704-4ce5-4d04-b700-95c4cebb9810\",\"source\":\"notification\",\"score\":77.16,\"title\":\"asset_missing\",\"timestamp\":1784521452475}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.477Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:741dfc6a-1529-4b11-94fc-e029b72feaee\",\"source\":\"notification\",\"score\":77.16,\"title\":\"asset_missing\",\"timestamp\":1784521452475}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.477Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:7affdd52-53c2-4d77-bac2-edd71a693994\",\"source\":\"notification\",\"score\":77.16,\"title\":\"asset_missing\",\"timestamp\":1784521452475}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.477Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:ac07db5c-48c5-4233-9a0b-9f7c99240e06\",\"source\":\"notification\",\"score\":77.16,\"title\":\"asset_missing\",\"timestamp\":1784521452475}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.478Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"cache\",\"seriesId\":\"series-trending-shorts\",\"dailyActiveViewers\":0,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":0,\"publishingVelocity\":0,\"generatedAt\":1784521451061,\"eventCount\":1,\"timestamp\":1784521452477}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.478Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452477}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.479Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452477}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.479Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"horizon_forecasts\",\"profileId\":\"series-trending-shorts\",\"horizonCount\":3,\"growthRate\":0.08,\"timestamp\":1784521452478}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.479Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"dashboard_brief\",\"seriesId\":\"series-trending-shorts\",\"aggregateNetMonthlyCents\":74521,\"mrrCents\":74521,\"arrCents\":894252,\"forecastCount\":3,\"timestamp\":1784521452478}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.479Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-vault-chronicles\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452478,\"eventCount\":1,\"timestamp\":1784521452478}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.479Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-vault-chronicles\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452478}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.480Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-vault-chronicles\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452478}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.480Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"horizon_forecasts\",\"profileId\":\"series-vault-chronicles\",\"horizonCount\":3,\"growthRate\":0.08,\"timestamp\":1784521452479}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.480Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"dashboard_brief\",\"seriesId\":\"series-vault-chronicles\",\"aggregateNetMonthlyCents\":74521,\"mrrCents\":74521,\"arrCents\":894252,\"forecastCount\":3,\"timestamp\":1784521452479}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.480Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-neon-vengeance\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452479,\"eventCount\":1,\"timestamp\":1784521452479}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.480Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-neon-vengeance\",\"grossMonthlyCents\":137842,\"netCreatorCents\":109171,\"monthlyViewers\":1500,\"episodes\":6,\"timestamp\":1784521452479}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.480Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-neon-vengeance\",\"grossMonthlyCents\":137842,\"netCreatorCents\":109171,\"monthlyViewers\":1500,\"episodes\":6,\"timestamp\":1784521452479}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.480Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"horizon_forecasts\",\"profileId\":\"series-neon-vengeance\",\"horizonCount\":3,\"growthRate\":0.08,\"timestamp\":1784521452480}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.480Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"dashboard_brief\",\"seriesId\":\"series-neon-vengeance\",\"aggregateNetMonthlyCents\":109171,\"mrrCents\":109171,\"arrCents\":1310052,\"forecastCount\":3,\"timestamp\":1784521452480}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.481Z",
+        "type": "log",
+        "text": "[MARKETPLACE_LISTING] {\"count\":7,\"category\":\"all\",\"creatorId\":null,\"listingIds\":[\"service-editing-001\",\"service-voice_over-001\",\"service-music-001\",\"service-vfx-001\",\"service-thumbnail_design-001\",\"service-script_writing-001\",\"service-marketing-001\"],\"timestamp\":1784521452480}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.482Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"cache\",\"seriesId\":\"series-trending-shorts\",\"dailyActiveViewers\":0,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":0,\"publishingVelocity\":0,\"generatedAt\":1784521451061,\"eventCount\":1,\"timestamp\":1784521452481}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.482Z",
+        "type": "log",
+        "text": "[WORKFLOW_ENGINE] {\"seriesId\":\"series-trending-shorts\",\"taskCount\":3,\"created\":0,\"completed\":0,\"readinessBefore\":0,\"readinessAfter\":36,\"actionRecommendations\":3,\"usesMockData\":false,\"helpAvailable\":true,\"timestamp\":1784521452481}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.484Z",
+        "type": "log",
+        "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"series-trending-shorts\",\"currentReadiness\":0,\"projectedReadiness\":36,\"targetReadiness\":80,\"estimatedTime\":9,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"analysis\":{\"readiness\":{\"score\":0,\"metadata\":0,\"assets\":0,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":3,\"pendingTasks\":3,\"inProgressTasks\":0,\"criticalTasks\":3,\"estimatedMinutes\":9},\"release\":{\"episodesScheduled\":0,\"episodesReady\":1,\"missingAssets\":0,\"daysUntilLaunch\":null,\"launchReadinessScore\":87},\"assets\":{\"totalEpisodes\":3,\"coveredEpisodes\":3,\"missingAssets\":3,\"coveragePercent\":100}},\"topPriorityCount\":3,\"quickWinCount\":0,\"criticalRiskCount\":3,\"recommendedActionCount\":3,\"timestamp\":1784521452483}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.484Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e01\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E01 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452483}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.484Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e02\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E02 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452483}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.484Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e03\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E03 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452483}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.485Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-vault-chronicles\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452484,\"eventCount\":1,\"timestamp\":1784521452484}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.486Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-vault-chronicles\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452485,\"eventCount\":1,\"timestamp\":1784521452485}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.487Z",
+        "type": "log",
+        "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"series-vault-chronicles\",\"currentReadiness\":0,\"projectedReadiness\":36,\"targetReadiness\":80,\"estimatedTime\":9,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"analysis\":{\"readiness\":{\"score\":0,\"metadata\":0,\"assets\":0,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":3,\"pendingTasks\":3,\"inProgressTasks\":0,\"criticalTasks\":3,\"estimatedMinutes\":9},\"release\":{\"episodesScheduled\":0,\"episodesReady\":0,\"missingAssets\":1,\"daysUntilLaunch\":null,\"launchReadinessScore\":60},\"assets\":{\"totalEpisodes\":3,\"coveredEpisodes\":2,\"missingAssets\":3,\"coveragePercent\":67}},\"topPriorityCount\":3,\"quickWinCount\":0,\"criticalRiskCount\":3,\"recommendedActionCount\":3,\"timestamp\":1784521452486}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.487Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e01\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E01 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452486}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.487Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e02\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E02 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452486}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.487Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e03\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E03 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452486}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.487Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-vault-chronicles\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452486,\"eventCount\":1,\"timestamp\":1784521452486}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.488Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-vault-chronicles\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452487,\"eventCount\":1,\"timestamp\":1784521452487}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.489Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-neon-vengeance\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452487,\"eventCount\":1,\"timestamp\":1784521452487}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.489Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-neon-vengeance\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452488,\"eventCount\":1,\"timestamp\":1784521452488}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.490Z",
+        "type": "log",
+        "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"series-neon-vengeance\",\"currentReadiness\":25,\"projectedReadiness\":61,\"targetReadiness\":80,\"estimatedTime\":18,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"analysis\":{\"readiness\":{\"score\":25,\"metadata\":100,\"assets\":0,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":5,\"pendingTasks\":5,\"inProgressTasks\":0,\"criticalTasks\":0,\"estimatedMinutes\":15},\"release\":{\"episodesScheduled\":0,\"episodesReady\":1,\"missingAssets\":0,\"daysUntilLaunch\":null,\"launchReadinessScore\":93},\"assets\":{\"totalEpisodes\":6,\"coveredEpisodes\":6,\"missingAssets\":6,\"coveragePercent\":100}},\"topPriorityCount\":5,\"quickWinCount\":0,\"criticalRiskCount\":5,\"recommendedActionCount\":6,\"timestamp\":1784521452489}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.490Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e01\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E01 reel\",\"impact\":6,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452489}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.490Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e02\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E02 reel\",\"impact\":6,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452489}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.491Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e03\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E03 reel\",\"impact\":6,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452489}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.491Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e04\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E04 reel\",\"impact\":6,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452489}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.491Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s02e01\",\"priority\":\"CRITICAL\",\"title\":\"Upload S2:E01 reel\",\"impact\":6,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452489}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.491Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s02e02\",\"priority\":\"CRITICAL\",\"title\":\"Upload S2:E02 reel\",\"impact\":6,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452490}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.491Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-neon-vengeance\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452490,\"eventCount\":1,\"timestamp\":1784521452490}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.492Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-neon-vengeance\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452491,\"eventCount\":1,\"timestamp\":1784521452491}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.502Z",
+        "type": "log",
+        "text": "[DISCOVERY_INDEX] {\"totalDocuments\":330,\"bySource\":{\"series_metadata\":19,\"episode\":12,\"workflow\":13,\"notification\":200,\"revenue\":3,\"hero_content\":6,\"marketplace\":16,\"security_event\":37,\"sentinel_recommendation\":24},\"timestamp\":1784521452494}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.502Z",
+        "type": "log",
+        "text": "[MARKETPLACE_LISTING] {\"count\":7,\"category\":\"all\",\"creatorId\":null,\"listingIds\":[\"service-editing-001\",\"service-voice_over-001\",\"service-music-001\",\"service-vfx-001\",\"service-thumbnail_design-001\",\"service-script_writing-001\",\"service-marketing-001\"],\"timestamp\":1784521452494}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.502Z",
+        "type": "log",
+        "text": "[MARKETPLACE_SEARCH] {\"query\":null,\"category\":\"all\",\"activeOnly\":true,\"resultCount\":7,\"timestamp\":1784521452494}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.502Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"cache\",\"seriesId\":\"series-trending-shorts\",\"dailyActiveViewers\":0,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":0,\"publishingVelocity\":0,\"generatedAt\":1784521451061,\"eventCount\":1,\"timestamp\":1784521452494}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.502Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452495}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.502Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452495}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.502Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452495}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.502Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452495}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.502Z",
+        "type": "log",
+        "text": "[WORKFLOW_ENGINE] {\"seriesId\":\"series-trending-shorts\",\"taskCount\":3,\"created\":0,\"completed\":0,\"readinessBefore\":0,\"readinessAfter\":36,\"actionRecommendations\":3,\"usesMockData\":false,\"helpAvailable\":true,\"timestamp\":1784521452496}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.502Z",
+        "type": "log",
+        "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"series-trending-shorts\",\"currentReadiness\":0,\"projectedReadiness\":36,\"targetReadiness\":80,\"estimatedTime\":9,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"analysis\":{\"readiness\":{\"score\":0,\"metadata\":0,\"assets\":0,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":3,\"pendingTasks\":3,\"inProgressTasks\":0,\"criticalTasks\":3,\"estimatedMinutes\":9},\"release\":{\"episodesScheduled\":0,\"episodesReady\":1,\"missingAssets\":0,\"daysUntilLaunch\":null,\"launchReadinessScore\":87},\"assets\":{\"totalEpisodes\":3,\"coveredEpisodes\":3,\"missingAssets\":3,\"coveragePercent\":100}},\"topPriorityCount\":3,\"quickWinCount\":0,\"criticalRiskCount\":3,\"recommendedActionCount\":3,\"timestamp\":1784521452497}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.502Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e01\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E01 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452497}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.502Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e02\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E02 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452498}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.503Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e03\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E03 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452498}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.503Z",
+        "type": "log",
+        "text": "[HOME_FEED] {\"reason\":\"notification\",\"seriesId\":\"series-trending-shorts\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1784521452499}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.503Z",
+        "type": "log",
+        "text": "[HOME_FEED_REFRESH] {\"reason\":\"notification\",\"updatedAt\":1784521452428,\"timestamp\":1784521452499}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.503Z",
+        "type": "info",
+        "text": "[RESPONSE] {timestamp: 2026-07-20T04:24:12.501Z, function: fetchWithRetry, sourceFile: api.js, assetId: null, fileName: null}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.505Z",
+        "type": "log",
+        "text": "[MARKETPLACE_LISTING] {\"count\":7,\"category\":\"all\",\"creatorId\":null,\"listingIds\":[\"service-editing-001\",\"service-voice_over-001\",\"service-music-001\",\"service-vfx-001\",\"service-thumbnail_design-001\",\"service-script_writing-001\",\"service-marketing-001\"],\"timestamp\":1784521452504}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.505Z",
+        "type": "log",
+        "text": "[MARKETPLACE_SEARCH] {\"query\":null,\"category\":\"all\",\"activeOnly\":true,\"resultCount\":7,\"timestamp\":1784521452504}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.505Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452504}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.506Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452505}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.506Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452505}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.506Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452505}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.512Z",
+        "type": "log",
+        "text": "[STUDIO_ASSISTANT] {\"seriesId\":\"series-trending-shorts\",\"currentReadiness\":0,\"projectedReadiness\":36,\"openWorkflowTasks\":3,\"unreadNotifications\":200,\"missingAssets\":3,\"blockerCount\":3,\"insightCount\":6,\"timestamp\":1784521452511}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.512Z",
+        "type": "log",
+        "text": "[MISSION_GENERATED] {\"seriesId\":\"series-trending-shorts\",\"todaysMission\":\"Attach 3 missing reels, then attach reel to e01.\",\"topPriority\":\"Attach reel to E01\",\"quickWin\":\"Attach reel to E03\",\"criticalRisk\":\"Upload S1:E01 reel\",\"projectedReadiness\":36,\"targetReadiness\":80,\"timestamp\":1784521452511}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.512Z",
+        "type": "log",
+        "text": "[RISK_DETECTED] {\"seriesId\":\"series-trending-shorts\",\"riskTitle\":\"Upload S1:E01 reel\",\"severity\":\"CRITICAL\",\"releaseRisk\":\"No release risks detected \u2014 schedule looks stable.\",\"blockerCount\":3,\"timestamp\":1784521452511}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.512Z",
+        "type": "log",
+        "text": "[RISK_DETECTED] {\"seriesId\":\"series-trending-shorts\",\"insightId\":\"what-next\",\"label\":\"What should I do next?\",\"summary\":\"Attach reel to E01\",\"severity\":\"CRITICAL\",\"timestamp\":1784521452511}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.512Z",
+        "type": "log",
+        "text": "[RISK_DETECTED] {\"seriesId\":\"series-trending-shorts\",\"insightId\":\"biggest-blocker\",\"label\":\"Biggest blocker\",\"summary\":\"3 episodes missing assets\",\"severity\":\"CRITICAL\",\"timestamp\":1784521452511}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.512Z",
+        "type": "log",
+        "text": "[RISK_DETECTED] {\"seriesId\":\"series-trending-shorts\",\"insightId\":\"missing-assets\",\"label\":\"Missing assets\",\"summary\":\"3 episodes need video assets.\",\"severity\":\"CRITICAL\",\"timestamp\":1784521452511}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.519Z",
+        "type": "log",
+        "text": "[SEARCH_INDEX] {\"total\":357,\"byDomain\":{\"reels\":19,\"series\":3,\"episodes\":28,\"tasks\":13,\"workflows\":3,\"notifications\":200,\"marketplace_listings\":7,\"creators\":7,\"teams\":1,\"revenue_insights\":6,\"security_incidents\":37,\"sentinel_recommendations\":8,\"guide_me_content\":18,\"daily_engagement_cards\":7},\"timestamp\":1784521452516}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.519Z",
+        "type": "log",
+        "text": "[SEARCH_INDEX] {\"reason\":\"notifications_changed\",\"timestamp\":1784521452516}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.519Z",
+        "type": "log",
+        "text": "[MARKETPLACE_LISTING] {\"count\":7,\"category\":\"all\",\"creatorId\":null,\"listingIds\":[\"service-editing-001\",\"service-voice_over-001\",\"service-music-001\",\"service-vfx-001\",\"service-thumbnail_design-001\",\"service-script_writing-001\",\"service-marketing-001\"],\"timestamp\":1784521452517}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.519Z",
+        "type": "log",
+        "text": "[MARKETPLACE_SEARCH] {\"query\":null,\"category\":\"all\",\"activeOnly\":true,\"resultCount\":7,\"timestamp\":1784521452517}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.519Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452517}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.519Z",
+        "type": "log",
+        "text": "[CREATOR_FEED] {\"reason\":\"notifications_updated\",\"seriesId\":\"series-trending-shorts\",\"cardCount\":8,\"cardKinds\":[\"today_tasks\",\"revenue_snapshot\",\"marketplace_opportunities\",\"daily_engagement\",\"trending_series\",\"upcoming_releases\",\"security_alerts\",\"team_activity\"],\"topCard\":\"today_tasks\",\"timestamp\":1784521452518}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.520Z",
+        "type": "log",
+        "text": "[MARKETPLACE_LISTING] {\"count\":7,\"category\":\"all\",\"creatorId\":null,\"listingIds\":[\"service-editing-001\",\"service-voice_over-001\",\"service-music-001\",\"service-vfx-001\",\"service-thumbnail_design-001\",\"service-script_writing-001\",\"service-marketing-001\"],\"timestamp\":1784521452518}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.520Z",
+        "type": "log",
+        "text": "[MARKETPLACE_SEARCH] {\"query\":null,\"category\":\"all\",\"activeOnly\":true,\"resultCount\":7,\"timestamp\":1784521452518}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.520Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452518}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.523Z",
+        "type": "log",
+        "text": "[DISCOVERY_FEED] {\"reason\":\"notifications_updated\",\"seriesId\":\"series-trending-shorts\",\"cardCount\":12,\"sectionSizes\":{\"trendingCreators\":1,\"marketplaceOpportunities\":3,\"upcomingReleases\":1,\"revenueMilestones\":1,\"sentinelInsights\":2,\"teamHighlights\":1,\"productionWins\":1,\"dailyRecommendations\":2},\"topCard\":\"sentinel_insights\",\"timestamp\":1784521452522}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.523Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"sentinel_insights:insight-1\",\"sectionId\":\"sentinel_insights\",\"title\":\"Insight 1\",\"score\":69,\"timestamp\":1784521452522}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.524Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"sentinel_insights:insight-2\",\"sectionId\":\"sentinel_insights\",\"title\":\"Insight 2\",\"score\":69,\"timestamp\":1784521452522}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.524Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"revenue_milestones:revenue-pulse\",\"sectionId\":\"revenue_milestones\",\"title\":\"Revenue Pulse\",\"score\":69,\"timestamp\":1784521452522}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.524Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"daily_recommendations:daily-studio-tip\",\"sectionId\":\"daily_recommendations\",\"title\":\"Daily Studio Tip\",\"score\":66,\"timestamp\":1784521452522}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.524Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"daily_recommendations:daily-creator-challenge\",\"sectionId\":\"daily_recommendations\",\"title\":\"Daily Creator Challenge\",\"score\":64,\"timestamp\":1784521452522}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.524Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"marketplace_opportunities:open-vfx-composite-gig\",\"sectionId\":\"marketplace_opportunities\",\"title\":\"Open VFX Composite Gig\",\"score\":64,\"timestamp\":1784521452522}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.524Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"marketplace_opportunities:editing-package\",\"sectionId\":\"marketplace_opportunities\",\"title\":\"Editing Package\",\"score\":60,\"timestamp\":1784521452522}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.524Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"marketplace_opportunities:voice-over-package\",\"sectionId\":\"marketplace_opportunities\",\"title\":\"Voice Over Package\",\"score\":60,\"timestamp\":1784521452522}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.524Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"upcoming_releases:no-scheduled-release\",\"sectionId\":\"upcoming_releases\",\"title\":\"No scheduled release\",\"score\":56,\"timestamp\":1784521452522}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.524Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"production_wins:no-production-wins-yet-today\",\"sectionId\":\"production_wins\",\"title\":\"No production wins yet today\",\"score\":50,\"timestamp\":1784521452522}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.524Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"trending_creators:build-creator-momentum\",\"sectionId\":\"trending_creators\",\"title\":\"Build creator momentum\",\"score\":44,\"timestamp\":1784521452522}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.524Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"team_highlights:no-recent-team-highlights\",\"sectionId\":\"team_highlights\",\"title\":\"No recent team highlights\",\"score\":38,\"timestamp\":1784521452522}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.524Z",
+        "type": "log",
+        "text": "[DISCOVERY_REFRESH] {\"reason\":\"notifications_updated\",\"updatedAt\":1784521452521,\"cardCount\":12,\"timestamp\":1784521452522}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.526Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":null,\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452523,\"eventCount\":1,\"timestamp\":1784521452523}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.526Z",
+        "type": "log",
+        "text": "[OBSERVABILITY] {\"seriesId\":null,\"signals\":{\"api_latency\":399,\"database_latency\":401,\"workflow_throughput\":2,\"notification_throughput\":200,\"publishing_throughput\":0,\"viewer_engagement\":10},\"alertCount\":2,\"timestamp\":1784521452524}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.526Z",
+        "type": "log",
+        "text": "[HEALTH_SCORE] {\"seriesId\":null,\"healthScore\":64,\"apiLatencyMs\":399,\"databaseLatencyMs\":401,\"viewerEngagement\":10,\"timestamp\":1784521452524}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.527Z",
+        "type": "log",
+        "text": "[SYSTEM_ALERT] {\"seriesId\":null,\"level\":\"warning\",\"code\":\"HEALTH_DEGRADED\",\"message\":\"Platform health score 64% is degraded\",\"timestamp\":1784521452524}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.527Z",
+        "type": "log",
+        "text": "[SYSTEM_ALERT] {\"seriesId\":null,\"level\":\"warning\",\"code\":\"VIEWER_ENGAGEMENT_LOW\",\"message\":\"Viewer engagement signals are below expected levels\",\"timestamp\":1784521452524}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.527Z",
+        "type": "info",
+        "text": "[FETCH] {timestamp: 2026-07-20T04:24:12.524Z, function: fetchWithRetry, sourceFile: api.js, assetId: null, fileName: null}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.528Z",
+        "type": "info",
+        "text": "[FETCH] {timestamp: 2026-07-20T04:24:12.527Z, function: fetchWithRetry, sourceFile: api.js, assetId: null, fileName: null}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.561Z",
+        "type": "info",
+        "text": "[RESPONSE] {timestamp: 2026-07-20T04:24:12.559Z, function: fetchWithRetry, sourceFile: api.js, assetId: null, fileName: null}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.563Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":null,\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452562,\"eventCount\":1,\"timestamp\":1784521452562}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.564Z",
+        "type": "log",
+        "text": "[OBSERVABILITY] {\"seriesId\":null,\"signals\":{\"api_latency\":400,\"database_latency\":401,\"workflow_throughput\":2,\"notification_throughput\":200,\"publishing_throughput\":0,\"viewer_engagement\":10},\"alertCount\":2,\"timestamp\":1784521452563}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.564Z",
+        "type": "log",
+        "text": "[HEALTH_SCORE] {\"seriesId\":null,\"healthScore\":64,\"apiLatencyMs\":400,\"databaseLatencyMs\":401,\"viewerEngagement\":10,\"timestamp\":1784521452563}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.564Z",
+        "type": "log",
+        "text": "[SYSTEM_ALERT] {\"seriesId\":null,\"level\":\"warning\",\"code\":\"HEALTH_DEGRADED\",\"message\":\"Platform health score 64% is degraded\",\"timestamp\":1784521452563}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.564Z",
+        "type": "log",
+        "text": "[SYSTEM_ALERT] {\"seriesId\":null,\"level\":\"warning\",\"code\":\"VIEWER_ENGAGEMENT_LOW\",\"message\":\"Viewer engagement signals are below expected levels\",\"timestamp\":1784521452563}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.565Z",
+        "type": "info",
+        "text": "[FETCH] {timestamp: 2026-07-20T04:24:12.564Z, function: fetchWithRetry, sourceFile: api.js, assetId: null, fileName: null}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.657Z",
+        "type": "info",
+        "text": "[RESPONSE] {timestamp: 2026-07-20T04:24:12.655Z, function: fetchWithRetry, sourceFile: api.js, assetId: null, fileName: null}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.736Z",
+        "type": "log",
+        "text": "[DISCOVERY_QUERY] {\"query\":\"trending popular episodes marketplace security\",\"tokenCount\":5,\"total\":40,\"tookMs\":48,\"timestamp\":1784521452734}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.736Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:3c78b8f4-69bb-4d2a-a6a6-8fcb95b9a377\",\"source\":\"notification\",\"score\":81.16,\"title\":\"asset_missing\",\"timestamp\":1784521452734}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.736Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:89a86489-e021-45cd-ac85-86f86e264cf7\",\"source\":\"notification\",\"score\":81.16,\"title\":\"asset_missing\",\"timestamp\":1784521452734}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.736Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:4f2f20a4-3542-449a-980c-d74de70fb5f5\",\"source\":\"notification\",\"score\":81.16,\"title\":\"asset_missing\",\"timestamp\":1784521452734}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.736Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:b01609e3-16e9-4f03-915c-1853c04d7912\",\"source\":\"notification\",\"score\":77.16,\"title\":\"asset_missing\",\"timestamp\":1784521452734}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.736Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:68a9d125-98a7-484b-9348-fd658938b690\",\"source\":\"notification\",\"score\":77.16,\"title\":\"asset_missing\",\"timestamp\":1784521452734}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.736Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:f3917c33-8c4d-4c7b-ae5a-e43276d1b4d7\",\"source\":\"notification\",\"score\":77.16,\"title\":\"asset_missing\",\"timestamp\":1784521452734}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.736Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:025fc704-4ce5-4d04-b700-95c4cebb9810\",\"source\":\"notification\",\"score\":77.16,\"title\":\"asset_missing\",\"timestamp\":1784521452734}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.737Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:741dfc6a-1529-4b11-94fc-e029b72feaee\",\"source\":\"notification\",\"score\":77.16,\"title\":\"asset_missing\",\"timestamp\":1784521452734}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.737Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:7affdd52-53c2-4d77-bac2-edd71a693994\",\"source\":\"notification\",\"score\":77.16,\"title\":\"asset_missing\",\"timestamp\":1784521452735}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.737Z",
+        "type": "log",
+        "text": "[DISCOVERY_RESULT] {\"query\":\"trending popular episodes marketplace security\",\"id\":\"notification:ac07db5c-48c5-4233-9a0b-9f7c99240e06\",\"source\":\"notification\",\"score\":77.16,\"title\":\"asset_missing\",\"timestamp\":1784521452735}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.737Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"cache\",\"seriesId\":\"series-trending-shorts\",\"dailyActiveViewers\":0,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":0,\"publishingVelocity\":0,\"generatedAt\":1784521451061,\"eventCount\":1,\"timestamp\":1784521452736}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.738Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452737}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.738Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452737}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.738Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"horizon_forecasts\",\"profileId\":\"series-trending-shorts\",\"horizonCount\":3,\"growthRate\":0.08,\"timestamp\":1784521452737}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.738Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"dashboard_brief\",\"seriesId\":\"series-trending-shorts\",\"aggregateNetMonthlyCents\":74521,\"mrrCents\":74521,\"arrCents\":894252,\"forecastCount\":3,\"timestamp\":1784521452738}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.738Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-vault-chronicles\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452738,\"eventCount\":1,\"timestamp\":1784521452738}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.738Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-vault-chronicles\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452738}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.739Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-vault-chronicles\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452738}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.739Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"horizon_forecasts\",\"profileId\":\"series-vault-chronicles\",\"horizonCount\":3,\"growthRate\":0.08,\"timestamp\":1784521452738}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.739Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"dashboard_brief\",\"seriesId\":\"series-vault-chronicles\",\"aggregateNetMonthlyCents\":74521,\"mrrCents\":74521,\"arrCents\":894252,\"forecastCount\":3,\"timestamp\":1784521452739}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.740Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-neon-vengeance\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452739,\"eventCount\":1,\"timestamp\":1784521452739}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.740Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-neon-vengeance\",\"grossMonthlyCents\":137842,\"netCreatorCents\":109171,\"monthlyViewers\":1500,\"episodes\":6,\"timestamp\":1784521452739}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.740Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-neon-vengeance\",\"grossMonthlyCents\":137842,\"netCreatorCents\":109171,\"monthlyViewers\":1500,\"episodes\":6,\"timestamp\":1784521452739}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.740Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"horizon_forecasts\",\"profileId\":\"series-neon-vengeance\",\"horizonCount\":3,\"growthRate\":0.08,\"timestamp\":1784521452739}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.740Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"dashboard_brief\",\"seriesId\":\"series-neon-vengeance\",\"aggregateNetMonthlyCents\":109171,\"mrrCents\":109171,\"arrCents\":1310052,\"forecastCount\":3,\"timestamp\":1784521452740}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.740Z",
+        "type": "log",
+        "text": "[MARKETPLACE_LISTING] {\"count\":7,\"category\":\"all\",\"creatorId\":null,\"listingIds\":[\"service-editing-001\",\"service-voice_over-001\",\"service-music-001\",\"service-vfx-001\",\"service-thumbnail_design-001\",\"service-script_writing-001\",\"service-marketing-001\"],\"timestamp\":1784521452740}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.741Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"cache\",\"seriesId\":\"series-trending-shorts\",\"dailyActiveViewers\":0,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":0,\"publishingVelocity\":0,\"generatedAt\":1784521451061,\"eventCount\":1,\"timestamp\":1784521452740}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.742Z",
+        "type": "log",
+        "text": "[WORKFLOW_ENGINE] {\"seriesId\":\"series-trending-shorts\",\"taskCount\":3,\"created\":0,\"completed\":0,\"readinessBefore\":0,\"readinessAfter\":36,\"actionRecommendations\":3,\"usesMockData\":false,\"helpAvailable\":true,\"timestamp\":1784521452741}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.743Z",
+        "type": "log",
+        "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"series-trending-shorts\",\"currentReadiness\":0,\"projectedReadiness\":36,\"targetReadiness\":80,\"estimatedTime\":9,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"analysis\":{\"readiness\":{\"score\":0,\"metadata\":0,\"assets\":0,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":3,\"pendingTasks\":3,\"inProgressTasks\":0,\"criticalTasks\":3,\"estimatedMinutes\":9},\"release\":{\"episodesScheduled\":0,\"episodesReady\":1,\"missingAssets\":0,\"daysUntilLaunch\":null,\"launchReadinessScore\":87},\"assets\":{\"totalEpisodes\":3,\"coveredEpisodes\":3,\"missingAssets\":3,\"coveragePercent\":100}},\"topPriorityCount\":3,\"quickWinCount\":0,\"criticalRiskCount\":3,\"recommendedActionCount\":3,\"timestamp\":1784521452742}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.743Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e01\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E01 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452742}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.743Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e02\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E02 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452742}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.743Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e03\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E03 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452742}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.743Z",
+        "type": "log",
+        "text": "[HERO_BLOCKER] {\"seriesId\":\"series-trending-shorts\",\"blocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"readiness\":0,\"timestamp\":1784521452742}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.743Z",
+        "type": "log",
+        "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e01\",\"title\":\"Upload S1:E01 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521452743}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.744Z",
+        "type": "log",
+        "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e02\",\"title\":\"Upload S1:E02 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521452743}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.744Z",
+        "type": "log",
+        "text": "[HERO_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e03\",\"title\":\"Upload S1:E03 reel\",\"priority\":\"CRITICAL\",\"impact\":12,\"timestamp\":1784521452743}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.744Z",
+        "type": "log",
+        "text": "[HERO_INTELLIGENCE] {\"surface\":\"command-center\",\"seriesId\":\"series-trending-shorts\",\"readinessPercent\":0,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"missingAssets\":3,\"openTasks\":3,\"publishingVelocity\":0,\"unreadNotifications\":200,\"timestamp\":1784521452743}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.745Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-vault-chronicles\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452744,\"eventCount\":1,\"timestamp\":1784521452744}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.745Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-vault-chronicles\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452745,\"eventCount\":1,\"timestamp\":1784521452745}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.746Z",
+        "type": "log",
+        "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"series-vault-chronicles\",\"currentReadiness\":0,\"projectedReadiness\":36,\"targetReadiness\":80,\"estimatedTime\":9,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"analysis\":{\"readiness\":{\"score\":0,\"metadata\":0,\"assets\":0,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":3,\"pendingTasks\":3,\"inProgressTasks\":0,\"criticalTasks\":3,\"estimatedMinutes\":9},\"release\":{\"episodesScheduled\":0,\"episodesReady\":0,\"missingAssets\":1,\"daysUntilLaunch\":null,\"launchReadinessScore\":60},\"assets\":{\"totalEpisodes\":3,\"coveredEpisodes\":2,\"missingAssets\":3,\"coveragePercent\":67}},\"topPriorityCount\":3,\"quickWinCount\":0,\"criticalRiskCount\":3,\"recommendedActionCount\":3,\"timestamp\":1784521452745}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.746Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e01\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E01 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452745}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.746Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e02\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E02 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452746}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.747Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-vault-chronicles\",\"id\":\"missing-asset-ep-vault-s01e03\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E03 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452746}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.747Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-vault-chronicles\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452746,\"eventCount\":1,\"timestamp\":1784521452746}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.748Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-vault-chronicles\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452747,\"eventCount\":1,\"timestamp\":1784521452747}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.748Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-neon-vengeance\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452747,\"eventCount\":1,\"timestamp\":1784521452747}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.748Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-neon-vengeance\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452748,\"eventCount\":1,\"timestamp\":1784521452748}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.766Z",
+        "type": "log",
+        "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"series-neon-vengeance\",\"currentReadiness\":25,\"projectedReadiness\":61,\"targetReadiness\":80,\"estimatedTime\":18,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"analysis\":{\"readiness\":{\"score\":25,\"metadata\":100,\"assets\":0,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":5,\"pendingTasks\":5,\"inProgressTasks\":0,\"criticalTasks\":0,\"estimatedMinutes\":15},\"release\":{\"episodesScheduled\":0,\"episodesReady\":1,\"missingAssets\":0,\"daysUntilLaunch\":null,\"launchReadinessScore\":93},\"assets\":{\"totalEpisodes\":6,\"coveredEpisodes\":6,\"missingAssets\":6,\"coveragePercent\":100}},\"topPriorityCount\":5,\"quickWinCount\":0,\"criticalRiskCount\":5,\"recommendedActionCount\":6,\"timestamp\":1784521452748}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.766Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e01\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E01 reel\",\"impact\":6,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452749}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.768Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e02\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E02 reel\",\"impact\":6,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452749}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.768Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e03\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E03 reel\",\"impact\":6,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452749}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.768Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s01e04\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E04 reel\",\"impact\":6,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452749}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.768Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s02e01\",\"priority\":\"CRITICAL\",\"title\":\"Upload S2:E01 reel\",\"impact\":6,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452749}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.768Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-neon-vengeance\",\"id\":\"missing-asset-ep-neon-s02e02\",\"priority\":\"CRITICAL\",\"title\":\"Upload S2:E02 reel\",\"impact\":6,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452749}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.768Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-neon-vengeance\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452749,\"eventCount\":1,\"timestamp\":1784521452749}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.768Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-neon-vengeance\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452750,\"eventCount\":1,\"timestamp\":1784521452750}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.768Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":\"series-neon-vengeance\",\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452752,\"eventCount\":1,\"timestamp\":1784521452752}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.768Z",
+        "type": "log",
+        "text": "[DISCOVERY_INDEX] {\"totalDocuments\":330,\"bySource\":{\"series_metadata\":19,\"episode\":12,\"workflow\":13,\"notification\":200,\"revenue\":3,\"hero_content\":6,\"marketplace\":16,\"security_event\":37,\"sentinel_recommendation\":24},\"timestamp\":1784521452756}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.769Z",
+        "type": "log",
+        "text": "[MARKETPLACE_LISTING] {\"count\":7,\"category\":\"all\",\"creatorId\":null,\"listingIds\":[\"service-editing-001\",\"service-voice_over-001\",\"service-music-001\",\"service-vfx-001\",\"service-thumbnail_design-001\",\"service-script_writing-001\",\"service-marketing-001\"],\"timestamp\":1784521452756}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.769Z",
+        "type": "log",
+        "text": "[MARKETPLACE_SEARCH] {\"query\":null,\"category\":\"all\",\"activeOnly\":true,\"resultCount\":7,\"timestamp\":1784521452757}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.769Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"cache\",\"seriesId\":\"series-trending-shorts\",\"dailyActiveViewers\":0,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":0,\"publishingVelocity\":0,\"generatedAt\":1784521451061,\"eventCount\":1,\"timestamp\":1784521452757}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.769Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452757}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.769Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452758}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.769Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452758}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.769Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452758}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.769Z",
+        "type": "log",
+        "text": "[WORKFLOW_ENGINE] {\"seriesId\":\"series-trending-shorts\",\"taskCount\":3,\"created\":0,\"completed\":0,\"readinessBefore\":0,\"readinessAfter\":36,\"actionRecommendations\":3,\"usesMockData\":false,\"helpAvailable\":true,\"timestamp\":1784521452760}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.769Z",
+        "type": "log",
+        "text": "[COPILOT_ANALYSIS] {\"seriesId\":\"series-trending-shorts\",\"currentReadiness\":0,\"projectedReadiness\":36,\"targetReadiness\":80,\"estimatedTime\":9,\"biggestBlocker\":\"S1:E01 has no reel attached.\",\"analysis\":{\"readiness\":{\"score\":0,\"metadata\":0,\"assets\":0,\"publishing\":0,\"releaseSchedule\":0},\"workflow\":{\"openTasks\":3,\"pendingTasks\":3,\"inProgressTasks\":0,\"criticalTasks\":3,\"estimatedMinutes\":9},\"release\":{\"episodesScheduled\":0,\"episodesReady\":1,\"missingAssets\":0,\"daysUntilLaunch\":null,\"launchReadinessScore\":87},\"assets\":{\"totalEpisodes\":3,\"coveredEpisodes\":3,\"missingAssets\":3,\"coveragePercent\":100}},\"topPriorityCount\":3,\"quickWinCount\":0,\"criticalRiskCount\":3,\"recommendedActionCount\":3,\"timestamp\":1784521452761}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.769Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e01\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E01 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452761}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.769Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e02\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E02 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452761}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.769Z",
+        "type": "log",
+        "text": "[COPILOT_RECOMMENDATION] {\"seriesId\":\"series-trending-shorts\",\"id\":\"missing-asset-ep-trending-s01e03\",\"priority\":\"CRITICAL\",\"title\":\"Upload S1:E03 reel\",\"impact\":12,\"estimatedMinutes\":3,\"category\":\"recommended-action\",\"timestamp\":1784521452762}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.769Z",
+        "type": "log",
+        "text": "[HOME_FEED] {\"reason\":\"notification\",\"seriesId\":\"series-trending-shorts\",\"sectionSizes\":{\"continueWatching\":0,\"trending\":8,\"recentlyUploaded\":8,\"newTeamActivity\":0,\"upcomingReleases\":0,\"marketplaceOpportunities\":5,\"creatorRecommendations\":6,\"securityAlerts\":2,\"sentinelRecommendations\":6},\"timestamp\":1784521452763}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.769Z",
+        "type": "log",
+        "text": "[HOME_FEED_REFRESH] {\"reason\":\"notification\",\"updatedAt\":1784521452686,\"timestamp\":1784521452763}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.769Z",
+        "type": "info",
+        "text": "[RESPONSE] {timestamp: 2026-07-20T04:24:12.766Z, function: fetchWithRetry, sourceFile: api.js, assetId: null, fileName: null}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.771Z",
+        "type": "log",
+        "text": "[MARKETPLACE_LISTING] {\"count\":7,\"category\":\"all\",\"creatorId\":null,\"listingIds\":[\"service-editing-001\",\"service-voice_over-001\",\"service-music-001\",\"service-vfx-001\",\"service-thumbnail_design-001\",\"service-script_writing-001\",\"service-marketing-001\"],\"timestamp\":1784521452770}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.771Z",
+        "type": "log",
+        "text": "[MARKETPLACE_SEARCH] {\"query\":null,\"category\":\"all\",\"activeOnly\":true,\"resultCount\":7,\"timestamp\":1784521452770}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.771Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452770}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.771Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452770}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.771Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452771}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.772Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452771}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.777Z",
+        "type": "log",
+        "text": "[STUDIO_ASSISTANT] {\"seriesId\":\"series-trending-shorts\",\"currentReadiness\":0,\"projectedReadiness\":36,\"openWorkflowTasks\":3,\"unreadNotifications\":200,\"missingAssets\":3,\"blockerCount\":3,\"insightCount\":6,\"timestamp\":1784521452776}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.777Z",
+        "type": "log",
+        "text": "[MISSION_GENERATED] {\"seriesId\":\"series-trending-shorts\",\"todaysMission\":\"Attach 3 missing reels, then attach reel to e01.\",\"topPriority\":\"Attach reel to E01\",\"quickWin\":\"Attach reel to E03\",\"criticalRisk\":\"Upload S1:E01 reel\",\"projectedReadiness\":36,\"targetReadiness\":80,\"timestamp\":1784521452777}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.778Z",
+        "type": "log",
+        "text": "[RISK_DETECTED] {\"seriesId\":\"series-trending-shorts\",\"riskTitle\":\"Upload S1:E01 reel\",\"severity\":\"CRITICAL\",\"releaseRisk\":\"No release risks detected \u2014 schedule looks stable.\",\"blockerCount\":3,\"timestamp\":1784521452777}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.778Z",
+        "type": "log",
+        "text": "[RISK_DETECTED] {\"seriesId\":\"series-trending-shorts\",\"insightId\":\"what-next\",\"label\":\"What should I do next?\",\"summary\":\"Attach reel to E01\",\"severity\":\"CRITICAL\",\"timestamp\":1784521452777}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.778Z",
+        "type": "log",
+        "text": "[RISK_DETECTED] {\"seriesId\":\"series-trending-shorts\",\"insightId\":\"biggest-blocker\",\"label\":\"Biggest blocker\",\"summary\":\"3 episodes missing assets\",\"severity\":\"CRITICAL\",\"timestamp\":1784521452777}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.778Z",
+        "type": "log",
+        "text": "[RISK_DETECTED] {\"seriesId\":\"series-trending-shorts\",\"insightId\":\"missing-assets\",\"label\":\"Missing assets\",\"summary\":\"3 episodes need video assets.\",\"severity\":\"CRITICAL\",\"timestamp\":1784521452777}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.785Z",
+        "type": "log",
+        "text": "[SEARCH_INDEX] {\"total\":357,\"byDomain\":{\"reels\":19,\"series\":3,\"episodes\":28,\"tasks\":13,\"workflows\":3,\"notifications\":200,\"marketplace_listings\":7,\"creators\":7,\"teams\":1,\"revenue_insights\":6,\"security_incidents\":37,\"sentinel_recommendations\":8,\"guide_me_content\":18,\"daily_engagement_cards\":7},\"timestamp\":1784521452782}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.785Z",
+        "type": "log",
+        "text": "[SEARCH_INDEX] {\"reason\":\"notifications_changed\",\"timestamp\":1784521452782}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.785Z",
+        "type": "log",
+        "text": "[MARKETPLACE_LISTING] {\"count\":7,\"category\":\"all\",\"creatorId\":null,\"listingIds\":[\"service-editing-001\",\"service-voice_over-001\",\"service-music-001\",\"service-vfx-001\",\"service-thumbnail_design-001\",\"service-script_writing-001\",\"service-marketing-001\"],\"timestamp\":1784521452784}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.785Z",
+        "type": "log",
+        "text": "[MARKETPLACE_SEARCH] {\"query\":null,\"category\":\"all\",\"activeOnly\":true,\"resultCount\":7,\"timestamp\":1784521452784}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.785Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452784}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.786Z",
+        "type": "log",
+        "text": "[CREATOR_FEED] {\"reason\":\"notifications_updated\",\"seriesId\":\"series-trending-shorts\",\"cardCount\":8,\"cardKinds\":[\"today_tasks\",\"revenue_snapshot\",\"marketplace_opportunities\",\"daily_engagement\",\"trending_series\",\"upcoming_releases\",\"security_alerts\",\"team_activity\"],\"topCard\":\"today_tasks\",\"timestamp\":1784521452784}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.786Z",
+        "type": "log",
+        "text": "[MARKETPLACE_LISTING] {\"count\":7,\"category\":\"all\",\"creatorId\":null,\"listingIds\":[\"service-editing-001\",\"service-voice_over-001\",\"service-music-001\",\"service-vfx-001\",\"service-thumbnail_design-001\",\"service-script_writing-001\",\"service-marketing-001\"],\"timestamp\":1784521452785}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.786Z",
+        "type": "log",
+        "text": "[MARKETPLACE_SEARCH] {\"query\":null,\"category\":\"all\",\"activeOnly\":true,\"resultCount\":7,\"timestamp\":1784521452785}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.786Z",
+        "type": "log",
+        "text": "[REVENUE_CORE] {\"operation\":\"compute_estimate\",\"profileType\":\"series\",\"profileId\":\"series-trending-shorts\",\"grossMonthlyCents\":94092,\"netCreatorCents\":74521,\"monthlyViewers\":1000,\"episodes\":3,\"timestamp\":1784521452785}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.790Z",
+        "type": "log",
+        "text": "[DISCOVERY_FEED] {\"reason\":\"notifications_updated\",\"seriesId\":\"series-trending-shorts\",\"cardCount\":12,\"sectionSizes\":{\"trendingCreators\":1,\"marketplaceOpportunities\":3,\"upcomingReleases\":1,\"revenueMilestones\":1,\"sentinelInsights\":2,\"teamHighlights\":1,\"productionWins\":1,\"dailyRecommendations\":2},\"topCard\":\"sentinel_insights\",\"timestamp\":1784521452788}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.790Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"sentinel_insights:insight-1\",\"sectionId\":\"sentinel_insights\",\"title\":\"Insight 1\",\"score\":69,\"timestamp\":1784521452788}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.790Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"sentinel_insights:insight-2\",\"sectionId\":\"sentinel_insights\",\"title\":\"Insight 2\",\"score\":69,\"timestamp\":1784521452788}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.790Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"revenue_milestones:revenue-pulse\",\"sectionId\":\"revenue_milestones\",\"title\":\"Revenue Pulse\",\"score\":69,\"timestamp\":1784521452788}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.790Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"daily_recommendations:daily-studio-tip\",\"sectionId\":\"daily_recommendations\",\"title\":\"Daily Studio Tip\",\"score\":66,\"timestamp\":1784521452788}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.790Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"daily_recommendations:daily-creator-challenge\",\"sectionId\":\"daily_recommendations\",\"title\":\"Daily Creator Challenge\",\"score\":64,\"timestamp\":1784521452789}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.790Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"marketplace_opportunities:open-vfx-composite-gig\",\"sectionId\":\"marketplace_opportunities\",\"title\":\"Open VFX Composite Gig\",\"score\":64,\"timestamp\":1784521452789}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.790Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"marketplace_opportunities:editing-package\",\"sectionId\":\"marketplace_opportunities\",\"title\":\"Editing Package\",\"score\":60,\"timestamp\":1784521452789}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.790Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"marketplace_opportunities:voice-over-package\",\"sectionId\":\"marketplace_opportunities\",\"title\":\"Voice Over Package\",\"score\":60,\"timestamp\":1784521452789}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.790Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"upcoming_releases:no-scheduled-release\",\"sectionId\":\"upcoming_releases\",\"title\":\"No scheduled release\",\"score\":56,\"timestamp\":1784521452789}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.790Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"production_wins:no-production-wins-yet-today\",\"sectionId\":\"production_wins\",\"title\":\"No production wins yet today\",\"score\":50,\"timestamp\":1784521452789}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.790Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"trending_creators:build-creator-momentum\",\"sectionId\":\"trending_creators\",\"title\":\"Build creator momentum\",\"score\":44,\"timestamp\":1784521452789}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.790Z",
+        "type": "log",
+        "text": "[DISCOVERY_CARD] {\"id\":\"team_highlights:no-recent-team-highlights\",\"sectionId\":\"team_highlights\",\"title\":\"No recent team highlights\",\"score\":38,\"timestamp\":1784521452789}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.790Z",
+        "type": "log",
+        "text": "[DISCOVERY_REFRESH] {\"reason\":\"notifications_updated\",\"updatedAt\":1784521452788,\"cardCount\":12,\"timestamp\":1784521452789}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.793Z",
+        "type": "log",
+        "text": "[ANALYTICS_AGGREGATE] {\"phase\":\"aggregate\",\"source\":\"local\",\"seriesId\":null,\"dailyActiveViewers\":1,\"seriesCompletionRate\":0,\"mostWatchedEpisodes\":[],\"studioProductivity\":1,\"publishingVelocity\":0,\"generatedAt\":1784521452790,\"eventCount\":1,\"timestamp\":1784521452790}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.793Z",
+        "type": "log",
+        "text": "[OBSERVABILITY] {\"seriesId\":null,\"signals\":{\"api_latency\":401,\"database_latency\":403,\"workflow_throughput\":2,\"notification_throughput\":200,\"publishing_throughput\":0,\"viewer_engagement\":10},\"alertCount\":3,\"timestamp\":1784521452790}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.793Z",
+        "type": "log",
+        "text": "[HEALTH_SCORE] {\"seriesId\":null,\"healthScore\":52,\"apiLatencyMs\":401,\"databaseLatencyMs\":403,\"viewerEngagement\":10,\"timestamp\":1784521452790}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.793Z",
+        "type": "log",
+        "text": "[SYSTEM_ALERT] {\"seriesId\":null,\"level\":\"warning\",\"code\":\"HEALTH_DEGRADED\",\"message\":\"Platform health score 52% is degraded\",\"timestamp\":1784521452790}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.793Z",
+        "type": "log",
+        "text": "[SYSTEM_ALERT] {\"seriesId\":null,\"level\":\"warning\",\"code\":\"API_LATENCY_HIGH\",\"message\":\"Average API latency 401ms exceeds target\",\"timestamp\":1784521452791}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.793Z",
+        "type": "log",
+        "text": "[SYSTEM_ALERT] {\"seriesId\":null,\"level\":\"warning\",\"code\":\"VIEWER_ENGAGEMENT_LOW\",\"message\":\"Viewer engagement signals are below expected levels\",\"timestamp\":1784521452791}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.793Z",
+        "type": "info",
+        "text": "[FETCH] {timestamp: 2026-07-20T04:24:12.791Z, function: fetchWithRetry, sourceFile: api.js, assetId: null, fileName: null}"
+      },
+      {
+        "ts": "2026-07-20T04:24:12.800Z",
+        "type": "info",
+        "text": "[FETCH] {timestamp: 2026-07-20T04:24:12.795Z, function: fetchWithRetry, sourceFile: api.js, assetId: null, fileName: null}"
+      }
+    ],
+    "network": {
+      "postReels": [
+        {
+          "phase": "request",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels",
+          "ts": "2026-07-20T04:18:26.946Z",
+          "t0": 1784521106946,
+          "status": 502,
+          "elapsedMs": 300190
+        },
+        {
+          "phase": "response",
+          "url": "https://strong-lolly-a9fcb4.netlify.app/api/reels",
+          "status": 502,
+          "elapsedMs": 300190,
+          "id": null,
+          "ingestStatus": null,
+          "pollUrl": null,
+          "bodyPreview": "upstream error",
+          "ts": "2026-07-20T04:23:27.136Z"
+        }
+      ],
+      "pollGets": [],
+      "otherApi": []
+    },
+    "uploadStatusTimeline": [
+      {
+        "ts": "2026-07-20T04:18:26.941Z",
+        "text": "Validating hero video..."
+      },
+      {
+        "ts": "2026-07-20T04:18:27.946Z",
+        "text": "Uploading hero video..."
+      },
+      {
+        "ts": "2026-07-20T04:18:29.955Z",
+        "text": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-20T04:18:33.966Z",
+        "text": "Synced with backend"
+      },
+      {
+        "ts": "2026-07-20T04:18:37.981Z",
+        "text": "Backend reconnecting..."
+      },
+      {
+        "ts": "2026-07-20T04:23:27.243Z",
+        "text": "Failed: Create reel failed (502)"
+      }
+    ],
+    "processingTimeline": [
+      {
+        "ts": "2026-07-20T04:18:26.941Z",
+        "state": "processing_visible",
+        "title": "Replacing Hero"
+      },
+      {
+        "ts": "2026-07-20T04:23:27.243Z",
+        "state": "processing_cleared",
+        "phase": "preview_pending",
+        "title": "Upload Needs Attention"
+      }
+    ],
+    "heroStorageBefore": {
+      "reel": null,
+      "mgr": null
+    },
+    "heroStorageAfterAccept": {
+      "reel": null,
+      "mgr": null
+    },
+    "heroStorageAfterRefresh": {
+      "reel": null,
+      "mgr": null
+    },
+    "restoreReasons": [
+      {
+        "ts": "2026-07-20T04:18:24.447Z",
+        "text": "[BG7V_HERO_RESTORE_REASON] {heroAssetId: , matchedReelId: null, restoreAttempted: false, restored: false, reason: NO_HERO_ID}"
+      },
+      {
+        "ts": "2026-07-20T04:23:49.242Z",
+        "text": "[BG7V_HERO_RESTORE_REASON] {heroAssetId: , matchedReelId: null, restoreAttempted: false, restored: false, reason: NO_HERO_ID}"
+      }
+    ],
+    "ui": {
+      "phase": "preview_pending",
+      "title": "Upload Needs Attention",
+      "op": "Failed: Create reel failed (502)",
+      "videoSrc": null
+    },
+    "restoreReasonsFiltered": [
+      {
+        "ts": "2026-07-20T04:23:49.242Z",
+        "text": "[BG7V_HERO_RESTORE_REASON] {heroAssetId: , matchedReelId: null, restoreAttempted: false, restored: false, reason: NO_HERO_ID}"
+      }
+    ]
+  },
+  "rules": {
+    "noSourceChanges": true,
+    "noFixes": true,
+    "noCommits": true,
+    "noDeploys": true,
+    "ignoreTransportOwnership": true,
+    "ignoreReconnectOwnership": true,
+    "ignoreThumbnailGeneration": true
+  },
+  "summary": {
+    "firstFailureStage": "pollUrl_creation",
+    "lastSuccessfulStage": "HTTP_response",
+    "postStatus": 502,
+    "reelId": null,
+    "pollUrl": null,
+    "elapsedMs": 300190,
+    "responseBody": "upstream error",
+    "processingSaw": true,
+    "processingCleared": true,
+    "uploadStatusFinal": {
+      "ts": "2026-07-20T04:23:27.243Z",
+      "text": "Failed: Create reel failed (502)"
+    },
+    "heroStorageAfterAccept": {
+      "reel": null,
+      "mgr": null
+    }
+  },
+  "postProcessedAt": "2026-07-20T04:24:41.126786Z",
+  "measurementScript": "frontend/scripts/mission-rc3-hero-pipeline-01.mjs",
+  "failurePathObservations": {
+    "processing_indicator_removed": {
+      "id": "processing_indicator_removed",
+      "reached": true,
+      "timestamp": "2026-07-20T04:23:27.243Z",
+      "component": "HeroExperience.svelte",
+      "function": "heroUploadProcessing / UX phase",
+      "assetId": null,
+      "status": "preview_pending",
+      "durationMs": null,
+      "evidence": "Upload Needs Attention",
+      "firstFailure": false,
+      "lastSuccessfulStage": false
+    },
+    "hard_refresh": {
+      "id": "hard_refresh",
+      "reached": true,
+      "timestamp": "2026-07-20T04:23:47.251Z",
+      "component": "Playwright",
+      "function": "page.reload",
+      "assetId": null,
+      "status": "completed",
+      "durationMs": 440,
+      "evidence": "reload after failed upload",
+      "firstFailure": false,
+      "lastSuccessfulStage": false
+    },
+    "note": "Observed after HTTP 502 failure; not happy-path success"
+  }
+}

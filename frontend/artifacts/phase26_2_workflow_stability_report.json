@@ -1,0 +1,35 @@
+{
+  "mission": "PHASE-26.2 Surgical Command Center Workflow Auth / Retry Stabilization",
+  "generatedAt": "2026-08-12T19:15:00.000Z",
+  "commitPushDeploy": "none",
+  "productionBaseline": {
+    "bundle": "index-Cu_7jFHY.js",
+    "commit": "8804ffc"
+  },
+  "filesChanged": [
+    "frontend/src/lib/api/workflowApi.js",
+    "frontend/src/lib/workflow/workflowEngine.js",
+    "frontend/src/lib/notifications/notificationCenter.js",
+    "frontend/src/lib/command/commandCenterRefresh.js",
+    "frontend/src/components/studio/StudioWorkspaceLayout.svelte",
+    "frontend/src/components/studio/ProductionCommandCenter.svelte",
+    "frontend/package.json",
+    "frontend/scripts/validate-phase26-2-workflow-stability.mjs",
+    "MILESTONE_STATUS.md"
+  ],
+  "diffstat": "8 files changed (approx +281/-61 on tracked edits; +new refresh coordinator + validator)",
+  "behavior": {
+    "authHeader": "workflow mutations merge getAdminAuthHeaders(); missing token throws missing_authorization without network",
+    "circuitBreaker": "open on missing_authorization/401; skip further POSTs; clear on admin token change / admin-session-changed",
+    "readVsWrite": "isWorkflowApiAvailable = GET status (read only); canAttemptWorkflowWrites = token presence; pushStoreToApi no longer calls GET status",
+    "notificationHydrate": "before: 1 GET per workflow-tasks-updated; after: debounced 2500ms coalesce (25→1 verified)",
+    "commandCenterRefresh": "before: dual 5s timers + immediate event refresh; after: single shared interval owner + 400ms debounce"
+  },
+  "validation": {
+    "validate:phase26-2-workflow-stability": "PASS",
+    "phase17_25": "PASS",
+    "build": "PASS",
+    "git_diff_check": "PASS",
+    "frozen_vault_diff_empty": "PASS"
+  }
+}

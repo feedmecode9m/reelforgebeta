@@ -185,6 +185,33 @@
   /** Near-miss drag hint when pointer is over Studio but outside the upload zone. */
   let vaultNearMissHint = '';
   let vaultNearMissClearTimer = null;
+  /**
+   * User-visible drop diagnostic (not console-only).
+   * kind: idle | hovering | received | missed | rejected
+   * @type {{ kind: string; message: string; at: number }}
+   */
+  let vaultDropDebug = {
+    kind: 'idle',
+    message: 'Drop status: waiting — drop an MP4/MOV on UPLOAD VIDEO',
+    at: 0
+  };
+
+  function formatVaultDropSize(bytes) {
+    const n = Number(bytes || 0);
+    if (!Number.isFinite(n) || n <= 0) return 'unknown size';
+    return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  function setVaultDropDebug(kind, message) {
+    vaultDropDebug = {
+      kind: String(kind || 'idle'),
+      message: String(message || '').trim() || 'Drop status: waiting',
+      at: Date.now()
+    };
+    if (kind === 'missed' || kind === 'rejected' || kind === 'received') {
+      uploadStatus.set(vaultDropDebug.message);
+    }
+  }
   /** @type {((event: DragEvent) => void) | null} */
   let vaultDocDragOverHandler = null;
   /** @type {((event: DragEvent) => void) | null} */
@@ -639,8 +666,12 @@
       });
       if (!looksVideo) return;
       event.preventDefault();
+      const missedName = files.find((f) => f?.name)?.name || 'video file';
       vaultNearMissHint = 'Missed upload zone — drop on UPLOAD VIDEO (MP4/MOV)';
-      uploadStatus.set('⚠️ Drop on the UPLOAD VIDEO zone to stage your MP4');
+      setVaultDropDebug(
+        'missed',
+        `Drop missed: ${missedName} landed outside UPLOAD VIDEO — drop on the cyan upload box`
+      );
       if (vaultNearMissClearTimer) clearTimeout(vaultNearMissClearTimer);
       vaultNearMissClearTimer = setTimeout(() => {
         vaultNearMissHint = '';
@@ -1705,6 +1736,7 @@
   export function handleVaultVideoDragEnter(event) {
     allowDrop(event);
     videoDragActive.set(true);
+    setVaultDropDebug('hovering', 'Drop status: hovering UPLOAD VIDEO zone — release to stage');
     logDrag('video-vault:dragenter');
     const probe = event?.dataTransfer?.files?.[0];
     console.info('[MP4_DROP_START]', {
@@ -1729,6 +1761,9 @@
     const related = event?.relatedTarget;
     if (related && event.currentTarget?.contains?.(related)) return;
     videoDragActive.set(false);
+    if (vaultDropDebug.kind === 'hovering') {
+      setVaultDropDebug('idle', 'Drop status: waiting — drop an MP4/MOV on UPLOAD VIDEO');
+    }
   }
 
   export function handleVaultVideoDragOver(event) {
@@ -1800,6 +1835,12 @@
     });
 
     if (!file) {
+      setVaultDropDebug(
+        'rejected',
+        dropFiles.length
+          ? `Drop rejected: ${dropFiles[0]?.name || 'file'} is not a valid MP4/MOV (${dropFiles.length} file${dropFiles.length === 1 ? '' : 's'})`
+          : 'Drop received on zone, but browser sent 0 files — use click-to-choose instead'
+      );
       console.info('[MP4_DROP_REJECTED]', {
         reason: 'no_valid_video_in_transfer',
         fileCount: dropFiles.length,
@@ -1818,9 +1859,12 @@
         reason: 'rejected_invalid_file'
       });
       pipelineDiag('DND', 'handleVaultVideoDrop', 'VaultExperience.svelte', { result: 'rejected_invalid_file' });
-      uploadStatus.set('⚠️ Drop a valid video file');
       return;
     }
+    setVaultDropDebug(
+      'received',
+      `Drop received: ${file.name} (${formatVaultDropSize(file.size)}) — click ACCEPT to upload`
+    );
     stagePendingVaultVideo(file, 'drop');
   }
 
@@ -1864,12 +1908,18 @@
         fileSize: file.size,
         source
       });
+      setVaultDropDebug('rejected', `Drop rejected: ${file.name || 'file'} is empty (0 bytes)`);
       uploadStatus.set('⚠️ Empty file rejected — choose a real MP4/MOV');
       resourceManager.setTimeout(() => uploadStatus.set('Standby'), 4000);
       return;
     }
     if (file.size > CONFIG.MAX_VIDEO_SIZE) {
-      uploadStatus.set(`⚠️ Video too large. Max ${CONFIG.MAX_VIDEO_SIZE / 1024 / 1024}MB`);
+      const maxMb = CONFIG.MAX_VIDEO_SIZE / 1024 / 1024;
+      setVaultDropDebug(
+        'rejected',
+        `Drop rejected: ${file.name} is ${formatVaultDropSize(file.size)} — max ${maxMb}MB`
+      );
+      uploadStatus.set(`⚠️ Video too large. Max ${maxMb}MB`);
       resourceManager.setTimeout(() => uploadStatus.set('Standby'), 3000);
       return;
     }
@@ -2594,10 +2644,15 @@
       ts: new Date().toISOString()
     });
     if (!file) {
+      setVaultDropDebug('rejected', 'File picker: no valid MP4/MOV selected');
       uploadStatus.set('⚠️ Choose a valid MP4/MOV file');
       resourceManager.setTimeout(() => uploadStatus.set('Standby'), 3000);
       return;
     }
+    setVaultDropDebug(
+      'received',
+      `File chosen: ${file.name} (${formatVaultDropSize(file.size)}) — click ACCEPT to upload`
+    );
     stagePendingVaultVideo(file, 'file_picker');
   }
 
@@ -3899,6 +3954,19 @@
       </button>
     </div>
   {/if}
+  <div
+    class="vault-drop-debug"
+    class:vault-drop-debug--idle={vaultDropDebug.kind === 'idle'}
+    class:vault-drop-debug--hovering={vaultDropDebug.kind === 'hovering'}
+    class:vault-drop-debug--received={vaultDropDebug.kind === 'received'}
+    class:vault-drop-debug--missed={vaultDropDebug.kind === 'missed'}
+    class:vault-drop-debug--rejected={vaultDropDebug.kind === 'rejected'}
+    role="status"
+    aria-live="polite"
+    data-vault-drop-debug={vaultDropDebug.kind}
+  >
+    {vaultDropDebug.message}
+  </div>
   {#if vaultNearMissHint}
     <div class="vault-near-miss-hint" role="status" aria-live="polite" data-vault-near-miss>
       {vaultNearMissHint}

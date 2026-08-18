@@ -1,0 +1,68 @@
+{
+  "release_process_version": "1.0",
+  "milestone": "RECOVERY",
+  "git_commit": "117ca48",
+  "git_commit_full": "117ca4849cb7866f89c1c23e28272c45d9dab6fd",
+  "git_branch": "main",
+  "bundle_hash": "index-D6Zyj0T4.js",
+  "bundle_hash_previous": "index-B_skNQ2_.js",
+  "release_tooling_hash": "8a35672aa61400800a837d17aa63b729729678b9131de94ba1cb31842a74ed76",
+  "netlify_deployment_id": null,
+  "netlify_url": "https://strong-lolly-a9fcb4.netlify.app",
+  "railway_url": "https://reelforge-deploy-production.up.railway.app",
+  "backend_deployment_id": null,
+  "tool_versions": {
+    "node": "v24.5.0",
+    "npm": "10.9.8",
+    "rustc": "rustc 1.97.0 (2d8144b78 2026-07-07)",
+    "cargo": "cargo 1.97.0 (c980f4866 2026-06-30)",
+    "netlify_cli": "netlify-cli/27.1.1 linux-x64 node-v24.5.0",
+    "railway_cli": "railway 5.34.2"
+  },
+  "gates": {
+    "1_build": "PASS",
+    "2_credentials": "PASS",
+    "3_deploy": "PASS",
+    "4_bundle_verification": "PASS",
+    "5_production_smoke": "FAIL",
+    "6_regression": "PENDING",
+    "7_release_signoff": "PENDING"
+  },
+  "tests": {
+    "hero": "SKIPPED",
+    "vault": "SKIPPED",
+    "feed": "FAIL",
+    "delete": "SKIPPED"
+  },
+  "rollback": {
+    "required": false,
+    "frontend_bundle": "index-4M0W7yoT.js",
+    "backend_commit": "117ca4849cb7866f89c1c23e28272c45d9dab6fd",
+    "railway_deployment_id": null,
+    "netlify_deploy": null,
+    "netlify_url": "https://strong-lolly-a9fcb4.netlify.app",
+    "notes": "Documentation only — not an automatic rollback. Redeploy previous bundle via Netlify if required."
+  },
+  "resume": {
+    "supported": true,
+    "start_gate": 1,
+    "resumed": false,
+    "resumed_at": null,
+    "prior_manifest_timestamp": "2026-08-12T19:18:03.573Z",
+    "fingerprint": {
+      "processVersion": "1.0",
+      "gitCommit": "117ca48",
+      "gitCommitFull": "117ca4849cb7866f89c1c23e28272c45d9dab6fd",
+      "bundleHash": "index-Cgpghqeg.js",
+      "toolingHash": "8a35672aa61400800a837d17aa63b729729678b9131de94ba1cb31842a74ed76"
+    }
+  },
+  "verdict": "FAIL",
+  "timestamp": "2026-08-12T20:08:59.943Z",
+  "artifacts": {
+    "gate_state": "frontend/artifacts/.release-gate-state.json",
+    "validation": "frontend/artifacts/bg-7a1-production-release-validation.json",
+    "regression": "frontend/artifacts/bg-6a-production-ui.json",
+    "manifest": "frontend/artifacts/release-manifest-recovery-1786565339945.json"
+  }
+}

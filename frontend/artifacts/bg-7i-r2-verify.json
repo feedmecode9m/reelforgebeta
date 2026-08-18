@@ -1,0 +1,48 @@
+{
+  "mission": "BG-7I",
+  "ts": "2026-07-23T13:01:44.219Z",
+  "prod": "https://reelforge-deploy-production.up.railway.app",
+  "deploymentId": "75bd3f4c-8ab1-4952-aa1d-d2bc81abee44",
+  "tenMbRun": {
+    "ts": "2026-07-23T12:53:22.055Z",
+    "pass": true,
+    "putMs": 14352,
+    "ingest": "ready",
+    "delete": 200
+  },
+  "cases": [
+    {
+      "label": "10MB-probe",
+      "pass": true,
+      "putMs": 14352,
+      "ingest": "ready",
+      "delete": 200
+    },
+    {
+      "label": "50MB-probe",
+      "pass": true,
+      "putMs": 69751,
+      "ingest": "ready",
+      "delete": 200
+    },
+    {
+      "label": "100MB-probe",
+      "pass": true,
+      "putMs": 99630,
+      "ingest": "ready",
+      "delete": 200
+    },
+    {
+      "label": "condo_v1_2.mp4",
+      "bytes": 362155056,
+      "pass": false,
+      "error": "Node fetch failed @ 303008ms (client timeout; not R2/Railway 502)",
+      "curlRetry": {
+        "uploadId": "e8b91d11-4537-4982-8ce4-989116d37143",
+        "reelId": "c376c3f9-35a7-416e-abed-debc682cd05e",
+        "started": "2026-07-23T09:02:07-04:00",
+        "status": "in_progress_at_report_time"
+      }
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "attempts": [
+    {
+      "url": "http://127.0.0.1:4177/studio",
+      "snapshot": {
+        "title": "",
+        "path": "/studio",
+        "hasPassword": false,
+        "hasGhost": false,
+        "text": "404 The requested path could not be found"
+      }
+    },
+    {
+      "url": "http://127.0.0.1:4177/#studio",
+      "snapshot": {
+        "title": "ReelForge",
+        "path": "/#studio",
+        "hasPassword": false,
+        "hasGhost": false,
+        "text": "Reconnecting to backend… ! Backend unreachable — showing saved content ✕ LOOK@ZAKANDA PRESENTS Sign In Featured on ReelForge Watch Now Learn More FEATURED COLLECTION DOCUMENTARY Black Agriculture Black Agriculture stories curated for d"
+      }
+    },
+    {
+      "url": "https://strong-lolly-a9fcb4.netlify.app/studio",
+      "snapshot": {
+        "title": "ReelForge",
+        "path": "/studio",
+        "hasPassword": true,
+        "hasGhost": false,
+        "text": "LOOK@ZAKANDA PRESENTS Sign In LOOK@ZAKANDA PRESENTS Studio Access Password required to unlock Production Studio. Password Show Unlock Studio Viewer sign in Home © 2026 LOOK@ZAKANDA PRESENTS"
+      },
+      "afterLogin": {
+        "path": "/",
+        "controlCenter": true,
+        "contentTab": true,
+        "drop": [],
+        "text": "✓ Synced with backend LOOK@ZAKANDA PRESENTS Sign In Vic G 01_ARRIVAL_OPEN_v1 Trending local experience in Los Angeles captured from the creator vault. Vic-G and the team arrive in Los Angeles, set"
+      },
+      "drop": {
+        "ok": true,
+        "hasPending": true,
+        "hasAccept": true,
+        "zoneText": "✅ ACCEPT ❌ REJECT phase26.mp4 • 0.0 MB"
+      }
+    }
+  ]
+}

@@ -1,0 +1,130 @@
+{
+  "readers": [
+    {
+      "file": "src/lib/hero/heroIntelligence.js",
+      "function": "loadHeroManagerConfig",
+      "caller": "bootstrap + on-demand (widely called)",
+      "executionTiming": "bootstrap/mount + on-demand"
+    },
+    {
+      "file": "src/lib/hero/heroDomainGuard.js",
+      "function": "readHeroManagerSnapshot",
+      "caller": "getHeroDomainSnapshot → isHeroAsset/filterNonHeroAssets",
+      "executionTiming": "vault filtering / snapshot reads"
+    },
+    {
+      "file": "src/lib/hero/heroReelIdentity.js",
+      "function": "migrateLegacyHeroStorageIfNeeded",
+      "caller": "loadHeroReel / loadHeroVaultItems",
+      "executionTiming": "first hero reel/vault read (bootstrap/mount)"
+    },
+    {
+      "file": "src/viewer/viewerContext.js",
+      "function": "mountViewer (hydrateHeroBackgroundStores/applyManagerBackgroundFromConfig)",
+      "caller": "Viewer onMount",
+      "executionTiming": "startup/mount"
+    },
+    {
+      "file": "src/lib/mediaBootstrap.js",
+      "function": "bootstrapMediaFromBackend (reads hero config during bootstrap)",
+      "caller": "viewerContext onMount",
+      "executionTiming": "startup/mount"
+    },
+    {
+      "file": "src/components/experiences/HeroExperience.svelte",
+      "function": "component init + acceptHeroFile reads persisted config",
+      "caller": "Studio content / Hero Replace",
+      "executionTiming": "mount + accept flow"
+    },
+    {
+      "file": "src/components/studio/HeroManagerPanel.svelte",
+      "function": "refresh/applyConfig/story actions load persisted config",
+      "caller": "Studio → System tab",
+      "executionTiming": "onMount + user"
+    },
+    {
+      "file": "src/lib/discovery/discoveryEngine.js",
+      "function": "reads hero config",
+      "caller": "discovery engine",
+      "executionTiming": "feed/discovery bootstrap"
+    }
+  ],
+  "reloadTrace": [
+    {
+      "id": 46,
+      "phase": "afterReload",
+      "storageType": "localStorage",
+      "op": "getItem",
+      "key": "reelforge_hero_manager_config",
+      "ts": "2026-07-20T05:14:16.874Z",
+      "perfNowMs": 9912.899999999441,
+      "stack": [
+        "Error: RC3-BOOT-04 stack",
+        "at record (<anonymous>:71:19)",
+        "at proto.getItem (<anonymous>:98:5)",
+        "at ul (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:9:54054)",
+        "at t.$$.update (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:19:26571)",
+        "at at (https://strong-lolly-a9fcb4.netlify.app/assets/vendor-BRLD7tzm.js:1:4551)",
+        "at Y (https://strong-lolly-a9fcb4.netlify.app/assets/vendor-BRLD7tzm.js:1:4284)"
+      ],
+      "prev": {
+        "present": true,
+        "heroAssetId": "c4b0b4d6-3089-46ea-bddb-b86811d29f70",
+        "backgroundSource": "custom_image",
+        "rawLength": 140
+      },
+      "next": null
+    },
+    {
+      "id": 50,
+      "phase": "afterReload",
+      "storageType": "localStorage",
+      "op": "getItem",
+      "key": "reelforge_hero_reel",
+      "ts": "2026-07-20T05:14:17.078Z",
+      "perfNowMs": 258.5,
+      "stack": [
+        "Error: RC3-BOOT-04 stack",
+        "at record (<anonymous>:71:19)",
+        "at proto.getItem (<anonymous>:98:5)",
+        "at zi (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:9:1040)",
+        "at Rr (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:9:4345)",
+        "at l (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:10:64405)",
+        "at https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:10:65892",
+        "at Object.o [as subscribe] (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:1:1735)",
+        "at aF (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:10:65853)",
+        "at FJ (https://strong-lolly-a9fcb4.netlify.app/assets/index-Btl25zBV.js:74:6745)",
+        "at _e (https://strong-lolly-a9fcb4.netlify.app/assets/vendor-BRLD7tzm.js:1:7025)"
+      ],
+      "prev": {
+        "present": true,
+        "id": "c4b0b4d6-3089-46ea-bddb-b86811d29f70",
+        "url": "/thumbs/c4b0b4d6-3089-46ea-bddb-b86811d29f70.png",
+        "rawLength": 235
+      },
+      "next": null
+    }
+  ],
+  "writersAfterReload": [],
+  "mutationDetected": false,
+  "failureBoundary": "PERSISTENCE INTACT",
+  "meta": {
+    "generatedAt": "2026-07-20T05:14:18.704Z",
+    "bundle": "/assets/index-Btl25zBV.js",
+    "seed": {
+      "reelforge_hero_manager_config": {
+        "heroAssetId": "c4b0b4d6-3089-46ea-bddb-b86811d29f70",
+        "backgroundSource": "custom_image"
+      },
+      "reelforge_hero_reel": {
+        "id": "c4b0b4d6-3089-46ea-bddb-b86811d29f70",
+        "url": "/thumbs/c4b0b4d6-3089-46ea-bddb-b86811d29f70.png"
+      }
+    },
+    "counts": {
+      "collected": 406,
+      "afterReload": 361,
+      "writersAfterReload": 0
+    }
+  }
+}

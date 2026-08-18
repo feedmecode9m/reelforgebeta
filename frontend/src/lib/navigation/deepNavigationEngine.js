@@ -22,7 +22,7 @@ import { routeWorkflowNavigation } from '../studio/creatorActionRouter.js';
 
 export const ROUTE_DESTINATION_MAP = {
     studio_tab: 'Studio workspace tab + optional section',
-    command_center_page: 'Command Center dashboard section',
+    command_center_page: 'Production Command Center dashboard section',
     episode: 'Studio > Series > Season > Episode focus',
     workflow: 'Workflow board + workflow task focus',
     reel: 'Theater reel open flow',

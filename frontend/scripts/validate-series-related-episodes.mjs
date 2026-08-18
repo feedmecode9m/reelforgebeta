@@ -52,7 +52,9 @@ async function main() {
             buildSeriesViewFromRelated,
             identityTokens,
             sharesEntityTokenPrefix,
-            stripEpisodeDecorFromTitle
+            stripEpisodeDecorFromTitle,
+            looksLikeEpisodeFacingTitle,
+            resolveFamilySeriesTitle
         } = await server.ssrLoadModule('/src/lib/series/resolveRelatedEpisodes.js');
 
         const pilotId = '11111111-1111-4111-8111-111111111111';
@@ -101,8 +103,8 @@ async function main() {
         });
         assert(fromPilot.members.length >= 2, 'Fixture A: pilot seed → members >= 2');
         assert(
-            /vic g la story/i.test(fromPilot.seriesTitle),
-            `Fixture A: series title prefers franchise (${fromPilot.seriesTitle})`
+            /vic g/i.test(fromPilot.seriesTitle) && !looksLikeEpisodeFacingTitle(fromPilot.seriesTitle),
+            `Fixture A: series title prefers family name (${fromPilot.seriesTitle})`
         );
         const pilotTitles = fromPilot.members.map((m) => m.title);
         assert(
@@ -125,7 +127,8 @@ async function main() {
                 sharesEntityTokenPrefix(
                     identityTokens(fromEp2.seriesTitle),
                     identityTokens(fromPilot.seriesTitle)
-                ),
+                ) ||
+                (/vic g/i.test(fromEp2.seriesTitle) && /vic g/i.test(fromPilot.seriesTitle)),
             `Fixture B: same series identity (${fromEp2.seriesTitle} vs ${fromPilot.seriesTitle})`
         );
 
@@ -147,6 +150,131 @@ async function main() {
         assert(
             drawerTitles.length >= 2,
             `Fixture C: drawer episode count >= 2 (got ${drawerTitles.length})`
+        );
+
+        const arrivalId = '03ef898a-989f-42c3-bdbb-67f37338df65';
+        const arrivalCatalog = {
+            id: arrivalId,
+            name: '01 ARRIVAL OPEN v1',
+            title: '01 ARRIVAL OPEN v1',
+            url: `https://pub.example.r2.dev/prod/${arrivalId}.mp4`,
+            type: 'video',
+            status: 'ready'
+        };
+        const arrivalAlias = {
+            id: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+            name: 'Vic G 01_ARRIVAL_OPEN_v1',
+            title: 'Vic G 01_ARRIVAL_OPEN_v1',
+            url: `https://pub.example.r2.dev/prod/${arrivalId}.mp4`,
+            type: 'video',
+            status: 'ready'
+        };
+        const vibesId = '3894107e-ae44-43c5-af72-b3f5d5e0ad90';
+        const vibes = {
+            id: vibesId,
+            name: 'VIC G VIBES',
+            title: 'VIC G VIBES',
+            url: `https://pub.example.r2.dev/prod/${vibesId}.mp4`,
+            type: 'video',
+            status: 'ready'
+        };
+        const vibesStill = {
+            id: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
+            name: 'VIC G VIBES',
+            title: 'VIC G VIBES',
+            url: `https://cdn.example/thumbs/${vibesId}.jpg`,
+            type: 'image',
+            status: 'ready'
+        };
+        const dupReady = [arrivalCatalog, arrivalAlias, vibes, vibesStill];
+        const dupRelated = resolveRelatedEpisodes(arrivalCatalog, { readyAssets: dupReady });
+        const dupTitles = (dupRelated.members || []).map((m) => String(m.title || ''));
+        const arrivalHits = dupTitles.filter((t) => /arrival/i.test(t)).length;
+        const vibesHits = dupTitles.filter((t) => /vibes/i.test(t)).length;
+        assert(arrivalHits === 1, `Arrival Open listed once (got ${arrivalHits}: ${dupTitles.join(' | ')})`);
+        assert(vibesHits <= 1, `VIC G VIBES listed at most once (got ${vibesHits}: ${dupTitles.join(' | ')})`);
+        const { buildVicGSeriesPackage } = await server.ssrLoadModule(
+            '/src/lib/series/vicGSeriesPackage.js'
+        );
+        const packageRelated = {
+            seriesId: 'series-vic-g',
+            seriesTitle: 'Vic G',
+            members: [
+                {
+                    assetId: arrivalAlias.id,
+                    reelId: arrivalAlias.id,
+                    title: 'Vic G 01_ARRIVAL_OPEN_v1',
+                    episodeNumber: 1,
+                    seasonNumber: 1,
+                    mediaUrl: arrivalAlias.url,
+                    thumbnailUrl: '',
+                    source: 'vault',
+                    fromVault: true
+                },
+                {
+                    assetId: vibes.id,
+                    reelId: vibes.id,
+                    title: 'VIC G VIBES',
+                    episodeNumber: 3,
+                    seasonNumber: 1,
+                    mediaUrl: vibes.url,
+                    thumbnailUrl: '',
+                    source: 'vault',
+                    fromVault: true
+                }
+            ]
+        };
+        const packageView = buildSeriesViewFromRelated(packageRelated, buildVicGSeriesPackage());
+        const packageTitles = (packageView?.seasons || [])
+            .flatMap((s) => s.episodes || [])
+            .map((e) => String(e.title || ''));
+        const pkgArrival = packageTitles.filter((t) => /arrival/i.test(t)).length;
+        const pkgVibes = packageTitles.filter((t) => /vibes/i.test(t)).length;
+        assert(
+            pkgArrival === 1,
+            `Drawer+Vic G package: Arrival once (got ${pkgArrival}: ${packageTitles.join(' | ')})`
+        );
+        assert(
+            pkgVibes === 1,
+            `Drawer+Vic G package: VIBES once (got ${pkgVibes}: ${packageTitles.join(' | ')})`
+        );
+        assert(
+            normalizeTitle(packageView?.title) === 'vic g',
+            `Drawer+Vic G package heading is Family name (got ${packageView?.title})`
+        );
+        const arrivalFacing = resolveFamilySeriesTitle({
+            relatedTitle: 'Vic G 01_ARRIVAL_OPEN_v1',
+            catalogTitle: 'Vic G',
+            familyLabels: ['Vic G'],
+            creatorConfirmedCatalog: true
+        });
+        assert(
+            arrivalFacing === 'Vic G',
+            `Family title rejects episode Master Edit heading (got ${arrivalFacing})`
+        );
+        const {
+            isUnsafeHeroFilenameTitle
+        } = await server.ssrLoadModule('/src/lib/hero/heroTitleIntelligence.js');
+        const {
+            isUnsafeViewerCardTitle
+        } = await server.ssrLoadModule('/src/lib/feed/viewerMediaIdentity.js');
+        const copyName = 'copy D737BE01-CAEC-4CBC-B9A1-01EAB6157BCF';
+        assert(isUnsafeHeroFilenameTitle(copyName), 'copy UUID upload stem is unsafe hero title');
+        assert(isUnsafeViewerCardTitle(copyName), 'copy UUID upload stem is unsafe viewer title');
+        assert(
+            looksLikeEpisodeFacingTitle(copyName),
+            'copy UUID must not become All Episodes family heading'
+        );
+        const copyFamily = resolveFamilySeriesTitle({
+            relatedTitle: copyName,
+            catalogTitle: 'Vic G',
+            familyLabels: ['Vic G'],
+            seedTitle: copyName,
+            creatorConfirmedCatalog: true
+        });
+        assert(
+            copyFamily === 'Vic G',
+            `Family heading ignores copy UUID seed (got ${copyFamily})`
         );
 
         // --- Fixture D: STIRRED regression ---

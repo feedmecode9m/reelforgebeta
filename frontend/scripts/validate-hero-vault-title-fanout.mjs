@@ -370,6 +370,13 @@ assert(
 );
 assert(mediaPathAssetId(catalogReel) === HERO_ID, 'path UUID extracted from catalog url');
 assert(
+    mediaPathAssetId({
+        id: CATALOG_ID,
+        url: `https://pub.example.r2.dev/prod/${HERO_ID}.mp4`
+    }) === HERO_ID,
+    'R2 /prod/{uuid}.mp4 extracts playback UUID'
+);
+assert(
     mediaRecordTitleKeys(catalogReel).includes(HERO_ID),
     'catalog reel title keys include playback UUID'
 );

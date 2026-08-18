@@ -2,12 +2,28 @@ import { API_BASE_URL, fetchWithRetry } from '../api.js';
 
 const VIEWER_STORAGE_KEY = 'reelforge_viewer_id';
 
+/** iOS Safari on LAN HTTP is not a secure context — crypto.randomUUID() throws. */
+function fallbackId() {
+    return `anon-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function safeRandomId() {
+    try {
+        if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+            return crypto.randomUUID();
+        }
+    } catch {
+        /* insecure context */
+    }
+    return fallbackId();
+}
+
 /** Stable anonymous viewer id for progress / continue APIs. */
 export function getOrCreateViewerId() {
-    if (typeof localStorage === 'undefined') return `anon-${crypto.randomUUID()}`;
+    if (typeof localStorage === 'undefined') return `anon-${safeRandomId()}`;
     let id = localStorage.getItem(VIEWER_STORAGE_KEY);
     if (!id) {
-        id = crypto.randomUUID();
+        id = safeRandomId();
         localStorage.setItem(VIEWER_STORAGE_KEY, id);
     }
     return id;

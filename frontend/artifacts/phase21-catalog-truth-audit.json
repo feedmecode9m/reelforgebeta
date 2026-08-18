@@ -1,0 +1,560 @@
+{
+  "generatedAt": "2026-08-12T17:32:16.232Z",
+  "reloadEquivalence": [
+    {
+      "id": "A",
+      "label": "title only",
+      "ok": true,
+      "before": {
+        "title": "",
+        "description": "",
+        "tags": [],
+        "category": "",
+        "primaryDescriptionAuthority": false,
+        "primaryTagsAuthority": false,
+        "primaryCategoryAuthority": false
+      },
+      "afterSave": {
+        "title": "Phase21 Title Only",
+        "description": "",
+        "tags": [],
+        "category": "",
+        "primaryDescriptionAuthority": true,
+        "primaryTagsAuthority": true,
+        "primaryCategoryAuthority": true
+      },
+      "afterReload": {
+        "title": "Phase21 Title Only",
+        "description": "",
+        "tags": [],
+        "category": "",
+        "primaryDescriptionAuthority": true,
+        "primaryTagsAuthority": true,
+        "primaryCategoryAuthority": true
+      },
+      "projectedShelf": "Trending",
+      "previewShelf": "Trending",
+      "previewMatchesClassify": true
+    },
+    {
+      "id": "B",
+      "label": "description only",
+      "ok": true,
+      "before": {
+        "title": "",
+        "description": "",
+        "tags": [],
+        "category": "",
+        "primaryDescriptionAuthority": false,
+        "primaryTagsAuthority": false,
+        "primaryCategoryAuthority": false
+      },
+      "afterSave": {
+        "title": "Neutral Base",
+        "description": "A forbidden romance blooms",
+        "tags": [],
+        "category": "",
+        "primaryDescriptionAuthority": true,
+        "primaryTagsAuthority": true,
+        "primaryCategoryAuthority": true
+      },
+      "afterReload": {
+        "title": "Neutral Base",
+        "description": "A forbidden romance blooms",
+        "tags": [],
+        "category": "",
+        "primaryDescriptionAuthority": true,
+        "primaryTagsAuthority": true,
+        "primaryCategoryAuthority": true
+      },
+      "projectedShelf": "Romance",
+      "previewShelf": "Romance",
+      "previewMatchesClassify": true
+    },
+    {
+      "id": "C",
+      "label": "tags only",
+      "ok": true,
+      "before": {
+        "title": "",
+        "description": "",
+        "tags": [],
+        "category": "",
+        "primaryDescriptionAuthority": false,
+        "primaryTagsAuthority": false,
+        "primaryCategoryAuthority": false
+      },
+      "afterSave": {
+        "title": "Neutral Base",
+        "description": "",
+        "tags": [
+          "cyber",
+          "neon heist",
+          "action"
+        ],
+        "category": "",
+        "primaryDescriptionAuthority": true,
+        "primaryTagsAuthority": true,
+        "primaryCategoryAuthority": true
+      },
+      "afterReload": {
+        "title": "Neutral Base",
+        "description": "",
+        "tags": [
+          "cyber",
+          "neon heist",
+          "action"
+        ],
+        "category": "",
+        "primaryDescriptionAuthority": true,
+        "primaryTagsAuthority": true,
+        "primaryCategoryAuthority": true
+      },
+      "projectedShelf": "Cyber-Action",
+      "previewShelf": "Cyber-Action",
+      "previewMatchesClassify": true
+    },
+    {
+      "id": "D",
+      "label": "explicit category only",
+      "ok": true,
+      "before": {
+        "title": "",
+        "description": "",
+        "tags": [],
+        "category": "",
+        "primaryDescriptionAuthority": false,
+        "primaryTagsAuthority": false,
+        "primaryCategoryAuthority": false
+      },
+      "afterSave": {
+        "title": "Neutral Base",
+        "description": "",
+        "tags": [],
+        "category": "Suspense",
+        "primaryDescriptionAuthority": true,
+        "primaryTagsAuthority": true,
+        "primaryCategoryAuthority": true
+      },
+      "afterReload": {
+        "title": "Neutral Base",
+        "description": "",
+        "tags": [],
+        "category": "Suspense",
+        "primaryDescriptionAuthority": true,
+        "primaryTagsAuthority": true,
+        "primaryCategoryAuthority": true
+      },
+      "projectedShelf": "Suspense",
+      "previewShelf": "Suspense",
+      "previewMatchesClassify": true
+    },
+    {
+      "id": "E",
+      "label": "title+description+tags",
+      "ok": true,
+      "before": {
+        "title": "",
+        "description": "",
+        "tags": [],
+        "category": "",
+        "primaryDescriptionAuthority": false,
+        "primaryTagsAuthority": false,
+        "primaryCategoryAuthority": false
+      },
+      "afterSave": {
+        "title": "Forbidden Hearts",
+        "description": "A forbidden romance blooms",
+        "tags": [
+          "love",
+          "romance"
+        ],
+        "category": "",
+        "primaryDescriptionAuthority": true,
+        "primaryTagsAuthority": true,
+        "primaryCategoryAuthority": true
+      },
+      "afterReload": {
+        "title": "Forbidden Hearts",
+        "description": "A forbidden romance blooms",
+        "tags": [
+          "love",
+          "romance"
+        ],
+        "category": "",
+        "primaryDescriptionAuthority": true,
+        "primaryTagsAuthority": true,
+        "primaryCategoryAuthority": true
+      },
+      "projectedShelf": "Romance",
+      "previewShelf": "Romance",
+      "previewMatchesClassify": true
+    },
+    {
+      "id": "F",
+      "label": "all populated",
+      "ok": true,
+      "before": {
+        "title": "",
+        "description": "",
+        "tags": [],
+        "category": "",
+        "primaryDescriptionAuthority": false,
+        "primaryTagsAuthority": false,
+        "primaryCategoryAuthority": false
+      },
+      "afterSave": {
+        "title": "Full Package",
+        "description": "tense thriller suspense",
+        "tags": [
+          "thriller",
+          "mystery"
+        ],
+        "category": "Cyber-Action",
+        "primaryDescriptionAuthority": true,
+        "primaryTagsAuthority": true,
+        "primaryCategoryAuthority": true
+      },
+      "afterReload": {
+        "title": "Full Package",
+        "description": "tense thriller suspense",
+        "tags": [
+          "thriller",
+          "mystery"
+        ],
+        "category": "Cyber-Action",
+        "primaryDescriptionAuthority": true,
+        "primaryTagsAuthority": true,
+        "primaryCategoryAuthority": true
+      },
+      "projectedShelf": "Cyber-Action",
+      "previewShelf": "Cyber-Action",
+      "previewMatchesClassify": true
+    },
+    {
+      "id": "G",
+      "label": "description cleared",
+      "ok": true,
+      "before": {
+        "title": "Enriched",
+        "description": "forbidden romance",
+        "tags": [],
+        "category": "",
+        "primaryDescriptionAuthority": true,
+        "primaryTagsAuthority": true,
+        "primaryCategoryAuthority": true
+      },
+      "afterSave": {
+        "title": "Enriched",
+        "description": "",
+        "tags": [],
+        "category": "",
+        "primaryDescriptionAuthority": true,
+        "primaryTagsAuthority": true,
+        "primaryCategoryAuthority": true
+      },
+      "afterReload": {
+        "title": "Enriched",
+        "description": "",
+        "tags": [],
+        "category": "",
+        "primaryDescriptionAuthority": true,
+        "primaryTagsAuthority": true,
+        "primaryCategoryAuthority": true
+      },
+      "projectedShelf": "Trending",
+      "previewShelf": "Trending",
+      "previewMatchesClassify": true
+    },
+    {
+      "id": "H",
+      "label": "tags cleared",
+      "ok": true,
+      "before": {
+        "title": "Enriched",
+        "description": "",
+        "tags": [
+          "cyber",
+          "action"
+        ],
+        "category": "",
+        "primaryDescriptionAuthority": true,
+        "primaryTagsAuthority": true,
+        "primaryCategoryAuthority": true
+      },
+      "afterSave": {
+        "title": "Enriched",
+        "description": "",
+        "tags": [],
+        "category": "",
+        "primaryDescriptionAuthority": true,
+        "primaryTagsAuthority": true,
+        "primaryCategoryAuthority": true
+      },
+      "afterReload": {
+        "title": "Enriched",
+        "description": "",
+        "tags": [],
+        "category": "",
+        "primaryDescriptionAuthority": true,
+        "primaryTagsAuthority": true,
+        "primaryCategoryAuthority": true
+      },
+      "projectedShelf": "Trending",
+      "previewShelf": "Trending",
+      "previewMatchesClassify": true
+    },
+    {
+      "id": "I",
+      "label": "category cleared",
+      "ok": true,
+      "before": {
+        "title": "Enriched",
+        "description": "forbidden romance",
+        "tags": [],
+        "category": "Suspense",
+        "primaryDescriptionAuthority": true,
+        "primaryTagsAuthority": true,
+        "primaryCategoryAuthority": true
+      },
+      "afterSave": {
+        "title": "Enriched",
+        "description": "forbidden romance",
+        "tags": [],
+        "category": "",
+        "primaryDescriptionAuthority": true,
+        "primaryTagsAuthority": true,
+        "primaryCategoryAuthority": true
+      },
+      "afterReload": {
+        "title": "Enriched",
+        "description": "forbidden romance",
+        "tags": [],
+        "category": "",
+        "primaryDescriptionAuthority": true,
+        "primaryTagsAuthority": true,
+        "primaryCategoryAuthority": true
+      },
+      "projectedShelf": "Romance",
+      "previewShelf": "Romance",
+      "previewMatchesClassify": true
+    },
+    {
+      "id": "J",
+      "label": "all optional cleared",
+      "ok": true,
+      "before": {
+        "title": "Keep Title",
+        "description": "forbidden romance",
+        "tags": [
+          "cyber"
+        ],
+        "category": "Romance",
+        "primaryDescriptionAuthority": true,
+        "primaryTagsAuthority": true,
+        "primaryCategoryAuthority": true
+      },
+      "afterSave": {
+        "title": "Keep Title",
+        "description": "",
+        "tags": [],
+        "category": "",
+        "primaryDescriptionAuthority": true,
+        "primaryTagsAuthority": true,
+        "primaryCategoryAuthority": true
+      },
+      "afterReload": {
+        "title": "Keep Title",
+        "description": "",
+        "tags": [],
+        "category": "",
+        "primaryDescriptionAuthority": true,
+        "primaryTagsAuthority": true,
+        "primaryCategoryAuthority": true
+      },
+      "projectedShelf": "Trending",
+      "previewShelf": "Trending",
+      "previewMatchesClassify": true
+    }
+  ],
+  "classification": [
+    {
+      "name": "Romance evidence",
+      "shelf": "Romance",
+      "preview": "Romance",
+      "explicit": false,
+      "ok": true
+    },
+    {
+      "name": "Suspense evidence",
+      "shelf": "Suspense",
+      "preview": "Suspense",
+      "explicit": false,
+      "ok": true
+    },
+    {
+      "name": "Cyber-Action evidence",
+      "shelf": "Cyber-Action",
+      "preview": "Cyber-Action",
+      "explicit": false,
+      "ok": true
+    },
+    {
+      "name": "neutral Trending",
+      "shelf": "Trending",
+      "preview": "Trending",
+      "explicit": false,
+      "ok": true
+    },
+    {
+      "name": "explicit Cyber over Romance evidence",
+      "shelf": "Cyber-Action",
+      "preview": "Cyber-Action",
+      "explicit": true,
+      "ok": true
+    },
+    {
+      "name": "clear explicit → remaining Romance",
+      "shelf": "Romance",
+      "preview": "Romance",
+      "explicit": false,
+      "ok": true
+    }
+  ],
+  "mirrorResurrection": [
+    {
+      "case": "primary+mirror populated",
+      "primaryWins": true,
+      "loaded": {
+        "title": "Primary Title",
+        "description": "primary desc",
+        "tags": [
+          "a"
+        ],
+        "category": "Romance",
+        "primaryDescriptionAuthority": true,
+        "primaryTagsAuthority": true,
+        "primaryCategoryAuthority": true
+      }
+    },
+    {
+      "case": "primary cleared + mirror poisoned",
+      "loaded": {
+        "title": "Keep",
+        "description": "",
+        "tags": [],
+        "category": "",
+        "primaryDescriptionAuthority": true,
+        "primaryTagsAuthority": true,
+        "primaryCategoryAuthority": true
+      },
+      "shelf": "Trending",
+      "resurrected": false,
+      "primaryWins": true
+    }
+  ],
+  "failureSafety": [
+    {
+      "case": "series mirror failure",
+      "ok": true
+    },
+    {
+      "case": "primary persistence failure",
+      "returnedInMemory": true,
+      "durableUnchanged": true,
+      "ok": true,
+      "note": "In-memory return can diverge from durable primary when titles persist throws — callers treat returned object as success"
+    }
+  ],
+  "identity": [
+    {
+      "case": "metadata does not alter media",
+      "ok": true,
+      "id": "media-1",
+      "thumb": "https://cdn.example/unique.jpg",
+      "poster": "https://cdn.example/unique.jpg",
+      "mediaUrl": "https://cdn.example/unique.mp4",
+      "category": "Romance"
+    },
+    {
+      "case": "poster+MP4 one identity",
+      "ok": true,
+      "count": 1
+    },
+    {
+      "case": "generic UUID asset lifecycle",
+      "ok": true,
+      "afterClearShelf": "Trending"
+    }
+  ],
+  "inventory": {
+    "totalApiRows": 24,
+    "totalCanonicalIdentities": 24,
+    "posterOnly": 18,
+    "mp4Only": 0,
+    "posterAndMp4": 6,
+    "genericUuidCamera": 24,
+    "apiRowsSharingIds": 0
+  },
+  "crossShelf": {
+    "projectedUniqueIdentities": 24,
+    "projectedCardSlots": 24,
+    "multiShelfIdentityCount": 0,
+    "intraShelfDuplicateSlots": 0,
+    "shelfCounts": {
+      "Trending": 24,
+      "Romance": 0,
+      "Cyber-Action": 0,
+      "Suspense": 0
+    },
+    "samples": [],
+    "explicitOrMetadataClassifiedApprox": 0,
+    "inferredApprox": 0,
+    "trendingPrimaryApprox": 24,
+    "verdict": "NO_MULTI_SHELF"
+  },
+  "blockers": [],
+  "findings": [
+    "FINDING: saveCreatorCatalogMetadata returns saved object even when reel_titles_persistent setItem throws; VaultExperience treats truthy return as success and may overlay from failed durable write intent. Mitigated in practice because throw is caught inside save and prior durable state remains; overlay then reads durable map (Prior), not returned object fields.",
+    "Primary authority reel_titles_persistent",
+    "Mirror reelforge_series_metadata is fill-hole only when primary key absent; clears write empty keys so authority blocks resurrection",
+    "applyPersistedTitlesOverlay clears feed description/tags/category; personalVideos path only applies non-empty description/tags (vault UI reads loadCreatorCatalogMetadata)",
+    "distributeToShelves copies genre cards onto Trending with same id — legitimate discovery, not duplicate identity",
+    "Title empty save preserves prior.title (title clear asymmetric vs description/tags/category)",
+    "Vic G / seriesStore / HeroManagerPanel write series mirror; cannot override primary when primary*Authority keys exist",
+    "LATENT BLOCKER: title-only writers replace entire reel_titles_persistent entry without merge",
+    "Vault projection resolveCreatorDescription can read seriesMeta.description in browser (window-gated); classification runs before vault desc overlay so shelves stay protected when hydrate cleared first",
+    "personalVideos overlay in applyPersistedTitlesOverlay applies non-empty description/tags only (does not clear); feed overlay clears correctly; vault UX reads loadCreatorCatalogMetadata",
+    "Title clear asymmetry in saveCreatorCatalogMetadata: empty title preserves prior.title (intentional for title durability; differs from description/tags/category clear)",
+    "Production catalog currently all Trending (no client LS metadata on server inventory); cross-shelf proven by distributeToShelves when genre evidence exists"
+  ],
+  "latentBlockers": [
+    {
+      "id": "TITLE_MAP_ENTRY_REPLACE_WITHOUT_MERGE",
+      "severity": "BLOCKER_LATENT",
+      "surfaces": [
+        "viewerContext.createPersistentTitleStore.saveTitle",
+        "HeroManagerPanel.writePersistentTitle fallback",
+        "StudioExperience Master Edit title save"
+      ],
+      "rootCause": "Title-only writers replace reel_titles_persistent[id] with {title,title_original,savedAt} and do not spread prior description/tags/category/creatorCategory keys.",
+      "effect": "Drops primary*Authority keys → loadCreatorCatalogMetadata falls through to reelforge_series_metadata and can revive cleared or stale description/tags/category into classification.",
+      "proof": "Reproduced in audit: after creator metadata save + title-only overwrite, load returns mirror description/tags/category with primaryDescriptionAuthority=false.",
+      "minimalSurgicalFix": "In saveTitle / writePersistentTitle: merge prior entry — titles[id] = { ...prior, ...titleFields, savedAt } — never omit existing description/tags/category keys unless intentionally clearing.",
+      "affectedFiles": [
+        "frontend/src/viewer/viewerContext.js",
+        "frontend/src/components/studio/HeroManagerPanel.svelte",
+        "frontend/src/components/experiences/StudioExperience.svelte"
+      ],
+      "regressionRisk": "Low if merge-only; must not reintroduce wiped titles. Add validator: creator metadata survives subsequent title-only Master Edit.",
+      "phase22": true
+    }
+  ],
+  "verdict": {
+    "creatorLifecycle17to20": "PASS",
+    "singleAuthorityUnderAllWriters": "FAIL_LATENT",
+    "phase21": "PASS_WITH_LATENT_BLOCKER_DOCUMENTED",
+    "codeChanges": "NONE",
+    "recommendedNext": "PHASE_22_TITLE_MAP_MERGE"
+  }
+}
