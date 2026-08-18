@@ -107,3 +107,4 @@ frontend/artifacts/hero-persistence-characterization.json
 docker-compose.override.yml
 .codex/
 public/thumbs/
+frontend/artifacts/*.har
