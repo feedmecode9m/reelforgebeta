@@ -156,6 +156,8 @@ export function stripEpisodeDecorFromTitle(rawTitle) {
     text = text.replace(/[\s\-_.]*(?:[\[(])?S\d{1,2}\s*[Ee]\d{1,3}[\])]?(?:[\s\-_.]+.*)?$/i, '');
     // trailing V1 / V1(2)
     text = text.replace(/[\s\-_.]+[Vv]\d{1,3}(?:\s*[\(\[]\s*\d{1,3}\s*[\)\]])?\s*$/i, '');
+    // trailing episode-only décor (STIRRED 2 Motherland → STIRRED 2)
+    text = text.replace(/[\s\-_.]+motherland\s*$/i, '');
     // trailing standalone number (STIRRED 2)
     text = text.replace(/[\s\-_.]+(\d{1,3})\s*$/i, (full, num, offset, whole) => {
         // Keep years occasionally mistaken for episodes when base is short
@@ -182,6 +184,7 @@ export function looksLikeEpisodeFacingTitle(value) {
     if (/_v\d+\b/i.test(text)) return true;
     if (/_(?:arrival|open|cut|final|master|edit)\b/i.test(text)) return true;
     if (/\b(?:arrival|open)\b/i.test(text) && /\bv\d+\b/i.test(text)) return true;
+    if (/^motherland$/i.test(text)) return true;
     return false;
 }
 
@@ -226,6 +229,9 @@ export function resolveFamilySeriesTitle(input = {}) {
     push(stripEpisodeDecorFromTitle(franchise) || franchise);
     push(stripEpisodeDecorFromTitle(relatedTitle) || relatedTitle);
     push(stripEpisodeDecorFromTitle(seedTitle));
+
+    const vicG = ranked.find((value) => /\bvic\s*g\b/i.test(value));
+    if (vicG) return vicG;
 
     if (!ranked.length) {
         const fallback =
@@ -605,6 +611,29 @@ function vaultFamilyAllowsJoin(
 }
 
 /**
+ * Distinctive Vic G / LA production titles. Motherland / STIRRED stay out.
+ * @param {unknown} value
+ */
+function isVicGProjectTitle(value) {
+    const n = normalizeSeriesText(value);
+    if (!n) return false;
+    return (
+        /\bvic g\b/.test(n) ||
+        /poom poom/.test(n) ||
+        /set shooting/.test(n) ||
+        /soundstage shoot/.test(n) ||
+        /los angeles/.test(n)
+    );
+}
+
+function isMotherlandOrStirredTitle(value) {
+    const n = normalizeSeriesText(value);
+    if (!n) return false;
+    if (isVicGProjectTitle(n)) return false;
+    return /\bmotherland\b/.test(n) || /\bstirred\b/.test(n);
+}
+
+/**
  * @param {string} seedTitle
  * @param {string} otherTitle
  * @param {string} seedDesc
@@ -613,6 +642,12 @@ function vaultFamilyAllowsJoin(
  * @param {string} otherCreator
  */
 function titlesRelated(seedTitle, otherTitle, seedDesc, otherDesc, seedCreator, otherCreator) {
+    if (
+        (isVicGProjectTitle(seedTitle) && isMotherlandOrStirredTitle(otherTitle)) ||
+        (isVicGProjectTitle(otherTitle) && isMotherlandOrStirredTitle(seedTitle))
+    ) {
+        return false;
+    }
     // Filename / "copy UUID" stems never form an All Episodes family by title alone.
     if (
         isUnsafeHeroFilenameTitle(seedTitle) ||
@@ -1262,6 +1297,10 @@ export function resolveRelatedEpisodes(assetOrReel, options = {}) {
 
         // Description of seed names this vault title token block
         if (
+            !(
+                (isVicGProjectTitle(seedTitle) && isMotherlandOrStirredTitle(title)) ||
+                (isVicGProjectTitle(title) && isMotherlandOrStirredTitle(seedTitle))
+            ) &&
             normalizeSeriesText(seedDesc).includes(normalizeSeriesText(stripEpisodeDecorFromTitle(title))) &&
             stripEpisodeDecorFromTitle(title).length >= 6
         ) {

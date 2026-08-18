@@ -49,6 +49,12 @@
     /** @type {number} */
     export let titleEpoch = 0;
 
+    /**
+     * Sibling episode titles / filenames for All Episodes editorial overlay.
+     * @type {unknown[]}
+     */
+    export let familyItems = [];
+
     $: readyVaultAssets =
         Array.isArray(heroVaultAssets) && heroVaultAssets.length
             ? heroVaultAssets
@@ -149,8 +155,10 @@
                     seasonNumber={season.seasonNumber}
                     episodeNumber={row.episode.episodeNumber}
                     title={row.episode.title}
+                    description={row.episode.description || ''}
                     seriesLabel={/** @type {{ seriesLabel?: string }} */ (row.episode).seriesLabel ||
                         effectiveSeriesLabel}
+                    familyItems={familyItems}
                     viewerMode={true}
                     episodeId={row.episode.episodeId}
                     status={row.episode.status}
@@ -192,8 +200,10 @@
                         seasonNumber={season.seasonNumber}
                         episodeNumber={row.episode.episodeNumber}
                         title={row.episode.title}
+                        description={row.episode.description || ''}
                         seriesLabel={/** @type {{ seriesLabel?: string }} */ (row.episode).seriesLabel ||
                             effectiveSeriesLabel}
+                        familyItems={familyItems}
                         viewerMode={true}
                         episodeId={row.episode.episodeId}
                         status={row.episode.status}

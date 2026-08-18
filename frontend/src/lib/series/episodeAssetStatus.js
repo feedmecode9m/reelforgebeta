@@ -6,6 +6,11 @@ import { get } from 'svelte/store';
 import { seriesCatalog, getReelSeriesMetadata } from './seriesStore.js';
 import { episodeHasReel } from './seriesTypes.js';
 import { logEpisodeAssetDiag } from './episodeAssetDiagnostics.js';
+import {
+    collectStudioFamilyItems,
+    presentEpisodeOperationDescription,
+    presentEpisodeOperationTitle
+} from './laProductionStudioEnrichment.js';
 
 /** @typedef {'Draft' | 'Missing Asset' | 'Ready' | 'Scheduled' | 'Published'} EpisodeAssetDisplayStatus */
 
@@ -24,6 +29,7 @@ import { logEpisodeAssetDiag } from './episodeAssetDiagnostics.js';
  * @property {number | null} runtime
  * @property {EpisodeAssetDisplayStatus} status
  * @property {boolean} reelInFeed
+ * @property {string} [guideDescription]
  */
 
 /**
@@ -60,6 +66,7 @@ export function buildEpisodeAssetRecords(feedReels = []) {
     const records = [];
 
     for (const series of get(seriesCatalog)) {
+        const familyItems = collectStudioFamilyItems(series, feedReels);
         for (const season of series.seasons) {
             const seasonId = season.seasonId || `season-${series.id}-${season.seasonNumber}`;
             for (const episode of season.episodes) {
@@ -69,6 +76,21 @@ export function buildEpisodeAssetRecords(feedReels = []) {
                 const thumbnailUrl =
                     (feedReel && (feedReel.thumbnailUrl || feedReel.thumbnail_url)) ||
                     (series.poster ? String(series.poster) : null);
+                const episodeTitle = presentEpisodeOperationTitle({
+                    episodeTitle: episode.title,
+                    episodeNumber: episode.episodeNumber,
+                    episode,
+                    reel: feedReel,
+                    familyItems
+                });
+                const guideDescription = presentEpisodeOperationDescription({
+                    episodeTitle: episode.title,
+                    episodeNumber: episode.episodeNumber,
+                    episode,
+                    reel: feedReel,
+                    familyItems,
+                    currentDescription: episode.description || studio?.description || ''
+                });
 
                 records.push({
                     seriesId: series.id,
@@ -76,7 +98,7 @@ export function buildEpisodeAssetRecords(feedReels = []) {
                     seasonNumber: season.seasonNumber,
                     episodeId: episode.episodeId,
                     episodeNumber: episode.episodeNumber,
-                    episodeTitle: episode.title,
+                    episodeTitle,
                     reelId,
                     reelUuid: reelId,
                     attachedReelTitle: feedReel
@@ -85,7 +107,8 @@ export function buildEpisodeAssetRecords(feedReels = []) {
                     thumbnailUrl: thumbnailUrl ? String(thumbnailUrl) : null,
                     runtime: studio?.runtime ?? episode.runtime ?? null,
                     status: resolveEpisodeAssetStatus(episode, feedReel),
-                    reelInFeed: Boolean(feedReel)
+                    reelInFeed: Boolean(feedReel),
+                    guideDescription
                 });
             }
         }

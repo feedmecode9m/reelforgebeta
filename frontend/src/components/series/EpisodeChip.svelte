@@ -9,6 +9,8 @@
     } from '../../lib/hero/heroTitleIntelligence.js';
     import { isUnsafeViewerCardTitle } from '../../lib/feed/viewerMediaIdentity.js';
     import { isVaultVideoMediaUrl } from '../../lib/vault/normalizeVaultAsset.js';
+    import { presentLaProductionEpisode } from '../../lib/series/laProductionEpisodeGuide.js';
+    import '../../viewer/cinematicCardTokens.css';
 
     const dispatch = createEventDispatcher();
 
@@ -80,6 +82,12 @@
     /** @type {string} */
     export let description = '';
 
+    /**
+     * Sibling All Episodes titles / filenames — used to detect Los Angeles Production overlay.
+     * @type {unknown[]}
+     */
+    export let familyItems = [];
+
     $: code = `S${seasonNumber}:E${episodeNumber}`;
     $: epPad = String(Math.max(0, episodeNumber || 0)).padStart(2, '0');
     $: labelRoot = String(seriesLabel || '').trim();
@@ -118,7 +126,7 @@
      * Never paint Finder "copy UUID" / filename stems — blank until a real title exists.
      * Admin: preserve package title for creator tooling.
      */
-    $: displayTitle = (() => {
+    $: vaultDisplayTitle = (() => {
         void titleEpoch;
         if (viewerMode) {
             const projected = String(vaultCard?.title || '').trim();
@@ -157,9 +165,27 @@
         return String(title || '').trim();
     })();
 
-    $: viewerDescription = viewerMode
-        ? String(vaultCard?.description || '').trim()
+    $: vaultViewerDescription = viewerMode
+        ? String(vaultCard?.description || description || '').trim()
         : String(description || '').trim();
+
+    $: laGuide = viewerMode
+        ? presentLaProductionEpisode({
+              familyItems: [...(Array.isArray(familyItems) ? familyItems : []), labelRoot, title, mediaUrl],
+              seriesTitle: labelRoot,
+              episodeNumber,
+              title,
+              fileName: mediaUrl,
+              currentTitle: vaultDisplayTitle,
+              currentDescription: vaultViewerDescription
+          })
+        : { active: false, title: '', description: '', episodeNumber: null };
+
+    $: displayTitle = String(laGuide?.title || vaultDisplayTitle || '').trim();
+
+    $: viewerDescription = viewerMode
+        ? String(laGuide?.description || vaultViewerDescription || '').trim()
+        : vaultViewerDescription;
 
     /** Playability comes from parent presentation. */
     $: isPlayable = playable === true || (playable === undefined && Boolean(mediaAssetId));
@@ -283,12 +309,15 @@
                 {/if}
                 {#if viewerDescription}
                     <span class="episode-card__description" data-vault-card-description
-                        >{viewerDescription.length > 90
-                            ? `${viewerDescription.slice(0, 90)}…`
-                            : viewerDescription}</span
+                        >{viewerDescription}</span
                     >
                 {/if}
             </div>
+            {#if isPlayable}
+                <span class="episode-card__play" aria-hidden="true">
+                    <span class="episode-card__play-icon"></span>
+                </span>
+            {/if}
         </div>
     {:else}
         <div class="episode-chip__header">
@@ -452,11 +481,12 @@
     }
     .episode-card {
         display: grid;
-        grid-template-columns: 5.6rem minmax(0, 1fr);
-        gap: 0.8rem;
+        grid-template-columns: 5.6rem minmax(0, 1fr) 2.75rem;
+        gap: 0.75rem;
         align-items: center;
         width: 100%;
-        padding: 0.5rem 0.65rem 0.5rem 0.5rem;
+        padding: 0.55rem 0.65rem 0.55rem 0.5rem;
+        min-height: 44px;
     }
     .episode-card__poster {
         position: relative;
@@ -531,27 +561,50 @@
         color: rgba(255, 255, 255, 0.75);
     }
     .episode-card__title {
-        font-size: 0.88rem;
-        font-weight: 600;
+        font-size: 0.92rem;
+        font-weight: 700;
         line-height: 1.3;
-        color: rgba(255, 255, 255, 0.92);
-        white-space: nowrap;
+        color: var(--rf-cine-ink, rgba(255, 255, 255, 0.92));
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
         overflow: hidden;
-        text-overflow: ellipsis;
     }
     .episode-chip.viewer.selected .episode-card__title {
         color: #fff;
     }
     .episode-card__description {
-        display: block;
-        margin-top: 0.15rem;
-        font-size: 0.68rem;
-        line-height: 1.3;
-        color: rgba(255, 255, 255, 0.4);
         display: -webkit-box;
-        -webkit-line-clamp: 2;
+        margin-top: 0.15rem;
+        font-size: 0.72rem;
+        line-height: 1.4;
+        color: var(--rf-cine-muted, rgba(255, 255, 255, 0.45));
+        -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
         overflow: hidden;
+    }
+    .episode-card__play {
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: 50%;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--rf-cine-accent, #c4a574);
+        box-shadow: 0 0 0 1px rgba(196, 165, 116, 0.35);
+    }
+    .episode-card__play-icon {
+        display: block;
+        width: 0;
+        height: 0;
+        margin-left: 0.15rem;
+        border-style: solid;
+        border-width: 0.42rem 0 0.42rem 0.7rem;
+        border-color: transparent transparent transparent #0a0a0a;
+    }
+    .episode-chip.viewer:hover:not(:disabled) .episode-card__play {
+        filter: brightness(1.08);
     }
     .episode-card__series {
         font-size: 0.7rem;

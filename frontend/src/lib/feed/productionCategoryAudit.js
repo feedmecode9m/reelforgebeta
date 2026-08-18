@@ -28,6 +28,7 @@ import {
     loadCreatorCatalogMetadata,
     normalizeCreatorCategory
 } from './creatorCatalogMetadata.js';
+import { overlayLaProductionForClassification } from '../series/laProductionStudioEnrichment.js';
 
 /** @typedef {'MATCH'|'RECOMMEND_CHANGE'|'REVIEW'|'AMBIGUOUS'|'MANUAL'|'CREATOR_LOCK'|'FALLBACK_TRENDING'|'EXCLUDED'} AuditState */
 
@@ -191,19 +192,20 @@ export async function auditCatalogAsset(asset, options = {}) {
         { ...(asset && typeof asset === 'object' ? asset : {}), id: eligibility.assetId },
         options
     );
-    const titleResolved = resolveClassificationTitle(hydrated);
-    const authored = classifyContent(hydrated);
-    const creatorLocked = hasExplicitCreatorCategoryLock(hydrated, authored);
+    const classified = overlayLaProductionForClassification(hydrated, [hydrated]);
+    const titleResolved = resolveClassificationTitle(classified);
+    const authored = classifyContent(classified);
+    const creatorLocked = hasExplicitCreatorCategoryLock(classified, authored);
 
     const classification = await suggestShelfClassification({
-        ...hydrated,
+        ...classified,
         title: titleResolved.title,
         persistentTitle: titleResolved.title,
         creatorTitle: titleResolved.title
     });
 
-    const currentCategory = resolveCurrentCategory(hydrated);
-    const currentCategorySource = resolveCategorySourceLabel(hydrated);
+    const currentCategory = resolveCurrentCategory(classified);
+    const currentCategorySource = resolveCategorySourceLabel(classified);
 
     // NLP suggestion fields (non-authoritative when locked)
     let suggestedCategory = String(

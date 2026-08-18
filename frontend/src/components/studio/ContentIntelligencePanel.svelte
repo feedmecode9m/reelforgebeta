@@ -17,6 +17,11 @@
     resolveHeroAssetTruth,
     seedContentIntelligenceFromHeroTruth
   } from '../../lib/hero/heroViewerTruth.js';
+  import {
+    seedContentIntelligenceFromLaGuide,
+    LA_PRODUCTION_STUDIO_SERIES_TITLE
+  } from '../../lib/series/laProductionStudioEnrichment.js';
+  import { LA_PRODUCTION_EPISODES, LA_PRODUCTION_SYNOPSIS } from '../../lib/series/laProductionEpisodeGuide.js';
 
   const STORAGE_KEY = 'reelforge_content_intelligence_draft';
 
@@ -30,6 +35,8 @@
   let statusMessage = 'Fill metadata fields, then validate.';
   let heroTruthHint = '';
   let lastHeroSyncKey = '';
+  let selectedGuideEpisode = 1;
+  let guideStatus = '';
 
   function parseCsv(value) {
     return String(value || '')
@@ -133,6 +140,60 @@
       : `Filled empty intelligence fields from hero “${seeded.heroTitle}”.`;
   }
 
+  function collectVaultGuideContext() {
+    const items = loadHeroVaultItems();
+    const config = loadHeroManagerConfig();
+    const live = refreshHeroTruthHint();
+    return {
+      familyItems: [...(Array.isArray(items) ? items : []), config.heroTitle, live?.title, live?.truth],
+      title: String(config.heroTitle || live?.title || '').trim(),
+      fileName: String(live?.truth?.fileName || live?.truth?.mediaUrl || live?.truth?.url || '').trim()
+    };
+  }
+
+  /**
+   * Fill Content Intelligence + Discovery Fields from the LA episode guide.
+   * Always uses the production guide — does not require a matching hero title.
+   * @param {{ force?: boolean; episodeNumber?: number }} [options]
+   */
+  function syncFromLaEpisodeGuide(options = {}) {
+    const episodeNumber = Number(options.episodeNumber) || selectedGuideEpisode || 1;
+    selectedGuideEpisode = episodeNumber;
+    const context = collectVaultGuideContext();
+    const seeded = seedContentIntelligenceFromLaGuide(
+      { series, episode, discovery, community, educational },
+      { ...context, episodeNumber },
+      { force: Boolean(options.force) }
+    );
+    if (!seeded.active) {
+      statusMessage = 'Episode guide is unavailable.';
+      guideStatus = statusMessage;
+      return;
+    }
+    series = { ...series, ...seeded.series };
+    episode = { ...episode, ...seeded.episode };
+    discovery = { ...discovery, ...seeded.discovery };
+    community = { ...community, ...seeded.community };
+    educational = { ...educational, ...seeded.educational };
+    validation = validateContentIntelligencePayload({
+      series,
+      episode,
+      community,
+      educational,
+      rights,
+      discovery
+    });
+    persistDraft();
+    statusMessage = options.force
+      ? `Loaded episode guide into Content Intelligence: ${seeded.guideTitle}.`
+      : `Filled Content Intelligence from episode guide: ${seeded.guideTitle}.`;
+    guideStatus = `${LA_PRODUCTION_STUDIO_SERIES_TITLE} · E${episodeNumber} ${seeded.guideTitle}`;
+  }
+
+  function loadGuideEpisode(episodeNumber) {
+    syncFromLaEpisodeGuide({ force: true, episodeNumber });
+  }
+
   function handleHeroManagerUpdated(event) {
     refreshHeroTruthHint();
     const cfg = event?.detail || loadHeroManagerConfig();
@@ -188,10 +249,15 @@
   onMount(() => {
     loadDraft();
     refreshHeroTruthHint();
-    // Initial soft seed if draft empty
     if (!String(episode.episodeTitle || series.seriesTitle || '').trim()) {
       syncFromHeroBackground({ force: false });
     }
+    const needsGuide =
+      !String(episode.episodeDescription || '').trim() ||
+      !String(series.seriesDescription || '').trim() ||
+      !Array.isArray(discovery.topics) ||
+      discovery.topics.length === 0;
+    syncFromLaEpisodeGuide({ force: needsGuide, episodeNumber: selectedGuideEpisode });
     if (typeof window !== 'undefined') {
       window.addEventListener('reelforge:hero-manager-updated', handleHeroManagerUpdated);
       window.addEventListener('reelforge:vault-title-updated', handleVaultTitleUpdated);
@@ -218,15 +284,41 @@
       {#if heroTruthHint}
         <p class="content-intelligence-panel__hero-hint" data-content-intelligence-hero-source>{heroTruthHint}</p>
       {/if}
+      {#if guideStatus}
+        <p class="content-intelligence-panel__hero-hint" data-content-intelligence-guide-source>{guideStatus}</p>
+      {/if}
     </div>
     <div class="content-intelligence-panel__actions">
       <button type="button" on:click={() => syncFromHeroBackground({ force: false })}>Sync from Hero</button>
       <button type="button" on:click={() => syncFromHeroBackground({ force: true })}>Overwrite from Hero</button>
+      <button type="button" data-fill-episode-guide on:click={() => syncFromLaEpisodeGuide({ force: true, episodeNumber: selectedGuideEpisode })}>Load episode guide</button>
       <button type="button" on:click={loadDraft}>Load Draft</button>
       <button type="button" on:click={validateNow}>Validate</button>
       <button type="button" on:click={resetPanel}>Reset</button>
     </div>
   </div>
+
+  <article class="content-intelligence-panel__card content-intelligence-panel__card--guide" data-content-intelligence-guide>
+    <h4>Episode guide</h4>
+    <p class="content-intelligence-panel__guide-lead">
+      {LA_PRODUCTION_STUDIO_SERIES_TITLE} — {LA_PRODUCTION_EPISODES.length} episodes. Choose an episode to load its title and wording into Content Intelligence and Discovery Fields.
+    </p>
+    <p class="content-intelligence-panel__guide-synopsis">{LA_PRODUCTION_SYNOPSIS}</p>
+    <div class="content-intelligence-panel__guide-list">
+      {#each LA_PRODUCTION_EPISODES as ep (ep.episodeNumber)}
+        <button
+          type="button"
+          class="content-intelligence-panel__guide-ep"
+          class:selected={selectedGuideEpisode === ep.episodeNumber}
+          data-guide-episode={ep.episodeNumber}
+          on:click={() => loadGuideEpisode(ep.episodeNumber)}
+        >
+          <strong>E{ep.episodeNumber} · {ep.title}</strong>
+          <span>{ep.description}</span>
+        </button>
+      {/each}
+    </div>
+  </article>
 
   <div class="content-intelligence-panel__grid">
     <article class="content-intelligence-panel__card" data-content-intelligence-series>
@@ -447,6 +539,47 @@
   }
   .content-intelligence-panel__card--discovery {
     margin-top: 0.6rem;
+  }
+  .content-intelligence-panel__card--guide {
+    margin-bottom: 0.7rem;
+  }
+  .content-intelligence-panel__guide-lead,
+  .content-intelligence-panel__guide-synopsis {
+    margin: 0 !important;
+    font-size: 0.72rem !important;
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.82) !important;
+  }
+  .content-intelligence-panel__guide-list {
+    display: grid;
+    gap: 0.45rem;
+    margin-top: 0.35rem;
+  }
+  .content-intelligence-panel__guide-ep {
+    display: grid;
+    gap: 0.28rem;
+    text-align: left;
+    border: 1px solid rgba(201, 166, 255, 0.28);
+    background: rgba(0, 0, 0, 0.28);
+    color: #f4ecff;
+    border-radius: 8px;
+    padding: 0.55rem 0.65rem;
+    cursor: pointer;
+  }
+  .content-intelligence-panel__guide-ep strong {
+    font-size: 0.78rem;
+    color: #fff;
+  }
+  .content-intelligence-panel__guide-ep span {
+    font-size: 0.72rem;
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.82);
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .content-intelligence-panel__guide-ep.selected {
+    border-color: rgba(201, 166, 255, 0.85);
+    background: rgba(163, 119, 255, 0.22);
   }
   @media (max-width: 1200px) {
     .content-intelligence-panel__grid {

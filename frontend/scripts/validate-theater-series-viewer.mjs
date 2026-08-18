@@ -245,6 +245,8 @@ async function main() {
         );
         assert(/data-theater-series-drawer/.test(drawer), 'Drawer has theater series marker');
         assert(/series-shelf|episodeCount|hasViewerBody/.test(drawer), 'Viewer shelf collapses empty chrome');
+        assert(/presentLaProductionHeader/.test(drawer), 'Drawer can present LA Production editorial chrome');
+        assert(/series-shelf__synopsis|data-series-editorial-synopsis/.test(drawer), 'Drawer has editorial synopsis slot');
 
         const chip = read('src/components/series/EpisodeChip.svelte');
         assert(/viewerMode/.test(chip), 'EpisodeChip viewerMode');
@@ -287,6 +289,87 @@ async function main() {
         assert(
             splitTitles.filter((t) => /motherland/i.test(t)).length === 0,
             '01 ARRIVAL OPEN is not Theater-linked to 01 MICROS Motherland'
+        );
+
+        const mixed = resolveRelatedEpisodes(fromPilot.members[0] ? pilot : fromPilot, {
+            readyAssets: [
+                {
+                    id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb1',
+                    name: 'Vic G LA Story',
+                    url: 'https://cdn.example/videos/vic-pilot.mp4',
+                    type: 'video',
+                    status: 'ready'
+                },
+                {
+                    id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2',
+                    name: 'Vic G EPISODE 2 - POOM POOM TUESDAY',
+                    url: 'https://cdn.example/videos/vic-ep2.mp4',
+                    type: 'video',
+                    status: 'ready'
+                },
+                {
+                    id: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+                    name: '01 MICROS Motherland V1',
+                    title: '01 MICROS Motherland V1',
+                    url: 'https://cdn.example/videos/motherland.mp4',
+                    type: 'video',
+                    status: 'ready'
+                }
+            ]
+        });
+        const mixedTitles = (mixed?.members || []).map((m) => String(m.title || ''));
+        assert(
+            mixedTitles.filter((t) => /motherland/i.test(t)).length === 0,
+            `Vic G All Episodes excludes Motherland (got ${mixedTitles.join(' | ')})`
+        );
+        assert(
+            /vic g/i.test(mixed?.seriesTitle || '') && !/motherland/i.test(mixed?.seriesTitle || ''),
+            `Vic G All Episodes heading is Vic G not Motherland (got ${mixed?.seriesTitle})`
+        );
+
+        const {
+            isLosAngelesProductionFamily,
+            matchLaProductionEpisodeNumber,
+            presentLaProductionEpisode
+        } = await server.ssrLoadModule('/src/lib/series/laProductionEpisodeGuide.js');
+        assert(
+            !isLosAngelesProductionFamily(['01 ARRIVAL OPEN v1']),
+            'LA guide does not claim a lone Arrival OPEN title'
+        );
+        assert(
+            isLosAngelesProductionFamily([
+                '04_SET_SHOOTING_PT 1_V1.mp4',
+                '05_SET_SHOOTING_PT 2_V1.mp4'
+            ]),
+            'LA guide recognizes SET SHOOTING pair as the production family'
+        );
+        assert(
+            matchLaProductionEpisodeNumber('04_SET_SHOOTING_PT 1_V1') === 3,
+            'SET SHOOTING PT1 is guide episode 3'
+        );
+        const laChip = presentLaProductionEpisode({
+            familyItems: ['04_SET_SHOOTING_PT 1_V1.mp4', '05_SET_SHOOTING_PT 2_V1.mp4'],
+            title: '04_SET_SHOOTING_PT 1_V1',
+            currentTitle: '04_SET_SHOOTING_PT 1_V1'
+        });
+        assert(
+            laChip.title === 'Soundstage Shoot: Part One',
+            `All Episodes overlay uses guide title (got ${laChip.title})`
+        );
+        const { presentLaProductionHeader } = await server.ssrLoadModule(
+            '/src/lib/series/laProductionEpisodeGuide.js'
+        );
+        const arrivalHeader = presentLaProductionHeader({
+            familyItems: ['Vic G', 'Arrival'],
+            seriesTitle: 'Arrival',
+            episodeCount: 2,
+            selectedTitle: 'Arrival'
+        });
+        assert(
+            arrivalHeader.headingTitle === 'Arrival' &&
+                arrivalHeader.countLine === '2 episodes' &&
+                /arrive in Los Angeles/i.test(arrivalHeader.description),
+            'All Episodes header is Arrival + count + PDF wording'
         );
 
         // Hero Admin must not be required for this contract

@@ -18,6 +18,11 @@
         evaluateEpisodeReadyRequirements,
         resolveVaultAssetForEpisode
     } from '../../lib/series/seriesAssemblyWorkflow.js';
+    import {
+        collectStudioFamilyItems,
+        suggestCreatorCatalogEpisodeFields,
+        suggestCreatorCatalogSeriesFields
+    } from '../../lib/series/laProductionStudioEnrichment.js';
 
     const dispatch = createEventDispatcher();
 
@@ -222,15 +227,83 @@
         extraItems: Array.isArray(feedReels) ? feedReels : null
     });
 
+    $: catalogFamilyItems = collectStudioFamilyItems(series, [
+        ...(Array.isArray(feedReels) ? feedReels : []),
+        ...readyVaultAssets
+    ]);
+
+    /**
+     * @param {import('../../lib/series/seriesTypes.js').Episode | null | undefined} ep
+     */
+    function reelForEpisode(ep) {
+        const reelId = String(ep?.reelId || '').trim();
+        if (!reelId) return null;
+        const extras = Array.isArray(readyVaultAssets)
+            ? readyVaultAssets
+            : getReadyHeroVaultAssets({
+                  extraItems: Array.isArray(feedReels) ? feedReels : null
+              });
+        const pool = [...(Array.isArray(feedReels) ? feedReels : []), ...extras];
+        return pool.find((row) => String(row?.id || '') === reelId) || null;
+    }
+
+    /**
+     * @param {import('../../lib/series/seriesTypes.js').Episode} ep
+     */
+    function catalogEpisodeTitle(ep) {
+        const suggestion = suggestCreatorCatalogEpisodeFields(ep, catalogFamilyItems, reelForEpisode(ep));
+        return suggestion.active && suggestion.title ? suggestion.title : ep.title || 'Untitled';
+    }
+
+    $: catalogEpisodeSuggestion = selectedEpisode
+        ? suggestCreatorCatalogEpisodeFields(
+              selectedEpisode,
+              catalogFamilyItems,
+              reelForEpisode(selectedEpisode)
+          )
+        : { active: false, title: '', description: '', titleChanged: false, descriptionChanged: false };
+
+    $: catalogSeriesSuggestion = series
+        ? suggestCreatorCatalogSeriesFields(series, catalogFamilyItems)
+        : { active: false, seriesTitle: '', seriesDescription: '', replacePlaceholderTitle: false };
+
     /**
      * @param {import('../../lib/series/seriesTypes.js').Episode} ep
      */
     function loadEditor(ep) {
-        editTitle = ep.title || '';
-        editDescription = ep.description || '';
+        const family = collectStudioFamilyItems(series, [
+            ...(Array.isArray(feedReels) ? feedReels : []),
+            ...getReadyHeroVaultAssets({
+                extraItems: Array.isArray(feedReels) ? feedReels : null
+            })
+        ]);
+        const suggestion = suggestCreatorCatalogEpisodeFields(ep, family, reelForEpisode(ep));
+        if (suggestion.active && (suggestion.titleChanged || !String(ep.description || '').trim())) {
+            editTitle = suggestion.title;
+            editDescription = suggestion.description || ep.description || '';
+        } else {
+            editTitle = ep.title || '';
+            editDescription = ep.description || '';
+        }
         editStatus = ep.status || 'published';
         saveMessage = '';
         attachMessage = '';
+    }
+
+    function applyEpisodeGuide() {
+        if (!catalogEpisodeSuggestion.active) return;
+        editTitle = catalogEpisodeSuggestion.title;
+        editDescription = catalogEpisodeSuggestion.description || editDescription;
+        saveMessage = 'Episode guide applied — Save episode to persist';
+    }
+
+    function applySeriesGuide() {
+        if (!catalogSeriesSuggestion.active) return;
+        if (catalogSeriesSuggestion.replacePlaceholderTitle) {
+            editSeriesTitle = catalogSeriesSuggestion.seriesTitle;
+        }
+        editSeriesDescription = catalogSeriesSuggestion.seriesDescription;
+        seriesSaveMessage = 'Production guide applied — Save series to persist';
     }
 
     function handleSeriesChange() {
@@ -462,6 +535,16 @@
                     <button type="button" class="creator-catalog__btn" data-save-series on:click={handleSaveSeriesMeta}
                         >Save series</button
                     >
+                    {#if catalogSeriesSuggestion.active}
+                        <button
+                            type="button"
+                            class="creator-catalog__btn"
+                            data-apply-episode-guide-series
+                            on:click={applySeriesGuide}
+                        >
+                            Apply production guide
+                        </button>
+                    {/if}
                     {#if season}
                         <h5 class="creator-catalog__meta-title">Season {season.seasonNumber} metadata</h5>
                         <label class="creator-catalog__field">
@@ -517,7 +600,7 @@
                             >
                                 <span class="creator-catalog__drag" aria-hidden="true">⋮⋮</span>
                                 <span class="creator-catalog__code">{code}</span>
-                                <span class="creator-catalog__ep-title">{ep.title}</span>
+                                <span class="creator-catalog__ep-title">{catalogEpisodeTitle(ep)}</span>
                                 <span
                                     class="creator-catalog__badge"
                                     class:draft={ep.status === 'draft'}
@@ -620,6 +703,16 @@
                         >
                             Save episode
                         </button>
+                        {#if catalogEpisodeSuggestion.active}
+                            <button
+                                type="button"
+                                class="creator-catalog__btn"
+                                data-apply-episode-guide
+                                on:click={applyEpisodeGuide}
+                            >
+                                Apply episode guide
+                            </button>
+                        {/if}
                         <button
                             type="button"
                             class="creator-catalog__btn"

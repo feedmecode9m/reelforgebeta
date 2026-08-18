@@ -58,7 +58,10 @@ function metadataCompleteForRecord(record) {
     const series = ctx?.series;
     const hasTitle = Boolean(record.episodeTitle?.trim());
     const hasDescription = Boolean(
-        studio?.description?.trim() || episode?.description?.trim() || series?.description?.trim()
+        String(record.guideDescription || '').trim() ||
+            studio?.description?.trim() ||
+            episode?.description?.trim() ||
+            series?.description?.trim()
     );
     const hasGenre = Boolean(studio?.genre?.trim() || episode?.genre?.trim() || series?.genre?.trim());
     const hasRuntime = record.runtime != null && record.runtime > 0;

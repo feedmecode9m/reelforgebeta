@@ -13,9 +13,13 @@
     } from '../../lib/series/seriesCatalogTruth.js';
     import { formatIntelligenceExplanation } from '../../lib/architecture/intelligenceProvenance.js';
     import { emitAccessibilityAudit } from '../../lib/accessibility/accessibilityAudit.js';
+    import { presentLaProductionHeader } from '../../lib/series/laProductionEpisodeGuide.js';
+    import { resolveViewerEpisodePosterUrl } from '../../lib/series/viewerEpisodePoster.js';
+    import { resolveMediaForRender } from '../media/resolveDisplayUrl.js';
     import MediaPoster from '../media/MediaPoster.svelte';
     import SeasonAccordion from './SeasonAccordion.svelte';
     import SeriesBadge from './SeriesBadge.svelte';
+    import '../../viewer/cinematicCardTokens.css';
 
     const dispatch = createEventDispatcher();
 
@@ -136,6 +140,94 @@
                 ? `${episodeCount} episode${episodeCount === 1 ? '' : 's'}`
                 : `${seasonCount} seasons · ${episodeCount} episodes`
             : '';
+
+    $: editorialFamilyItems = [
+        series?.title,
+        catalogSeries?.title,
+        relatedResult?.seriesTitle,
+        seedAsset?.title,
+        seedAsset?.name,
+        seedAsset?.fileName,
+        seedAsset?.file_name,
+        seedAsset?.url,
+        seedAsset?.mediaUrl,
+        ...((relatedResult?.members || []).map((m) => m.title) || []),
+        ...((relatedResult?.members || []).map((m) => m.fileName || m.name) || []),
+        ...((series?.seasons || []).flatMap((s) =>
+            (s.episodes || []).map((e) => e.title || e.fileName || e.mediaUrl)
+        ) || []),
+        ...((Array.isArray(readyAssets) ? readyAssets : []).map(
+            (a) => a?.title || a?.name || a?.fileName || a?.file_name
+        ) || [])
+    ];
+
+    $: selectedShelfEpisode = (() => {
+        const flat = (series?.seasons || []).flatMap((s) => s.episodes || []);
+        return (
+            flat.find(
+                (e) =>
+                    String(e.episodeId || '') === String(selectedEpisodeId || '') ||
+                    String(e.mediaAssetId || '') === String(selectedEpisodeId || '') ||
+                    String(e.reelId || '') === String(selectedEpisodeId || '')
+            ) ||
+            flat[0] ||
+            seedAsset ||
+            null
+        );
+    })();
+
+    $: laHeader = viewerMode
+        ? presentLaProductionHeader({
+              familyItems: editorialFamilyItems,
+              seriesTitle: seriesLabelText,
+              episodeCount,
+              selectedEpisode: selectedShelfEpisode || seedAsset,
+              selectedTitle:
+                  selectedShelfEpisode?.title ||
+                  seedAsset?.title ||
+                  seedAsset?.name ||
+                  '',
+              selectedFileName:
+                  selectedShelfEpisode?.fileName ||
+                  seedAsset?.fileName ||
+                  seedAsset?.file_name ||
+                  seedAsset?.url ||
+                  seedAsset?.mediaUrl ||
+                  '',
+              episodeNumber:
+                  selectedShelfEpisode?.episodeNumber || seedAsset?.episodeNumber || ''
+          })
+        : { active: false, headingTitle: '', countLine: '', description: '' };
+
+    $: viewerSeriesTitle = laHeader.active && laHeader.headingTitle
+        ? laHeader.headingTitle
+        : seriesLabelText || 'Series';
+
+    $: viewerCountLine = laHeader.countLine || seriesMetaLine;
+    $: viewerHeaderDescription = String(laHeader.description || '').trim();
+
+    $: shelfPosterSource = (() => {
+        if (!viewerMode || !hasViewerBody) return '';
+        const flat = (series?.seasons || []).flatMap((s) => s.episodes || []);
+        const selected =
+            flat.find(
+                (e) =>
+                    String(e.episodeId || '') === String(selectedEpisodeId || '') ||
+                    String(e.mediaAssetId || '') === String(selectedEpisodeId || '') ||
+                    String(e.reelId || '') === String(selectedEpisodeId || '')
+            ) ||
+            flat[0] ||
+            seedAsset;
+        return resolveViewerEpisodePosterUrl({
+            episode: selected,
+            chipThumbnailUrl: '',
+            readyVaultAssets: Array.isArray(readyAssets) ? readyAssets : []
+        });
+    })();
+    $: shelfPosterUrl = shelfPosterSource
+        ? resolveMediaForRender(shelfPosterSource, 'poster', 'SeriesDrawer:shelfPoster') ||
+          shelfPosterSource
+        : '';
 
     /** @param {CustomEvent<{ episodeId: string }>} event */
     function handleEpisodeSelect(event) {
@@ -285,15 +377,26 @@
             tabindex="-1"
         >
             {#if viewerMode}
-                <!-- Streaming shelf header: title + counts only (no empty hero plane) -->
+                <!-- Streaming shelf header: title + counts; LA Production adds editorial chrome -->
                 <header class="series-shelf__header">
+                    {#if shelfPosterUrl}
+                        <div class="series-shelf__billboard" aria-hidden="true">
+                            <img class="series-shelf__billboard-img" src={shelfPosterUrl} alt="" />
+                            <div class="series-shelf__billboard-scrim"></div>
+                        </div>
+                    {/if}
                     <div class="series-shelf__heading">
                         <p class="series-shelf__eyebrow">All Episodes</p>
                         <h2 id="series-drawer-title" class="series-shelf__title" data-series-label>
-                            {seriesLabelText || 'Series'}
+                            {viewerSeriesTitle}
                         </h2>
-                        {#if seriesMetaLine}
-                            <p class="series-shelf__meta">{seriesMetaLine}</p>
+                        {#if viewerCountLine}
+                            <p class="series-shelf__meta">{viewerCountLine}</p>
+                        {/if}
+                        {#if viewerHeaderDescription}
+                            <p class="series-shelf__synopsis" data-series-editorial-synopsis>
+                                {viewerHeaderDescription}
+                            </p>
                         {/if}
                     </div>
                     <button
@@ -314,7 +417,8 @@
                                 selectedEpisodeId={selectedEpisodeId}
                                 defaultExpanded={true}
                                 heroVaultAssets={readyAssets}
-                                seriesLabel={seriesLabelText}
+                                seriesLabel={viewerSeriesTitle}
+                                familyItems={editorialFamilyItems}
                                 viewerMode={true}
                                 flat={flatViewerShelf}
                                 titleEpoch={titleEpoch}
@@ -609,23 +713,49 @@
 
     /* —— Viewer streaming shelf —— */
     .series-drawer--viewer {
-        background: #0c0d12;
-        border-left-color: rgba(255, 255, 255, 0.08);
+        background: var(--rf-cine-deep, #0c0d12);
+        border-left-color: var(--rf-cine-line, rgba(255, 255, 255, 0.08));
     }
     .series-shelf__header {
+        position: relative;
         flex-shrink: 0;
         display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 0.75rem;
-        padding: 1.1rem 1rem 0.85rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        flex-direction: column;
+        padding: 0 0 0.85rem;
+        border-bottom: 1px solid var(--rf-cine-line, rgba(255, 255, 255, 0.06));
+    }
+    .series-shelf__billboard {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        max-height: 11.5rem;
+        overflow: hidden;
+        background: #07090e;
+    }
+    .series-shelf__billboard-img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .series-shelf__billboard-scrim {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+            180deg,
+            rgba(7, 9, 14, 0.15) 0%,
+            rgba(7, 9, 14, 0.55) 55%,
+            rgba(7, 9, 14, 0.96) 100%
+        );
+        pointer-events: none;
     }
     .series-shelf__heading {
         min-width: 0;
         display: flex;
         flex-direction: column;
-        gap: 0.28rem;
+        gap: 0.35rem;
+        padding: 0.9rem 1rem 0;
+        padding-right: 3.5rem;
     }
     .series-shelf__eyebrow {
         margin: 0;
@@ -633,7 +763,7 @@
         font-weight: 600;
         letter-spacing: 0.16em;
         text-transform: uppercase;
-        color: rgba(255, 255, 255, 0.45);
+        color: var(--rf-cine-accent, #c4a574);
     }
     .series-shelf__title {
         margin: 0;
@@ -641,22 +771,36 @@
         font-weight: 700;
         letter-spacing: -0.02em;
         line-height: 1.15;
-        color: #fff;
+        color: var(--rf-cine-ink, #fff);
     }
     .series-shelf__meta {
         margin: 0;
         font-size: 0.78rem;
-        color: rgba(255, 255, 255, 0.5);
+        color: var(--rf-cine-muted, rgba(255, 255, 255, 0.5));
         letter-spacing: 0.01em;
     }
+    .series-shelf__synopsis {
+        margin: 0.45rem 0 0;
+        font-size: 0.88rem;
+        line-height: 1.5;
+        font-weight: 400;
+        color: rgba(255, 255, 255, 0.88);
+        display: -webkit-box;
+        -webkit-line-clamp: 6;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
     .series-shelf__close {
+        position: absolute;
+        top: max(0.65rem, env(safe-area-inset-top, 0px));
+        right: max(0.65rem, env(safe-area-inset-right, 0px));
         flex-shrink: 0;
         width: 2.75rem;
         height: 2.75rem;
         border-radius: 50%;
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        background: rgba(255, 255, 255, 0.04);
-        color: rgba(255, 255, 255, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: rgba(0, 0, 0, 0.55);
+        color: rgba(255, 255, 255, 0.9);
         cursor: pointer;
         font-size: 1rem;
         line-height: 1;
@@ -665,8 +809,8 @@
         transition: background 0.15s ease, border-color 0.15s ease;
     }
     .series-shelf__close:hover {
-        background: rgba(255, 255, 255, 0.1);
-        border-color: rgba(255, 255, 255, 0.22);
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(255, 255, 255, 0.28);
     }
     .series-shelf__body {
         flex: 1;
