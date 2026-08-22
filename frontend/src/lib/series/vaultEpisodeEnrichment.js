@@ -7,6 +7,11 @@
 
 import { sealVaultSeriesIdentityForStorage } from './vaultSeriesInference.js';
 import { presentVaultIdentityForCreator } from './vaultIdentityConfirmation.js';
+import {
+    applyVaultEpisodeAccess,
+    normalizeVaultEpisodeAccess,
+    readVaultEpisodeAccess
+} from './episodeAccessPricing.js';
 
 /**
  * @typedef {Object} VaultEpisodeEnrichment
@@ -108,18 +113,21 @@ export function sealVaultEpisodeEnrichmentForStorage(asset) {
         sealVaultSeriesIdentityForStorage(asset) || asset
     );
     const enrichment = normalizeVaultEpisodeEnrichment(readVaultEpisodeEnrichment(asset));
+    const access = normalizeVaultEpisodeAccess(readVaultEpisodeAccess(asset));
+    /** @type {Record<string, unknown>} */
+    let next = { ...sealed };
     if (!enrichment) {
-        // Drop empty nest so storage stays lean
-        if (sealed.episodeEnrichment) {
-            const { episodeEnrichment: _drop, ...rest } = sealed;
-            return rest;
+        if (next.episodeEnrichment) {
+            const { episodeEnrichment: _drop, ...rest } = next;
+            next = rest;
         }
-        return sealed;
+    } else {
+        next.episodeEnrichment = enrichment;
     }
-    return {
-        ...sealed,
-        episodeEnrichment: enrichment
-    };
+    if (access) {
+        next = applyVaultEpisodeAccess(next, access);
+    }
+    return next;
 }
 
 /**
@@ -175,7 +183,14 @@ export function presentVaultEpisodeEnrichmentForCreator(asset) {
  * Apply creator presentation package. Preserves identity, mediaAssetId, and playback URL.
  *
  * @param {Record<string, unknown> | null | undefined} asset
- * @param {{ title?: unknown; description?: unknown; artworkUrl?: unknown }} draft
+ * @param {{
+ *   title?: unknown;
+ *   description?: unknown;
+ *   artworkUrl?: unknown;
+ *   accessMode?: unknown;
+ *   mode?: unknown;
+ *   price?: unknown;
+ * }} draft
  * @returns {Record<string, unknown>}
  */
 export function applyCreatorVaultEpisodeEnrichment(asset, draft = {}) {
@@ -190,7 +205,7 @@ export function applyCreatorVaultEpisodeEnrichment(asset, draft = {}) {
     });
 
     /** @type {Record<string, unknown>} */
-    const next = {
+    let next = {
         ...asset,
         ...(mediaAssetId ? { id: mediaAssetId } : {})
     };
@@ -198,6 +213,22 @@ export function applyCreatorVaultEpisodeEnrichment(asset, draft = {}) {
         next.episodeEnrichment = enrichment;
     } else {
         delete next.episodeEnrichment;
+    }
+
+    if (
+        draft.accessMode != null ||
+        draft.mode != null ||
+        draft.price != null ||
+        Object.prototype.hasOwnProperty.call(draft, 'accessMode') ||
+        Object.prototype.hasOwnProperty.call(draft, 'price')
+    ) {
+        next = applyVaultEpisodeAccess(next, {
+            mode: draft.mode ?? draft.accessMode,
+            price: draft.price
+        });
+    } else {
+        const existing = normalizeVaultEpisodeAccess(readVaultEpisodeAccess(asset));
+        if (existing) next = applyVaultEpisodeAccess(next, existing);
     }
 
     const sealed = sealVaultEpisodeEnrichmentForStorage(next);

@@ -38,6 +38,7 @@ import {
 import { viewerFieldsFromVaultEnrichment } from './vaultEpisodeEnrichment.js';
 import { sortEpisodesForDisplay } from './seriesCatalogEdits.js';
 import { episodeIsViewerDiscoverable } from './publishingLifecycle.js';
+import { resolveEpisodeAccessPricing } from './episodeAccessPricing.js';
 import {
     resolveLinkedAssetDisplayTitle,
     isUnsafeHeroFilenameTitle,
@@ -979,7 +980,10 @@ export function buildSeriesViewFromRelated(related, catalogSeries = null, option
             createdAtMs: m.createdAtMs,
             vaultIndex: m.vaultIndex,
             displayOrder: m.displayOrder,
-            thumbnailUrl: m.thumbnailUrl || undefined
+            thumbnailUrl: m.thumbnailUrl || undefined,
+            accessMode: m.accessMode,
+            price: m.price,
+            isFree: m.isFree
         });
     }
 
@@ -1431,6 +1435,12 @@ export function resolveRelatedEpisodes(assetOrReel, options = {}) {
             creatorConfirmed
         });
 
+        const access = resolveEpisodeAccessPricing({
+            mediaAssetId: String(assetIdOf(asset) || id || label.assetId || ''),
+            reelId,
+            vaultAsset: asset
+        });
+
         return {
             assetId: String(assetIdOf(asset) || id || label.assetId || ''),
             reelId,
@@ -1449,7 +1459,10 @@ export function resolveRelatedEpisodes(assetOrReel, options = {}) {
             source: 'vault',
             fromVault: true,
             createdAtMs: createdAtMsOf(asset),
-            vaultIndex
+            vaultIndex,
+            accessMode: access.mode,
+            price: access.price,
+            isFree: access.isFree
         };
     });
 

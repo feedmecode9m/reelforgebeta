@@ -26,6 +26,11 @@
     readVaultSeriesLabel,
     theaterLinkedSiblingIds
   } from '../../lib/series/vaultTheaterFamilyLink.js';
+  import {
+    buildEpisodeAccessPricing,
+    readVaultEpisodeAccess,
+    resolveEpisodeAccessPricing
+  } from '../../lib/series/episodeAccessPricing.js';
 
   /** @type {Record<string, unknown> | null} */
   export let asset = null;
@@ -55,6 +60,9 @@
   let draftArtwork = '';
   let draftTags = '';
   let draftCategory = 'Trending';
+  /** @type {'free' | 'paid'} */
+  let draftAccessMode = 'free';
+  let draftPrice = '';
   let formError = '';
   let lastEditSignal = 0;
   /** @type {'idle' | 'saving' | 'saved' | 'error'} */
@@ -185,6 +193,16 @@
     draftArtwork = model.presentation.artworkUrl || '';
     draftTags = '';
     draftCategory = 'Trending';
+    {
+      const access =
+        readVaultEpisodeAccess(asset) ||
+        resolveEpisodeAccessPricing({
+          mediaAssetId: model.mediaAssetId,
+          vaultAsset: asset
+        });
+      draftAccessMode = access.mode;
+      draftPrice = access.price;
+    }
     draftFamilyLabel = defaultTheaterFamilyLabel(asset, model.presentation.title || model.series || '');
     draftSeason = String(model.season || 1);
     draftEpisode = String(model.episode || 1);
@@ -387,6 +405,11 @@
 
   function submitPackage() {
     formError = '';
+    const access = buildEpisodeAccessPricing(draftAccessMode, draftPrice);
+    if (access.mode === 'paid' && !access.price) {
+      formError = 'Enter a price for paid episodes (e.g. 4.99).';
+      return;
+    }
     packageSaveState = 'saving';
     lastSavedShelf = null;
     packageSaveToken += 1;
@@ -405,6 +428,8 @@
       artworkUrl: String(draftArtwork || '').trim(),
       tags: String(draftTags || '').trim(),
       category: resolveCanonicalDiscoveryShelf(draftCategory) || 'Trending',
+      accessMode: access.mode,
+      price: access.price,
       saveToken: packageSaveToken
     });
     const siblings = [...new Set(selectedSiblingIds.map((id) => String(id || '').trim()).filter(Boolean))];
@@ -632,6 +657,34 @@
           {/each}
         </select>
       </label>
+      <div class="vault-creator-card__pair" data-episode-access-pricing>
+        <label class="vault-creator-card__field">
+          <span>Viewer access</span>
+          <select
+            bind:value={draftAccessMode}
+            aria-label="Episode free or paid"
+            data-episode-access-mode
+            disabled={packageSaveState === 'saving'}
+          >
+            <option value="free">Free</option>
+            <option value="paid">Paid</option>
+          </select>
+        </label>
+        <label class="vault-creator-card__field">
+          <span>Price (USD)</span>
+          <input
+            type="text"
+            inputmode="decimal"
+            bind:value={draftPrice}
+            placeholder="4.99"
+            data-episode-price
+            disabled={packageSaveState === 'saving' || draftAccessMode !== 'paid'}
+          />
+        </label>
+      </div>
+      <p class="vault-creator-card__axis-hint">
+        Free shows a FREE badge in Theater All Episodes. Paid shows the price badge (playback unchanged).
+      </p>
       {#if shelfPreview}
         <p class="vault-creator-card__axis-hint" data-creator-shelf-preview>
           {shelfFeedbackCopy(shelfPreview)}

@@ -1808,7 +1808,9 @@ export function buildMetadataDraftForReel(reelId) {
         releaseYear: stored?.releaseYear ?? ctx?.series.releaseYear,
         episodeStatus: stored?.episodeStatus ?? ctx?.episode.status,
         episodeId: stored?.episodeId ?? ctx?.episode.episodeId,
-        seriesId: stored?.seriesId ?? ctx?.series.id
+        seriesId: stored?.seriesId ?? ctx?.series.id,
+        accessMode: stored?.accessMode || 'free',
+        price: stored?.price || ''
     };
 }
 

@@ -19,6 +19,7 @@
     import MediaPoster from '../media/MediaPoster.svelte';
     import SeasonAccordion from './SeasonAccordion.svelte';
     import SeriesBadge from './SeriesBadge.svelte';
+    import { resolveEpisodeAccessPricing } from '../../lib/series/episodeAccessPricing.js';
     import '../../viewer/cinematicCardTokens.css';
 
     const dispatch = createEventDispatcher();
@@ -68,8 +69,15 @@
         const onVaultTitle = () => {
             titleEpoch += 1;
         };
+        const onVaultAccess = () => {
+            titleEpoch += 1;
+        };
         window.addEventListener('reelforge:vault-title-updated', onVaultTitle);
-        return () => window.removeEventListener('reelforge:vault-title-updated', onVaultTitle);
+        window.addEventListener('reelforge:vault-access-updated', onVaultAccess);
+        return () => {
+            window.removeEventListener('reelforge:vault-title-updated', onVaultTitle);
+            window.removeEventListener('reelforge:vault-access-updated', onVaultAccess);
+        };
     });
 
     $: catalogSeries = seriesId ? getSeriesById(seriesId) : null;
@@ -205,6 +213,52 @@
 
     $: viewerCountLine = laHeader.countLine || seriesMetaLine;
     $: viewerHeaderDescription = String(laHeader.description || '').trim();
+
+    /** Header chips: FREE / price mix for All Episodes shelf. */
+    $: shelfAccessChips = (() => {
+        void titleEpoch;
+        if (!viewerMode || !hasViewerBody) return [];
+        const flat = (series?.seasons || []).flatMap((s) => s.episodes || []);
+        let freeCount = 0;
+        let paidCount = 0;
+        /** @type {string[]} */
+        const paidLabels = [];
+        for (const ep of flat) {
+            const access = resolveEpisodeAccessPricing({
+                episode: /** @type {Record<string, unknown>} */ (ep),
+                mediaAssetId: ep.mediaAssetId || ep.reelId,
+                reelId: ep.reelId,
+                vaultAsset:
+                    (Array.isArray(readyAssets) ? readyAssets : []).find(
+                        (a) =>
+                            String(a?.id || a?.assetId || '').trim() ===
+                            String(ep.mediaAssetId || ep.reelId || '').trim()
+                    ) || null
+            });
+            if (access.isFree) freeCount += 1;
+            else {
+                paidCount += 1;
+                if (access.badgeLabel && !paidLabels.includes(access.badgeLabel)) {
+                    paidLabels.push(access.badgeLabel);
+                }
+            }
+        }
+        /** @type {{ label: string; tone: 'free' | 'meta' | 'paid' }[]} */
+        const chips = [];
+        if (freeCount > 0) chips.push({ label: 'FREE', tone: 'free' });
+        if (paidCount > 0 && paidLabels.length === 1) {
+            chips.push({ label: paidLabels[0], tone: 'paid' });
+        } else if (paidCount > 0) {
+            chips.push({ label: 'PAID', tone: 'paid' });
+        }
+        if (episodeCount > 0) {
+            chips.push({
+                label: `${episodeCount} episode${episodeCount === 1 ? '' : 's'}`,
+                tone: 'meta'
+            });
+        }
+        return chips;
+    })();
 
     $: shelfPosterSource = (() => {
         if (!viewerMode || !hasViewerBody) return '';
@@ -390,6 +444,19 @@
                         <h2 id="series-drawer-title" class="series-shelf__title" data-series-label>
                             {viewerSeriesTitle}
                         </h2>
+                        {#if shelfAccessChips.length}
+                            <div class="series-shelf__chips" data-series-access-chips>
+                                {#each shelfAccessChips as chip (chip.label + chip.tone)}
+                                    <span
+                                        class="series-shelf__chip"
+                                        class:series-shelf__chip--free={chip.tone === 'free'}
+                                        class:series-shelf__chip--paid={chip.tone === 'paid'}
+                                        class:series-shelf__chip--meta={chip.tone === 'meta'}
+                                        >{chip.label}</span
+                                    >
+                                {/each}
+                            </div>
+                        {/if}
                         {#if viewerCountLine}
                             <p class="series-shelf__meta">{viewerCountLine}</p>
                         {/if}
@@ -772,6 +839,37 @@
         letter-spacing: -0.02em;
         line-height: 1.15;
         color: var(--rf-cine-ink, #fff);
+    }
+    .series-shelf__chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        margin-top: 0.55rem;
+    }
+    .series-shelf__chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.18rem 0.5rem;
+        border-radius: 999px;
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        color: rgba(244, 241, 234, 0.7);
+        background: transparent;
+    }
+    .series-shelf__chip--free {
+        border-color: rgba(248, 225, 107, 0.7);
+        color: #f8e16b;
+    }
+    .series-shelf__chip--paid {
+        border-color: rgba(244, 241, 234, 0.4);
+        color: rgba(244, 241, 234, 0.82);
+    }
+    .series-shelf__chip--meta {
+        border-color: rgba(255, 255, 255, 0.18);
+        color: rgba(255, 255, 255, 0.55);
     }
     .series-shelf__meta {
         margin: 0;

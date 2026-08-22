@@ -128,11 +128,19 @@
     import { isServerGrantedPublished } from '../../lib/hero/heroServerAuthorityEngine.js';
     import {
         getEpisodeByReelId,
-        updateEpisodeTitleForReel
+        updateEpisodeTitleForReel,
+        saveReelSeriesMetadata
     } from '../../lib/series/seriesStore.js';
     import { bridgeFeedReelsToCatalog } from '../../lib/series/episodeBridge.js';
     import { resolveContentIdentity } from '../../lib/content/contentIdentityResolver.js';
     import { syncHeroIdentityToEpisodeMetadata } from '../../lib/series/heroEpisodeSync.js';
+    import {
+        buildEpisodeAccessPricing,
+        dispatchVaultAccessUpdated,
+        applyVaultEpisodeAccess,
+        resolveEpisodeAccessPricing
+    } from '../../lib/series/episodeAccessPricing.js';
+    import { applyCreatorVaultEpisodeEnrichment } from '../../lib/series/vaultEpisodeEnrichment.js';
 
     /** @type {Record<string, unknown>[]} */
     export let feedReels = [];
@@ -256,6 +264,14 @@
     let vaultVideoErrorByAsset = {};
     /** Single Hero Vault card allowed to mount a <video> (hover or selected). */
     let activeHeroVaultPreviewId = '';
+    /** Access & Price modal for Hero Vault MP4s. */
+    let accessModalOpen = false;
+    /** @type {Record<string, unknown> | null} */
+    let accessModalItem = null;
+    /** @type {'free' | 'paid'} */
+    let accessDraftMode = 'free';
+    let accessDraftPrice = '';
+    let accessModalError = '';
 
     const HERO_IMAGE_STORAGE_KEY = 'reelforge_hero_image';
     const HERO_VIDEO_STORAGE_KEY = 'reelforge_hero_video';
@@ -1044,7 +1060,7 @@
             name: 'Premiere Announcement',
             defaultLabel: 'UPCOMING PREMIERE',
             defaultTitleStructure: '{seriesTitle} Premieres Soon',
-            defaultSubtitleStructure: 'A new chapter arrives on ReelForge.',
+            defaultSubtitleStructure: 'A new chapter arrives on LOOK@ZAKANDA.',
             defaultDescriptionStructure: 'Be first to experience the next release and join the premiere conversation.',
             recommendedCTA1: 'Set Reminder',
             recommendedCTA2: 'View Trailer'
@@ -1860,6 +1876,108 @@
                     ? 'Edited & accepted AI story — presentation updated (title locked to creator).'
                     : 'Accepted AI story framing — title remains creator-owned.';
         }
+    }
+
+    /**
+     * Open Access & Price window for a Hero Vault MP4 (Theater All Episodes badges).
+     * @param {Record<string, unknown>} item
+     */
+    function openHeroVaultAccess(item) {
+        if (!item?.assetId) return;
+        const assetId = String(item.assetId).trim();
+        const access = resolveEpisodeAccessPricing({
+            mediaAssetId: assetId,
+            reelId: assetId,
+            vaultAsset: item
+        });
+        accessModalItem = item;
+        accessDraftMode = access.mode;
+        accessDraftPrice = access.price;
+        accessModalError = '';
+        accessModalOpen = true;
+    }
+
+    function closeHeroVaultAccess() {
+        accessModalOpen = false;
+        accessModalItem = null;
+        accessModalError = '';
+    }
+
+    function saveHeroVaultAccess() {
+        if (!accessModalItem?.assetId) return;
+        const assetId = String(accessModalItem.assetId).trim();
+        const access = buildEpisodeAccessPricing(accessDraftMode, accessDraftPrice);
+        if (access.mode === 'paid' && !access.price) {
+            accessModalError = 'Enter a price for paid episodes (e.g. 4.99).';
+            return;
+        }
+        const playbackKey = mediaRecordPlaybackKey(accessModalItem);
+
+        if (personalVideos && typeof personalVideos.update === 'function') {
+            personalVideos.update((videos) => {
+                const list = Array.isArray(videos) ? videos : [];
+                const next = list.map((entry) => {
+                    const ids = new Set(
+                        [
+                            entry?.id,
+                            entry?.assetId,
+                            entry?.mediaAssetId,
+                            mediaPathAssetId(entry)
+                        ]
+                            .map((v) => String(v || '').trim())
+                            .filter(Boolean)
+                    );
+                    if (!ids.has(assetId) && mediaRecordPlaybackKey(entry) !== playbackKey) {
+                        return entry;
+                    }
+                    return applyCreatorVaultEpisodeEnrichment(
+                        /** @type {Record<string, unknown>} */ (entry),
+                        { accessMode: access.mode, price: access.price }
+                    );
+                });
+                try {
+                    persistPersonalVault(next);
+                } catch {
+                    /* ignore */
+                }
+                return next;
+            });
+        } else {
+            patchJsonArrayStorage(VIDEO_VAULT_KEY(), (entry) => {
+                const ids = new Set(
+                    [entry?.id, entry?.assetId, entry?.mediaAssetId]
+                        .map((v) => String(v || '').trim())
+                        .filter(Boolean)
+                );
+                if (!ids.has(assetId)) return entry;
+                return applyVaultEpisodeAccess(
+                    /** @type {Record<string, unknown>} */ (entry),
+                    { mode: access.mode, price: access.price }
+                );
+            });
+        }
+
+        try {
+            saveReelSeriesMetadata(
+                assetId,
+                { accessMode: access.mode, price: access.price },
+                { sourceType: 'creator', context: 'HeroVaultAccess' }
+            );
+        } catch {
+            /* ignore */
+        }
+
+        dispatchVaultAccessUpdated({
+            reelId: assetId,
+            mode: access.mode,
+            price: access.price
+        });
+        refreshHeroAssetRegistry();
+        statusMessage =
+            access.mode === 'free'
+                ? `Access saved: FREE badge for “${getDisplayTitle(accessModalItem)}”`
+                : `Access saved: ${access.badgeLabel} for “${getDisplayTitle(accessModalItem)}”`;
+        closeHeroVaultAccess();
     }
 
     /**
@@ -3458,6 +3576,15 @@
                             >
                                 Edit Title
                             </button>
+                            {#if isVideoHeroAssetType(item.assetType)}
+                                <button
+                                    type="button"
+                                    data-hero-edit-access
+                                    on:click|stopPropagation={() => openHeroVaultAccess(item)}
+                                >
+                                    Access &amp; Price
+                                </button>
+                            {/if}
                             <button type="button" on:click|stopPropagation={() => deleteHeroVaultAsset(item)}>Delete</button>
                         </div>
                     </article>
@@ -3465,6 +3592,62 @@
             </div>
         {/if}
     </section>
+
+    {#if accessModalOpen && accessModalItem}
+        <div
+            class="hero-access-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="hero-access-modal-title"
+            data-hero-access-modal
+        >
+            <button
+                type="button"
+                class="hero-access-modal__backdrop"
+                aria-label="Close access editor"
+                on:click|stopPropagation={closeHeroVaultAccess}
+            ></button>
+            <div class="hero-access-modal__panel">
+                <h3 id="hero-access-modal-title">Access &amp; Price</h3>
+                <p class="hero-access-modal__hint">
+                    Controls the FREE / price badge in Theater All Episodes. Playback is unchanged.
+                </p>
+                <p class="hero-access-modal__asset">{getDisplayTitle(accessModalItem)}</p>
+                <label class="hero-access-modal__field">
+                    <span>Viewer access</span>
+                    <select bind:value={accessDraftMode} data-episode-access-mode>
+                        <option value="free">Free</option>
+                        <option value="paid">Paid</option>
+                    </select>
+                </label>
+                <label class="hero-access-modal__field">
+                    <span>Price (USD)</span>
+                    <input
+                        type="text"
+                        inputmode="decimal"
+                        bind:value={accessDraftPrice}
+                        placeholder="4.99"
+                        disabled={accessDraftMode !== 'paid'}
+                        data-episode-price
+                    />
+                </label>
+                {#if accessModalError}
+                    <p class="hero-access-modal__error" role="alert">{accessModalError}</p>
+                {/if}
+                <div class="hero-access-modal__actions">
+                    <button type="button" class="hero-manager__btn" on:click|stopPropagation={saveHeroVaultAccess}
+                        >Save access</button
+                    >
+                    <button
+                        type="button"
+                        class="hero-manager__btn hero-manager__btn--ghost"
+                        on:click|stopPropagation={closeHeroVaultAccess}
+                        >Cancel</button
+                    >
+                </div>
+            </div>
+        </div>
+    {/if}
 
     <div class="hero-manager__priority" data-hero-manager-spotlight-priority>
         <span class="hero-manager__label">Spotlight Priority</span>
@@ -4486,5 +4669,87 @@
         background: rgba(255, 255, 255, 0.04);
         color: #fff;
         font-size: 0.58rem;
+    }
+    .hero-access-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 4000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+    .hero-access-modal__backdrop {
+        position: absolute;
+        inset: 0;
+        border: none;
+        padding: 0;
+        margin: 0;
+        background: rgba(0, 0, 0, 0.72);
+        cursor: pointer;
+    }
+    .hero-access-modal__panel {
+        position: relative;
+        z-index: 1;
+        width: min(22rem, 100%);
+        padding: 1.1rem 1.15rem;
+        border-radius: 12px;
+        border: 1px solid rgba(248, 225, 107, 0.28);
+        background: #12141a;
+        box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55);
+        display: grid;
+        gap: 0.65rem;
+    }
+    .hero-access-modal__panel h3 {
+        margin: 0;
+        font-size: 0.95rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #f8e16b;
+    }
+    .hero-access-modal__hint {
+        margin: 0;
+        font-size: 0.72rem;
+        line-height: 1.4;
+        color: rgba(255, 255, 255, 0.55);
+    }
+    .hero-access-modal__asset {
+        margin: 0;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.9);
+    }
+    .hero-access-modal__field {
+        display: grid;
+        gap: 0.25rem;
+        font-size: 0.68rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.55);
+    }
+    .hero-access-modal__field input,
+    .hero-access-modal__field select {
+        padding: 0.45rem 0.55rem;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: rgba(255, 255, 255, 0.04);
+        color: #fff;
+        font-size: 0.85rem;
+        text-transform: none;
+        letter-spacing: 0;
+    }
+    .hero-access-modal__field input:disabled {
+        opacity: 0.45;
+    }
+    .hero-access-modal__error {
+        margin: 0;
+        font-size: 0.75rem;
+        color: #f87171;
+    }
+    .hero-access-modal__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        margin-top: 0.25rem;
     }
 </style>

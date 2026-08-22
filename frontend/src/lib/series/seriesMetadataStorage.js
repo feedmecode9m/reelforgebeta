@@ -21,6 +21,8 @@ export const SERIES_METADATA_STORAGE_KEY = 'reelforge_series_metadata';
  * @property {'draft' | 'ready' | 'published' | 'archived'} [episodeStatus]
  * @property {string} [episodeId]
  * @property {string} [seriesId]
+ * @property {'free' | 'paid'} [accessMode] - Theater All Episodes FREE / price badge
+ * @property {string} [price] - Display dollars when accessMode is paid (e.g. "4.99")
  * @property {number} [updatedAt]
  */
 

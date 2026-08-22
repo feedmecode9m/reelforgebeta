@@ -12,6 +12,9 @@ Single source of truth for implementation vs release state. Update when a milest
 
 | Area | Status |
 |------|--------|
+| **LOCAL-EPISODE-ACCESS-PRICE-1** | ✅ **Release Approved** — Netlify `6a89cfd5a9c44e0a502bcd49` / `index-BUnK6Vmf.js`; Gates 1–7 PASS; FREE/price badges + Studio Access & Price live |
+| **LOCAL-STUDIO-DOLPHIN-MARK-1** | ✅ **Release Approved** — shipped with LOCAL-HERO-VISUAL-1 (`index-Cjy4JS_X.js`); studio header dolphin mark live at `/icons/studio-dolphin.png` |
+| **LOCAL-HERO-VISUAL-1** | ✅ **Release Approved** — Netlify `6a850125b1f4427967fc2c19` / `index-Cjy4JS_X.js`; Gates 1–7 PASS; gold Watch Now, glass Learn More, type scrim |
 | **LOCAL-HERO-CTA-1** | ✅ **Release Approved** — Netlify `6a84f044bdb850a9c438466e` / `index-Dp7OxAXX.js`; Gates 1–7 PASS; homepage Watch Now opens Theater |
 | **LOCAL-VIEWER-ALL-EPISODES-GUIDE-1** | ✅ **Release Approved** — shipped with LOCAL-STUDIO-EPISODE-GUIDE-1 (`index-C7cuc5MR.js`) |
 | **LOCAL-VIEWER-MAIN-POLISH-2** | ✅ **Release Approved** — Netlify `6a84c0cf61f5c954c59bcc7c` / `index-B7HE1x7y.js`; Gates 1–7 PASS; homepage Notifications bell removed |

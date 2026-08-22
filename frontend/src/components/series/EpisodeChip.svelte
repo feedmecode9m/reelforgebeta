@@ -10,6 +10,7 @@
     import { isUnsafeViewerCardTitle } from '../../lib/feed/viewerMediaIdentity.js';
     import { isVaultVideoMediaUrl } from '../../lib/vault/normalizeVaultAsset.js';
     import { presentLaProductionEpisode } from '../../lib/series/laProductionEpisodeGuide.js';
+    import { resolveEpisodeAccessPricing } from '../../lib/series/episodeAccessPricing.js';
     import '../../viewer/cinematicCardTokens.css';
 
     const dispatch = createEventDispatcher();
@@ -56,11 +57,15 @@
     let titleEpoch = 0;
     onMount(() => {
         if (typeof window === 'undefined') return;
-        const onVaultTitle = () => {
+        const bump = () => {
             titleEpoch += 1;
         };
-        window.addEventListener('reelforge:vault-title-updated', onVaultTitle);
-        return () => window.removeEventListener('reelforge:vault-title-updated', onVaultTitle);
+        window.addEventListener('reelforge:vault-title-updated', bump);
+        window.addEventListener('reelforge:vault-access-updated', bump);
+        return () => {
+            window.removeEventListener('reelforge:vault-title-updated', bump);
+            window.removeEventListener('reelforge:vault-access-updated', bump);
+        };
     });
 
     /** @type {string | null} */
@@ -88,6 +93,18 @@
      */
     export let familyItems = [];
 
+    /**
+     * Optional vault row for access/price resolution.
+     * @type {Record<string, unknown> | null}
+     */
+    export let vaultAsset = null;
+
+    /** @type {string} */
+    export let accessMode = '';
+
+    /** @type {string} */
+    export let price = '';
+
     $: code = `S${seasonNumber}:E${episodeNumber}`;
     $: epPad = String(Math.max(0, episodeNumber || 0)).padStart(2, '0');
     $: labelRoot = String(seriesLabel || '').trim();
@@ -102,6 +119,23 @@
 
     /** @type {string} */
     $: linkedReelId = String(mediaAssetId || '').trim();
+
+    $: accessPricing = (() => {
+        void titleEpoch;
+        return resolveEpisodeAccessPricing({
+            episode: {
+                accessMode,
+                price,
+                mediaAssetId: linkedReelId,
+                isFree: accessMode === 'free' ? true : accessMode === 'paid' ? false : undefined
+            },
+            mediaAssetId: linkedReelId,
+            reelId: linkedReelId,
+            vaultAsset
+        });
+    })();
+    $: accessBadgeLabel = viewerMode ? accessPricing.badgeLabel : '';
+    $: accessIsFree = accessPricing.isFree;
 
     $: vaultCard = linkedReelId
         ? resolveVaultCardProjection(linkedReelId, {
@@ -306,6 +340,16 @@
                 {/if}
                 {#if displayTitle}
                     <span class="episode-card__title" data-vault-card-title>{displayTitle}</span>
+                {/if}
+                {#if accessBadgeLabel}
+                    <span
+                        class="episode-card__access"
+                        class:episode-card__access--free={accessIsFree}
+                        class:episode-card__access--paid={!accessIsFree}
+                        data-episode-access-badge
+                        data-access-mode={accessPricing.mode}
+                        >{accessBadgeLabel}</span
+                    >
                 {/if}
                 {#if viewerDescription}
                     <span class="episode-card__description" data-vault-card-description
@@ -569,6 +613,25 @@
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
+    }
+    .episode-card__access {
+        display: inline-flex;
+        align-self: flex-start;
+        margin-top: 0.18rem;
+        padding: 0.14rem 0.42rem;
+        border-radius: 4px;
+        font-size: 0.58rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        line-height: 1.2;
+        border: 1px solid rgba(248, 225, 107, 0.7);
+        color: #f8e16b;
+        background: transparent;
+    }
+    .episode-card__access--paid {
+        border-color: rgba(244, 241, 234, 0.38);
+        color: rgba(244, 241, 234, 0.78);
     }
     .episode-chip.viewer.selected .episode-card__title {
         color: #fff;

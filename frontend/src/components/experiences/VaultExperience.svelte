@@ -125,7 +125,11 @@
     patchUploadDiagContext
   } from '../../lib/diagnostics/uploadStageDiag.js';
   import { appendUploadIdentityToFormData } from '../../lib/api/uploadIdentity.js';
-  import { bindEpisodeToFeedReel } from '../../lib/series/seriesStore.js';
+  import { bindEpisodeToFeedReel, saveReelSeriesMetadata } from '../../lib/series/seriesStore.js';
+  import {
+    buildEpisodeAccessPricing,
+    dispatchVaultAccessUpdated
+  } from '../../lib/series/episodeAccessPricing.js';
   import { clearUploadCheckpoint } from '../../lib/diagnostics/uploadRecovery.js';
   import {
     filterVideoVaultVisible,
@@ -2525,13 +2529,16 @@
       ) || {};
     const playbackKey = mediaRecordPlaybackKey(displayHit);
     const durableTitle = String(detail?.title || '').trim();
+    const access = buildEpisodeAccessPricing(detail?.accessMode, detail?.price);
     personalVideos.update((videos) => {
       const list = Array.isArray(videos) ? videos : [];
       try {
         const packaged = applyPackageToVaultListByMediaAssetId(list, id, {
           title: detail?.title,
           description: detail?.description,
-          artworkUrl: detail?.artworkUrl
+          artworkUrl: detail?.artworkUrl,
+          accessMode: access.mode,
+          price: access.price
         });
         let next = packaged.list;
         if (durableTitle) {
@@ -2546,7 +2553,9 @@
           mediaAssetId: id,
           cardMediaAssetId: String(cardMediaAssetId || '').trim() || null,
           mutated: packaged.mutated,
-          crossWriteOk: cross.ok
+          crossWriteOk: cross.ok,
+          accessMode: access.mode,
+          price: access.price
         });
         if (!packaged.mutated && next === list) return list;
         try {
@@ -2560,6 +2569,25 @@
         return list;
       }
     });
+    try {
+      saveReelSeriesMetadata(
+        id,
+        {
+          accessMode: access.mode,
+          price: access.price,
+          episodeTitle: durableTitle || undefined,
+          description: String(detail?.description || '').trim() || undefined
+        },
+        { sourceType: 'creator', context: 'VaultEpisodeAccess' }
+      );
+      dispatchVaultAccessUpdated({
+        reelId: id,
+        mode: access.mode,
+        price: access.price
+      });
+    } catch {
+      /* metadata mirror best-effort */
+    }
     // Phase 17 — durable catalog metadata for Smart Catalog (existing stores only).
     try {
       const savedMeta = saveCreatorCatalogMetadata(id, {

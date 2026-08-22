@@ -7,6 +7,12 @@
         getReelSeriesMetadata
     } from '../../lib/series/seriesStore.js';
     import { normalizeTags } from '../../lib/series/seriesMetadataStorage.js';
+    import {
+        buildEpisodeAccessPricing,
+        normalizeAccessMode,
+        normalizeEpisodePrice,
+        dispatchVaultAccessUpdated
+    } from '../../lib/series/episodeAccessPricing.js';
 
     const dispatch = createEventDispatcher();
 
@@ -26,6 +32,9 @@
     let releaseYear = '';
     let episodeStatus = 'published';
     let tagsInput = '';
+    /** @type {'free' | 'paid'} */
+    let accessMode = 'free';
+    let price = '';
     let saveMessage = '';
     let lastLoadedReelId = '';
 
@@ -47,11 +56,19 @@
         releaseYear = draft.releaseYear != null ? String(draft.releaseYear) : '';
         episodeStatus = draft.episodeStatus || 'published';
         tagsInput = (draft.tags || []).join(', ');
+        const access = buildEpisodeAccessPricing(draft.accessMode, draft.price);
+        accessMode = access.mode;
+        price = access.price;
         saveMessage = getReelSeriesMetadata(id) ? 'Loaded saved metadata' : 'Using catalog defaults';
     }
 
     function handleSave() {
         if (!reelId) return;
+        const access = buildEpisodeAccessPricing(accessMode, price);
+        if (access.mode === 'paid' && !access.price) {
+            saveMessage = 'Paid episodes need a price (e.g. 4.99)';
+            return;
+        }
         const saved = saveReelSeriesMetadata(
             reelId,
             {
@@ -64,7 +81,9 @@
                 runtime: runtime.trim() ? Number(runtime) : undefined,
                 releaseYear: releaseYear.trim() ? Number(releaseYear) : undefined,
                 episodeStatus: /** @type {'draft' | 'ready' | 'published' | 'archived'} */ (episodeStatus),
-                tags: normalizeTags(tagsInput)
+                tags: normalizeTags(tagsInput),
+                accessMode: access.mode,
+                price: access.price
             },
             { sourceType: 'creator', context: 'SeriesMetadataEditor' }
         );
@@ -72,7 +91,14 @@
             saveMessage = 'Save failed';
             return;
         }
+        accessMode = normalizeAccessMode(saved.accessMode);
+        price = normalizeEpisodePrice(saved.price);
         saveMessage = `Saved (${new Date(saved.updatedAt || Date.now()).toLocaleTimeString()})`;
+        dispatchVaultAccessUpdated({
+            reelId,
+            mode: access.mode,
+            price: access.price
+        });
         dispatch('saved', { reelId, metadata: saved });
     }
 </script>
@@ -142,6 +168,26 @@
                     <option value="draft">Draft</option>
                     <option value="archived">Archived</option>
                 </select>
+            </label>
+
+            <label class="series-metadata-editor__field">
+                <span>Viewer access</span>
+                <select bind:value={accessMode} data-episode-access-mode>
+                    <option value="free">Free</option>
+                    <option value="paid">Paid</option>
+                </select>
+            </label>
+
+            <label class="series-metadata-editor__field series-metadata-editor__field--compact">
+                <span>Price (USD)</span>
+                <input
+                    type="text"
+                    inputmode="decimal"
+                    bind:value={price}
+                    placeholder="4.99"
+                    disabled={accessMode !== 'paid'}
+                    data-episode-price
+                />
             </label>
 
             <label class="series-metadata-editor__field series-metadata-editor__field--full">

@@ -7,6 +7,8 @@
     } from '../../lib/series/episodeVaultBindingResolver.js';
     import { getReadyHeroVaultAssets } from '../../lib/series/heroVaultAssetSource.js';
     import { resolveViewerEpisodePosterUrl } from '../../lib/series/viewerEpisodePoster.js';
+    import { resolveEpisodeAccessPricing } from '../../lib/series/episodeAccessPricing.js';
+    import { assetIdOf } from '../../lib/series/episodeVaultResolver.js';
 
     const dispatch = createEventDispatcher();
 
@@ -68,12 +70,26 @@
         const chip = episodeChipPresentation(episode, vault);
         const mediaUrl = mediaUrlForChip(episode, chip);
         const playable = chip.playable || Boolean(mediaUrl);
+        const mediaId = String(chip.mediaAssetId || episode.mediaAssetId || episode.reelId || '').trim();
+        const vaultAsset =
+            (Array.isArray(readyVaultAssets) ? readyVaultAssets : []).find(
+                (a) => assetIdOf(a) === mediaId || String(a?.id || '').trim() === mediaId
+            ) || null;
+        const access = resolveEpisodeAccessPricing({
+            episode: /** @type {Record<string, unknown>} */ (episode),
+            mediaAssetId: mediaId,
+            reelId: String(episode.reelId || '').trim(),
+            vaultAsset
+        });
         return {
             episode,
             chip,
             mediaUrl,
             posterUrl: posterForChip(episode, chip),
-            playable
+            playable,
+            vaultAsset,
+            accessMode: access.mode,
+            price: access.price
         };
     });
     $: viewerRenderableRows = viewerRows.filter((row) => row.playable);
@@ -168,6 +184,9 @@
                     matchTier={null}
                     bindingLabel={''}
                     playable={row.playable}
+                    vaultAsset={row.vaultAsset}
+                    accessMode={row.accessMode}
+                    price={row.price}
                     selected={isEpisodeSelected(row.episode)}
                     on:select={handleEpisodeSelect}
                 />
@@ -213,6 +232,9 @@
                         matchTier={null}
                         bindingLabel={''}
                         playable={row.playable}
+                        vaultAsset={row.vaultAsset}
+                        accessMode={row.accessMode}
+                        price={row.price}
                         selected={isEpisodeSelected(row.episode)}
                         on:select={handleEpisodeSelect}
                     />
