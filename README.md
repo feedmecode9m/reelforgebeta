@@ -1,6 +1,16 @@
 # ReelForge
 
-Smart production studio for managing reels, vault media, and drag-and-drop workflows.
+Vertical microdrama / microdoc studio and viewer — powering **Look at Zakanda**.
+
+Hero → Theater playback, series guides, vault media, and production workflows in one stack.
+
+![ReelForge viewer demo](docs/media/reelforge-viewer-demo.gif)
+
+**Live:** [strong-lolly-a9fcb4.netlify.app](https://strong-lolly-a9fcb4.netlify.app)
+
+## Press
+
+- [Music Artist Vic G Brings R&B, Afrobeat and Reggae to Hollywood With The DAT BOI Experience](https://www.einpresswire.com/shareable-preview/SFfZGixVpd0m35I79MQcRg) — EIN Presswire (Aug 2026). Premiere of the vertical “DAT BOI” music video and *The Power of Support* on Look at Zakanda.
 
 ## Prerequisites
 
