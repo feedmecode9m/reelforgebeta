@@ -14,6 +14,8 @@ export const VIC_G_SERIES_ID = 'series-vic-g';
 
 /** @type {string} */
 export const VIC_G_SERIES_TITLE = 'Vic G';
+/** @type {string} */
+export const VIC_G_SERIES_POSTER = '/thumbs/power-of-support-series-poster.png';
 
 /**
  * Stable production reel identities (episode order).
@@ -53,6 +55,7 @@ export function buildVicGSeriesPackage() {
     return {
         id: VIC_G_SERIES_ID,
         title: VIC_G_SERIES_TITLE,
+        poster: VIC_G_SERIES_POSTER,
         description: '',
         tags: ['creator-package', 'creator-confirmed'],
         confirmedByCreator: true,

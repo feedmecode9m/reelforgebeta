@@ -118,12 +118,11 @@
 </script>
 
 <script>
-    import { afterUpdate } from 'svelte';
+    import { afterUpdate, onMount } from 'svelte';
     import MediaRenderer from '../media/MediaRenderer.svelte';
     import MediaThumbnail from '../media/MediaThumbnail.svelte';
     import MediaPoster from '../media/MediaPoster.svelte';
     import { prefersHoverPreview } from '../../lib/vertical/feedCardAutoplay.js';
-    import { videoMimeForPath } from '../../lib/config.js';
     import {
         claimPlaybackOwner,
         releasePlaybackOwner,
@@ -138,12 +137,10 @@
         flushBg7nMediaRendererStage,
         resetBg7nMediaRendererCards
     } from '../../lib/diagnostics/bg7nPipelineTrace.js';
-    import { logBg7pShelfDistribution, shelfCountsFromFeed } from '../../lib/diagnostics/bg7pShelfDistribution.js';
-    import { fillShelfPresentation, isRealShelfCard, isPlayableShelfVideo, pickFirstListWithRealCards, collectPlayableVideosFromFeedMap, mergeMissingVaultImageCards, mergeMissingPlayableVideos } from '../../lib/feed/fillShelfPresentation.js';
-    import { durableImageVaultUrl, resolveDurableViewerPoster } from '../../lib/viewer/vaultUtils.js';
-    import { LEGACY_HERO_REEL_KEY } from '../../lib/hero/heroRecord.js';
+    import { logBg7pShelfDistribution } from '../../lib/diagnostics/bg7pShelfDistribution.js';
+    import { resolveDurableViewerPoster } from '../../lib/viewer/vaultUtils.js';
     import { resolveVaultCardProjection } from '../../lib/content/vaultCardProjection.js';
-    import { logMobileShelfTrace, logMobilePlayTrace } from '../../lib/device/mobileExperienceDiagnostics.js';
+    import { logMobilePlayTrace } from '../../lib/device/mobileExperienceDiagnostics.js';
     import { detectMobilePresentation } from '../../lib/device/mobilePresentation.js';
     import ViewerSemanticCard from '../viewer/ViewerSemanticCard.svelte';
     import {
@@ -152,9 +149,15 @@
         collectRealViewerReels
     } from '../../lib/feed/viewerSemanticShell.js';
     import { composeViewerShelfLayouts } from '../../lib/feed/viewerShelfComposition.js';
-    import { categoryAliasStore, displayDiscoveryShelf, listViewerPrimaryRailTabs, shelfVisibleForViewerRail } from '../../lib/feed/discoveryTaxonomy.js';
+    import { categoryAliasStore, listViewerPrimaryRailTabs } from '../../lib/feed/discoveryTaxonomy.js';
     import { resolveViewerAssetId } from '../../lib/feed/viewerIdentityDedupe.js';
     import { logViewerMediaIdentityDiagnostics } from '../../lib/feed/viewerMediaIdentity.js';
+    import { seriesCatalog } from '../../lib/series/seriesStore.js';
+    import { getReadyHeroVaultAssets } from '../../lib/series/heroVaultAssetSource.js';
+    import { buildViewerSeriesBrowseCatalog } from '../../lib/series/viewerSeriesBrowseCatalog.js';
+    import { listContinueWatching, formatRemainingLabel } from '../../lib/series/seriesWatchProgress.js';
+    import SeriesBrowsePosterCard from '../series/SeriesBrowsePosterCard.svelte';
+    import ContinueWatchingBadge from '../series/ContinueWatchingBadge.svelte';
     import '../../viewer/cinematicCardTokens.css';
 
     /** @type {'feed' | 'theater-ambient' | 'theater-chrome'} */
@@ -197,8 +200,6 @@
     /** @type {{ poster?: string } | null} */
     export let theaterPlayback = null;
 
-    /** @type {Record<string, HTMLDivElement | null>} */
-    let rowRefs = {};
     /** @type {HTMLElement | null} */
     let feedSectionRoot = null;
     /** Primary rail: home | new-releases | trending | suspense — chrome only; cards unchanged. */
@@ -222,19 +223,16 @@
     }
 
     /**
-     * Title filter only — does not alter card/poster rendering.
-     * @param {unknown} reel
+     * @param {{ title?: string }} item
      */
-    function matchesDiscoverySearch(reel) {
+    function matchesProductionSearch(item) {
         const q = String(discoverySearchQuery || '')
             .trim()
             .toLowerCase();
         if (!q) return true;
-        const row = reel && typeof reel === 'object' ? /** @type {Record<string, unknown>} */ (reel) : {};
-        const hay = [row.title, row.name, row.seriesName, row.seriesTitle, row.seriesLabel]
-            .map((v) => String(v || '').toLowerCase())
-            .join(' ');
-        return hay.includes(q);
+        return String(item?.title || '')
+            .toLowerCase()
+            .includes(q);
     }
 
     $: if (section === 'feed') {
@@ -248,44 +246,13 @@
         flushBg7nMediaRendererStage();
         logBg7nDomStage(feedSectionRoot);
         resetBg7nMediaRendererCards();
-        const shelfDomCounts = {};
-        const shelfRealDomCounts = {};
-        for (const cat of Object.keys($feed || {}).filter((c) => c !== 'Auto-Detect')) {
-            const row = feedSectionRoot?.querySelector(`[aria-label="${cat} content row"]`);
-            shelfDomCounts[cat] = row
-                ? row.querySelectorAll('.reel-card, [data-viewer-semantic-card]').length
-                : 0;
-            shelfRealDomCounts[cat] = row
-                ? row.querySelectorAll(
-                      '.reel-card:not(.presentation-slot), [data-viewer-semantic-card]'
-                  ).length
-                : 0;
-        }
-        console.info('[BG7P_SHELF_DOM]', {
-            stage: 'ReelshortExperience:domPerShelf',
-            shelfDomCounts,
-            shelfRealDomCounts,
-            feedShelfCounts: shelfCountsFromFeed($feed),
+        const productionDomCards =
+            feedSectionRoot?.querySelectorAll('[data-series-id]').length || 0;
+        console.info('[VIEWER_PRODUCTION_LIBRARY_DOM]', {
+            stage: 'ReelshortExperience:dom',
+            productionDomCards,
+            rail: activeViewerRailKey,
             timestamp: new Date().toISOString()
-        });
-        console.info('[BG7S_SHELF_DOM]', {
-            stage: 'ReelshortExperience:domPerShelf',
-            shelfRealDomCounts,
-            shelfDisplayDomCounts: shelfDomCounts,
-            feedShelfCounts: shelfCountsFromFeed($feed),
-            timestamp: new Date().toISOString()
-        });
-        const trendingRow = feedSectionRoot?.querySelector('[data-viewer-discovery-row="Trending"]');
-        const trendingDom = trendingRow
-            ? trendingRow.querySelectorAll('[data-viewer-semantic-card], .reel-card:not(.presentation-slot)')
-                  .length
-            : 0;
-        console.info('[TRENDING_RENDER_TRACE]', {
-            stage: 'dom',
-            finalDomCardCount: trendingDom,
-            shouldRenderShelf: shouldRenderShelf('Trending'),
-            displayShelfCount: getShelfDisplayItems('Trending').length,
-            ts: new Date().toISOString()
         });
     });
 
@@ -319,178 +286,6 @@
             claimPlaybackOwner('hero', 'feed-return');
         }
     }
-    function countGlobalRealFeedCards() {
-        const map = identityFeedMap || $normalizedFeed || $feed || {};
-        return Object.values(map)
-            .flat()
-            .filter((item) => isRealShelfCard(item)).length;
-    }
-
-    function localVaultStillCards() {
-        if (typeof localStorage === 'undefined') return [];
-        try {
-            const stored = JSON.parse(localStorage.getItem('personal_thumbnails') || '[]');
-            if (!Array.isArray(stored)) return [];
-            return stored
-                .map((thumb, index) => {
-                    const row =
-                        thumb && typeof thumb === 'object'
-                            ? thumb
-                            : { fileName: String(thumb || ''), url: '' };
-                    const url = durableImageVaultUrl(row, row);
-                    if (!url) return null;
-                    const rawId = String(row.id || '').trim();
-                    const id = rawId
-                        ? `personal-thumb-vault-${rawId}`
-                        : `personal-thumb-vault-${index}`;
-                    return {
-                        id,
-                        type: 'image',
-                        url,
-                        thumbnailUrl: url,
-                        posterUrl: url,
-                        isPersonalThumbnail: true,
-                        publishableImage: true,
-                        category: 'Trending',
-                        isPlaceholder: false
-                    };
-                })
-                .filter(Boolean);
-        } catch {
-            return [];
-        }
-    }
-
-    function localVaultVideoCards() {
-        if (typeof localStorage === 'undefined') return [];
-        try {
-            const stored = JSON.parse(localStorage.getItem('personal_video_vault') || '[]');
-            if (!Array.isArray(stored)) return [];
-            return stored
-                .map((row) => {
-                    if (!row || typeof row !== 'object') return null;
-                    const state = String(row.uploadState || '').toLowerCase();
-                    if (
-                        state === 'failed' ||
-                        state === 'interrupted' ||
-                        state === 'pending_accept' ||
-                        state === 'uploading' ||
-                        row.deleted === true
-                    ) {
-                        return null;
-                    }
-                    const card = {
-                        ...row,
-                        type: row.type || 'video',
-                        isPersonalVideo: true,
-                        category: 'Trending',
-                        isPlaceholder: false
-                    };
-                    return isPlayableShelfVideo(card) ? card : null;
-                })
-                .filter(Boolean);
-        } catch {
-            return [];
-        }
-    }
-
-    function localHeroReelCard() {
-        if (typeof localStorage === 'undefined') return null;
-        try {
-            const raw = JSON.parse(localStorage.getItem(LEGACY_HERO_REEL_KEY) || 'null');
-            if (!raw || typeof raw !== 'object') return null;
-            const card = {
-                ...raw,
-                type: raw.type || 'video',
-                isPersonalVideo: true,
-                category: 'Trending',
-                isPlaceholder: false
-            };
-            return isPlayableShelfVideo(card) ? card : null;
-        } catch {
-            return null;
-        }
-    }
-
-    function getShelfSource(category) {
-        const identity = identityFeedMap?.[category];
-        const normalized = $normalizedFeed?.[category];
-        const raw = $feed?.[category];
-        const picked = pickFirstListWithRealCards([identity, normalized, raw]);
-        const extras = [raw, normalized, identity];
-        if (category === 'Trending') extras.push(localVaultStillCards());
-        let merged = mergeMissingVaultImageCards(picked, extras);
-        if (category === 'Trending') {
-            merged = mergeMissingPlayableVideos(merged, [
-                collectPlayableVideosFromFeedMap($normalizedFeed || $feed || {}),
-                localVaultVideoCards(),
-                [localHeroReelCard()].filter(Boolean),
-                identity,
-                normalized,
-                raw
-            ]);
-        }
-        if (merged.length > 0) return merged;
-        if (category === 'Trending') {
-            return collectPlayableVideosFromFeedMap($normalizedFeed || $feed || {});
-        }
-        return Array.isArray(identity) ? identity : Array.isArray(raw) ? raw : [];
-    }
-
-    function getShelfDisplayItems(category) {
-        const source = getShelfSource(category);
-        const hydrated = UIAgent.fillLandscape ? UIAgent.fillLandscape(source, category) : source;
-        const filteredReal = (hydrated || []).filter(isRealShelfCard);
-        const display = fillShelfPresentation(hydrated, category, undefined, {
-            globalRealCount: countGlobalRealFeedCards()
-        });
-        if (category === 'Trending' && typeof window !== 'undefined') {
-            const failure =
-                display.length > 0
-                    ? null
-                    : filteredReal.length === 0 &&
-                        (Array.isArray($feed?.Trending) ? $feed.Trending.length : 0) === 0
-                      ? 'A_or_hydration'
-                      : filteredReal.length === 0
-                        ? 'B_filtering'
-                        : display.length === 0
-                          ? 'C_shelf_filler'
-                          : 'D_render_condition';
-            console.info('[TRENDING_RENDER_TRACE]', {
-                rawTrendingInputCount: Array.isArray($feed?.Trending) ? $feed.Trending.length : 0,
-                normalizedTrendingCount: Array.isArray($normalizedFeed?.Trending)
-                    ? $normalizedFeed.Trending.length
-                    : 0,
-                identityTrendingCount: Array.isArray(identityFeedMap?.Trending)
-                    ? identityFeedMap.Trending.length
-                    : 0,
-                hydratedReelCount: Array.isArray(hydrated) ? hydrated.length : 0,
-                filteredCount: filteredReal.length,
-                displayShelfCount: Array.isArray(display) ? display.length : 0,
-                failure,
-                ts: new Date().toISOString()
-            });
-            const trendingRow =
-                (typeof document !== 'undefined' &&
-                    (feedSectionRoot || document.querySelector('.reelshort-feed-root'))?.querySelector(
-                        '[data-viewer-discovery-row="Trending"]'
-                    )) ||
-                null;
-            const domCount = trendingRow
-                ? trendingRow.querySelectorAll('[data-viewer-semantic-card], .reel-card').length
-                : null;
-            logMobileShelfTrace({
-                shelf: 'Trending',
-                rawCount: Array.isArray($feed?.Trending) ? $feed.Trending.length : 0,
-                hydratedCount: Array.isArray(hydrated) ? hydrated.length : 0,
-                visibleCount: Array.isArray(display) ? display.length : 0,
-                domCount,
-                failureStage: failure
-            });
-        }
-        return display;
-    }
-
     /**
      * @param {Record<string, unknown>} reel
      * @param {string} category
@@ -537,53 +332,6 @@
         );
     }
 
-    /** Trending first cards paint with the Processing badge — do not lazy-defer. */
-    function eagerTrendingPoster(category, index = 0) {
-        return category === 'Trending' && Number(index) < 8;
-    }
-
-    function shouldRenderShelf(category) {
-        return getShelfDisplayItems(category).length > 0;
-    }
-
-    function getRowStep(row) {
-        if (!row) return 360;
-        const firstCard = row.querySelector('.reel-card, [data-viewer-semantic-card]');
-        const cardWidth = firstCard?.getBoundingClientRect?.().width || 320;
-        const styles = window.getComputedStyle(row);
-        const gap = Number.parseFloat(styles.columnGap || styles.gap || '16') || 16;
-        return cardWidth + gap;
-    }
-
-    function scrollRow(category, direction = 1) {
-        const row = rowRefs[category];
-        if (!row) return;
-        const step = getRowStep(row) * 1.35;
-        row.scrollBy({
-            left: direction * step,
-            behavior: 'smooth'
-        });
-    }
-
-    function handleRowWheel(event, category) {
-        const row = rowRefs[category];
-        if (!row) return;
-        if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
-        event.preventDefault();
-        row.scrollBy({
-            left: event.deltaY,
-            behavior: 'auto'
-        });
-    }
-
-    function reelListKey(reel, category, index) {
-        return [
-            category,
-            reel?.id || 'no-id',
-            String(index)
-        ].join('::');
-    }
-
     /** Phase 6.4/6.5 — identity-first card resolution (video canonical; thumb → poster). */
     /** Phase 6.6 — Featured promo remount OK; Browse = residual identities only. */
     /** @type {Record<string, unknown[]>} */
@@ -599,7 +347,68 @@
         identityFeedMap
     });
     $: featuredItem = shelfComposition.featuredItem || null;
-    $: browseItems = shelfComposition.browseItems || [];
+    $: readyBrowseAssets = getReadyHeroVaultAssets();
+    $: productionBrowseCatalog = buildViewerSeriesBrowseCatalog($seriesCatalog, {
+        readyVaultAssets: readyBrowseAssets,
+        sectionLimit: 12
+    });
+    $: originalProductions = productionBrowseCatalog.sections.original;
+    $: trendingProductions = productionBrowseCatalog.sections.trending;
+    $: newProductions = productionBrowseCatalog.sections.newest;
+    $: hasSeriesRail = activeViewerRailKey === 'new-releases' || activeViewerRailKey === 'trending' || activeViewerRailKey === 'suspense';
+    $: activeProductionSections =
+        activeViewerRailKey === 'home'
+            ? [
+                { key: 'original', title: 'Original Productions', items: originalProductions },
+                { key: 'trending', title: 'Trending Productions', items: trendingProductions },
+                { key: 'new', title: 'New Productions', items: newProductions }
+            ].filter((section) => section.items.filter((item) => matchesProductionSearch(item)).length > 0)
+            : activeViewerRailKey === 'trending'
+              ? [{ key: 'trending', title: 'Trending Productions', items: trendingProductions }].filter(
+                    (section) => section.items.filter((item) => matchesProductionSearch(item)).length > 0
+                )
+              : activeViewerRailKey === 'new-releases'
+                ? [{ key: 'new', title: 'New Productions', items: newProductions }].filter(
+                      (section) => section.items.filter((item) => matchesProductionSearch(item)).length > 0
+                  )
+                : [];
+
+    let continueWatchingRefreshTick = 0;
+    onMount(() => {
+        if (typeof window === 'undefined') return;
+        const refresh = () => {
+            continueWatchingRefreshTick += 1;
+        };
+        window.addEventListener('reelforge:sync-schedule', refresh);
+        window.addEventListener('storage', refresh);
+        return () => {
+            window.removeEventListener('reelforge:sync-schedule', refresh);
+            window.removeEventListener('storage', refresh);
+        };
+    });
+
+    $: continueWatchingRefreshTick;
+    $: viewerFeedRows = Object.values($normalizedFeed || $feed || {})
+        .flat()
+        .filter((row) => row && typeof row === 'object' && !row.isPlaceholder && !row.isPresentationOnly);
+    $: viewerFeedReelById = new Map(
+        viewerFeedRows.map((reel) => [String(reel?.id || ''), reel]).filter(([id]) => id)
+    );
+    $: continueWatchingRows = listContinueWatching({ limit: 8 })
+        .map((row) => {
+            const reel = viewerFeedReelById.get(String(row.reelId || ''));
+            if (!reel || !reel.url) return null;
+            const projection = resolveVaultCardProjection(String(reel.id || ''), { reel });
+            const title = String(projection.title || reel.title || reel.name || row.reelId || 'Episode').trim();
+            return {
+                row,
+                reel,
+                title,
+                poster: resolveShelfPoster(reel, null, projection, 'Continue Watching', 0)
+            };
+        })
+        .filter(Boolean);
+
     $: if (section === 'feed') {
         const flat = Object.values($normalizedFeed || $feed || {})
             .flat()
@@ -820,250 +629,52 @@
         </div>
     {/if}
 
-    {#each Object.keys($feed).filter((cat) => cat !== 'Auto-Detect') as category}
-        {@const config = UIAgent.getStudioConfigs(category)}
-        {@const displayName = displayDiscoveryShelf(category, $categoryAliasStore)}
-        {@const headingLabel = String(displayName || config.label || category)}
-        {#if shelfVisibleForViewerRail(category, activeViewerRailKey) && shouldRenderShelf(category)}
-        <section class="shelf" data-viewer-discovery-row={category}>
-            <h2 style="border-left: 4px solid {config.color}; color: {config.color};">{headingLabel}</h2>
-            <div class="row-shell">
-                <button
-                    type="button"
-                    class="row-nav row-nav--left"
-                    aria-label="Scroll row left"
-                    on:click={() => scrollRow(category, -1)}
-                >‹</button>
-                <div
-                    class="row"
-                    role="region"
-                    aria-label="{category} content row"
-                    bind:this={rowRefs[category]}
-                    on:mouseenter={UIAgent.startScroll}
-                    on:mouseleave={UIAgent.stopScroll}
-                    on:wheel={(event) => handleRowWheel(event, category)}
-                >
-                    {#each getShelfDisplayItems(category).filter((reel) => matchesDiscoverySearch(reel)) as reel, i (reelListKey(reel, category, i))}
-                        {#if reel.isPresentationOnly}
-                            <div
-                                class="reel-card presentation-slot viewer-sem-card--row"
-                                data-reel-id={reel.id}
-                                role="presentation"
-                                aria-hidden="true"
-                            >
-                                <div class="card-inner vault-card presentation-card-inner viewer-presentation-shell">
-                                    <div class="presentation-frame" style="--shelf-accent: {config.color}">
-                                        <span class="presentation-badge">{headingLabel}</span>
-                                        <span class="presentation-lock" aria-hidden="true">🔒</span>
-                                        <p class="presentation-copy">Coming Soon</p>
-                                    </div>
-                                </div>
-                                <h3 class="reel-title presentation-title-label">Coming Soon</h3>
-                            </div>
-                        {:else}
-                        {@const cardProjection = resolveVaultCardProjection(String(reel?.id || ''), {
-                            reel: /** @type {Record<string, unknown>} */ (reel)
-                        })}
-                        {@const cardResolved = resolveCardMedia(
-                            /** @type {Record<string, unknown>} */ (reel),
-                            category
-                        )}
-                        {@const rowShell = buildViewerSemanticShell(
-                            /** @type {Record<string, unknown>} */ (reel),
-                            {
-                                title: cardProjection.title,
-                                category,
-                                posterUrl: cardResolved.poster || cardProjection.posterUrl,
-                                description: cardProjection.description,
-                                seriesLine: cardProjection.seriesLine,
-                                seasonNumber: /** @type {any} */ (reel)?.seasonNumber,
-                                episodeNumber: /** @type {any} */ (reel)?.episodeNumber,
-                                seriesLabel:
-                                    /** @type {any} */ (reel)?.seriesLabel ||
-                                    /** @type {any} */ (reel)?.seriesName ||
-                                    /** @type {any} */ (reel)?.seriesTitle
-                            },
-                            cardResolved
-                        )}
-                        <ViewerSemanticCard
-                            reel={/** @type {Record<string, unknown>} */ (reel)}
-                            projection={cardProjection}
-                            shell={rowShell}
-                            resolvedMedia={cardResolved}
-                            variant="row"
-                            previewActive={String(feedHoverPreviewId) === String(reel.id)}
-                            onActivate={(r) => activateReel(r, category)}
-                            onMediaPointerEnter={() => {
-                                // Hover preview is desktop-only — coarse pointers scroll, not hover.
-                                if (detectMobilePresentation() || !prefersHoverPreview()) return;
-                                if (hasPlayableVideo(reel) && reel.url && !$feedCardVideoFallbacks.has(reel.id)) {
-                                    startFeedCardPreview(reel.id);
-                                }
-                            }}
-                            onMediaPointerLeave={() => stopFeedCardPreview(reel.id)}
-                        >
-                            <svelte:fragment slot="media">
-                                {#if hasPlayableVideo(reel) && reel.url}
-                                    {#if $feedCardVideoFallbacks.has(reel.id)}
-                                        {traceFeedCardRender(reel, category, 'video_fallback_thumbnail', resolveShelfPoster(reel, cardResolved, cardProjection, category, i))}
-                                        <MediaThumbnail
-                                            url={resolveShelfPoster(reel, cardResolved, cardProjection, category, i)}
-                                            alt={cardProjection.title || 'Video'}
-                                            lazyLoad={!eagerTrendingPoster(category, i)}
-                                            className="card-visual card-video-fallback"
-                                        />
-                                    {:else if prefersHoverPreview() && String(feedHoverPreviewId) === String(reel.id)}
-                                        {traceFeedCardRender(reel, category, 'video', reel.url)}
-                                        <MediaRenderer
-                                            type="video"
-                                            url={reel.url}
-                                            poster={resolveShelfPoster(reel, cardResolved, cardProjection, category, i)}
-                                            validateVideo={true}
-                                            useSourceElement={true}
-                                            captionsTrack={true}
-                                            muted
-                                            playsinline
-                                            loop
-                                            autoplay={true}
-                                            preload="metadata"
-                                            playbackRole="preview"
-                                            className="card-visual"
-                                            on:loadeddata={() => console.log('✅ Video loaded:', reel.url, videoMimeForPath(reel.url))}
-                                            on:error={(e) => onCardVideoError(e, reel)}
-                                        />
-                                    {:else}
-                                        {traceFeedCardRender(reel, category, 'video_poster', resolveShelfPoster(reel, cardResolved, cardProjection, category, i))}
-                                        <MediaThumbnail
-                                            url={resolveShelfPoster(reel, cardResolved, cardProjection, category, i)}
-                                            alt={cardProjection.title || 'Video'}
-                                            lazyLoad={!eagerTrendingPoster(category, i)}
-                                            className="card-visual card-video-poster"
-                                        />
-                                    {/if}
-                                {:else if reel.url}
-                                    {traceFeedCardRender(reel, category, 'image', $feedCardImageFallbacks[reel.id] || reel.url)}
-                                    <MediaThumbnail
-                                        url={$feedCardImageFallbacks[reel.id] || resolveShelfPoster(reel, cardResolved, cardProjection, category, i) || reel.url}
-                                        alt={cardProjection.title || 'Image'}
-                                        lazyLoad={!eagerTrendingPoster(category, i)}
-                                        className="card-visual"
-                                        raw={Boolean($feedCardImageFallbacks[reel.id])}
-                                        on:error={(e) => { logVaultImageError(e.currentTarget, reel.url); onImageError(e.currentTarget, reel, category, i); }}
-                                    />
-                                {:else}
-                                    {traceFeedCardRender(reel, category, 'empty', '')}
-                                    <div class="vault-card-empty" aria-label="Media unavailable">⚠️</div>
-                                {/if}
-                            </svelte:fragment>
-                        </ViewerSemanticCard>
-                        {/if}
-                    {/each}
+    <section class="viewer-production-library" aria-label="Production library">
+        {#if activeProductionSections.length === 0}
+            {#if hasSeriesRail}
+                <p class="viewer-production-library__empty" data-series-rail-empty>
+                    No productions available in this rail yet.
+                </p>
+            {/if}
+        {:else}
+            {#each activeProductionSections as sectionData (sectionData.key)}
+                <div class="viewer-production-library__section" data-series-rail={sectionData.key}>
+                    <h2 class="viewer-production-library__heading">{sectionData.title}</h2>
+                    <div class="viewer-production-library__grid" data-viewer-browse-grid>
+                        {#each sectionData.items.filter((item) => matchesProductionSearch(item)) as item (item.seriesId)}
+                            <SeriesBrowsePosterCard {item} sectionLabel={sectionData.key} />
+                        {/each}
+                    </div>
                 </div>
-                <button
-                    type="button"
-                    class="row-nav row-nav--right"
-                    aria-label="Scroll row right"
-                    on:click={() => scrollRow(category, 1)}
-                >›</button>
-            </div>
-        </section>
+            {/each}
         {/if}
-    {/each}
+    </section>
 
-    {#if browseItems.length > 0 && (activeViewerRailKey === 'home' || activeViewerRailKey === 'new-releases')}
-        <section class="viewer-browse" data-viewer-browse-grid aria-label="Browse all series">
-            <h2 class="viewer-browse__heading">Browse all series</h2>
-            <div class="viewer-browse__grid">
-                {#each browseItems.filter((item) => matchesDiscoverySearch(item.reel)) as item (item.reel.id)}
-                    {@const gridReel = item.reel}
-                    {@const gridCategory = item.shelf}
-                    {@const gridResolved = item.resolvedMedia || resolveCardMedia(
-                        /** @type {Record<string, unknown>} */ (gridReel),
-                        gridCategory
-                    )}
-                    {@const gridProjection = resolveVaultCardProjection(String(gridReel?.id || ''), {
-                        reel: /** @type {Record<string, unknown>} */ (gridReel)
-                    })}
-                    {@const gridShell = buildViewerSemanticShell(
-                        /** @type {Record<string, unknown>} */ (gridReel),
-                        {
-                            title: gridProjection.title,
-                            category: gridCategory,
-                            posterUrl: gridResolved.poster || gridProjection.posterUrl,
-                            description: gridProjection.description,
-                            seriesLine: gridProjection.seriesLine,
-                            seasonNumber: /** @type {any} */ (gridReel)?.seasonNumber,
-                            episodeNumber: /** @type {any} */ (gridReel)?.episodeNumber,
-                            seriesLabel:
-                                /** @type {any} */ (gridReel)?.seriesLabel ||
-                                /** @type {any} */ (gridReel)?.seriesName ||
-                                /** @type {any} */ (gridReel)?.seriesTitle
-                        },
-                        gridResolved
-                    )}
-                    <ViewerSemanticCard
-                        reel={/** @type {Record<string, unknown>} */ (gridReel)}
-                        projection={gridProjection}
-                        shell={gridShell}
-                        resolvedMedia={gridResolved}
-                        variant="grid"
-                        previewActive={String(feedHoverPreviewId) === String(gridReel.id)}
-                        onActivate={(r) => activateReel(r, gridCategory)}
-                        onMediaPointerEnter={() => {
-                            if (detectMobilePresentation() || !prefersHoverPreview()) return;
-                            if (hasPlayableVideo(gridReel) && gridReel.url && !$feedCardVideoFallbacks.has(gridReel.id)) {
-                                startFeedCardPreview(gridReel.id);
-                            }
-                        }}
-                        onMediaPointerLeave={() => stopFeedCardPreview(gridReel.id)}
+    {#if activeViewerRailKey === 'home' && continueWatchingRows.length > 0}
+        <section class="viewer-continue" aria-label="Continue watching" data-viewer-continue-watching>
+            <h2 class="viewer-continue__heading">Continue Watching</h2>
+            <div class="viewer-continue__row">
+                {#each continueWatchingRows as item (item.row.reelId)}
+                    <button
+                        type="button"
+                        class="viewer-continue__card"
+                        data-continue-reel-id={item.row.reelId}
+                        on:click={() => activateReel(item.reel, 'Continue Watching')}
                     >
-                        <svelte:fragment slot="media">
-                            {#if hasPlayableVideo(gridReel) && gridReel.url}
-                                {#if $feedCardVideoFallbacks.has(gridReel.id)}
-                                    <MediaThumbnail
-                                        url={resolveShelfPoster(gridReel, gridResolved, gridProjection, gridCategory, 0)}
-                                        alt={gridProjection.title || 'Video'}
-                                        lazyLoad
-                                        className="card-visual card-video-fallback"
-                                    />
-                                {:else if prefersHoverPreview() && String(feedHoverPreviewId) === String(gridReel.id)}
-                                    <MediaRenderer
-                                        type="video"
-                                        url={gridReel.url}
-                                        poster={resolveShelfPoster(gridReel, gridResolved, gridProjection, gridCategory, 0)}
-                                        validateVideo={true}
-                                        useSourceElement={true}
-                                        captionsTrack={true}
-                                        muted
-                                        playsinline
-                                        loop
-                                        autoplay={true}
-                                        preload="metadata"
-                                        playbackRole="preview"
-                                        className="card-visual"
-                                        on:error={(e) => onCardVideoError(e, gridReel)}
-                                    />
-                                {:else}
-                                    <MediaThumbnail
-                                        url={resolveShelfPoster(gridReel, gridResolved, gridProjection, gridCategory, 0)}
-                                        alt={gridProjection.title || 'Video'}
-                                        lazyLoad
-                                        className="card-visual card-video-poster"
-                                    />
-                                {/if}
-                            {:else if gridReel.url}
-                                <MediaThumbnail
-                                    url={$feedCardImageFallbacks[gridReel.id] || resolveShelfPoster(gridReel, gridResolved, gridProjection, gridCategory, 0) || gridReel.url}
-                                    alt={gridProjection.title || 'Image'}
-                                    lazyLoad
-                                    className="card-visual"
-                                    raw={Boolean($feedCardImageFallbacks[gridReel.id])}
-                                />
-                            {:else}
-                                <div class="vault-card-empty" aria-label="Media unavailable">⚠️</div>
-                            {/if}
-                        </svelte:fragment>
-                    </ViewerSemanticCard>
+                        <div class="viewer-continue__poster-wrap">
+                            <MediaThumbnail
+                                url={item.poster}
+                                alt=""
+                                lazyLoad
+                                className="viewer-continue__poster"
+                            />
+                        </div>
+                        <div class="viewer-continue__copy">
+                            <h3 class="viewer-continue__title">{item.title}</h3>
+                            <p class="viewer-continue__meta">{formatRemainingLabel(item.row.position, item.row.duration)}</p>
+                            <ContinueWatchingBadge percent={item.row.percent} />
+                        </div>
+                    </button>
                 {/each}
             </div>
         </section>
@@ -1205,169 +816,109 @@
         text-transform: uppercase;
         color: rgba(244, 241, 234, 0.72);
     }
-    .viewer-browse__heading {
-        margin: 0 0 0.85rem;
-        font-size: 1.15rem;
-        letter-spacing: 0.01em;
-        text-transform: none;
-        font-weight: 700;
-        color: #fff;
-    }
-    .viewer-browse {
-        padding: 0.5rem 1.25rem 3rem;
-    }
-    .viewer-browse__grid {
+    .viewer-production-library {
+        padding: 0.65rem 1.25rem 2.8rem;
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.85rem;
+        gap: 1.35rem;
     }
-    @media (min-width: 900px) {
-        .viewer-browse__grid {
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 1.1rem;
+    .viewer-production-library__section {
+        display: grid;
+        gap: 0.75rem;
+    }
+    .viewer-production-library__heading {
+        margin: 0;
+        font-size: 0.8rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: rgba(244, 241, 234, 0.72);
+    }
+    .viewer-production-library__grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.85rem 0.75rem;
+    }
+    @media (min-width: 700px) {
+        .viewer-production-library__grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
         }
     }
-    .viewer-presentation-shell {
-        border-radius: var(--rf-cine-radius, 28px) !important;
-        box-shadow: var(--rf-cine-shadow, 0 22px 48px rgba(0, 0, 0, 0.45));
+    @media (min-width: 980px) {
+        .viewer-production-library__grid {
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            gap: 1rem 0.85rem;
+        }
     }
-    .shelf h2 {
-        font-size: 1rem;
+    @media (min-width: 1400px) {
+        .viewer-production-library__grid {
+            grid-template-columns: repeat(8, minmax(0, 1fr));
+        }
+    }
+    .viewer-production-library__empty {
+        margin: 0;
+        color: rgba(244, 241, 234, 0.58);
+        font-size: 0.86rem;
+    }
+    .viewer-continue {
+        padding: 0 1.25rem 2rem;
+    }
+    .viewer-continue__heading {
+        margin: 0 0 0.75rem;
+        font-size: 0.8rem;
+        letter-spacing: 0.14em;
         text-transform: uppercase;
-        letter-spacing: 2px;
-        margin-bottom: 1rem;
-        padding-left: 1rem;
+        color: rgba(244, 241, 234, 0.72);
     }
-    .row {
-        display: flex;
-        gap: 1.1rem;
-        overflow-x: auto;
-        padding: 1rem 0;
-        scroll-snap-type: x proximity;
-        scroll-padding-inline: 0.25rem;
-        scroll-behavior: smooth;
-        overscroll-behavior-x: contain;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: thin;
-        scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
-    }
-    .row-shell {
-        position: relative;
-    }
-    .row-nav {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        z-index: 6;
-        width: 2.25rem;
-        height: 2.25rem;
-        border: 1px solid rgba(255, 255, 255, 0.28);
-        border-radius: 999px;
-        background: rgba(8, 10, 16, 0.72);
-        color: #fff;
-        font-size: 1.35rem;
-        line-height: 1;
+    .viewer-continue__row {
         display: grid;
-        place-items: center;
-        cursor: pointer;
-        backdrop-filter: blur(6px);
+        gap: 0.65rem;
     }
-    .row-nav:hover {
-        border-color: rgba(0, 242, 255, 0.72);
-        color: var(--neon-cyan);
-    }
-    .row-nav--left {
-        left: -0.3rem;
-    }
-    .row-nav--right {
-        right: -0.3rem;
-    }
-    .row::-webkit-scrollbar {
-        height: 6px;
-    }
-    .row::-webkit-scrollbar-track {
-        background: transparent;
-    }
-    .row::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 3px;
-    }
-    .reel-card {
-        flex: 0 0 clamp(280px, 28vw, 380px);
-        scroll-snap-align: start;
-        transition: transform 0.22s ease;
-        background: none;
-        border: none;
-        padding: 0;
+    .viewer-continue__card {
+        display: grid;
+        grid-template-columns: 96px minmax(0, 1fr);
+        gap: 0.7rem;
+        align-items: center;
+        width: 100%;
+        padding: 0.45rem;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.04);
+        color: inherit;
         text-align: left;
-        transform-origin: center center;
-        will-change: transform;
-    }
-    button.reel-card {
         cursor: pointer;
-        color: #f4f4f5;
     }
-    .reel-card.presentation-slot {
-        cursor: default;
-        pointer-events: none;
-        user-select: none;
-    }
-    .presentation-card-inner {
-        aspect-ratio: 16 / 9;
-        min-height: 160px;
-        border-radius: var(--rf-cine-radius, 28px);
-        background: linear-gradient(145deg, rgba(12, 14, 22, 0.96), rgba(24, 26, 36, 0.88));
-        border: 1px solid rgba(255, 255, 255, 0.08);
+    .viewer-continue__poster-wrap {
+        border-radius: 8px;
         overflow: hidden;
+        aspect-ratio: 16 / 9;
+        background: rgba(255, 255, 255, 0.06);
     }
-    .presentation-frame {
+    .viewer-continue__poster {
         width: 100%;
         height: 100%;
-        min-height: 160px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        padding: 1rem;
-        background:
-            radial-gradient(circle at 20% 20%, color-mix(in srgb, var(--shelf-accent, #666) 18%, transparent), transparent 55%),
-            linear-gradient(160deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.35));
+        object-fit: cover;
+        display: block;
     }
-    .presentation-badge {
-        font-size: 0.65rem;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        padding: 0.25rem 0.55rem;
-        border: 1px solid color-mix(in srgb, var(--shelf-accent, #666) 55%, transparent);
-        border-radius: 999px;
-        color: var(--shelf-accent, #aaa);
+    .viewer-continue__copy {
+        min-width: 0;
+        display: grid;
+        gap: 0.35rem;
     }
-    .presentation-lock {
-        font-size: 1.1rem;
-        opacity: 0.55;
-    }
-    .presentation-copy {
+    .viewer-continue__title {
         margin: 0;
-        font-size: 0.95rem;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: rgba(255, 255, 255, 0.72);
+        font-size: 0.9rem;
+        color: #fff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
-    .presentation-title-label {
-        color: rgba(255, 255, 255, 0.45);
-        font-weight: 500;
+    .viewer-continue__meta {
+        margin: 0;
+        font-size: 0.74rem;
+        color: rgba(244, 241, 234, 0.66);
     }
-    @media (hover: hover) and (pointer: fine) {
-        button.reel-card:hover {
-            transform: scale(1.04);
-            z-index: 10;
-        }
-    }
-    @media (max-width: 900px) {
-        .row-nav {
-            display: none;
-        }
+    .viewer-continue__card:focus-visible {
+        outline: 2px solid rgba(0, 242, 255, 0.65);
+        outline-offset: 2px;
     }
     .card-inner.vault-card {
         min-width: 120px;
