@@ -253,7 +253,7 @@ pub async fn create_episode(
     } else {
         None
     };
-    sqlx::query_as::<_, EpisodeRow>(
+    let row = sqlx::query_as::<_, EpisodeRow>(
         r#"
         INSERT INTO studio_episodes (
             season_id, episode_number, title, description, reel_id, publish_status, published_at
@@ -270,7 +270,13 @@ pub async fn create_episode(
     .bind(reel_id)
     .bind(published_at)
     .fetch_one(pool)
-    .await
+    .await?;
+
+    if let Some(bound_reel_id) = row.reel_id {
+        sync_reel_episode_bridge(pool, bound_reel_id, row.id).await?;
+    }
+
+    Ok(row)
 }
 
 pub enum AttachReelOutcome {
@@ -328,6 +334,8 @@ pub async fn attach_reel_to_episode(
     .bind(reel_id)
     .fetch_one(pool)
     .await?;
+
+    sync_reel_episode_bridge(pool, reel_id, episode_id).await?;
 
     Ok(AttachReelOutcome::Attached(row))
 }
@@ -475,6 +483,10 @@ pub async fn backfill_reels_to_hierarchy(pool: &PgPool) -> Result<BackfillReport
                 row.id
             }
         };
+        // Backfill creates catalog-series rows from reel categories with default FREE/0 settings.
+        // The current viewer paywall contract treats backfilled episodic content as EPISODE_LOCK
+        // with a 2-episode free window, so we normalize only untouched default rows.
+        apply_default_backfill_monetization(pool, series_id).await?;
 
         let season_id: Uuid = match find_season_one(pool, series_id).await? {
             Some(id) => id,
@@ -530,6 +542,23 @@ pub async fn backfill_reels_to_hierarchy(pool: &PgPool) -> Result<BackfillReport
         "#,
     )
     .fetch_one(pool)
+    .await?;
+
+    // Keep legacy reel-level episode identity aligned with canonical studio binding.
+    sqlx::query(
+        r#"
+        UPDATE reels r
+        SET episode_id = CAST(se.id AS TEXT),
+            updated_at = now()
+        FROM studio_episodes se
+        WHERE se.reel_id = r.id
+          AND (
+              r.episode_id IS NULL
+              OR r.episode_id <> CAST(se.id AS TEXT)
+          )
+        "#,
+    )
+    .execute(pool)
     .await?;
 
     Ok(BackfillReport {
@@ -595,4 +624,47 @@ async fn next_episode_number(pool: &PgPool, season_id: Uuid) -> Result<i32, sqlx
             .fetch_one(pool)
             .await?;
     Ok(max.map(|n| n + 1).unwrap_or(1))
+}
+
+async fn sync_reel_episode_bridge(
+    pool: &PgPool,
+    reel_id: Uuid,
+    canonical_episode_id: Uuid,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        r#"
+        UPDATE reels
+        SET episode_id = CAST($2 AS TEXT),
+            updated_at = now()
+        WHERE id = $1
+        "#,
+    )
+    .bind(reel_id)
+    .bind(canonical_episode_id)
+    .execute(pool)
+    .await?;
+    Ok(())
+}
+
+async fn apply_default_backfill_monetization(
+    pool: &PgPool,
+    series_id: Uuid,
+) -> Result<(), sqlx::Error> {
+    // Scope guard: mutate only series still in the untouched migration defaults.
+    // Any explicit monetization configuration remains authoritative.
+    sqlx::query(
+        r#"
+        UPDATE studio_series
+        SET access_mode = 'EPISODE_LOCK',
+            free_episode_count = 2,
+            updated_at = now()
+        WHERE id = $1
+          AND access_mode = 'FREE'
+          AND free_episode_count = 0
+        "#,
+    )
+    .bind(series_id)
+    .execute(pool)
+    .await?;
+    Ok(())
 }

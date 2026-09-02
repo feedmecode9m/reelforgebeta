@@ -123,6 +123,12 @@ pub struct HealthRefreshContext {
     pub health_state: SharedHealthState,
 }
 
+fn startup_payments_backfill_enabled() -> bool {
+    std::env::var("REELFORGE_PAYMENTS_API")
+        .map(|v| v == "1" || v.eq_ignore_ascii_case("true"))
+        .unwrap_or(false)
+}
+
 pub async fn run_post_bind_startup(ctx: HealthRefreshContext) {
     let HealthRefreshContext {
         pool,
@@ -203,6 +209,23 @@ pub async fn run_post_bind_startup(ctx: HealthRefreshContext) {
                 "[validation-backfill] confirmed={} rejected={}",
                 confirmed, rejected
             );
+        }
+    }
+
+    if db_available && startup_payments_backfill_enabled() {
+        match crate::db::studio::backfill_reels_to_hierarchy(&pool).await {
+            Ok(report) => {
+                println!(
+                    "[studio-backfill] project_id={} series_created={} seasons_created={} episodes_created={} episodes_skipped={} reels_unlinked={}",
+                    report.project_id,
+                    report.series_created,
+                    report.seasons_created,
+                    report.episodes_created,
+                    report.episodes_skipped,
+                    report.reels_unlinked
+                );
+            }
+            Err(e) => eprintln!("[studio-backfill] failed: {}", e),
         }
     }
 
