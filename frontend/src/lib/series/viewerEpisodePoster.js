@@ -8,7 +8,7 @@
  *   1. Explicit chip / episode poster fields (absolute API thumbs pass through)
  *   2. Ready vault / catalog inventory fields keyed by mediaAssetId
  *      (thumbnailUrl, thumbnailPath, image-type url with correct extension)
- *   3. Last-resort product identity path only when a real path cannot be found
+ *   3. No synthetic URL invention; caller should fall back to existing placeholder behavior
  *
  * Final URLs always pass through resolveMediaUrl so:
  *   - absolute production thumbs stay absolute (never `/thumbs/https://…`)
@@ -20,8 +20,6 @@ import { resolveMediaUrl } from '../api/reelContract.js';
 import { mediaPathAssetId } from '../content/persistentTitleMap.js';
 import { isVaultVideoMediaUrl } from '../vault/normalizeVaultAsset.js';
 
-const UUID_RE =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const IMAGE_EXT_RE = /\.(png|jpe?g|webp|gif)(\?|$)/i;
 const VIDEO_EXT_RE = /\.(mp4|mov|webm|m4v|avi|mkv)(\?|$)/i;
 
@@ -255,35 +253,6 @@ function finalizePosterUrl(raw) {
 }
 
 /**
- * Relative poster path for a stable media id.
- * Prefer a proven extension from a known thumb URL; last-resort `.jpg` keeps
- * cold-load catalog UUID cards (STIRRED) working when inventory is empty.
- * Never invent over an already-known absolute/relative art URL — callers must
- * pass those through finalizePosterUrl first.
- *
- * @param {unknown} mediaAssetId
- * @param {string} [knownThumbHint] absolute/relative thumb with a real extension
- * @returns {string}
- */
-export function posterPathFromMediaAssetId(mediaAssetId, knownThumbHint = '') {
-    const id = cleanUrl(mediaAssetId);
-    if (!id || !UUID_RE.test(id)) return '';
-
-    const hint = cleanUrl(knownThumbHint);
-    const fromHint = hint.match(IMAGE_EXT_RE);
-    if (fromHint) {
-        const file = hint.split('/').pop()?.split('?')[0] || '';
-        if (file && file.toLowerCase().includes(id.toLowerCase())) {
-            return `/thumbs/${file}`;
-        }
-        const ext = fromHint[1].toLowerCase().replace('jpeg', 'jpg');
-        return `/thumbs/${id}.${ext}`;
-    }
-    // Last resort only — many production reels use .png; prefer inventory when available.
-    return `/thumbs/${id}.jpg`;
-}
-
-/**
  * Resolve the poster URL for a viewer episode card (browser-loadable).
  *
  * @param {{
@@ -296,19 +265,8 @@ export function posterPathFromMediaAssetId(mediaAssetId, knownThumbHint = '') {
 export function resolveViewerEpisodePosterUrl(input = {}) {
     const episode = input.episode && typeof input.episode === 'object' ? input.episode : null;
     const ready = Array.isArray(input.readyVaultAssets) ? input.readyVaultAssets : [];
-    const mediaId = cleanUrl(
-        episode?.mediaAssetId || episode?.reelId || episode?.heroVaultAssetId || ''
-    );
+    const mediaId = cleanUrl(episode?.mediaAssetId || episode?.reelId || episode?.heroVaultAssetId || '');
     const lookupIds = posterLookupIds(episode, mediaId);
-    // Prefer R2 /prod/{uuid} (catalog thumb path) over a vault-only personal id.
-    const playbackId = episode
-        ? mediaPathAssetId({
-              ...episode,
-              url: episode.mediaUrl || episode.url || episode.src,
-              mediaUrl: episode.mediaUrl || episode.url || episode.src
-          })
-        : '';
-    const inventId = cleanUrl(playbackId) || mediaId || lookupIds[0] || '';
 
     const chipThumb = cleanUrl(input.chipThumbnailUrl);
     if (isUsableEpisodePosterUrl(chipThumb)) return finalizePosterUrl(chipThumb);
@@ -329,9 +287,5 @@ export function resolveViewerEpisodePosterUrl(input = {}) {
         const fromVault = thumbOf(bound);
         if (isUsableEpisodePosterUrl(fromVault)) return finalizePosterUrl(fromVault);
     }
-
-    // Only invent identity path when no real inventory art exists for this media id.
-    return finalizePosterUrl(
-        posterPathFromMediaAssetId(inventId, fromPool || fromThumbsVault || epThumb)
-    );
+    return '';
 }

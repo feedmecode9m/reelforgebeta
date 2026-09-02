@@ -46,6 +46,7 @@
     resolveEpisodeMedia,
     episodeChipPresentation
   } from '../../lib/series/episodeVaultBindingResolver.js';
+  import { resolveViewerEpisodePosterUrl } from '../../lib/series/viewerEpisodePoster.js';
   import {
     openTheaterReel,
     configureTheaterExperience,
@@ -284,6 +285,7 @@
   $: recommendations = series
     ? recommendSeries({ seedSeriesId: series.id, seedSeriesLabel: series.title, limit: 6 })
     : [];
+  $: seriesById = new Map(($seriesCatalog || []).map((row) => [String(row?.id || ''), row]));
   // Official Genre only when creator assigned it — never discovery shelf labels.
   $: publicGenre = (() => {
     const raw = creatorFacingGenre(series?.genre);
@@ -314,6 +316,56 @@
     }),
     placeholder: DEFAULT_MEDIA_PLACEHOLDER
   });
+
+  /**
+   * @param {import('../../lib/series/seriesTypes.js').Episode} episode
+   * @param {{ thumbnailUrl?: string }} [chip]
+   */
+  function resolveEpisodeGuidePoster(episode, chip = {}) {
+    const poster = resolveViewerEpisodePosterUrl({
+      episode,
+      chipThumbnailUrl: chip?.thumbnailUrl || '',
+      readyVaultAssets: effectiveReadyAssets
+    });
+    return String(poster || '').trim() || DEFAULT_MEDIA_PLACEHOLDER;
+  }
+
+  /**
+   * @param {string} seriesId
+   * @param {string} recPoster
+   */
+  function resolveRecommendationPoster(seriesId, recPoster = '') {
+    const direct = String(recPoster || '').trim();
+    if (direct) return direct;
+    const target = seriesById.get(String(seriesId || '').trim()) || null;
+    if (!target) return '';
+    const episodeThumbnails = (target.seasons || []).flatMap((season) =>
+      (season.episodes || []).map((episode) => {
+        const resolved = resolveEpisodeMedia({
+          episode,
+          readyVaultAssets: effectiveReadyAssets
+        });
+        if (!resolved.matched) return null;
+        return resolved.thumbnail || resolved.mediaUrl || null;
+      })
+    );
+    return resolveSeriesPosterSrc({
+      seriesPoster: target.poster,
+      episodeThumbnails,
+      placeholder: DEFAULT_MEDIA_PLACEHOLDER
+    });
+  }
+
+  /** @param {Event} event */
+  function handleSeriesImageFallback(event) {
+    const img = /** @type {HTMLImageElement} */ (event.currentTarget);
+    const src = String(img?.getAttribute('src') || '');
+    if (!src) return;
+    if (src !== DEFAULT_MEDIA_PLACEHOLDER) {
+      img.dataset.fallbackState = 'placeholder';
+      img.src = DEFAULT_MEDIA_PLACEHOLDER;
+    }
+  }
 
   function refreshHeroVaultAssets() {
     try {
@@ -750,10 +802,11 @@
             {@const path =
               publicSeriesPath({ id: rec.seriesId, title: rec.title }) ||
               `/series/${String(rec.seriesId).replace(/^series-/, '')}`}
+            {@const recPoster = resolveRecommendationPoster(rec.seriesId, rec.poster)}
             <li class="series-public__rec-row">
               <a class="series-public__rec-link" href={path} data-recommendation-series={rec.seriesId}>
-                {#if rec.poster}
-                  <img class="series-public__rec-poster" src={rec.poster} alt="" loading="lazy" />
+                {#if recPoster}
+                  <img class="series-public__rec-poster" src={recPoster} alt="" loading="lazy" on:error={handleSeriesImageFallback} />
                 {/if}
                 <span class="series-public__rec-title">{rec.title}</span>
                 <span class="series-public__rec-reason">{rec.reason}</span>
@@ -791,6 +844,7 @@
               row.episode.episodeId,
               row.episode.reelId || row.episode.mediaAssetId
             )}
+            {@const guidePosterUrl = resolveEpisodeGuidePoster(row.episode, chip)}
             <li
               class="series-public__status-row"
               class:playable={guidePlayable && catalogPublic}
@@ -804,8 +858,8 @@
                 >S{row.season.seasonNumber}:E{row.episode.episodeNumber}</span
               >
               <span class="series-public__status-title">{row.episode.title}</span>
-              {#if chip.thumbnailUrl}
-                <img class="series-public__status-thumb" src={chip.thumbnailUrl} alt="" />
+              {#if guidePosterUrl}
+                <img class="series-public__status-thumb" src={guidePosterUrl} alt="" loading="lazy" on:error={handleSeriesImageFallback} />
               {/if}
               {#if guideLabel}
                 <span class="series-public__status-badge">{guideLabel}</span>

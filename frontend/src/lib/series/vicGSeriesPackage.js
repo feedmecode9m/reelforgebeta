@@ -14,8 +14,6 @@ export const VIC_G_SERIES_ID = 'series-vic-g';
 
 /** @type {string} */
 export const VIC_G_SERIES_TITLE = 'Vic G';
-/** @type {string} */
-export const VIC_G_SERIES_POSTER = '/thumbs/power-of-support-series-poster.png';
 
 /**
  * Stable production reel identities (episode order).
@@ -55,7 +53,8 @@ export function buildVicGSeriesPackage() {
     return {
         id: VIC_G_SERIES_ID,
         title: VIC_G_SERIES_TITLE,
-        poster: VIC_G_SERIES_POSTER,
+        // Poster remains catalog/Hero-Vault supplied; package should not hardcode a viewer file path.
+        poster: '',
         description: '',
         tags: ['creator-package', 'creator-confirmed'],
         confirmedByCreator: true,
@@ -95,7 +94,8 @@ export function buildVicGSeriesPackage() {
  */
 export function mergeVicGSeriesIntoCatalog(catalogItems) {
     const list = Array.isArray(catalogItems) ? catalogItems.slice() : [];
-    const pkg = buildVicGSeriesPackage();
+    const existingVicSeries = list.find((series) => series?.id === VIC_G_SERIES_ID) || null;
+    const pkg = existingVicSeries || buildVicGSeriesPackage();
     const reelIds = VIC_G_REEL_IDS;
 
     /** @param {import('./seriesTypes.js').Series} series */
