@@ -46,6 +46,7 @@ use events::EventBus;
 use futures_util::StreamExt;
 use sqlx::postgres::PgPoolOptions;
 use std::env;
+use std::path::{Path, PathBuf};
 use std::time::Duration;
 use tokio::sync::broadcast;
 
@@ -62,6 +63,38 @@ fn is_production_env() -> bool {
 
 fn is_deployed_host() -> bool {
     is_production_env()
+}
+
+fn resolve_public_media_root() -> PathBuf {
+    let media_root_override = env::var("MEDIA_ROOT")
+        .ok()
+        .map(|v| v.trim().to_string())
+        .filter(|v| !v.is_empty());
+    let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    resolve_public_media_root_with_override(media_root_override.as_deref(), &manifest_dir)
+}
+
+fn resolve_public_media_root_with_override(
+    media_root_override: Option<&str>,
+    manifest_dir: &Path,
+) -> PathBuf {
+    if let Some(raw) = media_root_override {
+        return PathBuf::from(raw);
+    }
+
+    // Stable default for this repo: backend crate lives at `<repo>/backend`.
+    let repo_public = manifest_dir.join("../public");
+    if repo_public.is_dir() {
+        return repo_public;
+    }
+
+    // Backward-compatible fallbacks if the source tree layout differs.
+    let backend_public = manifest_dir.join("public");
+    if backend_public.is_dir() {
+        return backend_public;
+    }
+
+    PathBuf::from("./public")
 }
 
 /// Private IPv4 used when phones hit `npm run dev` on the LAN (non-production only).
@@ -278,7 +311,7 @@ async fn main() -> std::io::Result<()> {
         println!("ℹ️  R2 not configured — signed uploads use Railway direct PUT");
     }
 
-    let public_path = std::path::PathBuf::from("./public");
+    let public_path = resolve_public_media_root();
     let thumbs_path = public_path.join("thumbs");
     let videos_path = public_path.join("videos");
 
@@ -823,6 +856,50 @@ async fn main() -> std::io::Result<()> {
     .bind(bind_address)?
     .run()
     .await
+}
+
+#[cfg(test)]
+mod tests {
+    use super::resolve_public_media_root_with_override;
+    use std::fs;
+    use std::path::PathBuf;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    fn temp_dir(prefix: &str) -> PathBuf {
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("clock")
+            .as_nanos();
+        let dir = std::env::temp_dir().join(format!("{}_{}", prefix, now));
+        fs::create_dir_all(&dir).expect("create temp dir");
+        dir
+    }
+
+    #[test]
+    fn media_root_prefers_override_when_present() {
+        let manifest = PathBuf::from("/tmp/reelforge/backend");
+        let resolved =
+            resolve_public_media_root_with_override(Some("/var/lib/reelforge/public"), &manifest);
+        assert_eq!(resolved, PathBuf::from("/var/lib/reelforge/public"));
+    }
+
+    #[test]
+    fn media_root_defaults_to_repo_public_independent_of_runtime_cwd() {
+        let root = temp_dir("reelforge_media_root_test");
+        let repo_dir = root.join("repo");
+        let backend_dir = repo_dir.join("backend");
+        let public_dir = repo_dir.join("public");
+        fs::create_dir_all(&backend_dir).expect("create backend dir");
+        fs::create_dir_all(public_dir.join("thumbs")).expect("create thumbs");
+        fs::create_dir_all(public_dir.join("videos")).expect("create videos");
+
+        let resolved = resolve_public_media_root_with_override(None, &backend_dir);
+        let resolved_norm = fs::canonicalize(&resolved).expect("canonicalize resolved path");
+        let expected_norm = fs::canonicalize(&public_dir).expect("canonicalize expected path");
+        assert_eq!(resolved_norm, expected_norm);
+
+        let _ = fs::remove_dir_all(root);
+    }
 }
 
 /// Dev telemetry sink (replaces separate :7463 ingest — avoids browser CORS failures).
