@@ -1,4 +1,9 @@
 import { API_BASE_URL, fetchWithRetry } from '../api.js';
+import {
+    getAdminAuthHeaders,
+    getAdminToken,
+    maybeHandleInvalidAdminSession
+} from '../adminSession.js';
 
 export const SERIES_API_MIGRATION_KEY = 'reelforge_series_api_migrated';
 /** Offline API catalog snapshot only — must NOT share the reel metadata map key. */
@@ -56,9 +61,22 @@ export function logSeriesApiDiag(phase, detail = {}) {
 async function seriesFetch(path, options = {}, meta = {}) {
     const method = options.method || 'GET';
     const isWrite = method !== 'GET' && method !== 'HEAD';
+    /** @type {Record<string, string>} */
+    const headers = {
+        ...(options.headers && typeof options.headers === 'object' && !(options.headers instanceof Headers)
+            ? /** @type {Record<string, string>} */ (options.headers)
+            : {})
+    };
 
-    const res = await fetchWithRetry(`${API_BASE_URL}${path}`, options, {
-        retries: 1,
+    if (isWrite) {
+        Object.assign(headers, getAdminAuthHeaders());
+        if (!headers.Authorization && !getAdminToken()) {
+            throw new Error('missing_authorization');
+        }
+    }
+
+    const res = await fetchWithRetry(`${API_BASE_URL}${path}`, { ...options, method, headers }, {
+        retries: isWrite ? 0 : 1,
         notifyReconnectOnFailure: false
     });
     if (res.status === 404) {
@@ -67,6 +85,9 @@ async function seriesFetch(path, options = {}, meta = {}) {
     }
     if (!res.ok) {
         const body = await res.json().catch(() => ({}));
+        if (isWrite && res.status === 401) {
+            maybeHandleInvalidAdminSession(res, body, 'seriesApi');
+        }
         throw new Error(body.error || `Series API failed (${res.status})`);
     }
 
@@ -251,6 +272,32 @@ export function seriesToApiPayload(series) {
             }))
         }))
     };
+}
+
+/**
+ * Series-row payload for PUT /api/series/:id when editing catalog metadata only.
+ * Omits seasons so episode rows and reel bindings are never touched.
+ *
+ * @param {Series | null | undefined} series
+ */
+export function seriesToApiRowPayload(series) {
+    if (!series || !series.id) {
+        return { id: '', title: '' };
+    }
+    /** @type {Record<string, unknown>} */
+    const payload = {
+        id: String(series.id),
+        title: String(series.title || '').trim(),
+        description: String(series.description ?? ''),
+        genre: String(series.genre ?? ''),
+        poster: String(series.poster ?? ''),
+        tags: Array.isArray(series.tags) ? series.tags.map(String) : []
+    };
+    const releaseYear = Number(series.releaseYear);
+    if (Number.isFinite(releaseYear)) {
+        payload.releaseYear = releaseYear;
+    }
+    return payload;
 }
 
 /**
@@ -465,6 +512,7 @@ export function initSeriesApi() {
         updateEpisode,
         deleteEpisode,
         seriesToApiPayload,
+        seriesToApiRowPayload,
         apiSeriesToCatalog
     };
 }

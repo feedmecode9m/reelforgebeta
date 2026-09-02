@@ -5,6 +5,7 @@
         getSeriesById,
         updateCatalogEpisode,
         updateCatalogSeries,
+        persistSeriesRowToApi,
         updateCatalogSeason,
         setEpisodeStatus,
         reorderEpisodesInSeason,
@@ -43,6 +44,7 @@
     let saveMessage = '';
     let attachMessage = '';
     let lastLoadedEpisodeId = '';
+    let lastLoadedSeriesId = '';
 
     /**
      * Prefer vault-inferred series, then explicit preferred id, never force Neon only.
@@ -81,10 +83,12 @@
             selectedSeasonNumber = 1;
             selectedEpisodeId = '';
             lastLoadedEpisodeId = '';
+            lastLoadedSeriesId = '';
         }
     } else {
         selectedSeriesId = '';
         selectedEpisodeId = '';
+        lastLoadedSeriesId = '';
     }
 
     $: series = selectedSeriesId ? getSeriesById(selectedSeriesId) : null;
@@ -122,7 +126,8 @@
     let editSeasonPoster = '';
     let seriesSaveMessage = '';
 
-    $: if (series) {
+    $: if (series && series.id !== lastLoadedSeriesId) {
+        lastLoadedSeriesId = series.id;
         editSeriesTitle = series.title || '';
         editSeriesDescription = series.description || '';
         editSeriesPoster = series.poster || '';
@@ -133,17 +138,25 @@
         editSeasonPoster = /** @type {{ poster?: string }} */ (season).poster || '';
     }
 
-    function handleSaveSeriesMeta() {
+    async function handleSaveSeriesMeta() {
         if (!selectedSeriesId) return;
         const updated = updateCatalogSeries(selectedSeriesId, {
             title: editSeriesTitle,
             description: editSeriesDescription,
             poster: editSeriesPoster
         });
-        seriesSaveMessage = updated ? 'Series metadata saved' : 'Series save failed';
-        if (updated) {
-            dispatch('changed', { type: 'series-meta', seriesId: selectedSeriesId });
+        if (!updated) {
+            seriesSaveMessage = 'Series save failed';
+            return;
         }
+        const apiResult = await persistSeriesRowToApi(selectedSeriesId);
+        if (!apiResult.ok) {
+            const detail = apiResult.error || apiResult.reason || 'API unavailable';
+            seriesSaveMessage = `Saved locally — canonical API save failed (${detail})`;
+            return;
+        }
+        seriesSaveMessage = 'Series metadata saved';
+        dispatch('changed', { type: 'series-meta', seriesId: selectedSeriesId });
     }
 
     function handleSaveSeasonMeta() {
@@ -310,6 +323,7 @@
         selectedSeasonNumber = 1;
         selectedEpisodeId = '';
         lastLoadedEpisodeId = '';
+        lastLoadedSeriesId = '';
         dispatch('seriesSelect', { seriesId: selectedSeriesId });
     }
 

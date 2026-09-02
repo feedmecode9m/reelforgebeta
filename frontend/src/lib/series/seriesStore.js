@@ -21,6 +21,7 @@ import {
     updateSeries,
     createSeries,
     seriesToApiPayload,
+    seriesToApiRowPayload,
     apiSeriesToCatalog,
     catalogToReelMetadataMap,
     applyReelPatchToCatalog,
@@ -31,6 +32,7 @@ import {
     logSeriesApiSync,
     cacheSeriesCatalogOffline
 } from '../api/seriesApi.js';
+import { getAdminToken } from '../adminSession.js';
 import { logEpisodeAssetDiag } from './episodeAssetDiagnostics.js';
 import { scheduleSyncPush } from '../sync/syncManager.js';
 import {
@@ -1648,6 +1650,52 @@ export function updateCatalogSeries(seriesId, patch = {}) {
         ts: new Date().toISOString()
     });
     return getSeriesById(sid) || null;
+}
+
+/**
+ * Persist canonical series-row metadata to the Series API (no seasons / episodes).
+ * Creator Catalog series Save promotion boundary — does not touch reel bindings.
+ *
+ * @param {string} seriesId
+ * @returns {Promise<{ ok: boolean; reason?: string; error?: string }>}
+ */
+export async function persistSeriesRowToApi(seriesId) {
+    const sid = String(seriesId || '').trim();
+    if (!sid) {
+        return { ok: false, reason: 'missing-series-id' };
+    }
+
+    try {
+        const available = await isSeriesApiAvailable();
+        if (!available) {
+            logSeriesApiWrite({ source: 'fallback', seriesId: sid, reason: 'api-unavailable' });
+            return { ok: false, reason: 'api-unavailable' };
+        }
+        if (!getAdminToken()) {
+            logSeriesApiWrite({ source: 'fallback', seriesId: sid, reason: 'missing_authorization' });
+            return { ok: false, reason: 'missing_authorization' };
+        }
+
+        const series = getSeriesById(sid);
+        if (!series) {
+            return { ok: false, reason: 'series-not-found' };
+        }
+
+        const payload = seriesToApiRowPayload(series);
+        if (!String(payload.title || '').trim()) {
+            return { ok: false, reason: 'empty-title' };
+        }
+
+        await updateSeries(sid, payload);
+        seriesPersistenceMode.set('api');
+        cacheSeriesCatalogOffline(get(seriesCatalog), get(reelSeriesMetadata));
+        logSeriesApiWrite({ seriesId: sid, source: 'series-row-save' });
+        return { ok: true };
+    } catch (err) {
+        const message = String(err?.message || err || 'api-save-failed');
+        logSeriesApiWrite({ source: 'fallback', seriesId: sid, reason: message });
+        return { ok: false, reason: 'api-save-failed', error: message };
+    }
 }
 
 /**
