@@ -23,7 +23,18 @@ export function normalizeAccessMode(value) {
     const raw = String(value || '')
         .trim()
         .toLowerCase();
-    if (raw === 'paid' || raw === 'pay' || raw === 'premium' || raw === 'locked') return 'paid';
+    if (
+        raw === 'paid' ||
+        raw === 'pay' ||
+        raw === 'premium' ||
+        raw === 'locked' ||
+        raw === 'episode_lock' ||
+        raw === 'season_pass' ||
+        raw === 'vip' ||
+        raw === 'subscription'
+    ) {
+        return 'paid';
+    }
     return 'free';
 }
 
@@ -96,7 +107,18 @@ export function readVaultEpisodeAccess(asset) {
         asset.accessMode ??
         asset.access_mode ??
         boolFree;
-    const priceRaw = nested?.price ?? asset.price ?? asset.episodePrice ?? '';
+    const priceRaw =
+        nested?.price ??
+        asset.price ??
+        asset.episodePrice ??
+        asset.episode_price ??
+        asset.vipPrice ??
+        asset.vip_price ??
+        asset.seasonPrice ??
+        asset.season_price ??
+        asset.subscriptionPrice ??
+        asset.subscription_price ??
+        '';
     const hasExplicit =
         Boolean(String(modeRaw || '').trim()) ||
         Boolean(String(priceRaw || '').trim()) ||

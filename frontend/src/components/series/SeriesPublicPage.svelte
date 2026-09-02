@@ -56,6 +56,14 @@
   import { isVideoReel } from '../../lib/api/reelContract.js';
   import { resolveTheaterPlayback } from '../../lib/media/theaterPlayback.js';
   import {
+    subscribeViewerPaidAccessEntitlement,
+    resolveViewerSubscriptionUrl,
+    openViewerSubscriptionCheckout,
+    consumeViewerCheckoutFailureReason,
+    VIEWER_CHECKOUT_FAILURE_REASONS
+  } from '../../lib/series/viewerAccessEntitlement.js';
+  import { resolveEpisodeAccessPricing } from '../../lib/series/episodeAccessPricing.js';
+  import {
     watchSessionStart,
     watchOnProgress,
     watchOnPlay,
@@ -84,6 +92,9 @@
   let selectedEpisodeId = '';
   let playNotice = '';
   let bootstrapped = false;
+  let hasAccessEntitlement = false;
+  let subscriptionUrl = '';
+  let pendingLockedEpisode = null;
   /** True while vault inference + binding restore runs on cold load. */
   let hydrating = true;
 
@@ -362,6 +373,30 @@
       playNotice = 'This episode is not available to viewers yet.';
       return;
     }
+    const access = resolveEpisodeAccessPricing({
+      episode: ctx.episode,
+      mediaAssetId: String(ctx.episode?.mediaAssetId || ''),
+      reelId: String(ctx.episode?.reelId || '')
+    });
+    if (access.mode !== 'free' && !hasAccessEntitlement) {
+      const episodeNumber = Number(ctx.episode?.episodeNumber);
+      const episodeLine =
+        Number.isFinite(episodeNumber) && episodeNumber > 0
+          ? `Episode ${episodeNumber}`
+          : 'This episode';
+      const gateLine = access.badgeLabel
+        ? `${episodeLine} is ${access.badgeLabel}.`
+        : `${episodeLine} requires paid access.`;
+      playNotice = `${gateLine} Pay or subscribe to continue watching.`;
+      pendingLockedEpisode = {
+        episodeId: String(ctx.episode?.episodeId || episodeId),
+        reelId: String(ctx.episode?.reelId || ctx.episode?.mediaAssetId || ''),
+        episodeNumber: Number.isFinite(episodeNumber) ? episodeNumber : undefined,
+        mode: access.mode,
+        price: access.price
+      };
+      return;
+    }
 
     refreshHeroVaultAssets();
     // Manual binding override → keyword resolve (unchanged algorithm) → unavailable.
@@ -416,6 +451,53 @@
     playEpisode(event.detail.episodeId, 'drawer');
   }
 
+  /** @param {CustomEvent<Record<string, unknown>>} event */
+  function handleEpisodeLocked(event) {
+    const lockedEpisodeId = String(
+      event.detail?.episodeId ||
+        event.detail?.id ||
+        selectedEpisodeId ||
+        ''
+    ).trim();
+    const episodeNumber = Number(event.detail?.episodeNumber);
+    const badgeLabel = String(event.detail?.badgeLabel || '').trim();
+    const episodeLine = Number.isFinite(episodeNumber) && episodeNumber > 0 ? `Episode ${episodeNumber}` : 'This episode';
+    const gateLine = badgeLabel ? `${episodeLine} is ${badgeLabel}.` : `${episodeLine} requires paid access.`;
+    playNotice = `${gateLine} Pay or subscribe to continue watching.`;
+    pendingLockedEpisode = {
+      episodeId: lockedEpisodeId,
+      reelId: String(event.detail?.reelId || event.detail?.mediaAssetId || ''),
+      episodeNumber: Number.isFinite(episodeNumber) ? episodeNumber : undefined,
+      mode: String(event.detail?.accessMode || 'paid'),
+      price: String(event.detail?.price || '')
+    };
+  }
+
+  function resolveCheckoutFailureMessage() {
+    const reason = consumeViewerCheckoutFailureReason();
+    if (reason === VIEWER_CHECKOUT_FAILURE_REASONS.UNAUTHENTICATED) {
+      return 'Payment unavailable right now. Sign in and try again.';
+    }
+    if (reason === VIEWER_CHECKOUT_FAILURE_REASONS.MISSING_EPISODE) {
+      return 'Payment unavailable for this episode right now. Select the locked episode again and retry.';
+    }
+    return 'Payment unavailable right now. Please try again.';
+  }
+
+  async function openSubscriptionFlow() {
+    const opened = await openViewerSubscriptionCheckout({
+      source: 'series_public_lock',
+      episodeId: pendingLockedEpisode?.episodeId,
+      reelId: pendingLockedEpisode?.reelId,
+      episodeNumber: pendingLockedEpisode?.episodeNumber,
+      mode: pendingLockedEpisode?.mode,
+      price: pendingLockedEpisode?.price
+    });
+    if (!opened) {
+      playNotice = resolveCheckoutFailureMessage();
+    }
+  }
+
   function playFirstAvailable() {
     if (!firstPlayable) {
       playNotice = 'No playable episodes in this series yet.';
@@ -425,6 +507,12 @@
   }
 
   onMount(() => {
+    const stopEntitlement = subscribeViewerPaidAccessEntitlement((next) => {
+      hasAccessEntitlement = Boolean(next);
+    });
+    if (typeof window !== 'undefined') {
+      window.addEventListener('reelforge:episode-play-blocked', handleEpisodeLocked);
+    }
     initSeriesMetadata();
     hydrating = true;
     try {
@@ -460,6 +548,13 @@
         console.warn('[SeriesPublicPage] public /api/reels load failed', err);
       }
     })();
+    resolveViewerSubscriptionUrl()
+      .then((url) => {
+        subscriptionUrl = String(url || '').trim();
+      })
+      .catch(() => {
+        subscriptionUrl = '';
+      });
 
     hydrating = false;
 
@@ -492,6 +587,10 @@
     bootstrapped = true;
 
     return () => {
+      stopEntitlement();
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('reelforge:episode-play-blocked', handleEpisodeLocked);
+      }
       theaterManager.close();
     };
   });
@@ -568,6 +667,13 @@
         </div>
         {#if playNotice}
           <p class="series-public__notice" role="status">{playNotice}</p>
+          {#if subscriptionUrl}
+            <button
+              type="button"
+              class="series-public__cta"
+              on:click={openSubscriptionFlow}
+            >Subscribe with Stripe</button>
+          {/if}
         {/if}
       </div>
     </section>
@@ -587,10 +693,12 @@
               heroVaultAssets={effectiveReadyAssets}
               seriesLabel={series.title || ''}
               viewerMode={true}
+              {hasAccessEntitlement}
               flat={sortedSeasons.length === 1}
               defaultExpanded={season.seasonNumber === (sortedSeasons[0]?.seasonNumber ?? 1)}
               bind:selectedEpisodeId
               on:episodeSelect={handleEpisodeSelect}
+              on:episodeLocked={handleEpisodeLocked}
             />
           {/each}
         </div>

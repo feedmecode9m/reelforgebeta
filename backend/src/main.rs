@@ -378,6 +378,18 @@ async fn main() -> std::io::Result<()> {
                         web::put().to(api::viewer_account::put_profile),
                     )
                     .route(
+                        "/payments/status",
+                        web::get().to(api::payments_api::payments_status),
+                    )
+                    .route(
+                        "/payments/checkout",
+                        web::post().to(api::payments_api::create_checkout),
+                    )
+                    .route(
+                        "/payments/webhook",
+                        web::post().to(api::payments_api::stripe_webhook),
+                    )
+                    .route(
                         "/viewer/history",
                         web::get().to(api::viewer_account::get_history),
                     )

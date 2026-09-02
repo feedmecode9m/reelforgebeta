@@ -56,6 +56,8 @@
      * @type {boolean}
      */
     export let viewerMode = true;
+    /** Whether paid/subscription episodes should unlock in viewer mode. */
+    export let hasAccessEntitlement = false;
 
     /**
      * Dock as landscape side panel (no full-screen modal).
@@ -283,16 +285,41 @@
           shelfPosterSource
         : '';
 
+    /**
+     * @param {Record<string, unknown> | null | undefined} episode
+     * @returns {string}
+     */
+    function stableEpisodeIdFor(episode) {
+        return String(episode?.episodeId || episode?.id || '').trim();
+    }
+
     /** @param {CustomEvent<{ episodeId: string }>} event */
     function handleEpisodeSelect(event) {
-        selectedEpisodeId = event.detail.episodeId;
+        const selectedId = String(event.detail?.episodeId || event.detail?.id || '').trim();
+        selectedEpisodeId = selectedId;
         const episode = series?.seasons
             ?.flatMap((s) => s.episodes || [])
-            .find((e) => e.episodeId === event.detail.episodeId);
+            .find((e) => stableEpisodeIdFor(e) === selectedId);
         dispatch('episodeSelect', {
             ...event.detail,
+            episodeId: selectedId,
             reelId: episode?.reelId || event.detail.reelId || null,
             mediaAssetId: episode?.mediaAssetId || null
+        });
+    }
+
+    /** @param {CustomEvent<Record<string, unknown>>} event */
+    function handleEpisodeLocked(event) {
+        const lockedEpisodeId = String(
+            event.detail?.episodeId ||
+                event.detail?.id ||
+                selectedEpisodeId ||
+                ''
+        ).trim();
+        selectedEpisodeId = lockedEpisodeId;
+        dispatch('episodeLocked', {
+            ...event.detail,
+            episodeId: lockedEpisodeId
         });
     }
 
@@ -487,9 +514,11 @@
                                 seriesLabel={viewerSeriesTitle}
                                 familyItems={editorialFamilyItems}
                                 viewerMode={true}
+                                {hasAccessEntitlement}
                                 flat={flatViewerShelf}
                                 titleEpoch={titleEpoch}
                                 on:episodeSelect={handleEpisodeSelect}
+                                on:episodeLocked={handleEpisodeLocked}
                             />
                         {/each}
                     </div>

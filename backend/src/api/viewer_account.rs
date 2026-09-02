@@ -121,6 +121,44 @@ fn default_avatar_from_email(email: &str) -> String {
         .unwrap_or_else(|| "V".to_string())
 }
 
+const PROTECTED_SETTINGS_KEYS: &[&str] = &[
+    "hasPaidAccess",
+    "hasSubscription",
+    "subscriptionActive",
+    "subscriptionStatus",
+    "subscriptionState",
+    "stripeStatus",
+    "subscription",
+    "billing",
+    "stripe",
+];
+
+fn sanitize_user_settings_patch(
+    incoming: &serde_json::Value,
+    existing: &serde_json::Value,
+) -> serde_json::Value {
+    let mut next = if incoming.is_object() {
+        incoming.clone()
+    } else {
+        serde_json::json!({})
+    };
+    let Some(next_obj) = next.as_object_mut() else {
+        return serde_json::json!({});
+    };
+    for key in PROTECTED_SETTINGS_KEYS {
+        next_obj.remove(*key);
+    }
+
+    if let Some(existing_obj) = existing.as_object() {
+        for key in PROTECTED_SETTINGS_KEYS {
+            if let Some(value) = existing_obj.get(*key) {
+                next_obj.insert((*key).to_string(), value.clone());
+            }
+        }
+    }
+    next
+}
+
 /// GET /api/account/profile
 pub async fn get_profile(
     req: HttpRequest,
@@ -200,11 +238,11 @@ pub async fn put_profile(
         existing.avatar_placeholder.clone()
     };
 
-    let settings = body
-        .settings
-        .clone()
-        .filter(|v| v.is_object())
-        .unwrap_or(existing.settings.clone());
+    let settings = if let Some(ref candidate) = body.settings {
+        sanitize_user_settings_patch(candidate, &existing.settings)
+    } else {
+        existing.settings.clone()
+    };
 
     let updated = sqlx::query(
         r#"
@@ -704,5 +742,32 @@ mod tests {
     fn complete_ratio_threshold() {
         assert!((10.0 / 11.0) >= COMPLETE_RATIO);
         assert!((8.0 / 10.0) < COMPLETE_RATIO);
+    }
+
+    #[test]
+    fn user_settings_patch_cannot_override_billing_entitlement_fields() {
+        let existing = serde_json::json!({
+            "theme": "dark",
+            "hasPaidAccess": true,
+            "billing": { "subscriptionActive": true, "subscriptionStatus": "active" },
+            "stripe": { "customerId": "cus_123", "subscriptionStatus": "active" }
+        });
+        let incoming = serde_json::json!({
+            "theme": "light",
+            "hasPaidAccess": false,
+            "billing": { "subscriptionActive": false },
+            "stripe": { "customerId": "cus_attacker" }
+        });
+        let merged = sanitize_user_settings_patch(&incoming, &existing);
+        assert_eq!(merged.get("theme").and_then(|v| v.as_str()), Some("light"));
+        assert_eq!(merged.get("hasPaidAccess").and_then(|v| v.as_bool()), Some(true));
+        assert_eq!(
+            merged.get("billing").and_then(|v| v.get("subscriptionActive")).and_then(|v| v.as_bool()),
+            Some(true)
+        );
+        assert_eq!(
+            merged.get("stripe").and_then(|v| v.get("customerId")).and_then(|v| v.as_str()),
+            Some("cus_123")
+        );
     }
 }

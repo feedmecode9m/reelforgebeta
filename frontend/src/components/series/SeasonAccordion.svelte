@@ -37,6 +37,8 @@
      * @type {boolean}
      */
     export let viewerMode = false;
+    /** Whether paid/subscription episodes are unlocked for this viewer session. */
+    export let hasAccessEntitlement = false;
 
     /**
      * Flat shelf: no accordion shell (single-season viewer lists).
@@ -92,8 +94,10 @@
             price: access.price
         };
     });
-    $: viewerRenderableRows = viewerRows.filter((row) => row.playable);
-    $: viewerEpisodes = viewerRenderableRows.map((row) => row.episode);
+    // Desktop parity: render the full season catalog in viewer mode.
+    // Per-row playability/locking is handled inside EpisodeChip.
+    $: viewerRenderableRows = viewerRows;
+    $: viewerEpisodes = viewerRows.map((row) => row.episode);
     $: seasonLabel = season?.title || `Season ${season?.seasonNumber ?? 1}`;
     $: episodeCount = viewerMode ? viewerEpisodes.length : sortedEpisodes.length;
     $: effectiveSeriesLabel = String(seriesLabel || '').trim();
@@ -137,6 +141,15 @@
         ).trim();
     }
 
+    /**
+     * Stable episode identifier used across lock/select event propagation.
+     * @param {import('../../lib/series/seriesTypes.js').Episode} episode
+     * @returns {string}
+     */
+    function stableEpisodeIdFor(episode) {
+        return String(episode?.episodeId || episode?.id || '').trim();
+    }
+
     function toggleExpanded() {
         if (flat) return;
         expanded = !expanded;
@@ -148,6 +161,11 @@
         dispatch('episodeSelect', { seriesId, seasonNumber: season.seasonNumber, ...event.detail });
     }
 
+    /** @param {CustomEvent<Record<string, unknown>>} event */
+    function handleEpisodeLocked(event) {
+        dispatch('episodeLocked', { seriesId, seasonNumber: season.seasonNumber, ...event.detail });
+    }
+
     /**
      * Active rail state: selected id may be catalog episode id, vault media id, or reel id.
      * @param {import('../../lib/series/seriesTypes.js').Episode} episode
@@ -155,7 +173,7 @@
     function isEpisodeSelected(episode) {
         const sel = String(selectedEpisodeId || '').trim();
         if (!sel) return false;
-        const candidates = [episode.episodeId, episode.mediaAssetId, episode.reelId]
+        const candidates = [episode.episodeId, episode.id, episode.mediaAssetId, episode.reelId]
             .map((v) => String(v || '').trim())
             .filter(Boolean);
         return candidates.includes(sel);
@@ -176,7 +194,7 @@
                         effectiveSeriesLabel}
                     familyItems={familyItems}
                     viewerMode={true}
-                    episodeId={row.episode.episodeId}
+                    episodeId={stableEpisodeIdFor(row.episode)}
                     status={row.episode.status}
                     mediaAssetId={row.chip.mediaAssetId || null}
                     thumbnailUrl={row.posterUrl}
@@ -187,8 +205,10 @@
                     vaultAsset={row.vaultAsset}
                     accessMode={row.accessMode}
                     price={row.price}
+                    {hasAccessEntitlement}
                     selected={isEpisodeSelected(row.episode)}
                     on:select={handleEpisodeSelect}
+                    on:locked={handleEpisodeLocked}
                 />
             </div>
         {/each}
@@ -224,7 +244,7 @@
                             effectiveSeriesLabel}
                         familyItems={familyItems}
                         viewerMode={true}
-                        episodeId={row.episode.episodeId}
+                        episodeId={stableEpisodeIdFor(row.episode)}
                         status={row.episode.status}
                         mediaAssetId={row.chip.mediaAssetId || null}
                         thumbnailUrl={row.posterUrl}
@@ -235,8 +255,10 @@
                         vaultAsset={row.vaultAsset}
                         accessMode={row.accessMode}
                         price={row.price}
+                        {hasAccessEntitlement}
                         selected={isEpisodeSelected(row.episode)}
                         on:select={handleEpisodeSelect}
+                        on:locked={handleEpisodeLocked}
                     />
                 {/each}
             </div>
@@ -269,7 +291,7 @@
                         seriesLabel={/** @type {{ seriesLabel?: string }} */ (episode).seriesLabel ||
                             effectiveSeriesLabel}
                         viewerMode={false}
-                        episodeId={episode.episodeId}
+                        episodeId={stableEpisodeIdFor(episode)}
                         status={episode.status}
                         mediaAssetId={chip.mediaAssetId || episode.mediaAssetId || episode.reelId || null}
                         thumbnailUrl={posterForChip(episode, chip)}

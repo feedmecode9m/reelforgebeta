@@ -388,6 +388,7 @@ fn is_public_mutating_route(method: &Method, path: &str) -> bool {
         "/api/watch/event"
             | "/api/analytics"
             | "/api/security/events"
+            | "/api/payments/webhook"
             | "/api/dev/client-log"
             | "/api/debug/mobile-trace"
     )
@@ -395,7 +396,9 @@ fn is_public_mutating_route(method: &Method, path: &str) -> bool {
 
 /// VIEWER-1 personalization: any authenticated account (viewer or admin user session).
 fn is_viewer_self_service_path(path: &str) -> bool {
-    path.starts_with("/api/viewer/") || path.starts_with("/api/account/")
+    path.starts_with("/api/viewer/")
+        || path.starts_with("/api/account/")
+        || path.starts_with("/api/payments/")
 }
 
 /// Minimum role required for a mutating `/api/*` path.
@@ -621,6 +624,10 @@ mod tests {
             mutating_route_required_role(&Method::POST, "/api/auth/register"),
             None
         );
+        assert_eq!(
+            mutating_route_required_role(&Method::POST, "/api/payments/webhook"),
+            None
+        );
     }
 
     #[test]
@@ -688,6 +695,10 @@ mod tests {
         );
         assert_eq!(
             mutating_route_required_role(&Method::POST, "/api/viewer/watchlist"),
+            Some(UserRole::Viewer)
+        );
+        assert_eq!(
+            mutating_route_required_role(&Method::POST, "/api/payments/checkout"),
             Some(UserRole::Viewer)
         );
         assert_eq!(

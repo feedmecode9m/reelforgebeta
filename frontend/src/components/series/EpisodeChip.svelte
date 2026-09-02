@@ -104,6 +104,8 @@
 
     /** @type {string} */
     export let price = '';
+    /** Viewer entitlement: true when paid/subscription content should unlock. */
+    export let hasAccessEntitlement = false;
 
     $: code = `S${seasonNumber}:E${episodeNumber}`;
     $: epPad = String(Math.max(0, episodeNumber || 0)).padStart(2, '0');
@@ -221,10 +223,13 @@
         ? String(laGuide?.description || vaultViewerDescription || '').trim()
         : vaultViewerDescription;
 
-    /** Playability comes from parent presentation. */
-    $: isPlayable = playable === true || (playable === undefined && Boolean(mediaAssetId));
+    /** Base playability from parent presentation/media bind. */
+    $: hasPlayableMedia = playable === true || (playable === undefined && Boolean(mediaAssetId));
+    $: paywalled = viewerMode && hasPlayableMedia && accessPricing.mode === 'paid' && !hasAccessEntitlement;
+    /** Final playability after access gating. */
+    $: isPlayable = hasPlayableMedia && !paywalled;
     $: readyBound = isPlayable && Boolean(mediaAssetId && String(mediaAssetId).trim());
-    $: showUnavailable = !isPlayable;
+    $: showUnavailable = !hasPlayableMedia;
     /**
      * Final <img> URL through the same media/backend resolver as MediaRenderer/Theater posters.
      * Never use an MP4/playback URL as poster (blank on iOS All Episodes).
@@ -288,16 +293,31 @@
     data-match-tier={viewerMode ? undefined : matchTier || undefined}
     data-binding-label={viewerMode ? undefined : displayBindingLabel || undefined}
     data-viewer-mode={viewerMode ? 'true' : undefined}
+    data-access-gated={paywalled ? 'true' : undefined}
     data-active={selected ? 'true' : undefined}
     data-testid={episodeId ? `episode-chip-${episodeId}` : undefined}
     aria-pressed={selected}
-    aria-disabled={!isPlayable}
-    disabled={!isPlayable}
+    aria-disabled={showUnavailable || paywalled}
+    disabled={showUnavailable}
     aria-label={viewerMode
-        ? `${viewerIdentityLine || 'Episode'}${displayTitle ? ` — ${displayTitle}` : ''}${selected ? ' — now playing' : readyBound ? ' — play' : ' — unavailable'}`
+        ? `${viewerIdentityLine || 'Episode'}${displayTitle ? ` — ${displayTitle}` : ''}${selected ? ' — now playing' : paywalled ? ' — locked, subscribe to watch' : readyBound ? ' — play' : ' — unavailable'}`
         : `${code} ${title} — ${displayBindingLabel}${readyBound ? ' — Enter Theater' : ''}`}
     on:click={() => {
-        if (!isPlayable) return;
+        if (showUnavailable) return;
+        if (paywalled) {
+            dispatch('locked', {
+                episodeId,
+                reelId: mediaAssetId || null,
+                seasonNumber,
+                episodeNumber,
+                title: displayTitle || title,
+                mediaAssetId,
+                accessMode: accessPricing.mode,
+                price: accessPricing.price,
+                badgeLabel: accessPricing.badgeLabel
+            });
+            return;
+        }
         dispatch('select', {
             episodeId,
             seasonNumber,
@@ -360,6 +380,13 @@
             {#if isPlayable}
                 <span class="episode-card__play" aria-hidden="true">
                     <span class="episode-card__play-icon"></span>
+                </span>
+            {:else if paywalled}
+                <span class="episode-card__play episode-card__play--locked" aria-hidden="true">🔒</span>
+            {/if}
+            {#if paywalled}
+                <span class="episode-card__lock-note">
+                    {accessPricing.price ? `Unlock for $${accessPricing.price} or subscribe` : 'Subscribe to watch'}
                 </span>
             {/if}
         </div>
@@ -523,6 +550,10 @@
     .episode-chip.viewer.selected.ready {
         border-color: rgba(255, 255, 255, 0.28);
     }
+    .episode-chip.viewer[data-access-gated='true'] {
+        border-color: rgba(244, 241, 234, 0.26);
+        background: rgba(255, 255, 255, 0.04);
+    }
     .episode-card {
         display: grid;
         grid-template-columns: 5.6rem minmax(0, 1fr) 2.75rem;
@@ -665,6 +696,20 @@
         border-style: solid;
         border-width: 0.42rem 0 0.42rem 0.7rem;
         border-color: transparent transparent transparent #0a0a0a;
+    }
+    .episode-card__play--locked {
+        font-size: 1rem;
+        background: rgba(0, 0, 0, 0.45);
+        color: rgba(255, 255, 255, 0.82);
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+    }
+    .episode-card__lock-note {
+        grid-column: 2 / -1;
+        margin-top: 0.1rem;
+        font-size: 0.65rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: rgba(244, 241, 234, 0.72);
     }
     .episode-chip.viewer:hover:not(:disabled) .episode-card__play {
         filter: brightness(1.08);

@@ -13,6 +13,7 @@ pub mod watch_events;
 pub mod security_events;
 pub mod revenue;
 pub mod workflow;
+pub mod payments;
 
 use sqlx::PgPool;
 
@@ -92,6 +93,12 @@ pub fn revenue_api_enabled() -> bool {
     std::env::var("REELFORGE_REVENUE_API")
         .map(|v| v != "0" && !v.eq_ignore_ascii_case("false"))
         .unwrap_or(true)
+}
+
+pub fn payments_api_enabled() -> bool {
+    std::env::var("REELFORGE_PAYMENTS_API")
+        .map(|v| v == "1" || v.eq_ignore_ascii_case("true"))
+        .unwrap_or(false)
 }
 
 pub fn pipeline_api_enabled() -> bool {

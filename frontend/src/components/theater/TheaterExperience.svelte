@@ -493,6 +493,14 @@
         detectMobilePresentation,
         subscribeMobilePresentation
     } from '../../lib/device/mobilePresentation.js';
+    import {
+        subscribeViewerPaidAccessEntitlement,
+        resolveViewerSubscriptionUrl,
+        openViewerSubscriptionCheckout,
+        consumeViewerCheckoutFailureReason,
+        VIEWER_CHECKOUT_FAILURE_REASONS
+    } from '../../lib/series/viewerAccessEntitlement.js';
+    import { resolveEpisodeAccessPricing } from '../../lib/series/episodeAccessPricing.js';
 
     /** @type {import('svelte/store').Readable<unknown[]>} */
     export let personalVideos;
@@ -512,6 +520,9 @@
     let seriesDrawerOpen = false;
     let selectedSeriesEpisodeId = '';
     let episodeNavNotice = '';
+    let hasAccessEntitlement = false;
+    let subscriptionUrl = '';
+    let pendingLockedEpisode = null;
     /** Homepage Learn More asked for All Episodes; Watch Now must not auto-dock the rail. */
     let heroCtaPendingEpisodes = false;
     let heroCtaSuppressAutoOpen = false;
@@ -890,11 +901,31 @@
 
     onMount(() => {
         syncMobileTheaterFlag('mount');
+        const stopEntitlement = subscribeViewerPaidAccessEntitlement((next) => {
+            hasAccessEntitlement = Boolean(next);
+        });
+        resolveViewerSubscriptionUrl()
+            .then((url) => {
+                subscriptionUrl = String(url || '').trim();
+            })
+            .catch(() => {
+                subscriptionUrl = '';
+            });
+        const stopMobilePresentation = subscribeMobilePresentation(() =>
+            syncMobileTheaterFlag('viewport_change')
+        );
         if (typeof window !== 'undefined') {
             window.addEventListener('reelforge:hero-watch-now', onHeroWatchNowCta);
             window.addEventListener('reelforge:hero-learn-more', onHeroLearnMoreCta);
+            window.addEventListener('reelforge:episode-play-blocked', handleSeriesEpisodeLocked);
         }
-        return subscribeMobilePresentation(() => syncMobileTheaterFlag('viewport_change'));
+        return () => {
+            stopEntitlement();
+            stopMobilePresentation();
+            if (typeof window !== 'undefined') {
+                window.removeEventListener('reelforge:episode-play-blocked', handleSeriesEpisodeLocked);
+            }
+        };
     });
     onDestroy(() => {
         if (mobileControlsHideTimer != null) clearTimeout(mobileControlsHideTimer);
@@ -1047,6 +1078,40 @@
         const episodeId = event.detail.episodeId;
         selectedSeriesEpisodeId = episodeId;
         const detailReelId = event.detail?.reelId ? String(event.detail.reelId) : '';
+        const fromView = drawerSeriesView?.seasons
+            ?.flatMap((s) => s.episodes || [])
+            .find((e) => e.episodeId === episodeId);
+        const access = resolveEpisodeAccessPricing({
+            episode:
+                fromView ||
+                ({
+                    episodeNumber: event.detail?.episodeNumber,
+                    accessMode: event.detail?.accessMode
+                }),
+            mediaAssetId: String(event.detail?.mediaAssetId || fromView?.mediaAssetId || ''),
+            reelId: detailReelId || String(fromView?.reelId || '')
+        });
+        if (access.mode !== 'free' && !hasAccessEntitlement) {
+            const episodeNumber = Number(fromView?.episodeNumber ?? event.detail?.episodeNumber);
+            const episodeLine =
+                Number.isFinite(episodeNumber) && episodeNumber > 0
+                    ? `Episode ${episodeNumber}`
+                    : 'This episode';
+            const gateLine = access.badgeLabel
+                ? `${episodeLine} is ${access.badgeLabel}.`
+                : `${episodeLine} requires paid access.`;
+            episodeNavNotice = `${gateLine} Pay or subscribe to continue.`;
+            pendingLockedEpisode = {
+                episodeId: String(episodeId || ''),
+                reelId: String(
+                    detailReelId || event.detail?.mediaAssetId || fromView?.mediaAssetId || fromView?.reelId || ''
+                ),
+                episodeNumber: Number.isFinite(episodeNumber) ? episodeNumber : undefined,
+                mode: access.mode,
+                price: access.price
+            };
+            return;
+        }
         console.info('[THEATER_EPISODE_LOAD]', {
             seriesId: drawerSeriesId || seriesId || relatedEpisodes?.seriesId || null,
             episodeId,
@@ -1069,9 +1134,6 @@
                 m.reelId === detailReelId ||
                 m.assetId === String(event.detail?.mediaAssetId || '')
         );
-        const fromView = drawerSeriesView?.seasons
-            ?.flatMap((s) => s.episodes || [])
-            .find((e) => e.episodeId === episodeId);
         const reelId =
             detailReelId ||
             (event.detail?.mediaAssetId ? String(event.detail.mediaAssetId) : '') ||
@@ -1086,7 +1148,29 @@
             );
             const candidate = fromVault || fromReady || (member?.url || member?.playbackUrl ? member : null);
             if (candidate && typeof openTheaterReel === 'function') {
-                openTheaterReel(candidate);
+                const candidateWithAccess = {
+                    ...candidate,
+                    episodeId: String(episodeId || candidate?.episodeId || ''),
+                    episodeNumber:
+                        Number(fromView?.episodeNumber ?? member?.episodeNumber ?? event.detail?.episodeNumber) ||
+                        candidate?.episodeNumber ||
+                        null,
+                    accessMode:
+                        member?.accessMode ||
+                        fromView?.accessMode ||
+                        event.detail?.accessMode ||
+                        candidate?.accessMode ||
+                        null,
+                    price:
+                        member?.price ||
+                        fromView?.price ||
+                        event.detail?.price ||
+                        candidate?.price ||
+                        '',
+                    mediaAssetId:
+                        String(event.detail?.mediaAssetId || fromView?.mediaAssetId || candidate?.mediaAssetId || reelId)
+                };
+                openTheaterReel(candidateWithAccess);
                 seriesDrawerOpen = false;
                 episodeNavNotice = '';
                 return;
@@ -1098,6 +1182,56 @@
     function openSeriesDrawer() {
         seriesDrawerOpen = true;
         episodeNavNotice = '';
+    }
+
+    /** @param {CustomEvent<Record<string, unknown>>} event */
+    function handleSeriesEpisodeLocked(event) {
+        const lockedEpisodeId = String(
+            event.detail?.episodeId ||
+                event.detail?.id ||
+                selectedSeriesEpisodeId ||
+                ''
+        ).trim();
+        const episodeNumber = Number(event.detail?.episodeNumber);
+        const badgeLabel = String(event.detail?.badgeLabel || '').trim();
+        const episodeLine =
+            Number.isFinite(episodeNumber) && episodeNumber > 0
+                ? `Episode ${episodeNumber}`
+                : 'This episode';
+        const gateLine = badgeLabel ? `${episodeLine} is ${badgeLabel}.` : `${episodeLine} requires paid access.`;
+        episodeNavNotice = `${gateLine} Pay or subscribe to continue.`;
+        pendingLockedEpisode = {
+            episodeId: lockedEpisodeId,
+            reelId: String(event.detail?.reelId || event.detail?.mediaAssetId || ''),
+            episodeNumber: Number.isFinite(episodeNumber) ? episodeNumber : undefined,
+            mode: String(event.detail?.accessMode || 'paid'),
+            price: String(event.detail?.price || '')
+        };
+    }
+
+    function resolveCheckoutFailureMessage() {
+        const reason = consumeViewerCheckoutFailureReason();
+        if (reason === VIEWER_CHECKOUT_FAILURE_REASONS.UNAUTHENTICATED) {
+            return 'Payment unavailable right now. Sign in and try again.';
+        }
+        if (reason === VIEWER_CHECKOUT_FAILURE_REASONS.MISSING_EPISODE) {
+            return 'Payment unavailable for this episode right now. Select the locked episode again and retry.';
+        }
+        return 'Payment unavailable right now. Please try again.';
+    }
+
+    async function openTheaterSubscriptionFlow() {
+        const opened = await openViewerSubscriptionCheckout({
+            source: 'theater_episode_lock',
+            episodeId: pendingLockedEpisode?.episodeId,
+            reelId: pendingLockedEpisode?.reelId,
+            episodeNumber: pendingLockedEpisode?.episodeNumber,
+            mode: pendingLockedEpisode?.mode,
+            price: pendingLockedEpisode?.price
+        });
+        if (!opened) {
+            episodeNavNotice = resolveCheckoutFailureMessage();
+        }
     }
 
     $: theaterPlayback =
@@ -1496,7 +1630,25 @@
             <button class="theater-close-btn-bottom" on:click={(e) => { e.stopPropagation(); theaterManager.close(); }}>✕ CLOSE THEATER (ESC)</button>
             {/if}
             {#if episodeNavNotice}
-                <p class="theater-episode-nav-notice" role="status">{episodeNavNotice}</p>
+                <div class="theater-episode-nav-notice" role="status">
+                    <p>{episodeNavNotice}</p>
+                    {#if subscriptionUrl}
+                        <div class="theater-payment-actions">
+                            <button
+                                type="button"
+                                class="theater-payment-btn"
+                                on:click|stopPropagation={openTheaterSubscriptionFlow}
+                            >PAY WITH STRIPE</button>
+                            <button
+                                type="button"
+                                class="theater-payment-btn theater-payment-btn--quiet"
+                                on:click|stopPropagation={() => {
+                                    episodeNavNotice = '';
+                                }}
+                            >Not now</button>
+                        </div>
+                    {/if}
+                </div>
             {/if}
         </div>
         {#if hasSeriesDrawer}
@@ -1508,8 +1660,10 @@
                 readyAssets={relatedReadyAssets}
                 selectedEpisodeId={selectedSeriesEpisodeId}
                 viewerMode={true}
+                {hasAccessEntitlement}
                 docked={seriesDrawerDocked}
                 on:episodeSelect={handleSeriesEpisodeSelect}
+                on:episodeLocked={handleSeriesEpisodeLocked}
             />
         {/if}
     </div>
@@ -1921,6 +2075,34 @@
         color: #fbbf24;
         background: rgba(251, 191, 36, 0.1);
         border: 1px solid rgba(251, 191, 36, 0.35);
+    }
+    .theater-episode-nav-notice p {
+        margin: 0;
+    }
+    .theater-payment-actions {
+        margin-top: 0.65rem;
+        display: flex;
+        gap: 0.45rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    .theater-payment-btn {
+        border: 1px solid rgba(247, 207, 74, 0.55);
+        border-radius: 999px;
+        background: rgba(247, 207, 74, 0.18);
+        color: #fff7db;
+        font-size: 0.66rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 0.35rem 0.7rem;
+        cursor: pointer;
+    }
+    .theater-payment-btn--quiet {
+        border-color: rgba(255, 255, 255, 0.25);
+        background: transparent;
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 500;
     }
     .theater-debug-overlay {
         position: fixed;

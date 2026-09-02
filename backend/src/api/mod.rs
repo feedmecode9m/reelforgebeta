@@ -18,3 +18,4 @@ pub mod watch;
 pub mod viewer_account;
 pub mod security_api;
 pub mod workflow_api;
+pub mod payments_api;
