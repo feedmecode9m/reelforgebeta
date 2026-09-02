@@ -286,3 +286,25 @@ pub async fn delete_episode(pool: web::Data<PgPool>, path: web::Path<String>) ->
         })),
     }
 }
+
+pub async fn delete_series(pool: web::Data<PgPool>, path: web::Path<String>) -> HttpResponse {
+    if let Err(resp) = check_series_enabled() {
+        return resp;
+    }
+    let id = path.into_inner();
+    if id.trim().is_empty() {
+        return HttpResponse::BadRequest().json(serde_json::json!({
+            "error": "Series id is required"
+        }));
+    }
+
+    match db::series::delete_series(pool.get_ref(), &id).await {
+        Ok(true) => HttpResponse::Ok().json(serde_json::json!({ "deleted": true, "id": id })),
+        Ok(false) => HttpResponse::NotFound().json(serde_json::json!({
+            "error": "Series not found"
+        })),
+        Err(e) => HttpResponse::InternalServerError().json(serde_json::json!({
+            "error": e.to_string()
+        })),
+    }
+}

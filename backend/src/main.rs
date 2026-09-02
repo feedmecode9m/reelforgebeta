@@ -537,6 +537,10 @@ async fn main() -> std::io::Result<()> {
                         web::post().to(api::studio::attach_reel),
                     )
                     .route(
+                        "/studio/episodes/{id}/rebind-reel",
+                        web::post().to(api::studio::rebind_reel),
+                    )
+                    .route(
                         "/studio/backfill",
                         web::post().to(api::studio::backfill_hierarchy),
                     )
@@ -548,6 +552,7 @@ async fn main() -> std::io::Result<()> {
                     .route("/series", web::post().to(api::series_api::create_series))
                     .route("/series/{id}", web::get().to(api::series_api::get_series))
                     .route("/series/{id}", web::put().to(api::series_api::update_series))
+                    .route("/series/{id}", web::delete().to(api::series_api::delete_series))
                     .route(
                         "/series/{id}/seasons",
                         web::get().to(api::series_api::list_series_seasons),

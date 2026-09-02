@@ -887,6 +887,14 @@ pub async fn delete_episode(pool: &PgPool, id: &str) -> Result<bool, sqlx::Error
     Ok(result.rows_affected() > 0)
 }
 
+pub async fn delete_series(pool: &PgPool, id: &str) -> Result<bool, sqlx::Error> {
+    let result = sqlx::query("DELETE FROM series WHERE id = $1")
+        .bind(id)
+        .execute(pool)
+        .await?;
+    Ok(result.rows_affected() > 0)
+}
+
 #[cfg(test)]
 mod reel_id_patch_tests {
     use super::{resolve_reel_id_patch, UpdateEpisodeInput};
