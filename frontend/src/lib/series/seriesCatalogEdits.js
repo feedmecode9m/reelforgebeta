@@ -20,6 +20,7 @@ export const SERIES_CATALOG_EDITS_KEY = 'reelforge_series_catalog_edits';
  *   displayOrder?: number;
  *   title?: string;
  *   description?: string;
+ *   thumbnailUrl?: string;
  * }} EpisodeCatalogEdit
  */
 
@@ -263,6 +264,9 @@ export function applyEpisodeAuthorityFromEdit(episodes, edit, seasonMeta = {}) {
         }
         if (row.description != null) {
             next.description = String(row.description);
+        }
+        if (row.thumbnailUrl != null && String(row.thumbnailUrl).trim()) {
+            next.thumbnailUrl = String(row.thumbnailUrl).trim();
         }
         return next;
     });

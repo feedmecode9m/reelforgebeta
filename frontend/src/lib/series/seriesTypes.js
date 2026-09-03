@@ -18,6 +18,7 @@ export const EPISODE_STATUSES = /** @type {const} */ (['draft', 'ready', 'publis
  * @property {number} [runtime] - Duration in seconds
  * @property {EpisodeStatus} status
  * @property {string | null} [reelId] - Optional link to an existing feed/vault reel
+ * @property {string} [thumbnailUrl] - Canonical episode poster URL (API episodes.thumbnail_url)
  * @property {string | null} [thumbnailAssetId] - Hero Vault ready image/poster asset id
  * @property {string | null} [mediaAssetId] - Hero Vault ready playable media asset id
  * @property {string[]} [aliases] - Alternate titles for Hero Vault matching

@@ -20,8 +20,12 @@ import {
     fetchSeriesApiStatus,
     updateSeries,
     createSeries,
+    createEpisode,
+    updateEpisode,
     seriesToApiPayload,
     seriesToApiRowPayload,
+    episodeToApiRowPayload,
+    episodeToApiCreatePayload,
     apiSeriesToCatalog,
     catalogToReelMetadataMap,
     applyReelPatchToCatalog,
@@ -1323,7 +1327,7 @@ function syncReelMetadataFromCatalogEpisode(ctx) {
  * Updates title / description / status only; preserves episodeId, reelId, season membership.
  *
  * @param {string} episodeId
- * @param {{ title?: string; description?: string; status?: import('./seriesTypes.js').EpisodeStatus }} patch
+ * @param {{ title?: string; description?: string; status?: import('./seriesTypes.js').EpisodeStatus; thumbnailUrl?: string }} patch
  * @returns {{ series: Series; season: Season; episode: Episode } | null}
  */
 export function updateCatalogEpisode(episodeId, patch = {}) {
@@ -1349,6 +1353,11 @@ export function updateCatalogEpisode(episodeId, patch = {}) {
         if (fields.status === 'published') {
             fields.publishedAt = new Date().toISOString();
         }
+    }
+    if ('thumbnailUrl' in patch) {
+        const thumbnailUrl = String(patch.thumbnailUrl ?? '').trim();
+        if (!thumbnailUrl) return null;
+        fields.thumbnailUrl = thumbnailUrl;
     }
     if (Object.keys(fields).length === 0) {
         return existing;
@@ -1387,6 +1396,7 @@ export function updateCatalogEpisode(episodeId, patch = {}) {
     if (fields.status) durable.status = fields.status;
     if (fields.title) durable.title = fields.title;
     if ('description' in fields) durable.description = fields.description;
+    if (fields.thumbnailUrl) durable.thumbnailUrl = fields.thumbnailUrl;
     if (Object.keys(durable).length) {
         upsertEpisodeCatalogEdit(updated.series.id, id, durable);
     }
@@ -1405,6 +1415,58 @@ export function updateCatalogEpisode(episodeId, patch = {}) {
     });
 
     return updated;
+}
+
+/**
+ * Assign a Thumbnail Vault poster URL to a canonical episode and persist via API.
+ * Preserves episodeId and reelId; writes editorial thumbnailUrl only.
+ *
+ * @param {string} episodeId
+ * @param {string} thumbnailUrl
+ */
+export async function assignEpisodePoster(episodeId, thumbnailUrl) {
+    const eid = String(episodeId || '').trim();
+    const url = String(thumbnailUrl || '').trim();
+    if (!eid || !url) {
+        return { ok: false, reason: 'missing-episode-or-poster-url' };
+    }
+
+    const before = getEpisodeById(eid);
+    if (!before?.episode) {
+        return { ok: false, reason: 'episode-not-found' };
+    }
+
+    const updated = updateCatalogEpisode(eid, { thumbnailUrl: url });
+    if (!updated?.episode) {
+        return { ok: false, reason: 'catalog-update-failed' };
+    }
+
+    const persist = await persistEpisodeRowToApi(eid);
+    if (!persist.ok) {
+        console.warn('[EPISODE_POSTER_ASSIGN]', {
+            episodeId: eid,
+            thumbnailUrl: url,
+            reason: persist.reason || 'api-save-failed',
+            ts: new Date().toISOString()
+        });
+        return { ok: false, reason: persist.reason || 'api-save-failed' };
+    }
+
+    console.info('[EPISODE_POSTER_ASSIGN]', {
+        episodeId: eid,
+        seriesId: updated.series.id,
+        seasonNumber: updated.season.seasonNumber,
+        reelId: updated.episode.reelId || null,
+        thumbnailUrl: updated.episode.thumbnailUrl || url,
+        ts: new Date().toISOString()
+    });
+
+    return {
+        ok: true,
+        episodeId: eid,
+        reelId: before.episode.reelId || null,
+        thumbnailUrl: updated.episode.thumbnailUrl || url
+    };
 }
 
 /**
@@ -1694,6 +1756,56 @@ export async function persistSeriesRowToApi(seriesId) {
     } catch (err) {
         const message = String(err?.message || err || 'api-save-failed');
         logSeriesApiWrite({ source: 'fallback', seriesId: sid, reason: message });
+        return { ok: false, reason: 'api-save-failed', error: message };
+    }
+}
+
+export async function persistEpisodeRowToApi(episodeId) {
+    const eid = String(episodeId || '').trim();
+    if (!eid) {
+        return { ok: false, reason: 'missing-episode-id' };
+    }
+
+    try {
+        const available = await isSeriesApiAvailable();
+        if (!available) {
+            logSeriesApiWrite({ source: 'fallback', episodeId: eid, reason: 'api-unavailable' });
+            return { ok: false, reason: 'api-unavailable' };
+        }
+        if (!getAdminToken()) {
+            logSeriesApiWrite({ source: 'fallback', episodeId: eid, reason: 'missing_authorization' });
+            return { ok: false, reason: 'missing_authorization' };
+        }
+
+        const ctx = getEpisodeById(eid);
+        if (!ctx) {
+            return { ok: false, reason: 'episode-not-found' };
+        }
+
+        const payload = episodeToApiRowPayload(ctx);
+        if (!String(payload.title || '').trim()) {
+            return { ok: false, reason: 'empty-title' };
+        }
+
+        let result = await updateEpisode(eid, payload);
+        if (result?.disabled && String(result.error || '').toLowerCase().includes('episode not found')) {
+            const createBody = episodeToApiCreatePayload(ctx);
+            if (!createBody) {
+                return { ok: false, reason: 'invalid-create-payload' };
+            }
+            result = await createEpisode(createBody);
+        }
+        if (result?.disabled) {
+            return { ok: false, reason: result.error || 'api-disabled' };
+        }
+
+        seriesPersistenceMode.set('api');
+        cacheSeriesCatalogOffline(get(seriesCatalog), get(reelSeriesMetadata));
+        logSeriesApiWrite({ episodeId: eid, source: 'episode-row-save' });
+        return { ok: true };
+    } catch (err) {
+        const message = String(err?.message || err || 'api-save-failed');
+        logSeriesApiWrite({ source: 'fallback', episodeId: eid, reason: message });
         return { ok: false, reason: 'api-save-failed', error: message };
     }
 }

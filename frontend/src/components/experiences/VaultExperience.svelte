@@ -69,6 +69,7 @@
     applyTitleFieldsToRecord
   } from '../../lib/content/persistentTitleMap.js';
   import VaultEpisodeCreatorStatus from '../series/VaultEpisodeCreatorStatus.svelte';
+  import ThumbnailPosterAssignPanel from '../studio/ThumbnailPosterAssignPanel.svelte';
   import { validateVideoFile } from '../../lib/runtime-guards.js';
   import { API_BASE_URL, toRelativeMediaPath } from '../../lib/config.js';
   import {
@@ -266,6 +267,8 @@
   let deleteAuditLogged = false;
   let selectedThumbnailIds = [];
   let selectedVideoIds = [];
+  /** @type {Record<string, unknown> | null} */
+  let posterAssignEntry = null;
   let thumbnailCanonicalizationDone = false;
   /** @type {Record<string, number>} fileName → put percent */
   let vaultUploadPercents = {};
@@ -1067,6 +1070,18 @@
       action: wasSelected ? 'removed' : 'added',
       newCount: selectedThumbnailIds.length
     });
+  }
+
+  /**
+   * @param {unknown} entry
+   */
+  function openPosterAssign(entry) {
+    if (!entry || typeof entry !== 'object') return;
+    posterAssignEntry = /** @type {Record<string, unknown>} */ (entry);
+  }
+
+  function closePosterAssign() {
+    posterAssignEntry = null;
   }
 
   function toggleVideoSelection(videoId) {
@@ -3361,7 +3376,7 @@
     const target = /** @type {HTMLElement | null} */ (event?.target);
     if (
       target?.closest?.(
-        '.thumb-delete-btn, .batch-select-label, .batch-select-checkbox, .vault-card-actions, .vault-soft-remove-bar'
+        '.thumb-delete-btn, .thumb-assign-btn, .batch-select-label, .batch-select-checkbox, .vault-card-actions, .vault-soft-remove-bar'
       )
     ) {
       event.preventDefault();
@@ -3962,6 +3977,16 @@
           {/if}
           <button
             type="button"
+            class="thumb-assign-btn"
+            on:click|stopPropagation={() =>
+              openPosterAssign(typeof img === 'object' && img ? img : reel)}
+            data-action="assign-thumbnail-poster-open"
+            data-testid="thumbnail-poster-assign-open"
+          >
+            Assign
+          </button>
+          <button
+            type="button"
             class="thumb-delete-btn"
             on:click|stopPropagation={() => handleThumbnailRemove(i)}
             aria-label="Remove thumbnail {i + 1}"
@@ -3982,6 +4007,12 @@
       </div>
     {/each}
   </div>
+  <ThumbnailPosterAssignPanel
+    thumbnailEntry={posterAssignEntry}
+    {uploadStatus}
+    onClose={closePosterAssign}
+    onAssigned={closePosterAssign}
+  />
 </div>
 
 <div class="personal-media-grid"
@@ -4642,3 +4673,28 @@
     <p style="margin:2rem 0 0 0;color:#94a3b8;font-size:0.85rem;font-style:italic;">Upload your first reel to replace these demo cards.</p>
   </div>
 {/if}
+
+<style>
+  :global(.vault-grid-chrome .thumb-assign-btn) {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 40;
+    pointer-events: auto;
+    touch-action: manipulation;
+    padding: 0.2rem 0.45rem;
+    border: 1px solid rgba(0, 255, 200, 0.45);
+    border-radius: 6px;
+    background: rgba(8, 24, 32, 0.92);
+    color: rgba(0, 255, 200, 0.95);
+    font-size: 0.65rem;
+    font-weight: 600;
+    cursor: pointer;
+    line-height: 1.2;
+  }
+
+  :global(.vault-grid-chrome .thumb-assign-btn:hover) {
+    border-color: rgba(0, 255, 200, 0.85);
+    background: rgba(0, 255, 200, 0.12);
+  }
+</style>

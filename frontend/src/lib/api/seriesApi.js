@@ -301,6 +301,80 @@ export function seriesToApiRowPayload(series) {
 }
 
 /**
+ * Episode-row payload for PUT /api/episodes/:id — editorial metadata only.
+ * Omits reelId, seriesId, seasonNumber, and episodeNumber so bindings never drift.
+ *
+ * @param {{ series: Series; season: Season; episode: import('../series/seriesTypes.js').Episode } | null | undefined} ctx
+ */
+export function episodeToApiRowPayload(ctx) {
+    if (!ctx?.episode?.episodeId) {
+        return { title: '' };
+    }
+    const { episode } = ctx;
+    /** @type {Record<string, unknown>} */
+    const payload = {
+        title: String(episode.title || '').trim(),
+        description: String(episode.description ?? ''),
+        status: String(episode.status || 'draft')
+    };
+    if (episode.thumbnailUrl) {
+        payload.thumbnailUrl = String(episode.thumbnailUrl);
+    }
+    if (episode.genre) {
+        payload.genre = String(episode.genre);
+    }
+    if (Array.isArray(episode.tags) && episode.tags.length) {
+        payload.tags = episode.tags.map(String);
+    }
+    const runtimeSeconds = Number(episode.runtimeSeconds ?? episode.runtime);
+    if (Number.isFinite(runtimeSeconds)) {
+        payload.runtimeSeconds = runtimeSeconds;
+    }
+    return payload;
+}
+
+/**
+ * Create payload for POST /api/episodes when a local catalog row is not yet in Postgres.
+ *
+ * @param {{ series: Series; season: Season; episode: import('../series/seriesTypes.js').Episode } | null | undefined} ctx
+ */
+export function episodeToApiCreatePayload(ctx) {
+    if (!ctx?.episode?.episodeId || !ctx?.series?.id) {
+        return null;
+    }
+    const { series, season, episode } = ctx;
+    /** @type {Record<string, unknown>} */
+    const payload = {
+        id: String(episode.episodeId),
+        seriesId: String(series.id),
+        seasonNumber: Number(season.seasonNumber) || 1,
+        episodeNumber: Number(episode.episodeNumber) || 1,
+        title: String(episode.title || '').trim(),
+        status: String(episode.status || 'draft')
+    };
+    if (episode.description) {
+        payload.description = String(episode.description);
+    }
+    if (episode.reelId) {
+        payload.reelId = String(episode.reelId);
+    }
+    if (episode.thumbnailUrl) {
+        payload.thumbnailUrl = String(episode.thumbnailUrl);
+    }
+    if (episode.genre) {
+        payload.genre = String(episode.genre);
+    }
+    if (Array.isArray(episode.tags) && episode.tags.length) {
+        payload.tags = episode.tags.map(String);
+    }
+    const runtimeSeconds = Number(episode.runtimeSeconds ?? episode.runtime);
+    if (Number.isFinite(runtimeSeconds)) {
+        payload.runtimeSeconds = runtimeSeconds;
+    }
+    return payload;
+}
+
+/**
  * Convert API series DTO to frontend catalog shape.
  * @param {Record<string, unknown>} apiSeries
  * @returns {Series}

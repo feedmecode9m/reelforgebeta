@@ -5,8 +5,9 @@
  * catalog authority, or vault persistence.
  *
  * Priority:
- *   1. Explicit chip / episode poster fields (absolute API thumbs pass through)
- *   2. Ready vault / catalog inventory fields keyed by mediaAssetId
+ *   1. Explicit episode poster fields (episode.thumbnailUrl / poster / artworkUrl)
+ *   2. Chip / vault-bound thumbnail (auto-still from matched MP4)
+ *   3. Ready vault / catalog inventory fields keyed by mediaAssetId
  *      (thumbnailUrl, thumbnailPath, image-type url with correct extension)
  *   3. No synthetic URL invention; caller should fall back to existing placeholder behavior
  *
@@ -269,10 +270,12 @@ export function resolveViewerEpisodePosterUrl(input = {}) {
     const lookupIds = posterLookupIds(episode, mediaId);
 
     const chipThumb = cleanUrl(input.chipThumbnailUrl);
-    if (isUsableEpisodePosterUrl(chipThumb)) return finalizePosterUrl(chipThumb);
-
     const epThumb = thumbOf(episode);
+
+    // Canonical episode.thumbnailUrl is editorial authority — wins over vault chip/auto-still.
     if (isUsableEpisodePosterUrl(epThumb)) return finalizePosterUrl(epThumb);
+
+    if (isUsableEpisodePosterUrl(chipThumb)) return finalizePosterUrl(chipThumb);
 
     if (!lookupIds.length) return '';
 
