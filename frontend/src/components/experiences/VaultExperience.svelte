@@ -1305,6 +1305,27 @@
   }
 
   /**
+   * Bring a Video Vault Edit control into the Studio scroll viewport so the click
+   * target is hittable inside `.control-center-scroll-body` (lower-row cards).
+   * @param {EventTarget | null | undefined} trigger
+   */
+  function scrollVaultEditControlIntoView(trigger) {
+    if (typeof document === 'undefined') return;
+    const el = trigger instanceof HTMLElement ? trigger : null;
+    if (!el) return;
+    el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }
+
+  /**
+   * @param {MouseEvent | PointerEvent | TouchEvent} event
+   * @param {Record<string, unknown> | null | undefined} video
+   */
+  function handleVaultVideoEditClick(event, video) {
+    scrollVaultEditControlIntoView(event?.currentTarget);
+    requestVaultVideoEdit(video);
+  }
+
+  /**
    * Open existing asset package/identity editor — no re-upload.
    * @param {Record<string, unknown> | null | undefined} video
    */
@@ -4491,7 +4512,7 @@
                     on:pointerdown={stopVaultCardDragGesture}
                     on:mousedown={stopVaultCardDragGesture}
                     on:touchstart={stopVaultCardDragGesture}
-                    on:click|stopPropagation|preventDefault={() => requestVaultVideoEdit(video)}
+                    on:click|stopPropagation|preventDefault={(event) => handleVaultVideoEditClick(event, video)}
                   >
                     Edit
                   </button>
