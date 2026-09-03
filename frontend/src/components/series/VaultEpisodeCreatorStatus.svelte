@@ -5,7 +5,7 @@
    * Phase 17–20: package editor authors title/description/tags/category for Smart Catalog
    * with save-state feedback and classification result (same classifier path as feed).
    */
-  import { createEventDispatcher, onDestroy } from 'svelte';
+  import { createEventDispatcher, onDestroy, tick } from 'svelte';
   import { presentVaultEpisodeCompleteness } from '../../lib/series/creatorExperiencePresentation.js';
   import {
     CREATOR_SHELF_OPTIONS,
@@ -186,6 +186,132 @@
     });
   }
 
+  /** @type {HTMLDivElement | null} */
+  let creatorCardEl = null;
+
+  /**
+   * @param {HTMLElement} el
+   */
+  function isPointerReachable(el) {
+    const rect = el.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return false;
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const hit = document.elementFromPoint(cx, cy);
+    return hit === el || Boolean(hit && el.contains(hit));
+  }
+
+  /**
+   * Incrementally scroll `scrollRoot` until `el` is pointer-reachable inside it.
+   * @param {HTMLElement} el
+   * @param {HTMLElement} scrollRoot
+   */
+  function scrollElementWithinContainer(el, scrollRoot) {
+    const style = getComputedStyle(scrollRoot);
+    if (!/(auto|scroll|overlay)/.test(style.overflowY)) return;
+    for (let step = 0; step < 48; step += 1) {
+      if (isPointerReachable(el)) return;
+      const rootRect = scrollRoot.getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+      if (elRect.bottom > rootRect.bottom - 6) {
+        scrollRoot.scrollTop += Math.min(Math.ceil(elRect.bottom - rootRect.bottom + 8), 64);
+      } else if (elRect.top < rootRect.top + 6) {
+        scrollRoot.scrollTop -= Math.min(Math.ceil(rootRect.top - elRect.top + 8), 64);
+      } else {
+        break;
+      }
+    }
+  }
+
+  /**
+   * Keep the hosting vault card inside the Studio inner scrollport without overscrolling.
+   */
+  function fitVaultCardInStudioScroll() {
+    const card = creatorCardEl;
+    const vaultCard = card?.closest('.vault-card');
+    const studioScroll = card?.closest('[data-control-center-scroll-body]');
+    if (!(vaultCard instanceof HTMLElement) || !(studioScroll instanceof HTMLElement)) return;
+    for (let step = 0; step < 48; step += 1) {
+      const vaultRect = vaultCard.getBoundingClientRect();
+      const bodyRect = studioScroll.getBoundingClientRect();
+      if (vaultRect.top >= bodyRect.top + 4 && vaultRect.bottom <= bodyRect.bottom - 4) return;
+      if (vaultRect.bottom > bodyRect.bottom - 4) {
+        studioScroll.scrollTop += Math.min(Math.ceil(vaultRect.bottom - bodyRect.bottom + 8), 32);
+      } else if (vaultRect.top < bodyRect.top + 4) {
+        studioScroll.scrollTop -= Math.min(Math.ceil(bodyRect.top - vaultRect.top + 8), 32);
+      } else {
+        break;
+      }
+    }
+  }
+
+  /**
+   * @param {EventTarget | null | undefined} trigger
+   */
+  function scrollPackageControlIntoView(trigger) {
+    if (typeof document === 'undefined') return;
+    const el = trigger instanceof HTMLElement ? trigger : null;
+    const card = creatorCardEl;
+    if (!el || !card || editing !== 'package') return;
+
+    const studioScroll = card.closest('[data-control-center-scroll-body]');
+    const actions = card.querySelector('.vault-creator-card__actions');
+
+    if (actions instanceof HTMLElement && el !== actions && !actions.contains(el)) {
+      for (let step = 0; step < 32; step += 1) {
+        const elRect = el.getBoundingClientRect();
+        const actionsRect = actions.getBoundingClientRect();
+        if (elRect.bottom <= actionsRect.top - 4) break;
+        card.scrollTop += 12;
+      }
+      scrollElementWithinContainer(el, card);
+    }
+
+    fitVaultCardInStudioScroll();
+
+    if (studioScroll instanceof HTMLElement) {
+      scrollElementWithinContainer(el, studioScroll);
+    }
+  }
+
+  /**
+   * After package editor opens, bring the access row into the Studio/editor scroll surfaces.
+   */
+  async function scrollPackageEditorCompletionIntoView() {
+    if (typeof document === 'undefined') return;
+    await tick();
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const card = creatorCardEl;
+    if (!card || editing !== 'package') return;
+
+    const vaultCard = card.closest('.vault-card');
+    if (vaultCard instanceof HTMLElement) {
+      fitVaultCardInStudioScroll();
+    }
+
+    card.scrollTop = 0;
+    const accessSelect = card.querySelector('[data-episode-access-mode]');
+    if (accessSelect instanceof HTMLElement) {
+      scrollPackageControlIntoView(accessSelect);
+    }
+  }
+
+  /**
+   * @param {MouseEvent | PointerEvent} event
+   */
+  function handleSaveClick(event) {
+    scrollPackageControlIntoView(event?.currentTarget);
+    submitPackage();
+  }
+
+  /**
+   * @param {MouseEvent | PointerEvent} event
+   */
+  function handleCancelClick(event) {
+    scrollPackageControlIntoView(event?.currentTarget);
+    cancelEdit();
+  }
+
   function openPackage() {
     if (!model) return;
     draftTitle = model.presentation.title || '';
@@ -253,6 +379,7 @@
     selectedSiblingIds = cands
       .filter((row) => row.sameFamily || isTheaterFamilyCandidate(row, theaterSiblings))
       .map((row) => String(row.id));
+    void scrollPackageEditorCompletionIntoView();
   }
 
   function cancelEdit() {
@@ -490,6 +617,7 @@
 
 {#if active && model}
   <div
+    bind:this={creatorCardEl}
     class="vault-creator-card"
     class:vault-creator-card--incomplete={!model.complete}
     class:vault-creator-card--editing={Boolean(editing)}
@@ -665,6 +793,8 @@
             aria-label="Episode free or paid"
             data-episode-access-mode
             disabled={packageSaveState === 'saving'}
+            on:focus={(event) => scrollPackageControlIntoView(event.currentTarget)}
+            on:click={(event) => scrollPackageControlIntoView(event.currentTarget)}
           >
             <option value="free">Free</option>
             <option value="paid">Paid</option>
@@ -679,6 +809,8 @@
             placeholder="4.99"
             data-episode-price
             disabled={packageSaveState === 'saving' || draftAccessMode !== 'paid'}
+            on:focus={(event) => scrollPackageControlIntoView(event.currentTarget)}
+            on:click={(event) => scrollPackageControlIntoView(event.currentTarget)}
           />
         </label>
       </div>
@@ -867,7 +999,7 @@
           disabled={packageSaveState === 'saving'}
           on:pointerdown|stopPropagation
           on:mousedown|stopPropagation
-          on:click|stopPropagation|preventDefault={submitPackage}
+          on:click|stopPropagation|preventDefault={handleSaveClick}
         >
           {packageSaveState === 'saving' ? 'Saving…' : packageSaveState === 'saved' ? 'Save again' : 'Save package'}
         </button>
@@ -877,7 +1009,7 @@
           disabled={packageSaveState === 'saving'}
           on:pointerdown|stopPropagation
           on:mousedown|stopPropagation
-          on:click|stopPropagation|preventDefault={cancelEdit}
+          on:click|stopPropagation|preventDefault={handleCancelClick}
         >
           {packageSaveState === 'saved' ? 'Done' : 'Cancel'}
         </button>
