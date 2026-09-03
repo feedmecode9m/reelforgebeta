@@ -1,9 +1,9 @@
 /**
  * PRODUCT-02 — Episode ↔ vault reel attachment orchestration.
- * Uses attachReelToEpisode() when studio hierarchy UUID is available;
- * always updates local catalog via attachEpisodeReel().
+ * Uses attachReelToEpisode()/rebindReelToEpisode() when studio hierarchy UUID is available;
+ * updates local catalog only after studio operation succeeds.
  */
-import { attachReelToEpisode } from '../api/studio.js';
+import { attachReelToEpisode, rebindReelToEpisode } from '../api/studio.js';
 import { attachEpisodeReel, getEpisodeById } from '../series/seriesStore.js';
 
 const UUID_RE =
@@ -55,6 +55,25 @@ export function resolveStudioEpisodeUuid(episodeRow, projectTree) {
 }
 
 /**
+ * @param {Record<string, unknown> | null | undefined} projectTree
+ * @param {string} reelId
+ * @returns {string | null}
+ */
+export function resolveCurrentStudioOwnerEpisodeUuid(projectTree, reelId) {
+    if (!projectTree?.series?.length || !UUID_RE.test(String(reelId || ''))) return null;
+    const targetReel = String(reelId);
+    for (const series of projectTree.series || []) {
+        for (const season of series.seasons || []) {
+            for (const ep of season.episodes || []) {
+                if (String(ep?.reel_id || '') !== targetReel) continue;
+                if (ep?.id && UUID_RE.test(String(ep.id))) return String(ep.id);
+            }
+        }
+    }
+    return null;
+}
+
+/**
  * @param {string} episodeId
  * @param {string} reelId
  * @param {Record<string, unknown> | null | undefined} projectTree
@@ -80,13 +99,9 @@ export async function performEpisodeReelAttach(episodeId, reelId, projectTree, o
         };
     }
 
-    const localOk = attachEpisodeReel(episodeId, reelId);
-    if (!localOk) {
-        throw new Error('Failed to update episode in series catalog');
-    }
-
     let studioAttached = false;
     let studioError = null;
+    let studioRebound = false;
     const studioUuid = resolveStudioEpisodeUuid(
         {
             seriesId: ctx.series.id,
@@ -97,20 +112,46 @@ export async function performEpisodeReelAttach(episodeId, reelId, projectTree, o
         projectTree
     );
 
-    if (studioUuid && UUID_RE.test(reelId)) {
-        try {
-            await attachReelToEpisode(studioUuid, reelId);
-            studioAttached = true;
-        } catch (err) {
-            studioError = err?.message || String(err);
+    const resolvedStudioEpisodeId = studioUuid
+        ? studioUuid
+        : UUID_RE.test(episodeId)
+          ? episodeId
+          : null;
+
+    if (!resolvedStudioEpisodeId || !UUID_RE.test(reelId)) {
+        throw new Error('Studio episode mapping unavailable; attachment aborted');
+    }
+
+    try {
+        await attachReelToEpisode(resolvedStudioEpisodeId, reelId);
+        studioAttached = true;
+    } catch (err) {
+        studioError = err?.message || String(err);
+        const alreadyBound =
+            /already attached to another episode/i.test(studioError) ||
+            /reelalreadybound/i.test(studioError);
+        if (!alreadyBound) {
+            throw new Error(studioError || 'Studio attach failed');
         }
-    } else if (UUID_RE.test(episodeId) && UUID_RE.test(reelId)) {
-        try {
-            await attachReelToEpisode(episodeId, reelId);
-            studioAttached = true;
-        } catch (err) {
-            studioError = err?.message || String(err);
+        const sourceEpisodeId = resolveCurrentStudioOwnerEpisodeUuid(projectTree, reelId);
+        if (!sourceEpisodeId) {
+            throw new Error('Studio rebind requires source episode, but current owner was not found');
         }
+        if (sourceEpisodeId === resolvedStudioEpisodeId) {
+            studioAttached = true;
+            studioRebound = true;
+            studioError = null;
+        } else {
+            await rebindReelToEpisode(resolvedStudioEpisodeId, reelId, sourceEpisodeId);
+            studioAttached = true;
+            studioRebound = true;
+            studioError = null;
+        }
+    }
+
+    const localOk = attachEpisodeReel(episodeId, reelId);
+    if (!localOk) {
+        throw new Error('Failed to update episode in series catalog');
     }
 
     return {
@@ -119,6 +160,7 @@ export async function performEpisodeReelAttach(episodeId, reelId, projectTree, o
         localOk,
         studioAttached,
         studioError,
+        studioRebound,
         episodeId,
         reelId,
         episodeLabel: `S${ctx.season.seasonNumber}E${ctx.episode.episodeNumber} — ${ctx.episode.title}`

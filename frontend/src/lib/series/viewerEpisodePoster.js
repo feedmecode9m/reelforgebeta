@@ -127,6 +127,9 @@ function posterLookupIds(episode, primaryId = '') {
         push(episode.mediaAssetId);
         push(episode.reelId);
         push(episode.heroVaultAssetId);
+        push(episode.thumbnailAssetId);
+        push(episode.thumbnailId);
+        push(episode.posterAssetId);
         push(episode.id);
         push(
             mediaPathAssetId({

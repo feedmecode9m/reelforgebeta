@@ -33,39 +33,39 @@ export const LA_PRODUCTION_SYNOPSIS =
 export const LA_PRODUCTION_EPISODES = [
     {
         episodeNumber: 1,
-        title: 'Arrival',
+        title: 'The Project',
         description:
-            'Vic-G and the team arrive in Los Angeles, setting the stage for the production ahead. The episode captures the first moments in LA, the anticipation surrounding the project, and the beginning of the journey behind the music video.'
+            'Who are the main players behind the sound and production of Dat Boi and Zakanda? This episode introduces Zarian, Vic-G, and the team as the project in Los Angeles begins to take shape.'
     },
     {
         episodeNumber: 2,
-        title: 'Poom Poom Tuesday',
+        title: 'Arrival in LA',
         description:
-            'The first official shoot day begins at Poom Poom Tuesday in Los Angeles. With part of the music video taking place inside the club, Vic-G and the production team step into the nightlife atmosphere to capture the first scenes of the project and establish the energy and visual tone for what is to come.'
+            'Vic-G and the team arrive in Los Angeles, setting the stage for production and introducing the city, momentum, and early movement around the project.'
     },
     {
         episodeNumber: 3,
-        title: 'Soundstage Shoot: Part One',
+        title: 'Club Poom Poom',
         description:
-            "Production moves to the soundstage as the main studio shoot gets underway. The episode follows Vic-G and the team through the creative process as lighting, performance, camera setups, and production elements come together to bring the music video's vision to life."
+            'The first official shoot day begins at Poom Poom Tuesday in Los Angeles, where the nightlife scenes establish the energy and visual tone for what comes next.'
     },
     {
         episodeNumber: 4,
-        title: 'Soundstage Shoot: Part Two',
+        title: 'Set Shooting Pt 1',
         description:
-            'The soundstage experience continues with a closer look at NK and the dancers. Part Two goes beyond the performance itself, giving the dancers space to speak, share their perspectives, and become part of the story behind the production while the team completes the remaining soundstage work.'
+            "Production moves to the soundstage as the studio shoot gets underway and the team's performance, camera, and lighting work start coming together."
     },
     {
         episodeNumber: 5,
-        title: 'Condo Wind Down',
+        title: 'Set Shooting Pt 2',
         description:
-            'After the soundstage shoot, the energy shifts from production mode to a more relaxed setting at the condo. The team unwinds after the day, sharing food, wine, conversation, and candid moments that offer a more personal look at the people behind the project.'
+            'The soundstage session continues with additional performance and production sequences as the final major scenes are completed.'
     },
     {
         episodeNumber: 6,
-        title: 'My Society + AMP',
+        title: 'Condo Wind Down',
         description:
-            'Vic-G steps into another side of the creative experience through My Society and AMP. The episode brings together music, community, social connection, and culture as Vic-G gets the chance to meet, hang out with, and connect with the people surrounding these social music events. It expands the story beyond the video shoot and into the larger creative community around the project.'
+            'After the shoot days, the team winds down at the condo with candid off-set moments and reflections from the production run.'
     }
 ];
 
@@ -160,22 +160,24 @@ export function isDistinctiveLaProductionAsset(blob) {
 export function matchLaProductionEpisodeNumber(blob) {
     const raw = text(blob);
     if (!raw) return null;
-    if (/poom\s*poom/i.test(raw)) return 2;
+    if (/project|intro/i.test(raw)) return 1;
+    if (/arrival/i.test(raw)) return 2;
+    if (/poom\s*poom/i.test(raw)) return 3;
     if (
         /soundstage.*(?:part|pt)[\s._:-]*(?:two|2)(?!\d)/i.test(raw) ||
         /set[\s_-]*shooting.*(?:part|pt)[\s._:-]*2(?!\d)/i.test(raw)
     ) {
-        return 4;
+        return 5;
     }
     if (
         /soundstage.*(?:part|pt)[\s._:-]*(?:one|1)(?!\d)/i.test(raw) ||
         /set[\s_-]*shooting.*(?:part|pt)[\s._:-]*1(?!\d)/i.test(raw)
     ) {
-        return 3;
+        return 4;
     }
-    if (/condo/i.test(raw)) return 5;
-    if (/my\s*society|\bamp\b/i.test(raw)) return 6;
-    if (/\barrival\b/i.test(raw)) return 1;
+    if (/condo/i.test(raw)) return 6;
+    if (/my\s*society|\bamp\b/i.test(raw)) return null;
+    if (/\barrival\b/i.test(raw)) return 2;
     return null;
 }
 

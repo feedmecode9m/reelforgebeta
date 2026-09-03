@@ -1,6 +1,7 @@
 use chrono::{DateTime, Utc};
 use sqlx::PgPool;
 use uuid::Uuid;
+use sqlx::{Postgres, Transaction};
 
 #[derive(Debug, Clone, sqlx::FromRow, serde::Serialize)]
 pub struct ProjectRow {
@@ -286,36 +287,61 @@ pub enum AttachReelOutcome {
     ReelAlreadyBound,
 }
 
+pub enum RebindReelOutcome {
+    Rebound {
+        row: EpisodeRow,
+        previous_episode_id: Option<Uuid>,
+        noop: bool,
+    },
+    EpisodeNotFound,
+    ReelNotFound,
+    SourceEpisodeRequired,
+    SourceMismatch {
+        current_episode_id: Option<Uuid>,
+    },
+    TargetHasAnotherReel {
+        target_reel_id: Uuid,
+    },
+}
+
 pub async fn attach_reel_to_episode(
     pool: &PgPool,
     episode_id: Uuid,
     reel_id: Uuid,
 ) -> Result<AttachReelOutcome, sqlx::Error> {
-    let episode_exists: bool =
-        sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM studio_episodes WHERE id = $1)")
-            .bind(episode_id)
-            .fetch_one(pool)
-            .await?;
-    if !episode_exists {
-        return Ok(AttachReelOutcome::EpisodeNotFound);
-    }
+    let mut tx = pool.begin().await?;
 
-    let reel_exists: bool = sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM reels WHERE id = $1)")
+    let existing_target_reel_row: Option<(Option<Uuid>,)> = sqlx::query_as(
+        "SELECT reel_id FROM studio_episodes WHERE id = $1 FOR UPDATE",
+    )
+    .bind(episode_id)
+    .fetch_optional(&mut *tx)
+    .await?;
+    let Some((existing_target_reel,)) = existing_target_reel_row else {
+        tx.rollback().await?;
+        return Ok(AttachReelOutcome::EpisodeNotFound);
+    };
+
+    let reel_exists: bool = sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM reels WHERE id = $1 FOR UPDATE)")
         .bind(reel_id)
-        .fetch_one(pool)
+        .fetch_one(&mut *tx)
         .await?;
     if !reel_exists {
+        tx.rollback().await?;
         return Ok(AttachReelOutcome::ReelNotFound);
     }
+
+    lock_reel_advisory_tx(&mut tx, reel_id).await?;
 
     let already_bound: bool = sqlx::query_scalar(
         "SELECT EXISTS(SELECT 1 FROM studio_episodes WHERE reel_id = $1 AND id <> $2)",
     )
     .bind(reel_id)
     .bind(episode_id)
-    .fetch_one(pool)
+    .fetch_one(&mut *tx)
     .await?;
     if already_bound {
+        tx.rollback().await?;
         return Ok(AttachReelOutcome::ReelAlreadyBound);
     }
 
@@ -332,12 +358,139 @@ pub async fn attach_reel_to_episode(
     )
     .bind(episode_id)
     .bind(reel_id)
-    .fetch_one(pool)
+    .fetch_one(&mut *tx)
     .await?;
 
-    sync_reel_episode_bridge(pool, reel_id, episode_id).await?;
+    sync_reel_episode_bridge_tx(&mut tx, reel_id, episode_id).await?;
+
+    // Attach can replace the target episode reel in-place; clear the displaced bridge
+    // so `reels.episode_id` always matches the current studio owner.
+    if let Some(displaced_reel_id) = existing_target_reel {
+        if displaced_reel_id != reel_id {
+            clear_reel_episode_bridge_tx(&mut tx, displaced_reel_id, episode_id).await?;
+        }
+    }
+
+    tx.commit().await?;
 
     Ok(AttachReelOutcome::Attached(row))
+}
+
+pub async fn rebind_reel_to_episode(
+    pool: &PgPool,
+    target_episode_id: Uuid,
+    reel_id: Uuid,
+    source_episode_id: Option<Uuid>,
+) -> Result<RebindReelOutcome, sqlx::Error> {
+    let mut tx = pool.begin().await?;
+
+    let target_existing_reel_row: Option<(Option<Uuid>,)> = sqlx::query_as(
+        "SELECT reel_id FROM studio_episodes WHERE id = $1 FOR UPDATE",
+    )
+    .bind(target_episode_id)
+    .fetch_optional(&mut *tx)
+    .await?;
+    let Some((target_existing_reel,)) = target_existing_reel_row else {
+        tx.rollback().await?;
+        return Ok(RebindReelOutcome::EpisodeNotFound);
+    };
+
+    let reel_exists: bool = sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM reels WHERE id = $1 FOR UPDATE)")
+        .bind(reel_id)
+        .fetch_one(&mut *tx)
+        .await?;
+    if !reel_exists {
+        tx.rollback().await?;
+        return Ok(RebindReelOutcome::ReelNotFound);
+    }
+
+    lock_reel_advisory_tx(&mut tx, reel_id).await?;
+
+    let current_owner_episode_id: Option<Uuid> = sqlx::query_scalar(
+        "SELECT id FROM studio_episodes WHERE reel_id = $1 LIMIT 1 FOR UPDATE",
+    )
+    .bind(reel_id)
+    .fetch_optional(&mut *tx)
+    .await?;
+
+    if current_owner_episode_id == Some(target_episode_id) {
+        let row = sqlx::query_as::<_, EpisodeRow>(
+            r#"
+            SELECT id, season_id, reel_id, episode_number, title, description,
+                   publish_status, scheduled_at, published_at, created_at, updated_at
+            FROM studio_episodes
+            WHERE id = $1
+            "#,
+        )
+        .bind(target_episode_id)
+        .fetch_one(&mut *tx)
+        .await?;
+        sync_reel_episode_bridge_tx(&mut tx, reel_id, target_episode_id).await?;
+        tx.commit().await?;
+        return Ok(RebindReelOutcome::Rebound {
+            row,
+            previous_episode_id: current_owner_episode_id,
+            noop: true,
+        });
+    }
+
+    if let Some(target_reel_id) = target_existing_reel {
+        if target_reel_id != reel_id {
+            tx.rollback().await?;
+            return Ok(RebindReelOutcome::TargetHasAnotherReel { target_reel_id });
+        }
+    }
+
+    if current_owner_episode_id.is_some() && source_episode_id.is_none() {
+        tx.rollback().await?;
+        return Ok(RebindReelOutcome::SourceEpisodeRequired);
+    }
+
+    if source_episode_id != current_owner_episode_id {
+        tx.rollback().await?;
+        return Ok(RebindReelOutcome::SourceMismatch {
+            current_episode_id: current_owner_episode_id,
+        });
+    }
+
+    if let Some(owner_episode_id) = current_owner_episode_id {
+        sqlx::query(
+            r#"
+            UPDATE studio_episodes
+            SET reel_id = NULL,
+                updated_at = now()
+            WHERE id = $1
+            "#,
+        )
+        .bind(owner_episode_id)
+        .execute(&mut *tx)
+        .await?;
+    }
+
+    let row = sqlx::query_as::<_, EpisodeRow>(
+        r#"
+        UPDATE studio_episodes
+        SET reel_id = $2,
+            published_at = COALESCE(published_at, now()),
+            updated_at = now()
+        WHERE id = $1
+        RETURNING id, season_id, reel_id, episode_number, title, description,
+                  publish_status, scheduled_at, published_at, created_at, updated_at
+        "#,
+    )
+    .bind(target_episode_id)
+    .bind(reel_id)
+    .fetch_one(&mut *tx)
+    .await?;
+
+    sync_reel_episode_bridge_tx(&mut tx, reel_id, target_episode_id).await?;
+    tx.commit().await?;
+
+    Ok(RebindReelOutcome::Rebound {
+        row,
+        previous_episode_id: current_owner_episode_id,
+        noop: false,
+    })
 }
 
 #[derive(Debug, Clone, serde::Serialize)]
@@ -511,18 +664,7 @@ pub async fn backfill_reels_to_hierarchy(pool: &PgPool) -> Result<BackfillReport
         let mut next_ep = next_episode_number(pool, season_id).await?;
 
         for (reel_id, title) in reels {
-            let already: bool = sqlx::query_scalar(
-                "SELECT EXISTS(SELECT 1 FROM studio_episodes WHERE reel_id = $1)",
-            )
-            .bind(reel_id)
-            .fetch_one(pool)
-            .await?;
-            if already {
-                episodes_skipped += 1;
-                continue;
-            }
-
-            match create_episode(pool, season_id, next_ep, &title, None, Some(reel_id)).await {
+            match create_backfill_episode_for_reel(pool, season_id, next_ep, &title, reel_id).await {
                 Ok(_) => {
                     episodes_created += 1;
                     next_ep += 1;
@@ -644,6 +786,340 @@ async fn sync_reel_episode_bridge(
     .execute(pool)
     .await?;
     Ok(())
+}
+
+async fn lock_reel_advisory_tx(
+    tx: &mut Transaction<'_, Postgres>,
+    reel_id: Uuid,
+) -> Result<(), sqlx::Error> {
+    let key = advisory_key_for_uuid(reel_id);
+    sqlx::query("SELECT pg_advisory_xact_lock($1)")
+        .bind(key)
+        .execute(&mut **tx)
+        .await?;
+    Ok(())
+}
+
+fn advisory_key_for_uuid(id: Uuid) -> i64 {
+    let bytes = id.as_bytes();
+    let mut head = [0u8; 8];
+    head.copy_from_slice(&bytes[..8]);
+    i64::from_be_bytes(head)
+}
+
+async fn sync_reel_episode_bridge_tx(
+    tx: &mut Transaction<'_, Postgres>,
+    reel_id: Uuid,
+    canonical_episode_id: Uuid,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        r#"
+        UPDATE reels
+        SET episode_id = CAST($2 AS TEXT),
+            updated_at = now()
+        WHERE id = $1
+        "#,
+    )
+    .bind(reel_id)
+    .bind(canonical_episode_id)
+    .execute(&mut **tx)
+    .await?;
+    Ok(())
+}
+
+async fn clear_reel_episode_bridge_tx(
+    tx: &mut Transaction<'_, Postgres>,
+    reel_id: Uuid,
+    expected_episode_id: Uuid,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        r#"
+        UPDATE reels
+        SET episode_id = NULL,
+            updated_at = now()
+        WHERE id = $1
+          AND episode_id = CAST($2 AS TEXT)
+        "#,
+    )
+    .bind(reel_id)
+    .bind(expected_episode_id)
+    .execute(&mut **tx)
+    .await?;
+    Ok(())
+}
+
+async fn create_backfill_episode_for_reel(
+    pool: &PgPool,
+    season_id: Uuid,
+    episode_number: i32,
+    title: &str,
+    reel_id: Uuid,
+) -> Result<(), sqlx::Error> {
+    let mut tx = pool.begin().await?;
+    lock_reel_advisory_tx(&mut tx, reel_id).await?;
+
+    let already: bool = sqlx::query_scalar(
+        "SELECT EXISTS(SELECT 1 FROM studio_episodes WHERE reel_id = $1)",
+    )
+    .bind(reel_id)
+    .fetch_one(&mut *tx)
+    .await?;
+    if already {
+        tx.rollback().await?;
+        return Err(sqlx::Error::RowNotFound);
+    }
+
+    let row = sqlx::query_as::<_, EpisodeRow>(
+        r#"
+        INSERT INTO studio_episodes (
+            season_id, episode_number, title, description, reel_id, publish_status, published_at
+        )
+        VALUES ($1, $2, $3, $4, $5, 'published', $6)
+        RETURNING id, season_id, reel_id, episode_number, title, description,
+                  publish_status, scheduled_at, published_at, created_at, updated_at
+        "#,
+    )
+    .bind(season_id)
+    .bind(episode_number)
+    .bind(title)
+    .bind(None::<&str>)
+    .bind(Some(reel_id))
+    .bind(Some(Utc::now()))
+    .fetch_one(&mut *tx)
+    .await?;
+
+    sync_reel_episode_bridge_tx(&mut tx, reel_id, row.id).await?;
+    tx.commit().await?;
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    async fn pool() -> Option<PgPool> {
+        let url = std::env::var("DATABASE_URL").ok()?;
+        let pool = PgPool::connect(&url).await.ok()?;
+        let _ = crate::db::run_migrations(&pool).await.ok()?;
+        Some(pool)
+    }
+
+    async fn seed_reel(pool: &PgPool, reel_id: Uuid, title: &str) {
+        sqlx::query(
+            r#"
+            INSERT INTO reels (id, title, category, status, validated, file_name, video_url)
+            VALUES ($1, $2, 'Trending', 'ready', true, $3, $4)
+            ON CONFLICT (id) DO NOTHING
+            "#,
+        )
+        .bind(reel_id)
+        .bind(title)
+        .bind(format!("{reel_id}.mp4"))
+        .bind(format!("/videos/{reel_id}.mp4"))
+        .execute(pool)
+        .await
+        .expect("seed reel");
+    }
+
+    async fn seed_series(pool: &PgPool) -> (Uuid, Uuid, Uuid) {
+        let project = create_project(pool, "rebind-test-project", None)
+            .await
+            .expect("project");
+        let series = create_series(pool, project.id, "rebind-test-series", None)
+            .await
+            .expect("series");
+        let season = create_season(pool, series.id, 1, Some("Season 1"))
+            .await
+            .expect("season");
+        (project.id, series.id, season.id)
+    }
+
+    #[tokio::test]
+    async fn rebind_requires_source_when_reel_has_owner() {
+        let Some(pool) = pool().await else {
+            eprintln!("skip rebind_requires_source_when_reel_has_owner: DATABASE_URL not set");
+            return;
+        };
+        let (_, _, season_id) = seed_series(&pool).await;
+        let reel_id = Uuid::new_v4();
+        seed_reel(&pool, reel_id, "Reel source-required").await;
+        let source = create_episode(&pool, season_id, 1, "source", None, Some(reel_id))
+            .await
+            .expect("source episode");
+        let target = create_episode(&pool, season_id, 2, "target", None, None)
+            .await
+            .expect("target episode");
+
+        let result = rebind_reel_to_episode(&pool, target.id, reel_id, None)
+            .await
+            .expect("rebind call");
+        assert!(matches!(result, RebindReelOutcome::SourceEpisodeRequired));
+
+        let still_source: Option<Uuid> =
+            sqlx::query_scalar("SELECT id FROM studio_episodes WHERE reel_id = $1")
+                .bind(reel_id)
+                .fetch_optional(&pool)
+                .await
+                .expect("current owner");
+        assert_eq!(still_source, Some(source.id));
+    }
+
+    #[tokio::test]
+    async fn rebind_rejects_source_mismatch() {
+        let Some(pool) = pool().await else {
+            eprintln!("skip rebind_rejects_source_mismatch: DATABASE_URL not set");
+            return;
+        };
+        let (_, _, season_id) = seed_series(&pool).await;
+        let reel_id = Uuid::new_v4();
+        seed_reel(&pool, reel_id, "Reel source-mismatch").await;
+        let source = create_episode(&pool, season_id, 11, "source", None, Some(reel_id))
+            .await
+            .expect("source episode");
+        let target = create_episode(&pool, season_id, 12, "target", None, None)
+            .await
+            .expect("target episode");
+        let wrong_source = Uuid::new_v4();
+
+        let result = rebind_reel_to_episode(&pool, target.id, reel_id, Some(wrong_source))
+            .await
+            .expect("rebind call");
+        match result {
+            RebindReelOutcome::SourceMismatch { current_episode_id } => {
+                assert_eq!(current_episode_id, Some(source.id));
+            }
+            _ => panic!("expected source mismatch"),
+        }
+    }
+
+    #[tokio::test]
+    async fn rebind_rejects_occupied_target() {
+        let Some(pool) = pool().await else {
+            eprintln!("skip rebind_rejects_occupied_target: DATABASE_URL not set");
+            return;
+        };
+        let (_, _, season_id) = seed_series(&pool).await;
+        let moving_reel = Uuid::new_v4();
+        let target_reel = Uuid::new_v4();
+        seed_reel(&pool, moving_reel, "moving").await;
+        seed_reel(&pool, target_reel, "target").await;
+        let source = create_episode(&pool, season_id, 21, "source", None, Some(moving_reel))
+            .await
+            .expect("source episode");
+        let target = create_episode(&pool, season_id, 22, "target", None, Some(target_reel))
+            .await
+            .expect("target episode");
+
+        let result = rebind_reel_to_episode(&pool, target.id, moving_reel, Some(source.id))
+            .await
+            .expect("rebind call");
+        match result {
+            RebindReelOutcome::TargetHasAnotherReel { target_reel_id } => {
+                assert_eq!(target_reel_id, target_reel);
+            }
+            _ => panic!("expected occupied target conflict"),
+        }
+    }
+
+    #[tokio::test]
+    async fn rebind_is_idempotent_for_same_target_and_keeps_bridge_synced() {
+        let Some(pool) = pool().await else {
+            eprintln!("skip rebind_is_idempotent_for_same_target_and_keeps_bridge_synced: DATABASE_URL not set");
+            return;
+        };
+        let (_, _, season_id) = seed_series(&pool).await;
+        let reel_id = Uuid::new_v4();
+        seed_reel(&pool, reel_id, "idempotent").await;
+        let target = create_episode(&pool, season_id, 31, "target", None, Some(reel_id))
+            .await
+            .expect("target episode");
+        sqlx::query("UPDATE reels SET episode_id = NULL WHERE id = $1")
+            .bind(reel_id)
+            .execute(&pool)
+            .await
+            .expect("desync bridge");
+
+        let result = rebind_reel_to_episode(&pool, target.id, reel_id, None)
+            .await
+            .expect("rebind call");
+        match result {
+            RebindReelOutcome::Rebound { noop, .. } => assert!(noop),
+            _ => panic!("expected noop rebound"),
+        }
+
+        let bridge: Option<String> =
+            sqlx::query_scalar("SELECT episode_id FROM reels WHERE id = $1")
+                .bind(reel_id)
+                .fetch_one(&pool)
+                .await
+                .expect("bridge");
+        let target_id = target.id.to_string();
+        assert_eq!(bridge.as_deref(), Some(target_id.as_str()));
+    }
+
+    #[tokio::test]
+    async fn rebind_moves_owner_and_backfill_does_not_recreate_duplicate() {
+        let Some(pool) = pool().await else {
+            eprintln!("skip rebind_moves_owner_and_backfill_does_not_recreate_duplicate: DATABASE_URL not set");
+            return;
+        };
+        let (_, _, season_id) = seed_series(&pool).await;
+        let reel_id = Uuid::new_v4();
+        seed_reel(&pool, reel_id, "move-and-backfill").await;
+        let source = create_episode(&pool, season_id, 41, "source", None, Some(reel_id))
+            .await
+            .expect("source");
+        let target = create_episode(&pool, season_id, 42, "target", None, None)
+            .await
+            .expect("target");
+
+        let result = rebind_reel_to_episode(&pool, target.id, reel_id, Some(source.id))
+            .await
+            .expect("rebind call");
+        assert!(matches!(result, RebindReelOutcome::Rebound { noop: false, .. }));
+
+        let owners: i64 =
+            sqlx::query_scalar("SELECT COUNT(*) FROM studio_episodes WHERE reel_id = $1")
+                .bind(reel_id)
+                .fetch_one(&pool)
+                .await
+                .expect("owner count");
+        assert_eq!(owners, 1);
+
+        let source_reel: Option<Uuid> =
+            sqlx::query_scalar("SELECT reel_id FROM studio_episodes WHERE id = $1")
+                .bind(source.id)
+                .fetch_one(&pool)
+                .await
+                .expect("source reel");
+        assert_eq!(source_reel, None);
+
+        let target_reel: Option<Uuid> =
+            sqlx::query_scalar("SELECT reel_id FROM studio_episodes WHERE id = $1")
+                .bind(target.id)
+                .fetch_one(&pool)
+                .await
+                .expect("target reel");
+        assert_eq!(target_reel, Some(reel_id));
+
+        let bridge: Option<String> =
+            sqlx::query_scalar("SELECT episode_id FROM reels WHERE id = $1")
+                .bind(reel_id)
+                .fetch_one(&pool)
+                .await
+                .expect("bridge");
+        let target_id = target.id.to_string();
+        assert_eq!(bridge.as_deref(), Some(target_id.as_str()));
+
+        let _ = backfill_reels_to_hierarchy(&pool).await.expect("backfill");
+        let owners_after_backfill: i64 =
+            sqlx::query_scalar("SELECT COUNT(*) FROM studio_episodes WHERE reel_id = $1")
+                .bind(reel_id)
+                .fetch_one(&pool)
+                .await
+                .expect("owner count after backfill");
+        assert_eq!(owners_after_backfill, 1);
+    }
 }
 
 async fn apply_default_backfill_monetization(

@@ -1,5 +1,5 @@
 import { API_BASE_URL, fetchWithRetry } from '../api.js';
-import { getAdminAuthHeaders } from '../adminSession.js';
+import { getAdminAuthHeaders, maybeHandleInvalidAdminSession } from '../adminSession.js';
 
 const DEVICE_STORAGE_KEY = 'reelforge_sync_device_id';
 
@@ -35,6 +35,9 @@ async function syncFetch(path, options = {}) {
     }
     if (!res.ok) {
         const body = await res.json().catch(() => ({}));
+        if (String(options.method || 'GET').toUpperCase() !== 'GET' && res.status === 401) {
+            maybeHandleInvalidAdminSession(res, body, 'syncApi');
+        }
         throw new Error(body.error || `Sync API failed (${res.status})`);
     }
     return res.json();

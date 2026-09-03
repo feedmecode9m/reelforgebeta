@@ -129,6 +129,9 @@ export function stripHeavyThumbnailEntries(entries = [], keep = STORAGE_LIMITS.M
                 String(item.fileName || item.file_name || '').trim() ||
                 (url ? url.split('/').pop()?.split('?')[0] || '' : '');
             const displayName = String(item.title || item.name || fileName || '').trim();
+            const linkedVideoId = String(
+                item.personal_video_id || item.personalVideoId || item.linkedVideoId || ''
+            ).trim();
             return {
                 id: item.id ? String(item.id) : undefined,
                 fileName,
@@ -138,7 +141,8 @@ export function stripHeavyThumbnailEntries(entries = [], keep = STORAGE_LIMITS.M
                 size: item.size,
                 type: item.type,
                 addedAt: item.addedAt || new Date().toISOString(),
-                orphaned: item.orphaned === true ? true : undefined
+                orphaned: item.orphaned === true ? true : undefined,
+                ...(linkedVideoId ? { personal_video_id: linkedVideoId } : {})
             };
         })
         .filter((item) => item?.fileName || item?.url);

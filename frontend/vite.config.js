@@ -125,6 +125,9 @@ export default defineConfig({
   build: {
     target: 'es2020',
     minify: 'esbuild',
+    // Current app bundle is intentionally large while we iterate on architecture;
+    // raise warning threshold to reduce noisy non-actionable build output.
+    chunkSizeWarningLimit: 3000,
     rollupOptions: {
       output: {
         entryFileNames: `assets/[name]-[hash].js`,

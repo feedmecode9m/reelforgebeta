@@ -259,6 +259,78 @@ function hydrateEmptyThumbnailVaultFromBackendReels(reels, storageKey = THUMBNAI
 }
 
 /**
+ * Backend sync must not replace a useful local editorial title with a UUID/hash filename.
+ * @param {string} name
+ * @returns {boolean}
+ */
+export function isUuidOrHashLikeDisplayName(name) {
+  const s = String(name || '').trim();
+  if (!s) return false;
+  if (
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(s)
+  ) {
+    return true;
+  }
+  if (/^[0-9A-F]{8}(?:-[0-9A-F]{4}){3}-[0-9A-F]{12}$/i.test(s)) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * @param {string} name
+ * @returns {boolean}
+ */
+function isUsefulHumanTitle(name) {
+  const s = String(name || '').trim();
+  return Boolean(s) && !isUuidOrHashLikeDisplayName(s);
+}
+
+/**
+ * @param {Record<string, unknown>} target
+ * @param {Record<string, unknown>} reel
+ * @returns {boolean}
+ */
+function mergeLinkedVideoIdFromBackend(target, reel) {
+  const backendLink = String(
+    reel?.personal_video_id || reel?.personalVideoId || reel?.linkedVideoId || ''
+  ).trim();
+  const localLink = String(target?.personal_video_id || target?.personalVideoId || '').trim();
+  if (backendLink) {
+    if (localLink !== backendLink) {
+      target.personal_video_id = backendLink;
+      return true;
+    }
+    return false;
+  }
+  if (localLink && !target.personal_video_id) {
+    target.personal_video_id = localLink;
+    return true;
+  }
+  return false;
+}
+
+/**
+ * @param {Record<string, unknown>} target
+ * @param {string} displayName
+ * @returns {boolean}
+ */
+function mergeDisplayTitleFromBackend(target, displayName) {
+  const incoming = String(displayName || '').trim();
+  if (!incoming) return false;
+  const localName = String(target.name || target.title || '').trim();
+  if (isUsefulHumanTitle(localName) && !isUsefulHumanTitle(incoming)) {
+    return false;
+  }
+  if (target.name !== incoming || target.title !== incoming) {
+    target.name = incoming;
+    target.title = incoming;
+    return true;
+  }
+  return false;
+}
+
+/**
  * Upgrade existing local vault entries from backend thumb reels; hydrate empty vault by reel.id membership.
  * @param {Record<string, unknown>[]} reels
  * @param {string} [storageKey]
@@ -295,11 +367,14 @@ export function upgradeThumbnailVaultFromBackendReels(reels, storageKey = THUMBN
     if (existingIdx < 0) continue;
     if (typeof entries[existingIdx] === 'string') {
       const key = String(entries[existingIdx]).trim();
+      const localUseful = isUsefulHumanTitle(key);
+      const resolvedName =
+        isUsefulHumanTitle(displayName) ? displayName : localUseful ? key : displayName || key;
       entries[existingIdx] = {
         fileName: fileName || key,
         url: relUrl || `/thumbs/${key.replace(/^thumbs\//, '')}`,
-        name: displayName || key,
-        title: displayName || key,
+        name: resolvedName,
+        title: resolvedName,
         origin: 'legacy_string'
       };
       changed = true;
@@ -318,9 +393,10 @@ export function upgradeThumbnailVaultFromBackendReels(reels, storageKey = THUMBN
       target.url = relUrl || target.url;
       changed = true;
     }
-    if (displayName && (target.name !== displayName || target.title !== displayName)) {
-      target.name = displayName;
-      target.title = displayName;
+    if (mergeDisplayTitleFromBackend(/** @type {Record<string, unknown>} */ (target), displayName)) {
+      changed = true;
+    }
+    if (mergeLinkedVideoIdFromBackend(/** @type {Record<string, unknown>} */ (target), reel)) {
       changed = true;
     }
   }

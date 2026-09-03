@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from 'svelte';
   import { isAuthenticated, currentUser, buildLoginPath, setStoredReturnPath } from '../../lib/auth/index.js';
   import { clientNavigate } from '../../lib/auth/clientNavigate.js';
   import AccountMenu from '../account/AccountMenu.svelte';
@@ -16,6 +17,25 @@
   let menuOpen = false;
   let profileInitial = '';
   let profileLoadId = 0;
+  let pathname = '/';
+
+  function syncPathname() {
+    if (typeof window === 'undefined') return;
+    pathname = window.location.pathname || '/';
+  }
+
+  function goHome() {
+    clientNavigate('/');
+  }
+
+  function goBack() {
+    if (typeof window === 'undefined') return;
+    if (window.history.length > 1) {
+      window.history.back();
+      return;
+    }
+    clientNavigate('/');
+  }
 
   function toggleMenu() {
     menuOpen = !menuOpen;
@@ -69,6 +89,7 @@
   $: signedIn = $isAuthenticated && Boolean($currentUser);
   $: userId = $currentUser?.id != null ? String($currentUser.id) : '';
   $: userEmail = String($currentUser?.email || '').trim();
+  $: onHomeRoute = pathname === '/';
 
   // Reactive: re-derive avatar whenever session user changes (login / restore / logout).
   $: if (signedIn) {
@@ -80,6 +101,16 @@
   }
 
   $: initial = profileInitial || (userEmail ? userEmail.charAt(0).toUpperCase() : '•');
+
+  onMount(() => {
+    syncPathname();
+    if (typeof window === 'undefined') return undefined;
+    const handlePopState = () => syncPathname();
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  });
 </script>
 
 <header
@@ -92,6 +123,26 @@
   <a class="consumer-header__brand" href="/" on:click|preventDefault={() => clientNavigate('/')}>
     <span class="consumer-header__brand-mark">{brand}</span>
   </a>
+
+  <nav class="consumer-header__nav" aria-label="Page navigation">
+    <button
+      type="button"
+      class="consumer-header__nav-btn"
+      aria-label="Go back"
+      on:click={goBack}
+    >
+      ← Back
+    </button>
+    <button
+      type="button"
+      class="consumer-header__nav-btn"
+      class:is-active={onHomeRoute}
+      aria-label="Go home"
+      on:click={goHome}
+    >
+      Home
+    </button>
+  </nav>
 
   <div class="consumer-header__actions" data-account-menu-root>
     {#if signedIn}
@@ -175,6 +226,38 @@
     position: relative;
     flex-shrink: 0;
   }
+  .consumer-header__nav {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-left: auto;
+  }
+  .consumer-header__nav-btn {
+    border: 1px solid var(--lz-border, rgba(255, 255, 255, 0.18));
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--lz-ink, #fff);
+    border-radius: var(--lz-radius-pill, 999px);
+    padding: 0.35rem 0.75rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    font-family: inherit;
+    transition:
+      border-color var(--lz-duration-fast, 160ms) var(--lz-ease, ease),
+      background var(--lz-duration-fast, 160ms) var(--lz-ease, ease);
+  }
+  .consumer-header__nav-btn:hover {
+    border-color: rgba(0, 242, 255, 0.5);
+    background: rgba(0, 242, 255, 0.1);
+  }
+  .consumer-header__nav-btn:focus-visible {
+    outline: 2px solid var(--lz-focus, rgba(0, 242, 255, 0.65));
+    outline-offset: 2px;
+  }
+  .consumer-header__nav-btn.is-active {
+    border-color: rgba(0, 242, 255, 0.55);
+    background: rgba(0, 242, 255, 0.12);
+  }
   .consumer-header__sign-in {
     border: 1px solid var(--lz-border-strong, rgba(255, 255, 255, 0.28));
     background: rgba(255, 255, 255, 0.06);
@@ -237,6 +320,12 @@
     .consumer-header {
       padding: max(0.5rem, env(safe-area-inset-top, 0px)) max(0.85rem, env(safe-area-inset-right, 0px)) 0.65rem
         max(0.85rem, env(safe-area-inset-left, 0px));
+    }
+    .consumer-header__nav {
+      order: 3;
+      width: 100%;
+      margin-left: 0;
+      justify-content: flex-start;
     }
     .consumer-header__profile-label {
       display: none;

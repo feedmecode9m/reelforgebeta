@@ -239,6 +239,38 @@ export async function deleteEpisode(episodeId) {
 }
 
 /**
+ * Canonical POST /api/series payload for Studio "+ Add series".
+ * Uses a text series id (never a studio_series UUID) and a Season 1 structural shell.
+ *
+ * @param {string} title
+ * @param {{ id?: string; idSuffix?: number | string }} [options]
+ */
+export function seriesCreatePayloadFromStudioTitle(title, options = {}) {
+    const trimmed = String(title || '').trim();
+    const stamp = options.idSuffix ?? Date.now();
+    const slug = trimmed
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 32);
+    const id = options.id || `series-studio-${slug || 'untitled'}-${stamp}`;
+    const seasonId = `season-${id}-1`;
+    return {
+        id,
+        title: trimmed,
+        tags: ['studio-created'],
+        seasons: [
+            {
+                seasonId,
+                seasonNumber: 1,
+                title: 'Season 1',
+                episodes: []
+            }
+        ]
+    };
+}
+
+/**
  * Convert frontend Series catalog to API upsert payload.
  * @param {Series} series
  */
@@ -256,20 +288,24 @@ export function seriesToApiPayload(series) {
             seasonNumber: season.seasonNumber,
             title: season.title,
             description: season.description,
-            episodes: (season.episodes || []).map((episode) => ({
-                episodeId: episode.episodeId,
-                episodeNumber: episode.episodeNumber,
-                title: episode.title,
-                description: episode.description,
-                runtime: episode.runtime ?? episode.runtimeSeconds,
-                runtimeSeconds: episode.runtimeSeconds ?? episode.runtime,
-                status: episode.status,
-                reelId: episode.reelId || undefined,
-                thumbnailUrl: episode.thumbnailUrl,
-                releaseDate: episode.releaseDate,
-                genre: episode.genre,
-                tags: episode.tags || []
-            }))
+            episodes: (season.episodes || []).map((episode) => {
+                /** @type {Record<string, unknown>} */
+                const row = {
+                    episodeId: episode.episodeId,
+                    episodeNumber: episode.episodeNumber,
+                    title: episode.title,
+                    description: episode.description,
+                    runtime: episode.runtime ?? episode.runtimeSeconds,
+                    runtimeSeconds: episode.runtimeSeconds ?? episode.runtime,
+                    status: episode.status,
+                    reelId: episode.reelId || undefined,
+                    releaseDate: episode.releaseDate,
+                    genre: episode.genre,
+                    tags: episode.tags || []
+                };
+                // Editorial poster authority: episode row PUT only — never via series upsert/reel bind.
+                return row;
+            })
         }))
     };
 }
@@ -587,6 +623,8 @@ export function initSeriesApi() {
         deleteEpisode,
         seriesToApiPayload,
         seriesToApiRowPayload,
+        episodeToApiRowPayload,
+        episodeToApiCreatePayload,
         apiSeriesToCatalog
     };
 }

@@ -152,8 +152,9 @@
     import { categoryAliasStore, listViewerPrimaryRailTabs } from '../../lib/feed/discoveryTaxonomy.js';
     import { resolveViewerAssetId } from '../../lib/feed/viewerIdentityDedupe.js';
     import { logViewerMediaIdentityDiagnostics } from '../../lib/feed/viewerMediaIdentity.js';
-    import { seriesCatalog } from '../../lib/series/seriesStore.js';
+    import { seriesCatalog, reelSeriesMetadata } from '../../lib/series/seriesStore.js';
     import { getReadyHeroVaultAssets } from '../../lib/series/heroVaultAssetSource.js';
+    import { resolveViewerEpisodePosterUrl } from '../../lib/series/viewerEpisodePoster.js';
     import { buildViewerSeriesBrowseCatalog } from '../../lib/series/viewerSeriesBrowseCatalog.js';
     import { listContinueWatching, formatRemainingLabel } from '../../lib/series/seriesWatchProgress.js';
     import SeriesBrowsePosterCard from '../series/SeriesBrowsePosterCard.svelte';
@@ -350,6 +351,7 @@
     $: readyBrowseAssets = getReadyHeroVaultAssets();
     $: productionBrowseCatalog = buildViewerSeriesBrowseCatalog($seriesCatalog, {
         readyVaultAssets: readyBrowseAssets,
+        reelMetadataMap: $reelSeriesMetadata,
         sectionLimit: 12
     });
     $: originalProductions = productionBrowseCatalog.sections.original;
@@ -391,6 +393,54 @@
     $: viewerFeedRows = Object.values($normalizedFeed || $feed || {})
         .flat()
         .filter((row) => row && typeof row === 'object' && !row.isPlaceholder && !row.isPresentationOnly);
+    $: continuePosterReadyAssets = (() => {
+        /** @type {Map<string, Record<string, unknown>>} */
+        const byId = new Map();
+        const push = (item) => {
+            if (!item || typeof item !== 'object') return;
+            const id = String(item.id || item.mediaAssetId || item.assetId || item.reelId || '').trim();
+            if (!id || byId.has(id)) return;
+            byId.set(id, item);
+        };
+        for (const item of getReadyHeroVaultAssets()) push(item);
+        for (const item of viewerFeedRows) push(item);
+        return [...byId.values()];
+    })();
+    /**
+     * @param {string} reelId
+     */
+    function findCatalogEpisodeByReelId(reelId) {
+        const id = String(reelId || '').trim();
+        if (!id) return null;
+        for (const series of $seriesCatalog || []) {
+            for (const season of series?.seasons || []) {
+                for (const episode of season?.episodes || []) {
+                    if (String(episode?.reelId || episode?.mediaAssetId || '').trim() === id) {
+                        return episode;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    /**
+     * Canonical viewer poster chain:
+     * episode/chip fields → ready vault/catalog assets (incl. CI artwork) → shelf fallback.
+     * @param {Record<string, unknown>} row
+     * @param {Record<string, unknown>} reel
+     * @param {Record<string, unknown> | null | undefined} projection
+     */
+    function resolveContinueWatchingPoster(row, reel, projection) {
+        const episode = findCatalogEpisodeByReelId(String(row?.reelId || ''));
+        if (episode) {
+            const poster = resolveViewerEpisodePosterUrl({
+                episode,
+                readyVaultAssets: continuePosterReadyAssets
+            });
+            if (poster) return poster;
+        }
+        return resolveShelfPoster(reel, null, projection, 'Continue Watching', 0);
+    }
     $: viewerFeedReelById = new Map(
         viewerFeedRows.map((reel) => [String(reel?.id || ''), reel]).filter(([id]) => id)
     );
@@ -404,7 +454,7 @@
                 row,
                 reel,
                 title,
-                poster: resolveShelfPoster(reel, null, projection, 'Continue Watching', 0)
+                poster: resolveContinueWatchingPoster(row, reel, projection)
             };
         })
         .filter(Boolean);
@@ -709,6 +759,10 @@
 {/if}
 
 <style>
+    .reelshort-feed-root {
+        display: flex;
+        flex-direction: column;
+    }
     .shelf {
         margin-bottom: 3rem;
         padding: 0 2rem;
@@ -892,7 +946,7 @@
         aspect-ratio: 16 / 9;
         background: rgba(255, 255, 255, 0.06);
     }
-    .viewer-continue__poster {
+    :global(.viewer-continue__poster) {
         width: 100%;
         height: 100%;
         object-fit: cover;
@@ -920,6 +974,80 @@
         outline: 2px solid rgba(0, 242, 255, 0.65);
         outline-offset: 2px;
     }
+
+    /*
+     * Short landscape phones (e.g. 844×390): same Series Home hierarchy as desktop,
+     * with tighter vertical density so Featured + Original Productions stay visible
+     * beneath the cinematic hero without becoming the primary browse surface.
+     */
+    @media (orientation: landscape) and (max-height: 500px) {
+        .viewer-featured {
+            padding: 0.55rem 1rem 0.3rem;
+            margin-bottom: 0.65rem;
+        }
+        .viewer-featured__heading {
+            margin-bottom: 0.45rem;
+            font-size: 0.72rem;
+        }
+        .viewer-featured :global(.viewer-sem-card--featured) {
+            width: min(100%, 400px);
+        }
+        .viewer-featured :global(.viewer-sem-card__media) {
+            max-height: min(36vh, 142px);
+        }
+        .viewer-featured :global(.viewer-sem-card__info) {
+            padding: 0.5rem 0.65rem 0.6rem;
+        }
+        .viewer-featured :global(.viewer-sem-card__title) {
+            font-size: 0.92rem;
+        }
+        .viewer-featured :global(.viewer-sem-card__desc) {
+            font-size: 0.78rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .viewer-discovery-rail {
+            padding: 0.2rem 1rem 0.35rem;
+            margin-bottom: 0.15rem;
+        }
+        .viewer-discovery-rail__tab {
+            font-size: 0.82rem;
+            min-height: 40px;
+            gap: 0.85rem;
+        }
+        .viewer-production-library {
+            padding: 0.45rem 1rem 1.15rem;
+            gap: 0.85rem;
+        }
+        .viewer-production-library__heading {
+            font-size: 0.72rem;
+        }
+        .viewer-production-library__grid {
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 0.5rem 0.45rem;
+        }
+        .viewer-continue {
+            padding: 0 1rem 1rem;
+        }
+        .viewer-continue__heading {
+            margin-bottom: 0.5rem;
+            font-size: 0.72rem;
+        }
+        .viewer-continue__card {
+            grid-template-columns: 76px minmax(0, 1fr);
+            gap: 0.5rem;
+            padding: 0.35rem;
+        }
+        .viewer-continue__title {
+            font-size: 0.82rem;
+        }
+        .viewer-continue__meta {
+            font-size: 0.68rem;
+        }
+    }
+
     .card-inner.vault-card {
         min-width: 120px;
         min-height: 120px;

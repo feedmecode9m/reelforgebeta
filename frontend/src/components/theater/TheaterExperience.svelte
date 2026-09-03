@@ -490,6 +490,7 @@
         applyContentIdentityToSeriesContext
     } from '../../lib/content/contentIdentityResolver.js';
     import {
+        detectMobileLandscapePresentation,
         detectMobilePresentation,
         subscribeMobilePresentation
     } from '../../lib/device/mobilePresentation.js';
@@ -534,6 +535,8 @@
      * Desktop path leaves controls as always-native (no mobile chrome).
      */
     let isMobileTheater = typeof window !== 'undefined' ? detectMobilePresentation() : true;
+    let isMobileLandscapeTheater =
+        typeof window !== 'undefined' ? detectMobileLandscapePresentation() : false;
     /** Autoplay requires muted; after gesture, user mute state is tracked (never force-mute). */
     let theaterMuted = true;
     let theaterVolume = 1;
@@ -544,11 +547,26 @@
     let theaterIsPlaying = false;
     /** @type {ReturnType<typeof setTimeout> | null} */
     let mobileControlsHideTimer = null;
+    /** Brief play/pause/seek glyph over landscape video (~400–700 ms). */
+    /** @type {{ kind: 'play' | 'pause' | 'seek-back' | 'seek-forward'; seconds?: number } | null} */
+    let landscapeGestureHint = null;
+    /** @type {ReturnType<typeof setTimeout> | null} */
+    let landscapeGestureHintTimer = null;
+    /** @type {{ x: number; y: number; id: number } | null} */
+    let landscapePointerStart = null;
+    const LANDSCAPE_TAP_SLOP_PX = 14;
+    const LANDSCAPE_SWIPE_THRESHOLD_PX = 36;
+    const LANDSCAPE_SEEK_SECONDS = 10;
+    const LANDSCAPE_GESTURE_HINT_MS = 550;
 
     /** @param {string} reason */
     function reportTheaterControls(reason) {
         logTheaterControls({
-            deviceType: isMobileTheater ? 'mobile' : 'desktop',
+            deviceType: isMobileLandscapeTheater
+                ? 'mobile-landscape'
+                : isMobileTheater
+                  ? 'mobile'
+                  : 'desktop',
             isMobile: isMobileTheater,
             controlsVisible,
             volumeVisible,
@@ -559,10 +577,39 @@
         });
     }
 
+    function syncMobileLandscapeTheaterFlag() {
+        const next = detectMobileLandscapePresentation();
+        if (next === isMobileLandscapeTheater) return;
+        const wasLandscape = isMobileLandscapeTheater;
+        isMobileLandscapeTheater = next;
+        if (isMobileLandscapeTheater) {
+            controlsVisible = false;
+            volumeVisible = false;
+            menuVisible = false;
+            landscapeGestureHint = null;
+            if (mobileControlsHideTimer != null) {
+                clearTimeout(mobileControlsHideTimer);
+                mobileControlsHideTimer = null;
+            }
+            if (landscapeGestureHintTimer != null) {
+                clearTimeout(landscapeGestureHintTimer);
+                landscapeGestureHintTimer = null;
+            }
+            return;
+        }
+        if (wasLandscape && isMobileTheater) {
+            const el = resolveTheaterVideoElement();
+            const playing = Boolean(el && !el.paused && !el.ended);
+            if (playing) hideMobileTheaterControls('orientation_portrait');
+            else showMobileTheaterControls('orientation_portrait');
+        }
+    }
+
     function syncMobileTheaterFlag(reason = 'detect') {
         const next = detectMobilePresentation();
         const changed = next !== isMobileTheater;
         isMobileTheater = next;
+        syncMobileLandscapeTheaterFlag();
         if (!isMobileTheater) {
             // Desktop: native controls + header always available — never hide.
             controlsVisible = true;
@@ -582,7 +629,7 @@
         reportTheaterControls(reason);
     }
 
-    /** Hide chrome while playing; keep Play/Mute at the bottom when paused. */
+    /** Hide header chrome while playing; restore when paused. */
     function hideMobileTheaterControls(reason = 'idle') {
         if (!isMobileTheater) return;
         const el = resolveTheaterVideoElement();
@@ -594,12 +641,12 @@
         } else {
             controlsVisible = true;
             volumeVisible = false;
-            menuVisible = false;
+            menuVisible = true;
         }
         reportTheaterControls(reason);
     }
 
-    /** Reveal Play/Mute + header; auto-hide while playback is running. */
+    /** Reveal header chrome; auto-hide while playback is running. */
     function showMobileTheaterControls(reason = 'tap') {
         if (!isMobileTheater) {
             reportTheaterControls(reason);
@@ -619,11 +666,93 @@
         }, 2800);
     }
 
+    /** @param {'play' | 'pause' | 'seek-back' | 'seek-forward'} kind @param {number} [seconds] */
+    function showLandscapeGestureHint(kind, seconds = LANDSCAPE_SEEK_SECONDS) {
+        landscapeGestureHint = { kind, seconds };
+        if (landscapeGestureHintTimer != null) clearTimeout(landscapeGestureHintTimer);
+        landscapeGestureHintTimer = setTimeout(() => {
+            landscapeGestureHint = null;
+            landscapeGestureHintTimer = null;
+        }, LANDSCAPE_GESTURE_HINT_MS);
+    }
+
+    /** @param {number} deltaSeconds */
+    function seekTheaterRelative(deltaSeconds) {
+        const el = resolveTheaterVideoElement();
+        if (!el) return;
+        const duration = Number(el.duration);
+        const hasDuration = Number.isFinite(duration) && duration > 0;
+        const next = hasDuration
+            ? Math.min(duration, Math.max(0, el.currentTime + deltaSeconds))
+            : Math.max(0, el.currentTime + deltaSeconds);
+        try {
+            el.currentTime = next;
+        } catch {
+            /* ignore seek failures */
+        }
+        showLandscapeGestureHint(
+            deltaSeconds < 0 ? 'seek-back' : 'seek-forward',
+            Math.abs(deltaSeconds)
+        );
+        reportTheaterControls(deltaSeconds < 0 ? 'landscape_seek_back' : 'landscape_seek_forward');
+    }
+
+    async function toggleTheaterPlaybackWithLandscapeHint() {
+        const el = resolveTheaterVideoElement();
+        const willPlay = Boolean(el && (el.paused || el.ended));
+        await toggleTheaterPlayback();
+        showLandscapeGestureHint(willPlay ? 'play' : 'pause');
+    }
+
+    /** @param {PointerEvent} e */
+    function handleLandscapeWrapperPointerDown(e) {
+        if (!isMobileTheater || e.pointerType === 'mouse') return;
+        const target = /** @type {HTMLElement | null} */ (e.target);
+        if (target?.closest?.('button, input, a, [role="toolbar"]')) return;
+        landscapePointerStart = { x: e.clientX, y: e.clientY, id: e.pointerId };
+    }
+
+    /** @param {PointerEvent} e */
+    function handleLandscapeWrapperPointerUp(e) {
+        if (!isMobileTheater || e.pointerType === 'mouse') return;
+        if (!landscapePointerStart || landscapePointerStart.id !== e.pointerId) return;
+        const target = /** @type {HTMLElement | null} */ (e.target);
+        if (target?.closest?.('button, input, a, [role="toolbar"]')) {
+            landscapePointerStart = null;
+            return;
+        }
+        const dx = e.clientX - landscapePointerStart.x;
+        const dy = e.clientY - landscapePointerStart.y;
+        landscapePointerStart = null;
+        const absDx = Math.abs(dx);
+        const absDy = Math.abs(dy);
+        if (absDx >= LANDSCAPE_SWIPE_THRESHOLD_PX && absDx > absDy * 1.2) {
+            e.preventDefault();
+            e.stopPropagation();
+            seekTheaterRelative(dx > 0 ? LANDSCAPE_SEEK_SECONDS : -LANDSCAPE_SEEK_SECONDS);
+            return;
+        }
+        if (absDx <= LANDSCAPE_TAP_SLOP_PX && absDy <= LANDSCAPE_TAP_SLOP_PX) {
+            e.preventDefault();
+            e.stopPropagation();
+            theaterPlayGestureLock = true;
+            void toggleTheaterPlaybackWithLandscapeHint().finally(() => {
+                setTimeout(() => {
+                    theaterPlayGestureLock = false;
+                }, 400);
+            });
+        }
+    }
+
+    function handleLandscapeWrapperPointerCancel() {
+        landscapePointerStart = null;
+    }
+
     function toggleMobileTheaterChrome(reason = 'tap') {
         if (!isMobileTheater) return;
         const el = resolveTheaterVideoElement();
         const playing = Boolean(el && !el.paused && !el.ended);
-        if (playing && (controlsVisible || menuVisible)) {
+        if (playing && menuVisible) {
             if (mobileControlsHideTimer != null) {
                 clearTimeout(mobileControlsHideTimer);
                 mobileControlsHideTimer = null;
@@ -806,35 +935,6 @@
     /** Guards against pointerup + synthetic click double-toggle on some WebViews. */
     let theaterPlayGestureLock = false;
 
-    /**
-     * pointerup owns the gesture (iOS user-activation). preventDefault suppresses the
-     * synthetic click so we do not play then immediately pause.
-     * @param {PointerEvent} e
-     */
-    function handleTheaterPlayPointerUp(e) {
-        e.stopPropagation();
-        e.preventDefault();
-        theaterPlayGestureLock = true;
-        logMobilePlayTrace('THEATER_PLAY_POINTER_UP', {
-            assetId: String(get(activeReel)?.id || '').trim(),
-            resolver: 'TheaterExperience.handleTheaterPlayPointerUp',
-            source: 'mobile-theater-play-chrome',
-            viewerOpen: true,
-            playCalled: true
-        });
-        void toggleTheaterPlayback();
-        setTimeout(() => {
-            theaterPlayGestureLock = false;
-        }, 400);
-    }
-
-    /** @param {MouseEvent} e */
-    function handleTheaterPlayClick(e) {
-        e.stopPropagation();
-        if (theaterPlayGestureLock) return;
-        void toggleTheaterPlayback();
-    }
-
     /** @param {Event} e */
     function handleTheaterVolumeInput(e) {
         const input = /** @type {HTMLInputElement} */ (e.currentTarget);
@@ -863,27 +963,17 @@
 
     /** @param {Event} e */
     function handleTheaterVideoInteraction(e) {
-        // Toggle chrome only. Do NOT stopPropagation/preventDefault on the video —
-        // that blocks PLAY-2 / iOS user-activation.
-        if (isMobileTheater) {
-            toggleMobileTheaterChrome(e.type === 'touchend' ? 'touch' : 'pointer');
-        }
+        // Mobile portrait + landscape: wrapper owns tap/swipe gestures (pure-gesture layer).
+        if (isMobileTheater) return;
     }
 
     /**
-     * Wrapper-only gesture: toggle play when the tap is not on native controls / chrome.
+     * Wrapper-only gesture on mobile: tap play/pause, horizontal swipe seek.
      * @param {PointerEvent} e
      */
     function handleTheaterWrapperPointerUp(e) {
-        if (!isMobileTheater) return;
-        const target = /** @type {HTMLElement | null} */ (e.target);
-        if (!target) return;
-        if (target.closest?.('.theater-mobile-controls')) return;
-        if (target.closest?.('button, input, a, [role="toolbar"]')) return;
-        // Video pointerup is handled on the element; avoid a second toggle on bubble.
-        if (target.closest?.('video, [data-theater-video]')) return;
-        if (e.currentTarget === target) {
-            toggleMobileTheaterChrome('wrapper_pointer');
+        if (isMobileTheater) {
+            handleLandscapeWrapperPointerUp(e);
         }
     }
 
@@ -914,6 +1004,17 @@
         const stopMobilePresentation = subscribeMobilePresentation(() =>
             syncMobileTheaterFlag('viewport_change')
         );
+        /** @type {MediaQueryList | null} */
+        let orientationMql = null;
+        const onOrientationChange = () => syncMobileTheaterFlag('orientation_change');
+        if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+            orientationMql = window.matchMedia('(orientation: landscape)');
+            if (typeof orientationMql.addEventListener === 'function') {
+                orientationMql.addEventListener('change', onOrientationChange);
+            } else if (typeof orientationMql.addListener === 'function') {
+                orientationMql.addListener(onOrientationChange);
+            }
+        }
         if (typeof window !== 'undefined') {
             window.addEventListener('reelforge:hero-watch-now', onHeroWatchNowCta);
             window.addEventListener('reelforge:hero-learn-more', onHeroLearnMoreCta);
@@ -922,7 +1023,17 @@
         return () => {
             stopEntitlement();
             stopMobilePresentation();
+            if (orientationMql) {
+                if (typeof orientationMql.removeEventListener === 'function') {
+                    orientationMql.removeEventListener('change', onOrientationChange);
+                } else if (typeof orientationMql.removeListener === 'function') {
+                    orientationMql.removeListener(onOrientationChange);
+                }
+            }
+            if (landscapeGestureHintTimer != null) clearTimeout(landscapeGestureHintTimer);
             if (typeof window !== 'undefined') {
+                window.removeEventListener('reelforge:hero-watch-now', onHeroWatchNowCta);
+                window.removeEventListener('reelforge:hero-learn-more', onHeroLearnMoreCta);
                 window.removeEventListener('reelforge:episode-play-blocked', handleSeriesEpisodeLocked);
             }
         };
@@ -1334,6 +1445,7 @@
             class:framing-fit={$theaterFraming === 'fit'}
             class:framing-smart={$theaterFraming === 'smart'}
             class:theater-mobile={isMobileTheater}
+            class:theater-mobile-landscape={isMobileLandscapeTheater}
             class:theater-controls-visible={controlsVisible}
             class:theater-chrome-visible={isMobileTheater && (controlsVisible || menuVisible)}
             data-theater-container
@@ -1391,7 +1503,10 @@
                     class:framing-fit={$theaterFraming === 'fit'}
                     class:framing-smart={$theaterFraming === 'smart'}
                     class:theater-video-wrapper--mobile={isMobileTheater}
+                    class:theater-video-wrapper--landscape={isMobileLandscapeTheater}
+                    on:pointerdown={handleLandscapeWrapperPointerDown}
                     on:pointerup={handleTheaterWrapperPointerUp}
+                    on:pointercancel={handleLandscapeWrapperPointerCancel}
                 >
                     {#key theaterVideoKey}
                         {#if $theaterFraming === 'smart'}
@@ -1500,33 +1615,26 @@
                             on:pointerup={handleTheaterVideoInteraction}
                         />
                     {/key}
-                    {#if isMobileTheater}
-                        <div
-                            class="theater-mobile-controls"
-                            class:is-visible={controlsVisible}
-                            role="toolbar"
-                            aria-label="Theater playback controls"
-                            aria-hidden={!controlsVisible}
-                        >
-                            <button
-                                type="button"
-                                class="theater-mobile-play"
-                                aria-label={theaterIsPlaying ? 'Pause video' : 'Play video'}
-                                on:pointerup={handleTheaterPlayPointerUp}
-                                on:pointerdown|stopPropagation
-                                on:click={handleTheaterPlayClick}
-                            >{theaterIsPlaying ? 'Pause' : 'Play'}</button>
-                            <button
-                                type="button"
-                                class="theater-mobile-mute"
-                                aria-pressed={!theaterMuted}
-                                aria-label={theaterMuted ? 'Unmute video' : 'Mute video'}
-                                on:click|stopPropagation={toggleTheaterMute}
-                                on:pointerdown|stopPropagation
-                            >{theaterMuted ? 'Unmute' : 'Mute'}</button>
+                    {#if isMobileTheater && landscapeGestureHint}
+                        <div class="theater-landscape-gesture-hint" aria-hidden="true">
+                            {#if landscapeGestureHint.kind === 'play'}
+                                <span class="theater-landscape-gesture-hint__icon">▶</span>
+                            {:else if landscapeGestureHint.kind === 'pause'}
+                                <span class="theater-landscape-gesture-hint__icon">❚❚</span>
+                            {:else if landscapeGestureHint.kind === 'seek-back'}
+                                <span class="theater-landscape-gesture-hint__icon"
+                                    >↶ {landscapeGestureHint.seconds}s</span
+                                >
+                            {:else if landscapeGestureHint.kind === 'seek-forward'}
+                                <span class="theater-landscape-gesture-hint__icon"
+                                    >{landscapeGestureHint.seconds}s ↷</span
+                                >
+                            {/if}
                         </div>
                     {/if}
-                    <ReelshortExperience section="theater-chrome" />
+                    {#if !isMobileTheater}
+                        <ReelshortExperience section="theater-chrome" />
+                    {/if}
                 </div>
                 {#if theaterPlayback?.source === 'vault-link'}
                     <p class="theater-vault-link-notice">▶ Playing linked vault episode for this placeholder</p>
@@ -1721,15 +1829,40 @@
     .theater-overlay--series-landscape .theater-container {
         max-width: none;
         max-height: 100vh;
-        width: 100%;
+        width: min(440px, 46vw);
+        min-width: 320px;
         height: 100%;
-        border-radius: 0;
+        border-radius: 34px;
         margin: 0;
         flex: unset;
-        padding: 1rem 1.25rem;
+        justify-self: center;
+        align-self: center;
+        padding: 0.7rem;
         box-sizing: border-box;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background:
+            radial-gradient(120% 100% at 50% 0%, rgba(255, 255, 255, 0.08) 0%, transparent 58%),
+            linear-gradient(180deg, #0f1014 0%, #08090d 100%);
+        box-shadow:
+            0 16px 48px rgba(0, 0, 0, 0.45),
+            inset 0 1px 0 rgba(255, 255, 255, 0.08);
     }
     .theater-overlay--series-landscape .theater-glow-border {
+        display: none;
+    }
+    .theater-overlay--series-landscape .theater-video-wrapper {
+        border-radius: 26px;
+        min-height: min(84vh, 860px);
+        box-shadow: 0 22px 48px rgba(0, 0, 0, 0.55);
+    }
+    .theater-overlay--series-landscape .theater-header {
+        margin-bottom: 0.5rem;
+        padding-inline: 0.1rem;
+    }
+    .theater-overlay--series-landscape :global([data-theater-series-panel]),
+    .theater-overlay--series-landscape .theater-meta,
+    .theater-overlay--series-landscape .theater-close-btn-bottom {
         display: none;
     }
     @media (max-width: 900px) {
@@ -1738,6 +1871,8 @@
             grid-template-columns: none;
         }
         .theater-overlay--series-landscape .theater-container {
+            width: 100%;
+            min-width: 0;
             max-width: min(96vw, 520px);
             max-height: 92vh;
             border-radius: 12px;
@@ -2131,10 +2266,6 @@
     }
 
     /* Mobile-only presentation — desktop selectors above are unchanged. Playback path untouched. */
-    .theater-mobile-controls {
-        display: none;
-    }
-
     @media (max-width: 640px), (hover: none) and (pointer: coarse) {
         .theater-container.theater-mobile {
             max-width: 100%;
@@ -2248,56 +2379,6 @@
             object-fit: contain;
         }
 
-        .theater-mobile-controls {
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            gap: 0.5rem;
-            position: absolute;
-            left: max(0.65rem, env(safe-area-inset-left, 0px));
-            right: max(0.65rem, env(safe-area-inset-right, 0px));
-            bottom: max(0.55rem, env(safe-area-inset-bottom, 0px));
-            z-index: 12;
-            padding: 0.4rem 0.5rem;
-            border-radius: 999px;
-            background: rgba(0, 0, 0, 0.55);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            backdrop-filter: blur(10px);
-            opacity: 0;
-            pointer-events: none;
-            transform: translateY(8px);
-            transition: opacity 0.18s ease, transform 0.18s ease;
-        }
-
-        .theater-mobile-controls.is-visible {
-            opacity: 1;
-            pointer-events: auto;
-            transform: translateY(0);
-        }
-
-        .theater-mobile-play,
-        .theater-mobile-mute {
-            flex-shrink: 0;
-            border: 1px solid rgba(255, 255, 255, 0.22);
-            background: rgba(255, 255, 255, 0.08);
-            color: #fff;
-            border-radius: 999px;
-            padding: 0.4rem 0.85rem;
-            font-size: 0.72rem;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            cursor: pointer;
-            min-height: 2.5rem;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .theater-mobile-play {
-            font-weight: 700;
-            background: rgba(0, 242, 255, 0.18);
-            border-color: rgba(0, 242, 255, 0.45);
-        }
-
         .theater-container.theater-mobile .theater-close-btn-bottom {
             display: none;
         }
@@ -2312,10 +2393,58 @@
             object-fit: cover;
         }
 
-        .theater-mobile-controls {
-            left: max(0.85rem, env(safe-area-inset-left, 0px));
-            right: auto;
-            bottom: max(0.45rem, env(safe-area-inset-bottom, 0px));
+        .theater-container.theater-mobile.theater-mobile-landscape .theater-header,
+        .theater-container.theater-mobile.theater-mobile-landscape .theater-header--menu-raised,
+        .theater-container.theater-mobile.theater-mobile-landscape.theater-chrome-visible
+            .theater-header,
+        .theater-container.theater-mobile.theater-mobile-landscape.theater-chrome-visible
+            .theater-header--menu-raised {
+            opacity: 0 !important;
+            pointer-events: none !important;
+            transform: translateY(-6px);
+        }
+
+        .theater-container.theater-mobile.theater-mobile-landscape .theater-video-wrapper,
+        .theater-container.theater-mobile.theater-mobile-landscape .theater-video-wrapper--landscape {
+            touch-action: pan-y pinch-zoom;
+        }
+
+        .theater-landscape-gesture-hint {
+            position: absolute;
+            inset: 0;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            animation: theaterLandscapeHintFade 0.55s ease forwards;
+        }
+
+        .theater-landscape-gesture-hint__icon {
+            font-size: clamp(1.75rem, 6vw, 2.75rem);
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.94);
+            text-shadow: 0 2px 28px rgba(0, 0, 0, 0.82);
+            letter-spacing: 0.04em;
+        }
+
+        @keyframes theaterLandscapeHintFade {
+            0% {
+                opacity: 0;
+                transform: scale(0.92);
+            }
+            18% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            72% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(1);
+            }
         }
     }
 </style>

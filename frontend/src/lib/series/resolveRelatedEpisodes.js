@@ -39,6 +39,7 @@ import { viewerFieldsFromVaultEnrichment } from './vaultEpisodeEnrichment.js';
 import { sortEpisodesForDisplay } from './seriesCatalogEdits.js';
 import { episodeIsViewerDiscoverable } from './publishingLifecycle.js';
 import { resolveEpisodeAccessPricing } from './episodeAccessPricing.js';
+import { matchLaProductionEpisodeNumber } from './laProductionEpisodeGuide.js';
 import {
     resolveLinkedAssetDisplayTitle,
     isUnsafeHeroFilenameTitle,
@@ -437,6 +438,51 @@ function creatorKeyOf(item) {
  */
 function descriptionOf(item) {
     return String(item?.description || item?.synopsis || item?.summary || '').trim();
+}
+
+/**
+ * @param {unknown} rawTitle
+ * @returns {number | null}
+ */
+function leadingEpisodeNumberFromTitle(rawTitle) {
+    const match = String(rawTitle || '').trim().match(/^(\d{1,3})\b/);
+    if (!match) return null;
+    const n = Number(match[1]);
+    return Number.isFinite(n) && n >= 1 ? n : null;
+}
+
+/**
+ * Extract LA production episode number from any available asset text.
+ * Handles normalized viewer titles without numeric prefixes.
+ * @param {Record<string, unknown> | null | undefined} asset
+ * @param {string} title
+ * @returns {number | null}
+ */
+function guideEpisodeNumberFromAsset(asset, title) {
+    const nested =
+        asset?.seriesIdentity && typeof asset.seriesIdentity === 'object'
+            ? /** @type {Record<string, unknown>} */ (asset.seriesIdentity)
+            : null;
+    const enrich =
+        asset?.episodeEnrichment && typeof asset.episodeEnrichment === 'object'
+            ? /** @type {Record<string, unknown>} */ (asset.episodeEnrichment)
+            : null;
+    const blob = [
+        title,
+        asset?.name,
+        asset?.title,
+        asset?.fileName,
+        asset?.file_name,
+        asset?.mediaUrl,
+        asset?.url,
+        nested?.episodeTitle,
+        nested?.seriesLabel,
+        enrich?.title
+    ]
+        .map((v) => String(v || '').trim())
+        .filter(Boolean)
+        .join(' ');
+    return matchLaProductionEpisodeNumber(blob);
 }
 
 /**
@@ -1423,9 +1469,27 @@ export function resolveRelatedEpisodes(assetOrReel, options = {}) {
                   : Number(label.episodeNumber) >= 1
                     ? Number(label.episodeNumber)
                     : 1;
+        if (episodeNumber <= 1) {
+            const fromPrefix = leadingEpisodeNumberFromTitle(title);
+            if (fromPrefix != null) episodeNumber = fromPrefix;
+        }
+        if (episodeNumber <= 1) {
+            const fromGuide = guideEpisodeNumberFromAsset(asset, title);
+            if (fromGuide != null && fromGuide >= 1) episodeNumber = fromGuide;
+        }
         if (enRes.source === 'none' && identity?.confidence === 'low') {
             // Keep a display placeholder of 1 for free-form pilots only — not written to catalog
-            episodeNumber = Number(label.episodeNumber) >= 1 ? Number(label.episodeNumber) : 1;
+            const fromLabel = Number(label.episodeNumber);
+            const fromPrefix = leadingEpisodeNumberFromTitle(title);
+            const fromGuide = guideEpisodeNumberFromAsset(asset, title);
+            episodeNumber =
+                Number.isFinite(fromLabel) && fromLabel >= 1
+                    ? fromLabel
+                    : fromPrefix != null
+                      ? fromPrefix
+                      : fromGuide != null && fromGuide >= 1
+                        ? fromGuide
+                      : 1;
         }
 
         const titleRes = resolveAuthoritativeEpisodeTitle({
@@ -1436,6 +1500,7 @@ export function resolveRelatedEpisodes(assetOrReel, options = {}) {
         });
 
         const access = resolveEpisodeAccessPricing({
+            episode: { episodeNumber },
             mediaAssetId: String(assetIdOf(asset) || id || label.assetId || ''),
             reelId,
             vaultAsset: asset

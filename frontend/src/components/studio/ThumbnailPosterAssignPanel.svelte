@@ -5,15 +5,19 @@
     listCatalogSeriesOptions,
     listSeasonOptionsForSeries,
     listEpisodeOptionsForSeason,
+    resolveEpisodeCatalogSelection,
     resolvePosterAssignmentTarget,
     resolveThumbnailVaultPosterUrl
   } from '../../lib/studio/episodePosterAssignment.js';
+  import { emitCreatorProductionUpdated } from '../../lib/studio/creatorActionRouter.js';
   import MediaThumbnail from '../media/MediaThumbnail.svelte';
 
   /** Thumbnail Vault entry being assigned. */
   export let thumbnailEntry = null;
   /** Ready Video Vault assets for title / linked-reel target resolution. */
   export let videoAssets = [];
+  /** Optional workflow episode prefill (higher priority than resolver). */
+  export let prefillEpisodeId = '';
   /** @type {import('svelte/store').Writable<string>} */
   export let uploadStatus;
   /** @type {() => void} */
@@ -50,20 +54,33 @@
   $: if (!thumbnailEntry) {
     openedEntryKey = '';
     userTouchedSelection = false;
+    selectedSeriesId = '';
+    selectedSeasonNumber = '';
+    selectedEpisodeId = '';
   } else {
     const nextKey = entryPreselectKey(thumbnailEntry);
     if (nextKey !== openedEntryKey) {
       openedEntryKey = nextKey;
       userTouchedSelection = false;
+      selectedSeriesId = '';
+      selectedSeasonNumber = '';
+      selectedEpisodeId = '';
     }
   }
 
   $: if (thumbnailEntry && !userTouchedSelection) {
-    const target = resolvePosterAssignmentTarget(thumbnailEntry, $seriesCatalog, { videoAssets });
-    if (target) {
-      selectedSeriesId = target.seriesId;
-      selectedSeasonNumber = String(target.seasonNumber);
-      selectedEpisodeId = target.episodeId;
+    const prefill = resolveEpisodeCatalogSelection(prefillEpisodeId, $seriesCatalog);
+    if (prefill) {
+      selectedSeriesId = prefill.seriesId;
+      selectedSeasonNumber = String(prefill.seasonNumber);
+      selectedEpisodeId = prefill.episodeId;
+    } else {
+      const target = resolvePosterAssignmentTarget(thumbnailEntry, { videoAssets });
+      if (target) {
+        selectedSeriesId = target.seriesId;
+        selectedSeasonNumber = String(target.seasonNumber);
+        selectedEpisodeId = target.episodeId;
+      }
     }
   }
 
@@ -81,6 +98,11 @@
       : [];
   $: selectedEpisode =
     episodeOptions.find((row) => row.episodeId === selectedEpisodeId) || null;
+  $: episodeSelectValue =
+    selectedEpisodeId &&
+    episodeOptions.some((row) => row.episodeId === selectedEpisodeId)
+      ? selectedEpisodeId
+      : '';
 
   $: if (selectedSeriesId && seasonOptions.length && selectedSeasonNumber === '') {
     selectedSeasonNumber = String(seasonOptions[0].seasonNumber);
@@ -129,7 +151,9 @@
 
     assigning = true;
     try {
-      const result = await assignEpisodePoster(selectedEpisodeId, posterUrl);
+      const result = await assignEpisodePoster(selectedEpisodeId, posterUrl, {
+        source: 'thumbnail-vault'
+      });
       if (!result.ok) {
         errorMessage = result.reason || 'Poster assignment failed';
         uploadStatus?.set?.(`❌ ${errorMessage}`);
@@ -137,6 +161,11 @@
       }
       successMessage = `Poster assigned to ${selectedEpisode?.label || selectedEpisodeId}`;
       uploadStatus?.set?.(`✅ ${successMessage}`);
+      emitCreatorProductionUpdated({
+        episodeId: selectedEpisodeId,
+        actionType: 'missing-thumbnail',
+        source: 'thumbnail-poster-assign'
+      });
       onAssigned();
       closePanel();
     } catch (err) {
@@ -215,8 +244,11 @@
         <label class="input-label-wrapper">
           Episode
           <select
-            bind:value={selectedEpisodeId}
-            on:change={handleEpisodeChange}
+            value={episodeSelectValue}
+            on:change={(event) => {
+              selectedEpisodeId = event.currentTarget.value;
+              handleEpisodeChange();
+            }}
             disabled={!selectedSeriesId || selectedSeasonNumber === '' || episodeOptions.length === 0}
             data-thumbnail-poster-episode
             data-testid="thumbnail-poster-episode-select"

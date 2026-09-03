@@ -4032,6 +4032,7 @@
   <ThumbnailPosterAssignPanel
     thumbnailEntry={posterAssignEntry}
     videoAssets={$personalVideos || []}
+    prefillEpisodeId={uploadEpisodeId}
     {uploadStatus}
     onClose={closePosterAssign}
     onAssigned={closePosterAssign}
@@ -4635,6 +4636,8 @@
                   ...(Array.isArray($personalVideos) ? $personalVideos : []),
                   ...(Array.isArray(vaultDisplayVideos) ? vaultDisplayVideos : [])
                 ]}
+                thumbnailVaultEntries={$personalThumbnailCollection || []}
+                heroVaultCard={isHeroInjectedVaultCard(video)}
                 active={true}
                 editSignal={vaultEditSignals[cardMediaAssetId] || 0}
                 packageSaveFeedback={vaultPackageSaveFeedback[cardMediaAssetId] || null}

@@ -6,7 +6,6 @@
     fetchStudioStatus,
     fetchStudioProjects,
     fetchProjectTree,
-    createStudioSeries,
     createStudioSeason,
     createStudioEpisode,
     attachReelToEpisode,
@@ -43,6 +42,7 @@
   import DeveloperDiagnosticsCenter from '../diagnostics/DeveloperDiagnosticsCenter.svelte';
   import EpisodeReelAttachmentPanel from '../studio/EpisodeReelAttachmentPanel.svelte';
   import { emitCreatorProductionUpdated } from '../../lib/studio/creatorActionRouter.js';
+  import { createCatalogSeriesFromStudio } from '../../lib/series/seriesStore.js';
   import StudioWalkthrough from '../studio/StudioWalkthrough.svelte';
   import VaultExperience from './VaultExperience.svelte';
   import HeroExperience from './HeroExperience.svelte';
@@ -714,6 +714,19 @@
     }
   }
 
+  /** @param {CustomEvent<{ seriesId?: string }>} event */
+  function handleCreatorCatalogEditInVault(event) {
+    const seriesId = String(event?.detail?.seriesId || '').trim();
+    if (seriesId && studioSelectedSeriesId) {
+      studioSelectedSeriesId.set(seriesId);
+    }
+    tick().then(() => {
+      document
+        .querySelector('[data-workspace-panel-content] .video-vault-grid, [data-workspace-panel-content] .video-vault-drop')
+        ?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    });
+  }
+
   export async function handleUploadWithFaces() {
     const title = get(newTitle);
     const sourceUrl = get(videoSource);
@@ -940,12 +953,37 @@
 
   export async function handleCreateStudioSeries() {
     const title = get(studioFormSeriesTitle).trim();
-    const projectId = get(studioCatalogProjectId);
-    if (!title || !projectId) return;
+    if (!title) return;
     try {
-      await createStudioSeries({ project_id: projectId, title });
+      const result = await createCatalogSeriesFromStudio(title);
+      if (!result.ok) {
+        throw new Error(result.error || result.reason || 'Series create failed');
+      }
+      const seriesId = String(result.seriesId || '').trim();
       studioFormSeriesTitle.set('');
-      await loadStudioHierarchy();
+      if (seriesId) {
+        studioSelectedSeriesId.set(seriesId);
+        studioProjectTree.update((tree) => {
+          if (!tree) return tree;
+          const series = Array.isArray(tree.series) ? tree.series : [];
+          if (series.some((row) => String(row?.id || '') === seriesId)) return tree;
+          return {
+            ...tree,
+            series: [
+              ...series,
+              {
+                id: seriesId,
+                title: result.title || title,
+                seasons: [{ season_number: 1, title: 'Season 1', episodes: [] }]
+              }
+            ]
+          };
+        });
+      }
+      emitCreatorProductionUpdated({
+        action: 'creator-catalog',
+        detail: { seriesId, source: 'studio-series-create' }
+      });
       uploadStatus.set(`✅ Series "${title}" created`);
       resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
     } catch (error) {
@@ -1300,6 +1338,8 @@
       aria-label="Smart Production Studio"
       tabindex="-1"
       data-studio-theme-shell
+      on:click|stopPropagation
+      on:keydown|stopPropagation
     >
       <header class="control-center-header">
         <div>
@@ -1326,6 +1366,7 @@
         </div>
       </header>
 
+      <div class="control-center-scroll-body" data-control-center-scroll-body>
       {#if $adminMode}
         <ProductionCommandCenter
           feedReels={studioFeedReels}
@@ -1605,6 +1646,7 @@
                 preferredSeriesId={$studioSelectedSeriesId || ''}
                 on:changed={handleCreatorCatalogChanged}
                 on:seriesSelect={handleCreatorCatalogSeriesSelect}
+                on:editInVault={handleCreatorCatalogEditInVault}
               />
             </div>
             <div class="series-metadata-studio-section">
@@ -2510,6 +2552,7 @@
           </div>
         </div>
       {/if}
+      </div>
     </div>
   </div>
 {/if}

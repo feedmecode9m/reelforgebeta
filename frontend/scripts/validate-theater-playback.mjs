@@ -91,16 +91,20 @@ assert(
     'Theater mount does not race a second play() after tick'
 );
 
-// Mobile play chrome: explicit Play/Pause (native control taps were blocked by stopPropagation)
+// Mobile pure-gesture Theater: wrapper pointer handlers, no bottom dock
 assert(/toggleTheaterPlayback/.test(theater), 'mobile Theater exposes toggleTheaterPlayback');
 assert(/startTheaterPlayback/.test(theater), 'mobile Theater exposes startTheaterPlayback helper');
 assert(/resolveTheaterVideoElement/.test(theater), 'mobile Theater resolves video via manager or DOM');
-assert(/theater-mobile-play/.test(theater), 'mobile Theater renders Play/Pause control');
-assert(/handleTheaterPlayPointerUp/.test(theater), 'mobile Play uses pointerup for user-activation');
-assert(/toggleMobileTheaterChrome/.test(theater), 'mobile chrome toggles on canvas tap');
-assert(/hideMobileTheaterControls/.test(theater), 'mobile chrome hides while playing');
-assert(/env\(safe-area-inset-bottom/.test(theater), 'mobile Play/Mute dock to bottom safe area');
-assert(/controls=\{!isMobileTheater\}/.test(theater), 'mobile uses custom chrome instead of native video controls');
+assert(!/theater-mobile-controls/.test(theater), 'mobile Theater does not render bottom playback dock');
+assert(!/theater-mobile-play/.test(theater), 'mobile Theater does not render Play/Pause pill');
+assert(/handleLandscapeWrapperPointerUp/.test(theater), 'mobile Theater uses wrapper pointerup for tap/seek gestures');
+assert(/handleTheaterWrapperPointerUp/.test(theater), 'video wrapper delegates mobile gestures');
+assert(/hideMobileTheaterControls/.test(theater), 'mobile header chrome hides while playing');
+assert(
+    /\{#if !isMobileTheater\}[\s\S]{0,120}section="theater-chrome"/.test(theater),
+    'progress ring / timeline chrome suppressed on mobile Theater'
+);
+assert(/controls=\{!isMobileTheater\}/.test(theater), 'mobile uses gesture layer instead of native video controls');
 assert(!/class="theater-mobile-volume"/.test(theater), 'mobile overlay does not include volume slider');
 assert(
     !/on:touchend=\{handleTheaterVideoInteraction\}/.test(theater),

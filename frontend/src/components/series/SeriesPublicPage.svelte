@@ -9,6 +9,7 @@
   import SeriesBadge from './SeriesBadge.svelte';
   import {
     seriesCatalog,
+    reelSeriesMetadata,
     getEpisodeById,
     initSeriesMetadata,
     resolveSeriesContextForReel
@@ -31,12 +32,9 @@
   } from '../../lib/series/publicSeriesHydration.js';
   import {
     seriesCatalogCounts,
-    creatorFacingDescription,
-    creatorFacingGenre,
     resolveSeriesPosterSrc
   } from '../../lib/series/seriesCatalogTruth.js';
-  import { resolvePublicGenreDisplay } from '../../lib/architecture/intelligenceProvenance.js';
-  import { buildViewerIntelligencePresentation } from '../../lib/viewer/viewerIntelligencePresentation.js';
+  import { buildViewerProductionProjection } from '../../lib/series/viewerProductionProjection.js';
   import { DEFAULT_MEDIA_PLACEHOLDER } from '../../lib/config.js';
   import {
     theaterReelFromVaultResolve,
@@ -102,12 +100,14 @@
   /**
    * Vault ready rows ∪ public API reels (deduped by id).
    * Lets resolveEpisodeMedia honor catalog reelId without requiring Hero Vault LS.
+   * @param {Record<string, unknown>[]} heroAssets
+   * @param {Record<string, unknown>[]} apiAssets
    * @returns {Record<string, unknown>[]}
    */
-  function mergeReadyMediaAssets() {
+  function mergeReadyMediaAssets(heroAssets, apiAssets) {
     /** @type {Map<string, Record<string, unknown>>} */
     const byId = new Map();
-    for (const item of [...heroVaultAssets, ...publicApiReadyAssets]) {
+    for (const item of [...(heroAssets || []), ...(apiAssets || [])]) {
       if (!item || typeof item !== 'object') continue;
       const id = String(item.id || item.mediaAssetId || item.assetId || '').trim();
       if (!id || byId.has(id)) continue;
@@ -116,7 +116,7 @@
     return [...byId.values()];
   }
 
-  $: effectiveReadyAssets = mergeReadyMediaAssets();
+  $: effectiveReadyAssets = mergeReadyMediaAssets(heroVaultAssets, publicApiReadyAssets);
 
   /**
    * Resolve series from catalog by id convention, then title slug.
@@ -286,36 +286,17 @@
     ? recommendSeries({ seedSeriesId: series.id, seedSeriesLabel: series.title, limit: 6 })
     : [];
   $: seriesById = new Map(($seriesCatalog || []).map((row) => [String(row?.id || ''), row]));
-  // Official Genre only when creator assigned it — never discovery shelf labels.
-  $: publicGenre = (() => {
-    const raw = creatorFacingGenre(series?.genre);
-    const resolved = resolvePublicGenreDisplay(raw, 'creator');
-    return resolved.official ? resolved.display : '';
-  })();
-  $: publicDescription = creatorFacingDescription(series?.description);
-  // Intelligence is viewer-explaining only — never replaces series.title / genre / description.
-  $: viewerPresentation = series
-    ? buildViewerIntelligencePresentation({
-        title: series.title,
-        description: publicDescription,
-        genre: publicGenre,
-        identityTerms: Array.isArray(series.tags) ? series.tags : [],
-        themes: Array.isArray(series.tags) ? series.tags : [],
-        discoveryKeywords: Array.isArray(series.tags) ? series.tags : []
+  $: productionProjection = series
+    ? buildViewerProductionProjection(series, {
+        reelMetadataMap: $reelSeriesMetadata,
+        readyVaultAssets: effectiveReadyAssets,
+        placeholder: DEFAULT_MEDIA_PLACEHOLDER
       })
     : null;
-  $: seriesPosterSrc = resolveSeriesPosterSrc({
-    seriesPoster: series?.poster,
-    episodeThumbnails: allEpisodes.map(({ episode }) => {
-      const resolved = resolveEpisodeMedia({
-        episode,
-        readyVaultAssets: effectiveReadyAssets
-      });
-      if (!resolved.matched) return null;
-      return resolved.thumbnail || resolved.mediaUrl || null;
-    }),
-    placeholder: DEFAULT_MEDIA_PLACEHOLDER
-  });
+  $: publicGenre = productionProjection?.genre || '';
+  $: publicDescription = productionProjection?.description || '';
+  $: viewerPresentation = productionProjection?.presentation || null;
+  $: seriesPosterSrc = productionProjection?.posterSrc || DEFAULT_MEDIA_PLACEHOLDER;
 
   /**
    * @param {import('../../lib/series/seriesTypes.js').Episode} episode
@@ -455,7 +436,7 @@
     // Uses vault ∪ public API reels so cold viewers resolve catalog reelId binds.
     const resolved = resolveEpisodeMedia({
       episode: ctx.episode,
-      readyVaultAssets: mergeReadyMediaAssets()
+      readyVaultAssets: effectiveReadyAssets
     });
     logEpisodeVaultResolve({
       episodeId,
@@ -693,7 +674,6 @@
         <p class="series-public__meta" data-series-catalog-counts>
           {catalogCounts.seasonCount} season{catalogCounts.seasonCount === 1 ? '' : 's'}
           · {catalogCounts.episodeCount} episode{catalogCounts.episodeCount === 1 ? '' : 's'}
-          · {catalogCounts.playableCount} playable
           {#if series.releaseYear}
             · {series.releaseYear}
           {/if}
@@ -1258,6 +1238,41 @@
       min-width: 44px;
       padding: 0.55rem 0.85rem;
       touch-action: manipulation;
+    }
+  }
+
+  /* Short landscape: keep Vic G identity dominant; episodes remain below season context. */
+  @media (orientation: landscape) and (max-height: 500px) {
+    .series-public {
+      padding-top: 0.35rem;
+    }
+    .series-public__hero {
+      margin-bottom: 1rem;
+      gap: 0.85rem;
+    }
+    .series-public__poster-wrap {
+      max-width: 108px;
+    }
+    .series-public__title {
+      font-size: clamp(1.35rem, 3.5vw, 1.85rem);
+      margin-bottom: 0.45rem;
+    }
+    .series-public__desc {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 0.55rem;
+    }
+    .series-public__meta {
+      font-size: 0.78rem;
+    }
+    .series-public__section-title {
+      font-size: 0.76rem;
+      margin-bottom: 0.55rem;
+    }
+    .series-public__seasons {
+      margin-top: 0.25rem;
     }
   }
 </style>

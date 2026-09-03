@@ -22,6 +22,7 @@ import {
     createSeries,
     createEpisode,
     updateEpisode,
+    seriesCreatePayloadFromStudioTitle,
     seriesToApiPayload,
     seriesToApiRowPayload,
     episodeToApiRowPayload,
@@ -49,7 +50,8 @@ import { getReadyHeroVaultAssets } from './heroVaultAssetSource.js';
 import { inferAndBindVaultSeries } from './vaultSeriesInference.js';
 import {
     isDemoSeriesId,
-    stripDemoSeriesFromCatalog
+    stripDemoSeriesFromCatalog,
+    resolveEditorialProsePrecedence
 } from './seriesCatalogTruth.js';
 import {
     mergeVicGSeriesIntoCatalog,
@@ -149,6 +151,7 @@ export const playableEpisodes = derived(seriesCatalog, ($catalog) => {
 
 let metadataInitialized = false;
 let apiHydrationStarted = false;
+const blockedApiMetadataReels = new Set();
 
 /** @type {'local' | 'api' | 'migrating'} */
 export const seriesPersistenceMode = writable('local');
@@ -206,10 +209,7 @@ function mergeMetadataMapsPreservingCreator(localMap, apiMap) {
                 lookupPersistentHeroTitle(reelId) ||
                 apiRow.episodeTitle ||
                 local.episodeTitle,
-            description:
-                apiRow.description != null && String(apiRow.description).trim() !== ''
-                    ? apiRow.description
-                    : local.description,
+            description: resolveEditorialProsePrecedence(apiRow.description, local.description),
             // Publishing: catalog-edits → API → local (never local-ready over API draft/published)
             episodeStatus:
                 editStatus || apiRow.episodeStatus || local.episodeStatus || 'draft'
@@ -343,7 +343,6 @@ function applyApiCatalogState(catalogItems, map) {
     seriesCatalog.set(withPackages);
     mergedMap = alignReelMetadataMapToCatalog(mergedMap, withPackages);
     reelSeriesMetadata.set(mergedMap);
-    persistReelSeriesMetadataMap(mergedMap);
 
     // Vault may attach media for reels not yet in catalog, or fill heroVaultAssetId —
     // must not invent publication or renumber catalog episodes.
@@ -356,7 +355,6 @@ function applyApiCatalogState(catalogItems, map) {
     const postBindCatalog = get(seriesCatalog);
     const realigned = alignReelMetadataMapToCatalog(get(reelSeriesMetadata), postBindCatalog);
     reelSeriesMetadata.set(realigned);
-    persistReelSeriesMetadataMap(realigned);
 
     // Creator Series Catalog edits (order + optional status overrides) final layer.
     reapplyCreatorCatalogAuthorityToStore();
@@ -389,7 +387,7 @@ export function ensureVicGSeriesPackage() {
 
 /**
  * Test / tooling entry: apply API catalog authority onto the live store
- * (skips network — same merge path as hydrateSeriesFromApi success).
+ * (skips network — same merge path as hydrateCreatorAuthoredCatalogFromApi success).
  * @param {import('./seriesTypes.js').Series[]} catalogItems
  */
 export function applyAuthoritativeApiCatalog(catalogItems) {
@@ -482,32 +480,72 @@ async function migrateLocalCatalogToApi(catalogItems, map) {
     logSeriesApiSync({ phase: 'migrate-complete', status: 'complete' });
 }
 
-/** Load series catalog from API when available; fallback to localStorage. */
-async function hydrateSeriesFromApi() {
+/**
+ * Explicit API → hydrated catalog boundary.
+ *
+ * Ordering inside applyApiCatalogState:
+ *   API catalog rows → metadata align → vault media rebind (bindings only)
+ *   → reapplyCreatorCatalogAuthorityToStore (durable creator edits win last)
+ *
+ * Creator-confirmed vault seriesIdentity lives in personal_video_vault, not API rows.
+ * It is overlaid at vault hydrate via overlayLocalCreatorVaultAuthority (separate boundary).
+ *
+ * @param {unknown} [prefetchedResponse] optional GET /api/series payload (tests/migration)
+ * @returns {Promise<{ ok: true; seriesCount: number } | { ok: false; reason: string }>}
+ */
+export async function hydrateCreatorAuthoredCatalogFromApi(prefetchedResponse) {
     try {
         const available = await isSeriesApiAvailable();
         if (!available) {
             logSeriesApiRead({ source: 'fallback', reason: 'api-unavailable' });
             seriesPersistenceMode.set('local');
-            return;
+            return { ok: false, reason: 'api-unavailable' };
         }
 
-        const response = await fetchAllSeries();
+        const response =
+            prefetchedResponse !== undefined ? prefetchedResponse : await fetchAllSeries();
         if (response?.disabled) {
-            logSeriesApiRead({ source: 'fallback', reason: response.error || 'api-disabled' });
+            logSeriesApiRead({
+                source: 'fallback',
+                reason: response.error || 'api-disabled'
+            });
             seriesPersistenceMode.set('local');
+            return { ok: false, reason: response.error || 'api-disabled' };
+        }
+
+        if (!Array.isArray(response) || response.length === 0) {
+            logSeriesApiRead({ source: 'local-empty-api' });
+            return { ok: false, reason: 'api-empty' };
+        }
+
+        const catalogItems = response.map((row) => apiSeriesToCatalog(row)).filter(isSeries);
+        const map = catalogToReelMetadataMap(catalogItems);
+        applyApiCatalogState(catalogItems, map);
+        persistReelSeriesMetadataMap(get(reelSeriesMetadata));
+        cacheSeriesCatalogOffline(get(seriesCatalog), get(reelSeriesMetadata));
+        markSeriesApiMigrated();
+        logSeriesApiRead({
+            source: 'creator-authored-api-hydrate',
+            seriesCount: catalogItems.length
+        });
+        return { ok: true, seriesCount: catalogItems.length };
+    } catch (err) {
+        const message = String(err?.message || err || 'api-error');
+        logSeriesApiRead({ source: 'fallback', reason: message });
+        seriesPersistenceMode.set('local');
+        return { ok: false, reason: message };
+    }
+}
+
+/** Load series catalog from API when available; fallback to localStorage. */
+async function hydrateSeriesFromApi() {
+    try {
+        const hydrated = await hydrateCreatorAuthoredCatalogFromApi();
+        if (hydrated.ok) {
             return;
         }
 
-        if (Array.isArray(response) && response.length > 0) {
-            const catalogItems = response.map((row) => apiSeriesToCatalog(row)).filter(isSeries);
-            const map = catalogToReelMetadataMap(catalogItems);
-            applyApiCatalogState(catalogItems, map);
-            // applyApiCatalogState already merged + reapplied creator authority into map
-            persistReelSeriesMetadataMap(get(reelSeriesMetadata));
-            cacheSeriesCatalogOffline(get(seriesCatalog), get(reelSeriesMetadata));
-            markSeriesApiMigrated();
-            logSeriesApiRead({ source: 'api', seriesCount: catalogItems.length });
+        if (hydrated.reason !== 'api-empty') {
             return;
         }
 
@@ -516,15 +554,14 @@ async function hydrateSeriesFromApi() {
         if (!isSeriesApiMigrated() && (Object.keys(localMap).length > 0 || localCatalog.length > 0)) {
             await migrateLocalCatalogToApi(localCatalog, localMap);
             const refreshed = await fetchAllSeries();
-            if (Array.isArray(refreshed) && refreshed.length > 0) {
-                const catalogItems = refreshed.map((row) => apiSeriesToCatalog(row)).filter(isSeries);
-                const map = catalogToReelMetadataMap(catalogItems);
-                applyApiCatalogState(catalogItems, map);
-                persistReelSeriesMetadataMap(get(reelSeriesMetadata));
-                cacheSeriesCatalogOffline(get(seriesCatalog), get(reelSeriesMetadata));
-                logSeriesApiSync({ source: 'migrated', seriesCount: catalogItems.length });
-                return;
+            const remigrated = await hydrateCreatorAuthoredCatalogFromApi(refreshed);
+            if (remigrated.ok) {
+                logSeriesApiSync({
+                    source: 'migrated',
+                    seriesCount: remigrated.seriesCount
+                });
             }
+            return;
         }
 
         logSeriesApiRead({ source: 'local-empty-api' });
@@ -671,50 +708,98 @@ export function saveReelSeriesMetadata(reelId, patch, options = {}) {
             aliases: rest.aliases
         });
     }
-    void persistReelMetadataToApi(reelId, saved);
+    const allowApiPersist =
+        sourceType === PROVENANCE_SOURCE_TYPES.CREATOR ||
+        sourceType === PROVENANCE_SOURCE_TYPES.BINDING;
+    if (allowApiPersist) {
+        void persistReelMetadataToApi(reelId, saved);
+    }
     scheduleSyncPush('seriesMetadata');
     return saved;
 }
 
 /** @param {string} reelId @param {ReelSeriesMetadata} saved */
 async function persistReelMetadataToApi(reelId, saved) {
+    if (blockedApiMetadataReels.has(String(reelId))) {
+        return;
+    }
     try {
         const available = await isSeriesApiAvailable();
         if (!available) {
             logSeriesApiWrite({ source: 'fallback', reelId, reason: 'api-unavailable' });
             return;
         }
+        if (!getAdminToken()) {
+            logSeriesApiWrite({ source: 'fallback', reelId, reason: 'missing_authorization' });
+            return;
+        }
 
         // Clone current catalog for API payload only. Never re-set the live store from this
         // snapshot after `await` — a concurrent draft/status edit would be clobbered.
         const live = get(seriesCatalog);
+        const savedSeriesId = String(saved?.seriesId || '').trim();
+        const hasExistingSavedSeries = savedSeriesId
+            ? live.some((series) => String(series?.id || '') === savedSeriesId)
+            : false;
+        const canonicalBinding = live
+            .flatMap((series) =>
+                (series.seasons || []).flatMap((season) =>
+                    (season.episodes || []).map((episode) => ({
+                        seriesId: series.id,
+                        seriesTitle: series.title,
+                        seasonNumber: season.seasonNumber,
+                        episodeId: episode.episodeId,
+                        episodeNumber: episode.episodeNumber,
+                        episodeTitle: episode.title,
+                        episodeStatus: episode.status,
+                        reelId: episode.reelId
+                    }))
+                )
+            )
+            .find((binding) => String(binding.reelId || '') === String(reelId));
+        if (!canonicalBinding && !hasExistingSavedSeries) {
+            logSeriesApiWrite({
+                source: 'fallback',
+                reelId,
+                reason: 'unbound_series_metadata'
+            });
+            return;
+        }
+        const metadataForApi = canonicalBinding
+            ? {
+                  ...saved,
+                  seriesId: canonicalBinding.seriesId,
+                  seriesName: canonicalBinding.seriesTitle,
+                  seasonNumber: canonicalBinding.seasonNumber,
+                  episodeId: canonicalBinding.episodeId,
+                  episodeNumber: canonicalBinding.episodeNumber,
+                  episodeTitle:
+                      String(saved?.episodeTitle || '').trim() || canonicalBinding.episodeTitle,
+                  episodeStatus:
+                      canonicalBinding.episodeStatus || saved?.episodeStatus || 'draft'
+              }
+            : saved;
         const catalogClone =
             typeof structuredClone === 'function'
                 ? structuredClone(live)
                 : /** @type {Series[]} */ (JSON.parse(JSON.stringify(live)));
-        const target = applyReelPatchToCatalog(catalogClone, reelId, saved);
+        const target = applyReelPatchToCatalog(catalogClone, reelId, metadataForApi);
         if (!target) return;
+        const targetTags = Array.isArray(target.tags) ? target.tags.map((tag) => String(tag)) : [];
+        if (targetTags.includes('vault-inferred') || targetTags.includes('nlp-rehomed')) {
+            logSeriesApiWrite({
+                source: 'fallback',
+                reelId,
+                reason: 'inferred_series_not_persisted'
+            });
+            return;
+        }
 
         // Secondary guard: do not demote established catalog publish state from stale client snapshots.
-        const liveEpisodeCtx = live
-            .flatMap((series) => {
-                const seriesTags = Array.isArray(series.tags) ? series.tags.map(String) : [];
-                return (series.seasons || []).flatMap((season) =>
-                    (season.episodes || [])
-                        .filter((ep) => String(ep?.reelId || '') === String(reelId))
-                        .map((ep) => ({
-                            episodeStatus: ep.status,
-                            seriesTags
-                        }))
-                );
-            })
-            .find(Boolean);
         if (
-            liveEpisodeCtx &&
-            String(liveEpisodeCtx.episodeStatus || '') === 'draft' &&
-            String(saved?.episodeStatus || '') === 'published' &&
-            !liveEpisodeCtx.seriesTags.includes('vault-inferred') &&
-            !liveEpisodeCtx.seriesTags.includes('nlp-rehomed')
+            canonicalBinding &&
+            String(canonicalBinding.episodeStatus || '') === 'draft' &&
+            String(saved?.episodeStatus || '') === 'published'
         ) {
             for (const season of target.seasons || []) {
                 for (const episode of season.episodes || []) {
@@ -727,16 +812,51 @@ async function persistReelMetadataToApi(reelId, saved) {
         }
 
         const payload = seriesToApiPayload(target);
+        const liveEpisodeByReel = new Map();
+        for (const series of live) {
+            for (const season of series.seasons || []) {
+                for (const episode of season.episodes || []) {
+                    const id = String(episode?.reelId || '').trim();
+                    if (!id) continue;
+                    liveEpisodeByReel.set(id, String(episode.episodeId || ''));
+                }
+            }
+        }
+        const duplicateConflict = (payload.seasons || [])
+            .flatMap((season) => season.episodes || [])
+            .find((episode) => {
+                const reel = String(episode?.reelId || '').trim();
+                if (!reel) return false;
+                const existingEpisodeId = String(liveEpisodeByReel.get(reel) || '');
+                const nextEpisodeId = String(episode?.episodeId || '');
+                return existingEpisodeId && nextEpisodeId && existingEpisodeId !== nextEpisodeId;
+            });
+        if (duplicateConflict) {
+            blockedApiMetadataReels.add(String(reelId));
+            logSeriesApiWrite({
+                source: 'fallback',
+                reelId,
+                reason: 'reel_conflict_existing_episode'
+            });
+            return;
+        }
         await updateSeries(target.id, payload);
         seriesPersistenceMode.set('api');
         const current = get(seriesCatalog);
         cacheSeriesCatalogOffline(current, catalogToReelMetadataMap(current));
         logSeriesApiWrite({ reelId, seriesId: target.id, source: 'api' });
     } catch (err) {
+        const message = String(err?.message || '');
+        if (
+            /idx_episodes_reel_unique/i.test(message) ||
+            /duplicate key value violates unique constraint/i.test(message)
+        ) {
+            blockedApiMetadataReels.add(String(reelId));
+        }
         logSeriesApiWrite({
             source: 'fallback',
             reelId,
-            reason: err?.message || 'api-save-failed'
+            reason: message || 'api-save-failed'
         });
     }
 }
@@ -1454,8 +1574,9 @@ export function updateCatalogEpisode(episodeId, patch = {}) {
  *
  * @param {string} episodeId
  * @param {string} thumbnailUrl
+ * @param {{ source?: 'thumbnail-vault' | 'mp4-still' }} [options]
  */
-export async function assignEpisodePoster(episodeId, thumbnailUrl) {
+export async function assignEpisodePoster(episodeId, thumbnailUrl, options = {}) {
     const eid = String(episodeId || '').trim();
     const url = String(thumbnailUrl || '').trim();
     if (!eid || !url) {
@@ -1470,6 +1591,10 @@ export async function assignEpisodePoster(episodeId, thumbnailUrl) {
     const updated = updateCatalogEpisode(eid, { thumbnailUrl: url });
     if (!updated?.episode) {
         return { ok: false, reason: 'catalog-update-failed' };
+    }
+
+    if (options.source === 'thumbnail-vault' || options.source === 'mp4-still') {
+        upsertEpisodeCatalogEdit(updated.series.id, eid, { posterAssignSource: options.source });
     }
 
     const persist = await persistEpisodeRowToApi(eid);
@@ -1752,6 +1877,66 @@ export function updateCatalogSeries(seriesId, patch = {}) {
  * @param {string} seriesId
  * @returns {Promise<{ ok: boolean; reason?: string; error?: string }>}
  */
+/**
+ * Create a canonical Series from Studio "+ Add series" (POST /api/series).
+ * Does not write to studio_series — catalog hydration is the downstream authority.
+ *
+ * @param {string} title
+ * @returns {Promise<{ ok: boolean; reason?: string; error?: string; seriesId?: string; title?: string; series?: import('./seriesTypes.js').Series }>}
+ */
+export async function createCatalogSeriesFromStudio(title) {
+    const trimmed = String(title || '').trim();
+    if (!trimmed) {
+        return { ok: false, reason: 'empty-title' };
+    }
+
+    try {
+        const available = await isSeriesApiAvailable();
+        if (!available) {
+            logSeriesApiWrite({ source: 'fallback', reason: 'api-unavailable', phase: 'studio-create' });
+            return { ok: false, reason: 'api-unavailable' };
+        }
+        if (!getAdminToken()) {
+            logSeriesApiWrite({ source: 'fallback', reason: 'missing_authorization', phase: 'studio-create' });
+            return { ok: false, reason: 'missing_authorization' };
+        }
+
+        const payload = seriesCreatePayloadFromStudioTitle(trimmed);
+        const created = await createSeries(payload);
+        if (created?.disabled) {
+            return { ok: false, reason: created.error || 'api-disabled' };
+        }
+
+        const catalogSeries = apiSeriesToCatalog(/** @type {Record<string, unknown>} */ (created));
+        if (!catalogSeries?.id) {
+            return { ok: false, reason: 'invalid-api-response' };
+        }
+
+        seriesCatalog.update((items) => {
+            const rest = items.filter((s) => s.id !== catalogSeries.id);
+            return [...rest, catalogSeries];
+        });
+        seriesPersistenceMode.set('api');
+        cacheSeriesCatalogOffline(get(seriesCatalog), get(reelSeriesMetadata));
+        logSeriesApiWrite({
+            seriesId: catalogSeries.id,
+            source: 'studio-series-create',
+            seasonCount: catalogSeries.seasons?.length || 0
+        });
+
+        return {
+            ok: true,
+            seriesId: catalogSeries.id,
+            title: catalogSeries.title,
+            series: getSeriesById(catalogSeries.id) || catalogSeries
+        };
+    } catch (err) {
+        const message = String(err?.message || err || 'api-create-failed');
+        logSeriesApiWrite({ source: 'fallback', reason: message, phase: 'studio-create' });
+        return { ok: false, reason: 'api-create-failed', error: message };
+    }
+}
+
 export async function persistSeriesRowToApi(seriesId) {
     const sid = String(seriesId || '').trim();
     if (!sid) {
@@ -1791,11 +1976,15 @@ export async function persistSeriesRowToApi(seriesId) {
     }
 }
 
-export async function persistEpisodeRowToApi(episodeId) {
+export async function persistEpisodeRowToApi(episodeId, options = {}) {
     const eid = String(episodeId || '').trim();
     if (!eid) {
         return { ok: false, reason: 'missing-episode-id' };
     }
+
+    const applyCatalogStatus = options.applyCatalogStatus
+        ? String(options.applyCatalogStatus).trim()
+        : '';
 
     try {
         const available = await isSeriesApiAvailable();
@@ -1814,6 +2003,76 @@ export async function persistEpisodeRowToApi(episodeId) {
         }
 
         const payload = episodeToApiRowPayload(ctx);
+        if (applyCatalogStatus) {
+            payload.status = applyCatalogStatus;
+        }
+        if (!String(payload.title || '').trim()) {
+            return { ok: false, reason: 'empty-title' };
+        }
+
+        let result = await updateEpisode(eid, payload);
+        if (result?.disabled && String(result.error || '').toLowerCase().includes('episode not found')) {
+            const createBody = episodeToApiCreatePayload(ctx);
+            if (!createBody) {
+                return { ok: false, reason: 'invalid-create-payload' };
+            }
+            if (applyCatalogStatus) {
+                createBody.status = applyCatalogStatus;
+            }
+            result = await createEpisode(createBody);
+        }
+        if (result?.disabled) {
+            return { ok: false, reason: result.error || 'api-disabled' };
+        }
+
+        if (applyCatalogStatus) {
+            updateCatalogEpisode(eid, { status: /** @type {import('./seriesTypes.js').EpisodeStatus} */ (applyCatalogStatus) });
+        }
+
+        seriesPersistenceMode.set('api');
+        cacheSeriesCatalogOffline(get(seriesCatalog), get(reelSeriesMetadata));
+        logSeriesApiWrite({ episodeId: eid, source: 'episode-row-save' });
+        return { ok: true };
+    } catch (err) {
+        const message = String(err?.message || err || 'api-save-failed');
+        logSeriesApiWrite({ source: 'fallback', episodeId: eid, reason: message });
+        return { ok: false, reason: 'api-save-failed', error: message };
+    }
+}
+
+/**
+ * Persist creator-authored episode row including durable reel binding.
+ * Catalog → API boundary for vault materialization (series shell persisted separately).
+ *
+ * @param {string} episodeId
+ */
+export async function persistCreatorAuthoredEpisodeRowToApi(episodeId) {
+    const eid = String(episodeId || '').trim();
+    if (!eid) {
+        return { ok: false, reason: 'missing-episode-id' };
+    }
+
+    try {
+        const available = await isSeriesApiAvailable();
+        if (!available) {
+            logSeriesApiWrite({ source: 'fallback', episodeId: eid, reason: 'api-unavailable' });
+            return { ok: false, reason: 'api-unavailable' };
+        }
+        if (!getAdminToken()) {
+            logSeriesApiWrite({ source: 'fallback', episodeId: eid, reason: 'missing_authorization' });
+            return { ok: false, reason: 'missing_authorization' };
+        }
+
+        const ctx = getEpisodeById(eid);
+        if (!ctx?.episode?.episodeId) {
+            return { ok: false, reason: 'episode-not-found' };
+        }
+
+        const payload = episodeToApiRowPayload(ctx);
+        const reelId = String(ctx.episode.reelId || ctx.episode.mediaAssetId || '').trim();
+        if (reelId) {
+            payload.reelId = reelId;
+        }
         if (!String(payload.title || '').trim()) {
             return { ok: false, reason: 'empty-title' };
         }
@@ -1832,13 +2091,155 @@ export async function persistEpisodeRowToApi(episodeId) {
 
         seriesPersistenceMode.set('api');
         cacheSeriesCatalogOffline(get(seriesCatalog), get(reelSeriesMetadata));
-        logSeriesApiWrite({ episodeId: eid, source: 'episode-row-save' });
-        return { ok: true };
+        logSeriesApiWrite({ episodeId: eid, source: 'creator-authored-episode-persist', reelId: reelId || null });
+        return { ok: true, episodeId: eid, reelId: reelId || null };
     } catch (err) {
         const message = String(err?.message || err || 'api-save-failed');
         logSeriesApiWrite({ source: 'fallback', episodeId: eid, reason: message });
         return { ok: false, reason: 'api-save-failed', error: message };
     }
+}
+
+/**
+ * Persist an authored series shell to the Series API (PUT with POST create fallback).
+ * Creates season scaffolding only — episodes are persisted separately.
+ *
+ * @param {string} seriesId
+ */
+export async function persistAuthoredSeriesToApi(seriesId) {
+    const sid = String(seriesId || '').trim();
+    if (!sid) {
+        return { ok: false, reason: 'missing-series-id' };
+    }
+
+    try {
+        const available = await isSeriesApiAvailable();
+        if (!available) {
+            logSeriesApiWrite({ source: 'fallback', seriesId: sid, reason: 'api-unavailable' });
+            return { ok: false, reason: 'api-unavailable' };
+        }
+        if (!getAdminToken()) {
+            logSeriesApiWrite({ source: 'fallback', seriesId: sid, reason: 'missing_authorization' });
+            return { ok: false, reason: 'missing_authorization' };
+        }
+
+        const series = getSeriesById(sid);
+        if (!series) {
+            return { ok: false, reason: 'series-not-found' };
+        }
+
+        const rowPayload = seriesToApiRowPayload(series);
+        if (!String(rowPayload.title || '').trim()) {
+            return { ok: false, reason: 'empty-title' };
+        }
+
+        let result = await updateSeries(sid, rowPayload);
+        if (result?.disabled && String(result.error || '').toLowerCase().includes('not found')) {
+            /** @type {Record<string, unknown>} */
+            const createPayload = {
+                ...rowPayload,
+                seasons: (series.seasons || []).map((season) => ({
+                    seasonId: season.seasonId || `season-${sid}-${season.seasonNumber}`,
+                    seasonNumber: season.seasonNumber,
+                    title: season.title,
+                    description: season.description,
+                    episodes: []
+                }))
+            };
+            result = await createSeries(createPayload);
+            if (result?.disabled) {
+                return { ok: false, reason: result.error || 'api-disabled' };
+            }
+            const catalogSeries = apiSeriesToCatalog(/** @type {Record<string, unknown>} */ (result));
+            if (catalogSeries?.id) {
+                seriesCatalog.update((items) => {
+                    const rest = items.filter((s) => s.id !== catalogSeries.id);
+                    const local = getSeriesById(sid);
+                    return [...rest, local || catalogSeries];
+                });
+            }
+        }
+
+        seriesPersistenceMode.set('api');
+        cacheSeriesCatalogOffline(get(seriesCatalog), get(reelSeriesMetadata));
+        logSeriesApiWrite({ seriesId: sid, source: 'authored-series-persist' });
+        return { ok: true, seriesId: sid };
+    } catch (err) {
+        const message = String(err?.message || err || 'api-save-failed');
+        logSeriesApiWrite({ source: 'fallback', seriesId: sid, reason: message });
+        return { ok: false, reason: 'api-save-failed', error: message };
+    }
+}
+
+/**
+ * Vault → Catalog → API: materialize creator-confirmed production and persist durably.
+ *
+ * Ordering: identity materialization → series shell → episode + reel binding.
+ * Does not transition publication status — callers publish only after this succeeds.
+ *
+ * @param {Record<string, unknown> | null | undefined} vaultAsset
+ */
+export async function persistCreatorAuthoredCatalogProduction(vaultAsset) {
+    const { materializeCreatorAuthoredCatalogProduction } = await import('./authoredCatalogMaterialization.js');
+    const materialized = materializeCreatorAuthoredCatalogProduction(vaultAsset);
+    if (!materialized.ok) {
+        return materialized;
+    }
+
+    const ctx = materialized.ctx;
+    if (!ctx?.series?.id || !ctx?.episode?.episodeId) {
+        return { ok: false, reason: 'episode-materialization-failed' };
+    }
+
+    const seriesPersist = await persistAuthoredSeriesToApi(ctx.series.id);
+    if (!seriesPersist.ok) {
+        return seriesPersist;
+    }
+
+    const episodePersist = await persistCreatorAuthoredEpisodeRowToApi(ctx.episode.episodeId);
+    if (!episodePersist.ok) {
+        return episodePersist;
+    }
+
+    return {
+        ok: true,
+        ctx: getEpisodeById(ctx.episode.episodeId) || ctx,
+        mediaAssetId: materialized.mediaAssetId,
+        seriesId: ctx.series.id,
+        episodeId: ctx.episode.episodeId,
+        reelId: episodePersist.reelId || String(ctx.episode.reelId || materialized.mediaAssetId || '').trim() || null
+    };
+}
+
+/**
+ * Bind a vault asset into the catalog (when possible), patch episode fields, persist row to API.
+ *
+ * @param {string} mediaAssetId
+ * @param {{ title?: string; description?: string; status?: import('./seriesTypes.js').EpisodeStatus }} [patch]
+ * @param {Record<string, unknown> | null} [vaultAsset]
+ */
+export async function persistVaultEditsToCanonicalEpisode(mediaAssetId, patch = {}, vaultAsset = null) {
+    const id = String(mediaAssetId || '').trim();
+    if (!id) {
+        return { ok: false, reason: 'missing-media-asset-id' };
+    }
+
+    const asset =
+        vaultAsset && typeof vaultAsset === 'object'
+            ? { ...vaultAsset, id: String(vaultAsset.id || id).trim() || id }
+            : { id };
+    inferAndBindVaultSeries([asset], { source: 'vault-canonical-episode-save' });
+
+    const ctx = getEpisodeByReelId(id);
+    if (!ctx?.episode?.episodeId) {
+        return { ok: false, reason: 'no-catalog-episode' };
+    }
+
+    if (patch && typeof patch === 'object' && Object.keys(patch).length) {
+        updateCatalogEpisode(ctx.episode.episodeId, patch);
+    }
+
+    return persistEpisodeRowToApi(ctx.episode.episodeId);
 }
 
 /**

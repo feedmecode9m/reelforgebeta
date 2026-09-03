@@ -1406,8 +1406,9 @@ const now = Date.now();
 if (!force && now - lastSyncFromVaultAt < 5000) return;
 syncFromVaultInFlight = (async () => {
 pipelineCheckpoint('SYNC_FROM_VAULT', { phase: 'start', preserveLocal, force });
+const announceSync = force;
 const debugApi = import.meta.env.VITE_DEBUG_API === 'true';
-if (debugApi) console.info('[SYNC_DEBUG] syncFromVault:start', { preserveLocal, now });
+if (debugApi) console.info('[SYNC_DEBUG] syncFromVault:start', { preserveLocal, now, announceSync });
 let rawData = [];
 let syncCompletedSuccessfully = false;
 try {
@@ -1423,7 +1424,9 @@ try {
   /* ignore */
 }
 let backendReachable = false;
+if (announceSync) {
 setUploadStatusIfIdle('🔄 Syncing with backend...');
+}
 const healthy = await checkBackendHealth();
 if (!healthy) {
 if (isStorageFull()) {
@@ -1431,8 +1434,10 @@ uploadStatus.set('Backend offline and storage full. Clear local data or free up 
 loading.set(false);
 return;
 }
+if (announceSync) {
 uploadStatus.set('🔄 Backend reconnecting...');
 notifyBackendReconnecting();
+}
 console.warn('⚠️ Backend health check failed before sync');
 if (!hasStorageSpaceFor([])) {
 uploadStatus.set('Backend offline and storage full. Clear local data or free up space.');
@@ -1472,11 +1477,15 @@ rawData.map((r) => String(r?.id || '')).filter(Boolean),
 'syncFromVault:GET /api/reels'
 );
 logVaultFieldAuditList('GET /api/reels response (syncFromVault)', rawData);
+if (announceSync) {
 setUploadStatusIfIdle('✅ Synced with backend');
+}
 } else {
 backendReachable = false;
 console.warn(`⚠️ Backend returned ${res.status}, preserving local vault (offline reconcile skipped)`);
+if (announceSync) {
 uploadStatus.set(`⚠️ Sync failed (${res.status}) — showing saved content`);
+}
 rawData = filterOutDeletedMedia(
 normalizeReels(JSON.parse(localStorage.getItem(CONFIG.VAULT_KEY) || '[]'), 'localStorage fallback')
 );
@@ -1760,7 +1769,9 @@ uploadStatus.set('Backend offline and storage full. Clear local data or free up 
 loading.set(false);
 return;
 }
+if (announceSync) {
 uploadStatus.set('❌ Sync failed — showing saved content offline');
+}
 console.log('⚠️ Network failure, falling back to localStorage');
 if (!AI_CLEANUP_AGENT.syncThumbnailsToFeed()) return;
 AI_CLEANUP_AGENT.syncVideoVaultToFeed();
@@ -1776,12 +1787,12 @@ if (debugApi) console.info('[SYNC_DEBUG] syncFromVault:finish', { at: lastSyncFr
 loading.set(false);
 resourceManager.setTimeout(() => {
 if (isUploadFlowActive()) return;
-if (syncCompletedSuccessfully) {
+if (syncCompletedSuccessfully && announceSync) {
 uploadStatus.set('Standby');
 return;
 }
 const status = get(uploadStatus);
-if (status.startsWith('✅') || status.startsWith('⚠️') || status.startsWith('❌')) {
+if (announceSync && (status.startsWith('✅') || status.startsWith('⚠️') || status.startsWith('❌'))) {
 uploadStatus.set('Standby');
 }
 }, 4000);
@@ -2318,6 +2329,26 @@ const status = get(uploadStatus);
 if (status.startsWith('✅')) return;
 uploadStatus.set(`🔄 ${e.detail?.message || 'Backend reconnecting...'}`);
 };
+const onEpisodePlayBlocked = (event) => {
+const detail = event?.detail || {};
+const episodeNumber = Number(detail.episodeNumber);
+const badgeLabel = String(detail.badgeLabel || '').trim();
+const accessMode = String(detail.accessMode || 'paid').toLowerCase();
+const episodeLine =
+  Number.isFinite(episodeNumber) && episodeNumber > 0
+    ? `Episode ${Math.floor(episodeNumber)}`
+    : 'This episode';
+const gateLine = badgeLabel
+  ? `${episodeLine} is ${badgeLabel}.`
+  : accessMode === 'paid'
+    ? `${episodeLine} requires paid access.`
+    : `${episodeLine} is locked.`;
+setUploadStatusIfIdle(`⚠️ ${gateLine} Pay or subscribe to continue.`);
+resourceManager.setTimeout(() => {
+  const statusNow = String(get(uploadStatus) || '');
+  if (statusNow.startsWith('⚠️')) uploadStatus.set('Standby');
+}, 4500);
+};
 const onSearchOpenReel = (event) => {
 const detail = event?.detail || {};
 const reelId = detail.reelId || null;
@@ -2353,6 +2384,7 @@ resourceManager.addEventListener(window, 'reelforge:search-open-reel', onSearchO
 resourceManager.addEventListener(window, 'reelforge:search-navigate', onSearchNavigate);
 resourceManager.addEventListener(window, 'reelforge:open-studio', onOpenStudio);
 resourceManager.addEventListener(window, 'reelforge:account-play', onAccountPlay);
+resourceManager.addEventListener(window, 'reelforge:episode-play-blocked', onEpisodePlayBlocked);
 resourceManager.addEventListener(window, 'keydown', handleKeyDown);
 
 const hadLocalCache = hasLocalMediaCache(CONFIG.THUMBNAIL_STORAGE_KEY, CONFIG.VIDEO_VAULT_KEY);

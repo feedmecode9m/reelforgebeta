@@ -18,6 +18,10 @@ import {
     saveReelSeriesMetadata,
     seriesCatalog
 } from './seriesStore.js';
+import {
+    isAuthoritativeCatalogBinding,
+    resolveCanonicalCatalogOwner
+} from './canonicalCatalogOwnership.js';
 
 const UUID_RE =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -1161,6 +1165,17 @@ export function reconcileCatalogMembershipFromVault(reels = [], options = {}) {
             continue;
         }
 
+        if (isAuthoritativeCatalogBinding(ctx)) {
+            preserved += 1;
+            actions.push({
+                phase: 'preserved-canonical-catalog-owner',
+                mediaId: reelId,
+                seriesId: ctx.series.id,
+                episodeId: ctx.episode.episodeId
+            });
+            continue;
+        }
+
         if (isCatalogBindingCreatorConfirmed(reel, ctx)) {
             preserved += 1;
             actions.push({
@@ -1863,6 +1878,18 @@ export function inferAndBindVaultSeries(reels = [], options = {}) {
 
         for (const member of byEpKey.values()) {
             const reelId = String(member.reel.id);
+            const canonicalOwner = resolveCanonicalCatalogOwner(reelId);
+            if (canonicalOwner) {
+                skipped += 1;
+                logVaultSeriesInference({
+                    phase: 'skipped-canonical-catalog-owner',
+                    source,
+                    mediaId: reelId,
+                    seriesId: canonicalOwner.series?.id || null,
+                    episodeId: canonicalOwner.episode?.episodeId || null
+                });
+                continue;
+            }
             if (isReelAlreadySeriesBound(reelId)) {
                 // Attach mediaAssetId only — no status / number / title writeback
                 const existing = getEpisodeByReelId(reelId);

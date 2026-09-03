@@ -89,8 +89,14 @@
       }
 
       pendingReplace = false;
-      successMessage = 'Reel attached successfully';
-      uploadStatus.set(`✅ Episode updated — reel attached (${result.episodeLabel})`);
+      successMessage = result.studioRebound
+        ? 'Reel rebound successfully'
+        : 'Reel attached successfully';
+      uploadStatus.set(
+        result.studioRebound
+          ? `✅ Episode updated — reel moved and attached (${result.episodeLabel})`
+          : `✅ Episode updated — reel attached (${result.episodeLabel})`
+      );
       const attachedEpisodeId = selectedEpisodeId;
       studioAttachEpisodeId.set('');
       studioAttachReelId.set('');

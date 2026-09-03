@@ -321,6 +321,12 @@ pub struct AttachReelBody {
     pub reel_id: String,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct RebindReelBody {
+    pub reel_id: String,
+    pub source_episode_id: Option<String>,
+}
+
 pub async fn attach_reel(
     pool: web::Data<PgPool>,
     path: web::Path<String>,
@@ -357,6 +363,94 @@ pub async fn attach_reel(
         }
         Ok(db::studio::AttachReelOutcome::ReelAlreadyBound) => HttpResponse::Conflict()
             .json(serde_json::json!({ "error": "Reel is already attached to another episode" })),
+        Err(e) => HttpResponse::InternalServerError().json(serde_json::json!({
+            "error": e.to_string()
+        })),
+    }
+}
+
+pub async fn rebind_reel(
+    pool: web::Data<PgPool>,
+    path: web::Path<String>,
+    body: web::Json<RebindReelBody>,
+) -> HttpResponse {
+    if let Err(resp) = check_studio_enabled() {
+        return resp;
+    }
+    let target_episode_id = match Uuid::parse_str(&path.into_inner()) {
+        Ok(u) => u,
+        Err(_) => {
+            return HttpResponse::BadRequest().json(serde_json::json!({
+                "error": "Invalid target episode id"
+            }));
+        }
+    };
+    let reel_id = match Uuid::parse_str(&body.reel_id) {
+        Ok(u) => u,
+        Err(_) => {
+            return HttpResponse::BadRequest().json(serde_json::json!({
+                "error": "Invalid reel_id"
+            }));
+        }
+    };
+    let source_episode_id = match body.source_episode_id.as_deref() {
+        Some(raw) => match Uuid::parse_str(raw) {
+            Ok(u) => Some(u),
+            Err(_) => {
+                return HttpResponse::BadRequest().json(serde_json::json!({
+                    "error": "Invalid source_episode_id"
+                }));
+            }
+        },
+        None => None,
+    };
+
+    match db::studio::rebind_reel_to_episode(
+        pool.get_ref(),
+        target_episode_id,
+        reel_id,
+        source_episode_id,
+    )
+    .await
+    {
+        Ok(db::studio::RebindReelOutcome::Rebound {
+            row,
+            previous_episode_id,
+            noop,
+        }) => HttpResponse::Ok().json(serde_json::json!({
+            "ok": true,
+            "target_episode_id": target_episode_id,
+            "reel_id": reel_id,
+            "previous_episode_id": previous_episode_id,
+            "noop": noop,
+            "episode": row
+        })),
+        Ok(db::studio::RebindReelOutcome::EpisodeNotFound) => {
+            HttpResponse::NotFound().json(serde_json::json!({
+                "error": "target_episode_not_found"
+            }))
+        }
+        Ok(db::studio::RebindReelOutcome::ReelNotFound) => {
+            HttpResponse::NotFound().json(serde_json::json!({
+                "error": "reel_not_found"
+            }))
+        }
+        Ok(db::studio::RebindReelOutcome::SourceEpisodeRequired) => HttpResponse::Conflict().json(
+            serde_json::json!({
+                "error": "source_episode_id_required",
+                "message": "source_episode_id is required when reel is already bound"
+            }),
+        ),
+        Ok(db::studio::RebindReelOutcome::SourceMismatch { current_episode_id }) =>
+            HttpResponse::Conflict().json(serde_json::json!({
+                "error": "source_mismatch",
+                "current_episode_id": current_episode_id
+            })),
+        Ok(db::studio::RebindReelOutcome::TargetHasAnotherReel { target_reel_id }) =>
+            HttpResponse::Conflict().json(serde_json::json!({
+                "error": "target_episode_has_another_reel",
+                "target_reel_id": target_reel_id
+            })),
         Err(e) => HttpResponse::InternalServerError().json(serde_json::json!({
             "error": e.to_string()
         })),

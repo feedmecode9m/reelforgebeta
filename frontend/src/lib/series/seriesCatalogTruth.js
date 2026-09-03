@@ -54,6 +54,33 @@ export function seriesCatalogCounts(series, isPlayable) {
     };
 }
 
+/** Test/QA API prose that must never win over Studio editorial metadata. */
+export const TEST_FIXTURE_DESCRIPTION_PATTERNS = Object.freeze([
+    /^CRUD validation fixture$/i,
+    /^Migration fixture$/i,
+    /^validation fixture$/i,
+    /^test fixture$/i,
+    /^api test fixture$/i
+]);
+
+/** Catalog tags that are pipeline diagnostics — not viewer-facing themes. */
+export const INTERNAL_CATALOG_TAGS = Object.freeze([
+    'validation',
+    'fixture',
+    'test',
+    'qa',
+    'crud',
+    'nlp-metadata',
+    'nlp-rehomed',
+    'vault-inferred',
+    'vault-inference',
+    'creator-package',
+    'creator-confirmed',
+    'demo',
+    'mock',
+    'migration'
+]);
+
 /**
  * Synthetic blurbs written by inference (not creator-authored).
  * @param {unknown} description
@@ -67,12 +94,78 @@ export function isSyntheticSeriesDescription(description) {
 }
 
 /**
+ * True when description text is known test/QA infrastructure copy.
+ * @param {unknown} description
+ */
+export function isTestFixtureDescription(description) {
+    const d = String(description || '').trim();
+    if (!d) return false;
+    return TEST_FIXTURE_DESCRIPTION_PATTERNS.some((pattern) => pattern.test(d));
+}
+
+/**
+ * True when a catalog tag is internal pipeline/diagnostic metadata.
+ * @param {unknown} tag
+ */
+export function isInternalCatalogTag(tag) {
+    const t = String(tag || '')
+        .trim()
+        .toLowerCase()
+        .replace(/_/g, '-');
+    if (!t) return true;
+    return INTERNAL_CATALOG_TAGS.includes(t);
+}
+
+/**
+ * Editorial prose precedence for hydrate merges:
+ * approved Studio/creator copy > real API editorial > inferred/test fixture.
+ *
+ * @param {unknown} apiValue
+ * @param {unknown} localValue
+ */
+export function resolveEditorialProsePrecedence(apiValue, localValue) {
+    const api = String(apiValue || '').trim();
+    const local = String(localValue || '').trim();
+    const apiIsFixture = isTestFixtureDescription(api);
+    const apiIsSynthetic = isSyntheticSeriesDescription(api);
+    const localIsEditorial =
+        Boolean(local) && !isTestFixtureDescription(local) && !isSyntheticSeriesDescription(local);
+    const apiIsEditorial = Boolean(api) && !apiIsFixture && !apiIsSynthetic;
+
+    if (apiIsEditorial) return api;
+    if (localIsEditorial) return local;
+    if (local && (apiIsFixture || apiIsSynthetic || !api)) return local;
+    if (api && !apiIsFixture) return api;
+    return '';
+}
+
+/**
  * Public-facing description only when creator (or studio) set real copy.
  * @param {unknown} description
  */
 export function creatorFacingDescription(description) {
     if (isSyntheticSeriesDescription(description)) return '';
+    if (isTestFixtureDescription(description)) return '';
     return String(description || '').trim();
+}
+
+/** Test/QA genre labels that must never render as official viewer genre. */
+export const TEST_FIXTURE_GENRE_PATTERNS = Object.freeze([
+    /^test$/i,
+    /^qa$/i,
+    /^fixture$/i,
+    /^validation$/i,
+    /^crud$/i
+]);
+
+/**
+ * True when genre text is known test/QA infrastructure copy.
+ * @param {unknown} genre
+ */
+export function isTestFixtureGenre(genre) {
+    const g = String(genre || '').trim();
+    if (!g) return false;
+    return TEST_FIXTURE_GENRE_PATTERNS.some((pattern) => pattern.test(g));
 }
 
 /**
@@ -80,6 +173,7 @@ export function creatorFacingDescription(description) {
  * @param {unknown} genre
  */
 export function creatorFacingGenre(genre) {
+    if (isTestFixtureGenre(genre)) return '';
     return String(genre || '').trim();
 }
 

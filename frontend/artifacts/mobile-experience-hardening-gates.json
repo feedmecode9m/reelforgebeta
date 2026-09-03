@@ -1,14 +1,14 @@
 {
   "mission": "LOCAL-MOBILE-EXPERIENCE-HARDENING-1",
-  "generatedAt": "2026-08-16T21:11:11.743Z",
+  "generatedAt": "2026-09-03T21:46:55.268Z",
   "MOBILE_THEATER_REGRESSION": "PASS",
   "gates": {
     "surfaceAudit": "PASS",
     "identity": "PASS",
-    "shelf": "PASS",
+    "shelf": "FAIL",
     "touch": "PASS",
     "theaterRegression": "PASS",
-    "persistence": "PASS"
+    "persistence": "FAIL"
   },
   "notes": [
     "ok: Gate 1: mobile-surface-audit.json exists",
@@ -17,18 +17,19 @@
     "ok: Gate 2: shell carries series/S-E identity",
     "ok: Gate 2: card renders identity line",
     "ok: Gate 3: MOBILE_SHELF_TRACE helper",
-    "ok: Gate 3: Reelshort logs shelf trace",
     "ok: Gate 4: feed hover preview skipped on mobile",
     "ok: Gate 4: EpisodeChip viewer min touch 44px",
     "ok: Gate 4: SeriesPublicPage safe-area padding",
-    "ok: Gate 5: Theater play pointerup retained",
+    "ok: Gate 5: Theater wrapper gesture pointerup retained",
     "ok: Gate 5: Theater startTheaterPlayback retained",
     "ok: Gate 5: no video touchend stopPropagation regression",
-    "ok: Gate 6: persistence key personal_video_vault still wired",
-    "ok: Gate 6: persistence key personal_thumbnails still wired",
     "ok: Gate 6: persistence key reel_titles_persistent still wired",
     "ok: Gate 6: persistence key reelforge_hero_reel still wired",
     "ok: Gate 6: persistence key seriesStore still wired"
   ],
-  "failures": []
+  "failures": [
+    "Gate 3: Reelshort logs shelf trace",
+    "Gate 6: persistence key personal_video_vault still wired",
+    "Gate 6: persistence key personal_thumbnails still wired"
+  ]
 }

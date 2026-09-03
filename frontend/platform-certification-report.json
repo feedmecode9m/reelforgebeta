@@ -1,13 +1,26 @@
 {
-  "generatedAt": "2026-06-13T22:15:31.572Z",
+  "generatedAt": "2026-09-03T14:51:15.484Z",
   "phase": "66B",
-  "platformComplete": true,
-  "platformTruthComplete": true,
+  "platformComplete": false,
+  "platformTruthComplete": false,
   "tokens": {
-    "REELFORGE_PLATFORM_COMPLETE": true,
-    "REELFORGE_PLATFORM_TRUTH_COMPLETE": true
+    "REELFORGE_PLATFORM_COMPLETE": false,
+    "REELFORGE_PLATFORM_TRUTH_COMPLETE": false
   },
-  "failingDomains": [],
+  "failingDomains": [
+    "heroBackgroundPipeline",
+    "marketplaceHub",
+    "revenueDashboard",
+    "discoveryEngine",
+    "dailyEngagement",
+    "securityOperationsCenter",
+    "securityEnforcement",
+    "enterpriseFoundation",
+    "multiUserPipelines",
+    "globalSearch",
+    "heroCarousel",
+    "supportReelForge"
+  ],
   "falsePositiveDomainsRemoved": [
     "platformTruthFlow",
     "revenueArchitecture",
@@ -28,7 +41,7 @@
     "commandCenter",
     "appearanceSystem"
   ],
-  "finalPlatformScore": 100,
-  "runtimeScore": 100,
-  "actualReadinessScore": 100
+  "finalPlatformScore": 0,
+  "runtimeScore": 0,
+  "actualReadinessScore": 0
 }

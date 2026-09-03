@@ -1,5 +1,5 @@
 <script>
-    import { createEventDispatcher } from 'svelte';
+    import { createEventDispatcher, onMount } from 'svelte';
     import EpisodeChip from './EpisodeChip.svelte';
     import {
         resolveEpisodeMedia,
@@ -59,41 +59,122 @@
      */
     export let familyItems = [];
 
+    /**
+     * Cold-viewer ready pool when parent effectiveReadyAssets has not hydrated yet.
+     * @type {Record<string, unknown>[]}
+     */
+    let viewerPublicReadyAssets = [];
+
+    /**
+     * @param {unknown} reels
+     * @returns {Record<string, unknown>[]}
+     */
+    function mapApiReelsToReadyAssets(reels) {
+        if (!Array.isArray(reels)) return [];
+        /** @type {Record<string, unknown>[]} */
+        const out = [];
+        for (const r of reels) {
+            if (!r || typeof r !== 'object') continue;
+            const id = String(/** @type {Record<string, unknown>} */ (r).id || '').trim();
+            if (!id) continue;
+            const row = /** @type {Record<string, unknown>} */ (r);
+            const url = String(row.url || row.videoUrl || row.video_url || row.mediaUrl || '').trim();
+            if (!url) continue;
+            const playbackUrl = String(row.playbackUrl || row.playback_url || '').trim();
+            const playbackStatus = String(row.playbackStatus || row.playback_status || '')
+                .trim()
+                .toLowerCase();
+            out.push({
+                id,
+                mediaAssetId: id,
+                assetId: id,
+                name: row.name || row.title || id,
+                title: row.name || row.title || id,
+                fileName: row.fileName || row.filename || '',
+                url,
+                videoUrl: url,
+                thumbnailUrl: row.thumbnailUrl || row.thumbnail_url || '',
+                status: row.status || 'ready',
+                type: row.type || 'video',
+                validated: row.validated,
+                ...(playbackUrl ? { playbackUrl } : {}),
+                ...(playbackStatus ? { playbackStatus } : {})
+            });
+        }
+        return out;
+    }
+
+    onMount(() => {
+        if (!viewerMode) return;
+        if (Array.isArray(heroVaultAssets) && heroVaultAssets.length) return;
+        (async () => {
+            try {
+                const res = await fetch('/api/reels');
+                if (!res.ok) return;
+                const reels = await res.json();
+                viewerPublicReadyAssets = mapApiReelsToReadyAssets(reels);
+            } catch {
+                /* non-fatal — chips remain unavailable until parent pool hydrates */
+            }
+        })();
+    });
+
     $: readyVaultAssets =
         Array.isArray(heroVaultAssets) && heroVaultAssets.length
             ? heroVaultAssets
-            : getReadyHeroVaultAssets();
+            : Array.isArray(viewerPublicReadyAssets) && viewerPublicReadyAssets.length
+              ? viewerPublicReadyAssets
+              : getReadyHeroVaultAssets();
 
     $: sortedEpisodes = [...(season?.episodes || [])]
         .filter(Boolean)
         .sort((a, b) => a.episodeNumber - b.episodeNumber);
-    $: viewerRows = sortedEpisodes.map((episode) => {
-        const vault = resolveForChip(episode);
-        const chip = episodeChipPresentation(episode, vault);
-        const mediaUrl = mediaUrlForChip(episode, chip);
-        const playable = chip.playable || Boolean(mediaUrl);
-        const mediaId = String(chip.mediaAssetId || episode.mediaAssetId || episode.reelId || '').trim();
-        const vaultAsset =
-            (Array.isArray(readyVaultAssets) ? readyVaultAssets : []).find(
-                (a) => assetIdOf(a) === mediaId || String(a?.id || '').trim() === mediaId
-            ) || null;
-        const access = resolveEpisodeAccessPricing({
-            episode: /** @type {Record<string, unknown>} */ (episode),
-            mediaAssetId: mediaId,
-            reelId: String(episode.reelId || '').trim(),
-            vaultAsset
+
+    /**
+     * Build viewer chip rows from catalog episodes + ready vault/API assets.
+     * Assets are passed explicitly so Svelte 4 invalidates when the ready pool updates
+     * (e.g. after SeriesPublicPage loads /api/reels into effectiveReadyAssets).
+     *
+     * @param {import('../../lib/series/seriesTypes.js').Episode[]} episodes
+     * @param {Record<string, unknown>[]} assets
+     */
+    function buildViewerRows(episodes, assets) {
+        const ready = Array.isArray(assets) ? assets : [];
+        return episodes.map((episode) => {
+            const vault = resolveEpisodeMedia({ episode, readyVaultAssets: ready });
+            const chip = episodeChipPresentation(episode, vault);
+            const mediaUrl = mediaUrlForChip(episode, chip);
+            const playable = chip.playable || Boolean(mediaUrl);
+            const mediaId = String(chip.mediaAssetId || episode.mediaAssetId || episode.reelId || '').trim();
+            const vaultAsset =
+                ready.find(
+                    (a) => assetIdOf(a) === mediaId || String(a?.id || '').trim() === mediaId
+                ) || null;
+            const access = resolveEpisodeAccessPricing({
+                episode: /** @type {Record<string, unknown>} */ (episode),
+                mediaAssetId: mediaId,
+                reelId: String(episode.reelId || '').trim(),
+                vaultAsset
+            });
+            return {
+                episode,
+                chip,
+                mediaUrl,
+                posterUrl: resolveViewerEpisodePosterUrl({
+                    episode,
+                    chipThumbnailUrl: chip?.thumbnailUrl || '',
+                    readyVaultAssets: ready
+                }),
+                playable,
+                vaultAsset,
+                accessMode: access.mode,
+                price: access.price
+            };
         });
-        return {
-            episode,
-            chip,
-            mediaUrl,
-            posterUrl: posterForChip(episode, chip),
-            playable,
-            vaultAsset,
-            accessMode: access.mode,
-            price: access.price
-        };
-    });
+    }
+
+    // Explicit static dependency on readyVaultAssets (Svelte 4).
+    $: viewerRows = buildViewerRows(sortedEpisodes, readyVaultAssets);
     // Desktop parity: render the full season catalog in viewer mode.
     // Per-row playability/locking is handled inside EpisodeChip.
     $: viewerRenderableRows = viewerRows;

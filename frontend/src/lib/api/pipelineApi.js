@@ -1,4 +1,5 @@
 import { API_BASE_URL, fetchWithRetry } from '../api.js';
+import { getAdminAuthHeaders, maybeHandleInvalidAdminSession } from '../adminSession.js';
 
 export const PIPELINE_STAGES = /** @type {const} */ ([
     'IDEA',
@@ -30,6 +31,9 @@ async function pipelineFetch(path, options = {}) {
     }
     if (!res.ok) {
         const body = await res.json().catch(() => ({}));
+        if (String(options.method || 'GET').toUpperCase() !== 'GET' && res.status === 401) {
+            maybeHandleInvalidAdminSession(res, body, 'pipelineApi');
+        }
         throw new Error(body.error || `Pipeline API failed (${res.status})`);
     }
     return res.json();
@@ -84,9 +88,13 @@ export async function fetchPipeline(seriesId, episodeIds = []) {
  */
 export async function updatePipelineEpisode(episodeId, input) {
     try {
+        const authHeaders = getAdminAuthHeaders();
+        if (!authHeaders.Authorization) {
+            return { disabled: true, error: 'missing_authorization' };
+        }
         return await pipelineFetch(`/api/pipeline/${encodeURIComponent(episodeId)}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', ...authHeaders },
             body: JSON.stringify(input)
         });
     } catch (err) {

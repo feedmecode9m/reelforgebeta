@@ -18,6 +18,7 @@
     formatSuggestionConfidence
   } from '../../lib/feed/categorySuggestionReview.js';
   import { resolveMediaAssetId } from '../../lib/vault/vaultCreatorCardTargeting.js';
+  import { vaultIdentityIsCreatorConfirmed } from '../../lib/vault/vaultCreatorAuthority.js';
   import {
     defaultTheaterFamilyLabel,
     isTheaterFamilyCandidate,
@@ -31,6 +32,13 @@
     readVaultEpisodeAccess,
     resolveEpisodeAccessPricing
   } from '../../lib/series/episodeAccessPricing.js';
+  import { getEpisodeByMediaIdentity, seriesCatalog } from '../../lib/series/seriesStore.js';
+  import {
+    resolveVaultEditorialPosterState,
+    useMp4AsEpisodePoster,
+    featureEpisodeOnOriginalProductions
+  } from '../../lib/studio/episodePosterAssignment.js';
+  import { resolveMediaUrl } from '../../lib/api/reelContract.js';
 
   /** @type {Record<string, unknown> | null} */
   export let asset = null;
@@ -47,10 +55,14 @@
   export let packageSaveFeedback = null;
   /** Other Video Vault rows for Theater episode linking (optional). */
   export let vaultVideos = [];
+  /** Thumbnail Vault entries — used to detect confirmed Thumbnail Vault poster assigns. */
+  export let thumbnailVaultEntries = [];
+  /** Hero Vault injected card (STIRRED, etc.) — same poster editor, hero-specific copy. */
+  export let heroVaultCard = false;
 
   const dispatch = createEventDispatcher();
 
-  /** @type {null | 'identity' | 'package'} */
+  /** @type {null | 'identity' | 'package' | 'poster'} */
   let editing = null;
   let draftSeries = '';
   let draftSeason = '1';
@@ -84,6 +96,49 @@
   let linkSeedTitle = '';
   /** @type {string[]} */
   let selectedSiblingIds = [];
+  let posterAssignBusy = false;
+  let posterAssignMessage = '';
+  let featureHomeBusy = false;
+  let featureHomeMessage = '';
+
+  $: catalogRevision = $seriesCatalog;
+  $: cardMediaAssetId = resolveMediaAssetId(asset) || model?.mediaAssetId || '';
+  $: boundEpisodeCtx = catalogRevision && cardMediaAssetId ? getEpisodeByMediaIdentity(cardMediaAssetId) : null;
+  $: posterState = boundEpisodeCtx?.episode
+    ? resolveVaultEditorialPosterState(boundEpisodeCtx.episode, asset, {
+        seriesId: boundEpisodeCtx.series?.id,
+        thumbnailVaultEntries
+      })
+    : {
+        state: 'unassigned',
+        assigned: false,
+        displayUrl: '',
+        stillPreviewUrl: '',
+        canUseMp4AsPoster: false,
+        canFeatureOnHome: false,
+        statusLabel: 'No editorial poster assigned',
+        assignSource: null
+      };
+  $: editorialPosterDisplay = posterState.displayUrl
+    ? resolveMediaUrl(posterState.displayUrl, 'thumbnail', 'vault-editorial-poster') ||
+      posterState.displayUrl
+    : '';
+  $: mp4StillPreview =
+    posterState.stillPreviewUrl
+      ? resolveMediaUrl(posterState.stillPreviewUrl, 'thumbnail', 'vault-mp4-still') ||
+        posterState.stillPreviewUrl
+      : '';
+  $: canUseMp4AsPoster = posterState.canUseMp4AsPoster;
+  $: creatorIdentityConfirmed = vaultIdentityIsCreatorConfirmed(asset);
+  $: canFeatureOnHome =
+    (Boolean(boundEpisodeCtx?.episode?.episodeId) || creatorIdentityConfirmed) &&
+    (boundEpisodeCtx?.episode?.status !== 'published' || !boundEpisodeCtx?.episode) &&
+    (posterState.canFeatureOnHome || posterState.assigned || creatorIdentityConfirmed);
+  $: isFeaturedOnHome = boundEpisodeCtx?.episode?.status === 'published' && posterState.assigned;
+  $: canMakePoster =
+    canUseMp4AsPoster && posterState.state !== 'thumbnail-vault' && posterState.state !== 'catalog';
+  $: mp4StillIsPoster = posterState.assigned && posterState.assignSource === 'mp4-still';
+  $: thumbnailVaultIsPoster = posterState.assigned && posterState.state === 'thumbnail-vault';
 
   $: model = active && asset ? presentVaultEpisodeCompleteness(asset) : null;
 
@@ -101,11 +156,7 @@
   $: theaterCandidates = (() => {
     const currentId = resolveMediaAssetId(asset) || model?.mediaAssetId || '';
     const seedTitle = linkSeedTitle || model?.presentation?.title || '';
-    const identity = asset?.seriesIdentity && typeof asset.seriesIdentity === 'object' ? asset.seriesIdentity : null;
-    const seedConfirmed =
-      identity?.confirmedByCreator === true ||
-      identity?.identitySource === 'creator' ||
-      asset?.confirmedByCreator === true;
+    const seedConfirmed = vaultIdentityIsCreatorConfirmed(asset);
     const base = markSameTheaterFamily(
       listVaultTheaterLinkCandidates(vaultVideos, currentId, seedTitle),
       readVaultSeriesLabel(asset),
@@ -164,7 +215,7 @@
   $: if (active && model && editSignal !== lastEditSignal) {
     lastEditSignal = editSignal;
     if (editSignal > 0) {
-      openPackage();
+      openPosterEditor();
     }
   }
 
@@ -296,6 +347,36 @@
     }
   }
 
+  async function scrollPosterEditorIntoView() {
+    if (typeof document === 'undefined') return;
+    await tick();
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const card = creatorCardEl;
+    if (!card || (editing !== 'poster' && editing !== 'package')) return;
+
+    const vaultCard = card.closest('.vault-card');
+    if (vaultCard instanceof HTMLElement) {
+      fitVaultCardInStudioScroll();
+    }
+
+    card.scrollTop = 0;
+    const poster = card.querySelector('[data-vault-editorial-poster]');
+    if (poster instanceof HTMLElement) {
+      poster.scrollIntoView({ block: 'start' });
+    }
+  }
+
+  function openPosterEditor() {
+    if (!model) return;
+    posterAssignMessage = '';
+    formError = '';
+    editing = 'poster';
+    dispatch('editorOpen', {
+      mediaAssetId: resolveMediaAssetId(asset) || model?.mediaAssetId || ''
+    });
+    void scrollPosterEditorIntoView();
+  }
+
   /**
    * @param {MouseEvent | PointerEvent} event
    */
@@ -310,6 +391,92 @@
   function handleCancelClick(event) {
     scrollPackageControlIntoView(event?.currentTarget);
     cancelEdit();
+  }
+
+  async function handleMakePoster() {
+    if (!canMakePoster || posterAssignBusy) return;
+    posterAssignBusy = true;
+    posterAssignMessage = '';
+    featureHomeMessage = '';
+    formError = '';
+    try {
+      const result = await useMp4AsEpisodePoster(cardMediaAssetId, asset, { thumbnailVaultEntries });
+      if (!result?.ok) {
+        const reason = String(result?.reason || 'assign-failed');
+        if (reason === 'poster-already-set') {
+          posterAssignMessage = thumbnailVaultIsPoster
+            ? 'Thumbnail Vault poster is already assigned — Make poster is unavailable.'
+            : 'Editorial poster already assigned.';
+        } else if (reason === 'episode-not-bound') {
+          posterAssignMessage = 'Link this MP4 to a catalog episode before making a poster.';
+        } else if (reason === 'no-valid-still') {
+          posterAssignMessage = 'No generated MP4 still is available yet — wait for ingest to finish.';
+        } else {
+          posterAssignMessage = 'Could not assign MP4 still as poster.';
+        }
+        return;
+      }
+      posterAssignMessage = 'MP4 still is now the editorial poster for this episode.';
+      dispatch('posterAssigned', {
+        episodeId: result.episodeId,
+        thumbnailUrl: result.thumbnailUrl,
+        stillUrl: result.stillUrl,
+        mediaAssetId: cardMediaAssetId,
+        source: 'mp4-still',
+        seriesId: boundEpisodeCtx?.series?.id || ''
+      });
+    } finally {
+      posterAssignBusy = false;
+    }
+  }
+
+  async function handleFeatureOnOriginalProductions() {
+    if (!canFeatureOnHome || featureHomeBusy || posterAssignBusy) return;
+    featureHomeBusy = true;
+    featureHomeMessage = '';
+    posterAssignMessage = '';
+    formError = '';
+    try {
+      const result = await featureEpisodeOnOriginalProductions(cardMediaAssetId, asset, {
+        thumbnailVaultEntries
+      });
+      if (!result?.ok) {
+        const reason = String(result?.reason || 'feature-failed');
+        if (
+          reason === 'incomplete-vault-identity' ||
+          reason === 'creator-confirmation-required' ||
+          reason === 'episode-not-bound'
+        ) {
+          featureHomeMessage =
+            reason === 'creator-confirmation-required'
+              ? 'Confirm Series, Season, and Episode identity in the Vault — filename suggestions are not enough to publish.'
+              : 'Confirm Series, Season, and Episode identity in the Vault before publishing.';
+        } else if (reason === 'no-valid-still') {
+          featureHomeMessage = 'Wait for ingest to finish — no MP4 still is ready yet.';
+        } else {
+          featureHomeMessage = 'Could not feature this episode on Original Productions.';
+        }
+        return;
+      }
+      const seriesLabel = String(result.seriesTitle || result.seriesId || 'series').trim();
+      featureHomeMessage = `Featured on Original Productions — ${seriesLabel} card will appear on the home page after refresh.`;
+      dispatch('posterAssigned', {
+        episodeId: result.episodeId,
+        thumbnailUrl: result.thumbnailUrl,
+        mediaAssetId: cardMediaAssetId,
+        source: 'mp4-still',
+        featured: true,
+        seriesId: result.seriesId
+      });
+      dispatch('featuredOnHome', {
+        episodeId: result.episodeId,
+        seriesId: result.seriesId,
+        seriesTitle: result.seriesTitle,
+        mediaAssetId: cardMediaAssetId
+      });
+    } finally {
+      featureHomeBusy = false;
+    }
   }
 
   function openPackage() {
@@ -365,11 +532,7 @@
     const family = readVaultSeriesLabel(asset);
     const currentId = resolveMediaAssetId(asset) || model.mediaAssetId || '';
     const seedTitle = linkSeedTitle || draftTitle || model.presentation.title || '';
-    const identity = asset?.seriesIdentity && typeof asset.seriesIdentity === 'object' ? asset.seriesIdentity : null;
-    const seedConfirmed =
-      identity?.confirmedByCreator === true ||
-      identity?.identitySource === 'creator' ||
-      asset?.confirmedByCreator === true;
+    const seedConfirmed = vaultIdentityIsCreatorConfirmed(asset);
     const cands = markSameTheaterFamily(
       listVaultTheaterLinkCandidates(vaultVideos, currentId, seedTitle),
       family,
@@ -379,6 +542,7 @@
     selectedSiblingIds = cands
       .filter((row) => row.sameFamily || isTheaterFamilyCandidate(row, theaterSiblings))
       .map((row) => String(row.id));
+    void scrollPosterEditorIntoView();
     void scrollPackageEditorCompletionIntoView();
   }
 
@@ -660,10 +824,135 @@
           >Cancel</button
         >
       </div>
-    {:else if editing === 'package'}
+    {:else if editing === 'poster' || editing === 'package'}
       {#if model.identityLine}
         <p class="vault-creator-card__identity-line" data-creator-identity-line>{model.identityLine}</p>
       {/if}
+      <div
+        class="vault-creator-card__poster"
+        data-vault-editorial-poster
+        data-poster-state={posterState.state}
+        data-hero-vault-card={heroVaultCard ? 'true' : 'false'}
+      >
+        <p class="vault-creator-card__poster-title">Poster</p>
+        {#if heroVaultCard}
+          <p class="vault-creator-card__axis-hint" data-hero-vault-poster-hint>
+            Hero Vault — poster applies to the canonical catalog episode bound to this MP4.
+          </p>
+        {/if}
+        {#if boundEpisodeCtx?.series?.id}
+          <p
+            class="vault-creator-card__axis-hint"
+            data-bound-catalog-episode
+            data-bound-series-id={boundEpisodeCtx.series.id}
+            data-bound-episode-id={boundEpisodeCtx.episode?.episodeId || ''}
+          >
+            Catalog: {boundEpisodeCtx.series.title || boundEpisodeCtx.series.id}
+            · {boundEpisodeCtx.episode?.title || boundEpisodeCtx.episode?.episodeId}
+          </p>
+        {/if}
+        {#if posterState.assigned}
+          <div class="vault-creator-card__poster-preview">
+            {#if editorialPosterDisplay}
+              <img src={editorialPosterDisplay} alt="" loading="lazy" data-editorial-poster-preview />
+            {/if}
+            <p class="vault-creator-card__axis-hint" data-editorial-poster-status>
+              {mp4StillIsPoster
+                ? 'MP4 still is the current poster'
+                : posterState.statusLabel}
+            </p>
+            {#if thumbnailVaultIsPoster}
+              <p class="vault-creator-card__axis-hint" data-make-poster-unavailable>
+                Make poster unavailable — Thumbnail Vault poster is authoritative.
+              </p>
+            {/if}
+          </div>
+        {:else if !boundEpisodeCtx?.episode?.episodeId}
+          <p class="vault-creator-card__axis-hint" data-editorial-poster-status>
+            Link this MP4 to a catalog episode to make a poster.
+          </p>
+        {:else if !posterState.stillPreviewUrl}
+          <p class="vault-creator-card__axis-hint" data-editorial-poster-status>
+            {posterState.statusLabel}. Generated MP4 still not ready yet.
+          </p>
+        {:else}
+          {#if mp4StillPreview}
+            <div class="vault-creator-card__poster-preview">
+              <img src={mp4StillPreview} alt="" loading="lazy" data-mp4-still-preview />
+              <p class="vault-creator-card__axis-hint" data-mp4-still-caption>
+                Ingest preview only — not editorial until you choose Make poster.
+              </p>
+            </div>
+          {/if}
+          <p class="vault-creator-card__axis-hint" data-editorial-poster-status>
+            {posterState.statusLabel}
+          </p>
+          <button
+            type="button"
+            class="vault-creator-card__btn vault-creator-card__btn--primary"
+            data-make-poster
+            data-testid="make-poster"
+            disabled={!canMakePoster || posterAssignBusy || featureHomeBusy || packageSaveState === 'saving'}
+            on:click|stopPropagation|preventDefault={handleMakePoster}
+          >
+            {posterAssignBusy ? 'Assigning…' : 'Make poster'}
+          </button>
+        {/if}
+        {#if boundEpisodeCtx?.episode?.episodeId}
+          <div class="vault-creator-card__poster-feature">
+            <p class="vault-creator-card__axis-hint" data-feature-on-original-hint>
+              Feature publishes this episode to Original Productions (uses MP4 still if no poster yet).
+            </p>
+            {#if isFeaturedOnHome}
+              <p class="vault-creator-card__axis-hint" data-featured-on-home-status>
+                Published — visible on home page Original Productions
+              </p>
+            {:else}
+              <button
+                type="button"
+                class="vault-creator-card__btn"
+                class:vault-creator-card__btn--primary={posterState.assigned}
+                data-feature-on-original-productions
+                data-testid="feature-on-original-productions"
+                disabled={featureHomeBusy || posterAssignBusy || packageSaveState === 'saving' || (!canFeatureOnHome && !posterState.assigned)}
+                on:click|stopPropagation|preventDefault={handleFeatureOnOriginalProductions}
+              >
+                {featureHomeBusy ? 'Featuring…' : 'Feature on Original Productions'}
+              </button>
+            {/if}
+          </div>
+        {/if}
+        {#if posterAssignMessage}
+          <p class="vault-creator-card__axis-hint" data-editorial-poster-feedback aria-live="polite">
+            {posterAssignMessage}
+          </p>
+        {/if}
+        {#if featureHomeMessage}
+          <p class="vault-creator-card__axis-hint" data-feature-home-feedback aria-live="polite">
+            {featureHomeMessage}
+          </p>
+        {/if}
+      </div>
+      {#if editing === 'poster'}
+        <div class="vault-creator-card__actions">
+          <button
+            type="button"
+            class="vault-creator-card__btn"
+            data-open-package-from-poster
+            on:click|stopPropagation|preventDefault={openPackage}
+          >
+            Edit package metadata
+          </button>
+          <button
+            type="button"
+            class="vault-creator-card__btn vault-creator-card__btn--ghost"
+            data-poster-editor-done
+            on:click|stopPropagation|preventDefault={cancelEdit}
+          >
+            Done
+          </button>
+        </div>
+      {:else}
       <div class="vault-creator-card__theater-link" data-theater-family-link>
         <p class="vault-creator-card__nlp-review-title">Theater episode links</p>
         <p class="vault-creator-card__axis-hint">
@@ -1014,6 +1303,7 @@
           {packageSaveState === 'saved' ? 'Done' : 'Cancel'}
         </button>
       </div>
+      {/if}
     {:else}
       <!-- Identity: what this video is (Series / Season / Episode). -->
       <div class="vault-creator-card__section" data-section="identity">
@@ -1167,8 +1457,9 @@
           </p>
         {/if}
         {#if model.presentation.artworkUrl}
-          <div class="vault-creator-card__art" aria-hidden="true">
+          <div class="vault-creator-card__art" aria-hidden="true" data-package-artwork-preview>
             <img src={model.presentation.artworkUrl} alt="" loading="lazy" />
+            <p class="vault-creator-card__axis-hint">Package artwork preview (not home poster)</p>
           </div>
         {/if}
         <!-- Phase 19: package/catalog metadata editable without series identity confirmation -->

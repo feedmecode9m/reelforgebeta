@@ -1,8 +1,6 @@
-import { episodeIsPubliclyPlayable } from './seriesTypes.js';
 import { episodeIsViewerDiscoverable } from './publishingLifecycle.js';
-import { resolveSeriesPosterSrc } from './seriesCatalogTruth.js';
-import { publicSeriesPath } from './publicSeriesHydration.js';
-import { resolveEpisodeMedia } from './episodeVaultBindingResolver.js';
+import { VIC_G_SERIES_ID } from './vicGSeriesPackage.js';
+import { buildViewerProductionProjection } from './viewerProductionProjection.js';
 
 /**
  * @param {unknown} value
@@ -33,39 +31,116 @@ function collectViewerEpisodes(series) {
 }
 
 /**
- * @param {import('./seriesTypes.js').Series} series
+ * Prefer multi-episode / creator-backed series as the Browse representative when
+ * the same reelId appears on a vault-inferred singleton production.
+ *
+ * @param {import('./seriesTypes.js').Series | null | undefined} series
  * @param {import('./seriesTypes.js').Episode[]} episodes
- * @param {Record<string, unknown>[]} readyVaultAssets
- * @param {string} placeholder
- * @returns {string}
  */
-function resolveProductionPoster(series, episodes, readyVaultAssets, placeholder) {
-    const episodeThumbnails = episodes.map((episode) => {
-        const resolved = resolveEpisodeMedia({
-            episode,
-            readyVaultAssets
+function scoreBrowseCanonicalSeries(series, episodes) {
+    const seriesId = text(series?.id);
+    const tags = Array.isArray(series?.tags) ? series.tags.map(String) : [];
+    let score = episodes.length * 10;
+    if (seriesId === VIC_G_SERIES_ID) score += 1000;
+    if (tags.includes('creator-package')) score += 500;
+    if (tags.includes('creator-confirmed')) score += 200;
+    if (/^series-\d{2}-/.test(seriesId) && episodes.length <= 1) score -= 50;
+    if (tags.includes('vault-inferred') && episodes.length <= 1) score -= 20;
+    return score;
+}
+
+/**
+ * @param {import('./seriesTypes.js').Series[]} catalog
+ * @returns {Map<string, string>} reelId → canonical browse seriesId
+ */
+function buildReelCanonicalBrowseOwnerMap(catalog) {
+    /** @type {Map<string, { seriesId: string; score: number }>} */
+    const reelOwners = new Map();
+    for (const series of catalog) {
+        const seriesId = text(series?.id);
+        if (!seriesId) continue;
+        const episodes = collectViewerEpisodes(series);
+        if (episodes.length === 0) continue;
+        const score = scoreBrowseCanonicalSeries(series, episodes);
+        for (const episode of episodes) {
+            const reelId = text(episode?.reelId || episode?.mediaAssetId || episode?.heroVaultAssetId);
+            if (!reelId) continue;
+            const prev = reelOwners.get(reelId);
+            if (!prev || score > prev.score) {
+                reelOwners.set(reelId, { seriesId, score });
+            }
+        }
+    }
+    return new Map([...reelOwners.entries()].map(([reelId, row]) => [reelId, row.seriesId]));
+}
+
+/**
+ * Collapse vault-inferred singleton productions whose media already belongs to a
+ * canonical multi-episode series (e.g. Vic G). Presentation-only — no catalog mutation.
+ *
+ * @param {Array<{
+ *   seriesId: string;
+ *   title: string;
+ *   path: string;
+ *   posterSrc: string;
+ *   seasonCount: number;
+ *   episodeCount: number;
+ *   playableCount: number;
+ *   latestTimestamp: number;
+ *   relatedMaterialCount?: number;
+ *   stackLayers?: number;
+ * }>} items
+ * @param {import('./seriesTypes.js').Series[]} catalog
+ * @param {Map<string, string>} reelOwnerMap
+ */
+function collapseRelatedBrowseProductions(items, catalog, reelOwnerMap) {
+    /** @type {Map<string, Set<string>>} */
+    const collapsedInto = new Map();
+    const seriesById = new Map(catalog.map((series) => [text(series?.id), series]).filter(([id]) => id));
+
+    for (const item of items) {
+        const series = seriesById.get(item.seriesId);
+        if (!series) continue;
+        const episodes = collectViewerEpisodes(series);
+        const reelIds = episodes
+            .map((episode) => text(episode?.reelId || episode?.mediaAssetId || episode?.heroVaultAssetId))
+            .filter(Boolean);
+        if (reelIds.length === 0) continue;
+
+        const owners = new Set(reelIds.map((reelId) => reelOwnerMap.get(reelId)).filter(Boolean));
+        if (owners.size !== 1) continue;
+
+        const owner = [...owners][0];
+        if (owner === item.seriesId) continue;
+
+        if (!collapsedInto.has(owner)) collapsedInto.set(owner, new Set());
+        collapsedInto.get(owner).add(item.seriesId);
+    }
+
+    const satelliteIds = new Set();
+    for (const satellites of collapsedInto.values()) {
+        for (const id of satellites) satelliteIds.add(id);
+    }
+
+    return items
+        .filter((item) => !satelliteIds.has(item.seriesId))
+        .map((item) => {
+            const satellites = collapsedInto.get(item.seriesId);
+            if (!satellites || satellites.size === 0) return item;
+            const relatedMaterialCount = satellites.size;
+            return {
+                ...item,
+                relatedMaterialCount,
+                stackLayers: Math.min(2, relatedMaterialCount)
+            };
         });
-        return text(
-            resolved?.thumbnail ||
-                episode?.thumbnailUrl ||
-                episode?.poster ||
-                resolved?.mediaUrl ||
-                ''
-        );
-    });
-    return text(
-        resolveSeriesPosterSrc({
-            seriesPoster: series.poster,
-            episodeThumbnails,
-            placeholder
-        })
-    );
 }
 
 /**
  * @param {import('./seriesTypes.js').Series[]} catalog
  * @param {{
  *   readyVaultAssets?: Record<string, unknown>[];
+ *   reelMetadataMap?: Record<string, import('./seriesMetadataStorage.js').ReelSeriesMetadata>;
  *   placeholder?: string;
  *   sectionLimit?: number;
  * }} [options]
@@ -73,20 +148,14 @@ function resolveProductionPoster(series, episodes, readyVaultAssets, placeholder
 export function buildViewerSeriesBrowseCatalog(catalog, options = {}) {
     const list = Array.isArray(catalog) ? catalog : [];
     const readyVaultAssets = Array.isArray(options.readyVaultAssets) ? options.readyVaultAssets : [];
+    const reelMetadataMap =
+        options.reelMetadataMap && typeof options.reelMetadataMap === 'object'
+            ? options.reelMetadataMap
+            : {};
     const placeholder = text(options.placeholder);
     const sectionLimit = Math.max(1, toNumber(options.sectionLimit) || 12);
 
-    /** @type {Map<string, {
-     *   seriesId: string;
-     *   title: string;
-     *   path: string;
-     *   posterSrc: string;
-     *   seasonCount: number;
-     *   episodeCount: number;
-     *   playableCount: number;
-     *   latestTimestamp: number;
-     * }>}
-     */
+    /** @type {Map<string, ReturnType<typeof buildViewerProductionProjection> & { latestTimestamp: number }>} */
     const bySeriesId = new Map();
 
     for (const series of list) {
@@ -96,32 +165,25 @@ export function buildViewerSeriesBrowseCatalog(catalog, options = {}) {
         const episodes = collectViewerEpisodes(series);
         if (episodes.length === 0) continue;
 
-        const playableCount = episodes.filter((episode) => episodeIsPubliclyPlayable(episode)).length;
+        const projection = buildViewerProductionProjection(series, {
+            reelMetadataMap,
+            readyVaultAssets,
+            placeholder
+        });
+        if (!projection) continue;
+
         const latestTimestamp = episodes.reduce((max, episode) => {
             const publishedAt = Date.parse(text(episode?.publishedAt || episode?.releaseDate || ''));
             return Number.isFinite(publishedAt) ? Math.max(max, publishedAt) : max;
         }, 0);
-        const path = publicSeriesPath(series) || '';
-        if (!path) continue;
-
-        const seasonCount = (series.seasons || []).filter(
-            (season) =>
-                Array.isArray(season?.episodes) &&
-                season.episodes.some((episode) => episodeIsViewerDiscoverable(episode))
-        ).length;
         bySeriesId.set(seriesId, {
-            seriesId,
-            title: text(series.title) || seriesId,
-            path,
-            posterSrc: resolveProductionPoster(series, episodes, readyVaultAssets, placeholder),
-            seasonCount: Math.max(1, seasonCount || (series.seasons || []).length || 1),
-            episodeCount: episodes.length,
-            playableCount,
+            ...projection,
             latestTimestamp
         });
     }
 
-    const all = [...bySeriesId.values()];
+    const reelOwnerMap = buildReelCanonicalBrowseOwnerMap(list);
+    const all = collapseRelatedBrowseProductions([...bySeriesId.values()], list, reelOwnerMap);
     const newestCandidates = [...all]
         .sort((a, b) => {
             if (b.latestTimestamp !== a.latestTimestamp) return b.latestTimestamp - a.latestTimestamp;

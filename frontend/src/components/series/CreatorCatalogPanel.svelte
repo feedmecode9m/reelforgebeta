@@ -6,6 +6,7 @@
         updateCatalogEpisode,
         updateCatalogSeries,
         persistSeriesRowToApi,
+        persistEpisodeRowToApi,
         updateCatalogSeason,
         setEpisodeStatus,
         reorderEpisodesInSeason,
@@ -24,6 +25,8 @@
         suggestCreatorCatalogEpisodeFields,
         suggestCreatorCatalogSeriesFields
     } from '../../lib/series/laProductionStudioEnrichment.js';
+    import { buildCreatorSeriesPosterCatalog } from '../../lib/series/creatorSeriesPosterCatalog.js';
+    import SeriesBrowsePosterCard from './SeriesBrowsePosterCard.svelte';
 
     const dispatch = createEventDispatcher();
 
@@ -69,6 +72,7 @@
     }
 
     $: catalogList = $seriesCatalog || [];
+    $: posterCatalogItems = buildCreatorSeriesPosterCatalog(catalogList);
     $: seriesOptions = [...catalogList].sort((a, b) => {
         const aVault = Array.isArray(a.tags) && a.tags.includes('vault-inferred') ? 0 : 1;
         const bVault = Array.isArray(b.tags) && b.tags.includes('vault-inferred') ? 0 : 1;
@@ -327,6 +331,31 @@
         dispatch('seriesSelect', { seriesId: selectedSeriesId });
     }
 
+    /** @param {string} seriesId */
+    function selectCatalogSeries(seriesId) {
+        const id = String(seriesId || '').trim();
+        if (!id || !seriesOptions.some((s) => s.id === id)) return;
+        selectedSeriesId = id;
+        selectedSeasonNumber = 1;
+        selectedEpisodeId = '';
+        lastLoadedEpisodeId = '';
+        lastLoadedSeriesId = '';
+        dispatch('seriesSelect', { seriesId: id });
+    }
+
+    /** @param {CustomEvent<{ seriesId?: string }>} event */
+    function handlePosterSelect(event) {
+        selectCatalogSeries(String(event?.detail?.seriesId || ''));
+    }
+
+    /** @param {CustomEvent<{ seriesId?: string }>} event */
+    function handlePosterEditInVault(event) {
+        const seriesId = String(event?.detail?.seriesId || '').trim();
+        if (!seriesId) return;
+        selectCatalogSeries(seriesId);
+        dispatch('editInVault', { seriesId });
+    }
+
     function handleSeasonChange() {
         selectedEpisodeId = '';
         lastLoadedEpisodeId = '';
@@ -337,7 +366,7 @@
         selectedEpisodeId = episodeId;
     }
 
-    function handleSave() {
+    async function handleSave() {
         if (!selectedEpisodeId) {
             saveMessage = 'Select an episode first';
             return;
@@ -375,6 +404,12 @@
         });
         if (!updated) {
             saveMessage = 'Save failed — check title and status';
+            return;
+        }
+        const apiResult = await persistEpisodeRowToApi(selectedEpisodeId);
+        if (!apiResult.ok) {
+            const detail = apiResult.error || apiResult.reason || 'API unavailable';
+            saveMessage = `Saved locally — canonical API save failed (${detail})`;
             return;
         }
         saveMessage = `Saved ${new Date().toLocaleTimeString()}`;
@@ -494,6 +529,18 @@
     {#if !seriesOptions.length}
         <p class="creator-catalog__empty" role="status">No series in catalog yet.</p>
     {:else}
+        <section class="creator-catalog__poster-grid" data-creator-series-poster-grid aria-label="Series catalog cards">
+            {#each posterCatalogItems as card (card.seriesId)}
+                <SeriesBrowsePosterCard
+                    item={card}
+                    creatorMode={true}
+                    selected={selectedSeriesId === card.seriesId}
+                    on:select={handlePosterSelect}
+                    on:editInVault={handlePosterEditInVault}
+                />
+            {/each}
+        </section>
+
         <div class="creator-catalog__filters">
             <label class="creator-catalog__field">
                 <span>Series</span>
@@ -838,6 +885,12 @@
         margin: 0.25rem 0 0;
         font-size: 0.78rem;
         opacity: 0.72;
+    }
+    .creator-catalog__poster-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+        gap: 0.85rem;
+        margin-bottom: 1rem;
     }
     .creator-catalog__filters {
         display: grid;

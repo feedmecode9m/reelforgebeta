@@ -213,8 +213,17 @@
 
     function scrollUploadZonesIntoView() {
         if (typeof document === 'undefined') return;
+        const scrollBody = document.querySelector('[data-control-center-scroll-body]');
         const panel = document.querySelector('[data-workspace-panel-content]');
-        panel?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+        if (scrollBody && panel) {
+            const bodyRect = scrollBody.getBoundingClientRect();
+            const panelRect = panel.getBoundingClientRect();
+            if (panelRect.bottom > bodyRect.bottom || panelRect.top < bodyRect.top) {
+                scrollBody.scrollTop += panelRect.top - bodyRect.top - 24;
+            }
+        } else {
+            panel?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+        }
         const vaultDrop = document.querySelector('[data-workspace-panel-content] .video-vault-drop');
         vaultDrop?.scrollIntoView({ block: 'center', behavior: 'smooth' });
     }

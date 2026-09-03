@@ -1,0 +1,20 @@
+---
+description: Protect mobile theater UX and production gating parity
+globs: frontend/src/components/theater/**/*.svelte
+alwaysApply: false
+---
+
+# Mobile Theater Production Guardrails
+
+- Treat mobile theater as gesture-first playback UX.
+- Do not add a bottom playback dock, floating center controls, or center timeline dots on mobile theater.
+- On mobile, avoid rendering `ReelshortExperience` theater ambient/chrome overlays that can introduce floating center artifacts.
+- Preserve touch controls on the video surface:
+  - single tap: play/pause
+  - horizontal slide: scrub seek
+  - double tap left/right: -10s/+10s
+  - double tap center: mute/unmute
+- Keep landscape touch devices on mobile theater path (no desktop side-docked episode rail).
+- Keep paid/free logic aligned to production: first 2 episodes free unless explicit metadata overrides.
+- Treat Stripe subscription state as entitlement source using shared viewer entitlement helpers.
+- For mobile theater changes, verify local phone behavior before production deploy.

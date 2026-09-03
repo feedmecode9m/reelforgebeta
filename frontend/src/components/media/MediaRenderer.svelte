@@ -291,8 +291,14 @@
             on:mouseenter
             on:mouseleave
             on:click
+            on:pointerdown
+            on:pointermove
             on:pointerup
+            on:pointercancel
+            on:touchstart
+            on:touchmove
             on:touchend
+            on:touchcancel
         >
             {#if useSourceElement}
                 <source src={resolvedSrc} type={videoMime} />
@@ -342,8 +348,14 @@
             on:mouseenter
             on:mouseleave
             on:click
+            on:pointerdown
+            on:pointermove
             on:pointerup
+            on:pointercancel
+            on:touchstart
+            on:touchmove
             on:touchend
+            on:touchcancel
         >
             {#if useSourceElement}
                 <source src={resolvedSrc} type={videoMime} />

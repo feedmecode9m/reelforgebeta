@@ -79,6 +79,17 @@ export async function attachReelToEpisode(episodeId, reelId) {
     });
 }
 
+/** @param {string} episodeId @param {string} reelId @param {string | null | undefined} sourceEpisodeId */
+export async function rebindReelToEpisode(episodeId, reelId, sourceEpisodeId) {
+    const payload = { reel_id: reelId };
+    if (sourceEpisodeId) payload.source_episode_id = sourceEpisodeId;
+    return studioFetch(`/api/studio/episodes/${episodeId}/rebind-reel`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+}
+
 export async function backfillStudioHierarchy() {
     return studioFetch('/api/studio/backfill', { method: 'POST' });
 }

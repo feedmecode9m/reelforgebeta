@@ -40,7 +40,7 @@ assert(/logMobileShelfTrace/.test(reelshort), 'Gate 3: Reelshort logs shelf trac
 assert(/detectMobilePresentation\(\) \|\| !prefersHoverPreview/.test(reelshort), 'Gate 4: feed hover preview skipped on mobile');
 assert(/min-height:\s*44px/.test(episodeChip), 'Gate 4: EpisodeChip viewer min touch 44px');
 assert(/safe-area-inset/.test(seriesPage), 'Gate 4: SeriesPublicPage safe-area padding');
-assert(/handleTheaterPlayPointerUp/.test(theater), 'Gate 5: Theater play pointerup retained');
+assert(/handleLandscapeWrapperPointerUp/.test(theater), 'Gate 5: Theater wrapper gesture pointerup retained');
 assert(/startTheaterPlayback/.test(theater), 'Gate 5: Theater startTheaterPlayback retained');
 assert(!/on:touchend=\{handleTheaterVideoInteraction\}/.test(theater), 'Gate 5: no video touchend stopPropagation regression');
 

@@ -31,13 +31,28 @@ export const VIC_G_EPISODE_BINDINGS = Object.freeze([
     },
     {
         episodeNumber: 2,
-        reelId: 'd2aafde7-d7ba-492c-a860-20b51f7f4033',
+        reelId: 'cadfcabc-1947-4341-86a3-f82a08e78669',
         episodeId: 'ep-vic-g-s01e02'
     },
     {
         episodeNumber: 3,
         reelId: '3894107e-ae44-43c5-af72-b3f5d5e0ad90',
         episodeId: 'ep-vic-g-s01e03'
+    },
+    {
+        episodeNumber: 4,
+        reelId: 'b3a87c96-6ea0-4854-a0bc-6b0f2442f9a1',
+        episodeId: 'ep-vic-g-s01e04'
+    },
+    {
+        episodeNumber: 5,
+        reelId: 'efb01cee-9477-4477-982a-7611cfc08fcc',
+        episodeId: 'ep-vic-g-s01e05'
+    },
+    {
+        episodeNumber: 6,
+        reelId: '5cc786f0-8fbe-4f96-a59d-02014b0cc56f',
+        episodeId: 'ep-vic-g-s01e06'
     }
 ]);
 
@@ -92,11 +107,39 @@ export function buildVicGSeriesPackage() {
  * @param {import('./seriesTypes.js').Series[] | null | undefined} catalogItems
  * @returns {import('./seriesTypes.js').Series[]}
  */
+/**
+ * All reel/media ids exclusively owned by Vic G (package + any live catalog rows).
+ *
+ * @param {import('./seriesTypes.js').Series[] | null | undefined} catalogItems
+ * @param {import('./seriesTypes.js').Series | null | undefined} vicSeries
+ * @returns {Set<string>}
+ */
+function collectVicGExclusiveReelIds(catalogItems, vicSeries) {
+    /** @type {Set<string>} */
+    const ids = new Set(VIC_G_EPISODE_BINDINGS.map((b) => b.reelId).filter(Boolean));
+    const vic =
+        vicSeries ||
+        (Array.isArray(catalogItems)
+            ? catalogItems.find((series) => series?.id === VIC_G_SERIES_ID)
+            : null);
+    if (!vic) return ids;
+    for (const season of vic.seasons || []) {
+        for (const episode of season.episodes || []) {
+            for (const key of ['reelId', 'mediaAssetId', 'heroVaultAssetId']) {
+                const value =
+                    episode?.[key] != null ? String(/** @type {Record<string, unknown>} */ (episode)[key]).trim() : '';
+                if (value) ids.add(value);
+            }
+        }
+    }
+    return ids;
+}
+
 export function mergeVicGSeriesIntoCatalog(catalogItems) {
     const list = Array.isArray(catalogItems) ? catalogItems.slice() : [];
     const existingVicSeries = list.find((series) => series?.id === VIC_G_SERIES_ID) || null;
     const pkg = existingVicSeries || buildVicGSeriesPackage();
-    const reelIds = VIC_G_REEL_IDS;
+    const reelIds = collectVicGExclusiveReelIds(list, pkg);
 
     /** @param {import('./seriesTypes.js').Series} series */
     const stripReels = (series) => {

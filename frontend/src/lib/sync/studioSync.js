@@ -5,6 +5,7 @@
 
 import { writable, get } from 'svelte/store';
 import { fetchSyncStatus, pullSyncState, pushSyncState, getOrCreateSyncDeviceId } from '../api/syncApi.js';
+import { getAdminToken } from '../adminSession.js';
 import {
     SYNC_DOMAINS,
     entryUpdatedAt,
@@ -304,13 +305,21 @@ export async function performSync() {
 
         applyRemoteSyncPayload(merged);
 
-        const pushResult = await pushSyncState(payloadToPushDomains(merged));
-        const mergedPayload = /** @type {Record<string, unknown>} */ (pushResult?.payload || merged);
-        applyRemoteSyncPayload(mergedPayload);
+        let mergedPayload = merged;
+        if (getAdminToken()) {
+            const pushResult = await pushSyncState(payloadToPushDomains(merged));
+            mergedPayload = /** @type {Record<string, unknown>} */ (pushResult?.payload || merged);
+            applyRemoteSyncPayload(mergedPayload);
+        } else {
+            logStudioSyncDiag('SYNC_PUSH_SKIPPED', {
+                reason: 'missing_admin_session'
+            });
+        }
 
         logStudioSyncDiag('SYNC_PUSH', {
             domains: SYNC_DOMAINS,
-            conflictCount: conflicts.length
+            conflictCount: conflicts.length,
+            mode: getAdminToken() ? 'read-write' : 'pull-only'
         });
 
         const at = Date.now();

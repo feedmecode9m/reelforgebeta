@@ -142,11 +142,9 @@ try {
         url: SSR_POSTER_URL
     };
     const videoAssets = [{ id: CLUB_REEL, name: '03 CLUB POOM POOM V1', title: '03 CLUB POOM POOM V1' }];
-    const target = posterAssignment.resolvePosterAssignmentTarget(
-        thumbnailEntry,
-        get(store.seriesCatalog),
-        { videoAssets }
-    );
+    const target = posterAssignment.resolvePosterAssignmentTarget(thumbnailEntry, {
+        videoAssets
+    });
 
     assert(target?.episodeId === VIC_G_E02, `target episode is ${VIC_G_E02} (got ${target?.episodeId})`);
     assert(target?.seriesId === VIC_G_ID, `target series is ${VIC_G_ID} (got ${target?.seriesId})`);
@@ -208,6 +206,86 @@ try {
         'Vic G package episode count unchanged'
     );
 
+    console.log('\n[I] post-sync UUID rename — identity survives + resolver');
+    const thumbVault = await vite.ssrLoadModule('/src/lib/viewer/thumbnailVault.js');
+    bag.set(
+        'personal_thumbnails',
+        JSON.stringify([
+            {
+                id: POSTER_IMAGE_ID,
+                name: '03 CLUB POOM POOM V1',
+                title: '03 CLUB POOM POOM V1',
+                personal_video_id: CLUB_REEL,
+                url: SSR_POSTER_URL,
+                fileName: `${POSTER_IMAGE_ID}.jpeg`
+            }
+        ])
+    );
+
+    const backendUuidReel = {
+        id: POSTER_IMAGE_ID,
+        name: 'BE24E968-3D3D-4EE6-BE38-45E2FFC0D5B4',
+        title: 'BE24E968-3D3D-4EE6-BE38-45E2FFC0D5B4',
+        url: `/thumbs/${POSTER_IMAGE_ID}.jpeg`,
+        fileName: `${POSTER_IMAGE_ID}.jpeg`,
+        type: 'image/jpeg'
+    };
+
+    thumbVault.upgradeThumbnailVaultFromBackendReels([backendUuidReel]);
+    /** @type {Record<string, unknown>[]} */
+    const upgradedThumbs = JSON.parse(bag.get('personal_thumbnails') || '[]');
+    const postSyncEntry = upgradedThumbs[0];
+    assert(
+        postSyncEntry?.name === '03 CLUB POOM POOM V1',
+        `human title survives backend UUID rename (got ${postSyncEntry?.name})`
+    );
+    assert(
+        postSyncEntry?.personal_video_id === CLUB_REEL,
+        `personal_video_id survives backend hydration (got ${postSyncEntry?.personal_video_id})`
+    );
+
+    store.resetSeriesCatalogEmpty?.();
+    store.applyAuthoritativeApiCatalog(clubCatalogFixture());
+
+    const postSyncTarget = posterAssignment.resolvePosterAssignmentTarget(postSyncEntry, {
+        videoAssets
+    });
+    assert(
+        postSyncTarget?.episodeId === VIC_G_E02,
+        `post-sync resolver targets ${VIC_G_E02} (got ${postSyncTarget?.episodeId})`
+    );
+    assert(postSyncTarget?.reason === 'linked-media-id', 'post-sync resolver uses linked-media-id');
+    assert(postSyncTarget?.episodeId !== INFERRED_EP, 'post-sync resolver skips inferred shell');
+
+    const strippedEntry = {
+        id: POSTER_IMAGE_ID,
+        name: 'BE24E968-3D3D-4EE6-BE38-45E2FFC0D5B4',
+        title: 'BE24E968-3D3D-4EE6-BE38-45E2FFC0D5B4',
+        url: SSR_POSTER_URL
+    };
+    const persistentTitleMap = {
+        [POSTER_IMAGE_ID]: {
+            title: '03 CLUB POOM POOM V1',
+            title_original: '03 CLUB POOM POOM V1'
+        }
+    };
+    const persistentTarget = posterAssignment.resolvePosterAssignmentTarget(strippedEntry, {
+        videoAssets,
+        persistentTitleMap
+    });
+    assert(
+        persistentTarget?.episodeId === VIC_G_E02,
+        `persistent-title fallback targets ${VIC_G_E02} (got ${persistentTarget?.episodeId})`
+    );
+    assert(
+        persistentTarget?.reason === 'persistent-title-match',
+        'persistent-title fallback reason is persistent-title-match'
+    );
+
+    const postSyncAssign = await store.assignEpisodePoster(VIC_G_E02, SSR_POSTER_URL);
+    assert(postSyncAssign.ok === true, 'post-sync assignEpisodePoster succeeds');
+    assert(postSyncAssign.reelId === CLUB_REEL, 'post-sync assign keeps reelId unchanged');
+
     globalThis.fetch = nativeFetch;
 
     console.log('\n[browser] Thumbnail Vault assign panel preselect + Vic G E02 chip');
@@ -217,6 +295,10 @@ try {
         const context = await browser.newContext();
         await context.addInitScript(({ posterId }) => {
                 localStorage.setItem('personal_thumbnail_reel_ids', JSON.stringify([posterId]));
+                window.__productionUpdates = [];
+                window.addEventListener('reelforge:creator-production-updated', (event) => {
+                    window.__productionUpdates.push(event.detail || {});
+                });
             }, { posterId: POSTER_IMAGE_ID });
         const page = await context.newPage();
         await unlockStudioWithHeroSection(page, FRONTEND);
@@ -237,17 +319,28 @@ try {
         );
 
         await page.evaluate(
-            async ({ posterUrl, posterId }) => {
+            async ({ posterUrl, posterId, clubReel }) => {
                 const tv = await import('/src/lib/viewer/thumbnailVault.js');
                 tv.appendThumbnailVaultEntry({
                     id: posterId,
                     name: '03 CLUB POOM POOM V1',
                     title: '03 CLUB POOM POOM V1',
+                    personal_video_id: clubReel,
                     url: posterUrl,
                     type: 'image/jpeg'
                 });
+                tv.upgradeThumbnailVaultFromBackendReels([
+                    {
+                        id: posterId,
+                        name: 'BE24E968-3D3D-4EE6-BE38-45E2FFC0D5B4',
+                        title: 'BE24E968-3D3D-4EE6-BE38-45E2FFC0D5B4',
+                        url: posterUrl,
+                        fileName: `${posterId}.jpeg`,
+                        type: 'image/jpeg'
+                    }
+                ]);
             },
-            { posterUrl: POSTER_URL, posterId: POSTER_IMAGE_ID }
+            { posterUrl: POSTER_URL, posterId: POSTER_IMAGE_ID, clubReel: CLUB_REEL }
         );
 
         await page.evaluate(() => {
@@ -301,6 +394,17 @@ try {
 
         await page.locator('[data-testid="thumbnail-poster-assign-btn"]').click();
         await page.waitForTimeout(1500);
+
+        const productionUpdates = await page.evaluate(() => window.__productionUpdates || []);
+        assert(
+            productionUpdates.some(
+                (row) =>
+                    row?.episodeId === VIC_G_E02 &&
+                    row?.actionType === 'missing-thumbnail' &&
+                    row?.source === 'thumbnail-poster-assign'
+            ),
+            'creator-production update emitted after poster assign'
+        );
 
         await page.goto(`${FRONTEND}/series/vic-g`, { waitUntil: 'domcontentloaded', timeout: 120_000 });
         await page.waitForTimeout(2500);

@@ -21,6 +21,7 @@ export const SERIES_CATALOG_EDITS_KEY = 'reelforge_series_catalog_edits';
  *   title?: string;
  *   description?: string;
  *   thumbnailUrl?: string;
+ *   posterAssignSource?: 'thumbnail-vault' | 'mp4-still';
  * }} EpisodeCatalogEdit
  */
 

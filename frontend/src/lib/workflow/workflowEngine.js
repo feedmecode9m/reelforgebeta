@@ -231,6 +231,10 @@ async function pushStoreToApi(store) {
 
     try {
         for (const task of store.tasks) {
+            const seriesId = String(task?.seriesId || '').trim();
+            if (!seriesId) {
+                continue;
+            }
             await createWorkflowTask(operationalTaskToApi(task));
         }
         workflowPersistenceMode.set('api');
@@ -350,9 +354,21 @@ async function persistTaskMutation(task) {
  * @param {Record<string, unknown>[]} [feedReels]
  */
 export function syncWorkflowTasks(seriesId, feedReels = []) {
+    const normalizedSeriesId = String(seriesId || '').trim();
+    if (!normalizedSeriesId) {
+        const emptyResult = {
+            tasks: [],
+            plan: { tasks: [] },
+            projected: { readinessBefore: 0, readinessAfter: 0 },
+            actionPlan: { recommendations: [], blockers: [], quickWins: [] },
+            created: 0,
+            completed: 0
+        };
+        return emptyResult;
+    }
     const currentStore = loadWorkflowTaskStore();
-    const inputHash = `${seriesId}::${buildFeedSignature(feedReels)}::${buildTaskSignature(currentStore.tasks.filter((task) => task.seriesId === seriesId))}`;
-    const memo = workflowSyncMemo.get(seriesId);
+    const inputHash = `${normalizedSeriesId}::${buildFeedSignature(feedReels)}::${buildTaskSignature(currentStore.tasks.filter((task) => task.seriesId === normalizedSeriesId))}`;
+    const memo = workflowSyncMemo.get(normalizedSeriesId);
     const now = Date.now();
     if (memo && memo.hash === inputHash && now - memo.at < WORKFLOW_SYNC_MEMO_TTL_MS) {
         return memo.result;
@@ -360,7 +376,7 @@ export function syncWorkflowTasks(seriesId, feedReels = []) {
 
     const policy = enforceWorkflowPolicy({ operation: 'sync_workflow_tasks' });
     if (!policy.allowed) {
-        const existingTasks = getWorkflowTasksForSeries(seriesId);
+        const existingTasks = getWorkflowTasksForSeries(normalizedSeriesId);
         const blockedResult = {
             tasks: existingTasks,
             plan: { tasks: [] },
@@ -370,17 +386,17 @@ export function syncWorkflowTasks(seriesId, feedReels = []) {
             completed: 0
         };
         logWorkflowTaskDiag('WORKFLOW_ENGINE', {
-            seriesId,
+            seriesId: normalizedSeriesId,
             blockedByPolicy: true,
             reason: policy.reason,
             taskCount: existingTasks.filter((task) => task.status !== 'COMPLETE').length
         });
-        workflowSyncMemo.set(seriesId, { hash: inputHash, at: now, result: blockedResult });
+        workflowSyncMemo.set(normalizedSeriesId, { hash: inputHash, at: now, result: blockedResult });
         return blockedResult;
     }
 
-    const plan = buildWorkflowTasks(seriesId, feedReels);
-    const actionPlan = buildStudioActionPlan(seriesId, feedReels);
+    const plan = buildWorkflowTasks(normalizedSeriesId, feedReels);
+    const actionPlan = buildStudioActionPlan(normalizedSeriesId, feedReels);
     const store = loadWorkflowTaskStore();
     const candidateIds = new Set(plan.tasks.map((task) => task.id));
     let created = 0;
@@ -390,7 +406,7 @@ export function syncWorkflowTasks(seriesId, feedReels = []) {
     for (const candidate of plan.tasks) {
         const existing = store.tasks.find((task) => task.id === candidate.id);
         if (!existing) {
-            const task = createOperationalTask(candidate, seriesId);
+            const task = createOperationalTask(candidate, normalizedSeriesId);
             store.tasks.push(task);
             created += 1;
             if (task.taskType === 'MISSING_ASSET') {
@@ -398,7 +414,7 @@ export function syncWorkflowTasks(seriesId, feedReels = []) {
             }
             logWorkflowTaskDiag('WORKFLOW_TASK_CREATED', {
                 taskId: task.id,
-                seriesId,
+                seriesId: normalizedSeriesId,
                 episodeId: task.episodeId,
                 taskType: task.taskType,
                 priority: task.priority,
@@ -422,7 +438,7 @@ export function syncWorkflowTasks(seriesId, feedReels = []) {
             completed += 1;
             logWorkflowTaskDiag('WORKFLOW_TASK_COMPLETED', {
                 taskId: task.id,
-                seriesId,
+                seriesId: normalizedSeriesId,
                 episodeId: task.episodeId,
                 autoResolved: true
             });
@@ -440,13 +456,13 @@ export function syncWorkflowTasks(seriesId, feedReels = []) {
     }
 
     const seriesTasks = store.tasks
-        .filter((task) => task.seriesId === seriesId)
+        .filter((task) => task.seriesId === normalizedSeriesId)
         .sort((a, b) => a.priority - b.priority || b.estimatedImpact - a.estimatedImpact);
 
     const projected = projectReadinessFromWorkflow(plan);
 
     logWorkflowTaskDiag('WORKFLOW_ENGINE', {
-        seriesId,
+        seriesId: normalizedSeriesId,
         taskCount: seriesTasks.filter((t) => t.status !== 'COMPLETE').length,
         created,
         completed,
@@ -465,7 +481,7 @@ export function syncWorkflowTasks(seriesId, feedReels = []) {
         created,
         completed
     };
-    workflowSyncMemo.set(seriesId, { hash: inputHash, at: now, result });
+    workflowSyncMemo.set(normalizedSeriesId, { hash: inputHash, at: now, result });
     return result;
 }
 
