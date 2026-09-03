@@ -240,12 +240,9 @@ export async function refreshSession() {
     try {
         const { response, data } = await apiMe(token);
         if (!response.ok || !data?.user) {
-            // Unauthorized or otherwise unusable session — clear token + admin bridge.
+            // Consumer session invalid — clear consumer identity only.
+            // Password-based Studio session (reelforge_admin_session_token) stays independent.
             applySession({ token: null, user: null });
-            clearAdminSession({
-                emitExpired: response.status === 401 || response.status === 403,
-                source: 'auth_me'
-            });
             authStatus.set('ready');
             return { ok: false, reason: 'invalid_session' };
         }
@@ -259,9 +256,8 @@ export async function refreshSession() {
         });
         return { ok: true, user: get(currentUser) };
     } catch (err) {
-        // Phase 0: never keep a token while UI is guest — clear so identity is truthful.
+        // Network failure validating consumer session — clear consumer only; preserve Studio password session.
         applySession({ token: null, user: null });
-        clearAdminSession({ source: 'auth_me_network' });
         authStatus.set('ready');
         authError.set(err?.message || 'Session restore failed');
         return { ok: false, reason: 'network' };

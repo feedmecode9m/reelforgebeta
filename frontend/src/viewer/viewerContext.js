@@ -3,6 +3,7 @@
  */
 import { writable, derived, get } from 'svelte/store';
 import { API_BASE_URL, BACKEND_URL, checkBackendHealth, fetchWithRetry, getAdminAuthHeaders, clearAdminSession, notifyBackendReconnecting } from '../lib/api.js';
+import { canAccessStudio, logout as authLogout, refreshSession as refreshAuthSession } from '../lib/auth/index.js';
 import { deleteMediaFile, uploadMedia, uploadThumbnail } from '../lib/api/media.js';
 import {
 initReelshortProfile,
@@ -2071,42 +2072,39 @@ function handleGhostHoverEnter() { ghostHoverActive.set(true); }
 function handleGhostHoverLeave() { ghostHoverActive.set(false); }
 
 function toggleControlCenter() {
-  // AUTH-1 / Phase 0: Studio entry only after verified admin role (not sticky admin_mode).
-  import('../lib/auth/index.js').then((auth) => {
-    if (!auth.canAccessStudio()) {
-      adminMode.set(false);
-      controlCenterOpen.set(false);
-      return;
-    }
-    adminMode.set(true);
-    controlCenterOpen.update((v) => !v);
-    if (get(controlCenterOpen)) {
-      recordStudioUsage({ source: 'control-center' });
-      studioRefs.experience?.loadStudioHierarchy();
-      studioRefs.experience?.loadWatchContinue();
-    } else {
-      unlockBodyScroll();
-    }
-  });
+  if (!canAccessStudio()) {
+    adminMode.set(false);
+    controlCenterOpen.set(false);
+    return;
+  }
+  const opening = !get(controlCenterOpen);
+  adminMode.set(true);
+  controlCenterOpen.set(opening);
+  if (opening) {
+    recordStudioUsage({ source: 'control-center' });
+    studioRefs.experience?.loadStudioHierarchy();
+    studioRefs.experience?.loadWatchContinue();
+  } else {
+    unlockBodyScroll();
+  }
 }
 
 /** AUTH-UI-2: open production chrome from account menu only when authorized. */
 function openStudioFromAccountMenu(source = 'account_menu') {
-  import('../lib/auth/index.js').then((auth) => {
-    if (!auth.canAccessStudio()) {
-      adminMode.set(false);
-      controlCenterOpen.set(false);
-      return;
-    }
-    adminMode.set(true);
-    controlCenterOpen.set(true);
-    recordStudioUsage({ source: String(source || 'account_menu') });
-    studioRefs.experience?.loadStudioHierarchy();
-    studioRefs.experience?.loadWatchContinue();
-  });
+  if (!canAccessStudio()) {
+    adminMode.set(false);
+    controlCenterOpen.set(false);
+    return;
+  }
+  adminMode.set(true);
+  controlCenterOpen.set(true);
+  recordStudioUsage({ source: String(source || 'account_menu') });
+  studioRefs.experience?.loadStudioHierarchy();
+  studioRefs.experience?.loadWatchContinue();
 }
 function logout() {
-  adminMode.set(false); controlCenterOpen.set(false);
+  adminMode.set(false);
+  controlCenterOpen.set(false);
   clearAdminSession();
   if (typeof window !== 'undefined') {
     try {
@@ -2115,7 +2113,7 @@ function logout() {
       /* ignore */
     }
   }
-  import('../lib/auth/index.js').then((auth) => auth.logout()).catch(() => {});
+  authLogout().catch(() => {});
   uploadStatus.set('Signed out');
   resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000);
 }
@@ -2195,8 +2193,7 @@ if (typeof window !== 'undefined') {
         /* ignore */
       }
     }
-    const { canAccessStudio, refreshSession } = await import('../lib/auth/index.js');
-    await refreshSession();
+    await refreshAuthSession();
     if (!canAccessStudio()) {
       adminMode.set(false);
       controlCenterOpen.set(false);
@@ -2296,15 +2293,13 @@ isVideoReel,
 reupload: {
 deleteProduction: (id) => UIAgent.deleteProduction(id),
 openControlCenter: () => {
-  import('../lib/auth/index.js').then((auth) => {
-    if (auth.canAccessStudio()) {
-      adminMode.set(true);
-      controlCenterOpen.set(true);
-    } else {
-      adminMode.set(false);
-      controlCenterOpen.set(false);
-    }
-  });
+  if (canAccessStudio()) {
+    adminMode.set(true);
+    controlCenterOpen.set(true);
+  } else {
+    adminMode.set(false);
+    controlCenterOpen.set(false);
+  }
 },
 setUploadStatus: (msg) => uploadStatus.set(msg),
 scheduleStandby: () => resourceManager.setTimeout(() => uploadStatus.set('Standby'), 4000)
@@ -2335,15 +2330,13 @@ openTheater(reel);
 const onSearchNavigate = (event) => {
 const detail = event?.detail || {};
 if (detail?.workspaceTab || detail?.dashboardSection || detail?.targetType) {
-import('../lib/auth/index.js').then((auth) => {
-  if (auth.canAccessStudio()) {
-    controlCenterOpen.set(true);
+  if (canAccessStudio()) {
     adminMode.set(true);
+    controlCenterOpen.set(true);
   } else {
     adminMode.set(false);
     controlCenterOpen.set(false);
   }
-});
 }
 };
 const onOpenStudio = (event) => {

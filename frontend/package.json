@@ -121,6 +121,7 @@
     "validate:series-ordering": "node scripts/validate-series-ordering.mjs",
     "validate:series-metadata": "node scripts/validate-series-metadata.mjs",
     "validate:series-row-save": "node scripts/validate-series-row-save.mjs",
+    "validate:studio-entry-auth-boundary": "node scripts/validate-studio-entry-auth-boundary.mjs",
     "validate:publishing-controls": "node scripts/validate-publishing-controls.mjs",
     "validate:series-page": "node scripts/validate-series-page.mjs",
     "validate:viewer-access-entitlement": "node scripts/validate-viewer-access-entitlement.mjs",

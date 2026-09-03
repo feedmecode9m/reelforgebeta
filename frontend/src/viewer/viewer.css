@@ -24,9 +24,19 @@ body {
 * { box-sizing: border-box; }
 .ghost-trigger { position: fixed; top: 72px; right: 16px; width: 52px; height: 52px; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: crosshair; z-index: 9999; transition: all 0.3s ease; backdrop-filter: blur(10px); }
 .ghost-trigger:hover, .ghost-trigger.active { background: rgba(0,242,255,0.2); border-color: var(--neon-cyan); box-shadow: 0 0 30px rgba(0,242,255,0.4); transform: scale(1.1); }
+.ghost-trigger--hydrating { opacity: 0.55; cursor: wait; transform: none; box-shadow: none; }
+.ghost-trigger--hydrating:hover, .ghost-trigger--hydrating.active { opacity: 0.55; transform: none; box-shadow: none; background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
 .trigger-symbol { font-size: 1.8rem; font-weight: bold; color: var(--neon-cyan); text-shadow: 0 0 5px rgba(0,242,255,0.5); }
 main { min-height: 100vh; padding-bottom: 4rem; transition: filter 0.3s ease; position: relative; }
 main.blur { filter: blur(5px); pointer-events: none; user-select: none; }
+/* Studio / delete modals live inside blurred main — restore interaction explicitly. */
+.control-center-overlay,
+.control-center-overlay *,
+.delete-modal-overlay,
+.delete-modal-overlay *,
+.ghost-trigger {
+  pointer-events: auto;
+}
 main > header {
   position: absolute;
   top: 0;
@@ -294,10 +304,21 @@ backdrop-filter: blur(2px);
 .delete-confirm-btn { background: var(--neon-red); color: #fff; display: flex; align-items: center; justify-content: center; gap: 0.5rem; box-shadow: 0 0 20px rgba(229,9,20,0.3); }
 .delete-confirm-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(229,9,20,0.5); }
 .delete-spinner { width: 16px; height: 16px; border: 2px solid transparent; border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
-.control-center-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1500; display: grid; place-items: center; padding: 2rem; overflow-y: auto; backdrop-filter: blur(10px); border: none; width: 100%; font: inherit; color: inherit; cursor: default; text-align: inherit; }
-.control-center-container { background: var(--panel-bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; width: 100%; max-width: 1200px; max-height: 90vh; overflow-y: auto; box-shadow: 0 0 60px rgba(0,242,255,0.2); position: relative; isolation: isolate; }
+.control-center-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1500; display: flex; align-items: flex-start; justify-content: center; padding: 2rem 1rem; overflow: hidden; backdrop-filter: blur(10px); border: none; width: 100%; font: inherit; color: inherit; cursor: default; text-align: inherit; }
+.control-center-container { background: var(--panel-bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; width: 100%; max-width: 1200px; max-height: min(92dvh, calc(100dvh - 2rem)); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 60px rgba(0,242,255,0.2); position: relative; isolation: isolate; }
 .control-center-container::before { content: ''; position: absolute; inset: -1px; border-radius: 13px; background: linear-gradient(45deg, var(--neon-cyan), var(--neon-pink), var(--neon-gold)); background-size: 400% 400%; z-index: -1; animation: glowRotate 5s ease infinite; opacity: 0.3; }
-.control-center-header { position: relative; z-index: 2; display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(8,10,18,0.92); backdrop-filter: none; }
+.control-center-scroll-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 0 1.5rem 1.5rem; touch-action: pan-y; }
+.control-center-scroll-body button,
+.control-center-scroll-body input,
+.control-center-scroll-body select,
+.control-center-scroll-body textarea,
+.control-center-scroll-body a,
+.ghost-trigger,
+.admin-login-panel button,
+.admin-login-panel input {
+  touch-action: manipulation;
+}
+.control-center-header { position: relative; z-index: 2; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(8,10,18,0.92); backdrop-filter: none; }
 .control-center-header h2 { margin: 0; font-size: 1.25rem; background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 .control-center-header p { margin: 0.25rem 0 0; color: rgba(255,255,255,0.5); font-size: 0.875rem; }
 .control-center-actions { display: flex; gap: 0.5rem; }
@@ -314,7 +335,7 @@ backdrop-filter: blur(2px);
 .login-hint { font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-top: 1rem; }
 .login-hint code { background: rgba(0,0,0,0.5); padding: 0.2rem 0.4rem; border-radius: 4px; color: var(--neon-cyan); }
 .control-center-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; padding: 1.5rem; }
-@media (max-width: 900px) { .control-center-grid { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .control-center-grid { grid-template-columns: 1fr; } .control-center-overlay { padding: 1rem 0.5rem; } .control-center-container { max-height: min(96dvh, calc(100dvh - 1rem)); } .control-center-scroll-body { padding: 0 1rem 1rem; } .control-center-header { padding: 1rem; } }
 .studio-workspace-slot { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 0.5rem; }
 .studio-workspace-slot.forge-zone,
 .studio-workspace-slot .forge-zone,

@@ -1,7 +1,7 @@
 <script>
   import { onDestroy, tick } from 'svelte';
   import StudioExperience from '../experiences/StudioExperience.svelte';
-  import { currentUser, isAdminRole } from '../../lib/auth/index.js';
+  import { authStatus, currentUser, getAuthToken, isAdminRole } from '../../lib/auth/index.js';
   import { hasStudioAdminSessionToken } from '../../lib/adminSession.js';
 
   export let studioRefs;
@@ -198,19 +198,36 @@
     }
   });
   $: studioSessionTick;
-  $: showStudioEntry =
-    isAdminRole($currentUser?.role) || hasStudioAdminSessionToken();
+  $: studioPasswordSessionPresent = (studioSessionTick, hasStudioAdminSessionToken());
+  $: adminRolePresent = isAdminRole($currentUser?.role);
+  $: consumerSessionHydrating = $authStatus === 'loading' && Boolean(getAuthToken());
+  // Verified Studio authority — password session or admin RBAC role only.
+  $: studioAccessGranted = studioPasswordSessionPresent || adminRolePresent;
+  // Stable affordance during consumer hydrate; never mount chrome or open modal without authority.
+  $: showStudioAffordance = studioAccessGranted || consumerSessionHydrating;
+  $: studioEntryHydrating = consumerSessionHydrating && !studioAccessGranted;
 
-  // Keep adminMode as UI state only — clear when role cannot access studio.
-  $: if (!showStudioEntry && $adminMode) {
-    adminMode.set(false);
+  // Never leave modal state stuck when Studio authority is lost — even during auth transitions.
+  $: if (!studioAccessGranted) {
+    if ($adminMode) adminMode.set(false);
+    if ($controlCenterOpen) controlCenterOpen.set(false);
   }
-  $: if (!showStudioEntry && $controlCenterOpen) {
-    controlCenterOpen.set(false);
-  }
-  $: if (!showStudioEntry) {
+
+  $: if (!showStudioAffordance && $authStatus !== 'loading') {
     studioExperience = null;
     studioWalkthrough = null;
+  }
+
+  function handleGhostActivate() {
+    if (!studioAccessGranted) return;
+    toggleControlCenter();
+  }
+
+  function handleGhostKeydown(event) {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    if (!studioAccessGranted) return;
+    event.preventDefault();
+    toggleControlCenter();
   }
 
   $: if ($deleteConfirmReel && !deleteFocusTrapActive) {
@@ -230,21 +247,24 @@
 <svelte:window on:keydown={handleDeleteDialogKeydown} />
 
 <input type="file" id="file-input" accept="video/mp4,video/*" style="display: none" on:change={UIAgent.handleFileSelect} />
-{#if showStudioEntry}
+{#if showStudioAffordance}
 <button
   class="ghost-trigger"
-  class:active={$ghostHoverActive}
+  class:active={$ghostHoverActive && studioAccessGranted}
+  class:ghost-trigger--hydrating={studioEntryHydrating}
+  disabled={studioEntryHydrating}
   on:mouseenter={handleGhostHoverEnter}
   on:mouseleave={handleGhostHoverLeave}
-  on:click={toggleControlCenter}
-  on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleControlCenter(); } }}
-  aria-label="Smart Production Studio"
+  on:click={handleGhostActivate}
+  on:keydown={handleGhostKeydown}
+  aria-label={studioEntryHydrating ? 'Loading Smart Production Studio access' : 'Smart Production Studio'}
+  aria-busy={studioEntryHydrating}
 >
   <span class="trigger-symbol">⌘</span>
 </button>
 {/if}
 
-{#if showStudioEntry && $deleteConfirmReel}
+{#if studioAccessGranted && $deleteConfirmReel}
 <div
   class="delete-modal-overlay"
   role="presentation"
@@ -265,7 +285,7 @@
 </div>
 {/if}
 
-{#if showStudioEntry}
+{#if studioAccessGranted}
 <StudioExperience
   bind:this={studioExperience}
   bind:studioWalkthrough
