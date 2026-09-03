@@ -1073,6 +1073,29 @@
   }
 
   /**
+   * Full thumbnail vault row for poster assignment (not the display-only reel face).
+   * @param {unknown} img
+   * @param {number} index
+   */
+  function resolveThumbnailAssignSource(img, index) {
+    const stored = getStoredThumbnailEntries?.() || [];
+    const key =
+      typeof img === 'string'
+        ? img
+        : String(img?.fileName || img?.file_name || img?.id || '').trim();
+    const entry = stored.find((row) => {
+      if (!row) return false;
+      if (typeof row === 'string') return String(row).trim() === key;
+      return (
+        String(row.fileName || row.file_name || '').trim() === key ||
+        String(row.id || '').trim() === key
+      );
+    });
+    if (entry && typeof entry === 'object') return entry;
+    return getVaultImageReel(img, index);
+  }
+
+  /**
    * @param {unknown} entry
    */
   function openPosterAssign(entry) {
@@ -3978,8 +4001,7 @@
           <button
             type="button"
             class="thumb-assign-btn"
-            on:click|stopPropagation={() =>
-              openPosterAssign(typeof img === 'object' && img ? img : reel)}
+            on:click|stopPropagation={() => openPosterAssign(resolveThumbnailAssignSource(img, i))}
             data-action="assign-thumbnail-poster-open"
             data-testid="thumbnail-poster-assign-open"
           >
@@ -4009,6 +4031,7 @@
   </div>
   <ThumbnailPosterAssignPanel
     thumbnailEntry={posterAssignEntry}
+    videoAssets={$personalVideos || []}
     {uploadStatus}
     onClose={closePosterAssign}
     onAssigned={closePosterAssign}

@@ -5,12 +5,15 @@
     listCatalogSeriesOptions,
     listSeasonOptionsForSeries,
     listEpisodeOptionsForSeason,
+    resolvePosterAssignmentTarget,
     resolveThumbnailVaultPosterUrl
   } from '../../lib/studio/episodePosterAssignment.js';
   import MediaThumbnail from '../media/MediaThumbnail.svelte';
 
   /** Thumbnail Vault entry being assigned. */
   export let thumbnailEntry = null;
+  /** Ready Video Vault assets for title / linked-reel target resolution. */
+  export let videoAssets = [];
   /** @type {import('svelte/store').Writable<string>} */
   export let uploadStatus;
   /** @type {() => void} */
@@ -24,6 +27,45 @@
   let assigning = false;
   let errorMessage = '';
   let successMessage = '';
+  let userTouchedSelection = false;
+  let openedEntryKey = '';
+
+  /** @param {unknown} entry */
+  function entryPreselectKey(entry) {
+    if (!entry || typeof entry !== 'object') return '';
+    const row = /** @type {Record<string, unknown>} */ (entry);
+    return [
+      row.id,
+      row.url,
+      row.personal_video_id,
+      row.name,
+      row.title,
+      row.fileName
+    ]
+      .map((value) => String(value || '').trim())
+      .filter(Boolean)
+      .join('|');
+  }
+
+  $: if (!thumbnailEntry) {
+    openedEntryKey = '';
+    userTouchedSelection = false;
+  } else {
+    const nextKey = entryPreselectKey(thumbnailEntry);
+    if (nextKey !== openedEntryKey) {
+      openedEntryKey = nextKey;
+      userTouchedSelection = false;
+    }
+  }
+
+  $: if (thumbnailEntry && !userTouchedSelection) {
+    const target = resolvePosterAssignmentTarget(thumbnailEntry, $seriesCatalog, { videoAssets });
+    if (target) {
+      selectedSeriesId = target.seriesId;
+      selectedSeasonNumber = String(target.seasonNumber);
+      selectedEpisodeId = target.episodeId;
+    }
+  }
 
   $: posterUrl = resolveThumbnailVaultPosterUrl(thumbnailEntry);
   $: posterLabel =
@@ -49,12 +91,22 @@
     selectedEpisodeId = '';
   }
 
+  function markUserTouchedSelection() {
+    userTouchedSelection = true;
+  }
+
   function handleSeriesChange() {
+    markUserTouchedSelection();
     resetSeasonEpisode();
   }
 
   function handleSeasonChange() {
+    markUserTouchedSelection();
     selectedEpisodeId = '';
+  }
+
+  function handleEpisodeChange() {
+    markUserTouchedSelection();
   }
 
   function closePanel() {
@@ -164,9 +216,11 @@
           Episode
           <select
             bind:value={selectedEpisodeId}
+            on:change={handleEpisodeChange}
             disabled={!selectedSeriesId || selectedSeasonNumber === '' || episodeOptions.length === 0}
             data-thumbnail-poster-episode
             data-testid="thumbnail-poster-episode-select"
+            data-poster-assign-episode-id={selectedEpisodeId || ''}
           >
             <option value="">Select episode…</option>
             {#each episodeOptions as episode (episode.episodeId)}

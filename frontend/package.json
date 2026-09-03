@@ -122,6 +122,7 @@
     "validate:series-metadata": "node scripts/validate-series-metadata.mjs",
     "validate:series-row-save": "node scripts/validate-series-row-save.mjs",
     "validate:thumbnail-vault-episode-poster": "node scripts/validate-thumbnail-vault-episode-poster.mjs",
+    "validate:thumbnail-poster-assignment-target": "node scripts/validate-thumbnail-poster-assignment-target.mjs",
     "validate:studio-entry-auth-boundary": "node scripts/validate-studio-entry-auth-boundary.mjs",
     "validate:publishing-controls": "node scripts/validate-publishing-controls.mjs",
     "validate:series-page": "node scripts/validate-series-page.mjs",
