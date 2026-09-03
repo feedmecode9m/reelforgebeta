@@ -695,6 +695,37 @@ async function persistReelMetadataToApi(reelId, saved) {
         const target = applyReelPatchToCatalog(catalogClone, reelId, saved);
         if (!target) return;
 
+        // Secondary guard: do not demote established catalog publish state from stale client snapshots.
+        const liveEpisodeCtx = live
+            .flatMap((series) => {
+                const seriesTags = Array.isArray(series.tags) ? series.tags.map(String) : [];
+                return (series.seasons || []).flatMap((season) =>
+                    (season.episodes || [])
+                        .filter((ep) => String(ep?.reelId || '') === String(reelId))
+                        .map((ep) => ({
+                            episodeStatus: ep.status,
+                            seriesTags
+                        }))
+                );
+            })
+            .find(Boolean);
+        if (
+            liveEpisodeCtx &&
+            String(liveEpisodeCtx.episodeStatus || '') === 'draft' &&
+            String(saved?.episodeStatus || '') === 'published' &&
+            !liveEpisodeCtx.seriesTags.includes('vault-inferred') &&
+            !liveEpisodeCtx.seriesTags.includes('nlp-rehomed')
+        ) {
+            for (const season of target.seasons || []) {
+                for (const episode of season.episodes || []) {
+                    if (String(episode?.reelId || '') !== String(reelId)) continue;
+                    if (episode.status === 'draft') {
+                        episode.status = 'published';
+                    }
+                }
+            }
+        }
+
         const payload = seriesToApiPayload(target);
         await updateSeries(target.id, payload);
         seriesPersistenceMode.set('api');

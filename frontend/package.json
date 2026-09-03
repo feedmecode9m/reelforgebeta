@@ -138,6 +138,7 @@
     "validate:recommendations": "node scripts/validate-recommendations.mjs",
     "validate:creator-viewer-runtime": "node scripts/validate-creator-viewer-runtime.mjs",
     "validate:catalog-authority-hydration": "node scripts/validate-catalog-authority-hydration.mjs",
+    "validate:api-catalog-membership-survival": "node scripts/validate-api-catalog-membership-survival.mjs",
     "validate:viewer-production-projection": "node scripts/validate-viewer-production-projection.mjs",
     "validate:theater-series-viewer": "node scripts/validate-theater-series-viewer.mjs",
     "validate:theater-episode-poster": "node scripts/validate-theater-episode-poster.mjs",

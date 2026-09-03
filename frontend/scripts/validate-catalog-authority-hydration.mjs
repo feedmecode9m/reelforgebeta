@@ -32,6 +32,7 @@ globalThis.localStorage = {
 };
 globalThis.window = {
     localStorage: globalThis.localStorage,
+    location: { hostname: '127.0.0.1', href: 'http://127.0.0.1:5173/' },
     addEventListener() {},
     removeEventListener() {},
     dispatchEvent: () => true

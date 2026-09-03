@@ -1101,6 +1101,35 @@ function bindReelToEpisodeAfterRehome(reelId, series, episode, identity, opts = 
  *   actions: Array<Record<string, unknown>>;
  * }}
  */
+/**
+ * Non–vault-inferred catalog row with a live reel binding (API / creator package).
+ * Low-confidence Vault NLP must not detach these solely because soft title match fails.
+ *
+ * @param {{
+ *   series?: import('./seriesTypes.js').Series | null;
+ *   episode?: import('./seriesTypes.js').Episode | null;
+ * } | null | undefined} ctx
+ */
+export function isEstablishedCatalogMembership(ctx) {
+    if (!ctx?.series || !ctx?.episode) return false;
+    const reelId = String(ctx.episode.reelId || ctx.episode.mediaAssetId || '').trim();
+    if (!reelId) return false;
+
+    const seriesTags = Array.isArray(ctx.series.tags) ? ctx.series.tags.map(String) : [];
+    if (seriesTags.includes('vault-inferred') || seriesTags.includes('nlp-rehomed')) {
+        return false;
+    }
+
+    const epTags = Array.isArray(ctx.episode.tags) ? ctx.episode.tags.map(String) : [];
+    if (epTags.includes('vault-inferred') || epTags.includes('nlp-rehomed')) {
+        return false;
+    }
+
+    if (isSyntheticPackageTitle(ctx.episode.title)) return false;
+
+    return true;
+}
+
 export function reconcileCatalogMembershipFromVault(reels = [], options = {}) {
     const source = options.source || 'membership-reconcile';
     let rehomed = 0;
@@ -1244,8 +1273,20 @@ export function reconcileCatalogMembershipFromVault(reels = [], options = {}) {
             continue;
         }
 
-        // Low / null NLP: detach only when package title is clearly not named by the reel
+        // Low / null NLP: detach only when package title is clearly not named by the reel.
+        // Established API/creator catalog bindings outrank weak Vault heuristics alone.
         if (!softSeriesTitleInReel(ctx.series, reelTitle)) {
+            if (isEstablishedCatalogMembership(ctx)) {
+                preserved += 1;
+                actions.push({
+                    phase: 'preserved-established-catalog-membership',
+                    mediaId: reelId,
+                    seriesId: ctx.series.id,
+                    episodeId: ctx.episode.episodeId,
+                    reelTitle
+                });
+                continue;
+            }
             detachEpisodeReel(priorEpisodeId, {
                 demotePublished: true,
                 clearMatchingMediaAsset: true

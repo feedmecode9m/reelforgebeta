@@ -33,6 +33,7 @@ globalThis.localStorage = {
 };
 globalThis.window = {
     localStorage: globalThis.localStorage,
+    location: { hostname: '127.0.0.1', href: 'http://127.0.0.1:5173/' },
     addEventListener() {},
     removeEventListener() {},
     dispatchEvent: () => true
@@ -43,7 +44,8 @@ const REEL = {
     amp: '201ec6ee-6822-4bda-9295-080beb6f4e35',
     motherland: '9a1251a2-d6a6-42e5-9fcd-4eca17dcd6ef',
     club: 'd2aafde7-d7ba-492c-a860-20b51f7f4033',
-    condo: '3894107e-ae44-43c5-af72-b3f5d5e0ad90',
+    // Synthetic test UUID — must not collide with Vic G E03 (3894107e-…).
+    condo: 'cccccccc-cccc-4ccc-8ccc-cccccccccc01',
     creatorLocked: 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee',
     vic1: '11111111-1111-4111-8111-111111111111',
     vic2: '22222222-2222-4222-8222-222222222222'
