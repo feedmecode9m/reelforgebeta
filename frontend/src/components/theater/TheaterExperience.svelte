@@ -1007,13 +1007,6 @@
         reportTheaterControls('mobile_audio_bar_mute');
     }
 
-    function clearLandscapeSingleTapTimer() {
-        if (landscapeSingleTapTimer != null) {
-            clearTimeout(landscapeSingleTapTimer);
-            landscapeSingleTapTimer = null;
-        }
-    }
-
     /** User tap on the pure-gesture layer unlocks audio (no native volume chrome on mobile). */
     function unlockTheaterAudioForUserGesture(el = null) {
         if (!isMobileTheater) return;
