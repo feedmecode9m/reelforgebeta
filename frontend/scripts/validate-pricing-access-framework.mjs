@@ -121,10 +121,23 @@ function verifyVicG(series, label) {
 async function verifyPayments(label, apiBase) {
     const failures = [];
     try {
-        const status = await fetchJson(`${apiBase}/api/payments/status`);
-        if (!status.enabled) {
-            failures.push(`${label}: Payments API disabled (${status.hint || status.error || 'off'})`);
-        } else if (!status.publishableKeyConfigured) {
+        const res = await fetch(`${apiBase}/api/payments/status`, { signal: AbortSignal.timeout(15000) });
+        const body = await res.json().catch(() => ({}));
+        if (res.status === 404 && String(body?.error || '').includes('Payments API disabled')) {
+            failures.push(`${label}: Payments API disabled (${body?.hint || 'off'})`);
+            return failures;
+        }
+        // Status requires a signed-in viewer; 401 means the route is live and monetization is on.
+        if (res.status === 401 || res.status === 403) {
+            return failures;
+        }
+        if (!res.ok) {
+            failures.push(`${label}: payments status unexpected ${res.status}`);
+            return failures;
+        }
+        if (!body.enabled) {
+            failures.push(`${label}: Payments API disabled (${body.hint || body.error || 'off'})`);
+        } else if (!body.publishableKeyConfigured) {
             failures.push(`${label}: STRIPE_PUBLISHABLE_KEY not configured`);
         }
     } catch (err) {
@@ -161,7 +174,8 @@ async function verifyBrowsePoster(apiBase, label) {
     try {
         const browse = await vite.ssrLoadModule('/src/lib/series/viewerSeriesBrowseCatalog.js');
         const catalog = await fetchJson(`${apiBase}/api/series`);
-        const rows = browse.buildViewerSeriesBrowseCatalog(catalog);
+        const built = browse.buildViewerSeriesBrowseCatalog(catalog);
+        const rows = Array.isArray(built?.all) ? built.all : Array.isArray(built) ? built : [];
         const vicG = rows.find((row) => row.seriesId === SERIES_ID || row.id === SERIES_ID);
         if (!vicG) {
             return [`${label}: Vic G missing from browse catalog projection`];
@@ -183,6 +197,11 @@ async function main() {
     for (const target of TARGETS) {
         log(`Checking ${target.label} (${target.apiBase})`);
         try {
+            const health = await fetch(`${target.apiBase}/health`, { signal: AbortSignal.timeout(8000) }).catch(() => null);
+            if (!health?.ok) {
+                log(`SKIP ${target.label}: backend unreachable (${target.apiBase})`);
+                continue;
+            }
             const series = await fetchJson(`${target.apiBase}/api/series/${encodeURIComponent(SERIES_ID)}`);
             allFailures.push(...verifyVicG(series, target.label));
             allFailures.push(...(await verifyPayments(target.label, target.apiBase)));

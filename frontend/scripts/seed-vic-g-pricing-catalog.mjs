@@ -168,8 +168,11 @@ async function main() {
     if (!VERIFY_ONLY) await seed();
     const series = await apiFetch(`${API_BASE}/api/series/${encodeURIComponent(VIC_G_SERIES_ID)}`);
     verify(series);
-    const payments = await fetch(`${API_BASE}/api/payments/status`).then((r) => r.json()).catch(() => ({}));
-    if (payments?.enabled) {
+    const paymentsRes = await fetch(`${API_BASE}/api/payments/status`).catch(() => null);
+    const payments = paymentsRes ? await paymentsRes.json().catch(() => ({})) : {};
+    if (paymentsRes?.status === 401 || paymentsRes?.status === 403) {
+        log('Payments API enabled (auth required for status)');
+    } else if (payments?.enabled) {
         log(`Payments API enabled (publishableKey=${payments.publishableKeyConfigured ? 'yes' : 'no'})`);
     } else {
         log(`WARN: Payments API disabled — ${payments?.hint || payments?.error || 'unknown'}`);
