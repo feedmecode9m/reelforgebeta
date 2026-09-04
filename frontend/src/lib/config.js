@@ -253,49 +253,56 @@ export function rewriteDevLoopbackMediaToSameOrigin(url) {
     }
 }
 
-function productionProxyMediaHostname() {
-    const candidates = [
-        import.meta.env.VITE_DIRECT_UPLOAD_BASE_URL,
-        import.meta.env.VITE_BACKEND_URL,
-        import.meta.env.VITE_API_URL,
-        'https://reelforge-deploy-production.up.railway.app'
-    ];
-    for (const value of candidates) {
-        const sanitized = sanitizeExternalBaseUrl(value, 'production-proxy-media');
-        if (!sanitized) continue;
-        try {
-            return new URL(sanitized).hostname.toLowerCase();
-        } catch {
-            /* try next */
-        }
-    }
-    return 'reelforge-deploy-production.up.railway.app';
+function shouldRewriteMediaToSameOriginProxy() {
+    if (import.meta.env.PROD && shouldUseSameOriginApi()) return true;
+    if (import.meta.env.DEV && shouldUseSameOriginMediaInDev()) return true;
+    return false;
 }
 
 /**
- * Production mobile/desktop on lookatzakanda.com / Netlify: rewrite Railway volume
- * /videos and /thumbs to same-origin paths (Netlify proxy). Mirrors local Vite proxy
- * behavior so <video> avoids cross-origin ORB. R2/CDN absolute URLs are untouched.
+ * Rewrite absolute media hosts to same-origin /videos and /thumbs (Netlify/Railway proxy).
+ * Production API often stores https://*.netlify.app/videos/… while the app runs on
+ * lookatzakanda.com — cross-origin breaks iOS theater seek/unmute. Local Vite proxy
+ * only sees relative paths; this mirrors that in prod + LAN dev.
+ * R2 …/prod/{file} → /videos/{file} when same-origin proxy is active.
  * @param {string} url
  * @returns {string}
  */
-export function rewriteProductionProxyMediaToSameOrigin(url) {
-    if (!shouldUseSameOriginApi() || !import.meta.env.PROD) return url;
+export function rewriteKnownMediaHostsToSameOrigin(url) {
+    if (!shouldRewriteMediaToSameOriginProxy()) return url;
     const trimmed = String(url || '').trim();
     if (!/^https?:\/\//i.test(trimmed)) return trimmed;
     try {
         const parsed = new URL(trimmed);
-        if (parsed.hostname.toLowerCase() !== productionProxyMediaHostname()) return trimmed;
+        const host = parsed.hostname.toLowerCase();
+
+        if (host.endsWith('.r2.dev') || host.includes('r2.cloudflarestorage.com')) {
+            const prodFile = parsed.pathname.match(/^\/prod\/(.+)$/i);
+            if (prodFile?.[1] && /\.(mp4|mov|webm|m4v|avi|mkv)$/i.test(prodFile[1])) {
+                return `/videos/${prodFile[1]}${parsed.search}`;
+            }
+            return trimmed;
+        }
+
         if (!isMediaPath(parsed.pathname)) return trimmed;
+
+        // Any absolute /videos/* or /thumbs/* → same-origin (covers Netlify, Railway, custom domain).
         return `${parsed.pathname}${parsed.search}`;
     } catch {
         return trimmed;
     }
 }
 
-/** Dev loopback + production Railway proxy → same-origin media paths. */
+/**
+ * @deprecated Prefer rewriteKnownMediaHostsToSameOrigin — kept for existing imports/tests.
+ */
+export function rewriteProductionProxyMediaToSameOrigin(url) {
+    return rewriteKnownMediaHostsToSameOrigin(url);
+}
+
+/** Dev loopback + production/LAN same-origin media proxy paths. */
 export function rewriteMediaToSameOrigin(url) {
-    return rewriteProductionProxyMediaToSameOrigin(
+    return rewriteKnownMediaHostsToSameOrigin(
         rewriteDevLoopbackAbsoluteToSameOrigin(rewriteDevLoopbackMediaToSameOrigin(url))
     );
 }

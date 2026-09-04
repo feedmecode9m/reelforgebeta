@@ -77,8 +77,13 @@ assert(
     'LAN phones rewrite localhost URLs to same-origin'
 );
 assert(
-    /rewriteProductionProxyMediaToSameOrigin/.test(configJs),
-    'production rewrites Railway /videos|/thumbs to same-origin proxy'
+    /rewriteKnownMediaHostsToSameOrigin|rewriteProductionProxyMediaToSameOrigin/.test(configJs),
+    'production rewrites absolute /videos|/thumbs hosts to same-origin proxy'
+);
+assert(
+    /netlify\.app\/videos|Any absolute \/videos/.test(configJs) ||
+        /Strip origin for proxied media paths/.test(configJs),
+    'Netlify absolute video URLs rewrite to same-origin (lookatzakanda parity)'
 );
 assert(
     /lookatzakanda\.com/.test(configJs),
