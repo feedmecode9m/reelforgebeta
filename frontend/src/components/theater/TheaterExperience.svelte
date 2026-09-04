@@ -889,6 +889,28 @@
         showLandscapeGestureHint(theaterMuted ? 'mute' : 'unmute');
     }
 
+    /** Smallest mobile sound dock — must run unmute/play synchronously inside pointerup (iOS). */
+    function handleMobileSoundDockPointerUp(event) {
+        if (!isMobileTheater) return;
+        event.preventDefault();
+        event.stopPropagation();
+        const el = resolveTheaterVideoElement();
+        if (!el) return;
+        if (theaterMuted) {
+            if (el.paused || el.ended) {
+                syncStartTheaterPlaybackFromGesture(el);
+            } else {
+                unlockTheaterAudioForUserGesture(el);
+            }
+            showLandscapeGestureHint('unmute');
+            reportTheaterControls('mobile_sound_dock_unmute');
+            return;
+        }
+        applyTheaterMuteState(true);
+        showLandscapeGestureHint('mute');
+        reportTheaterControls('mobile_sound_dock_mute');
+    }
+
     function clearLandscapeSingleTapTimer() {
         if (landscapeSingleTapTimer != null) {
             clearTimeout(landscapeSingleTapTimer);
@@ -1938,6 +1960,21 @@
             {#if !$theaterChromeFlags.hideBottomClose && !isMobileTheater}
             <button class="theater-close-btn-bottom" on:click={(e) => { e.stopPropagation(); theaterManager.close(); }}>✕ CLOSE THEATER (ESC)</button>
             {/if}
+            {#if isMobileTheater && theaterVideoSrc && !$theaterPlaybackError}
+                <button
+                    type="button"
+                    class="theater-sound-dock"
+                    class:theater-sound-dock--muted={theaterMuted}
+                    aria-label={theaterMuted ? 'Turn sound on' : 'Mute sound'}
+                    aria-pressed={!theaterMuted}
+                    data-theater-sound-dock
+                    on:pointerup|stopPropagation={handleMobileSoundDockPointerUp}
+                >
+                    <span class="theater-sound-dock__icon" aria-hidden="true"
+                        >{theaterMuted ? '🔇' : '🔊'}</span
+                    >
+                </button>
+            {/if}
             {#if episodeNavNotice}
                 <div class="theater-episode-nav-notice" role="status">
                     <p>{episodeNavNotice}</p>
@@ -2660,6 +2697,37 @@
                 opacity: 0;
                 transform: scale(1);
             }
+        }
+
+        .theater-sound-dock {
+            position: fixed;
+            right: max(0.65rem, env(safe-area-inset-right, 0px));
+            bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+            z-index: 2105;
+            width: 2.35rem;
+            height: 2.35rem;
+            padding: 0;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            border-radius: 999px;
+            background: rgba(8, 10, 16, 0.78);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            pointer-events: auto;
+        }
+
+        .theater-sound-dock--muted {
+            border-color: rgba(250, 204, 21, 0.55);
+            box-shadow: 0 0 0 1px rgba(250, 204, 21, 0.25), 0 6px 18px rgba(0, 0, 0, 0.45);
+        }
+
+        .theater-sound-dock__icon {
+            font-size: 1.05rem;
+            line-height: 1;
         }
     }
 </style>

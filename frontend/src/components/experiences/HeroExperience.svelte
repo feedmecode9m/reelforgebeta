@@ -254,6 +254,35 @@ export let sanitizeViewer = false;
 
   let lastHeroGateAction = null;
 
+  /** Re-read manager cache after async bootstrap/hydrate (title path uses in-memory config). */
+  function syncHeroManagerConfigFromStorage(reason = 'storage_resync') {
+    if (typeof window === 'undefined') return;
+    const persisted = loadHeroManagerConfig();
+    const prevAssetId = String(heroManagerConfig?.heroAssetId || '').trim();
+    const nextAssetId = String(persisted?.heroAssetId || '').trim();
+    const prevTitle = String(heroManagerConfig?.heroTitle || '').trim();
+    const nextTitle = String(persisted?.heroTitle || '').trim();
+    const prevSource = String(heroManagerConfig?.backgroundSource || '').trim();
+    const nextSource = String(persisted?.backgroundSource || '').trim();
+    if (
+      prevAssetId === nextAssetId &&
+      prevTitle === nextTitle &&
+      prevSource === nextSource
+    ) {
+      return;
+    }
+    heroManagerConfig = persisted;
+    logHeroConfigBootTrace({
+      site: 'HeroExperience:storage-resync',
+      caller: 'HeroExperience.svelte:syncHeroManagerConfigFromStorage',
+      storageRawBeforeParse: localStorage.getItem('reelforge_hero_manager_config'),
+      heroAssetId: nextAssetId,
+      backgroundSource: nextSource,
+      configSource: 'loadHeroManagerConfig',
+      reason
+    });
+  }
+
   /** Persisted manager config wins for canonical hero identity fields. */
   function resolveHeroPresentationConfig() {
     const persisted = loadHeroManagerConfig();
@@ -332,6 +361,10 @@ export let sanitizeViewer = false;
       logBg7jHeroGate($viewerHydrationReady, action);
       lastHeroGateAction = action;
     }
+  }
+
+  $: if ($viewerHydrationReady) {
+    syncHeroManagerConfigFromStorage('viewer_hydration_ready');
   }
 
   $: heroBackgroundPresentation = resolveHeroBackgroundPresentationState(

@@ -264,7 +264,7 @@ function shouldRewriteMediaToSameOriginProxy() {
  * Production API often stores https://*.netlify.app/videos/… while the app runs on
  * lookatzakanda.com — cross-origin breaks iOS theater seek/unmute. Local Vite proxy
  * only sees relative paths; this mirrors that in prod + LAN dev.
- * R2 …/prod/{file} → /videos/{file} when same-origin proxy is active.
+ * R2 public URLs stay absolute — Railway /videos proxy does not mirror R2 objects.
  * @param {string} url
  * @returns {string}
  */
@@ -277,10 +277,6 @@ export function rewriteKnownMediaHostsToSameOrigin(url) {
         const host = parsed.hostname.toLowerCase();
 
         if (host.endsWith('.r2.dev') || host.includes('r2.cloudflarestorage.com')) {
-            const prodFile = parsed.pathname.match(/^\/prod\/(.+)$/i);
-            if (prodFile?.[1] && /\.(mp4|mov|webm|m4v|avi|mkv)$/i.test(prodFile[1])) {
-                return `/videos/${prodFile[1]}${parsed.search}`;
-            }
             return trimmed;
         }
 

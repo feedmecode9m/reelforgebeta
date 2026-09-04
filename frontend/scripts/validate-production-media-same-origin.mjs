@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Static + simulated PROD checks: absolute Netlify/Railway/R2 media → same-origin /videos.
+ * Static + simulated PROD checks: Netlify/Railway /videos → same-origin; R2 stays absolute.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -23,7 +23,10 @@ assert(
         /Any absolute \/videos/.test(configJs),
     'absolute media host rewrite covers Netlify catalog URLs'
 );
-assert(/host\.endsWith\('\.r2\.dev'\)/.test(configJs), 'R2 /prod/ paths map to /videos/');
+assert(
+    /host\.endsWith\('\.r2\.dev'\)/.test(configJs) && /return trimmed/.test(configJs),
+    'R2 public URLs pass through unchanged (Railway /videos has no R2 mirror)'
+);
 
 // Simulate rewrite logic (mirrors config.js — no import.meta in node)
 function rewriteKnownMediaHostsToSameOrigin(url) {
@@ -33,10 +36,6 @@ function rewriteKnownMediaHostsToSameOrigin(url) {
         const parsed = new URL(trimmed);
         const host = parsed.hostname.toLowerCase();
         if (host.endsWith('.r2.dev')) {
-            const prodFile = parsed.pathname.match(/^\/prod\/(.+)$/i);
-            if (prodFile?.[1] && /\.(mp4|mov|webm|m4v|avi|mkv)$/i.test(prodFile[1])) {
-                return `/videos/${prodFile[1]}${parsed.search}`;
-            }
             return trimmed;
         }
         if (
@@ -59,10 +58,10 @@ assert(
     `Netlify absolute → same-origin (${out})`
 );
 
-const r2Out = rewriteKnownMediaHostsToSameOrigin(
-    'https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/abc-123.mp4'
-);
-assert(r2Out === '/videos/abc-123.mp4', `R2 /prod/ → /videos/ (${r2Out})`);
+const r2In =
+    'https://pub-cb178488b1d4413988778e56a7d51439.r2.dev/prod/abc-123.mp4';
+const r2Out = rewriteKnownMediaHostsToSameOrigin(r2In);
+assert(r2Out === r2In, `R2 /prod/ stays absolute (${r2Out})`);
 
 if (failures.length) {
     console.error('FAIL validate-production-media-same-origin');

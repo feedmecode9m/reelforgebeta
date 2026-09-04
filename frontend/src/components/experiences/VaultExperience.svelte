@@ -1,5 +1,5 @@
 <script>
-  import { onMount, onDestroy } from 'svelte';
+  import { onMount, onDestroy, tick } from 'svelte';
   import { get, writable } from 'svelte/store';
   import { createVaultUtils, durableImageVaultUrl } from '../../lib/viewer/vaultUtils.js';
   import { isImage, isVideo } from '../../lib/vaultMedia.js';
@@ -23,6 +23,7 @@
     logDrag,
     VAULT_SOURCES
   } from '../../lib/drag-drop.js';
+  import { requestStudioContentTab } from '../../lib/dropAffordance.js';
   import { pipelineDiag, pipelineCheckpoint } from '../../lib/diagnostics/pipelineDiag.js';
   import { reelResStoreMutation, reelResReelSnapshot } from '../../lib/diagnostics/reelResolutionTrace.js';
   import { isVideoReel } from '../../lib/api/reelContract.js';
@@ -1981,6 +1982,28 @@
     pendingVaultVideo.set(null);
   }
 
+  /** Scroll the Video Vault ACCEPT control into view after global/studio drops. */
+  function scrollPendingVideoAcceptIntoView() {
+    requestStudioContentTab({ scrollUploadZones: true, source: 'vault_pending_accept' });
+    void tick().then(() => {
+      if (typeof document === 'undefined') return;
+      const scrollBody = document.querySelector('[data-control-center-scroll-body]');
+      const target =
+        document.querySelector('[data-vault-pending-accept-dock]') ||
+        document.querySelector('[data-vault-pending-ready]') ||
+        document.querySelector('.video-vault-drop--upload.has-pending') ||
+        document.querySelector('.video-vault-drop--upload');
+      if (!target) return;
+      if (scrollBody) {
+        const bodyRect = scrollBody.getBoundingClientRect();
+        const targetRect = target.getBoundingClientRect();
+        scrollBody.scrollTop += targetRect.top - bodyRect.top - 56;
+      } else {
+        target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }
+    });
+  }
+
   function stagePendingVaultVideo(file, source = 'drop') {
     if (!file) return;
     if (Number(file.size || 0) <= 0) {
@@ -2090,6 +2113,7 @@
         ? `🎬 ${file.name} (${sizeMb} MB) staged — preview skipped for large files. Ready to upload — click ACCEPT`
         : `🎬 ${file.name} (${sizeMb} MB) staged. Ready to upload — click ACCEPT`
     );
+    scrollPendingVideoAcceptIntoView();
   }
 
   export async function acceptPendingVideo() {
@@ -4700,6 +4724,44 @@
   </div>
 {/if}
 
+{#if $pendingVaultVideo}
+  <div
+    class="vault-pending-accept-dock"
+    data-vault-pending-accept-dock
+    role="region"
+    aria-label="Pending video upload — accept or reject"
+  >
+    <div class="vault-pending-accept-dock__copy">
+      <strong>{$pendingVaultVideo.name}</strong>
+      <span>
+        {(($pendingVaultVideo.size || 0) / (1024 * 1024)).toFixed(1)} MB — ready to upload
+      </span>
+    </div>
+    <div class="vault-pending-accept-dock__actions pending-actions">
+      <button
+        type="button"
+        class="accept-btn"
+        class:is-disabled={!adminSessionReady || vaultAcceptInFlight}
+        disabled={!adminSessionReady || vaultAcceptInFlight}
+        on:click|stopPropagation={acceptPendingVideo}
+      >
+        {vaultAcceptInFlight ? '⬆️ UPLOADING…' : '✅ ACCEPT'}
+      </button>
+      <button
+        type="button"
+        class="reject-btn"
+        disabled={vaultAcceptInFlight}
+        on:click|stopPropagation={rejectPendingVideo}
+      >
+        ❌ REJECT
+      </button>
+    </div>
+    {#if !adminSessionReady}
+      <p class="pending-login-hint">Studio login required to upload.</p>
+    {/if}
+  </div>
+{/if}
+
 <style>
   :global(.vault-grid-chrome .thumb-assign-btn) {
     position: absolute;
@@ -4722,5 +4784,54 @@
   :global(.vault-grid-chrome .thumb-assign-btn:hover) {
     border-color: rgba(0, 255, 200, 0.85);
     background: rgba(0, 255, 200, 0.12);
+  }
+
+  .vault-pending-accept-dock {
+    position: fixed;
+    left: 50%;
+    bottom: 4.75rem;
+    transform: translateX(-50%);
+    z-index: 1265;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem 1rem;
+    max-width: min(42rem, calc(100vw - 2rem));
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    border: 1px solid rgba(34, 197, 94, 0.55);
+    background: rgba(8, 16, 24, 0.96);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+    pointer-events: auto;
+  }
+
+  .vault-pending-accept-dock__copy {
+    display: grid;
+    gap: 0.15rem;
+    min-width: 0;
+    flex: 1 1 12rem;
+    text-align: left;
+  }
+
+  .vault-pending-accept-dock__copy strong {
+    font-size: 0.85rem;
+    color: #fff;
+    word-break: break-all;
+  }
+
+  .vault-pending-accept-dock__copy span {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.65);
+  }
+
+  .vault-pending-accept-dock__actions {
+    flex: 0 0 auto;
+  }
+
+  .vault-pending-accept-dock .pending-login-hint {
+    flex: 1 1 100%;
+    margin: 0;
+    text-align: center;
   }
 </style>

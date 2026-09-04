@@ -199,6 +199,21 @@ export function shouldPreserveLocalHeroPresentationOverRemote(localRecord, remot
         return { preserve: false, reason: 'same_asset_id_heal' };
     }
 
+    // Corrupt local cache (UUID/filename title) must not block a confirmed remote presentation row.
+    const localTitle = String(localRecord.heroTitle || localRecord.title || '').trim();
+    const remoteTitle = String(remote?.heroTitle || presentation.heroTitle || '').trim();
+    if (
+        effectiveRemoteId &&
+        effectiveRemoteId !== localId &&
+        effectiveRemoteMedia &&
+        isDurableHeroMediaUrl(effectiveRemoteMedia) &&
+        isUnsafeHeroFilenameTitle(localTitle) &&
+        remoteTitle &&
+        !isUnsafeHeroFilenameTitle(remoteTitle)
+    ) {
+        return { preserve: false, reason: 'remote_heals_unsafe_local_identity' };
+    }
+
     // Fail-closed rehydrate is not server confirmation. Durable local A must survive stale remote B/C.
     if (source === 'hero_authority_rehydrate_fail_closed') {
         return { preserve: true, reason: 'local_unconfirmed_fail_closed' };
