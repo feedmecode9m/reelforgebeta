@@ -94,6 +94,17 @@ fn is_production_runtime() -> bool {
     std::env::var("RAILWAY_ENVIRONMENT").is_ok() || std::env::var("RENDER").is_ok()
 }
 
+fn stripe_test_mode_allowed() -> bool {
+    matches!(
+        std::env::var("REELFORGE_STRIPE_TEST_MODE")
+            .unwrap_or_default()
+            .trim()
+            .to_ascii_lowercase()
+            .as_str(),
+        "1" | "true" | "yes" | "on"
+    )
+}
+
 fn normalize_paid_mode(value: &str) -> bool {
     matches!(
         value.trim().to_ascii_lowercase().as_str(),
@@ -732,11 +743,14 @@ pub async fn create_checkout(
         Ok(v) => v,
         Err(resp) => return resp,
     };
-    if is_production_runtime() && stripe_secret.starts_with("sk_test_") {
+    if is_production_runtime()
+        && stripe_secret.starts_with("sk_test_")
+        && !stripe_test_mode_allowed()
+    {
         return payments_error(
             StatusCode::SERVICE_UNAVAILABLE,
             "payments_not_configured",
-            "Test-mode Stripe secret key is not allowed in production",
+            "Test-mode Stripe secret key is not allowed in production (set REELFORGE_STRIPE_TEST_MODE=true to opt in)",
         );
     }
     let success_url = match require_env("STRIPE_CHECKOUT_SUCCESS_URL") {
