@@ -25,7 +25,12 @@ import {
     buildHeroAssetRegistry,
     resolveHeroAssetById
 } from './heroAssetBridge.js';
-import { reconcileActivePresentationHeroTitle } from './heroTitleIntelligence.js';
+import {
+    reconcileActivePresentationHeroTitle,
+    isUnsafeHeroFilenameTitle
+} from './heroTitleIntelligence.js';
+import { diagnoseInvalidHeroPresentation } from './legacyHeroPresentationRestore.js';
+import { rewriteMediaToSameOrigin } from '../config.js';
 
 export {
     getLastHeroConfigSource,
@@ -393,8 +398,16 @@ export function applyServerPresentationToHeroRecord(remote) {
     if (!remote || typeof remote !== 'object' || typeof window === 'undefined') return null;
 
     const id = String(remote.heroAssetId || '').trim();
-    const mediaUrl = String(remote.mediaUrl || '').trim();
-    const posterUrl = String(remote.posterUrl || '').trim();
+    const rawMedia = String(remote.mediaUrl || '').trim();
+    const rawPoster = String(remote.posterUrl || '').trim();
+    const mediaUrl =
+        /\.r2\.dev\//i.test(rawMedia) || /r2\.cloudflarestorage\.com/i.test(rawMedia)
+            ? rawMedia
+            : rewriteMediaToSameOrigin(rawMedia);
+    const posterUrl =
+        /\.r2\.dev\//i.test(rawPoster) || /r2\.cloudflarestorage\.com/i.test(rawPoster)
+            ? rawPoster
+            : rewriteMediaToSameOrigin(rawPoster);
     const bg = String(remote.backgroundSource || '').trim();
     const title = String(remote.heroTitle || '').trim();
     const subtitle = String(remote.heroSubtitle || '').trim();
@@ -486,7 +499,10 @@ export async function hydrateHeroPresentationFromServer(saveFn, loadFn) {
     const remote = await fetchHeroPresentation();
     const local = loadFn();
     const localId = String(local?.heroAssetId || '').trim();
-    const patch = mapServerPresentationToManagerPatch(remote);
+    let patch = mapServerPresentationToManagerPatch(remote);
+    if (patch) {
+        diagnoseInvalidHeroPresentation(remote, patch, isUnsafeHeroFilenameTitle);
+    }
     const remoteId = String(patch?.heroAssetId || remote?.heroAssetId || '').trim();
     const remoteMedia = String(remote?.mediaUrl || patch?.mediaUrl || '').trim();
 

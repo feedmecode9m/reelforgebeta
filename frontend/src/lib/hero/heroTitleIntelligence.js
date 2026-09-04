@@ -109,6 +109,9 @@ export function isUnsafeHeroFilenameTitle(value) {
     if (!text) return true;
     if (MEDIA_EXT.test(text)) return true;
     if (UUID_LIKE.test(text)) return true;
+    // Humanized upload stems: "F33e55ff 7fe4 4b01 A0e2 De4be8a8dd4c"
+    const compactUuid = text.replace(/\s+/g, '-').toLowerCase();
+    if (UUID_LIKE.test(compactUuid)) return true;
     if (UPLOAD_TEMP.test(text)) return true;
     // Finder "copy <UUID>" / duplicate export stems — never audience titles
     if (/^copy\s+[0-9a-f]{8}/i.test(text)) return true;
