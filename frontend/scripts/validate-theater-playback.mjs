@@ -123,8 +123,12 @@ assert(
     'mobile Theater supports double-tap seek and mute zones'
 );
 assert(
-    /syncStartTheaterPlaybackFromGesture/.test(theater),
-    'mobile play starts synchronously inside user gesture (iOS audio)'
+    /Autoplay-muted: first tap unmutes in place/.test(theater),
+    'mobile tap on autoplay-muted stream unmutes without reload'
+);
+assert(
+    /iOS ignores muted=false on an already-playing stream unless play\(\) runs/.test(theater),
+    'mobile unmute re-invokes play() inside user gesture'
 );
 assert(
     /pointer-events:\s*none/.test(theater) &&

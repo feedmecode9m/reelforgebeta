@@ -554,6 +554,8 @@
     let landscapeGestureHintTimer = null;
     /** @type {{ x: number; y: number; id: number } | null} */
     let landscapePointerStart = null;
+    /** @type {number} */
+    let landscapePointerDownAt = 0;
     /** @type {{ time: number; x: number; y: number } | null} */
     let landscapeLastTap = null;
     /** @type {ReturnType<typeof setTimeout> | null} */
@@ -714,11 +716,15 @@
         if (!isMobileTheater || e.pointerType === 'mouse') return;
         const target = /** @type {HTMLElement | null} */ (e.target);
         if (target?.closest?.('button, input, a, [role="toolbar"]')) return;
+        landscapePointerDownAt = Date.now();
         landscapePointerStart = { x: e.clientX, y: e.clientY, id: e.pointerId };
     }
 
-    /** @param {PointerEvent} e */
-    function handleLandscapeWrapperPointerUp(e) {
+    /**
+     * @param {PointerEvent} e
+     * @param {{ allowLongPressUnmute?: boolean }} [opts]
+     */
+    function handleLandscapeWrapperPointerUp(e, opts = {}) {
         if (!isMobileTheater || e.pointerType === 'mouse') return;
         if (!landscapePointerStart || landscapePointerStart.id !== e.pointerId) return;
         const target = /** @type {HTMLElement | null} */ (e.target);
@@ -726,13 +732,25 @@
             landscapePointerStart = null;
             return;
         }
+        const heldMs = Date.now() - landscapePointerDownAt;
         const dx = e.clientX - landscapePointerStart.x;
         const dy = e.clientY - landscapePointerStart.y;
         landscapePointerStart = null;
         const absDx = Math.abs(dx);
         const absDy = Math.abs(dy);
-        // Any user gesture on the pure-gesture layer may unlock audio (iOS sticky gesture).
-        unlockTheaterAudioForUserGesture();
+        const el = resolveTheaterVideoElement();
+        const isLongPress = heldMs > 450;
+
+        // iOS long-press: unmute in place only — avoid load()/play() restart from the beginning.
+        if (isLongPress) {
+            if (opts.allowLongPressUnmute && el && !el.paused && !el.ended && theaterMuted) {
+                unlockTheaterAudioForUserGesture(el);
+                showLandscapeGestureHint('unmute');
+            }
+            return;
+        }
+
+        unlockTheaterAudioForUserGesture(el);
         if (absDx >= LANDSCAPE_SWIPE_THRESHOLD_PX && absDx > absDy * 1.2) {
             e.preventDefault();
             e.stopPropagation();
@@ -764,27 +782,70 @@
         }
         landscapeLastTap = { time: now, x: e.clientX, y: e.clientY };
         const el = resolveTheaterVideoElement();
+        // Autoplay-muted: first tap unmutes in place (no pause, no reload).
+        if (el && !el.paused && !el.ended && theaterMuted) {
+            clearLandscapeSingleTapTimer();
+            landscapeLastTap = null;
+            unlockTheaterAudioForUserGesture(el);
+            showLandscapeGestureHint('unmute');
+            return;
+        }
         if (el && (el.paused || el.ended)) {
             clearLandscapeSingleTapTimer();
             landscapeLastTap = null;
             theaterPlayGestureLock = true;
-            unlockTheaterAudioForUserGesture();
-            void syncStartTheaterPlaybackFromGesture(el).finally(() => {
-                setTimeout(() => {
-                    theaterPlayGestureLock = false;
-                }, 400);
-            });
+            syncStartTheaterPlaybackFromGesture(el);
+            setTimeout(() => {
+                theaterPlayGestureLock = false;
+            }, 400);
             return;
         }
         scheduleLandscapeSingleTapPause();
     }
 
-    /** iOS-safe play start — must stay in the same user-gesture task as pointerup. */
-    async function syncStartTheaterPlaybackFromGesture(el) {
-        const willPlay = Boolean(el && (el.paused || el.ended));
+    /** iOS-safe play/unmute — play() must run synchronously inside pointerup (no await before it). */
+    function syncStartTheaterPlaybackFromGesture(el) {
+        unlockTheaterAudioForUserGesture(el);
+        if (el.ended) {
+            try {
+                el.currentTime = 0;
+            } catch {
+                /* ignore seek failures */
+            }
+        }
+        const needsLoad =
+            el.paused &&
+            !el.currentSrc &&
+            Boolean(el.querySelector('source')) &&
+            el.readyState < HTMLMediaElement.HAVE_METADATA;
+        if (needsLoad) {
+            try {
+                el.load();
+            } catch {
+                /* ignore */
+            }
+        }
+        el.muted = false;
+        theaterMuted = false;
+        if (el.volume === 0) {
+            el.volume = theaterVolume > 0 ? theaterVolume : 1;
+        }
         try {
-            await startTheaterPlayback(el);
-            if (willPlay) showLandscapeGestureHint('play');
+            const playResult = el.play();
+            theaterIsPlaying = !el.paused;
+            showLandscapeGestureHint('play');
+            if (playResult && typeof playResult.then === 'function') {
+                playResult
+                    .then(() => {
+                        theaterIsPlaying = !el.paused;
+                    })
+                    .catch(() => {
+                        theaterMuted = true;
+                        el.muted = true;
+                        el.play()?.catch?.(() => {});
+                        showMobileTheaterControls('play_error');
+                    });
+            }
         } catch {
             showMobileTheaterControls('play_error');
         }
@@ -813,7 +874,7 @@
 
     function applyTheaterMuteState(nextMuted) {
         theaterMuted = Boolean(nextMuted);
-        const el = theaterManager.videoElement;
+        const el = resolveTheaterVideoElement();
         if (el) {
             el.muted = theaterMuted;
             if (!theaterMuted && el.volume === 0) {
@@ -836,9 +897,26 @@
     }
 
     /** User tap on the pure-gesture layer unlocks audio (no native volume chrome on mobile). */
-    function unlockTheaterAudioForUserGesture() {
+    function unlockTheaterAudioForUserGesture(el = null) {
         if (!isMobileTheater || !theaterMuted) return;
-        applyTheaterMuteState(false);
+        const video = el || resolveTheaterVideoElement();
+        if (!video) return;
+        theaterMuted = false;
+        video.muted = false;
+        if (video.volume === 0) {
+            video.volume = theaterVolume > 0 ? theaterVolume : 1;
+        }
+        // iOS ignores muted=false on an already-playing stream unless play() runs in the gesture.
+        if (!video.paused && !video.ended) {
+            try {
+                const pending = video.play();
+                if (pending && typeof pending.catch === 'function') {
+                    pending.catch(() => {});
+                }
+            } catch {
+                /* ignore */
+            }
+        }
     }
 
     /** Delay pause-only tap so double-tap seek/mute can cancel (play uses sync path). */
@@ -911,8 +989,12 @@
                 /* ignore seek failures */
             }
         }
-        // Source-only attach can sit at readyState 0 until load() — common after episode switch.
-        const needsLoad = !el.currentSrc && Boolean(el.querySelector('source'));
+        // Source-only attach can sit at readyState 0 until load() — never reload mid-playback.
+        const needsLoad =
+            el.paused &&
+            !el.currentSrc &&
+            Boolean(el.querySelector('source')) &&
+            el.readyState < HTMLMediaElement.HAVE_METADATA;
         if (needsLoad) {
             logMobilePlayTrace('VIDEO_LOAD_CALL', {
                 assetId: String(get(activeReel)?.id || '').trim(),
@@ -1072,8 +1154,14 @@
      */
     function handleTheaterWrapperPointerUp(e) {
         if (isMobileTheater) {
-            handleLandscapeWrapperPointerUp(e);
+            handleLandscapeWrapperPointerUp(e, { allowLongPressUnmute: true });
         }
+    }
+
+    /** @param {Event} e */
+    function preventMobileTheaterContextMenu(e) {
+        if (!isMobileTheater) return;
+        e.preventDefault();
     }
 
     function onHeroWatchNowCta() {
@@ -1615,6 +1703,7 @@
                     on:pointerdown={handleLandscapeWrapperPointerDown}
                     on:pointerup={handleTheaterWrapperPointerUp}
                     on:pointercancel={handleLandscapeWrapperPointerCancel}
+                    on:contextmenu|preventDefault={preventMobileTheaterContextMenu}
                 >
                     {#key theaterVideoKey}
                         {#if $theaterFraming === 'smart'}
@@ -2478,6 +2567,9 @@
         .theater-container.theater-mobile .theater-video-wrapper,
         .theater-container.theater-mobile .theater-video-wrapper--mobile {
             touch-action: none;
+            -webkit-touch-callout: none;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         .theater-container.theater-mobile .theater-video-wrapper :global(.theater-video-fg) {
