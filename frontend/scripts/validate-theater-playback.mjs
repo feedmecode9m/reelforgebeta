@@ -123,6 +123,15 @@ assert(
     'mobile Theater supports double-tap seek and mute zones'
 );
 assert(
+    /syncStartTheaterPlaybackFromGesture/.test(theater),
+    'mobile play starts synchronously inside user gesture (iOS audio)'
+);
+assert(
+    /pointer-events:\s*none/.test(theater) &&
+        /Wrapper owns tap\/swipe/.test(theater),
+    'mobile theater video surface does not steal pointer events'
+);
+assert(
     /NotAllowed|force mute \+ retry|el\.muted = true/.test(theater),
     'mobile play retries muted after NotAllowedError'
 );

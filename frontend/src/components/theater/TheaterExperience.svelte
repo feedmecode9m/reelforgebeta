@@ -731,6 +731,8 @@
         landscapePointerStart = null;
         const absDx = Math.abs(dx);
         const absDy = Math.abs(dy);
+        // Any user gesture on the pure-gesture layer may unlock audio (iOS sticky gesture).
+        unlockTheaterAudioForUserGesture();
         if (absDx >= LANDSCAPE_SWIPE_THRESHOLD_PX && absDx > absDy * 1.2) {
             e.preventDefault();
             e.stopPropagation();
@@ -744,16 +746,47 @@
             const rect = wrapper?.getBoundingClientRect?.();
             const relX =
                 rect && rect.width > 0 ? (e.clientX - rect.left) / rect.width : 0.5;
-            const now = Date.now();
-            if (
-                landscapeLastTap &&
-                now - landscapeLastTap.time <= LANDSCAPE_DOUBLE_TAP_MS
-            ) {
-                handleLandscapeDoubleTap(e, relX);
-                return;
-            }
-            landscapeLastTap = { time: now, x: e.clientX, y: e.clientY };
-            scheduleLandscapeSingleTap();
+            handleLandscapeTapGesture(e, relX);
+        }
+    }
+
+    /**
+     * Tap play must run synchronously inside pointerup (Safari revokes unmuted play after ~280ms).
+     * Pause stays delayed so double-tap seek/mute zones can cancel it.
+     * @param {PointerEvent} e
+     * @param {number} relX 0–1 horizontal position in wrapper
+     */
+    function handleLandscapeTapGesture(e, relX) {
+        const now = Date.now();
+        if (landscapeLastTap && now - landscapeLastTap.time <= LANDSCAPE_DOUBLE_TAP_MS) {
+            handleLandscapeDoubleTap(e, relX);
+            return;
+        }
+        landscapeLastTap = { time: now, x: e.clientX, y: e.clientY };
+        const el = resolveTheaterVideoElement();
+        if (el && (el.paused || el.ended)) {
+            clearLandscapeSingleTapTimer();
+            landscapeLastTap = null;
+            theaterPlayGestureLock = true;
+            unlockTheaterAudioForUserGesture();
+            void syncStartTheaterPlaybackFromGesture(el).finally(() => {
+                setTimeout(() => {
+                    theaterPlayGestureLock = false;
+                }, 400);
+            });
+            return;
+        }
+        scheduleLandscapeSingleTapPause();
+    }
+
+    /** iOS-safe play start — must stay in the same user-gesture task as pointerup. */
+    async function syncStartTheaterPlaybackFromGesture(el) {
+        const willPlay = Boolean(el && (el.paused || el.ended));
+        try {
+            await startTheaterPlayback(el);
+            if (willPlay) showLandscapeGestureHint('play');
+        } catch {
+            showMobileTheaterControls('play_error');
         }
     }
 
@@ -808,10 +841,8 @@
         applyTheaterMuteState(false);
     }
 
-    /**
-     * Schedule single-tap play/pause; cancelled when a second tap arrives (double-tap zones).
-     */
-    function scheduleLandscapeSingleTap() {
+    /** Delay pause-only tap so double-tap seek/mute can cancel (play uses sync path). */
+    function scheduleLandscapeSingleTapPause() {
         clearLandscapeSingleTapTimer();
         landscapeSingleTapTimer = setTimeout(() => {
             landscapeSingleTapTimer = null;
@@ -2444,6 +2475,11 @@
             overflow: hidden;
         }
 
+        .theater-container.theater-mobile .theater-video-wrapper,
+        .theater-container.theater-mobile .theater-video-wrapper--mobile {
+            touch-action: none;
+        }
+
         .theater-container.theater-mobile .theater-video-wrapper :global(.theater-video-fg) {
             position: absolute;
             inset: 0;
@@ -2452,8 +2488,14 @@
             height: 100%;
             max-height: none;
             object-fit: cover;
-            touch-action: manipulation;
-            pointer-events: auto;
+            /* Wrapper owns tap/swipe — video must not steal iOS pointer events. */
+            touch-action: none;
+            pointer-events: none;
+        }
+
+        .theater-container.theater-mobile .theater-video-bg,
+        .theater-container.theater-mobile .theater-video-bg :global(.theater-video-bg-image) {
+            pointer-events: none;
         }
 
         .theater-container.theater-mobile .theater-video-wrapper.framing-fit :global(.theater-video-fg) {
@@ -2487,7 +2529,7 @@
 
         .theater-container.theater-mobile.theater-mobile-landscape .theater-video-wrapper,
         .theater-container.theater-mobile.theater-mobile-landscape .theater-video-wrapper--landscape {
-            touch-action: pan-y pinch-zoom;
+            touch-action: none;
         }
 
         .theater-landscape-gesture-hint {
