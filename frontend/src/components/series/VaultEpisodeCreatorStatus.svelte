@@ -30,8 +30,11 @@
   import {
     buildEpisodeAccessPricing,
     readVaultEpisodeAccess,
-    resolveEpisodeAccessPricing
+    resolveEpisodeAccessPricing,
+    resolveAccessPriceDraft,
+    resolveAccessPriceOnModeChange
   } from '../../lib/series/episodeAccessPricing.js';
+  import { PLATFORM_SUBSCRIPTION_MONTHLY_USD } from '../../lib/series/platformAccessPricingFramework.js';
   import { getEpisodeByMediaIdentity, seriesCatalog } from '../../lib/series/seriesStore.js';
   import {
     resolveVaultEditorialPosterState,
@@ -479,6 +482,15 @@
     }
   }
 
+  /** @param {Event} event */
+  function handleDraftAccessModeChange(event) {
+    const nextMode = /** @type {'free' | 'paid'} */ (
+      /** @type {HTMLSelectElement} */ (event.currentTarget).value
+    );
+    draftAccessMode = nextMode;
+    draftPrice = resolveAccessPriceOnModeChange(nextMode, draftPrice);
+  }
+
   function openPackage() {
     if (!model) return;
     draftTitle = model.presentation.title || '';
@@ -494,7 +506,7 @@
           vaultAsset: asset
         });
       draftAccessMode = access.mode;
-      draftPrice = access.price;
+      draftPrice = resolveAccessPriceDraft(access.mode, access.price);
     }
     draftFamilyLabel = defaultTheaterFamilyLabel(asset, model.presentation.title || model.series || '');
     draftSeason = String(model.season || 1);
@@ -698,7 +710,7 @@
     formError = '';
     const access = buildEpisodeAccessPricing(draftAccessMode, draftPrice);
     if (access.mode === 'paid' && !access.price) {
-      formError = 'Enter a price for paid episodes (e.g. 4.99).';
+      formError = `Enter a price for paid episodes (e.g. ${PLATFORM_SUBSCRIPTION_MONTHLY_USD}).`;
       return;
     }
     packageSaveState = 'saving';
@@ -1082,6 +1094,7 @@
             aria-label="Episode free or paid"
             data-episode-access-mode
             disabled={packageSaveState === 'saving'}
+            on:change={handleDraftAccessModeChange}
             on:focus={(event) => scrollPackageControlIntoView(event.currentTarget)}
             on:click={(event) => scrollPackageControlIntoView(event.currentTarget)}
           >
@@ -1095,7 +1108,7 @@
             type="text"
             inputmode="decimal"
             bind:value={draftPrice}
-            placeholder="4.99"
+            placeholder={PLATFORM_SUBSCRIPTION_MONTHLY_USD}
             data-episode-price
             disabled={packageSaveState === 'saving' || draftAccessMode !== 'paid'}
             on:focus={(event) => scrollPackageControlIntoView(event.currentTarget)}

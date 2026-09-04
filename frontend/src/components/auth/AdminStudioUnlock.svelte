@@ -5,10 +5,16 @@
    */
   import { onMount } from 'svelte';
   import ConsumerChrome from '../navigation/ConsumerChrome.svelte';
-  import { authenticateAdmin, setAdminSessionToken } from '../../lib/api.js';
   import { hasStudioAdminSessionToken } from '../../lib/adminSession.js';
   import { canAccessStudio, isAdminRole, currentUser } from '../../lib/auth/index.js';
   import { requestOpenStudio } from '../../lib/auth/clientNavigate.js';
+  import { unlockStudioWithPassword } from '../../lib/auth/studioAdminAuth.js';
+  import {
+    readStudioAutoEnterPreference,
+    writeStudioAutoEnterPreference,
+    readViewerPreviewMode,
+    writeViewerPreviewMode
+  } from '../../lib/auth/studioEntryPreferences.js';
 
   /** @type {(path: string) => void} */
   export let onNavigate = () => {};
@@ -17,64 +23,51 @@
   let busy = false;
   let localError = '';
   let showPassword = false;
+  let autoEnterStudio = readStudioAutoEnterPreference();
+  let viewerPreviewMode = readViewerPreviewMode();
 
   function enterStudio() {
     onNavigate('/');
-    // Viewer mounts on next frame; open control center after canAccessStudio gates pass.
     requestAnimationFrame(() => {
       requestOpenStudio('studio_unlock');
       setTimeout(() => requestOpenStudio('studio_unlock'), 120);
     });
   }
 
+  function browseAsViewer() {
+    onNavigate('/');
+  }
+
   onMount(() => {
-    // Already unlocked (password session or admin role) → proceed into Studio.
-    if (canAccessStudio()) {
+    if (canAccessStudio() && autoEnterStudio) {
       enterStudio();
     }
   });
 
+  function persistAutoEnter() {
+    writeStudioAutoEnterPreference(autoEnterStudio);
+  }
+
+  function persistViewerPreview() {
+    writeViewerPreviewMode(viewerPreviewMode);
+  }
+
   async function submit() {
     localError = '';
-    const pass = String(password || '');
-    if (!pass) {
-      localError = 'Password is required.';
-      return;
-    }
-
     busy = true;
     try {
-      const result = await authenticateAdmin(pass);
-      if (!result?.success) {
-        localError = 'Authentication failed. Check the password and try again.';
+      const result = await unlockStudioWithPassword(password);
+      if (!result.ok) {
+        localError = result.error || 'Authentication failed.';
         return;
       }
-      const token = String(result.token || '').trim();
-      if (!token || token === 'backend_token') {
-        localError = 'Login succeeded but no session token was returned.';
-        return;
-      }
-      setAdminSessionToken(token);
       password = '';
-      enterStudio();
-    } catch (err) {
-      // Localhost-only offline bridge matches StudioExperience behavior.
-      const host = typeof window !== 'undefined' ? String(window.location.hostname || '') : '';
-      const isLocalHost =
-        !host || host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
-      if (!isLocalHost) {
-        localError =
-          'Cannot reach studio authentication. Check connectivity and try again.';
-        return;
-      }
-      const localPasswords = ['Gaff1505!', 'SMART_PRODUCTION', 'admin123'];
-      if (localPasswords.includes(pass)) {
-        setAdminSessionToken('dev_local_session');
-        password = '';
+      if (autoEnterStudio) {
         enterStudio();
-        return;
+      } else {
+        browseAsViewer();
+        requestAnimationFrame(() => requestOpenStudio('studio_unlock'));
       }
-      localError = err?.message || 'Authentication failed.';
     } finally {
       busy = false;
     }
@@ -99,17 +92,24 @@
 
       <div class="studio-unlock__card">
         <h1 class="studio-unlock__title">Studio Access</h1>
-        <p class="studio-unlock__copy">Password required to unlock Production Studio.</p>
+        <p class="studio-unlock__copy">
+          Production Studio uses a separate password from viewer sign-in.
+        </p>
 
         {#if hasStudioAdminSessionToken() || isAdminRole($currentUser?.role)}
-          <p class="studio-unlock__copy">Session ready — opening Studio…</p>
-          <button type="button" class="studio-unlock__btn studio-unlock__btn--primary" on:click={enterStudio}>
-            Continue to Studio
-          </button>
+          <p class="studio-unlock__copy studio-unlock__copy--ok">Studio session active.</p>
+          <div class="studio-unlock__actions">
+            <button type="button" class="studio-unlock__btn studio-unlock__btn--primary" on:click={enterStudio}>
+              Open Studio
+            </button>
+            <button type="button" class="studio-unlock__btn" on:click={browseAsViewer}>
+              Browse as viewer
+            </button>
+          </div>
         {:else}
           <form class="studio-unlock__form" on:submit|preventDefault={submit} novalidate>
             <label class="studio-unlock__field">
-              <span>Password</span>
+              <span>Studio password</span>
               <div class="studio-unlock__password-row">
                 {#if showPassword}
                   <input
@@ -118,6 +118,7 @@
                     bind:value={password}
                     disabled={busy}
                     aria-invalid={Boolean(localError)}
+                    data-studio-password
                   />
                 {:else}
                   <input
@@ -126,6 +127,7 @@
                     bind:value={password}
                     disabled={busy}
                     aria-invalid={Boolean(localError)}
+                    data-studio-password
                   />
                 {/if}
                 <button
@@ -153,6 +155,27 @@
             </button>
           </form>
         {/if}
+
+        <div class="studio-unlock__prefs" data-studio-entry-prefs>
+          <label class="studio-unlock__pref">
+            <input
+              type="checkbox"
+              bind:checked={autoEnterStudio}
+              on:change={persistAutoEnter}
+              disabled={busy}
+            />
+            <span>Automatically open Studio when my session is already unlocked</span>
+          </label>
+          <label class="studio-unlock__pref">
+            <input
+              type="checkbox"
+              bind:checked={viewerPreviewMode}
+              on:change={persistViewerPreview}
+              disabled={busy}
+            />
+            <span>Preview as viewer (test paywall — disables admin watch bypass)</span>
+          </label>
+        </div>
 
         <div class="studio-unlock__footer">
           <button type="button" class="studio-unlock__link" on:click={goConsumerLogin}>
@@ -219,6 +242,15 @@
     font-size: 0.92rem;
     line-height: 1.45;
   }
+  .studio-unlock__copy--ok {
+    color: rgba(134, 239, 172, 0.9);
+  }
+  .studio-unlock__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin-bottom: 0.5rem;
+  }
   .studio-unlock__form {
     display: grid;
     gap: 0.85rem;
@@ -283,6 +315,26 @@
   .studio-unlock__btn:disabled {
     opacity: 0.55;
     cursor: not-allowed;
+  }
+  .studio-unlock__prefs {
+    margin-top: 1.15rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: grid;
+    gap: 0.65rem;
+  }
+  .studio-unlock__pref {
+    display: flex;
+    gap: 0.55rem;
+    align-items: flex-start;
+    font-size: 0.82rem;
+    color: var(--lz-ink-muted, rgba(255, 255, 255, 0.62));
+    line-height: 1.4;
+    cursor: pointer;
+  }
+  .studio-unlock__pref input {
+    margin-top: 0.15rem;
+    flex-shrink: 0;
   }
   .studio-unlock__footer {
     margin-top: 1.15rem;

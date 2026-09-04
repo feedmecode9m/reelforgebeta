@@ -4,7 +4,11 @@
  */
 
 import { getStoredReelSeriesMetadata } from './seriesMetadataStorage.js';
-import { VIC_G_SERIES_ID } from './vicGSeriesPackage.js';
+import {
+    PLATFORM_FREE_WATCH_LIMIT,
+    resolveDefaultPaidEpisodePrice
+} from './platformAccessPricingFramework.js';
+import { lookupVicGEpisodeBinding, VIC_G_SERIES_ID } from './vicGSeriesPackage.js';
 
 /** @typedef {'free' | 'paid'} EpisodeAccessMode */
 
@@ -70,10 +74,11 @@ export function buildEpisodeAccessPricing(mode, price) {
         };
     }
     if (accessMode === 'paid' && !normalizedPrice) {
+        const defaultPrice = resolveDefaultPaidEpisodePrice();
         return {
             mode: 'paid',
-            price: '',
-            badgeLabel: 'PAID',
+            price: defaultPrice,
+            badgeLabel: `$${defaultPrice}`,
             isFree: false
         };
     }
@@ -162,10 +167,35 @@ export function resolveSeriesEpisodeAccessPricing(input = {}) {
     if (!isPaidSeriesAccessMode(input.accessMode)) return null;
     const freeCountRaw = Number(input.freeEpisodeCount);
     const freeEpisodeCount =
-        Number.isFinite(freeCountRaw) && freeCountRaw >= 0 ? Math.floor(freeCountRaw) : 2;
+        Number.isFinite(freeCountRaw) && freeCountRaw >= 0
+            ? Math.floor(freeCountRaw)
+            : PLATFORM_FREE_WATCH_LIMIT;
     return episodeNumber <= freeEpisodeCount
         ? buildEpisodeAccessPricing('free', '')
-        : buildEpisodeAccessPricing('paid', '');
+        : buildEpisodeAccessPricing('paid', resolveDefaultPaidEpisodePrice());
+}
+
+/**
+ * Price field default for Access & Price editors (paid → framework monthly price).
+ * @param {unknown} mode
+ * @param {unknown} price
+ * @returns {string}
+ */
+export function resolveAccessPriceDraft(mode, price) {
+    const accessMode = normalizeAccessMode(mode);
+    if (accessMode !== 'paid') return '';
+    return normalizeEpisodePrice(price) || resolveDefaultPaidEpisodePrice();
+}
+
+/**
+ * When creator switches Viewer access to Paid, pre-fill framework price if empty.
+ * @param {'free' | 'paid'} mode
+ * @param {unknown} currentPrice
+ * @returns {string}
+ */
+export function resolveAccessPriceOnModeChange(mode, currentPrice) {
+    if (mode !== 'paid') return '';
+    return resolveAccessPriceDraft('paid', currentPrice);
 }
 
 /**
@@ -223,6 +253,45 @@ export function resolveEpisodeAccessPricing(input = {}) {
         }
     }
 
+    for (const id of ids) {
+        const vicBinding = lookupVicGEpisodeBinding(id);
+        if (!vicBinding) continue;
+        const fromSeries = resolveSeriesEpisodeAccessPricing({
+            episodeNumber: vicBinding.episodeNumber,
+            accessMode: 'SUBSCRIPTION',
+            freeEpisodeCount: PLATFORM_FREE_WATCH_LIMIT
+        });
+        if (fromSeries) return fromSeries;
+    }
+
+    const vaultAsset =
+        input.vaultAsset && typeof input.vaultAsset === 'object' ? input.vaultAsset : null;
+    const vaultEpisodeNumber = Number(
+        vaultAsset?.episodeNumber ?? vaultAsset?.episode_number ?? episode?.episodeNumber ?? episode?.episode_number
+    );
+    if (Number.isFinite(vaultEpisodeNumber) && vaultEpisodeNumber >= 1) {
+        const vaultSeriesId = String(
+            input.seriesId ||
+                vaultAsset?.seriesId ||
+                vaultAsset?.series_id ||
+                episode?.seriesId ||
+                episode?.series_id ||
+                ''
+        ).trim();
+        const seriesAccessMode =
+            input.seriesAccessMode ??
+            (vaultSeriesId === VIC_G_SERIES_ID ? 'SUBSCRIPTION' : undefined);
+        const freeEpisodeCount =
+            input.freeEpisodeCount ??
+            (vaultSeriesId === VIC_G_SERIES_ID ? PLATFORM_FREE_WATCH_LIMIT : undefined);
+        const fromVaultSeries = resolveSeriesEpisodeAccessPricing({
+            episodeNumber: vaultEpisodeNumber,
+            accessMode: seriesAccessMode,
+            freeEpisodeCount
+        });
+        if (fromVaultSeries) return fromVaultSeries;
+    }
+
     const seriesId = String(
         input.seriesId || episode?.seriesId || episode?.series_id || ''
     ).trim();
@@ -230,7 +299,8 @@ export function resolveEpisodeAccessPricing(input = {}) {
         input.seriesAccessMode ??
         (seriesId === VIC_G_SERIES_ID ? 'SUBSCRIPTION' : undefined);
     const freeEpisodeCount =
-        input.freeEpisodeCount ?? (seriesId === VIC_G_SERIES_ID ? 2 : undefined);
+        input.freeEpisodeCount ??
+        (seriesId === VIC_G_SERIES_ID ? PLATFORM_FREE_WATCH_LIMIT : undefined);
     const fromSeries = resolveSeriesEpisodeAccessPricing({
         episodeNumber: episode?.episodeNumber ?? episode?.episode_number,
         isFreeOverride: episode?.isFreeOverride ?? episode?.is_free_override,

@@ -1,0 +1,13 @@
+.git
+.github
+.cursor
+frontend
+**/target
+**/node_modules
+**/.env
+**/.env.*
+public
+backend/public
+*.md
+!backend/docs
+.dev-logs

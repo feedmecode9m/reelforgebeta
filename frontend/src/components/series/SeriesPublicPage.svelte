@@ -62,6 +62,7 @@
     VIEWER_CHECKOUT_FAILURE_REASONS
   } from '../../lib/series/viewerAccessEntitlement.js';
   import { resolveEpisodeAccessPricing } from '../../lib/series/episodeAccessPricing.js';
+  import SubscriptionPaywallActions from './SubscriptionPaywallActions.svelte';
   import {
     watchSessionStart,
     watchOnProgress,
@@ -617,7 +618,8 @@
       watchOnPause,
       watchOnComplete,
       watchOnExit,
-      watchApplyResume
+      watchApplyResume,
+      getViewerAccessEntitlement: () => hasAccessEntitlement
     });
 
     bootstrapped = true;
@@ -702,12 +704,18 @@
         </div>
         {#if playNotice}
           <p class="series-public__notice" role="status">{playNotice}</p>
-          {#if subscriptionUrl}
-            <button
-              type="button"
-              class="series-public__cta"
-              on:click={openSubscriptionFlow}
-            >Subscribe with Stripe</button>
+          {#if subscriptionUrl && pendingLockedEpisode?.episodeId}
+            <SubscriptionPaywallActions
+              source="series_public_lock"
+              episodeId={pendingLockedEpisode.episodeId}
+              reelId={pendingLockedEpisode.reelId || ''}
+              episodeNumber={pendingLockedEpisode.episodeNumber}
+              accessMode={pendingLockedEpisode.mode || 'paid'}
+              price={pendingLockedEpisode.price || ''}
+              on:failure={(event) => {
+                playNotice = String(event.detail?.message || playNotice);
+              }}
+            />
           {/if}
         {/if}
       </div>

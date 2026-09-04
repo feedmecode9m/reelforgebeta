@@ -295,6 +295,7 @@ try {
     if (!row || typeof row !== 'object') continue;
     if (!isHeroAsset(row)) continue;
     const id = String(row.id || '').trim();
+    if (id && isDeletedMediaId(id)) continue;
     if (id && inputIds.has(id)) continue;
     filtered.push(row);
     if (id) inputIds.add(id);

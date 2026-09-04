@@ -37,6 +37,7 @@ pub struct CheckoutRequestBody {
     pub reel_id: Option<String>,
     pub access_mode: Option<String>,
     pub requested_price_id: Option<String>,
+    pub subscription_tier: Option<String>,
     pub amount_cents: Option<i64>,
 }
 
@@ -130,14 +131,49 @@ fn validate_requested_price(
     Ok(())
 }
 
-fn resolve_price_from_server(access_mode: &str) -> Result<(String, String), HttpResponse> {
-    let mode = access_mode.trim().to_ascii_uppercase();
-    let episode_price_id = std::env::var("STRIPE_PRICE_ID_EPISODE")
+fn resolve_subscription_price_id(tier: Option<&str>) -> Result<String, HttpResponse> {
+    let monthly = std::env::var("STRIPE_PRICE_ID_SUBSCRIPTION")
+        .or_else(|_| std::env::var("STRIPE_PRICE_ID"))
         .unwrap_or_default()
         .trim()
         .to_string();
-    let subscription_price_id = std::env::var("STRIPE_PRICE_ID_SUBSCRIPTION")
-        .or_else(|_| std::env::var("STRIPE_PRICE_ID"))
+    let annual = std::env::var("STRIPE_PRICE_ID_ANNUAL")
+        .unwrap_or_default()
+        .trim()
+        .to_string();
+    let tier_norm = tier
+        .map(str::trim)
+        .filter(|v| !v.is_empty())
+        .map(|v| v.to_ascii_lowercase());
+    let wants_annual = matches!(
+        tier_norm.as_deref(),
+        Some("annual") | Some("year") | Some("yearly") | Some("yr")
+    );
+    if wants_annual {
+        if !annual.is_empty() {
+            return Ok(annual);
+        }
+        if !monthly.is_empty() {
+            return Ok(monthly);
+        }
+    } else if !monthly.is_empty() {
+        return Ok(monthly);
+    } else if !annual.is_empty() {
+        return Ok(annual);
+    }
+    Err(payments_error(
+        StatusCode::SERVICE_UNAVAILABLE,
+        "pricing_not_configured",
+        "No Stripe subscription price ID configured on server",
+    ))
+}
+
+fn resolve_price_from_server(
+    access_mode: &str,
+    subscription_tier: Option<&str>,
+) -> Result<(String, String), HttpResponse> {
+    let mode = access_mode.trim().to_ascii_uppercase();
+    let episode_price_id = std::env::var("STRIPE_PRICE_ID_EPISODE")
         .unwrap_or_default()
         .trim()
         .to_string();
@@ -145,17 +181,8 @@ fn resolve_price_from_server(access_mode: &str) -> Result<(String, String), Http
     if mode == "EPISODE_LOCK" && !episode_price_id.is_empty() {
         return Ok(("payment".to_string(), episode_price_id));
     }
-    if !subscription_price_id.is_empty() {
-        return Ok(("subscription".to_string(), subscription_price_id));
-    }
-    if !episode_price_id.is_empty() {
-        return Ok(("payment".to_string(), episode_price_id));
-    }
-    Err(payments_error(
-        StatusCode::SERVICE_UNAVAILABLE,
-        "pricing_not_configured",
-        "No Stripe price ID configured on server",
-    ))
+    let subscription_price_id = resolve_subscription_price_id(subscription_tier)?;
+    Ok(("subscription".to_string(), subscription_price_id))
 }
 
 fn parse_uuid(raw: Option<&str>) -> Option<Uuid> {
@@ -690,7 +717,10 @@ pub async fn create_checkout(
         );
     }
 
-    let (checkout_mode, server_price_id) = match resolve_price_from_server(&access_mode) {
+    let (checkout_mode, server_price_id) = match resolve_price_from_server(
+        &access_mode,
+        body.subscription_tier.as_deref(),
+    ) {
         Ok(v) => v,
         Err(resp) => return resp,
     };
@@ -1034,9 +1064,20 @@ mod tests {
     fn server_price_resolution_prefers_episode_lock_price() {
         std::env::set_var("STRIPE_PRICE_ID_EPISODE", "price_episode");
         std::env::set_var("STRIPE_PRICE_ID_SUBSCRIPTION", "price_sub");
-        let (mode, price) = resolve_price_from_server("EPISODE_LOCK").expect("price");
+        let (mode, price) = resolve_price_from_server("EPISODE_LOCK", None).expect("price");
         assert_eq!(mode, "payment");
         assert_eq!(price, "price_episode");
+    }
+
+    #[test]
+    fn subscription_price_resolution_supports_monthly_and_annual() {
+        std::env::set_var("STRIPE_PRICE_ID_SUBSCRIPTION", "price_monthly");
+        std::env::set_var("STRIPE_PRICE_ID_ANNUAL", "price_annual");
+        let (_, monthly) =
+            resolve_price_from_server("SUBSCRIPTION", Some("monthly")).expect("monthly");
+        assert_eq!(monthly, "price_monthly");
+        let (_, annual) = resolve_price_from_server("SUBSCRIPTION", Some("annual")).expect("annual");
+        assert_eq!(annual, "price_annual");
     }
 
     #[test]

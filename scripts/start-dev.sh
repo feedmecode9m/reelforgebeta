@@ -32,6 +32,14 @@ export RUST_LOG="${RUST_LOG:-reelforge=debug,actix_web=info}"
 export CORS_ALLOWED_ORIGINS="${CORS_ALLOWED_ORIGINS:-http://localhost:$FRONTEND_PORT,http://127.0.0.1:$FRONTEND_PORT}"
 export DATABASE_URL="${DATABASE_URL:-postgresql://user:password@localhost:5432/reelforge}"
 
+# Payments / Stripe keys live in backend/.env (loaded when backend starts from repo root).
+if [[ -f "$BACKEND_DIR/.env" ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source "$BACKEND_DIR/.env"
+  set +a
+fi
+
 # === Helper Functions ===
 log_info() { echo "ℹ️  $*"; }
 log_warn() { echo "⚠️  $*" >&2; }

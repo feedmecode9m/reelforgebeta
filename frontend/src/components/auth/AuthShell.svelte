@@ -13,6 +13,7 @@
     setStoredReturnPath,
     readNextFromSearch
   } from '../../lib/auth/index.js';
+  import { showStudioLinkOnViewerLogin } from '../../lib/auth/studioEntryPreferences.js';
   import ConsumerChrome from '../navigation/ConsumerChrome.svelte';
 
   /** @type {'login' | 'register'} */
@@ -157,7 +158,7 @@
         {:else}
           <h1 class="auth-title">{title}</h1>
           <p class="auth-copy">Sign in to continue watching</p>
-          <p class="auth-copy auth-copy--sub">Your personal cinema experience</p>
+          <p class="auth-copy auth-copy--sub">Viewer account — email and password only</p>
           <form class="auth-form" on:submit|preventDefault={submit} novalidate>
             <label class="auth-field">
               <span>Email</span>
@@ -246,18 +247,18 @@
               </button>
             {/if}
           </p>
-          {#if mode === 'login'}
-            <div class="auth-studio-entry">
-              <p class="auth-studio-entry__label">Admin / Studio Access</p>
+          {#if mode === 'login' && showStudioLinkOnViewerLogin()}
+            <p class="auth-studio-entry">
               <button
                 type="button"
-                class="auth-btn"
+                class="auth-link"
                 on:click={() => onNavigate('/studio')}
                 disabled={submitting}
               >
-                Open Studio Login
+                Studio access
               </button>
-            </div>
+              <span class="auth-studio-entry__hint"> (separate password)</span>
+            </p>
           {/if}
         {/if}
       </div>
@@ -512,16 +513,14 @@
   }
 
   .auth-studio-entry {
-    margin-top: var(--lz-space-5, 1.5rem);
-    padding-top: var(--lz-space-4, 1.1rem);
-    border-top: 1px solid var(--lz-border, rgba(255, 255, 255, 0.1));
-    display: grid;
-    gap: var(--lz-space-2, 0.65rem);
+    margin-top: var(--lz-space-4, 1.1rem);
+    padding-top: var(--lz-space-3, 0.85rem);
+    border-top: 1px solid var(--lz-border, rgba(255, 255, 255, 0.08));
+    font-size: var(--lz-size-small, 0.85rem);
+    color: var(--lz-ink-muted, rgba(255, 255, 255, 0.45));
   }
 
-  .auth-studio-entry__label {
-    margin: 0;
-    font-size: var(--lz-size-small, 0.85rem);
-    color: var(--lz-ink-muted, rgba(255, 255, 255, 0.55));
+  .auth-studio-entry__hint {
+    color: var(--lz-ink-dim, rgba(255, 255, 255, 0.35));
   }
 </style>

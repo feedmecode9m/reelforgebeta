@@ -50,6 +50,7 @@
     } from '../../lib/media/resolvePlayableMediaUrl.js';
     import { logMobilePlayTrace } from '../../lib/device/mobileExperienceDiagnostics.js';
     import { setTheaterProtectedMaster } from '../../lib/media/playbackOwnership.js';
+    import { evaluatePlaybackPaywallGate } from '../../lib/series/viewerPlaybackPaywall.js';
 
     export {
         activePublishingProfile,
@@ -102,6 +103,9 @@
     let resolveTheaterPlaybackFn = () => null;
     let logTheaterHandshakeFn = () => {};
     let isVideoReelFn = () => false;
+    let getViewerAccessEntitlementFn = () => false;
+    /** @type {(gate: ReturnType<typeof evaluatePlaybackPaywallGate>) => void} */
+    let onPlaybackPaywallBlockedFn = () => {};
     let reuploadDeps = {
         deleteProduction: () => {},
         openControlCenter: () => {},
@@ -124,6 +128,12 @@
         if (deps.resolveTheaterPlayback) resolveTheaterPlaybackFn = deps.resolveTheaterPlayback;
         if (deps.logTheaterHandshake) logTheaterHandshakeFn = deps.logTheaterHandshake;
         if (deps.isVideoReel) isVideoReelFn = deps.isVideoReel;
+        if (deps.getViewerAccessEntitlement) {
+            getViewerAccessEntitlementFn = deps.getViewerAccessEntitlement;
+        }
+        if (deps.onPlaybackPaywallBlocked) {
+            onPlaybackPaywallBlockedFn = deps.onPlaybackPaywallBlocked;
+        }
         if (deps.reupload) reuploadDeps = { ...reuploadDeps, ...deps.reupload };
     }
 
@@ -225,8 +235,6 @@
         });
         clearTheaterCountdown();
         resetTheaterTimeline();
-        // Phase 1: own bandwidth + unload hero/preview masters BEFORE any Theater <video> src binds.
-        beginTheaterExclusiveSession('theater-open-before-attach');
 
         let fresh = enrichTheaterReelForPlayback(/** @type {Record<string, unknown>} */ (reel));
         if (!fresh) {
@@ -240,6 +248,40 @@
         }
 
         const seriesCtx = resolveSeriesContextForReel(fresh);
+        const paywallGate = evaluatePlaybackPaywallGate(fresh, {
+            hasAccessEntitlement: getViewerAccessEntitlementFn(),
+            seriesCtx
+        });
+        if (paywallGate.blocked) {
+            onPlaybackPaywallBlockedFn(paywallGate);
+            if (typeof window !== 'undefined') {
+                try {
+                    window.dispatchEvent(
+                        new CustomEvent('reelforge:episode-play-blocked', {
+                            detail: {
+                                ...(paywallGate.pendingLockedEpisode || {}),
+                                badgeLabel: paywallGate.access?.badgeLabel || '',
+                                accessMode: paywallGate.access?.mode || 'paid',
+                                message: paywallGate.message
+                            }
+                        })
+                    );
+                } catch {
+                    /* ignore */
+                }
+            }
+            logMobilePlayTrace('OPEN_THEATER_REEL_PAYWALL', {
+                assetId: String(fresh?.id || '').trim(),
+                episodeId: String(paywallGate.pendingLockedEpisode?.episodeId || ''),
+                resolver: 'evaluatePlaybackPaywallGate',
+                playCalled: false
+            });
+            return;
+        }
+
+        // Phase 1: own bandwidth + unload hero/preview masters BEFORE any Theater <video> src binds.
+        beginTheaterExclusiveSession('theater-open-before-attach');
+
         if (seriesCtx) {
             fresh = applyEpisodeFieldsToReel(fresh, seriesCtx);
         }
@@ -502,6 +544,7 @@
         VIEWER_CHECKOUT_FAILURE_REASONS
     } from '../../lib/series/viewerAccessEntitlement.js';
     import { resolveEpisodeAccessPricing } from '../../lib/series/episodeAccessPricing.js';
+    import SubscriptionPaywallActions from '../series/SubscriptionPaywallActions.svelte';
 
     /** @type {import('svelte/store').Readable<unknown[]>} */
     export let personalVideos;
@@ -1311,6 +1354,13 @@
 
     onMount(() => {
         syncMobileTheaterFlag('mount');
+        configureTheaterExperience({
+            getViewerAccessEntitlement: () => hasAccessEntitlement,
+            onPlaybackPaywallBlocked: (gate) => {
+                episodeNavNotice = String(gate.message || '');
+                pendingLockedEpisode = gate.pendingLockedEpisode;
+            }
+        });
         const stopEntitlement = subscribeViewerPaidAccessEntitlement((next) => {
             hasAccessEntitlement = Boolean(next);
         });
@@ -2109,21 +2159,26 @@
             {#if episodeNavNotice}
                 <div class="theater-episode-nav-notice" role="status">
                     <p>{episodeNavNotice}</p>
-                    {#if subscriptionUrl}
-                        <div class="theater-payment-actions">
-                            <button
-                                type="button"
-                                class="theater-payment-btn"
-                                on:click|stopPropagation={openTheaterSubscriptionFlow}
-                            >PAY WITH STRIPE</button>
-                            <button
-                                type="button"
-                                class="theater-payment-btn theater-payment-btn--quiet"
-                                on:click|stopPropagation={() => {
-                                    episodeNavNotice = '';
-                                }}
-                            >Not now</button>
-                        </div>
+                    {#if subscriptionUrl && pendingLockedEpisode?.episodeId}
+                        <SubscriptionPaywallActions
+                            source="theater_episode_lock"
+                            episodeId={pendingLockedEpisode.episodeId}
+                            reelId={pendingLockedEpisode.reelId || ''}
+                            episodeNumber={pendingLockedEpisode.episodeNumber}
+                            accessMode={pendingLockedEpisode.mode || 'paid'}
+                            price={pendingLockedEpisode.price || ''}
+                            compact={true}
+                            on:failure={(event) => {
+                                episodeNavNotice = String(event.detail?.message || episodeNavNotice);
+                            }}
+                        />
+                        <button
+                            type="button"
+                            class="theater-payment-btn theater-payment-btn--quiet"
+                            on:click|stopPropagation={() => {
+                                episodeNavNotice = '';
+                            }}
+                        >Not now</button>
                     {/if}
                 </div>
             {/if}

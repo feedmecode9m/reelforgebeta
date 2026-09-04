@@ -26,6 +26,10 @@ import { computeProductionReadiness, computeSeriesHealth } from '../series/produ
 import { getWorkflowOperationsSnapshot, getWorkflowTasksForSeries } from '../workflow/workflowEngine.js';
 import { isWatchTrackingEnabled } from '../watch/watchTracker.js';
 import { toRelativeMediaPath, BACKEND_URL, ASSET_BASE_URL } from '../config.js';
+import { isDeletedMediaId } from '../deletionSync.js';
+import {
+    isMalformedDerivativeVaultPick
+} from '../vault/vaultGhostPickCleanup.js';
 import {
     pickHeroBackgroundMediaUrl,
     resolveHeroPlaybackUrl,
@@ -174,6 +178,7 @@ function isEligibleHeroVaultPick(entry) {
 
     const id = String(entry.id || entry.assetId || entry.personal_video_id || '').trim();
     if (!id) return false;
+    if (/\.playback/i.test(id)) return false;
     if (/^local-(pending|upload|interrupted)/i.test(id)) return false;
 
     const status = String(entry.status || entry.uploadStatus || 'ready').toLowerCase();
@@ -1897,6 +1902,7 @@ export function loadHeroVaultItems(extraItems = null) {
          */
         const push = (entry, source) => {
             if (!isEligibleHeroVaultPick(entry)) return;
+            if (isMalformedDerivativeVaultPick(entry)) return;
             // Synthetic personal-thumb feed cards are derived mirrors of thumbnail vault rows.
             // Harvesting them again after personal_thumbnails → double Hero Vault tiles for one asset.
             if (
@@ -1907,6 +1913,7 @@ export function loadHeroVaultItems(extraItems = null) {
             }
             const entryId = String(entry.id || entry.assetId || entry.personal_video_id || '').trim();
             if (!entryId) return;
+            if (isDeletedMediaId(entryId)) return;
             const canonicalId = canonicalThumbnailAssetId(entry) || stripPersonalThumbPrefix(entryId) || entryId;
             // Dedupe by both raw and canonical ids so personal-thumb-{uuid} collides with {uuid}.
             if (seen.has(entryId) || seen.has(canonicalId)) return;

@@ -103,6 +103,12 @@
     applyCanonicalDeleteClientEffects,
     isGhostVideoVaultEntry
   } from '../../lib/deletionSync.js';
+  import {
+    isMalformedDerivativeVaultPick,
+    normalizeVaultPickId,
+    purgeVaultPickLocally,
+    collectVaultPickPurgeIdsFromHeroItem
+  } from '../../lib/vault/vaultGhostPickCleanup.js';
   import { vaultForensic } from '../../lib/diagnostics/vaultForensics.js';
   import {
     trackUploadLockRegister,
@@ -143,6 +149,7 @@
     restoreVideoVaultAsset,
     VIDEO_VAULT_HIDDEN_STORAGE_KEY
   } from '../../lib/vault/videoVaultWorkspace.js';
+  import { reconcileVaultGhostPicks } from '../../lib/vault/vaultGhostPickCleanup.js';
 
   export let showPersonalControls = true;
 
@@ -602,6 +609,8 @@
     try {
       let backendReachable = false;
       let imageReels = [];
+      /** @type {unknown[]} */
+      let catalogReels = [];
       try {
         const res = await fetchWithRetry(
           `${API_BASE_URL}/api/reels?t=${Date.now()}`,
@@ -611,8 +620,8 @@
         backendReachable = res.ok;
         if (res.ok) {
           const body = await res.json().catch(() => []);
-          const reels = Array.isArray(body) ? body : [];
-          imageReels = reels.filter(isThumbnailImageReel);
+          catalogReels = Array.isArray(body) ? body : [];
+          imageReels = catalogReels.filter(isThumbnailImageReel);
         } else {
           console.warn(`[STARTUP_RECONCILE] Backend returned ${res.status}, skipping ghost reconcile`);
         }
@@ -641,6 +650,17 @@
           purgedCount: reconciled.purged.length,
           remaining: reconciled.entries.length,
           ts: new Date().toISOString()
+        });
+
+        reconcileVaultGhostPicks(catalogReels, {
+          backendReachable: true,
+          videoVaultKey: CONFIG?.VIDEO_VAULT_KEY || 'personal_video_vault',
+          feedStorageKey: CONFIG?.FEED_STORAGE_KEY || 'reelforge_feed',
+          persistVideoVault: persistPersonalVault,
+          persistFeed: (nextFeed) =>
+            storageSet(CONFIG?.FEED_STORAGE_KEY || 'reelforge_feed', nextFeed),
+          onPersonalVideosUpdate: (next) => personalVideos.set(next),
+          source: 'VaultExperience.ensureThumbnailCanonicalization'
         });
       }
 
@@ -1411,7 +1431,8 @@
     if (
       ref &&
       !isDurableVideoVaultWorkspaceAsset(ref) &&
-      (isGhostVideoVaultEntry(ref) ||
+      (isMalformedDerivativeVaultPick(ref) ||
+        isGhostVideoVaultEntry(ref) ||
         isVideoVaultStubPurgeTarget(ref, { isHeroInjected: isHeroInjectedVaultCard(ref) }))
     ) {
       purgeLocalVaultVideoStub(ref, 'tap_ghost_or_hero_stub');
@@ -1434,7 +1455,26 @@
 
     const inVault = (get(personalVideos) || []).some((item) => String(item?.id || '').trim() === id);
     if (!inVault) {
-      // Display-only card (hero merge) — purge hero pointer so the card cannot resurrect.
+      const purgeIds = collectVaultPickPurgeIdsFromHeroItem(
+        /** @type {Record<string, unknown>} */ (ref || { id, assetId: id })
+      );
+      purgeVaultPickLocally(purgeIds, {
+        videoVaultKey: CONFIG?.VIDEO_VAULT_KEY || 'personal_video_vault',
+        feedStorageKey: CONFIG?.FEED_STORAGE_KEY || 'reelforge_feed',
+        mediaUrl: String(ref?.url || ref?.video_url || ref?.mediaUrl || '').trim(),
+        feedSnapshot: get(feed),
+        persistVideoVault: persistPersonalVault,
+        persistFeed: (nextFeed) => {
+          feed.set(nextFeed);
+          storageSet(CONFIG?.FEED_STORAGE_KEY || 'reelforge_feed', nextFeed);
+        },
+        onPersonalVideosUpdate: (next) => personalVideos.set(next),
+        onFeedUpdate: (nextFeed) => {
+          feed.set(nextFeed);
+          storageSet(CONFIG?.FEED_STORAGE_KEY || 'reelforge_feed', nextFeed);
+        },
+        source: 'VaultExperience.handleVideoDelete:not_in_store'
+      });
       purgeLocalVaultVideoStub(ref || { id, name: 'video', isHeroBackground: true }, 'tap_display_only');
       canonicalizeVideoSelectionAfterDelete([id], { beforeCount, selectedIds });
       return;

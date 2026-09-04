@@ -63,7 +63,8 @@
     import { resolvePlayableMediaUrl } from '../../lib/media/resolvePlayableMediaUrl.js';
     import { deleteReelById, fetchReadyReels } from '../../lib/api/media.js';
     import { getAdminAuthHeaders } from '../../lib/api.js';
-    import { applyCanonicalDeleteClientEffects } from '../../lib/deletionSync.js';
+    import { applyCanonicalDeleteClientEffects, isDeletedMediaId } from '../../lib/deletionSync.js';
+    import { reconcileVaultGhostPicksAsync, normalizeVaultPickId, purgeVaultPickLocally, collectVaultPickPurgeIdsFromHeroItem } from '../../lib/vault/vaultGhostPickCleanup.js';
     import { vaultForensic } from '../../lib/diagnostics/vaultForensics.js';
     import {
         loadHeroReel,
@@ -138,8 +139,11 @@
         buildEpisodeAccessPricing,
         dispatchVaultAccessUpdated,
         applyVaultEpisodeAccess,
-        resolveEpisodeAccessPricing
+        resolveEpisodeAccessPricing,
+        resolveAccessPriceDraft,
+        resolveAccessPriceOnModeChange
     } from '../../lib/series/episodeAccessPricing.js';
+    import { PLATFORM_SUBSCRIPTION_MONTHLY_USD } from '../../lib/series/platformAccessPricingFramework.js';
     import { applyCreatorVaultEpisodeEnrichment } from '../../lib/series/vaultEpisodeEnrichment.js';
 
     /** @type {Record<string, unknown>[]} */
@@ -1112,8 +1116,12 @@
     async function findMatchingHeroReelId(item) {
         const candidateId = String(item?.assetId || '').trim();
         if (!candidateId) return '';
+        const normalizedId = normalizeVaultPickId(candidateId);
         const reels = await fetchReadyReels(authHeaders()).catch(() => []);
-        const byId = reels.find((reel) => String(reel?.id || '').trim() === candidateId);
+        const byId = reels.find((reel) => {
+            const reelId = String(reel?.id || '').trim();
+            return reelId === candidateId || (normalizedId && reelId === normalizedId);
+        });
         if (byId?.id) return String(byId.id);
 
         const heroMedia = normalizeComparablePath(item?.mediaUrl);
@@ -1142,7 +1150,22 @@
         if (Array.isArray(feedReels)) {
             extras.push(...feedReels);
         }
-        return extras;
+        return extras.filter((entry) => {
+            if (!entry || typeof entry !== 'object') return false;
+            const id = String(entry.id || entry.assetId || '').trim();
+            if (id && isDeletedMediaId(id)) return false;
+            if (/\.playback/i.test(id)) return false;
+            const fileName = String(entry.fileName || entry.file_name || entry.name || '').trim();
+            if (/\.playback/i.test(fileName)) return false;
+            return true;
+        });
+    }
+
+    function persistFeedEverywhere(nextFeed) {
+        if (feed && typeof feed.set === 'function') {
+            feed.set(nextFeed);
+        }
+        storageSet(CONFIG?.FEED_STORAGE_KEY || 'reelforge_feed', nextFeed);
     }
 
     /**
@@ -1892,9 +1915,18 @@
         });
         accessModalItem = item;
         accessDraftMode = access.mode;
-        accessDraftPrice = access.price;
+        accessDraftPrice = resolveAccessPriceDraft(access.mode, access.price);
         accessModalError = '';
         accessModalOpen = true;
+    }
+
+    /** @param {Event} event */
+    function handleHeroAccessModeChange(event) {
+        const nextMode = /** @type {'free' | 'paid'} */ (
+            /** @type {HTMLSelectElement} */ (event.currentTarget).value
+        );
+        accessDraftMode = nextMode;
+        accessDraftPrice = resolveAccessPriceOnModeChange(nextMode, accessDraftPrice);
     }
 
     function closeHeroVaultAccess() {
@@ -1908,7 +1940,7 @@
         const assetId = String(accessModalItem.assetId).trim();
         const access = buildEpisodeAccessPricing(accessDraftMode, accessDraftPrice);
         if (access.mode === 'paid' && !access.price) {
-            accessModalError = 'Enter a price for paid episodes (e.g. 4.99).';
+            accessModalError = `Enter a price for paid episodes (e.g. ${PLATFORM_SUBSCRIPTION_MONTHLY_USD}).`;
             return;
         }
         const playbackKey = mediaRecordPlaybackKey(accessModalItem);
@@ -2424,31 +2456,55 @@
         });
         const beforeCount = get(heroAssetRegistry).length;
         let persistenceOk = false;
-        const reelId = await findMatchingHeroReelId(item);
-        if (reelId) {
+        const assetId = String(item?.assetId || '').trim();
+        const normalizedId = normalizeVaultPickId(assetId);
+        const purgeIds = collectVaultPickPurgeIdsFromHeroItem(item);
+        const reelIdsToPurge = [...purgeIds];
+        const mediaUrl = String(item?.mediaUrl || item?.thumbnailUrl || '').trim();
+        const feedSnapshot = feed && typeof feed.subscribe === 'function' ? get(feed) : null;
+
+        applyCanonicalDeleteClientEffects(
+            {
+                ctx: {
+                    feed,
+                    personalVideos,
+                    activeReel: writable(null),
+                    actions: {
+                        persistFeed: persistFeedEverywhere,
+                        persistVault: persistPersonalVault
+                    }
+                }
+            },
+            { reelIds: reelIdsToPurge, videoUrl: mediaUrl }
+        );
+
+        purgeVaultPickLocally(purgeIds, {
+            videoVaultKey: CONFIG?.VIDEO_VAULT_KEY || 'personal_video_vault',
+            feedStorageKey: CONFIG?.FEED_STORAGE_KEY || 'reelforge_feed',
+            mediaUrl,
+            feedSnapshot,
+            persistVideoVault: persistPersonalVault,
+            persistFeed: persistFeedEverywhere,
+            onPersonalVideosUpdate: (next) => personalVideos.set(next),
+            onFeedUpdate: persistFeedEverywhere,
+            source: 'HeroManagerPanel.deleteHeroVaultAsset'
+        });
+
+        const catalogReelId = await findMatchingHeroReelId(item);
+        const confirmedOnServer =
+            Boolean(catalogReelId) &&
+            (catalogReelId === assetId ||
+                catalogReelId === normalizedId ||
+                reelIdsToPurge.includes(catalogReelId));
+        if (confirmedOnServer && catalogReelId && !/\.playback/i.test(catalogReelId)) {
             try {
-                await deleteReelById(reelId, authHeaders());
+                await deleteReelById(catalogReelId, authHeaders());
                 persistenceOk = true;
-                applyCanonicalDeleteClientEffects(
-                    {
-                        ctx: {
-                            feed,
-                            personalVideos,
-                            activeReel: writable(null),
-                            actions: {
-                                persistFeed: (nextFeed) =>
-                                    storageSet(CONFIG?.FEED_STORAGE_KEY || 'reelforge_feed', nextFeed),
-                                persistVault: persistPersonalVault
-                            }
-                        }
-                    },
-                    { reelId }
-                );
                 await syncFromVault(true);
             } catch (error) {
                 console.warn('[HERO_VAULT_DELETE_BACKEND_FAILED]', {
-                    itemId: String(item?.assetId || ''),
-                    reelId,
+                    itemId: assetId,
+                    reelId: catalogReelId,
                     error: error?.message || String(error),
                     timestamp: Date.now()
                 });
@@ -2487,8 +2543,8 @@
         });
         console.info('[DELETE_PERSISTENCE]', {
             vault: 'hero-vault',
-            success: persistenceOk || !reelId,
-            reelId,
+            success: persistenceOk || !confirmedOnServer,
+            reelId: catalogReelId || '',
             timestamp: Date.now()
         });
         console.info('[DELETE_UI_REFRESH]', {
@@ -2508,13 +2564,13 @@
             vault: 'hero-vault',
             timestamp: Date.now()
         });
-        vaultForensic(persistenceOk || !reelId ? 'VAULT_DELETE_SUCCESS' : 'VAULT_DELETE_FAIL', {
+        vaultForensic(persistenceOk || !confirmedOnServer ? 'VAULT_DELETE_SUCCESS' : 'VAULT_DELETE_FAIL', {
             vaultType: 'hero',
             assetId: String(item?.assetId || ''),
             fileName: displayName,
             storageLocation: isVideo ? HERO_VIDEO_STORAGE_KEY : HERO_IMAGE_STORAGE_KEY,
-            backendEndpoint: `${CONFIG?.API_BASE_URL || ''}/api/reels/${reelId || ''}`,
-            result: persistenceOk ? 'delete_success' : reelId ? 'backend_delete_failed' : 'local_only_delete'
+            backendEndpoint: `${CONFIG?.API_BASE_URL || ''}/api/reels/${catalogReelId || ''}`,
+            result: persistenceOk ? 'delete_success' : confirmedOnServer ? 'backend_delete_failed' : 'local_only_delete'
         });
         config = { ...config };
     }
@@ -2667,6 +2723,17 @@
 
     onMount(() => {
         refresh();
+        void reconcileVaultGhostPicksAsync(() => fetchReadyReels(authHeaders()), {
+            backendReachable: true,
+            videoVaultKey: CONFIG?.VIDEO_VAULT_KEY || 'personal_video_vault',
+            feedStorageKey: CONFIG?.FEED_STORAGE_KEY || 'reelforge_feed',
+            persistVideoVault: persistPersonalVault,
+            persistFeed: persistFeedEverywhere,
+            onPersonalVideosUpdate: (next) => personalVideos.set(next),
+            source: 'HeroManagerPanel.onMount'
+        }).then((result) => {
+            if (result?.changed) refreshHeroAssetRegistry();
+        });
         window.addEventListener('reelforge:hero-manager-updated', handleManagerUpdate);
         reconcilePendingTitlePatches(authHeaders).catch(() => {});
         // Phase 8: rehydrate server authority on Manager load
@@ -3615,7 +3682,11 @@
                 <p class="hero-access-modal__asset">{getDisplayTitle(accessModalItem)}</p>
                 <label class="hero-access-modal__field">
                     <span>Viewer access</span>
-                    <select bind:value={accessDraftMode} data-episode-access-mode>
+                    <select
+                        bind:value={accessDraftMode}
+                        data-episode-access-mode
+                        on:change={handleHeroAccessModeChange}
+                    >
                         <option value="free">Free</option>
                         <option value="paid">Paid</option>
                     </select>
@@ -3626,7 +3697,7 @@
                         type="text"
                         inputmode="decimal"
                         bind:value={accessDraftPrice}
-                        placeholder="4.99"
+                        placeholder={PLATFORM_SUBSCRIPTION_MONTHLY_USD}
                         disabled={accessDraftMode !== 'paid'}
                         data-episode-price
                     />

@@ -17,6 +17,8 @@
     sanitizeReturnPath,
     setStoredReturnPath
   } from './lib/auth/index.js';
+  import { initViewerCheckoutReturnHandler } from './lib/series/viewerAccessEntitlement.js';
+  import { readStudioAutoEnterPreference } from './lib/auth/studioEntryPreferences.js';
   import { hasStudioAdminSessionToken } from './lib/adminSession.js';
   import { requestOpenStudio } from './lib/auth/clientNavigate.js';
   import './styles.css';
@@ -115,6 +117,7 @@
   }
 
   onMount(() => {
+    const stopCheckoutReturn = initViewerCheckoutReturnHandler();
     refreshSession().finally(() => {
       authReady = true;
       enforceGate();
@@ -122,6 +125,7 @@
     window.addEventListener('popstate', onPopState);
     window.addEventListener('reelforge:admin-session-changed', onAdminSessionChanged);
     return () => {
+      stopCheckoutReturn();
       window.removeEventListener('popstate', onPopState);
       window.removeEventListener('reelforge:admin-session-changed', onAdminSessionChanged);
     };
@@ -166,13 +170,14 @@
   // When already unlocked and hitting /studio|/admin, land on Viewer + open Studio once.
   let studioAutoOpenDone = false;
   $: if (authReady && routeKind === 'studio' && studioUnlocked && !studioAutoOpenDone) {
-    studioAutoOpenDone = true;
-    requestAnimationFrame(() => {
-      if (pathname === '/studio' || pathname === '/admin' || pathname.startsWith('/studio/') || pathname.startsWith('/admin/')) {
-        // Stay on path but mount Viewer below; still open control center.
-        requestOpenStudio('studio_route');
-      }
-    });
+    if (readStudioAutoEnterPreference()) {
+      studioAutoOpenDone = true;
+      requestAnimationFrame(() => {
+        if (pathname === '/studio' || pathname === '/admin' || pathname.startsWith('/studio/') || pathname.startsWith('/admin/')) {
+          requestOpenStudio('studio_route');
+        }
+      });
+    }
   }
   $: if (routeKind !== 'studio') {
     studioAutoOpenDone = false;

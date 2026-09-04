@@ -21,6 +21,12 @@ import {
     resolveEpisodeAccessPricing,
     resolveSeriesEpisodeAccessPricing
 } from '../src/lib/series/episodeAccessPricing.js';
+import {
+    PLATFORM_FREE_WATCH_LIMIT,
+    PLATFORM_SUBSCRIPTION_ANNUAL_USD,
+    PLATFORM_SUBSCRIPTION_MONTHLY_USD
+} from '../src/lib/series/platformAccessPricingFramework.js';
+import { lookupVicGEpisodeBinding } from '../src/lib/series/vicGSeriesPackage.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '..');
@@ -41,7 +47,7 @@ const TARGETS = [
 ];
 
 const SERIES_ID = 'series-vic-g';
-const FREE_EPISODE_COUNT = 2;
+const FREE_EPISODE_COUNT = PLATFORM_FREE_WATCH_LIMIT;
 
 /** @param {string} msg */
 function log(msg) {
@@ -112,6 +118,10 @@ function verifyVicG(series, label) {
         });
         if (access.mode !== 'paid') {
             failures.push(`${label}: E${n} should be PAID, got ${access.mode}`);
+        } else if (access.price !== PLATFORM_SUBSCRIPTION_MONTHLY_USD) {
+            failures.push(
+                `${label}: E${n} paid price expected $${PLATFORM_SUBSCRIPTION_MONTHLY_USD}, got ${access.price || '—'}`
+            );
         }
     }
     return failures;
@@ -120,20 +130,25 @@ function verifyVicG(series, label) {
 /** @param {string} label @param {string} apiBase */
 async function verifyPayments(label, apiBase) {
     const failures = [];
+    const warnings = [];
     try {
         const res = await fetch(`${apiBase}/api/payments/status`, { signal: AbortSignal.timeout(15000) });
         const body = await res.json().catch(() => ({}));
         if (res.status === 404 && String(body?.error || '').includes('Payments API disabled')) {
-            failures.push(`${label}: Payments API disabled (${body?.hint || 'off'})`);
-            return failures;
+            if (label === 'LOCAL') {
+                warnings.push(`${label}: Payments API disabled (${body?.hint || 'off'}) — enable REELFORGE_PAYMENTS_API for Stripe paywall tests`);
+            } else {
+                failures.push(`${label}: Payments API disabled (${body?.hint || 'off'})`);
+            }
+            return { failures, warnings };
         }
         // Status requires a signed-in viewer; 401 means the route is live and monetization is on.
         if (res.status === 401 || res.status === 403) {
-            return failures;
+            return { failures, warnings };
         }
         if (!res.ok) {
             failures.push(`${label}: payments status unexpected ${res.status}`);
-            return failures;
+            return { failures, warnings };
         }
         if (!body.enabled) {
             failures.push(`${label}: Payments API disabled (${body.hint || body.error || 'off'})`);
@@ -143,24 +158,40 @@ async function verifyPayments(label, apiBase) {
     } catch (err) {
         failures.push(`${label}: payments status unreachable (${err.message})`);
     }
-    return failures;
+    return { failures, warnings };
 }
 
-/** PDF framework: subscription tiers $7.99/mo and $69.99/yr (documented; Stripe price IDs server-side). */
+/** PDF framework: subscription tiers $7.99/mo and $69.99/yr (Stripe price IDs server-side). */
 function verifyPricingFrameworkDoc() {
     const monthly = resolveSeriesEpisodeAccessPricing({
         episodeNumber: 3,
         accessMode: 'SUBSCRIPTION',
-        freeEpisodeCount: 2
+        freeEpisodeCount: FREE_EPISODE_COUNT
     });
     const free = resolveSeriesEpisodeAccessPricing({
         episodeNumber: 1,
         accessMode: 'SUBSCRIPTION',
-        freeEpisodeCount: 2
+        freeEpisodeCount: FREE_EPISODE_COUNT
     });
+    const vicE3ReelId = '3894107e-ae44-43c5-af72-b3f5d5e0ad90';
+    const vicE3 = lookupVicGEpisodeBinding(vicE3ReelId);
+    const vicAccess = vicE3
+        ? resolveEpisodeAccessPricing({ mediaAssetId: vicE3ReelId, reelId: vicE3ReelId })
+        : null;
     const failures = [];
     if (free?.mode !== 'free') failures.push('Framework: first 2 episodes in series should resolve free');
     if (monthly?.mode !== 'paid') failures.push('Framework: episode 3+ should resolve paid/subscription');
+    if (monthly?.price !== PLATFORM_SUBSCRIPTION_MONTHLY_USD) {
+        failures.push(
+            `Framework: paid episode default price expected ${PLATFORM_SUBSCRIPTION_MONTHLY_USD}, got ${monthly?.price || '—'}`
+        );
+    }
+    if (PLATFORM_SUBSCRIPTION_ANNUAL_USD !== '69.99') {
+        failures.push('Framework: annual tier must remain 69.99');
+    }
+    if (!vicAccess || vicAccess.mode !== 'paid' || vicAccess.price !== PLATFORM_SUBSCRIPTION_MONTHLY_USD) {
+        failures.push('Framework: Vic G E3 vault binding should resolve paid at 7.99');
+    }
     return failures;
 }
 
@@ -192,6 +223,7 @@ async function verifyBrowsePoster(apiBase, label) {
 
 async function main() {
     const allFailures = [];
+    const allWarnings = [];
     allFailures.push(...verifyPricingFrameworkDoc());
 
     for (const target of TARGETS) {
@@ -204,11 +236,18 @@ async function main() {
             }
             const series = await fetchJson(`${target.apiBase}/api/series/${encodeURIComponent(SERIES_ID)}`);
             allFailures.push(...verifyVicG(series, target.label));
-            allFailures.push(...(await verifyPayments(target.label, target.apiBase)));
+            const payments = await verifyPayments(target.label, target.apiBase);
+            allFailures.push(...(payments.failures || []));
+            allWarnings.push(...(payments.warnings || []));
             allFailures.push(...(await verifyBrowsePoster(target.apiBase, target.label)));
         } catch (err) {
             allFailures.push(`${target.label}: ${err.message}`);
         }
+    }
+
+    if (allWarnings.length) {
+        console.warn('[validate-pricing] WARNINGS:');
+        for (const w of allWarnings) console.warn(`  - ${w}`);
     }
 
     if (allFailures.length) {

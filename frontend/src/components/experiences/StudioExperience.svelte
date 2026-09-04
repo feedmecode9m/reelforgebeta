@@ -1,7 +1,8 @@
 <script>
   import { get } from 'svelte/store';
   import { onDestroy, tick } from 'svelte';
-  import { authenticateAdmin, getAdminAuthHeaders, getAdminToken, setAdminSessionToken } from '../../lib/api.js';
+  import { getAdminAuthHeaders, getAdminToken } from '../../lib/api.js';
+  import { unlockStudioWithPassword } from '../../lib/auth/studioAdminAuth.js';
   import {
     fetchStudioStatus,
     fetchStudioProjects,
@@ -844,50 +845,20 @@
       adminLoginError = '❌ Password cannot be empty';
       return;
     }
-    try {
-      const result = await authenticateAdmin(password);
-      if (result.success) {
-        const token = String(result.token || '').trim();
-        if (!token || token === 'backend_token') {
-          adminLoginError = '❌ Login succeeded but no session token was returned. Check backend /admin/auth.';
-          return;
-        }
-        setAdminSessionToken(token);
-        adminMode.set(true);
-        controlCenterOpen.set(true);
-        adminLoginError = '';
-        adminPasswordInput = '';
-        uploadStatus.set('✅ Admin access granted');
-        setTimeout(() => uploadStatus.set('Standby'), 2000);
-        await loadWatchContinue();
-        return;
-      }
-      adminLoginError = '❌ Authentication failed';
-    } catch (error) {
-      console.warn('⚠️ Backend unreachable, attempting secure local dev fallback:', error.message);
-      const host = typeof window !== 'undefined' ? String(window.location.hostname || '') : '';
-      const isLocalHost =
-        !host || host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
-      // Production Netlify must never store dev_local_session — PUT /api/* rejects it.
-      if (!isLocalHost) {
-        adminLoginError =
-          '❌ Cannot reach backend auth. Fix API connectivity, then log in again (offline session is disabled on production hosts).';
-        return;
-      }
-      const localPasswords = ['Gaff1505!', 'SMART_PRODUCTION', CONFIG.ADMIN_PASSWORD || 'admin123'];
-      if (localPasswords.includes(password)) {
-        setAdminSessionToken('dev_local_session');
-        adminMode.set(true);
-        controlCenterOpen.set(true);
-        adminLoginError = '';
-        adminPasswordInput = '';
-        uploadStatus.set('✅ Admin access granted (Local Dev Mode)');
-        setTimeout(() => uploadStatus.set('Standby'), 2000);
-        await loadWatchContinue();
-      } else {
-        adminLoginError = '❌ Authentication failed: Backend unreachable & password incorrect';
-      }
+    const result = await unlockStudioWithPassword(password);
+    if (!result.ok) {
+      adminLoginError = `❌ ${result.error || 'Authentication failed'}`;
+      return;
     }
+    adminMode.set(true);
+    controlCenterOpen.set(true);
+    adminLoginError = '';
+    adminPasswordInput = '';
+    uploadStatus.set(
+      result.mode === 'local_dev' ? '✅ Admin access granted (Local Dev Mode)' : '✅ Admin access granted'
+    );
+    setTimeout(() => uploadStatus.set('Standby'), 2000);
+    await loadWatchContinue();
   }
 
   export async function loadWatchContinue() {
@@ -2531,12 +2502,12 @@
           </div>
           <div class="login-form">
             <label class="input-label-wrapper">
-              ADMIN PASSWORD
+              STUDIO PASSWORD
               <input
                 bind:this={adminInputElement}
                 type="password"
                 bind:value={adminPasswordInput}
-                placeholder="Enter admin password"
+                placeholder="Studio password"
                 on:keydown={(event) => {
                   if (event.key === 'Enter') attemptAdminLogin();
                 }}
@@ -2547,7 +2518,7 @@
             {/if}
             <button class="submit-btn" on:click={attemptAdminLogin}>🔓 UNLOCK STUDIO</button>
             <p class="login-hint">
-              Use <code>Gaff1505!</code> or <code>SMART_PRODUCTION</code> (case‑sensitive)
+              Viewer sign-in is separate. Use <button type="button" class="login-hint__link" on:click={() => typeof window !== 'undefined' && (window.location.href = '/studio')}>Studio access</button> for the full unlock screen.
             </p>
           </div>
         </div>

@@ -13,6 +13,7 @@ import {
   applyCanonicalDeleteClientEffects,
   isGhostVideoVaultEntry
 } from '../deletionSync.js';
+import { isMalformedDerivativeVaultPick, purgeVaultPickLocally } from '../vault/vaultGhostPickCleanup.js';
 import { isStorageFull, wouldExceedQuota } from '../storage.js';
 import { isHeroAsset, filterNonHeroAssets } from '../hero/heroDomainGuard.js';
 import { clearHeroReel, resolveActiveHeroVideoReel } from '../hero/heroReelIdentity.js';
@@ -1119,6 +1120,7 @@ export function createAiCleanupAgent(deps) {
   if (!video) { uploadStatus.set('❌ Video not found'); resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2000); return; }
   const ghost =
     isGhostVideoVaultEntry(video) ||
+    isMalformedDerivativeVaultPick(video) ||
     String(video?.uploadState || '') === 'interrupted' ||
     String(video?.uploadState || '') === 'failed' ||
     String(video?.uploadState || '') === 'pending_accept' ||
@@ -1206,6 +1208,18 @@ export function createAiCleanupAgent(deps) {
     { purge: runClientMediaPurge },
     { reelId: videoId, filename: diskName, videoUrl: video?.url }
   );
+
+  purgeVaultPickLocally([videoId], {
+    videoVaultKey: CONFIG.VIDEO_VAULT_KEY,
+    feedStorageKey: CONFIG.FEED_STORAGE_KEY,
+    mediaUrl: String(video?.url || video?.video_url || '').trim(),
+    persistVideoVault: (next) => {
+      personalVideos.set(next);
+      storageSet(CONFIG.VIDEO_VAULT_KEY, next);
+    },
+    persistFeed: (nextFeed) => storageSet(CONFIG.FEED_STORAGE_KEY, nextFeed),
+    source: 'aiCleanupAgent.deleteVaultVideo'
+  });
 
   const hero = resolveActiveHeroVideoReel();
   if (hero?.id && String(hero.id) === String(videoId)) {

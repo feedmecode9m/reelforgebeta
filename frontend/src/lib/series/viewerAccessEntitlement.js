@@ -1,6 +1,7 @@
 import { currentUser, isAdminRole, isAuthenticatedSync } from '../auth/index.js';
 import { fetchViewerProfile } from '../api/viewerAccount.js';
 import { createCheckoutSession } from '../api/payments.js';
+import { readViewerPreviewMode } from '../auth/studioEntryPreferences.js';
 import { get } from 'svelte/store';
 
 const TRUTHY = new Set([
@@ -262,6 +263,8 @@ function extractPaidFlag(payload) {
  * @returns {Promise<boolean>}
  */
 export async function resolveViewerPaidAccessEntitlement() {
+    if (readViewerPreviewMode()) return false;
+
     let authenticatedViewer = false;
     try {
         const viewer = /** @type {{ role?: string } | null} */ (get(currentUser));
@@ -306,8 +309,54 @@ export async function resolveViewerSubscriptionUrl() {
 }
 
 /**
+ * After Stripe redirect (?checkout=success), refresh profile-backed entitlement.
+ * @returns {Promise<boolean>}
+ */
+export async function refreshViewerEntitlementFromCheckoutReturn() {
+    if (typeof window === 'undefined') return false;
+    try {
+        const params = new URLSearchParams(window.location.search || '');
+        const isSuccess =
+            params.get('checkout') === 'success' ||
+            params.get('payment') === 'success' ||
+            /^(complete|completed|success|succeeded|paid)$/i.test(
+                String(params.get('checkout_status') || params.get('checkoutStatus') || '').trim()
+            );
+        if (!isSuccess) return false;
+
+        syncStripeEntitlementFromUrl();
+        try {
+            await fetchViewerProfile();
+        } catch {
+            /* profile refresh is best-effort */
+        }
+        dispatchViewerEntitlementUpdated({ source: 'checkout_return', entitled: true });
+
+        params.delete('checkout');
+        params.delete('payment');
+        params.delete('checkout_status');
+        params.delete('checkoutStatus');
+        params.delete('session_id');
+        params.delete('sessionId');
+        const nextQuery = params.toString();
+        const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ''}${window.location.hash || ''}`;
+        window.history.replaceState({}, '', nextUrl);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+/** @returns {() => void} */
+export function initViewerCheckoutReturnHandler() {
+    if (typeof window === 'undefined') return () => {};
+    void refreshViewerEntitlementFromCheckoutReturn();
+    return () => {};
+}
+
+/**
  * Open Stripe/subscription checkout for locked episodes.
- * @param {{ source?: string; episodeId?: string; episodeNumber?: number; mode?: string; price?: string }} [context]
+ * @param {{ source?: string; episodeId?: string; reelId?: string; episodeNumber?: number; mode?: string; price?: string; subscriptionTier?: 'monthly' | 'annual'; requestedPriceId?: string }} [context]
  */
 export async function openViewerSubscriptionCheckout(context = {}) {
     if (typeof window === 'undefined') return false;
@@ -329,7 +378,9 @@ export async function openViewerSubscriptionCheckout(context = {}) {
         const checkout = await createCheckoutSession({
             episodeId,
             reelId: reelId || undefined,
-            accessMode: accessMode || undefined
+            accessMode: accessMode || undefined,
+            subscriptionTier: context.subscriptionTier || undefined,
+            requestedPriceId: context.requestedPriceId || undefined
         });
         if (checkout.checkoutUrl) {
             window.location.assign(checkout.checkoutUrl);

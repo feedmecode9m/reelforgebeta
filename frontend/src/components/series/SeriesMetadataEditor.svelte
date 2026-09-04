@@ -11,8 +11,11 @@
         buildEpisodeAccessPricing,
         normalizeAccessMode,
         normalizeEpisodePrice,
-        dispatchVaultAccessUpdated
+        dispatchVaultAccessUpdated,
+        resolveAccessPriceDraft,
+        resolveAccessPriceOnModeChange
     } from '../../lib/series/episodeAccessPricing.js';
+    import { PLATFORM_SUBSCRIPTION_MONTHLY_USD } from '../../lib/series/platformAccessPricingFramework.js';
 
     const dispatch = createEventDispatcher();
 
@@ -58,15 +61,23 @@
         tagsInput = (draft.tags || []).join(', ');
         const access = buildEpisodeAccessPricing(draft.accessMode, draft.price);
         accessMode = access.mode;
-        price = access.price;
+        price = resolveAccessPriceDraft(access.mode, access.price);
         saveMessage = getReelSeriesMetadata(id) ? 'Loaded saved metadata' : 'Using catalog defaults';
+    }
+
+    function handleAccessModeChange(event) {
+        const nextMode = /** @type {'free' | 'paid'} */ (
+            /** @type {HTMLSelectElement} */ (event.currentTarget).value
+        );
+        accessMode = nextMode;
+        price = resolveAccessPriceOnModeChange(nextMode, price);
     }
 
     function handleSave() {
         if (!reelId) return;
         const access = buildEpisodeAccessPricing(accessMode, price);
         if (access.mode === 'paid' && !access.price) {
-            saveMessage = 'Paid episodes need a price (e.g. 4.99)';
+            saveMessage = `Paid episodes need a price (e.g. ${PLATFORM_SUBSCRIPTION_MONTHLY_USD})`;
             return;
         }
         const saved = saveReelSeriesMetadata(
@@ -172,7 +183,7 @@
 
             <label class="series-metadata-editor__field">
                 <span>Viewer access</span>
-                <select bind:value={accessMode} data-episode-access-mode>
+                <select bind:value={accessMode} data-episode-access-mode on:change={handleAccessModeChange}>
                     <option value="free">Free</option>
                     <option value="paid">Paid</option>
                 </select>
@@ -184,7 +195,7 @@
                     type="text"
                     inputmode="decimal"
                     bind:value={price}
-                    placeholder="4.99"
+                    placeholder={PLATFORM_SUBSCRIPTION_MONTHLY_USD}
                     disabled={accessMode !== 'paid'}
                     data-episode-price
                 />

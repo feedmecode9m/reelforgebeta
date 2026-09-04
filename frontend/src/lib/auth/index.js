@@ -44,3 +44,13 @@ export {
     setStoredReturnPath,
     takeStoredReturnPath
 } from './returnPath.js';
+
+export {
+    readStudioAutoEnterPreference,
+    writeStudioAutoEnterPreference,
+    readViewerPreviewMode,
+    writeViewerPreviewMode,
+    showStudioLinkOnViewerLogin
+} from './studioEntryPreferences.js';
+
+export { unlockStudioWithPassword } from './studioAdminAuth.js';

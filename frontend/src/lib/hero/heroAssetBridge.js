@@ -104,8 +104,7 @@ export function normalizeHeroAssetRecord(item, options = {}) {
         normalizeAssetId(String(item?.id || '')) ||
         normalizeAssetId(String(item?.fileName || item?.file_name || '')) ||
         normalizeAssetId(String(mediaUrl));
-
-    if (!assetId) return null;
+    if (/\.playback/i.test(assetId)) return null;
     const assetType = inferAssetType(mediaUrl, String(item?.type || ''));
     console.info('[HERO_CLASSIFY]', {
         stage: 'heroAssetBridge.normalizeHeroAssetRecord',

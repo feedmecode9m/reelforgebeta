@@ -28,7 +28,13 @@ async function paymentsFetch(path, options = {}) {
 export async function createCheckoutSession(payload = {}) {
     const data = await paymentsFetch('/api/payments/checkout', {
         method: 'POST',
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+            episodeId: payload.episodeId,
+            reelId: payload.reelId,
+            accessMode: payload.accessMode,
+            requestedPriceId: payload.requestedPriceId,
+            subscriptionTier: payload.subscriptionTier
+        })
     });
     const checkoutUrl = String(data?.checkout?.checkoutUrl || data?.checkout?.url || '').trim();
     if (!checkoutUrl) {
