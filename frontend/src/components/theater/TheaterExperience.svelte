@@ -1960,21 +1960,6 @@
             {#if !$theaterChromeFlags.hideBottomClose && !isMobileTheater}
             <button class="theater-close-btn-bottom" on:click={(e) => { e.stopPropagation(); theaterManager.close(); }}>✕ CLOSE THEATER (ESC)</button>
             {/if}
-            {#if isMobileTheater && theaterVideoSrc && !$theaterPlaybackError}
-                <button
-                    type="button"
-                    class="theater-sound-dock"
-                    class:theater-sound-dock--muted={theaterMuted}
-                    aria-label={theaterMuted ? 'Turn sound on' : 'Mute sound'}
-                    aria-pressed={!theaterMuted}
-                    data-theater-sound-dock
-                    on:pointerup|stopPropagation={handleMobileSoundDockPointerUp}
-                >
-                    <span class="theater-sound-dock__icon" aria-hidden="true"
-                        >{theaterMuted ? '🔇' : '🔊'}</span
-                    >
-                </button>
-            {/if}
             {#if episodeNavNotice}
                 <div class="theater-episode-nav-notice" role="status">
                     <p>{episodeNavNotice}</p>
@@ -1997,6 +1982,21 @@
                 </div>
             {/if}
         </div>
+        {#if isMobileTheater && theaterVideoSrc && !$theaterPlaybackError}
+            <button
+                type="button"
+                class="theater-sound-dock"
+                class:theater-sound-dock--muted={theaterMuted}
+                aria-label={theaterMuted ? 'Turn sound on' : 'Mute sound'}
+                aria-pressed={!theaterMuted}
+                data-theater-sound-dock
+                on:pointerup|stopPropagation={handleMobileSoundDockPointerUp}
+            >
+                <span class="theater-sound-dock__icon" aria-hidden="true"
+                    >{theaterMuted ? '🔇' : '🔊'}</span
+                >
+            </button>
+        {/if}
         {#if hasSeriesDrawer}
             <SeriesDrawer
                 bind:open={seriesDrawerOpen}
@@ -2503,6 +2503,42 @@
         font-size: 11px;
     }
 
+    /* Portrait + landscape mobile — must not live inside landscape-only @media. */
+    .theater-overlay--mobile .theater-sound-dock {
+        position: fixed;
+        right: max(0.75rem, env(safe-area-inset-right, 0px));
+        bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+        z-index: 2200;
+        width: 2.85rem;
+        height: 2.85rem;
+        min-width: 2.85rem;
+        min-height: 2.85rem;
+        padding: 0;
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        border-radius: 999px;
+        background: rgba(8, 10, 16, 0.88);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+        pointer-events: auto;
+    }
+
+    .theater-overlay--mobile .theater-sound-dock--muted {
+        border-color: rgba(250, 204, 21, 0.65);
+        box-shadow:
+            0 0 0 1px rgba(250, 204, 21, 0.35),
+            0 8px 24px rgba(0, 0, 0, 0.55);
+    }
+
+    .theater-overlay--mobile .theater-sound-dock__icon {
+        font-size: 1.2rem;
+        line-height: 1;
+    }
+
     /* Mobile-only presentation — desktop selectors above are unchanged. Playback path untouched. */
     @media (max-width: 640px), (hover: none) and (pointer: coarse) {
         .theater-container.theater-mobile {
@@ -2697,37 +2733,6 @@
                 opacity: 0;
                 transform: scale(1);
             }
-        }
-
-        .theater-sound-dock {
-            position: fixed;
-            right: max(0.65rem, env(safe-area-inset-right, 0px));
-            bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
-            z-index: 2105;
-            width: 2.35rem;
-            height: 2.35rem;
-            padding: 0;
-            border: 1px solid rgba(255, 255, 255, 0.22);
-            border-radius: 999px;
-            background: rgba(8, 10, 16, 0.78);
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-            pointer-events: auto;
-        }
-
-        .theater-sound-dock--muted {
-            border-color: rgba(250, 204, 21, 0.55);
-            box-shadow: 0 0 0 1px rgba(250, 204, 21, 0.25), 0 6px 18px rgba(0, 0, 0, 0.45);
-        }
-
-        .theater-sound-dock__icon {
-            font-size: 1.05rem;
-            line-height: 1;
         }
     }
 </style>
