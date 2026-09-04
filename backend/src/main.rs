@@ -502,6 +502,10 @@ async fn main() -> std::io::Result<()> {
                         web::post().to(api::migrate::migrate_media),
                     )
                     .route(
+                        "/admin/deploy-static-thumb",
+                        web::post().to(handlers::deploy_static_thumb),
+                    )
+                    .route(
                         "/reels/{id}/category",
                         web::patch().to(handlers::update_reel_category),
                     )

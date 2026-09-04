@@ -658,3 +658,40 @@ pub async fn delete_storage_file(
         }))
     }
 }
+
+/// POST /api/admin/deploy-static-thumb — write a named image into public/thumbs (admin only).
+pub async fn deploy_static_thumb(
+    mut payload: Multipart,
+    thumbs_path: web::Data<ThumbsDir>,
+) -> impl Responder {
+    let (_field, filename, bytes) =
+        match crate::media_api::read_multipart_upload(&mut payload, &["file"]).await {
+            Ok(v) => v,
+            Err(resp) => return resp,
+        };
+
+    if let Err(reason) = crate::media_api::validate_bytes_for_image(&bytes, &filename) {
+        return HttpResponse::BadRequest().json(serde_json::json!({ "error": reason }));
+    }
+
+    if let Err(e) = std::fs::create_dir_all(&thumbs_path.0) {
+        return HttpResponse::InternalServerError().json(serde_json::json!({
+            "error": format!("Failed to prepare thumbs directory: {e}")
+        }));
+    }
+
+    let dest = thumbs_path.0.join(&filename);
+    if let Err(e) = std::fs::write(&dest, &bytes) {
+        return HttpResponse::InternalServerError().json(serde_json::json!({
+            "error": format!("Write failed: {e}")
+        }));
+    }
+
+    let url = format!("/thumbs/{}", filename);
+    HttpResponse::Ok().json(serde_json::json!({
+        "ok": true,
+        "filename": filename,
+        "url": url,
+        "bytes": bytes.len()
+    }))
+}

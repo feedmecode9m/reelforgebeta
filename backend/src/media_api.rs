@@ -148,7 +148,7 @@ fn validate_bytes(
     })
 }
 
-async fn read_multipart_upload(
+pub async fn read_multipart_upload(
     payload: &mut Multipart,
     allowed_fields: &[&str],
 ) -> Result<(String, String, Vec<u8>), HttpResponse> {

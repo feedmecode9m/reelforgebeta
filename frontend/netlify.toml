@@ -32,7 +32,7 @@
   from = "/thumbs/*"
   to = "https://reelforge-deploy-production.up.railway.app/thumbs/:splat"
   status = 200
-  force = true
+  force = false
 
 [[redirects]]
   from = "/health"

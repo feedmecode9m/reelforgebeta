@@ -65,6 +65,10 @@ function resolveThumbsDir() {
     return path.join(mediaRoot, 'thumbs');
 }
 
+function resolveFrontendPublicThumbsDir() {
+    return path.join(root, 'public', 'thumbs');
+}
+
 function copyPosterToThumbs() {
     const source =
         POSTER_SOURCE ||
@@ -76,14 +80,50 @@ function copyPosterToThumbs() {
     }
     const destDir = resolveThumbsDir();
     const dest = path.join(destDir, POSTER_BASENAME);
+    const frontendDestDir = resolveFrontendPublicThumbsDir();
+    const frontendDest = path.join(frontendDestDir, POSTER_BASENAME);
     if (DRY_RUN) {
         log(`DRY_RUN — would copy ${source} → ${dest}`);
+        log(`DRY_RUN — would copy ${source} → ${frontendDest}`);
         return dest;
     }
     fs.mkdirSync(destDir, { recursive: true });
     fs.copyFileSync(source, dest);
+    fs.mkdirSync(frontendDestDir, { recursive: true });
+    fs.copyFileSync(source, frontendDest);
     log(`Copied poster → ${dest}`);
+    log(`Copied poster → ${frontendDest}`);
     return dest;
+}
+
+/** @param {string} token @param {string} sourcePath */
+async function uploadPosterToRemote(token, sourcePath) {
+    const isLocal = /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/i.test(API_BASE);
+    if (isLocal) return;
+    const bytes = fs.readFileSync(sourcePath);
+    const form = new FormData();
+    form.append('file', new Blob([bytes], { type: 'image/png' }), POSTER_BASENAME);
+    const res = await fetch(`${API_BASE}/api/admin/deploy-static-thumb`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: form
+    });
+    const text = await res.text();
+    /** @type {unknown} */
+    let body;
+    try {
+        body = text ? JSON.parse(text) : null;
+    } catch {
+        body = text;
+    }
+    if (!res.ok) {
+        const detail =
+            body && typeof body === 'object' && body !== null && 'error' in body
+                ? String(/** @type {{ error?: string }} */ (body).error)
+                : text.slice(0, 200);
+        throw new Error(`POST ${API_BASE}/api/admin/deploy-static-thumb → ${res.status}: ${detail}`);
+    }
+    log(`Uploaded poster to ${API_BASE}${/** @type {{ url?: string }} */ (body)?.url || POSTER_URL}`);
 }
 
 async function adminToken() {
@@ -157,6 +197,10 @@ async function main() {
     }
     copyPosterToThumbs();
     const token = await adminToken();
+    const source =
+        POSTER_SOURCE ||
+        path.join(repoRoot, 'public', 'thumbs', POSTER_BASENAME);
+    await uploadPosterToRemote(token, source);
     await updateSeriesPoster(token);
     await verifyBrowse();
     log('Vic G face poster seed complete');
