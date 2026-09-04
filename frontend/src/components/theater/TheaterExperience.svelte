@@ -539,6 +539,10 @@
         typeof window !== 'undefined' ? detectMobileLandscapePresentation() : false;
     /** Autoplay requires muted; after gesture, user mute state is tracked (never force-mute). */
     let theaterMuted = true;
+    /** True after explicit user unmute — blocks iOS spurious volumechange re-mute. */
+    let theaterAudioUnlockedByUser = false;
+    /** First unmute after a new stream rewinds slightly so muted autoplay does not skip dialogue. */
+    let theaterAwaitingFirstUnmute = true;
     let theaterVolume = 1;
     let controlsVisible = true;
     let volumeVisible = true;
@@ -560,11 +564,15 @@
     let landscapeLastTap = null;
     /** @type {ReturnType<typeof setTimeout> | null} */
     let landscapeSingleTapTimer = null;
+    /** @type {ReturnType<typeof setTimeout> | null} */
+    let landscapeLongPressUnmuteTimer = null;
     const LANDSCAPE_TAP_SLOP_PX = 14;
     const LANDSCAPE_SWIPE_THRESHOLD_PX = 36;
     const LANDSCAPE_SEEK_SECONDS = 10;
     const LANDSCAPE_GESTURE_HINT_MS = 550;
     const LANDSCAPE_DOUBLE_TAP_MS = 280;
+    const LANDSCAPE_LONG_PRESS_MS = 450;
+    const THEATER_FIRST_UNMUTE_REWIND_SEC = 2.5;
 
     /** @param {string} reason */
     function reportTheaterControls(reason) {
@@ -711,13 +719,31 @@
         showLandscapeGestureHint(willPlay ? 'play' : 'pause');
     }
 
+    function clearLandscapeLongPressUnmuteTimer() {
+        if (landscapeLongPressUnmuteTimer != null) {
+            clearTimeout(landscapeLongPressUnmuteTimer);
+            landscapeLongPressUnmuteTimer = null;
+        }
+    }
+
     /** @param {PointerEvent} e */
     function handleLandscapeWrapperPointerDown(e) {
         if (!isMobileTheater || e.pointerType === 'mouse') return;
         const target = /** @type {HTMLElement | null} */ (e.target);
-        if (target?.closest?.('button, input, a, [role="toolbar"]')) return;
+        if (target?.closest?.('button, input, a, [role="toolbar"], [data-theater-sound-dock]')) return;
         landscapePointerDownAt = Date.now();
         landscapePointerStart = { x: e.clientX, y: e.clientY, id: e.pointerId };
+        clearLandscapeLongPressUnmuteTimer();
+        // Unmute while finger is still down — iOS keeps audio only when play() runs inside the gesture.
+        landscapeLongPressUnmuteTimer = setTimeout(() => {
+            landscapeLongPressUnmuteTimer = null;
+            if (!landscapePointerStart || landscapePointerStart.id !== e.pointerId) return;
+            const el = resolveTheaterVideoElement();
+            if (el && !el.paused && !el.ended && theaterMuted) {
+                unlockTheaterAudioForUserGesture(el);
+                showLandscapeGestureHint('unmute');
+            }
+        }, LANDSCAPE_LONG_PRESS_MS);
     }
 
     /**
@@ -736,13 +762,16 @@
         const dx = e.clientX - landscapePointerStart.x;
         const dy = e.clientY - landscapePointerStart.y;
         landscapePointerStart = null;
+        clearLandscapeLongPressUnmuteTimer();
         const absDx = Math.abs(dx);
         const absDy = Math.abs(dy);
         const el = resolveTheaterVideoElement();
-        const isLongPress = heldMs > 450;
+        const isLongPress = heldMs > LANDSCAPE_LONG_PRESS_MS;
 
-        // iOS long-press: unmute in place only — avoid load()/play() restart from the beginning.
+        // Long-press unmute usually fires from the hold timer; re-assert on release if needed.
         if (isLongPress) {
+            e.preventDefault();
+            e.stopPropagation();
             if (opts.allowLongPressUnmute && el && !el.paused && !el.ended && theaterMuted) {
                 unlockTheaterAudioForUserGesture(el);
                 showLandscapeGestureHint('unmute');
@@ -827,6 +856,8 @@
         }
         el.muted = false;
         theaterMuted = false;
+        theaterAudioUnlockedByUser = true;
+        theaterAwaitingFirstUnmute = false;
         if (el.volume === 0) {
             el.volume = theaterVolume > 0 ? theaterVolume : 1;
         }
@@ -854,6 +885,7 @@
     function handleLandscapeWrapperPointerCancel() {
         landscapePointerStart = null;
         landscapeLastTap = null;
+        clearLandscapeLongPressUnmuteTimer();
         clearLandscapeSingleTapTimer();
     }
 
@@ -873,6 +905,9 @@
     }
 
     function applyTheaterMuteState(nextMuted) {
+        if (nextMuted) {
+            theaterAudioUnlockedByUser = false;
+        }
         theaterMuted = Boolean(nextMuted);
         const el = resolveTheaterVideoElement();
         if (el) {
@@ -919,12 +954,33 @@
     }
 
     /** User tap on the pure-gesture layer unlocks audio (no native volume chrome on mobile). */
-    function unlockTheaterAudioForUserGesture(el = null) {
-        if (!isMobileTheater || !theaterMuted) return;
+    function unlockTheaterAudioForUserGesture(el = null, opts = {}) {
+        if (!isMobileTheater) return;
         const video = el || resolveTheaterVideoElement();
         if (!video) return;
+        const rewindOnFirst = opts.rewindOnFirst !== false;
+        if (
+            theaterMuted &&
+            rewindOnFirst &&
+            theaterAwaitingFirstUnmute &&
+            video.currentTime > 0.75
+        ) {
+            try {
+                video.currentTime = Math.max(0, video.currentTime - THEATER_FIRST_UNMUTE_REWIND_SEC);
+            } catch {
+                /* ignore seek failures */
+            }
+        }
+        theaterAwaitingFirstUnmute = false;
+        theaterAudioUnlockedByUser = true;
         theaterMuted = false;
         video.muted = false;
+        video.defaultMuted = false;
+        try {
+            video.removeAttribute('muted');
+        } catch {
+            /* ignore */
+        }
         if (video.volume === 0) {
             video.volume = theaterVolume > 0 ? theaterVolume : 1;
         }
@@ -932,13 +988,23 @@
         if (!video.paused && !video.ended) {
             try {
                 const pending = video.play();
-                if (pending && typeof pending.catch === 'function') {
-                    pending.catch(() => {});
+                if (pending && typeof pending.then === 'function') {
+                    pending
+                        .then(() => {
+                            if (theaterAudioUnlockedByUser && video.isConnected && video.muted) {
+                                video.muted = false;
+                            }
+                        })
+                        .catch(() => {});
                 }
             } catch {
                 /* ignore */
             }
         }
+        queueMicrotask(() => {
+            if (!theaterAudioUnlockedByUser || !video.isConnected) return;
+            if (video.muted) video.muted = false;
+        });
     }
 
     /** Delay pause-only tap so double-tap seek/mute can cancel (play uses sync path). */
@@ -1160,6 +1226,11 @@
     function handleTheaterVideoVolumeChange(e) {
         const el = /** @type {HTMLVideoElement} */ (e.currentTarget);
         if (!el) return;
+        if (theaterAudioUnlockedByUser && el.muted) {
+            el.muted = false;
+            theaterMuted = false;
+            return;
+        }
         theaterMuted = Boolean(el.muted || el.volume === 0);
         if (!el.muted && el.volume > 0) theaterVolume = el.volume;
     }
@@ -1240,6 +1311,7 @@
                 }
             }
             if (landscapeGestureHintTimer != null) clearTimeout(landscapeGestureHintTimer);
+            clearLandscapeLongPressUnmuteTimer();
             clearLandscapeSingleTapTimer();
             if (typeof window !== 'undefined') {
                 window.removeEventListener('reelforge:hero-watch-now', onHeroWatchNowCta);
@@ -1250,6 +1322,7 @@
     });
     onDestroy(() => {
         if (mobileControlsHideTimer != null) clearTimeout(mobileControlsHideTimer);
+        clearLandscapeLongPressUnmuteTimer();
         clearLandscapeSingleTapTimer();
         if (typeof window !== 'undefined') {
             window.removeEventListener('reelforge:hero-watch-now', onHeroWatchNowCta);
@@ -1385,6 +1458,8 @@
         lastTheaterVideoKey = theaterVideoKey;
         // New stream → re-start muted for autoplay policy; mobile chrome waits for play/tap.
         theaterMuted = true;
+        theaterAudioUnlockedByUser = false;
+        theaterAwaitingFirstUnmute = true;
         theaterIsPlaying = false;
         if (isMobileTheater) {
             // Keep Play reachable even when autoplay is blocked.
@@ -1982,7 +2057,7 @@
                 </div>
             {/if}
         </div>
-        {#if isMobileTheater && theaterVideoSrc && !$theaterPlaybackError}
+        {#if isMobileTheater && theaterVideoSrc}
             <button
                 type="button"
                 class="theater-sound-dock"
@@ -2532,6 +2607,21 @@
         box-shadow:
             0 0 0 1px rgba(250, 204, 21, 0.35),
             0 8px 24px rgba(0, 0, 0, 0.55);
+        animation: theater-sound-dock-pulse 1.6s ease-in-out infinite;
+    }
+
+    @keyframes theater-sound-dock-pulse {
+        0%,
+        100% {
+            box-shadow:
+                0 0 0 0 rgba(250, 204, 21, 0.35),
+                0 8px 24px rgba(0, 0, 0, 0.55);
+        }
+        50% {
+            box-shadow:
+                0 0 0 8px rgba(250, 204, 21, 0.12),
+                0 8px 24px rgba(0, 0, 0, 0.55);
+        }
     }
 
     .theater-overlay--mobile .theater-sound-dock__icon {

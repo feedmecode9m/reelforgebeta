@@ -91,14 +91,17 @@ assert(
     'Theater mount does not race a second play() after tick'
 );
 
-// Mobile pure-gesture Theater: wrapper pointer handlers, no bottom dock
+// Mobile pure-gesture Theater: wrapper pointer handlers + visible sound dock
 assert(/toggleTheaterPlayback/.test(theater), 'mobile Theater exposes toggleTheaterPlayback');
 assert(/startTheaterPlayback/.test(theater), 'mobile Theater exposes startTheaterPlayback helper');
 assert(/resolveTheaterVideoElement/.test(theater), 'mobile Theater resolves video via manager or DOM');
-assert(!/theater-mobile-controls/.test(theater), 'mobile Theater does not render bottom playback dock');
+assert(/theater-sound-dock/.test(theater), 'mobile Theater renders fixed sound dock');
+assert(!/theater-mobile-controls/.test(theater), 'mobile Theater does not render legacy bottom playback dock');
 assert(!/theater-mobile-play/.test(theater), 'mobile Theater does not render Play/Pause pill');
 assert(/handleLandscapeWrapperPointerUp/.test(theater), 'mobile Theater uses wrapper pointerup for tap/seek gestures');
 assert(/handleTheaterWrapperPointerUp/.test(theater), 'video wrapper delegates mobile gestures');
+assert(/landscapeLongPressUnmuteTimer/.test(theater), 'long-press unmutes while finger is still down (iOS audio)');
+assert(/theaterAudioUnlockedByUser/.test(theater), 'user unmute sticky guard prevents iOS re-mute');
 assert(/hideMobileTheaterControls/.test(theater), 'mobile header chrome hides while playing');
 assert(
     /\{#if !isMobileTheater\}[\s\S]{0,120}section="theater-chrome"/.test(theater),
