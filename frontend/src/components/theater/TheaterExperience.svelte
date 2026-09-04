@@ -564,15 +564,11 @@
     let landscapeLastTap = null;
     /** @type {ReturnType<typeof setTimeout> | null} */
     let landscapeSingleTapTimer = null;
-    /** @type {ReturnType<typeof setTimeout> | null} */
-    let landscapeLongPressUnmuteTimer = null;
     const LANDSCAPE_TAP_SLOP_PX = 14;
     const LANDSCAPE_SWIPE_THRESHOLD_PX = 36;
     const LANDSCAPE_SEEK_SECONDS = 10;
     const LANDSCAPE_GESTURE_HINT_MS = 550;
     const LANDSCAPE_DOUBLE_TAP_MS = 280;
-    const LANDSCAPE_LONG_PRESS_MS = 450;
-    const THEATER_FIRST_UNMUTE_REWIND_SEC = 2.5;
 
     /** @param {string} reason */
     function reportTheaterControls(reason) {
@@ -719,31 +715,115 @@
         showLandscapeGestureHint(willPlay ? 'play' : 'pause');
     }
 
-    function clearLandscapeLongPressUnmuteTimer() {
-        if (landscapeLongPressUnmuteTimer != null) {
-            clearTimeout(landscapeLongPressUnmuteTimer);
-            landscapeLongPressUnmuteTimer = null;
+    function clearLandscapeSingleTapTimer() {
+        if (landscapeSingleTapTimer != null) {
+            clearTimeout(landscapeSingleTapTimer);
+            landscapeSingleTapTimer = null;
         }
+    }
+
+    /** Block muted autoplay on mobile until the viewer explicitly opts into sound. */
+    function guardMobileTheaterUntilSoundGesture(el) {
+        if (!isMobileTheater || theaterAudioUnlockedByUser || !el) return;
+        theaterMuted = true;
+        el.muted = true;
+        if (!el.paused) {
+            try {
+                el.pause();
+            } catch {
+                /* ignore */
+            }
+        }
+        theaterIsPlaying = false;
+    }
+
+    /**
+     * Mobile-only: one tap plays from the start with sound so picture and audio stay aligned.
+     * @param {HTMLVideoElement | null} [el]
+     */
+    function startMobileTheaterWithSound(el = null) {
+        const video = el || resolveTheaterVideoElement();
+        if (!video || !isMobileTheater) return;
+        if (theaterAwaitingFirstUnmute) {
+            try {
+                video.currentTime = 0;
+            } catch {
+                /* ignore seek failures */
+            }
+        }
+        theaterAwaitingFirstUnmute = false;
+        theaterAudioUnlockedByUser = true;
+        theaterMuted = false;
+        video.muted = false;
+        video.defaultMuted = false;
+        try {
+            video.removeAttribute('muted');
+        } catch {
+            /* ignore */
+        }
+        if (video.volume === 0) {
+            video.volume = theaterVolume > 0 ? theaterVolume : 1;
+        }
+        const needsLoad =
+            video.paused &&
+            !video.currentSrc &&
+            Boolean(video.querySelector('source')) &&
+            video.readyState < HTMLMediaElement.HAVE_METADATA;
+        if (needsLoad) {
+            try {
+                video.load();
+            } catch {
+                /* ignore */
+            }
+        }
+        try {
+            const playResult = video.play();
+            theaterIsPlaying = !video.paused;
+            showLandscapeGestureHint('play');
+            if (playResult && typeof playResult.then === 'function') {
+                playResult
+                    .then(() => {
+                        theaterIsPlaying = !video.paused;
+                        if (theaterAudioUnlockedByUser && video.isConnected && video.muted) {
+                            video.muted = false;
+                        }
+                    })
+                    .catch(() => {
+                        theaterMuted = true;
+                        video.muted = true;
+                        theaterAudioUnlockedByUser = false;
+                        theaterAwaitingFirstUnmute = true;
+                        video.play()?.catch?.(() => {});
+                        showMobileTheaterControls('play_error');
+                    });
+            }
+        } catch {
+            showMobileTheaterControls('play_error');
+        }
+    }
+
+    /** @param {PointerEvent} event */
+    function handleMobileSoundGatePointerUp(event) {
+        if (!isMobileTheater) return;
+        event.preventDefault();
+        event.stopPropagation();
+        startMobileTheaterWithSound();
+        reportTheaterControls('mobile_sound_gate');
     }
 
     /** @param {PointerEvent} e */
     function handleLandscapeWrapperPointerDown(e) {
         if (!isMobileTheater || e.pointerType === 'mouse') return;
         const target = /** @type {HTMLElement | null} */ (e.target);
-        if (target?.closest?.('button, input, a, [role="toolbar"], [data-theater-sound-dock]')) return;
+        if (
+            target?.closest?.(
+                'button, input, a, [role="toolbar"], [data-theater-sound-gate], [data-theater-audio-bar]'
+            )
+        ) {
+            return;
+        }
         landscapePointerDownAt = Date.now();
         landscapePointerStart = { x: e.clientX, y: e.clientY, id: e.pointerId };
-        clearLandscapeLongPressUnmuteTimer();
-        // Unmute while finger is still down — iOS keeps audio only when play() runs inside the gesture.
-        landscapeLongPressUnmuteTimer = setTimeout(() => {
-            landscapeLongPressUnmuteTimer = null;
-            if (!landscapePointerStart || landscapePointerStart.id !== e.pointerId) return;
-            const el = resolveTheaterVideoElement();
-            if (el && !el.paused && !el.ended && theaterMuted) {
-                unlockTheaterAudioForUserGesture(el);
-                showLandscapeGestureHint('unmute');
-            }
-        }, LANDSCAPE_LONG_PRESS_MS);
     }
 
     /**
@@ -758,28 +838,13 @@
             landscapePointerStart = null;
             return;
         }
-        const heldMs = Date.now() - landscapePointerDownAt;
         const dx = e.clientX - landscapePointerStart.x;
         const dy = e.clientY - landscapePointerStart.y;
         landscapePointerStart = null;
-        clearLandscapeLongPressUnmuteTimer();
         const absDx = Math.abs(dx);
         const absDy = Math.abs(dy);
         const el = resolveTheaterVideoElement();
-        const isLongPress = heldMs > LANDSCAPE_LONG_PRESS_MS;
 
-        // Long-press unmute usually fires from the hold timer; re-assert on release if needed.
-        if (isLongPress) {
-            e.preventDefault();
-            e.stopPropagation();
-            if (opts.allowLongPressUnmute && el && !el.paused && !el.ended && theaterMuted) {
-                unlockTheaterAudioForUserGesture(el);
-                showLandscapeGestureHint('unmute');
-            }
-            return;
-        }
-
-        unlockTheaterAudioForUserGesture(el);
         if (absDx >= LANDSCAPE_SWIPE_THRESHOLD_PX && absDx > absDy * 1.2) {
             e.preventDefault();
             e.stopPropagation();
@@ -811,12 +876,10 @@
         }
         landscapeLastTap = { time: now, x: e.clientX, y: e.clientY };
         const el = resolveTheaterVideoElement();
-        // Autoplay-muted: first tap unmutes in place (no pause, no reload).
-        if (el && !el.paused && !el.ended && theaterMuted) {
+        if (el && theaterMuted) {
             clearLandscapeSingleTapTimer();
             landscapeLastTap = null;
-            unlockTheaterAudioForUserGesture(el);
-            showLandscapeGestureHint('unmute');
+            startMobileTheaterWithSound(el);
             return;
         }
         if (el && (el.paused || el.ended)) {
@@ -834,6 +897,10 @@
 
     /** iOS-safe play/unmute — play() must run synchronously inside pointerup (no await before it). */
     function syncStartTheaterPlaybackFromGesture(el) {
+        if (isMobileTheater) {
+            startMobileTheaterWithSound(el);
+            return;
+        }
         unlockTheaterAudioForUserGesture(el);
         if (el.ended) {
             try {
@@ -885,7 +952,6 @@
     function handleLandscapeWrapperPointerCancel() {
         landscapePointerStart = null;
         landscapeLastTap = null;
-        clearLandscapeLongPressUnmuteTimer();
         clearLandscapeSingleTapTimer();
     }
 
@@ -925,25 +991,20 @@
     }
 
     /** Smallest mobile sound dock — must run unmute/play synchronously inside pointerup (iOS). */
-    function handleMobileSoundDockPointerUp(event) {
+    function handleMobileAudioBarPointerUp(event) {
         if (!isMobileTheater) return;
         event.preventDefault();
         event.stopPropagation();
         const el = resolveTheaterVideoElement();
         if (!el) return;
         if (theaterMuted) {
-            if (el.paused || el.ended) {
-                syncStartTheaterPlaybackFromGesture(el);
-            } else {
-                unlockTheaterAudioForUserGesture(el);
-            }
-            showLandscapeGestureHint('unmute');
-            reportTheaterControls('mobile_sound_dock_unmute');
+            startMobileTheaterWithSound(el);
+            reportTheaterControls('mobile_audio_bar_unmute');
             return;
         }
         applyTheaterMuteState(true);
         showLandscapeGestureHint('mute');
-        reportTheaterControls('mobile_sound_dock_mute');
+        reportTheaterControls('mobile_audio_bar_mute');
     }
 
     function clearLandscapeSingleTapTimer() {
@@ -954,23 +1015,10 @@
     }
 
     /** User tap on the pure-gesture layer unlocks audio (no native volume chrome on mobile). */
-    function unlockTheaterAudioForUserGesture(el = null, opts = {}) {
+    function unlockTheaterAudioForUserGesture(el = null) {
         if (!isMobileTheater) return;
         const video = el || resolveTheaterVideoElement();
-        if (!video) return;
-        const rewindOnFirst = opts.rewindOnFirst !== false;
-        if (
-            theaterMuted &&
-            rewindOnFirst &&
-            theaterAwaitingFirstUnmute &&
-            video.currentTime > 0.75
-        ) {
-            try {
-                video.currentTime = Math.max(0, video.currentTime - THEATER_FIRST_UNMUTE_REWIND_SEC);
-            } catch {
-                /* ignore seek failures */
-            }
-        }
+        if (!video || theaterMuted === false) return;
         theaterAwaitingFirstUnmute = false;
         theaterAudioUnlockedByUser = true;
         theaterMuted = false;
@@ -984,7 +1032,6 @@
         if (video.volume === 0) {
             video.volume = theaterVolume > 0 ? theaterVolume : 1;
         }
-        // iOS ignores muted=false on an already-playing stream unless play() runs in the gesture.
         if (!video.paused && !video.ended) {
             try {
                 const pending = video.play();
@@ -1311,7 +1358,6 @@
                 }
             }
             if (landscapeGestureHintTimer != null) clearTimeout(landscapeGestureHintTimer);
-            clearLandscapeLongPressUnmuteTimer();
             clearLandscapeSingleTapTimer();
             if (typeof window !== 'undefined') {
                 window.removeEventListener('reelforge:hero-watch-now', onHeroWatchNowCta);
@@ -1322,7 +1368,6 @@
     });
     onDestroy(() => {
         if (mobileControlsHideTimer != null) clearTimeout(mobileControlsHideTimer);
-        clearLandscapeLongPressUnmuteTimer();
         clearLandscapeSingleTapTimer();
         if (typeof window !== 'undefined') {
             window.removeEventListener('reelforge:hero-watch-now', onHeroWatchNowCta);
@@ -1462,13 +1507,26 @@
         theaterAwaitingFirstUnmute = true;
         theaterIsPlaying = false;
         if (isMobileTheater) {
-            // Keep Play reachable even when autoplay is blocked.
+            // Mobile waits for an explicit play-with-sound tap — no muted autoplay drift.
             controlsVisible = true;
             volumeVisible = true;
             menuVisible = true;
             showMobileTheaterControls('video_source_change');
         }
     }
+
+    $: showMobilePlayWithSoundGate =
+        isMobileTheater &&
+        Boolean(theaterVideoSrc) &&
+        !$theaterPlaybackError &&
+        theaterAwaitingFirstUnmute &&
+        theaterMuted;
+
+    $: showMobileAudioBar =
+        isMobileTheater &&
+        Boolean(theaterVideoSrc) &&
+        !$theaterPlaybackError &&
+        theaterAudioUnlockedByUser;
 
     /** @param {CustomEvent<{ episodeId: string }>} event */
     function handleSeriesEpisodeSelect(event) {
@@ -1832,7 +1890,7 @@
                             mimeType={theaterVideoMime}
                             useSourceElement={true}
                             preload="metadata"
-                            autoplay
+                            autoplay={!isMobileTheater}
                             muted={theaterMuted}
                             controls={!isMobileTheater}
                             playsinline
@@ -1844,6 +1902,10 @@
                             }}
                             on:volumechange={handleTheaterVideoVolumeChange}
                             on:play={(e) => {
+                                if (isMobileTheater && !theaterAudioUnlockedByUser) {
+                                    guardMobileTheaterUntilSoundGesture(e.currentTarget);
+                                    return;
+                                }
                                 theaterIsPlaying = true;
                                 logTheaterMedia({
                                     phase: 'play',
@@ -1877,7 +1939,11 @@
                             on:loadedmetadata={(e) => {
                                 theaterPlaybackError.set(false);
                                 resetTheaterTimeline();
-                                theaterApplyResume(e.currentTarget);
+                                if (isMobileTheater && theaterAwaitingFirstUnmute) {
+                                    guardMobileTheaterUntilSoundGesture(e.currentTarget);
+                                } else {
+                                    theaterApplyResume(e.currentTarget);
+                                }
                                 logTheaterMedia({
                                     phase: 'loadedmetadata',
                                     reelId: get(activeReel)?.id ?? null,
@@ -1909,6 +1975,18 @@
                             on:pointerup={handleTheaterVideoInteraction}
                         />
                     {/key}
+                    {#if showMobilePlayWithSoundGate}
+                        <button
+                            type="button"
+                            class="theater-mobile-sound-gate"
+                            data-theater-sound-gate
+                            aria-label="Play video with sound"
+                            on:pointerup|stopPropagation={handleMobileSoundGatePointerUp}
+                        >
+                            <span class="theater-mobile-sound-gate__icon" aria-hidden="true">▶</span>
+                            <span class="theater-mobile-sound-gate__label">Play with sound</span>
+                        </button>
+                    {/if}
                     {#if isMobileTheater && landscapeGestureHint}
                         <div class="theater-landscape-gesture-hint" aria-hidden="true">
                             {#if landscapeGestureHint.kind === 'play'}
@@ -2057,18 +2135,21 @@
                 </div>
             {/if}
         </div>
-        {#if isMobileTheater && theaterVideoSrc}
+        {#if showMobileAudioBar}
             <button
                 type="button"
-                class="theater-sound-dock"
-                class:theater-sound-dock--muted={theaterMuted}
+                class="theater-mobile-audio-bar"
+                class:theater-mobile-audio-bar--muted={theaterMuted}
+                data-theater-audio-bar
                 aria-label={theaterMuted ? 'Turn sound on' : 'Mute sound'}
                 aria-pressed={!theaterMuted}
-                data-theater-sound-dock
-                on:pointerup|stopPropagation={handleMobileSoundDockPointerUp}
+                on:pointerup|stopPropagation={handleMobileAudioBarPointerUp}
             >
-                <span class="theater-sound-dock__icon" aria-hidden="true"
-                    >{theaterMuted ? '🔇' : '🔊'}</span
+                <span class="theater-mobile-audio-bar__icon" aria-hidden="true"
+                    >{theaterMuted ? '🔊' : '🔇'}</span
+                >
+                <span class="theater-mobile-audio-bar__label"
+                    >{theaterMuted ? 'Sound on' : 'Mute'}</span
                 >
             </button>
         {/if}
@@ -2578,55 +2659,94 @@
         font-size: 11px;
     }
 
-    /* Portrait + landscape mobile — must not live inside landscape-only @media. */
-    .theater-overlay--mobile .theater-sound-dock {
-        position: fixed;
-        right: max(0.75rem, env(safe-area-inset-right, 0px));
-        bottom: max(1rem, env(safe-area-inset-bottom, 0px));
-        z-index: 2200;
-        width: 2.85rem;
-        height: 2.85rem;
-        min-width: 2.85rem;
-        min-height: 2.85rem;
-        padding: 0;
+    /* Center prompt — away from browser URL bar; one tap = play from start with sound. */
+    .theater-mobile-sound-gate {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 24;
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.45rem;
+        min-width: 11rem;
+        padding: 1rem 1.35rem;
         border: 1px solid rgba(255, 255, 255, 0.28);
-        border-radius: 999px;
-        background: rgba(8, 10, 16, 0.88);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+        border-radius: 16px;
+        background: rgba(8, 10, 16, 0.82);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+        color: #fff;
+        cursor: pointer;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+        pointer-events: auto;
+        animation: theater-mobile-sound-gate-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes theater-mobile-sound-gate-pulse {
+        0%,
+        100% {
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+        }
+        50% {
+            box-shadow:
+                0 12px 40px rgba(0, 0, 0, 0.55),
+                0 0 0 6px rgba(250, 204, 21, 0.14);
+        }
+    }
+
+    .theater-mobile-sound-gate__icon {
+        font-size: 1.65rem;
+        line-height: 1;
+    }
+
+    .theater-mobile-sound-gate__label {
+        font-size: 0.95rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+    }
+
+    /* Bottom-center mute toggle — thumb reach, not near browser chrome. */
+    .theater-overlay--mobile .theater-mobile-audio-bar {
+        position: fixed;
+        left: 50%;
+        bottom: max(1.35rem, env(safe-area-inset-bottom, 0px));
+        transform: translateX(-50%);
+        z-index: 2200;
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        gap: 0.45rem;
+        min-height: 2.85rem;
+        padding: 0.55rem 1.15rem;
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        border-radius: 999px;
+        background: rgba(8, 10, 16, 0.9);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+        color: #fff;
         cursor: pointer;
         touch-action: manipulation;
         -webkit-tap-highlight-color: transparent;
         pointer-events: auto;
     }
 
-    .theater-overlay--mobile .theater-sound-dock--muted {
+    .theater-overlay--mobile .theater-mobile-audio-bar--muted {
         border-color: rgba(250, 204, 21, 0.65);
-        box-shadow:
-            0 0 0 1px rgba(250, 204, 21, 0.35),
-            0 8px 24px rgba(0, 0, 0, 0.55);
-        animation: theater-sound-dock-pulse 1.6s ease-in-out infinite;
+        background: rgba(24, 20, 8, 0.94);
     }
 
-    @keyframes theater-sound-dock-pulse {
-        0%,
-        100% {
-            box-shadow:
-                0 0 0 0 rgba(250, 204, 21, 0.35),
-                0 8px 24px rgba(0, 0, 0, 0.55);
-        }
-        50% {
-            box-shadow:
-                0 0 0 8px rgba(250, 204, 21, 0.12),
-                0 8px 24px rgba(0, 0, 0, 0.55);
-        }
-    }
-
-    .theater-overlay--mobile .theater-sound-dock__icon {
-        font-size: 1.2rem;
+    .theater-mobile-audio-bar__icon {
+        font-size: 1.15rem;
         line-height: 1;
+    }
+
+    .theater-mobile-audio-bar__label {
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
     }
 
     /* Mobile-only presentation — desktop selectors above are unchanged. Playback path untouched. */

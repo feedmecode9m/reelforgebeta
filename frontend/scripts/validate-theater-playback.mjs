@@ -95,12 +95,14 @@ assert(
 assert(/toggleTheaterPlayback/.test(theater), 'mobile Theater exposes toggleTheaterPlayback');
 assert(/startTheaterPlayback/.test(theater), 'mobile Theater exposes startTheaterPlayback helper');
 assert(/resolveTheaterVideoElement/.test(theater), 'mobile Theater resolves video via manager or DOM');
-assert(/theater-sound-dock/.test(theater), 'mobile Theater renders fixed sound dock');
+assert(/theater-mobile-sound-gate/.test(theater), 'mobile Theater shows center play-with-sound gate');
+assert(/theater-mobile-audio-bar/.test(theater), 'mobile Theater shows bottom audio bar after first play');
+assert(/startMobileTheaterWithSound/.test(theater), 'mobile play-with-sound starts aligned from user tap');
+assert(/guardMobileTheaterUntilSoundGesture/.test(theater), 'mobile blocks muted autoplay until sound tap');
 assert(!/theater-mobile-controls/.test(theater), 'mobile Theater does not render legacy bottom playback dock');
 assert(!/theater-mobile-play/.test(theater), 'mobile Theater does not render Play/Pause pill');
 assert(/handleLandscapeWrapperPointerUp/.test(theater), 'mobile Theater uses wrapper pointerup for tap/seek gestures');
 assert(/handleTheaterWrapperPointerUp/.test(theater), 'video wrapper delegates mobile gestures');
-assert(/landscapeLongPressUnmuteTimer/.test(theater), 'long-press unmutes while finger is still down (iOS audio)');
 assert(/theaterAudioUnlockedByUser/.test(theater), 'user unmute sticky guard prevents iOS re-mute');
 assert(/hideMobileTheaterControls/.test(theater), 'mobile header chrome hides while playing');
 assert(
@@ -126,12 +128,14 @@ assert(
     'mobile Theater supports double-tap seek and mute zones'
 );
 assert(
-    /Autoplay-muted: first tap unmutes in place/.test(theater),
-    'mobile tap on autoplay-muted stream unmutes without reload'
+    /startMobileTheaterWithSound|mobile tap on autoplay-muted stream unmutes without reload|first tap plays from the start with sound/.test(
+        theater
+    ),
+    'mobile tap starts play-with-sound without muted drift'
 );
 assert(
-    /iOS ignores muted=false on an already-playing stream unless play\(\) runs/.test(theater),
-    'mobile unmute re-invokes play() inside user gesture'
+    /play\(\) must run synchronously inside pointerup|startMobileTheaterWithSound/.test(theater),
+    'mobile play-with-sound runs inside user gesture'
 );
 assert(
     /pointer-events:\s*none/.test(theater) &&
