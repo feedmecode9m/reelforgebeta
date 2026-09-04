@@ -409,7 +409,10 @@
     const access = resolveEpisodeAccessPricing({
       episode: ctx.episode,
       mediaAssetId: String(ctx.episode?.mediaAssetId || ''),
-      reelId: String(ctx.episode?.reelId || '')
+      reelId: String(ctx.episode?.reelId || ''),
+      seriesId: ctx.series?.id,
+      seriesAccessMode: ctx.series?.accessMode ?? ctx.series?.access_mode,
+      freeEpisodeCount: ctx.series?.freeEpisodeCount ?? ctx.series?.free_episode_count
     });
     if (access.mode !== 'free' && !hasAccessEntitlement) {
       const episodeNumber = Number(ctx.episode?.episodeNumber);
@@ -724,6 +727,8 @@
               {season}
               heroVaultAssets={effectiveReadyAssets}
               seriesLabel={series.title || ''}
+              seriesAccessMode={series.accessMode || series.access_mode || ''}
+              freeEpisodeCount={series.freeEpisodeCount ?? series.free_episode_count}
               viewerMode={true}
               {hasAccessEntitlement}
               flat={sortedSeasons.length === 1}

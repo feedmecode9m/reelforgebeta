@@ -35,13 +35,13 @@ export const LA_PRODUCTION_EPISODES = [
         episodeNumber: 1,
         title: 'The Project',
         description:
-            'Who are the main players behind the sound and production of Dat Boi and Zakanda? This episode introduces Zarian, Vic-G, and the team as the project in Los Angeles begins to take shape.'
+            'Who are the main players behind the sound and production of Dat Boi and Zakanda? This episode introduces Zarian, the man at the helm, Vic G, the talent, and other players as they come together to create Dat Boi music video in Los Angeles.'
     },
     {
         episodeNumber: 2,
         title: 'Arrival in LA',
         description:
-            'Vic-G and the team arrive in Los Angeles, setting the stage for production and introducing the city, momentum, and early movement around the project.'
+            'Vic-G and the team arrive in Los Angeles, setting the stage for the production ahead. The episode captures the first moments in LA, the anticipation surrounding the project, and the beginning of the journey behind the music video.'
     },
     {
         episodeNumber: 3,

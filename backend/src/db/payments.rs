@@ -504,6 +504,35 @@ async fn fetch_checkout_context_by_episode_id(
     .bind(episode_id)
     .fetch_optional(pool)
     .await?;
+    if row.is_some() {
+        return parse_episode_checkout_context_row(row);
+    }
+    fetch_public_catalog_checkout_context_by_episode_id(pool, episode_id).await
+}
+
+async fn fetch_public_catalog_checkout_context_by_episode_id(
+    pool: &PgPool,
+    episode_id: &str,
+) -> Result<Option<EpisodeCheckoutContext>, sqlx::Error> {
+    let row = sqlx::query(
+        r#"
+        SELECT
+            e.id AS canonical_episode_id,
+            s.id AS series_id,
+            e.episode_number,
+            false AS is_free_override,
+            COALESCE(NULLIF(s.access_mode, ''), 'FREE') AS access_mode,
+            COALESCE(s.free_episode_count, 2) AS free_episode_count
+        FROM episodes e
+        INNER JOIN seasons sz ON sz.id = e.season_id
+        INNER JOIN series s ON s.id = sz.series_id
+        WHERE e.id = $1
+        LIMIT 1
+        "#,
+    )
+    .bind(episode_id)
+    .fetch_optional(pool)
+    .await?;
     parse_episode_checkout_context_row(row)
 }
 
@@ -524,6 +553,35 @@ async fn fetch_checkout_context_by_reel_id(
         INNER JOIN studio_seasons sz ON sz.id = se.season_id
         INNER JOIN studio_series ss ON ss.id = sz.series_id
         WHERE se.reel_id = $1
+        LIMIT 1
+        "#,
+    )
+    .bind(reel_id)
+    .fetch_optional(pool)
+    .await?;
+    if row.is_some() {
+        return parse_episode_checkout_context_row(row);
+    }
+    fetch_public_catalog_checkout_context_by_reel_id(pool, reel_id).await
+}
+
+async fn fetch_public_catalog_checkout_context_by_reel_id(
+    pool: &PgPool,
+    reel_id: Uuid,
+) -> Result<Option<EpisodeCheckoutContext>, sqlx::Error> {
+    let row = sqlx::query(
+        r#"
+        SELECT
+            e.id AS canonical_episode_id,
+            s.id AS series_id,
+            e.episode_number,
+            false AS is_free_override,
+            COALESCE(NULLIF(s.access_mode, ''), 'FREE') AS access_mode,
+            COALESCE(s.free_episode_count, 2) AS free_episode_count
+        FROM episodes e
+        INNER JOIN seasons sz ON sz.id = e.season_id
+        INNER JOIN series s ON s.id = sz.series_id
+        WHERE e.reel_id = CAST($1 AS TEXT)
         LIMIT 1
         "#,
     )

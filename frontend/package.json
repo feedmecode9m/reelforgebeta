@@ -144,6 +144,8 @@
     "validate:creator-catalog-authority-pass5": "node scripts/validate-creator-catalog-authority-pass5.mjs",
     "seed:stirred-production-catalog": "node scripts/seed-stirred-production-catalog.mjs",
     "seed:vic-g-face-poster": "node scripts/seed-vic-g-face-poster.mjs",
+    "seed:vic-g-pricing-catalog": "node scripts/seed-vic-g-pricing-catalog.mjs",
+    "validate:pricing-access-framework": "node scripts/validate-pricing-access-framework.mjs",
     "validate:api-catalog-membership-survival": "node scripts/validate-api-catalog-membership-survival.mjs",
     "validate:viewer-production-projection": "node scripts/validate-viewer-production-projection.mjs",
     "validate:theater-series-viewer": "node scripts/validate-theater-series-viewer.mjs",

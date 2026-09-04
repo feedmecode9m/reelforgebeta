@@ -1200,7 +1200,14 @@
                     accessMode: event.detail?.accessMode
                 }),
             mediaAssetId: String(event.detail?.mediaAssetId || fromView?.mediaAssetId || ''),
-            reelId: detailReelId || String(fromView?.reelId || '')
+            reelId: detailReelId || String(fromView?.reelId || ''),
+            seriesId: drawerSeriesView?.id,
+            seriesAccessMode:
+                drawerSeriesView?.accessMode ?? drawerSeriesView?.access_mode ?? event.detail?.seriesAccessMode,
+            freeEpisodeCount:
+                drawerSeriesView?.freeEpisodeCount ??
+                drawerSeriesView?.free_episode_count ??
+                event.detail?.freeEpisodeCount
         });
         if (access.mode !== 'free' && !hasAccessEntitlement) {
             const episodeNumber = Number(fromView?.episodeNumber ?? event.detail?.episodeNumber);

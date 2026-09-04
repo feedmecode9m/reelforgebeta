@@ -11,6 +11,8 @@ pub struct SeriesRow {
     pub release_year: Option<i32>,
     pub poster: Option<String>,
     pub tags: serde_json::Value,
+    pub access_mode: String,
+    pub free_episode_count: i32,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -125,7 +127,18 @@ pub struct SeriesDto {
     pub poster: Option<String>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub tags: Vec<String>,
+    #[serde(skip_serializing_if = "is_default_access_mode")]
+    pub access_mode: String,
+    pub free_episode_count: i32,
     pub seasons: Vec<SeasonDto>,
+}
+
+fn is_default_access_mode(mode: &str) -> bool {
+    mode.trim().eq_ignore_ascii_case("FREE")
+}
+
+fn is_default_free_episode_count(_count: &i32) -> bool {
+    false
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -239,6 +252,8 @@ pub struct UpsertSeriesInput {
     pub release_year: Option<i32>,
     pub poster: Option<String>,
     pub tags: Option<Vec<String>>,
+    pub access_mode: Option<String>,
+    pub free_episode_count: Option<i32>,
     pub seasons: Option<Vec<UpsertSeasonInput>>,
 }
 
@@ -314,7 +329,8 @@ pub async fn list_series_ids(pool: &PgPool) -> Result<Vec<String>, sqlx::Error> 
 pub async fn get_series(pool: &PgPool, id: &str) -> Result<Option<SeriesDto>, sqlx::Error> {
     let series_row: Option<SeriesRow> = sqlx::query_as(
         r#"
-        SELECT id, title, description, genre, release_year, poster, tags, created_at, updated_at
+        SELECT id, title, description, genre, release_year, poster, tags,
+               access_mode, free_episode_count, created_at, updated_at
         FROM series WHERE id = $1
         "#,
     )
@@ -380,6 +396,8 @@ pub async fn get_series(pool: &PgPool, id: &str) -> Result<Option<SeriesDto>, sq
         release_year: series_row.release_year,
         poster: series_row.poster,
         tags: tags_to_vec(&series_row.tags),
+        access_mode: series_row.access_mode,
+        free_episode_count: series_row.free_episode_count,
         seasons,
     }))
 }
@@ -403,8 +421,8 @@ pub async fn upsert_series(pool: &PgPool, input: &UpsertSeriesInput) -> Result<S
 
     sqlx::query(
         r#"
-        INSERT INTO series (id, title, description, genre, release_year, poster, tags)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        INSERT INTO series (id, title, description, genre, release_year, poster, tags, access_mode, free_episode_count)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, COALESCE($8, 'FREE'), COALESCE($9, 2))
         ON CONFLICT (id) DO UPDATE SET
             title = EXCLUDED.title,
             description = EXCLUDED.description,
@@ -412,6 +430,8 @@ pub async fn upsert_series(pool: &PgPool, input: &UpsertSeriesInput) -> Result<S
             release_year = EXCLUDED.release_year,
             poster = EXCLUDED.poster,
             tags = EXCLUDED.tags,
+            access_mode = COALESCE($8, series.access_mode),
+            free_episode_count = COALESCE($9, series.free_episode_count),
             updated_at = now()
         "#,
     )
@@ -422,6 +442,10 @@ pub async fn upsert_series(pool: &PgPool, input: &UpsertSeriesInput) -> Result<S
     .bind(input.release_year)
     .bind(input.poster.as_deref())
     .bind(tags_to_json(input.tags.as_deref()))
+    .bind(input.access_mode.as_deref())
+    .bind(input.free_episode_count)
+    .bind(input.access_mode.as_deref())
+    .bind(input.free_episode_count)
     .execute(pool)
     .await?;
 

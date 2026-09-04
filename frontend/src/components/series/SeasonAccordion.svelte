@@ -49,6 +49,11 @@
     /** @type {string} */
     export let seriesLabel = '';
 
+    /** @type {string} */
+    export let seriesAccessMode = '';
+    /** @type {number | undefined} */
+    export let freeEpisodeCount = undefined;
+
     /** Remount chips when Hero Vault Master Edit fans out. */
     /** @type {number} */
     export let titleEpoch = 0;
@@ -154,7 +159,10 @@
                 episode: /** @type {Record<string, unknown>} */ (episode),
                 mediaAssetId: mediaId,
                 reelId: String(episode.reelId || '').trim(),
-                vaultAsset
+                vaultAsset,
+                seriesId,
+                seriesAccessMode,
+                freeEpisodeCount
             });
             return {
                 episode,

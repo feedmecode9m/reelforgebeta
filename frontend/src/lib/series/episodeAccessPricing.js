@@ -4,6 +4,7 @@
  */
 
 import { getStoredReelSeriesMetadata } from './seriesMetadataStorage.js';
+import { VIC_G_SERIES_ID } from './vicGSeriesPackage.js';
 
 /** @typedef {'free' | 'paid'} EpisodeAccessMode */
 
@@ -145,6 +146,28 @@ export function normalizeVaultEpisodeAccess(draft) {
     return { mode: pricing.mode, price: pricing.price };
 }
 
+/** @param {unknown} value @returns {boolean} */
+export function isPaidSeriesAccessMode(value) {
+    const raw = String(value || '')
+        .trim()
+        .toUpperCase();
+    return ['PAID', 'EPISODE_LOCK', 'SEASON_PASS', 'VIP', 'SUBSCRIPTION'].includes(raw);
+}
+
+/** @param {{ episodeNumber?: unknown; isFreeOverride?: unknown; accessMode?: unknown; freeEpisodeCount?: unknown }} input */
+export function resolveSeriesEpisodeAccessPricing(input = {}) {
+    const episodeNumber = Number(input.episodeNumber);
+    if (!Number.isFinite(episodeNumber) || episodeNumber < 1) return null;
+    if (input.isFreeOverride === true) return buildEpisodeAccessPricing('free', '');
+    if (!isPaidSeriesAccessMode(input.accessMode)) return null;
+    const freeCountRaw = Number(input.freeEpisodeCount);
+    const freeEpisodeCount =
+        Number.isFinite(freeCountRaw) && freeCountRaw >= 0 ? Math.floor(freeCountRaw) : 2;
+    return episodeNumber <= freeEpisodeCount
+        ? buildEpisodeAccessPricing('free', '')
+        : buildEpisodeAccessPricing('paid', '');
+}
+
 /**
  * Resolve viewer badge for an episode / vault media id.
  * Priority: episode fields → vault asset → series metadata → default FREE.
@@ -154,6 +177,9 @@ export function normalizeVaultEpisodeAccess(draft) {
  *   mediaAssetId?: string | null;
  *   reelId?: string | null;
  *   vaultAsset?: Record<string, unknown> | null;
+ *   seriesAccessMode?: unknown;
+ *   freeEpisodeCount?: unknown;
+ *   seriesId?: string | null;
  * }} input
  * @returns {EpisodeAccessPricing}
  */
@@ -196,6 +222,22 @@ export function resolveEpisodeAccessPricing(input = {}) {
             );
         }
     }
+
+    const seriesId = String(
+        input.seriesId || episode?.seriesId || episode?.series_id || ''
+    ).trim();
+    const seriesAccessMode =
+        input.seriesAccessMode ??
+        (seriesId === VIC_G_SERIES_ID ? 'SUBSCRIPTION' : undefined);
+    const freeEpisodeCount =
+        input.freeEpisodeCount ?? (seriesId === VIC_G_SERIES_ID ? 2 : undefined);
+    const fromSeries = resolveSeriesEpisodeAccessPricing({
+        episodeNumber: episode?.episodeNumber ?? episode?.episode_number,
+        isFreeOverride: episode?.isFreeOverride ?? episode?.is_free_override,
+        accessMode: seriesAccessMode,
+        freeEpisodeCount
+    });
+    if (fromSeries) return fromSeries;
 
     return buildEpisodeAccessPricing('free', '');
 }
