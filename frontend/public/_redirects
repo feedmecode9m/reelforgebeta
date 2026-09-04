@@ -1,4 +1,5 @@
-# Proxy API + media to Railway (same-origin — avoids browser CORS on uploads)
+# Proxy API + media to Railway (same-origin — mobile theater + uploads on lookatzakanda.com)
+# Bundled dist/thumbs/* win over the thumbs line when netlify.toml sets force=false.
 /api/*  https://reelforge-deploy-production.up.railway.app/api/:splat  200
 /admin/auth  https://reelforge-deploy-production.up.railway.app/admin/auth  200
 /videos/*  https://reelforge-deploy-production.up.railway.app/videos/:splat  200

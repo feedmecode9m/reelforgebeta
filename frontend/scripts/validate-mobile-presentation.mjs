@@ -29,6 +29,8 @@ const mediaRenderer = read('src/components/media/MediaRenderer.svelte');
 const theater = read('src/components/theater/TheaterExperience.svelte');
 const mobileLib = read('src/lib/device/mobilePresentation.js');
 const configJs = read('src/lib/config.js');
+const netlifyToml = read('netlify.toml');
+const redirects = read('public/_redirects');
 const backendCors = read('backend/src/main.rs', true);
 const viewerCss = read('src/viewer/viewer.css');
 
@@ -73,6 +75,33 @@ assert(
 assert(
     /rewriteDevLoopbackAbsoluteToSameOrigin/.test(configJs),
     'LAN phones rewrite localhost URLs to same-origin'
+);
+assert(
+    /rewriteProductionProxyMediaToSameOrigin/.test(configJs),
+    'production rewrites Railway /videos|/thumbs to same-origin proxy'
+);
+assert(
+    /lookatzakanda\.com/.test(configJs),
+    'custom domain lookatzakanda.com uses same-origin proxy host guard'
+);
+assert(
+    /VITE_USE_SAME_ORIGIN_API\s*=\s*"true"/.test(netlifyToml),
+    'netlify.toml bakes VITE_USE_SAME_ORIGIN_API for production mobile'
+);
+assert(
+    /from = "\/videos\/\*"/.test(netlifyToml) &&
+        /reelforge-deploy-production\.up\.railway\.app\/videos/.test(netlifyToml),
+    'netlify.toml proxies /videos to Railway'
+);
+assert(
+    /from = "\/thumbs\/\*"[\s\S]*force = false/.test(netlifyToml),
+    'netlify.toml serves bundled /thumbs before Railway proxy'
+);
+assert(
+    /\/videos\/\*\s+https:\/\/reelforge-deploy-production\.up\.railway\.app\/videos/.test(
+        redirects
+    ),
+    'public/_redirects proxies /videos for same-origin mobile theater'
 );
 
 assert(

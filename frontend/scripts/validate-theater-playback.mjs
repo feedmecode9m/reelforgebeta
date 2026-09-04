@@ -115,6 +115,14 @@ assert(
     'mobile video interaction does not stopPropagation before native play'
 );
 assert(
+    /unlockTheaterAudioForUserGesture/.test(theater),
+    'mobile gesture play unlocks audio after user tap'
+);
+assert(
+    /handleLandscapeDoubleTap/.test(theater),
+    'mobile Theater supports double-tap seek and mute zones'
+);
+assert(
     /NotAllowed|force mute \+ retry|el\.muted = true/.test(theater),
     'mobile play retries muted after NotAllowedError'
 );

@@ -51,17 +51,20 @@ function resolveConfiguredApiUrl() {
     return '';
 }
 
-/** Netlify static hosts must use same-origin /api (see public/_redirects). */
-function isNetlifyStaticHost() {
+/** Production SPA hosts that proxy /api and /videos through same-origin (Netlify _redirects). */
+function isSameOriginProxyHost() {
     if (typeof window === 'undefined') return false;
     const host = window.location.hostname.toLowerCase();
-    return host.endsWith('.netlify.app') || host.endsWith('.netlify.live');
+    if (host.endsWith('.netlify.app') || host.endsWith('.netlify.live')) return true;
+    // Custom domain — same proxy contract as *.netlify.app (lookatzakanda.com mobile theater).
+    if (host === 'lookatzakanda.com' || host === 'www.lookatzakanda.com') return true;
+    return false;
 }
 
 function shouldUseSameOriginApi() {
     if (import.meta.env.VITE_USE_SAME_ORIGIN_API === 'true') return true;
     // Drop/manual deploys may omit build env; never call Railway directly from the browser on Netlify.
-    if (import.meta.env.PROD && isNetlifyStaticHost()) return true;
+    if (import.meta.env.PROD && isSameOriginProxyHost()) return true;
     return false;
 }
 
@@ -125,7 +128,7 @@ export const API_BASE_URL = resolveApiBaseUrl();
 export const USE_SIGNED_UPLOADS =
     import.meta.env.VITE_USE_SIGNED_UPLOADS === 'true' ||
     (import.meta.env.PROD &&
-        isNetlifyStaticHost() &&
+        isSameOriginProxyHost() &&
         import.meta.env.VITE_USE_SIGNED_UPLOADS !== 'false') ||
     // Local Studio: large MP4s require signed PUT + progress events (multipart is capped).
     (import.meta.env.DEV && import.meta.env.VITE_USE_SIGNED_UPLOADS !== 'false');
@@ -250,6 +253,53 @@ export function rewriteDevLoopbackMediaToSameOrigin(url) {
     }
 }
 
+function productionProxyMediaHostname() {
+    const candidates = [
+        import.meta.env.VITE_DIRECT_UPLOAD_BASE_URL,
+        import.meta.env.VITE_BACKEND_URL,
+        import.meta.env.VITE_API_URL,
+        'https://reelforge-deploy-production.up.railway.app'
+    ];
+    for (const value of candidates) {
+        const sanitized = sanitizeExternalBaseUrl(value, 'production-proxy-media');
+        if (!sanitized) continue;
+        try {
+            return new URL(sanitized).hostname.toLowerCase();
+        } catch {
+            /* try next */
+        }
+    }
+    return 'reelforge-deploy-production.up.railway.app';
+}
+
+/**
+ * Production mobile/desktop on lookatzakanda.com / Netlify: rewrite Railway volume
+ * /videos and /thumbs to same-origin paths (Netlify proxy). Mirrors local Vite proxy
+ * behavior so <video> avoids cross-origin ORB. R2/CDN absolute URLs are untouched.
+ * @param {string} url
+ * @returns {string}
+ */
+export function rewriteProductionProxyMediaToSameOrigin(url) {
+    if (!shouldUseSameOriginApi() || !import.meta.env.PROD) return url;
+    const trimmed = String(url || '').trim();
+    if (!/^https?:\/\//i.test(trimmed)) return trimmed;
+    try {
+        const parsed = new URL(trimmed);
+        if (parsed.hostname.toLowerCase() !== productionProxyMediaHostname()) return trimmed;
+        if (!isMediaPath(parsed.pathname)) return trimmed;
+        return `${parsed.pathname}${parsed.search}`;
+    } catch {
+        return trimmed;
+    }
+}
+
+/** Dev loopback + production Railway proxy → same-origin media paths. */
+export function rewriteMediaToSameOrigin(url) {
+    return rewriteProductionProxyMediaToSameOrigin(
+        rewriteDevLoopbackAbsoluteToSameOrigin(rewriteDevLoopbackMediaToSameOrigin(url))
+    );
+}
+
 /**
  * Strip backend origin (or fix double-prefix corruption) → `/videos/...` or `/thumbs/...`.
  * @param {string | null | undefined} path
@@ -300,17 +350,15 @@ export function toBackendMediaUrl(path) {
     if (!trimmed) return '';
     if (trimmed.startsWith('blob:') || trimmed.startsWith('data:')) return trimmed;
 
-    // Absolute http(s) — keep CDN/R2 hosts. Local loopback media uses the Vite proxy.
+    // Absolute http(s) — keep CDN/R2 hosts. Loopback/Railway volume media → same-origin proxy.
     if (/^https?:\/\//i.test(trimmed)) {
-        const rewritten = rewriteDevLoopbackAbsoluteToSameOrigin(
-            rewriteDevLoopbackMediaToSameOrigin(trimmed)
-        );
+        const rewritten = rewriteMediaToSameOrigin(trimmed);
         if (rewritten !== trimmed) {
             logResolvedMediaUrl(
                 'media',
                 rewritten,
                 trimmed,
-                'toBackendMediaUrl:dev-loopback-same-origin'
+                'toBackendMediaUrl:same-origin-proxy'
             );
             return rewritten;
         }

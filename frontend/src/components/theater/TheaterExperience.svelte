@@ -548,16 +548,21 @@
     /** @type {ReturnType<typeof setTimeout> | null} */
     let mobileControlsHideTimer = null;
     /** Brief play/pause/seek glyph over landscape video (~400–700 ms). */
-    /** @type {{ kind: 'play' | 'pause' | 'seek-back' | 'seek-forward'; seconds?: number } | null} */
+    /** @type {{ kind: 'play' | 'pause' | 'seek-back' | 'seek-forward' | 'mute' | 'unmute'; seconds?: number } | null} */
     let landscapeGestureHint = null;
     /** @type {ReturnType<typeof setTimeout> | null} */
     let landscapeGestureHintTimer = null;
     /** @type {{ x: number; y: number; id: number } | null} */
     let landscapePointerStart = null;
+    /** @type {{ time: number; x: number; y: number } | null} */
+    let landscapeLastTap = null;
+    /** @type {ReturnType<typeof setTimeout> | null} */
+    let landscapeSingleTapTimer = null;
     const LANDSCAPE_TAP_SLOP_PX = 14;
     const LANDSCAPE_SWIPE_THRESHOLD_PX = 36;
     const LANDSCAPE_SEEK_SECONDS = 10;
     const LANDSCAPE_GESTURE_HINT_MS = 550;
+    const LANDSCAPE_DOUBLE_TAP_MS = 280;
 
     /** @param {string} reason */
     function reportTheaterControls(reason) {
@@ -666,7 +671,7 @@
         }, 2800);
     }
 
-    /** @param {'play' | 'pause' | 'seek-back' | 'seek-forward'} kind @param {number} [seconds] */
+    /** @param {'play' | 'pause' | 'seek-back' | 'seek-forward' | 'mute' | 'unmute'} kind @param {number} [seconds] */
     function showLandscapeGestureHint(kind, seconds = LANDSCAPE_SEEK_SECONDS) {
         landscapeGestureHint = { kind, seconds };
         if (landscapeGestureHintTimer != null) clearTimeout(landscapeGestureHintTimer);
@@ -735,17 +740,27 @@
         if (absDx <= LANDSCAPE_TAP_SLOP_PX && absDy <= LANDSCAPE_TAP_SLOP_PX) {
             e.preventDefault();
             e.stopPropagation();
-            theaterPlayGestureLock = true;
-            void toggleTheaterPlaybackWithLandscapeHint().finally(() => {
-                setTimeout(() => {
-                    theaterPlayGestureLock = false;
-                }, 400);
-            });
+            const wrapper = /** @type {HTMLElement | null} */ (e.currentTarget);
+            const rect = wrapper?.getBoundingClientRect?.();
+            const relX =
+                rect && rect.width > 0 ? (e.clientX - rect.left) / rect.width : 0.5;
+            const now = Date.now();
+            if (
+                landscapeLastTap &&
+                now - landscapeLastTap.time <= LANDSCAPE_DOUBLE_TAP_MS
+            ) {
+                handleLandscapeDoubleTap(e, relX);
+                return;
+            }
+            landscapeLastTap = { time: now, x: e.clientX, y: e.clientY };
+            scheduleLandscapeSingleTap();
         }
     }
 
     function handleLandscapeWrapperPointerCancel() {
         landscapePointerStart = null;
+        landscapeLastTap = null;
+        clearLandscapeSingleTapTimer();
     }
 
     function toggleMobileTheaterChrome(reason = 'tap') {
@@ -777,6 +792,58 @@
 
     function toggleTheaterMute() {
         applyTheaterMuteState(!theaterMuted);
+        showLandscapeGestureHint(theaterMuted ? 'mute' : 'unmute');
+    }
+
+    function clearLandscapeSingleTapTimer() {
+        if (landscapeSingleTapTimer != null) {
+            clearTimeout(landscapeSingleTapTimer);
+            landscapeSingleTapTimer = null;
+        }
+    }
+
+    /** User tap on the pure-gesture layer unlocks audio (no native volume chrome on mobile). */
+    function unlockTheaterAudioForUserGesture() {
+        if (!isMobileTheater || !theaterMuted) return;
+        applyTheaterMuteState(false);
+    }
+
+    /**
+     * Schedule single-tap play/pause; cancelled when a second tap arrives (double-tap zones).
+     */
+    function scheduleLandscapeSingleTap() {
+        clearLandscapeSingleTapTimer();
+        landscapeSingleTapTimer = setTimeout(() => {
+            landscapeSingleTapTimer = null;
+            landscapeLastTap = null;
+            theaterPlayGestureLock = true;
+            void toggleTheaterPlaybackWithLandscapeHint().finally(() => {
+                setTimeout(() => {
+                    theaterPlayGestureLock = false;
+                }, 400);
+            });
+        }, LANDSCAPE_DOUBLE_TAP_MS);
+    }
+
+    /**
+     * Double-tap left/right: ±10s. Double-tap center: mute/unmute.
+     * @param {PointerEvent} e
+     * @param {number} relX 0–1 horizontal position in wrapper
+     */
+    function handleLandscapeDoubleTap(e, relX) {
+        e.preventDefault();
+        e.stopPropagation();
+        clearLandscapeSingleTapTimer();
+        landscapeLastTap = null;
+        if (relX < 0.35) {
+            seekTheaterRelative(-LANDSCAPE_SEEK_SECONDS);
+            return;
+        }
+        if (relX > 0.65) {
+            seekTheaterRelative(LANDSCAPE_SEEK_SECONDS);
+            return;
+        }
+        toggleTheaterMute();
     }
 
     /** Prefer mounted Theater primary; fall back to live DOM if manager ref was cleared mid-remount. */
@@ -914,6 +981,7 @@
         });
         try {
             if (el.paused || el.ended) {
+                unlockTheaterAudioForUserGesture();
                 await startTheaterPlayback(el);
             } else {
                 el.pause();
@@ -1031,6 +1099,7 @@
                 }
             }
             if (landscapeGestureHintTimer != null) clearTimeout(landscapeGestureHintTimer);
+            clearLandscapeSingleTapTimer();
             if (typeof window !== 'undefined') {
                 window.removeEventListener('reelforge:hero-watch-now', onHeroWatchNowCta);
                 window.removeEventListener('reelforge:hero-learn-more', onHeroLearnMoreCta);
@@ -1040,6 +1109,7 @@
     });
     onDestroy(() => {
         if (mobileControlsHideTimer != null) clearTimeout(mobileControlsHideTimer);
+        clearLandscapeSingleTapTimer();
         if (typeof window !== 'undefined') {
             window.removeEventListener('reelforge:hero-watch-now', onHeroWatchNowCta);
             window.removeEventListener('reelforge:hero-learn-more', onHeroLearnMoreCta);
@@ -1636,6 +1706,10 @@
                                 <span class="theater-landscape-gesture-hint__icon"
                                     >{landscapeGestureHint.seconds}s ↷</span
                                 >
+                            {:else if landscapeGestureHint.kind === 'mute'}
+                                <span class="theater-landscape-gesture-hint__icon">🔇</span>
+                            {:else if landscapeGestureHint.kind === 'unmute'}
+                                <span class="theater-landscape-gesture-hint__icon">🔊</span>
                             {/if}
                         </div>
                     {/if}

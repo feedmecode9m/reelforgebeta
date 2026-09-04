@@ -22,8 +22,7 @@ import {
     toBackendMediaUrl,
     logResolvedMediaUrl,
     toRelativeMediaPath,
-    rewriteDevLoopbackMediaToSameOrigin,
-    rewriteDevLoopbackAbsoluteToSameOrigin
+    rewriteMediaToSameOrigin
 } from '../config.js';
 import { reelResEntry, reelResExit, reelResNormalizeBranch, reelResReelSnapshot } from '../diagnostics/reelResolutionTrace.js';
 import { logBg7kCardNormalize } from '../diagnostics/bg7kCardRenderTrace.js';
@@ -116,13 +115,11 @@ export function resolveMediaUrl(url, kind = 'media', context = kind) {
         return trimmed;
     }
 
-    // Absolute http(s) — keep CDN/R2 hosts. Local loopback /videos|/thumbs → Vite proxy.
+    // Absolute http(s) — keep CDN/R2 hosts. Loopback/Railway volume → same-origin proxy.
     if (/^https?:\/\//i.test(trimmed)) {
-        const rewritten = rewriteDevLoopbackAbsoluteToSameOrigin(
-            rewriteDevLoopbackMediaToSameOrigin(trimmed)
-        );
+        const rewritten = rewriteMediaToSameOrigin(trimmed);
         if (rewritten !== trimmed) {
-            logResolvedMediaUrl(kind, rewritten, trimmed, `${context}:dev-loopback-same-origin`);
+            logResolvedMediaUrl(kind, rewritten, trimmed, `${context}:same-origin-proxy`);
             return rewritten;
         }
         logResolvedMediaUrl(kind, trimmed, trimmed, `${context}:absolute_passthrough`);
