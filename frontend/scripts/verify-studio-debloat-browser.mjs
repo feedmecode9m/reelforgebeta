@@ -75,6 +75,119 @@ async function waitForVaultHydration(page) {
     await page.waitForTimeout(500);
 }
 
+async function waitForSystemVaultHydration(page) {
+    await page.waitForFunction(
+        () => document.querySelector('[data-workspace-panel-system] [data-vault-edit]'),
+        null,
+        { timeout: 20000 }
+    ).catch(() => null);
+    await page.waitForTimeout(500);
+}
+
+/**
+ * Probe vault edit UI in a workspace panel. Invariant: no parent editing marker without
+ * child editor, and after workspace dismiss no child editor may remain open alone.
+ * @param {import('playwright').Page} page
+ * @param {string} panelSelector
+ * @param {string} [assetId]
+ */
+async function probeVaultEditorState(page, panelSelector, assetId = '') {
+    return page.evaluate(({ panelSel, id }) => {
+        const panel = document.querySelector(panelSel);
+        if (!panel) {
+            return {
+                editorOpen: false,
+                childEditing: false,
+                parentEditing: false,
+                doneVisible: false,
+                invariantOk: true
+            };
+        }
+        const card = id
+            ? panel.querySelector(`[data-media-asset-id="${id}"], [data-vault-asset-id="${id}"]`)
+            : null;
+        const cardRoot = card?.closest('.vault-card') || card;
+        const parentEditing = Boolean(cardRoot?.classList.contains('vault-card--editing'));
+        const childEditing = Boolean(panel.querySelector('.vault-creator-card--editing'));
+        const doneBtn = panel.querySelector('[data-poster-editor-done], [data-creator-package-done]');
+        const doneVisible = Boolean(
+            doneBtn instanceof HTMLElement && doneBtn.offsetParent !== null
+        );
+        const editorOpen = childEditing || doneVisible || parentEditing;
+        const anyParentEditing = Boolean(panel.querySelector('.vault-card--editing'));
+        const invariantOk = anyParentEditing || !childEditing;
+        return { editorOpen, childEditing, parentEditing, doneVisible, invariantOk, anyParentEditing };
+    }, { panelSel: panelSelector, id: assetId });
+}
+
+/**
+ * Edit → workspace tab switch → return → re-edit regression for Content or System vault.
+ * @param {import('playwright').Page} page
+ * @param {{ panelSelector: string; homeTab: 'content' | 'system'; criteriaPrefix: string }} opts
+ */
+async function runVaultTabSwitchReEditRegression(page, { panelSelector, homeTab, criteriaPrefix }) {
+    await page.click(`[data-workspace-tab="${homeTab}"]`);
+    await page.waitForTimeout(400);
+    if (homeTab === 'content') {
+        await waitForVaultHydration(page);
+    } else {
+        await waitForSystemVaultHydration(page);
+    }
+
+    const editBtn = page.locator(`${panelSelector} [data-vault-edit]`).first();
+    if ((await editBtn.count()) === 0) {
+        setCriterion(`${criteriaPrefix}-open`, 'SKIP', 'no editable vault card');
+        setCriterion(`${criteriaPrefix}-dismiss`, 'SKIP');
+        setCriterion(`${criteriaPrefix}-reedit`, 'SKIP');
+        setCriterion(`${criteriaPrefix}-invariant`, 'SKIP');
+        return;
+    }
+
+    const assetId = await editBtn.evaluate((el) => {
+        const card = el.closest('[data-media-asset-id], [data-vault-asset-id]');
+        return card?.getAttribute('data-media-asset-id') || card?.getAttribute('data-vault-asset-id') || '';
+    });
+
+    await editBtn.click();
+    await page.waitForTimeout(800);
+    let probe = await probeVaultEditorState(page, panelSelector, assetId);
+    setCriterion(`${criteriaPrefix}-open`, probe.editorOpen ? 'PASS' : 'FAIL', JSON.stringify(probe));
+    if (!probe.editorOpen) {
+        setCriterion(`${criteriaPrefix}-dismiss`, 'SKIP');
+        setCriterion(`${criteriaPrefix}-reedit`, 'FAIL');
+        setCriterion(`${criteriaPrefix}-invariant`, 'SKIP');
+        return;
+    }
+
+    await page.click('[data-workspace-tab="production"]');
+    await page.waitForTimeout(400);
+    await page.click(`[data-workspace-tab="${homeTab}"]`);
+    await page.waitForTimeout(500);
+
+    probe = await probeVaultEditorState(page, panelSelector, assetId);
+    const dismissed = !probe.childEditing && !probe.doneVisible;
+    setCriterion(
+        `${criteriaPrefix}-dismiss`,
+        dismissed ? 'PASS' : 'FAIL',
+        JSON.stringify(probe)
+    );
+    setCriterion(
+        `${criteriaPrefix}-invariant`,
+        probe.invariantOk && dismissed ? 'PASS' : 'FAIL',
+        `invariantOk=${probe.invariantOk} parentEditing=${probe.anyParentEditing} childEditing=${probe.childEditing}`
+    );
+    if (!dismissed) {
+        setCriterion(`${criteriaPrefix}-reedit`, 'FAIL', 'stale editor blocked re-edit');
+        return;
+    }
+
+    const reEditBtn = page.locator(`${panelSelector} [data-vault-edit]`).first();
+    await reEditBtn.click();
+    await page.waitForTimeout(800);
+    probe = await probeVaultEditorState(page, panelSelector, assetId);
+    setCriterion(`${criteriaPrefix}-reedit`, probe.editorOpen ? 'PASS' : 'FAIL', JSON.stringify(probe));
+}
+
 async function main() {
     let browser;
     try {
@@ -143,6 +256,13 @@ async function main() {
             }
         }
 
+        // Vault edit lifecycle: tab switch must dismiss stale child editor and allow re-edit.
+        await runVaultTabSwitchReEditRegression(page, {
+            panelSelector: '[data-workspace-panel-content]',
+            homeTab: 'content',
+            criteriaPrefix: 'vault-content-tab-switch'
+        });
+
         // 13–15 Production
         await page.click('[data-workspace-tab="production"]');
         await page.waitForTimeout(400);
@@ -188,6 +308,12 @@ async function main() {
             '18',
             (await page.locator('.studio-system-disclosure[open]').count()) === 0 ? 'PASS' : 'FAIL'
         );
+
+        await runVaultTabSwitchReEditRegression(page, {
+            panelSelector: '[data-workspace-panel-system]',
+            homeTab: 'system',
+            criteriaPrefix: 'vault-system-tab-switch'
+        });
 
         // 19–21 Shared authority
         const systemVault = await countVaultAssets(page, '[data-workspace-panel-system]');

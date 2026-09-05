@@ -1422,7 +1422,15 @@
   function dismissVaultPackageEditor(...candidateIds) {
     vaultEditingAssetId = '';
     const ids = [...new Set(candidateIds.map((v) => String(v || '').trim()).filter(Boolean))];
-    if (!ids.length) return;
+    if (!ids.length) {
+      const hasActiveSignals = Object.values(vaultEditSignals).some((value) => Number(value) > 0);
+      if (hasActiveSignals) {
+        vaultEditSignals = Object.fromEntries(
+          Object.keys(vaultEditSignals).map((key) => [key, 0])
+        );
+      }
+      return;
+    }
     const next = { ...vaultEditSignals };
     for (const id of ids) {
       next[id] = 0;

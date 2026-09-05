@@ -219,6 +219,8 @@
     lastEditSignal = editSignal;
     if (editSignal > 0) {
       openPosterEditor();
+    } else if (editing) {
+      cancelEdit();
     }
   }
 
