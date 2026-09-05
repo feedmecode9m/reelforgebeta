@@ -20,6 +20,7 @@ import { initCreatorTeams } from '../lib/teams/creatorTeams.js';
 import { initNotificationCenter } from '../lib/notifications/notificationCenter.js';
 import { initEpisodePipeline } from '../lib/pipeline/episodePipeline.js';
 import { initCommandCenter } from '../lib/command/commandCenter.js';
+import { dedupeFeedReelsById } from '../lib/studio/feedPresentation.js';
 import {
         applyHeroManagerBackground,
         applyHeroSelection,
@@ -49,6 +50,7 @@ import {
     reconcileFeedToCanonicalShelves,
     syncCategoryAliasStore
 } from '../lib/feed/discoveryTaxonomy.js';
+import { computeEffectiveShelfCounts } from '../lib/feed/effectiveShelfDistribution.js';
 import {
     PERSONAL_VIDEO_VAULT_MINIMAL_FIELDS,
     overlayLocalCreatorVaultAuthority,
@@ -576,7 +578,7 @@ for (const reel of fromNormalized[cat] || []) {
 if (reel?.id && !reel.isPresentationOnly && !reel.layoutOnly) reels.push(reel);
 }
 }
-return reels;
+return dedupeFeedReelsById(reels);
 }
 
 function patchFeedWithEpisodeBindings() {
@@ -849,15 +851,7 @@ feed.set(reconciled);
 categories.set(Object.keys(reconciled));
 return reconciled;
 }
-const CANONICAL_LIVE_SHELVES = ['Trending', 'Romance', 'Cyber-Action', 'Suspense'];
-const categoryCounts = derived(feed, ($feed) => {
-const counts = {};
-CANONICAL_LIVE_SHELVES.forEach((cat) => {
-const rows = Array.isArray($feed?.[cat]) ? $feed[cat] : [];
-counts[cat] = rows.filter((r) => r && !r.isPlaceholder).length;
-});
-return counts;
-});
+const categoryCounts = derived(feed, ($feed) => computeEffectiveShelfCounts($feed));
 const normalizedFeed = derived(feed, ($feed) => {
 const normalized = {};
 Object.keys($feed).forEach((cat) => {

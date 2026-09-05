@@ -149,7 +149,17 @@
         collectRealViewerReels
     } from '../../lib/feed/viewerSemanticShell.js';
     import { composeViewerShelfLayouts } from '../../lib/feed/viewerShelfComposition.js';
-    import { categoryAliasStore, listViewerPrimaryRailTabs } from '../../lib/feed/discoveryTaxonomy.js';
+    import {
+        categoryAliasStore,
+        labelViewerPrimaryRailTab,
+        listViewerPrimaryRailTabs,
+        VIEWER_PRIMARY_RAIL
+    } from '../../lib/feed/discoveryTaxonomy.js';
+    import {
+        buildReelEffectiveShelvesMap,
+        collectViewerRailFeedItems,
+        reelMatchesViewerRail
+    } from '../../lib/feed/effectiveShelfDistribution.js';
     import { resolveViewerAssetId } from '../../lib/feed/viewerIdentityDedupe.js';
     import { logViewerMediaIdentityDiagnostics } from '../../lib/feed/viewerMediaIdentity.js';
     import { seriesCatalog, reelSeriesMetadata } from '../../lib/series/seriesStore.js';
@@ -234,6 +244,75 @@
         return String(item?.title || '')
             .toLowerCase()
             .includes(q);
+    }
+
+    /**
+     * @param {Record<string, unknown>} reel
+     */
+    function matchesShelfFeedSearch(reel) {
+        const projection = resolveVaultCardProjection(String(reel?.id || ''), { reel });
+        return matchesProductionSearch({
+            title: String(projection.title || reel?.title || reel?.name || '')
+        });
+    }
+
+    /**
+     * @param {{ reel: Record<string, unknown>; shelf: string; resolvedMedia?: Record<string, unknown> }} item
+     */
+    function buildFeedPosterBrowseItem(item) {
+        const reel = item.reel;
+        const shelfCategory = item.shelf;
+        const projection = resolveVaultCardProjection(String(reel?.id || ''), { reel });
+        const resolved =
+            item.resolvedMedia ||
+            resolveCardMedia(/** @type {Record<string, unknown>} */ (reel), shelfCategory);
+        const posterSrc = resolveShelfPoster(reel, resolved, projection, shelfCategory, 0);
+        const episode = findCatalogEpisodeByReelId(String(reel?.id || ''));
+        const seasonCount = episode ? 1 : 1;
+        const episodeCount = episode ? 1 : 1;
+        return {
+            seriesId: `feed:${String(reel?.id || '')}`,
+            title: String(projection.title || reel?.title || reel?.name || '').trim(),
+            posterSrc,
+            path: '',
+            seasonCount,
+            episodeCount,
+            feedReel: reel,
+            feedShelf: shelfCategory,
+            isFeedPoster: true
+        };
+    }
+
+    /**
+     * @param {{ seriesId?: string }} production
+     * @param {Map<string, Set<string>>} shelvesByReel
+     */
+    function productionMatchesActiveRail(production, shelvesByReel) {
+        if (activeViewerRailKey === 'home') return true;
+        const series = ($seriesCatalog || []).find(
+            (entry) => String(entry?.id || '') === String(production?.seriesId || '')
+        );
+        if (!series) return false;
+        for (const season of series.seasons || []) {
+            for (const episode of season?.episodes || []) {
+                const reelId = String(
+                    episode?.reelId || episode?.mediaAssetId || episode?.heroVaultAssetId || ''
+                ).trim();
+                if (reelId && reelMatchesViewerRail(reelId, activeViewerRailKey, shelvesByReel)) return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param {Array<{ title?: string; seriesId?: string }>} items
+     * @param {Map<string, Set<string>>} shelvesByReel
+     */
+    function filterProductionsByRail(items, shelvesByReel) {
+        if (activeViewerRailKey === 'home') return items;
+        return (items || []).filter(
+            (item) => matchesProductionSearch(item) && productionMatchesActiveRail(item, shelvesByReel)
+        );
     }
 
     $: if (section === 'feed') {
@@ -357,7 +436,23 @@
     $: originalProductions = productionBrowseCatalog.sections.original;
     $: trendingProductions = productionBrowseCatalog.sections.trending;
     $: newProductions = productionBrowseCatalog.sections.newest;
-    $: hasSeriesRail = activeViewerRailKey === 'new-releases' || activeViewerRailKey === 'trending' || activeViewerRailKey === 'suspense';
+    $: viewerRailFeedMap = $feed || {};
+    $: reelShelvesById = buildReelEffectiveShelvesMap(viewerRailFeedMap);
+    $: activeViewerRailSlot =
+        VIEWER_PRIMARY_RAIL.find((slot) => slot.key === activeViewerRailKey) || VIEWER_PRIMARY_RAIL[0];
+    $: activeRailShelfFeedItems = collectViewerRailFeedItems(
+        activeViewerRailKey,
+        viewerRailFeedMap,
+        {},
+        identityResolvedById
+    );
+    $: visibleRailShelfFeedItems = activeRailShelfFeedItems.filter((item) =>
+        matchesShelfFeedSearch(item.reel)
+    );
+    $: hasSeriesRail =
+        activeViewerRailKey === 'new-releases' ||
+        activeViewerRailKey === 'trending' ||
+        activeViewerRailKey === 'suspense';
     $: activeProductionSections =
         activeViewerRailKey === 'home'
             ? [
@@ -366,14 +461,58 @@
                 { key: 'new', title: 'New Productions', items: newProductions }
             ].filter((section) => section.items.filter((item) => matchesProductionSearch(item)).length > 0)
             : activeViewerRailKey === 'trending'
-              ? [{ key: 'trending', title: 'Trending Productions', items: trendingProductions }].filter(
-                    (section) => section.items.filter((item) => matchesProductionSearch(item)).length > 0
-                )
+              ? [
+                    {
+                        key: 'trending',
+                        title: 'Trending Productions',
+                        items: filterProductionsByRail(trendingProductions, reelShelvesById)
+                    }
+                ].filter((section) => section.items.length > 0)
               : activeViewerRailKey === 'new-releases'
-                ? [{ key: 'new', title: 'New Productions', items: newProductions }].filter(
-                      (section) => section.items.filter((item) => matchesProductionSearch(item)).length > 0
-                  )
-                : [];
+                ? [
+                      {
+                          key: 'new',
+                          title: 'New Productions',
+                          items: filterProductionsByRail(newProductions, reelShelvesById)
+                      }
+                  ].filter((section) => section.items.length > 0)
+                : activeViewerRailKey === 'suspense'
+                  ? [
+                        {
+                            key: 'suspense',
+                            title: 'Suspense Productions',
+                            items: filterProductionsByRail([...productionBrowseCatalog.all], reelShelvesById)
+                        }
+                    ].filter((section) => section.items.length > 0)
+                  : [];
+    $: activeRailPosterItems = (() => {
+        if (!hasSeriesRail) return [];
+        /** @type {Array<Record<string, unknown>>} */
+        const out = [];
+        /** @type {Set<string>} */
+        const seenKeys = new Set();
+
+        for (const item of visibleRailShelfFeedItems) {
+            const posterItem = buildFeedPosterBrowseItem(item);
+            const key = String(posterItem.seriesId || resolveViewerAssetId(item.reel) || '').trim();
+            if (!key || seenKeys.has(key)) continue;
+            seenKeys.add(key);
+            out.push(posterItem);
+        }
+
+        for (const section of activeProductionSections) {
+            for (const item of section.items) {
+                if (!matchesProductionSearch(item)) continue;
+                const key = String(item?.seriesId || '').trim();
+                if (!key || seenKeys.has(key)) continue;
+                seenKeys.add(key);
+                out.push({ ...item, isFeedPoster: false });
+            }
+        }
+
+        return out;
+    })();
+    $: hasRailSurfaceContent = activeRailPosterItems.length > 0;
 
     let continueWatchingRefreshTick = 0;
     onMount(() => {
@@ -679,14 +818,42 @@
         </div>
     {/if}
 
+    {#if hasSeriesRail && activeRailPosterItems.length > 0}
+        {@const railLabel = labelViewerPrimaryRailTab(activeViewerRailSlot, $categoryAliasStore)}
+        <section
+            class="viewer-discovery-row"
+            data-viewer-discovery-row
+            data-rail-shelf={activeViewerRailSlot?.shelfId || ''}
+            aria-label={railLabel}
+        >
+            <h2 class="viewer-discovery-row__heading">{railLabel}</h2>
+            <div class="viewer-discovery-row__track viewer-discovery-row__track--posters">
+                {#each activeRailPosterItems as item (item.seriesId)}
+                    <div class="viewer-discovery-row__card">
+                        <SeriesBrowsePosterCard
+                            {item}
+                            sectionLabel={activeViewerRailKey}
+                            feedMode={Boolean(item.isFeedPoster)}
+                            onFeedActivate={() =>
+                                activateReel(
+                                    /** @type {Record<string, unknown>} */ (item.feedReel),
+                                    String(item.feedShelf || activeViewerRailSlot?.shelfId || '')
+                                )}
+                        />
+                    </div>
+                {/each}
+            </div>
+        </section>
+    {/if}
+
     <section class="viewer-production-library" aria-label="Production library">
-        {#if activeProductionSections.length === 0}
-            {#if hasSeriesRail}
+        {#if hasSeriesRail}
+            {#if !hasRailSurfaceContent}
                 <p class="viewer-production-library__empty" data-series-rail-empty>
                     No productions available in this rail yet.
                 </p>
             {/if}
-        {:else}
+        {:else if activeProductionSections.length > 0}
             {#each activeProductionSections as sectionData (sectionData.key)}
                 <div class="viewer-production-library__section" data-series-rail={sectionData.key}>
                     <h2 class="viewer-production-library__heading">{sectionData.title}</h2>
@@ -862,6 +1029,31 @@
         color: #fff;
         padding: 0.55rem 1rem;
         font-size: 0.95rem;
+    }
+    .viewer-discovery-row {
+        padding: 0.35rem 1.25rem 1rem;
+    }
+    .viewer-discovery-row__heading {
+        margin: 0 0 0.75rem;
+        font-size: 0.8rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: rgba(244, 241, 234, 0.72);
+    }
+    .viewer-discovery-row__track {
+        display: grid;
+        grid-auto-flow: column;
+        gap: 0.75rem;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding-bottom: 0.15rem;
+    }
+    .viewer-discovery-row__track--posters {
+        grid-auto-columns: clamp(104px, 31vw, 180px);
+    }
+    .viewer-discovery-row__track::-webkit-scrollbar {
+        display: none;
     }
     .viewer-featured__heading {
         margin: 0 0 0.85rem;

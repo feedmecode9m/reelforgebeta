@@ -19,6 +19,10 @@
     export let sectionLabel = '';
     /** Creator/catalog surface — card is selectable, not a viewer nav link. */
     export let creatorMode = false;
+    /** Feed shelf rail — button opens Theater instead of series page link. */
+    export let feedMode = false;
+    /** @type {() => void} */
+    export let onFeedActivate = () => {};
     /** Highlight when creator catalog has this series selected. */
     export let selected = false;
 
@@ -101,6 +105,37 @@
             Edit in Vault
         </button>
     </article>
+{:else if feedMode}
+    <button
+        type="button"
+        class="series-poster-card"
+        class:series-poster-card--stacked={stackLayers > 0}
+        data-feed-poster-card
+        data-series-id={item?.seriesId || undefined}
+        data-series-section={sectionLabel || undefined}
+        aria-label={`Play ${seriesTitle || 'video'}`}
+        on:click={onFeedActivate}
+    >
+        <div class="series-poster-card__stack" aria-hidden="true">
+            {#if stackLayers >= 2}
+                <span class="series-poster-card__layer series-poster-card__layer--2"></span>
+            {/if}
+            {#if stackLayers >= 1}
+                <span class="series-poster-card__layer series-poster-card__layer--1"></span>
+            {/if}
+            <div class="series-poster-card__media">
+                {#if item?.posterSrc}
+                    <img class="series-poster-card__img" src={item.posterSrc} alt="" loading="lazy" />
+                {:else}
+                    <div class="series-poster-card__fallback" aria-hidden="true">Series</div>
+                {/if}
+            </div>
+        </div>
+        <div class="series-poster-card__copy">
+            <h3 class="series-poster-card__title">{seriesTitle || 'Untitled Series'}</h3>
+            <p class="series-poster-card__meta">{metadataLine}</p>
+        </div>
+    </button>
 {:else}
     <a
         class="series-poster-card"
@@ -140,6 +175,13 @@
         text-decoration: none;
         color: inherit;
         min-width: 0;
+        border: none;
+        background: transparent;
+        padding: 0;
+        font: inherit;
+        text-align: left;
+        cursor: pointer;
+        width: 100%;
     }
     .series-poster-card--creator {
         gap: 0.55rem;
