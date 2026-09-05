@@ -247,7 +247,7 @@
 <svelte:window on:keydown={handleDeleteDialogKeydown} />
 
 <input type="file" id="file-input" accept="video/mp4,video/*" style="display: none" on:change={UIAgent.handleFileSelect} />
-{#if showStudioAffordance}
+{#if showStudioAffordance && !$controlCenterOpen}
 <button
   class="ghost-trigger"
   class:active={$ghostHoverActive && studioAccessGranted}

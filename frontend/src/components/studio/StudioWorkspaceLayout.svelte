@@ -1,22 +1,10 @@
 <script>
     import { createEventDispatcher, onDestroy, onMount, tick } from 'svelte';
     import { seriesCatalog } from '../../lib/series/seriesStore.js';
-    import {
-        auditProductionOperations,
-        buildEpisodeOperationRows,
-        computeProductionReadiness,
-        computeSeriesHealth,
-        getMissingAssetQueue
-    } from '../../lib/series/productionHealth.js';
     import { auditEpisodeAssets } from '../../lib/series/episodeAssetStatus.js';
     import {
-        buildCommandCenterSnapshot,
-        logCommandCenterDiag
-    } from '../../lib/command/commandCenter.js';
-    import {
         registerCommandCenterRefreshListener,
-        scheduleCommandCenterRefresh,
-        startCommandCenterRefreshInterval
+        scheduleCommandCenterRefresh
     } from '../../lib/command/commandCenterRefresh.js';
     import { evaluateNotificationTriggers } from '../../lib/notifications/notificationCenter.js';
     import { auditStudioHelpRegistry } from '../../lib/studio/studioHelpRegistry.js';
@@ -26,27 +14,12 @@
         loadWorkspaceTab,
         logStudioWorkspaceDiag,
         saveWorkspaceTab,
+        scrollStudioWorkspaceNavIntoView,
         workspaceTabSlug
     } from '../../lib/studio/studioWorkspace.js';
     import { STUDIO_SELECT_CONTENT_TAB_EVENT } from '../../lib/dropAffordance.js';
-    import { buildStudioActionPlan } from '../../lib/series/actionEngine.js';
-    import SeriesHealthDashboard from '../series/SeriesHealthDashboard.svelte';
-    import ProductionReadinessMeter from '../series/ProductionReadinessMeter.svelte';
-    import CreatorEpisodeReadinessBoard from './CreatorEpisodeReadinessBoard.svelte';
-    import EpisodeOperationsTable from '../series/EpisodeOperationsTable.svelte';
+    import { getMissingAssetQueue } from '../../lib/series/productionHealth.js';
     import MissingAssetQueue from '../series/MissingAssetQueue.svelte';
-    import StudioContextualWarnings from '../studio/StudioContextualWarnings.svelte';
-    import StudioActionCoach from '../series/StudioActionCoach.svelte';
-    import WorkflowTaskCenter from '../workflow/WorkflowTaskCenter.svelte';
-    import TeamManager from '../teams/TeamManager.svelte';
-    import PipelineBoard from '../pipeline/PipelineBoard.svelte';
-    import ProductionPipelineBoard from '../workflows/ProductionPipelineBoard.svelte';
-    import ReleaseCenter from '../release/ReleaseCenter.svelte';
-    import CreatorCopilot from '../copilot/CreatorCopilot.svelte';
-    import StudioRepairCenter from '../series/StudioRepairCenter.svelte';
-    import OperationsDashboard from '../series/OperationsDashboard.svelte';
-    import CreatorKnowledgeGraphPanel from '../graph/CreatorKnowledgeGraphPanel.svelte';
-    import EnterpriseObservabilityPanel from '../observability/EnterpriseObservabilityPanel.svelte';
     import {
         emitGuideMePanelContext,
         initGuideMeEngine,
@@ -54,13 +27,7 @@
     } from '../../lib/studio/guideMeEngine.js';
     import { CREATOR_PRODUCTION_UPDATED } from '../../lib/studio/creatorActionRouter.js';
     import { emitAccessibilityAudit } from '../../lib/accessibility/accessibilityAudit.js';
-    import GuideMeAssistantPanel from '../studio/GuideMeAssistantPanel.svelte';
     import GlobalSearchBar from '../discovery/GlobalSearchBar.svelte';
-    import SupportReelforgeSection from './SupportReelforgeSection.svelte';
-    import DailyEngagementSection from './DailyEngagementSection.svelte';
-    import CreatorHomeFeed from './CreatorHomeFeed.svelte';
-    import CreatorProfile from './CreatorProfile.svelte';
-    import MonetizationHub from '../monetization/MonetizationHub.svelte';
 
     const dispatch = createEventDispatcher();
 
@@ -70,51 +37,18 @@
     /** @type {string} */
     export let selectedSeriesId = null;
 
-    /** When true, parent ProductionCommandCenter owns command-center diagnostics. */
-    export let embeddedInCommandCenter = false;
+    /** @type {(preserveLocal?: boolean) => Promise<void>} */
+    export let syncFromVault = async () => {};
 
     /** @type {typeof WORKSPACE_TABS[number]} */
     let activeTab = loadWorkspaceTab();
 
     let refreshKey = 0;
-    let stopSharedInterval = () => {};
     let unregisterSharedRefresh = () => {};
     let guideMeMode = isGuideMeModeEnabled();
     /** PHASE-STUDIO-1 — gate notification eval to refresh-bus ticks only. */
     let lastNotificationRefreshKey = -1;
     let prevSelectedSeriesId = selectedSeriesId;
-
-    /** @type {ReturnType<typeof buildCommandCenterSnapshot> | null} */
-    let snapshot = null;
-
-    /** @type {Record<string, boolean>} */
-    let expandedSections = {
-        readinessDetail: false,
-        coverageDetail: false,
-        actionsDetail: false,
-        notificationsDetail: false,
-        releasesDetail: false,
-        teamDetail: false
-    };
-
-    function refreshSnapshot(phase = 'refresh') {
-        snapshot = buildCommandCenterSnapshot(selectedSeriesId, feedReels);
-        if (!embeddedInCommandCenter) {
-            logCommandCenterDiag(phase === 'load' ? 'COMMAND_CENTER_LOAD' : 'COMMAND_CENTER_REFRESH', {
-            seriesId: selectedSeriesId,
-            section: activeTab,
-            readinessScore: snapshot.readiness.score,
-            activeReleases: snapshot.releases.activeCount,
-            bottleneckCount: snapshot.workflow.bottleneckCount,
-            teamActivityCount: snapshot.team.activityCount,
-            unreadNotifications: snapshot.notifications.unreadCount,
-            repairSuggestions: snapshot.repair.suggestionCount
-        });
-        }
-        if (typeof window !== 'undefined') {
-            window.dispatchEvent(new CustomEvent('reelforge:command-center-updated', { detail: snapshot }));
-        }
-    }
 
     onMount(() => {
         initStudioWorkspace();
@@ -132,13 +66,8 @@
         });
         unregisterSharedRefresh = registerCommandCenterRefreshListener(() => {
             refreshKey += 1;
-            refreshSnapshot('refresh');
         });
-        // Nested under ProductionCommandCenter: parent owns the shared 5s interval.
-        if (!embeddedInCommandCenter) {
-            stopSharedInterval = startCommandCenterRefreshInterval('studio-workspace');
-        }
-        refreshSnapshot('load');
+        refreshKey += 1;
 
         const onUpdate = () => {
             scheduleCommandCenterRefresh('workspace-domain-event');
@@ -165,21 +94,14 @@
             window.removeEventListener('reelforge:search-navigate', handleSearchNavigate);
             window.removeEventListener(STUDIO_SELECT_CONTENT_TAB_EVENT, handleSelectContentTab);
             unregisterSharedRefresh();
-            stopSharedInterval();
         };
     });
 
     onDestroy(() => {
         unregisterSharedRefresh();
-        stopSharedInterval();
     });
 
-    $: health = computeSeriesHealth(feedReels, selectedSeriesId);
-    $: readiness = computeProductionReadiness(feedReels, selectedSeriesId);
-    $: operationRows = buildEpisodeOperationRows(feedReels, selectedSeriesId);
     $: missingQueue = getMissingAssetQueue(feedReels, selectedSeriesId);
-    $: actionPlan = buildStudioActionPlan(selectedSeriesId, feedReels);
-    $: refreshKey, auditProductionOperations(feedReels, selectedSeriesId, true);
 
     // PHASE-STUDIO-1 — notification triggers only when shared refresh bus advances
     // (mount / interval / domain event / tab / series change). Never schedule on feedReels ticks.
@@ -196,6 +118,11 @@
 
     /** @param {typeof WORKSPACE_TABS[number]} tab */
     function selectTab(tab) {
+        if (typeof window !== 'undefined' && tab !== activeTab) {
+            window.dispatchEvent(
+                new CustomEvent('reelforge:studio-workspace-tab-change', { detail: { tab } })
+            );
+        }
         activeTab = tab;
         saveWorkspaceTab(tab);
         logStudioWorkspaceDiag('WORKSPACE_TAB', { tab, seriesId: selectedSeriesId });
@@ -206,9 +133,12 @@
             action: 'tab_change',
             activeTab: tab
         });
-        if (tab === 'Content') {
-            void tick().then(() => scrollUploadZonesIntoView());
-        }
+        void tick().then(() => scrollActiveWorkspacePanelIntoView(tab));
+    }
+
+    /** @param {typeof WORKSPACE_TABS[number]} tab */
+    function scrollActiveWorkspacePanelIntoView(tab) {
+        scrollStudioWorkspaceNavIntoView(12);
     }
 
     function scrollUploadZonesIntoView() {
@@ -236,18 +166,8 @@
         }
     }
 
-    /** @param {Event & { currentTarget: HTMLDetailsElement }} event @param {string} sectionId */
-    function handleSectionToggle(event, sectionId) {
-        expandedSections = { ...expandedSections, [sectionId]: event.currentTarget.open };
-        logStudioWorkspaceDiag('WORKSPACE_SECTION', {
-            section: sectionId,
-            expanded: event.currentTarget.open,
-            tab: activeTab
-        });
-    }
-
     function handleManualRefresh() {
-        scheduleCommandCenterRefresh('workspace-manual-refresh');
+        void syncFromVault(true);
         logStudioWorkspaceDiag('STUDIO_REFRESH', { phase: 'manual', tab: activeTab });
     }
 
@@ -257,23 +177,10 @@
         dispatch('changed');
     }
 
-    function handleReleaseScheduled() {
-        scheduleCommandCenterRefresh('workspace-release-scheduled');
-        dispatch('changed');
-    }
-
-
-    /** @param {CustomEvent<{ tab?: string; section?: string }>} event */
-    function handleGuideMeNavigate(event) {
-        const tab = event.detail?.tab;
-        if (tab && WORKSPACE_TABS.includes(/** @type {typeof WORKSPACE_TABS[number]} */ (tab))) {
-            selectTab(/** @type {typeof WORKSPACE_TABS[number]} */ (tab));
-        }
-    }
-
-    function handleRepaired() {
-        scheduleCommandCenterRefresh('workspace-repaired');
-        dispatch('changed');
+    /** @param {Event} event */
+    function handleSeriesSelect(event) {
+        const target = /** @type {HTMLSelectElement} */ (event.currentTarget);
+        dispatch('seriesChange', target.value || null);
     }
 
     /** @param {CustomEvent<{ workspaceTab?: string }>} event */
@@ -308,36 +215,26 @@
 </script>
 
 <div
-    class="studio-workspace-layout production-command-center"
+    class="studio-workspace-layout"
     data-studio-workspace-layout
-    data-production-command-center={embeddedInCommandCenter ? undefined : true}
-    data-production-operations-dashboard={embeddedInCommandCenter ? undefined : true}
     data-active-workspace-tab={workspaceTabSlug(activeTab)}
 >
     <header class="studio-workspace-layout__header">
         <div class="studio-workspace-layout__brand">
-            <h3>Creator Operating System</h3>
-            <span class="studio-workspace-layout__hint">Focused workspace · progressive disclosure</span>
+            <h3>Creator Workspace</h3>
+            <span class="studio-workspace-layout__hint">Content · Production · System</span>
             {#if guideMeMode}
                 <span class="studio-workspace-layout__guide-mode" data-guide-me-mode-indicator>Guide Me Mode ON</span>
             {/if}
         </div>
         <div class="studio-workspace-layout__header-actions">
             <GlobalSearchBar />
-            <button
-                type="button"
-                class="studio-workspace-layout__refresh production-command-center__refresh"
-                data-command-center-refresh
-                on:click={handleManualRefresh}
-            >
-                Refresh
-            </button>
         </div>
     </header>
 
     <label class="studio-workspace-layout__series-select production-command-center__series-select">
         <span>Series</span>
-        <select bind:value={selectedSeriesId} data-command-center-series>
+        <select value={selectedSeriesId} on:change={handleSeriesSelect} data-command-center-series>
             {#each $seriesCatalog as series (series.id)}
                 <option value={series.id}>{series.title}</option>
             {/each}
@@ -377,208 +274,36 @@
         data-command-center-panel
         data-active-section={activeTab}
     >
-        {#if activeTab === 'Overview'}
-            <div class="studio-workspace-layout__overview" data-workspace-overview data-command-center-overview data-guide-me-section="overview">
-                <GuideMeAssistantPanel
-                    {feedReels}
-                    seriesId={selectedSeriesId}
-                    on:navigate={handleGuideMeNavigate}
-                />
-                <CreatorHomeFeed {feedReels} seriesId={selectedSeriesId} />
-                <CreatorProfile {feedReels} seriesId={selectedSeriesId} />
-                <MonetizationHub />
-
-                <section class="studio-workspace-layout__hero-metrics">
-                    <article class="studio-workspace-layout__metric-card" data-workspace-metric-readiness data-command-metric-readiness>
-                        <span class="studio-workspace-layout__metric-label">Readiness Score</span>
-                        <strong class="studio-workspace-layout__metric-value">{snapshot?.readiness.score ?? readiness.weightedPercent}%</strong>
-                        <p class="studio-workspace-layout__metric-copy">Weighted production readiness across metadata, assets, publishing, and release schedule.</p>
-                    </article>
-                    <article class="studio-workspace-layout__metric-card" data-workspace-metric-coverage>
-                        <span class="studio-workspace-layout__metric-label">Coverage</span>
-                        <strong class="studio-workspace-layout__metric-value">{health.assetCoverage}%</strong>
-                        <p class="studio-workspace-layout__metric-copy">{health.publishedEpisodes} published · {health.missingAssets} missing assets · {health.totalEpisodes} episodes tracked.</p>
-                    </article>
-                </section>
-
-                <section class="studio-workspace-layout__grid">
-                    <article class="studio-workspace-layout__card" data-workspace-top-actions>
-                        <h4>Top Actions</h4>
-                        {#if actionPlan.recommendations.length === 0}
-                            <p class="studio-workspace-layout__empty">No prioritized actions — you're in great shape.</p>
-                        {:else}
-                            <ul class="studio-workspace-layout__action-list">
-                                {#each actionPlan.recommendations.slice(0, 3) as action (action.id)}
-                                    <li>
-                                        <span>{action.title}</span>
-                                        <em>+{action.impact}%</em>
-                                    </li>
-                                {/each}
-                            </ul>
-                        {/if}
-                    </article>
-
-                    <article class="studio-workspace-layout__card" data-workspace-notifications data-command-metric-notifications>
-                        <h4>Notifications</h4>
-                        <strong class="studio-workspace-layout__inline-stat">{snapshot?.notifications.unreadCount ?? 0} unread</strong>
-                        {#if snapshot?.notifications.recent.length}
-                            <ul class="studio-workspace-layout__compact-list">
-                                {#each snapshot.notifications.recent.slice(0, 3) as note (note.id)}
-                                    <li data-command-notification-item data-notification-read={note.read}>
-                                        <span>{note.type}</span>
-                                        <p>{note.message}</p>
-                                    </li>
-                                {/each}
-                            </ul>
-                        {:else}
-                            <p class="studio-workspace-layout__empty">No recent notifications.</p>
-                        {/if}
-                    </article>
-
-                    <article class="studio-workspace-layout__card" data-workspace-upcoming-releases data-command-metric-releases>
-                        <h4>Upcoming Releases</h4>
-                        <strong class="studio-workspace-layout__inline-stat">{snapshot?.releases.activeCount ?? 0} active</strong>
-                        {#if snapshot?.releases.entries.length}
-                            <ul class="studio-workspace-layout__compact-list">
-                                {#each snapshot.releases.entries.slice(0, 3) as release (release.episodeId)}
-                                    <li>
-                                        <span>{release.title || release.episodeId}</span>
-                                        <em>{release.status}{release.releaseDate ? ` · ${release.releaseDate}` : ''}</em>
-                                    </li>
-                                {/each}
-                            </ul>
-                        {:else}
-                            <p class="studio-workspace-layout__empty">No scheduled releases yet.</p>
-                        {/if}
-                    </article>
-
-                    <article class="studio-workspace-layout__card" data-workspace-team-activity data-command-metric-team-activity>
-                        <h4>Team Activity</h4>
-                        <strong class="studio-workspace-layout__inline-stat">{snapshot?.team.activityCount ?? 0} recent events</strong>
-                        {#if snapshot?.team.recentActivity.length}
-                            <ul class="studio-workspace-layout__compact-list">
-                                {#each snapshot.team.recentActivity.slice(0, 3) as item, index (index)}
-                                    <li>
-                                        <span>{item.user}</span>
-                                        <em>{item.type}</em>
-                                    </li>
-                                {/each}
-                            </ul>
-                        {:else}
-                            <p class="studio-workspace-layout__empty">No team activity recorded.</p>
-                        {/if}
-                    </article>
-                </section>
-
-                <div class="studio-workspace-layout__metrics-strip">
-                    <div class="production-command-center__metric" data-command-metric-bottlenecks>
-                        <strong>{snapshot?.workflow.bottleneckCount ?? 0}</strong>
-                        <span>Bottlenecks</span>
-                    </div>
-                    <div class="production-command-center__metric" data-command-metric-repairs>
-                        <strong>{snapshot?.repair.suggestionCount ?? 0}</strong>
-                        <span>Repair Suggestions</span>
-                    </div>
-                </div>
-
-                <DailyEngagementSection seriesId={selectedSeriesId} {feedReels} />
-                <SupportReelforgeSection />
-
-                <div class="studio-workspace-layout__advanced">
-                    <details
-                        class="studio-workspace-layout__disclosure"
-                        open={expandedSections.readinessDetail}
-                        on:toggle={(e) => handleSectionToggle(e, 'readinessDetail')}
-                    >
-                        <summary>Detailed Readiness</summary>
-                        <ProductionReadinessMeter {readiness} />
-                    </details>
-                    <details
-                        class="studio-workspace-layout__disclosure"
-                        open={expandedSections.coverageDetail}
-                        on:toggle={(e) => handleSectionToggle(e, 'coverageDetail')}
-                    >
-                        <summary>Full Coverage Report</summary>
-                        <SeriesHealthDashboard {health} />
-                    </details>
-                    <details
-                        class="studio-workspace-layout__disclosure"
-                        open={expandedSections.actionsDetail}
-                        on:toggle={(e) => handleSectionToggle(e, 'actionsDetail')}
-                    >
-                        <summary>Complete Action Plan</summary>
-                        <StudioActionCoach {feedReels} seriesId={selectedSeriesId} />
-                    </details>
-                </div>
-            </div>
-        {:else if activeTab === 'Production'}
-            <div data-workspace-panel-production data-command-section-production data-guide-me-section="production">
-                <CreatorEpisodeReadinessBoard rows={operationRows} {actionPlan} seriesId={selectedSeriesId} />
-                <slot name="production" />
-                <div class="production-command-center__health-row">
-                    <SeriesHealthDashboard {health} />
-                    <div class="production-command-center__readiness-col">
-                        <ProductionReadinessMeter {readiness} />
-                    </div>
-                </div>
-                <WorkflowTaskCenter {feedReels} seriesId={selectedSeriesId} />
-                <ProductionPipelineBoard {feedReels} seriesId={selectedSeriesId} />
-                <PipelineBoard {feedReels} seriesId={selectedSeriesId} />
-            </div>
-        {:else if activeTab === 'Content'}
-            <div
-                data-workspace-panel-content
-                data-command-section-content
-                data-guide-me-section="content"
-                data-upload-zones-emphasis="true"
-            >
-                <slot name="content" />
-                <ReleaseCenter {feedReels} seriesId={selectedSeriesId} on:scheduled={handleReleaseScheduled} />
-                <MissingAssetQueue queue={missingQueue} {feedReels} on:attached={handleQueueAttached} />
-                <EpisodeOperationsTable rows={operationRows} />
-            </div>
-        {:else if activeTab === 'Teams'}
-            <div data-workspace-panel-teams data-command-section-teams data-guide-me-section="teams">
-                <slot name="teams" />
-                <TeamManager seriesId={selectedSeriesId} />
-            </div>
-        {:else if activeTab === 'Analytics'}
-            <div data-workspace-panel-analytics data-command-section-analytics data-guide-me-section="analytics">
-                <slot name="analytics" />
-                <OperationsDashboard seriesId={selectedSeriesId} />
-                <EnterpriseObservabilityPanel seriesId={selectedSeriesId} />
-                <CreatorKnowledgeGraphPanel {feedReels} seriesId={selectedSeriesId} />
-            </div>
-        {:else if activeTab === 'Automation'}
-            <div data-workspace-panel-automation data-command-section-automation data-guide-me-section="automation">
-                <slot name="automation" />
-                <CreatorCopilot {feedReels} seriesId={selectedSeriesId} />
-                <StudioActionCoach {feedReels} seriesId={selectedSeriesId} />
-            </div>
-        {:else if activeTab === 'System'}
-            <div data-workspace-panel-system data-command-section-system data-guide-me-section="system">
-                <slot name="system" />
-                <StudioContextualWarnings {health} {readiness} {operationRows} seriesId={selectedSeriesId} />
-                <StudioRepairCenter {feedReels} seriesId={selectedSeriesId} on:repaired={handleRepaired} />
-                {#if snapshot?.notifications.recent.length}
-                    <div class="production-command-center__notifications" data-command-notifications>
-                        <h5>Recent Notifications</h5>
-                        <ul>
-                            {#each snapshot.notifications.recent as note (note.id)}
-                                <li data-command-notification-item data-notification-read={note.read}>
-                                    <span>{note.type}</span>
-                                    <p>{note.message}</p>
-                                </li>
-                            {/each}
-                        </ul>
-                    </div>
-                {/if}
-            </div>
-        {/if}
+        <div
+            class="studio-workspace-layout__tab-panel"
+            data-workspace-panel-content
+            data-upload-zones-emphasis="true"
+            hidden={activeTab !== 'Content'}
+        >
+            <slot name="content" />
+        </div>
+        <div
+            class="studio-workspace-layout__tab-panel"
+            data-workspace-panel-production
+            hidden={activeTab !== 'Production'}
+        >
+            <slot name="production" />
+            <MissingAssetQueue queue={missingQueue} {feedReels} on:attached={handleQueueAttached} />
+        </div>
+        <div
+            class="studio-workspace-layout__tab-panel"
+            data-workspace-panel-system
+            hidden={activeTab !== 'System'}
+        >
+            <slot name="system" />
+        </div>
     </div>
 </div>
 
 <style>
+    .studio-workspace-layout__tab-panel[hidden] {
+        display: none !important;
+    }
     .studio-workspace-layout {
         margin-top: 0.5rem;
         padding: 1rem;

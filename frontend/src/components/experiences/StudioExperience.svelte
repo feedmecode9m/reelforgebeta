@@ -1,5 +1,6 @@
 <script>
   import { get } from 'svelte/store';
+  import { dedupeFeedReelsById } from '../../lib/studio/feedPresentation.js';
   import { onDestroy, tick } from 'svelte';
   import { getAdminAuthHeaders, getAdminToken } from '../../lib/api.js';
   import { unlockStudioWithPassword } from '../../lib/auth/studioAdminAuth.js';
@@ -18,27 +19,9 @@
     isValidVideoUrl,
     validateVideoFile
   } from '../../lib/runtime-guards.js';
-  import { getLocalStorageSize, formatBytes } from '../../lib/storage.js';
-  import PlatformConfigPanel from '../studio/PlatformConfigPanel.svelte';
-  import StudioAmbientAudioPanel from '../studio/StudioAmbientAudioPanel.svelte';
-  import StudioAppearancePanel from '../studio/StudioAppearancePanel.svelte';
-  import SentinelSecurityCard from '../studio/SentinelSecurityCard.svelte';
-  import SentinelAssistantPanel from '../studio/SentinelAssistantPanel.svelte';
-  import CreatorOnboardingWizard from '../studio/CreatorOnboardingWizard.svelte';
-  import HeroManagerPanel from '../studio/HeroManagerPanel.svelte';
-  import MonetizationPanel from '../studio/MonetizationPanel.svelte';
-  import MarketplaceDashboard from '../marketplace/MarketplaceDashboard.svelte';
-  import RevenueDashboard from '../revenue/RevenueDashboard.svelte';
-  import PlatformPublishingProfiles from '../studio/PlatformPublishingProfiles.svelte';
-  import PublishingProfileSelector from '../publishing/PublishingProfileSelector.svelte';
-  import SeriesMetadataEditor from '../series/SeriesMetadataEditor.svelte';
   import CreatorCatalogPanel from '../series/CreatorCatalogPanel.svelte';
-  import CreatorSeriesAssembly from '../series/CreatorSeriesAssembly.svelte';
-  import ContentIntelligencePanel from '../studio/ContentIntelligencePanel.svelte';
-  import ProductionCommandCenter from '../studio/ProductionCommandCenter.svelte';
-  import SmartCategoryAuditPanel from '../studio/SmartCategoryAuditPanel.svelte';
-  import IdentityBackedEditorialReviewPanel from '../studio/IdentityBackedEditorialReviewPanel.svelte';
-  import SemanticProductionCardsPanel from '../studio/SemanticProductionCardsPanel.svelte';
+  import HeroManagerPanel from '../studio/HeroManagerPanel.svelte';
+  import StudioWorkspaceLayout from '../studio/StudioWorkspaceLayout.svelte';
   import { categoryAliasStore, displayDiscoveryShelf } from '../../lib/feed/discoveryTaxonomy.js';
   import DeveloperDiagnosticsCenter from '../diagnostics/DeveloperDiagnosticsCenter.svelte';
   import EpisodeReelAttachmentPanel from '../studio/EpisodeReelAttachmentPanel.svelte';
@@ -46,7 +29,6 @@
   import { createCatalogSeriesFromStudio } from '../../lib/series/seriesStore.js';
   import StudioWalkthrough from '../studio/StudioWalkthrough.svelte';
   import VaultExperience from './VaultExperience.svelte';
-  import HeroExperience from './HeroExperience.svelte';
   import {
     consumeMediaUploadIntent,
     requestStudioContentTab
@@ -128,8 +110,10 @@
   export let vaultUtils;
   /** @type {(preserveLocal?: boolean) => Promise<void>} */
   export let syncFromVault;
-  /** @type {(domains: string | string[], options?: Record<string, unknown>) => Promise<void>} */
-  export let syncDomain = async () => {};
+  /** Bridge legacy syncDomain call sites to unified vault refresh. */
+  async function studioSyncDomain(_domains, _opts) {
+    await syncFromVault(true);
+  }
   /** @type {(videos: unknown[]) => void} */
   export let persistPersonalVault;
   export let viewerHydrationReady;
@@ -550,9 +534,7 @@
   }
 
   /** Full production inventory from feed — placeholders excluded, no visibility cap. */
-  $: studioInventoryBase = Object.values($feed || {})
-    .flat()
-    .filter((reel) => reel && !reel.isPlaceholder);
+  $: studioInventoryBase = dedupeFeedReelsById(Object.values($feed || {}).flat());
 
   /** Filtered/sorted view of studioInventoryBase for operator browsing. */
   $: studioInventoryView = (() => {
@@ -779,7 +761,7 @@
         selectedFile.set(null);
         newCategory.set('Auto-Detect');
         forceDisplayInStudio();
-        await syncDomain([SYNC_DOMAIN.VIDEO, SYNC_DOMAIN.FEED], { preserveLocal: true, force: true });
+        await studioSyncDomain([SYNC_DOMAIN.VIDEO, SYNC_DOMAIN.FEED], { preserveLocal: true, force: true });
         return;
       }
 
@@ -814,7 +796,7 @@
       selectedFile.set(null);
       newCategory.set('Auto-Detect');
       forceDisplayInStudio();
-      await syncDomain([SYNC_DOMAIN.VIDEO, SYNC_DOMAIN.FEED], { preserveLocal: true, force: true });
+      await studioSyncDomain([SYNC_DOMAIN.VIDEO, SYNC_DOMAIN.FEED], { preserveLocal: true, force: true });
     } catch (error) {
       console.error('Upload error:', error);
       uploadStatus.set('❌ UPLOAD FAILED');
@@ -1199,7 +1181,7 @@
       const { uploadMedia } = await import('../../lib/api/media.js');
       await uploadMedia(formData, getAdminAuthHeaders());
       uploadStatus.set(`✅ Unveiled ${filename} to vault`);
-      await syncDomain([SYNC_DOMAIN.VIDEO, SYNC_DOMAIN.FEED], { preserveLocal: true, force: true });
+      await studioSyncDomain([SYNC_DOMAIN.VIDEO, SYNC_DOMAIN.FEED], { preserveLocal: true, force: true });
     } catch (error) {
       console.error('unveilToCloud failed:', error);
       uploadStatus.set(`❌ Unveil failed: ${error.message}`);
@@ -1319,15 +1301,6 @@
         </div>
         <div class="control-center-actions">
           {#if $adminMode}
-            <button
-              type="button"
-              class="guide-me-btn"
-              data-studio-guide-me
-              on:click={startStudioWalkthrough}
-              title="Guide Me production coach"
-            >
-              Guide Me
-            </button>
             <button type="button" class="refresh-btn" on:click={() => syncFromVault(true)} title="Refresh content">
               🔄
             </button>
@@ -1339,321 +1312,25 @@
 
       <div class="control-center-scroll-body" data-control-center-scroll-body>
       {#if $adminMode}
-        <ProductionCommandCenter
+        <StudioWorkspaceLayout
           feedReels={studioFeedReels}
+          selectedSeriesId={$studioSelectedSeriesId}
+          on:seriesChange={(event) => studioSelectedSeriesId.set(event.detail)}
+          {syncFromVault}
           on:changed={handleEpisodeAssetChanged}
         >
-          <div slot="production" class="studio-workspace-slot forge-zone">
-<CreatorOnboardingWizard
-  seriesId={studioFeedReels?.[0]?.seriesId || null}
-  feedReels={studioFeedReels}
-/>
-<EpisodeReelAttachmentPanel
-  {uploadStatus}
-  {studioAttachEpisodeId}
-  {studioAttachReelId}
-  personalVideos={$personalVideos}
-  studioProjectTree={$studioProjectTree}
-  loadStudioHierarchy={loadStudioHierarchy}
-  onAttached={handleEpisodeAssetChanged}
-/>
-<div class="smart-header">
-              <div class="ai-badge">AI-POWERED</div>
-              <h3>Smart Category Detection Active</h3>
-              <p class="smart-subtitle">Content will be automatically placed in optimal category</p>
-            </div>
-            <label class="input-label-wrapper">
-              PRODUCTION TITLE *
-              <input
-                bind:value={$newTitle}
-                placeholder="e.g. 'Barbershop Stories'"
-                on:input={detectCategoryFromTitle}
-              />
-            </label>
-            <div class="category-detection-hint">
-              {#if $detectedCategory && $newCategory === 'Auto-Detect'}
-                <div class="detection-preview">
-                  <span class="detection-icon">🎯</span>
-                  <span class="detection-text">
-                    Will place in:
-                    <strong style="color: {UIAgent.getStudioConfigs($detectedCategory).color}">
-                      {$detectedCategory}
-                    </strong>
-                  </span>
-                </div>
-              {/if}
-            </div>
-            <label class="input-label-wrapper">
-              CATEGORY PLACEMENT
-              <div class="category-selector">
-                <select bind:value={$newCategory}>
-                  {#each CONFIG.CATEGORIES as cat}
-                    <option value={cat}>
-                      {#if cat === 'Auto-Detect'}
-                        🤖 {cat} (Recommended)
-                      {:else}
-                        📁 {displayDiscoveryShelf(cat, $categoryAliasStore)}
-                      {/if}
-                    </option>
-                  {/each}
-                </select>
-              </div>
-            </label>
-            <label class="input-label-wrapper">
-              VIDEO SOURCE
-              <div class="source-options">
-                <div class="url-input">
-                  <input bind:value={$videoSource} placeholder="https://example.com/video.mp4" />
-                  <span class="input-label-or">OR</span>
-                </div>
-                <div class="file-upload-section">
-                  <button class="browse-btn" on:click={UIAgent.handleFileBrowse}>📁 BROWSE FOR VIDEO FILE</button>
-                  <div
-                    class="file-drop-zone"
-                    class:active={$dragActive}
-                    on:dragenter={() => dragActive.set(true)}
-                    on:dragleave={() => dragActive.set(false)}
-                    on:dragover={(event) => {
-                      event.preventDefault();
-                      dragActive.set(true);
-                    }}
-                    on:drop={UIAgent.handleDrop}
-                    role="group"
-                    aria-label="Video file drop zone"
-                  >
-                    <span>Or drop video file here</span>
-                  </div>
-                  {#if $selectedFile}
-                    <div class="file-info">
-                      <div class="file-details">
-                        <span class="file-name">🎬 {$selectedFile?.name}</span>
-                        <span class="file-size">
-                          ({($selectedFile?.size / 1024 / 1024).toFixed(1)} MB)
-                        </span>
-                      </div>
-                      <button
-                        class="clear-file"
-                        on:click={() => {
-                          selectedFile.set(null);
-                          videoSource.set('');
-                        }}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  {/if}
-                </div>
-              </div>
-            </label>
-            {#if $isAutoDetecting}
-              <div class="processing-indicator">
-                <div class="processing-spinner"></div>
-                <span>🤖 ANALYZING...</span>
-              </div>
-            {/if}
-            <button
-              class="submit-btn {$newCategory === 'Auto-Detect' ? 'ai-submit' : ''}"
-              on:click={handleUploadWithFaces}
-              disabled={$isAutoDetecting}
-            >
-              {#if $isAutoDetecting}
-                <span class="ai-thinking">🤖 Analyzing...</span>
-              {:else if $newCategory === 'Auto-Detect'}
-                <span class="ai-upload">📤 UPLOAD WITH SMART PLACEMENT</span>
-              {:else}
-                <span>📤 UPLOAD TO {displayDiscoveryShelf($newCategory, $categoryAliasStore)}</span>
-              {/if}
-            </button>
-          <div class="studio-hierarchy-section">
-            <div class="smart-header">
-              <div class="ai-badge">📁 PRODUCTION HIERARCHY</div>
-              <h3>Project → Series → Season → Episode</h3>
-              <p class="smart-subtitle">Additive metadata layer — playback unchanged</p>
-            </div>
-            {#if $studioHierarchyLoading}
-              <p class="hierarchy-hint">Loading hierarchy...</p>
-            {:else if !$studioHierarchyEnabled}
-              <p class="hierarchy-hint">
-                Studio hierarchy API disabled. Set <code>REELFORGE_STUDIO_HIERARCHY=true</code> on the
-                backend.
-              </p>
-            {:else if $studioHierarchyError}
-              <p class="hierarchy-error">{$studioHierarchyError}</p>
-            {:else}
-              <div class="hierarchy-actions">
-                <button class="force-cleanup-btn" type="button" on:click={runStudioBackfill}>
-                  ↻ Backfill reels → episodes
-                </button>
-                <button class="force-cleanup-btn" type="button" on:click={loadStudioHierarchy}>
-                  🔄 Refresh tree
-                </button>
-              </div>
-              {#if $studioProjectTree}
-                <p class="hierarchy-project-name"><strong>{$studioProjectTree.name}</strong></p>
-                <div class="hierarchy-tree">
-                  {#each $studioProjectTree.series as series}
-                    <details class="hierarchy-series" open>
-                      <summary>
-                        {series.title}
-                        <span class="hierarchy-meta">({series.seasons?.length || 0} seasons)</span>
-                      </summary>
-                      {#each series.seasons as season}
-                        <details class="hierarchy-season">
-                          <summary>
-                            S{season.season_number}{#if season.title}: {season.title}{/if}
-                            <span class="hierarchy-meta">({season.episodes?.length || 0} eps)</span>
-                          </summary>
-                          <ul class="hierarchy-episodes">
-                            {#each season.episodes as episode}
-                              <li>
-                                S{season.season_number}E{episode.episode_number} — {episode.title}
-                                {#if episode.reel_id}
-                                  <span class="hierarchy-reel-badge" title={episode.reel_id}>🎬 linked</span>
-                                {:else}
-                                  <span class="hierarchy-reel-badge orphan">no reel</span>
-                                {/if}
-                              </li>
-                            {/each}
-                          </ul>
-                        </details>
-                      {/each}
-                    </details>
-                  {/each}
-                  {#if !$studioProjectTree.series?.length}
-                    <p class="hierarchy-hint">No series yet — create one below or run backfill.</p>
-                  {/if}
-                </div>
-              {/if}
-              <div class="hierarchy-forms">
-                <label class="input-label-wrapper">
-                  NEW SERIES
-                  <input bind:value={$studioFormSeriesTitle} placeholder="Series title" />
-                </label>
-                <button
-                  class="quick-upload-btn"
-                  type="button"
-                  on:click={handleCreateStudioSeries}
-                  disabled={!$studioFormSeriesTitle.trim()}
-                >
-                  + Add series
-                </button>
-                <label class="input-label-wrapper">
-                  SERIES
-                  <select bind:value={$studioSelectedSeriesId}>
-                    <option value="">Select series...</option>
-                    {#each $studioProjectTree?.series || [] as series}
-                      <option value={series.id}>{series.title}</option>
-                    {/each}
-                  </select>
-                </label>
-                <label class="input-label-wrapper">
-                  SEASON #
-                  <input type="number" min="1" bind:value={$studioFormSeasonNumber} />
-                </label>
-                <button
-                  class="quick-upload-btn"
-                  type="button"
-                  on:click={handleCreateStudioSeason}
-                  disabled={!$studioSelectedSeriesId}
-                >
-                  + Add season
-                </button>
-                <label class="input-label-wrapper">
-                  SEASON
-                  <select bind:value={$studioSelectedSeasonId}>
-                    <option value="">Select season...</option>
-                    {#each ($studioProjectTree?.series || [])
-                      .flatMap((series) =>
-                        (series.seasons || []).map((season) => ({ ...season, seriesTitle: series.title }))
-                      ) as season}
-                      <option value={season.id}>{season.seriesTitle} — S{season.season_number}</option>
-                    {/each}
-                  </select>
-                </label>
-                <label class="input-label-wrapper">
-                  EPISODE #
-                  <input type="number" min="1" bind:value={$studioFormEpisodeNumber} />
-                </label>
-                <label class="input-label-wrapper">
-                  EPISODE TITLE
-                  <input bind:value={$studioFormEpisodeTitle} placeholder="Episode title" />
-                </label>
-                <button
-                  class="quick-upload-btn"
-                  type="button"
-                  on:click={handleCreateStudioEpisode}
-                  disabled={!$studioSelectedSeasonId || !$studioFormEpisodeTitle.trim()}
-                >
-                  + Add episode
-                </button>
-              </div>
-            {/if}
-          </div>
-          </div>
           <div slot="content" class="studio-workspace-slot">
-            <div class="creator-catalog-studio-section" data-content-panel="creator-catalog">
-              <div class="smart-header">
-                <div class="ai-badge">SERIES ASSEMBLY</div>
-                <h3>Creator Series Assembly</h3>
-                <p class="smart-subtitle">
-                  Complete episode packages, check readiness, and preview series before publish
-                </p>
-              </div>
-              <CreatorSeriesAssembly
-                feedReels={studioFeedReels}
-                preferredSeriesId={$studioSelectedSeriesId || ''}
-                on:changed={handleCreatorCatalogChanged}
-                on:seriesSelect={handleCreatorCatalogSeriesSelect}
-              />
-              <div class="smart-header" style="margin-top: 1.25rem;">
-                <div class="ai-badge">SERIES CATALOG</div>
-                <h3>Creator Catalog Control</h3>
-                <p class="smart-subtitle">
-                  Organize vault-bound series — edit titles, status, and episode order (catalog store of truth)
-                </p>
-              </div>
-              <CreatorCatalogPanel
-                feedReels={studioFeedReels}
-                preferredSeriesId={$studioSelectedSeriesId || ''}
-                on:changed={handleCreatorCatalogChanged}
-                on:seriesSelect={handleCreatorCatalogSeriesSelect}
-                on:editInVault={handleCreatorCatalogEditInVault}
-              />
-            </div>
-            <div class="series-metadata-studio-section">
-              <div class="smart-header">
-                <div class="ai-badge">📺 SERIES METADATA</div>
-                <h3>Reel Metadata (advanced)</h3>
-                <p class="smart-subtitle">
-                  Optional reel-centric metadata editor — use Creator Catalog for series-first edits
-                </p>
-              </div>
-              <label class="input-label-wrapper">
-                LINK TO REEL
-                <select bind:value={$studioSeriesMetadataReelId}>
-                  <option value="">Select production reel...</option>
-                  {#each studioSeriesMetadataReelOptions as reel (reel.id)}
-                    <option value={reel.id}>{reel.title || reel.name || reel.id}</option>
-                  {/each}
-                </select>
-              </label>
-              <SeriesMetadataEditor
-                reelId={$studioSeriesMetadataReelId}
-                reelLabel={studioSeriesMetadataReelLabel}
-                on:saved={handleMetadataSaved}
-              />
-            </div>
-            <PublishingProfileSelector />
             <div class="personal-studio-section" data-content-panel="assets">
               <div class="smart-header">
                 <div class="ai-badge">🎬 PERSONAL CONTENT STUDIO</div>
-                <h3>Media Vault</h3>
+                <h3>Video Vault</h3>
                 <p class="smart-subtitle">
                   Upload, browse, and drag media into the feed — synced with the backend catalog
                 </p>
               </div>
-
               <VaultExperience
+                surfaceRole="creator"
+                showPersonalControls={true}
                 {personalThumbnailCollection}
                 {personalVideos}
                 {personalThumbnailIndex}
@@ -1672,7 +1349,7 @@
                 {UIAgent}
                 {vaultUtils}
                 {syncFromVault}
-                {syncDomain}
+                syncDomain={studioSyncDomain}
                 {persistPersonalVault}
                 {storageSet}
                 {getFallbackImage}
@@ -1680,819 +1357,222 @@
                 uploadSeriesId={$studioSelectedSeriesId}
               />
             </div>
-            <ContentIntelligencePanel />
             <div class="asset-manager" data-content-panel="collections">
-            <div class="smart-header">
-              <div class="ai-badge">LIVE CONTENT</div>
-              <h3>Smart Category Distribution</h3>
-            </div>
-            <div class="distribution-center">
-              <h3 class="glow-text">Smart Category Distribution</h3>
-              <p
-                class="scd-viewer-rail-hint"
-                data-scd-viewer-rail-hint
-                style="margin: 0.35rem 0 1rem; font-size: 0.82rem; line-height: 1.45; color: rgba(255,255,255,0.62); max-width: 42rem;"
-              >
-                Viewer Home / New Releases / Trending / Suspense labels sync from these LIVE CONTENT renames
-                (Romance → New Releases tab, Trending → Trending tab, Suspense → Suspense tab). Cards and posters are unchanged.
-              </p>
-              <div class="category-chips-grid">
-                {#each Object.entries($categoryCounts) as [name, count]}
-                  {@const catConfig = UIAgent.getStudioConfigs(name)}
-                  {@const displayName = displayDiscoveryShelf(name, $categoryAliasStore)}
-                  <div class="category-chip futuristic-card" style="border-color: {catConfig.color}">
-                    <span
-                      contenteditable="true"
-                      on:blur={(event) =>
-                        UIAgent.renameCategory(name, event.currentTarget.textContent || '')}
-                      class="editable-label"
-                      style="color: {catConfig.color}"
-                    >
-                      {displayName}
-                    </span>
-                    <span class="count-badge" style="background: {catConfig.color}">{count} items</span>
-                    <div
-                      class="glow-line"
-                      style="background: linear-gradient(90deg, transparent, {catConfig.color}, transparent)"
-                    ></div>
-                  </div>
-                {/each}
+              <div class="smart-header">
+                <div class="ai-badge">LIVE CONTENT</div>
+                <h3>Smart Category Distribution</h3>
               </div>
-            </div>
-            <SmartCategoryAuditPanel
-              {feed}
-              authHeaders={() => getAdminAuthHeaders()}
-              onCategoryPersisted={() => {
-                try {
-                  AI_CLEANUP_AGENT?.applyPersistedTitlesOverlay?.();
-                } catch {
-                  /* optional */
-                }
-              }}
-            />
-            <IdentityBackedEditorialReviewPanel
-              authHeaders={() => getAdminAuthHeaders()}
-              onCategoryPersisted={() => {
-                try {
-                  AI_CLEANUP_AGENT?.applyPersistedTitlesOverlay?.();
-                } catch {
-                  /* optional */
-                }
-              }}
-            />
-            <SemanticProductionCardsPanel
-              authHeaders={() => getAdminAuthHeaders()}
-              allowPersist={false}
-              onCategoryPersisted={() => {
-                try {
-                  AI_CLEANUP_AGENT?.applyPersistedTitlesOverlay?.();
-                } catch {
-                  /* optional */
-                }
-              }}
-            />
-            <HeroExperience
-              section="replace"
-              {HERO_BACKGROUND_VIDEO}
-              {HERO_POSTER_IMAGE}
-              {heroVideoLoaded}
-              {heroVideoFailed}
-              {heroRestoring}
-              {heroResumeToast}
-              {heroPendingFile}
-              {heroIsDragOver}
-              {heroPreviewUrl}
-              {personalVideos}
-              {uploadStatus}
-              {resourceManager}
-              {CONFIG}
-              {syncFromVault}
-              {syncDomain}
-              {persistPersonalVault}
-              {viewerHydrationReady}
-            />
-
-            <div class="category-stats">
-              {#each Object.entries($categoryCounts) as [cat, count]}
-                {#if $feed[cat]}
-                  {@const catConfig = UIAgent.getStudioConfigs(cat)}
-                  {@const displayName = displayDiscoveryShelf(cat, $categoryAliasStore)}
-                  <div class="stat-item">
-                    <span
-                      class="stat-category"
-                      style="border-left: 3px solid {catConfig.color}; color: {catConfig.color}"
-                    >
-                      {displayName}
-                    </span>
-                    <span class="stat-count">
-                      {count} items
-                    </span>
-                    <span class="personal-count" style="color: {catConfig.color}">
-                      ({$feed[cat].filter((reel) => reel.isPersonalThumbnail).length} personal thumbs)
-                    </span>
-                    <span class="video-count" style="color: {catConfig.color}">
-                      ({$feed[cat].filter((reel) => reel.isPersonalVideo).length} personal videos)
-                    </span>
-                  </div>
-                {/if}
-              {/each}
-            </div>
-
-            <div class="input-label-wrapper studio-inventory-section">
-              <div class="studio-inventory-heading">RECENTLY ADDED PRODUCTIONS</div>
-              <div class="studio-inventory-toolbar" role="group" aria-label="Production inventory filters">
-                <label class="studio-inventory-select-all">
-                  <input
-                    bind:this={studioSelectAllCheckbox}
-                    type="checkbox"
-                    class="studio-inventory-checkbox"
-                    checked={studioInventoryAllVisibleSelected}
-                    disabled={studioInventoryVisibleIds.length === 0 || studioBulkActionState === 'executing'}
-                    on:change={toggleSelectAllVisibleInventory}
-                    aria-label="Select all visible productions"
-                  />
-                  <span>Select visible</span>
-                </label>
-                <input
-                  type="search"
-                  class="studio-inventory-search"
-                  bind:value={studioInventoryQuery}
-                  placeholder="Search title, filename, category, status…"
-                  aria-label="Search productions"
-                />
-                <select
-                  class="studio-inventory-sort"
-                  bind:value={studioInventorySort}
-                  aria-label="Sort productions"
-                >
-                  <option value="newest">Newest first</option>
-                  <option value="oldest">Oldest first</option>
-                  <option value="title">Title A–Z</option>
-                </select>
-                <span class="studio-inventory-count" aria-live="polite">
-                  {studioInventoryView.length}/{studioInventoryBase.length}
-                </span>
-              </div>
-              {#if studioInventorySelectedCount > 0 || studioBulkDeleteResult || studioBulkCategoryResult}
-                <div
-                  class="studio-bulk-toolbar"
-                  role="region"
-                  aria-label="Bulk production actions"
-                  data-bulk-action-state={studioBulkActionState}
-                >
-                  {#if studioInventorySelectedCount > 0}
-                    <span class="studio-bulk-count" aria-live="polite">
-                      {studioInventorySelectedCount} selected
-                    </span>
-                  {/if}
-                  <span class="studio-bulk-state" aria-live="polite">
-                    State: {studioBulkActionState}
-                  </span>
-                  {#if studioInventorySelectedCount > 0}
-                    <button
-                      type="button"
-                      class="studio-bulk-btn"
-                      on:click={clearInventorySelection}
-                      disabled={studioBulkActionState === 'executing'}
-                    >
-                      Clear selection
-                    </button>
-                    {#if studioBulkActionState !== 'confirming'}
-                      <button
-                        type="button"
-                        class="studio-bulk-btn"
-                        on:click={enterBulkConfirmPreview}
-                        disabled={studioBulkActionState === 'executing'}
-                      >
-                        Review selection
-                      </button>
-                    {:else}
-                      <button
-                        type="button"
-                        class="studio-bulk-btn"
-                        on:click={cancelBulkConfirmPreview}
-                        disabled={studioBulkActionState === 'executing'}
-                      >
-                        Back to review
-                      </button>
-                    {/if}
-                    <button
-                      type="button"
-                      class="studio-bulk-btn is-destructive"
-                      on:click={enterBulkDeleteConfirm}
-                      disabled={studioBulkActionState === 'executing'}
-                      title="Delete selected productions by id"
-                    >
-                      Bulk delete
-                    </button>
-                    <label class="studio-bulk-category-picker">
-                      <span class="studio-bulk-category-label">Category</span>
-                      <select
-                        class="studio-bulk-category-select"
-                        bind:value={studioBulkCategoryTarget}
-                        disabled={studioBulkActionState === 'executing'}
-                        aria-label="Bulk category target"
-                      >
-                        {#each STUDIO_BULK_CATEGORY_OPTIONS as option}
-                          <option value={option}>{displayDiscoveryShelf(option, $categoryAliasStore)}</option>
-                        {/each}
-                      </select>
-                    </label>
-                    <button
-                      type="button"
-                      class="studio-bulk-btn"
-                      on:click={enterBulkCategoryConfirm}
-                      disabled={studioBulkActionState === 'executing'}
-                      title="Update category for selected productions via PATCH /api/reels/:id/category"
-                    >
-                      Bulk category
-                    </button>
-                    <button
-                      type="button"
-                      class="studio-bulk-btn is-placeholder"
-                      disabled
-                      title="Bulk export requires backend support — not available yet"
-                    >
-                      Bulk export
-                    </button>
-                    <div class="studio-bulk-summary" aria-label="Selected productions summary">
-                      <div class="studio-bulk-summary-title">Selected items</div>
-                      <ul class="studio-bulk-summary-list">
-                        {#each studioInventorySelectedSummary as item (item.id)}
-                          <li>
-                            <span class="studio-bulk-summary-name">{item.title}</span>
-                            <code class="studio-bulk-summary-id">{item.id}</code>
-                            {#if item.category}
-                              <span class="studio-bulk-summary-meta">{item.category}</span>
-                            {/if}
-                            {#if item.status}
-                              <span class="studio-bulk-summary-meta">{item.status}</span>
-                            {/if}
-                          </li>
-                        {/each}
-                      </ul>
-                    </div>
-                  {/if}
-                  {#if studioBulkPendingAction === 'delete' && (studioBulkActionState === 'confirming' || studioBulkActionState === 'executing')}
-                    <div
-                      class="studio-bulk-confirm-preview"
-                      role="group"
-                      aria-label="Bulk delete confirmation"
-                    >
-                      <div class="studio-bulk-confirm-title">Confirm bulk delete</div>
-                      <p class="studio-bulk-confirm-copy">
-                        {#if studioBulkActionState === 'executing'}
-                          Deleting {studioInventorySelectedCount || 'selected'} production{studioInventorySelectedCount === 1 ? '' : 's'}…
-                        {:else}
-                          Permanently delete
-                          {studioInventorySelectedCount} production{studioInventorySelectedCount === 1 ? '' : 's'}?
-                          This cannot be undone.
-                        {/if}
-                      </p>
-                      <ul class="studio-bulk-summary-list">
-                        {#each studioInventorySelectedSummary as item (item.id)}
-                          <li>
-                            <span class="studio-bulk-summary-name">{item.title}</span>
-                            <code class="studio-bulk-summary-id">{item.id}</code>
-                          </li>
-                        {/each}
-                      </ul>
-                      <div class="studio-bulk-confirm-actions">
-                        <button
-                          type="button"
-                          class="studio-bulk-btn"
-                          on:click={cancelBulkConfirmPreview}
-                          disabled={studioBulkActionState === 'executing'}
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="button"
-                          class="studio-bulk-btn is-destructive"
-                          on:click={executeBulkDelete}
-                          disabled={studioBulkActionState === 'executing'}
-                        >
-                          {#if studioBulkActionState === 'executing'}
-                            Deleting…
-                          {:else}
-                            Confirm delete
-                          {/if}
-                        </button>
-                      </div>
-                    </div>
-                  {:else if studioBulkPendingAction === 'category' && (studioBulkActionState === 'confirming' || studioBulkActionState === 'executing')}
-                    <div
-                      class="studio-bulk-confirm-preview"
-                      role="group"
-                      aria-label="Bulk category confirmation"
-                    >
-                      <div class="studio-bulk-confirm-title">Confirm bulk category</div>
-                      <p class="studio-bulk-confirm-copy">
-                        {#if studioBulkActionState === 'executing'}
-                          Updating {studioInventorySelectedCount || 'selected'} production{studioInventorySelectedCount === 1 ? '' : 's'}
-                          to {studioBulkCategoryTarget}…
-                        {:else}
-                          Set category to <strong>{studioBulkCategoryTarget}</strong> for
-                          {studioInventorySelectedCount} production{studioInventorySelectedCount === 1 ? '' : 's'}?
-                        {/if}
-                      </p>
-                      <div class="studio-bulk-summary-title">Current categories</div>
-                      <ul class="studio-bulk-summary-list">
-                        {#each studioBulkCategoryPreview as row (row.category)}
-                          <li>
-                            <span class="studio-bulk-summary-name">{row.category}</span>
-                            <span class="studio-bulk-summary-meta">{row.count}</span>
-                          </li>
-                        {/each}
-                      </ul>
-                      <div class="studio-bulk-summary-title">Affected productions</div>
-                      <ul class="studio-bulk-summary-list">
-                        {#each studioInventorySelectedSummary as item (item.id)}
-                          <li>
-                            <span class="studio-bulk-summary-name">{item.title}</span>
-                            <code class="studio-bulk-summary-id">{item.id}</code>
-                            <span class="studio-bulk-summary-meta"
-                              >{item.category || '(none)'} → {studioBulkCategoryTarget}</span
-                            >
-                          </li>
-                        {/each}
-                      </ul>
-                      <div class="studio-bulk-confirm-actions">
-                        <button
-                          type="button"
-                          class="studio-bulk-btn"
-                          on:click={cancelBulkConfirmPreview}
-                          disabled={studioBulkActionState === 'executing'}
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="button"
-                          class="studio-bulk-btn"
-                          on:click={executeBulkCategory}
-                          disabled={studioBulkActionState === 'executing'}
-                        >
-                          {#if studioBulkActionState === 'executing'}
-                            Updating…
-                          {:else}
-                            Confirm category update
-                          {/if}
-                        </button>
-                      </div>
-                    </div>
-                  {:else if studioBulkActionState === 'confirming'}
-                    <div
-                      class="studio-bulk-confirm-preview"
-                      role="group"
-                      aria-label="Bulk action confirmation preview"
-                    >
-                      <div class="studio-bulk-confirm-title">Confirmation preview</div>
-                      <p class="studio-bulk-confirm-copy">
-                        {studioInventorySelectedCount} production{studioInventorySelectedCount === 1 ? '' : 's'}
-                        selected. Use Bulk delete or Bulk category to apply a supported action.
-                      </p>
-                      <ul class="studio-bulk-summary-list">
-                        {#each studioInventorySelectedSummary as item (item.id)}
-                          <li>
-                            <span class="studio-bulk-summary-name">{item.title}</span>
-                            <code class="studio-bulk-summary-id">{item.id}</code>
-                            {#if item.category}
-                              <span class="studio-bulk-summary-meta">{item.category}</span>
-                            {/if}
-                          </li>
-                        {/each}
-                      </ul>
-                    </div>
-                  {/if}
-                  {#if studioBulkDeleteResult && (studioBulkActionState === 'success' || studioBulkActionState === 'failed')}
-                    <div
-                      class="studio-bulk-result"
-                      role="status"
-                      aria-live="polite"
-                      data-bulk-result={studioBulkActionState}
-                    >
-                      <div class="studio-bulk-result-title">Bulk delete result</div>
-                      <p class="studio-bulk-confirm-copy">
-                        Deleted: {studioBulkDeleteResult.deletedCount}.
-                        Failed: {studioBulkDeleteResult.failedCount}.
-                        Remaining selected: {studioBulkDeleteResult.remainingCount}.
-                      </p>
-                      {#if studioBulkDeleteResult.failed.length}
-                        <ul class="studio-bulk-summary-list">
-                          {#each studioBulkDeleteResult.failed as item (item.id)}
-                            <li>
-                              <code class="studio-bulk-summary-id">{item.id}</code>
-                              <span class="studio-bulk-summary-meta">{item.error}</span>
-                            </li>
-                          {/each}
-                        </ul>
-                      {/if}
-                      <button
-                        type="button"
-                        class="studio-bulk-btn"
-                        on:click={dismissBulkDeleteResult}
-                      >
-                        Dismiss
-                      </button>
-                    </div>
-                  {/if}
-                  {#if studioBulkCategoryResult && (studioBulkActionState === 'success' || studioBulkActionState === 'failed')}
-                    <div
-                      class="studio-bulk-result"
-                      role="status"
-                      aria-live="polite"
-                      data-bulk-result={studioBulkActionState}
-                    >
-                      <div class="studio-bulk-result-title">Bulk category result</div>
-                      <p class="studio-bulk-confirm-copy">
-                        Target: {studioBulkCategoryResult.category}.
-                        Updated: {studioBulkCategoryResult.updatedCount}.
-                        Failed: {studioBulkCategoryResult.failedCount}.
-                        Remaining selected: {studioBulkCategoryResult.remainingCount}.
-                      </p>
-                      {#if studioBulkCategoryResult.failed.length}
-                        <ul class="studio-bulk-summary-list">
-                          {#each studioBulkCategoryResult.failed as item (item.id)}
-                            <li>
-                              <code class="studio-bulk-summary-id">{item.id}</code>
-                              <span class="studio-bulk-summary-meta">{item.error}</span>
-                            </li>
-                          {/each}
-                        </ul>
-                      {/if}
-                      <button
-                        type="button"
-                        class="studio-bulk-btn"
-                        on:click={dismissBulkCategoryResult}
-                      >
-                        Dismiss
-                      </button>
-                    </div>
-                  {/if}
-                </div>
-              {/if}
-              {#if !$viewerHydrationReady}
-                <p class="studio-inventory-feedback is-loading" role="status">Loading productions…</p>
-              {:else if $uploadStatus && $uploadStatus !== 'Standby'}
+              <div class="distribution-center">
+                <h3 class="glow-text">Smart Category Distribution</h3>
                 <p
-                  class="studio-inventory-feedback"
-                  class:is-loading={/SAVING|SYNCING|Deleting|DELETING|UPLOADING/i.test($uploadStatus)}
-                  class:is-error={/^❌|ERROR:/i.test($uploadStatus)}
-                  class:is-ok={/^✅/i.test($uploadStatus)}
-                  role="status"
+                  class="scd-viewer-rail-hint"
+                  data-scd-viewer-rail-hint
+                  style="margin: 0.35rem 0 1rem; font-size: 0.82rem; line-height: 1.45; color: rgba(255,255,255,0.62); max-width: 42rem;"
                 >
-                  {$uploadStatus}
+                  Viewer Home / New Releases / Trending / Suspense labels sync from these LIVE CONTENT renames
+                  (Romance → New Releases tab, Trending → Trending tab, Suspense → Suspense tab). Item counts use
+                  effective creator shelf (same logic as the viewer tab), not raw bucket placement alone.
                 </p>
-              {/if}
-              <div class="asset-list">
-                {#each studioInventoryView as reel (reel.id)}
-                  {@const reelId = String(reel.id)}
-                  {@const reelConfig = UIAgent.getStudioConfigs(reel.category)}
-                  {@const productionStatus = resolveProductionStatus(reel)}
-                  {@const productionType = resolveProductionType(reel)}
-                  {@const rowFeedback = renameRowFeedback[reelId] || null}
-                  {@const rowSelected = !!studioInventorySelected[reelId]}
-                  {@const rowDeleting =
-                    !!$isDeleting && $deleteConfirmReel && String($deleteConfirmReel.id) === reelId}
-                  <div
-                    class="asset-item smart-item"
-                    class:is-selected={rowSelected}
-                    class:is-deleting={rowDeleting}
-                    class:is-rename-busy={renameBusyId === reelId}
-                    style="border-left: 4px solid {reelConfig.color}"
-                  >
-                    <label class="studio-inventory-row-select">
-                      <input
-                        type="checkbox"
-                        class="studio-inventory-checkbox"
-                        checked={rowSelected}
-                        disabled={rowDeleting || studioBulkActionState === 'executing'}
-                        on:change={() => toggleInventorySelection(reelId)}
-                        aria-label="Select production {reel.title || reelId}"
-                      />
-                    </label>
-                    <div class="asset-info">
-                      <div class="editable-title-wrapper">
-                        <input
-                          type="text"
-                          value={reel.title || ''}
-                          disabled={rowDeleting || renameBusyId === reelId}
-                          on:input={(event) => (reel.title = event.currentTarget.value)}
-                          on:blur={() => updateReelTitle(reel, reel.title)}
-                          on:keydown={(event) => {
-                            if (event.key === 'Enter') {
-                              event.preventDefault();
-                              updateReelTitle(reel, reel.title);
-                            }
-                          }}
-                          placeholder="Enter title..."
-                          class="asset-title-input"
-                          aria-label="Edit production title"
-                        />
-                        {#if rowFeedback}
-                          <small
-                            class="title-save-feedback"
-                            class:is-saving={rowFeedback.kind === 'saving'}
-                            class:is-saved={rowFeedback.kind === 'saved'}
-                            class:is-local={rowFeedback.kind === 'local'}
-                            class:is-error={rowFeedback.kind === 'error'}
-                          >
-                            {rowFeedback.message}
-                          </small>
-                        {:else if reel.title !== reel.title_original}
-                          <small class="title-changed">Changed</small>
-                        {/if}
-                      </div>
-                      <div class="asset-meta">
-                        <span
-                          class="smart-category"
-                          style="background: {reelConfig.color}20; color: {reelConfig.color}"
-                        >
-                          {displayDiscoveryShelf(reel.category, $categoryAliasStore) || reel.category}
-                        </span>
-                        {#if productionStatus}
-                          <span class="production-status-badge status-{productionStatus}">
-                            {productionStatus}
-                          </span>
-                        {/if}
-                        {#if productionType}
-                          <span class="production-type-badge type-{productionType}">
-                            {productionType}
-                          </span>
-                        {/if}
-                        {#if productionStatus === 'failed' && (reel.error_message || reel.errorMessage)}
-                          <span class="production-error-text" title={String(reel.error_message || reel.errorMessage)}>
-                            {reel.error_message || reel.errorMessage}
-                          </span>
-                        {/if}
-                        {#if reel.auto_detected}
-                          <span class="detection-meta">
-                            🤖 Auto-placed ({reel.detection_confidence || 'High'})
-                          </span>
-                        {:else}
-                          <span class="detection-meta">📤 Manually placed</span>
-                        {/if}
-                        {#if reel.isPersonalVideo}
-                          <span class="video-badge">🎬 Video</span>
-                        {/if}
-                      </div>
-                    </div>
-                    <div class="button-group">
-                      {#if reel.isPersonalVideo}
-                        <button
-                          class="unveil-btn"
-                          disabled={rowDeleting || !!$isDeleting}
-                          on:click={() =>
-                            unveilToCloud(reel.file_name || reel.personal_video || reel.video_url)}
-                          title="Upload to cloud"
-                        >
-                          🚀 UNVEIL
-                        </button>
-                      {/if}
-                      <button
-                        class="delete-btn"
-                        disabled={!!$isDeleting}
-                        aria-busy={rowDeleting}
-                        on:click={() => UIAgent.deleteProduction(reel.id)}
-                        title="Delete production (confirmation required)"
+                <div class="category-chips-grid">
+                  {#each Object.entries($categoryCounts) as [name, count]}
+                    {@const catConfig = UIAgent.getStudioConfigs(name)}
+                    {@const displayName = displayDiscoveryShelf(name, $categoryAliasStore)}
+                    <div class="category-chip futuristic-card" style="border-color: {catConfig.color}">
+                      <span
+                        contenteditable="true"
+                        on:blur={(event) =>
+                          UIAgent.renameCategory(name, event.currentTarget.textContent || '')}
+                        class="editable-label"
+                        style="color: {catConfig.color}"
                       >
-                        {rowDeleting ? 'DELETING…' : 'DELETE'}
-                      </button>
+                        {displayName}
+                      </span>
+                      <span class="count-badge" style="background: {catConfig.color}">{count} items</span>
+                      <div
+                        class="glow-line"
+                        style="background: linear-gradient(90deg, transparent, {catConfig.color}, transparent)"
+                      ></div>
                     </div>
-                  </div>
-                {/each}
-                {#if studioInventoryBase.length > 0 && studioInventoryView.length === 0}
-                  <p class="studio-inventory-empty">No productions match this search.</p>
-                {/if}
+                  {/each}
+                </div>
               </div>
             </div>
+            <div class="creator-catalog-studio-section" data-content-panel="creator-catalog">
+              <div class="smart-header">
+                <div class="ai-badge">SERIES CATALOG</div>
+                <h3>Creator Catalog</h3>
+                <p class="smart-subtitle">
+                  Organize vault-bound series — edit titles, status, and episode order (catalog store of truth)
+                </p>
+              </div>
+              <CreatorCatalogPanel
+                feedReels={studioFeedReels}
+                preferredSeriesId={$studioSelectedSeriesId || ''}
+                on:changed={handleCreatorCatalogChanged}
+                on:seriesSelect={handleCreatorCatalogSeriesSelect}
+                on:editInVault={handleCreatorCatalogEditInVault}
+              />
+            </div>
           </div>
-          </div>
-          <div slot="analytics" class="studio-workspace-slot">
-            <RevenueDashboard
-              seriesId={$studioSelectedSeriesId || null}
-              feedReels={studioFeedReels}
-            />
-            <MarketplaceDashboard
-              seriesId={$studioSelectedSeriesId || null}
-              feedReels={studioFeedReels}
+          <div slot="production" class="studio-workspace-slot forge-zone">
+            <EpisodeReelAttachmentPanel
+              {uploadStatus}
+              {studioAttachEpisodeId}
+              {studioAttachReelId}
+              personalVideos={$personalVideos}
+              studioProjectTree={$studioProjectTree}
+              loadStudioHierarchy={loadStudioHierarchy}
+              onAttached={handleEpisodeAssetChanged}
             />
           </div>
           <div slot="system" class="studio-workspace-slot">
-          <DeveloperDiagnosticsCenter
-            {adminMode}
-            {feed}
-            {personalThumbnailCollection}
-            {personalVideos}
-            {viewerHydrationReady}
-            {HERO_BACKGROUND_VIDEO}
-            {HERO_POSTER_IMAGE}
-            {heroVideoFailed}
-            {heroVideoLoaded}
-            {heroPendingFile}
-            {storageHealth}
-            {uploadStatus}
-          />
-          <SentinelSecurityCard />
-          <SentinelAssistantPanel feedReels={studioFeedReels} seriesId={$studioSelectedSeriesId || null} />
-          <HeroManagerPanel
-            feedReels={studioFeedReels}
-            {feed}
-            {personalVideos}
-            {persistPersonalVault}
-            {storageSet}
-            {syncFromVault}
-            {syncDomain}
-            {CONFIG}
-            {persistentTitles}
-            {updateReelTitle}
-          />
-          <StudioAppearancePanel />
-<PlatformPublishingProfiles />
-          <PlatformConfigPanel
-            active={$controlCenterOpen}
-            onStatus={(msg) => {
-              uploadStatus.set(msg);
-              resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2500);
-            }}
-          />
-          <StudioAmbientAudioPanel studioOpen={$controlCenterOpen && $adminMode} />
-          <MonetizationPanel
-            active={$controlCenterOpen}
-            onStatus={(msg) => {
-              uploadStatus.set(msg);
-              resourceManager.setTimeout(() => uploadStatus.set('Standby'), 2500);
-            }}
-          />
-
-          {#if $watchContinueEnabled}
-            <div class="hierarchy-section watch-continue-section" data-watch-continue>
-              <h4 class="hierarchy-title">Continue watching (API)</h4>
-              {#if $watchContinueLoading}
-                <p class="hierarchy-hint">Loading progress...</p>
-              {:else if $watchContinueItems.length === 0}
-                <p class="hierarchy-hint">No in-progress titles for this viewer.</p>
-              {:else}
-                <ul class="watch-continue-list">
-                  {#each $watchContinueItems as item}
-                    <li class="watch-continue-item">
-                      <span>{item.episode_title || item.reel_title || item.reel_id}</span>
-                      <span class="watch-continue-pct">{Math.round(item.completion_percent)}%</span>
-                    </li>
-                  {/each}
-                </ul>
-              {/if}
+            <div class="personal-studio-section" data-system-panel="vault">
+              <div class="smart-header">
+                <div class="ai-badge">🎬 SYSTEM VAULT</div>
+                <h3>Video Vault</h3>
+                <p class="smart-subtitle">
+                  Administrative view of the same vault authority — shared stores and persistence
+                </p>
+              </div>
+              <VaultExperience
+                surfaceRole="system"
+                showPersonalControls={false}
+                {personalThumbnailCollection}
+                {personalVideos}
+                {personalThumbnailIndex}
+                {pendingThumbnail}
+                {thumbnailDragActive}
+                {videoDragActive}
+                {uploadStatus}
+                {personalStudioMode}
+                {usePersonalThumbnails}
+                {personalVideoCollection}
+                {newTitle}
+                {feed}
+                {CONFIG}
+                {resourceManager}
+                {AI_CLEANUP_AGENT}
+                {UIAgent}
+                {vaultUtils}
+                {syncFromVault}
+                syncDomain={studioSyncDomain}
+                {persistPersonalVault}
+                {storageSet}
+                {getFallbackImage}
+                uploadEpisodeId={$studioAttachEpisodeId}
+                uploadSeriesId={$studioSelectedSeriesId}
+              />
             </div>
-          {/if}
-            <div class="asset-manager">
-<div class="ai-maintenance-panel">
-              <div class="smart-header ai-header">
-                <div class="ai-badge pulse">🤖 AI MAINTENANCE</div>
-                <h3>Autonomous Data Hygiene</h3>
-              </div>
-              <div class="health-dashboard">
-                <div
-                  class="health-score"
-                  class:good={$storageHealth.score >= 80}
-                  class:warning={$storageHealth.score >= 60 && $storageHealth.score < 80}
-                  class:critical={$storageHealth.score < 60}
-                >
-                  <svg viewBox="0 0 36 36" class="health-ring">
-                    <path
-                      class="health-ring-bg"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    />
-                    <path
-                      class="health-ring-fill"
-                      stroke-dasharray="{$storageHealth.score}, 100"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    />
-                  </svg>
-                  <div class="health-percent">{$storageHealth.score}%</div>
-                  <span class="health-label">HEALTH</span>
-                </div>
-                {#if $storageHealth.issues?.length > 0}
-                  <div class="health-issues">
-                    <small>⚠️ {$storageHealth.issues.length} items need attention</small>
-                    <ul>
-                      {#each $storageHealth.issues as issue}
-                        <li>{issue}</li>
-                      {/each}
-                    </ul>
+            <HeroManagerPanel
+              feedReels={studioFeedReels}
+              {feed}
+              {personalVideos}
+              {persistPersonalVault}
+              {storageSet}
+              {syncFromVault}
+              syncDomain={studioSyncDomain}
+              {CONFIG}
+              {persistentTitles}
+              {updateReelTitle}
+            />
+            <details class="studio-system-disclosure">
+              <summary>Diagnostics / Sync</summary>
+              <DeveloperDiagnosticsCenter
+                {adminMode}
+                {feed}
+                {personalThumbnailCollection}
+                {personalVideos}
+                {viewerHydrationReady}
+                {HERO_BACKGROUND_VIDEO}
+                {HERO_POSTER_IMAGE}
+                {heroVideoFailed}
+                {heroVideoLoaded}
+                {heroPendingFile}
+                {storageHealth}
+                {uploadStatus}
+              />
+              <div class="asset-manager">
+                <div class="ai-maintenance-panel">
+                  <div class="smart-header ai-header">
+                    <div class="ai-badge pulse">🤖 AI MAINTENANCE</div>
+                    <h3>Autonomous Data Hygiene</h3>
                   </div>
-                {/if}
-                <div class="health-details">
-                  <small>
-                    Vault: {$storageHealth.details?.vault || 0} | Thumbs:
-                    {$storageHealth.details?.thumbs || 0} | Videos:
-                    {$storageHealth.details?.videos || 0}
-                  </small>
-                </div>
-                <div class="storage-metrics">
-                  <div class="metric">
-                    <span class="metric-value">
-                      {JSON.parse(
-                        (typeof window !== 'undefined' ? localStorage.getItem(CONFIG.VAULT_KEY) : null) ||
-                          '[]'
-                      ).length}
-                    </span>
-                    <span class="metric-label">Active Records</span>
+                  <div class="health-dashboard">
+                    <div
+                      class="health-score"
+                      class:good={$storageHealth.score >= 80}
+                      class:warning={$storageHealth.score >= 60 && $storageHealth.score < 80}
+                      class:critical={$storageHealth.score < 60}
+                    >
+                      <svg viewBox="0 0 36 36" class="health-ring">
+                        <path
+                          class="health-ring-bg"
+                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                        />
+                        <path
+                          class="health-ring-fill"
+                          stroke-dasharray="{$storageHealth.score}, 100"
+                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                        />
+                      </svg>
+                      <div class="health-percent">{$storageHealth.score}%</div>
+                      <span class="health-label">HEALTH</span>
+                    </div>
+                    <div class="health-details">
+                      <small>
+                        Vault: {$storageHealth.details?.vault || 0} | Thumbs:
+                        {$storageHealth.details?.thumbs || 0} | Videos:
+                        {$storageHealth.details?.videos || 0}
+                      </small>
+                    </div>
                   </div>
-                  <div class="metric">
-                    <span class="metric-value">{resourceManager.blobUrls.size}</span>
-                    <span class="metric-label">Temp Blobs</span>
-                  </div>
-                  <div class="metric">
-                    <span class="metric-value">{formatBytes(getLocalStorageSize())}</span>
-                    <span class="metric-label">Local Storage</span>
-                  </div>
-                  <div class="metric">
-                    <span class="metric-value">
-                      {$lastAiCleanup
-                        ? new Date($lastAiCleanup.timestamp).toLocaleTimeString([], {
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })
-                        : 'Never'}
-                    </span>
-                    <span class="metric-label">Last Cleanup</span>
-                  </div>
-                </div>
-              </div>
-              <div class="ai-controls">
-                <div class="toggle-row">
-                  <label class="ai-toggle">
-                    <input
-                      type="checkbox"
-                      checked={$aiMaintenanceMode}
-                      on:change={(event) => AI_CLEANUP_AGENT.setMaintenanceMode(event.target.checked)}
-                    />
-                    <span class="toggle-slider"></span>
-                    <span class="toggle-label">
-                      {$aiMaintenanceMode ? 'Auto-Cleanup ON' : 'Auto-Cleanup PAUSED'}
-                    </span>
-                  </label>
-                  <button
-                    class="force-cleanup-btn"
-                    on:click={() => AI_CLEANUP_AGENT.forceCleanup()}
-                    disabled={$isCleaning}
-                    class:cleaning={$isCleaning}
-                    title="Trigger immediate AI analysis"
-                  >
-                    {#if $isCleaning}
-                      <span class="mini-spinner"></span>
-                      <span>SCANNING...</span>
-                    {:else}
-                      <span>⚡ FORCE SCAN</span>
-                    {/if}
-                  </button>
-                  <button
-                    class="force-cleanup-btn clear-cache-btn"
-                    on:click={clearApplicationCache}
-                    title="Clear cached feed/thumbnail data"
-                  >
-                    🧹 CLEAR CACHE
-                  </button>
-                  <button
-                    class="force-cleanup-btn reset-data-btn"
-                    on:click={resetAllLocalData}
-                    title="Clear all localStorage and reload"
-                  >
-                    ♻️ RESET LOCAL DATA
-                  </button>
-                </div>
-                {#if $lastAiCleanup}
-                  <div class="last-cleanup-log" class:has-error={$lastAiCleanup.error}>
-                    <small>
-                      {#if $lastAiCleanup.error}
-                        <span class="error-text">❌ {$lastAiCleanup.error}</span>
-                      {:else}
-                        <span>
-                          Last: {$lastAiCleanup.actions?.length || 0} actions •
-                          {$lastAiCleanup.duration || '0ms'} • Health:
-                          {$lastAiCleanup.healthAfter?.score || '??'}%
+                  <div class="ai-controls">
+                    <div class="toggle-row">
+                      <label class="ai-toggle">
+                        <input
+                          type="checkbox"
+                          checked={$aiMaintenanceMode}
+                          on:change={(event) => AI_CLEANUP_AGENT.setMaintenanceMode(event.target.checked)}
+                        />
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-label">
+                          {$aiMaintenanceMode ? 'Auto-Cleanup ON' : 'Auto-Cleanup PAUSED'}
                         </span>
-                        {#if $lastAiCleanup.forced}
-                          <span class="forced-badge">[FORCED]</span>
+                      </label>
+                      <button
+                        class="force-cleanup-btn"
+                        on:click={() => AI_CLEANUP_AGENT.forceCleanup()}
+                        disabled={$isCleaning}
+                        class:cleaning={$isCleaning}
+                      >
+                        {#if $isCleaning}
+                          <span class="mini-spinner"></span>
+                          <span>SCANNING...</span>
+                        {:else}
+                          <span>⚡ FORCE SCAN</span>
                         {/if}
-                      {/if}
-                    </small>
+                      </button>
+                      <button
+                        class="force-cleanup-btn clear-cache-btn"
+                        on:click={clearApplicationCache}
+                        title="Clear cached feed/thumbnail data"
+                      >
+                        🧹 CLEAR CACHE
+                      </button>
+                      <button
+                        class="force-cleanup-btn reset-data-btn"
+                        on:click={resetAllLocalData}
+                        title="Clear all localStorage and reload"
+                      >
+                        ♻️ RESET LOCAL DATA
+                      </button>
+                    </div>
                   </div>
-                {/if}
+                </div>
               </div>
-              <div class="ai-rules">
-                <h4>🧠 AI Retention Policy</h4>
-                <ul>
-                  <li class:active={true}>Keep: Accessed in last 48 hours</li>
-                  <li class:active={true}>Keep: Valid video + thumbnail</li>
-                  <li class:active={true}>Archive: Stale &gt; 7 days, no access</li>
-                  <li class:active={true}>Purge: Broken blob URLs immediately</li>
-                  <li class:active={true}>Auto-clean when health &lt; 70%</li>
-                </ul>
-              </div>
-            </div>
+            </details>
           </div>
-        </ProductionCommandCenter>
+        </StudioWorkspaceLayout>
       {:else}
         <div class="admin-login-panel">
           <div class="smart-header">

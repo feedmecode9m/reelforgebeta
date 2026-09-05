@@ -24,6 +24,7 @@
     VAULT_SOURCES
   } from '../../lib/drag-drop.js';
   import { requestStudioContentTab } from '../../lib/dropAffordance.js';
+  import { scrollStudioWorkspaceNavIntoView } from '../../lib/studio/studioWorkspace.js';
   import { pipelineDiag, pipelineCheckpoint } from '../../lib/diagnostics/pipelineDiag.js';
   import { reelResStoreMutation, reelResReelSnapshot } from '../../lib/diagnostics/reelResolutionTrace.js';
   import { isVideoReel } from '../../lib/api/reelContract.js';
@@ -151,6 +152,8 @@
   } from '../../lib/vault/videoVaultWorkspace.js';
   import { reconcileVaultGhostPicks } from '../../lib/vault/vaultGhostPickCleanup.js';
 
+  /** Presentation-only: creator (Content) vs system (System) — same stores and save paths. */
+  export let surfaceRole = 'creator';
   export let showPersonalControls = true;
 
   export let personalThumbnailCollection;
@@ -835,6 +838,10 @@
       }
     };
     window.addEventListener('reelforge:upload-progress', onVaultUploadProgress);
+    const onWorkspaceTabChange = () => {
+      dismissVaultPackageEditor();
+    };
+    window.addEventListener('reelforge:studio-workspace-tab-change', onWorkspaceTabChange);
     await ensureThumbnailCanonicalization();
     return () => {
       window.removeEventListener('beforeunload', onBeforeUnload);
@@ -842,6 +849,7 @@
       window.removeEventListener('AUTH_SESSION_EXPIRED', onSessionChange);
       window.removeEventListener('storage', onStorage);
       window.removeEventListener('reelforge:upload-progress', onVaultUploadProgress);
+      window.removeEventListener('reelforge:studio-workspace-tab-change', onWorkspaceTabChange);
       if (typeof document !== 'undefined') {
         if (vaultDocDragOverHandler) {
           document.removeEventListener('dragover', vaultDocDragOverHandler, true);
@@ -1404,6 +1412,22 @@
       reupload: false,
       ts: new Date().toISOString()
     });
+  }
+
+  /**
+   * Fully dismiss vault package/poster editor (Done / Cancel).
+   * Clears edit latch so post-save store refresh cannot reopen the editor.
+   * @param {...string} candidateIds
+   */
+  function dismissVaultPackageEditor(...candidateIds) {
+    vaultEditingAssetId = '';
+    const ids = [...new Set(candidateIds.map((v) => String(v || '').trim()).filter(Boolean))];
+    if (!ids.length) return;
+    const next = { ...vaultEditSignals };
+    for (const id of ids) {
+      next[id] = 0;
+    }
+    vaultEditSignals = next;
   }
 
   async function handleVideoDelete(videoId, videoRef = null) {
@@ -3934,7 +3958,7 @@
   </div>
 {/if}
 
-<div class="personal-media-grid">
+<div class="personal-media-grid" data-vault-surface-role={surfaceRole}>
   <div class="vault-category-row">
     <label class="input-label-wrapper">
       SHELF CATEGORY (uploads)
@@ -4714,8 +4738,12 @@
                     event.detail?.mediaAssetId || cardMediaAssetId || ''
                   ).trim();
                 }}
-                on:closeEditor={() => {
-                  if (vaultEditingAssetId === cardMediaAssetId) vaultEditingAssetId = '';
+                on:closeEditor={(event) => {
+                  dismissVaultPackageEditor(
+                    event.detail?.mediaAssetId,
+                    cardMediaAssetId
+                  );
+                  void tick().then(() => scrollStudioWorkspaceNavIntoView(12));
                 }}
               />
             {/if}
