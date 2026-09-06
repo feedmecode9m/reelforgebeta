@@ -25,6 +25,7 @@
     import {
         analyzeHeroTitle,
         dispatchVaultTitleUpdated,
+        dispatchVaultDescriptionUpdated,
         isUnsafeHeroFilenameTitle,
         queuePendingTitlePatch,
         reconcilePendingTitlePatches,
@@ -35,7 +36,9 @@
     import { resolveVaultCardProjection } from '../../lib/content/vaultCardProjection.js';
     import { mergeTitleIntoPersistentMap, mediaRecordTitleKeys, mediaRecordPlaybackKey, mediaPathAssetId } from '../../lib/content/persistentTitleMap.js';
     import {
-        CREATOR_SHELF_OPTIONS
+        CREATOR_SHELF_OPTIONS,
+        loadCreatorCatalogMetadata,
+        saveCreatorCatalogMetadata
     } from '../../lib/feed/creatorCatalogMetadata.js';
     import { categoryAliasStore, displayDiscoveryShelf, resolveCanonicalDiscoveryShelf } from '../../lib/feed/discoveryTaxonomy.js';
     import {
@@ -129,7 +132,10 @@
     import { isServerGrantedPublished } from '../../lib/hero/heroServerAuthorityEngine.js';
     import {
         getEpisodeByReelId,
+        getEpisodeByMediaIdentity,
         updateEpisodeTitleForReel,
+        updateCatalogEpisode,
+        persistEpisodeRowToApi,
         saveReelSeriesMetadata
     } from '../../lib/series/seriesStore.js';
     import { bridgeFeedReelsToCatalog } from '../../lib/series/episodeBridge.js';
@@ -276,6 +282,15 @@
     let accessDraftMode = 'free';
     let accessDraftPrice = '';
     let accessModalError = '';
+    /** Story & description modal for Hero Vault MP4s. */
+    let storyModalOpen = false;
+    /** @type {Record<string, unknown> | null} */
+    let storyModalItem = null;
+    let storyDraftDescription = '';
+    let storyModalError = '';
+    let storyModalBusy = false;
+    /** Bumps Hero Vault card projection after story saves (no reload). */
+    let vaultStoryRevision = 0;
 
     const HERO_IMAGE_STORAGE_KEY = 'reelforge_hero_image';
     const HERO_VIDEO_STORAGE_KEY = 'reelforge_hero_video';
@@ -2013,6 +2028,126 @@
     }
 
     /**
+     * Initial textarea value: creator catalog authority → bound episode → card projection.
+     * @param {string} assetId
+     * @param {string} [cardDescription]
+     */
+    function resolveHeroVaultStoryDraft(assetId, cardDescription = '') {
+        const id = String(assetId || '').trim();
+        if (!id) return '';
+        const meta = loadCreatorCatalogMetadata(id);
+        if (meta.primaryDescriptionAuthority) {
+            return String(meta.description || '');
+        }
+        if (meta.description) return meta.description;
+        const bound = getEpisodeByMediaIdentity(id);
+        const episodeDesc = String(bound?.episode?.description || '').trim();
+        if (episodeDesc) return episodeDesc;
+        return String(cardDescription || '').trim();
+    }
+
+    /**
+     * Hero Vault card story preview — respects cleared creator authority.
+     * @param {string} assetId
+     * @param {string} [vaultCardDescription]
+     */
+    function heroVaultStoryPreview(assetId, vaultCardDescription = '') {
+        const id = String(assetId || '').trim();
+        if (!id) return '';
+        const meta = loadCreatorCatalogMetadata(id);
+        if (meta.primaryDescriptionAuthority) {
+            return String(meta.description || '');
+        }
+        if (meta.description) return meta.description;
+        return String(vaultCardDescription || '').trim();
+    }
+
+    /**
+     * @param {Record<string, unknown>} item
+     * @param {string} [cardDescription]
+     */
+    function openHeroVaultStory(item, cardDescription = '') {
+        if (!item?.assetId) return;
+        storyModalItem = item;
+        storyDraftDescription = resolveHeroVaultStoryDraft(String(item.assetId), cardDescription);
+        storyModalError = '';
+        storyModalBusy = false;
+        storyModalOpen = true;
+    }
+
+    function closeHeroVaultStory() {
+        storyModalOpen = false;
+        storyModalItem = null;
+        storyDraftDescription = '';
+        storyModalError = '';
+        storyModalBusy = false;
+    }
+
+    async function saveHeroVaultStory() {
+        if (!storyModalItem?.assetId || storyModalBusy) return;
+        const assetId = String(storyModalItem.assetId).trim();
+        const description = String(storyDraftDescription || '').slice(0, 4000);
+        const previousMeta = loadCreatorCatalogMetadata(assetId);
+        storyModalBusy = true;
+        storyModalError = '';
+        try {
+            const saved = saveCreatorCatalogMetadata(assetId, { description });
+            if (!saved) {
+                storyModalError = 'Could not save story description.';
+                return;
+            }
+
+            const bound = getEpisodeByMediaIdentity(assetId);
+            let catalogWarning = '';
+            if (bound?.episode?.episodeId) {
+                const updated = updateCatalogEpisode(bound.episode.episodeId, { description });
+                if (!updated) {
+                    catalogWarning = 'Catalog episode update failed.';
+                } else {
+                    const persist = await persistEpisodeRowToApi(bound.episode.episodeId);
+                    if (!persist.ok) {
+                        catalogWarning = persist.reason || 'Catalog API sync pending.';
+                    }
+                }
+            }
+
+            const existingTitle = getDisplayTitle(storyModalItem);
+            try {
+                syncHeroIdentityToEpisodeMetadata(assetId, {
+                    title: existingTitle,
+                    episodeTitle: existingTitle,
+                    description,
+                    source: 'creator'
+                });
+            } catch {
+                /* ignore */
+            }
+
+            dispatchVaultDescriptionUpdated({
+                reelId: assetId,
+                oldDescription: previousMeta.description || '',
+                newDescription: description,
+                episodeId: bound?.episode?.episodeId || null,
+                source: 'hero-manager-edit-story'
+            });
+
+            vaultStoryRevision += 1;
+            refreshHeroAssetRegistry();
+
+            const label = existingTitle || assetId;
+            statusMessage = description
+                ? `Story saved for “${label}”.`
+                : `Story cleared for “${label}”.`;
+            if (catalogWarning) {
+                statusMessage += ` ${catalogWarning}`;
+            }
+            closeHeroVaultStory();
+        } finally {
+            storyModalBusy = false;
+        }
+    }
+
+    /**
      * Edit title for a vault pick used as hero (and globally for feed / episodes).
      * Persists so labeling + title-match episode ordering + landscape stay correct in real time.
      */
@@ -3501,8 +3636,9 @@
                 Select any ready vault video (or image) below, or use the Vault Hero Asset menu above.
             </p>
             <div class="hero-vault__grid">
-                {#each $heroAssetRegistry as item (item.assetId)}
+                {#each $heroAssetRegistry as item (`${item.assetId}:${vaultStoryRevision}`)}
                     {@const isActive = String(item.assetId) === String(config.heroAssetId || '')}
+                    {@const catalogMeta = loadCreatorCatalogMetadata(item.assetId)}
                     {@const vaultCard = resolveVaultCardProjection(item.assetId, {
                         reel: {
                             id: item.assetId,
@@ -3513,11 +3649,16 @@
                             thumbnailUrl: item.posterUrl || item.thumbnailUrl,
                             type: item.assetType
                         },
+                        enrichment:
+                            catalogMeta.primaryDescriptionAuthority || catalogMeta.description
+                                ? { description: catalogMeta.description }
+                                : undefined,
                         isActiveHero: isActive,
                         heroAssetId: config.heroAssetId,
                         heroDescription: isActive ? config.heroDescription : ''
                     })}
                     {@const displayTitle = vaultCard.title || getDisplayTitle(item)}
+                    {@const storyPreview = heroVaultStoryPreview(item.assetId, vaultCard.description)}
                     {@const videoLoaded = Boolean(vaultVideoLoadedByAsset[item.assetId])}
                     {@const videoErrored = Boolean(vaultVideoErrorByAsset[item.assetId])}
                     {@const vaultPreviewActive = String(activeHeroVaultPreviewId) === String(item.assetId)}
@@ -3621,12 +3762,12 @@
                                 <strong data-vault-card-title>{vaultCard.title}</strong>
                             {/if}
                             <span>{isVideoHeroAssetType(item.assetType) ? 'Video vault pick' : 'Image vault pick'}</span>
-                            {#if vaultCard.description}
+                            {#if storyPreview}
                                 <span
                                     class="hero-vault__story-preview"
                                     data-vault-card-description
                                     data-hero-story-preview
-                                    >{vaultCard.description}</span
+                                    >{storyPreview}</span
                                 >
                             {/if}
                             <span>ID: {item.assetId}</span>
@@ -3642,6 +3783,13 @@
                                 on:click|stopPropagation={() => editHeroVaultTitle(item)}
                             >
                                 Edit Title
+                            </button>
+                            <button
+                                type="button"
+                                data-hero-edit-story
+                                on:click|stopPropagation={() => openHeroVaultStory(item, storyPreview)}
+                            >
+                                Edit Story
                             </button>
                             {#if isVideoHeroAssetType(item.assetType)}
                                 <button
@@ -3715,6 +3863,65 @@
                         on:click|stopPropagation={closeHeroVaultAccess}
                         >Cancel</button
                     >
+                </div>
+            </div>
+        </div>
+    {/if}
+
+    {#if storyModalOpen && storyModalItem}
+        <div
+            class="hero-access-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="hero-story-modal-title"
+            data-hero-story-modal
+        >
+            <button
+                type="button"
+                class="hero-access-modal__backdrop"
+                aria-label="Close story editor"
+                on:click|stopPropagation={closeHeroVaultStory}
+            ></button>
+            <div class="hero-access-modal__panel">
+                <h3 id="hero-story-modal-title">Story &amp; description</h3>
+                <p class="hero-access-modal__hint">
+                    Shown on the Hero Vault card and, when this MP4 is catalog-bound, the associated
+                    series/catalog surfaces.
+                </p>
+                <p class="hero-access-modal__asset">{getDisplayTitle(storyModalItem)}</p>
+                <label class="hero-access-modal__field">
+                    <span>Description</span>
+                    <textarea
+                        bind:value={storyDraftDescription}
+                        maxlength="4000"
+                        rows="6"
+                        data-hero-story-draft
+                        disabled={storyModalBusy}
+                        placeholder="Describe the story viewers should feel when they discover this pick."
+                    ></textarea>
+                </label>
+                {#if storyModalError}
+                    <p class="hero-access-modal__error" role="alert">{storyModalError}</p>
+                {/if}
+                <div class="hero-access-modal__actions">
+                    <button
+                        type="button"
+                        class="hero-manager__btn"
+                        disabled={storyModalBusy}
+                        on:click|stopPropagation={saveHeroVaultStory}
+                        data-hero-story-save
+                    >
+                        {storyModalBusy ? 'Saving…' : 'Save'}
+                    </button>
+                    <button
+                        type="button"
+                        class="hero-manager__btn hero-manager__btn--ghost"
+                        disabled={storyModalBusy}
+                        on:click|stopPropagation={closeHeroVaultStory}
+                        data-hero-story-cancel
+                    >
+                        Cancel
+                    </button>
                 </div>
             </div>
         </div>
@@ -4799,7 +5006,8 @@
         color: rgba(255, 255, 255, 0.55);
     }
     .hero-access-modal__field input,
-    .hero-access-modal__field select {
+    .hero-access-modal__field select,
+    .hero-access-modal__field textarea {
         padding: 0.45rem 0.55rem;
         border-radius: 8px;
         border: 1px solid rgba(255, 255, 255, 0.16);
@@ -4809,7 +5017,13 @@
         text-transform: none;
         letter-spacing: 0;
     }
-    .hero-access-modal__field input:disabled {
+    .hero-access-modal__field textarea {
+        resize: vertical;
+        min-height: 5.5rem;
+        line-height: 1.45;
+    }
+    .hero-access-modal__field input:disabled,
+    .hero-access-modal__field textarea:disabled {
         opacity: 0.45;
     }
     .hero-access-modal__error {

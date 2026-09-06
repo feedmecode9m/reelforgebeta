@@ -695,6 +695,31 @@ export function dispatchVaultTitleUpdated(detail) {
 }
 
 /**
+ * Emit real-time vault story/description update (Hero Vault Edit Story).
+ * @param {{
+ *   reelId: string;
+ *   oldDescription?: string;
+ *   newDescription?: string;
+ *   episodeId?: string | null;
+ *   source?: string;
+ * }} detail
+ */
+export function dispatchVaultDescriptionUpdated(detail) {
+    if (typeof window === 'undefined') return;
+    const payload = {
+        reelId: String(detail.reelId || '').trim(),
+        oldDescription: String(detail.oldDescription ?? ''),
+        newDescription: String(detail.newDescription ?? ''),
+        description: String(detail.newDescription ?? ''),
+        episodeId: detail.episodeId || null,
+        updatedAt: new Date().toISOString(),
+        source: detail.source || 'hero-vault-edit-story'
+    };
+    window.dispatchEvent(new CustomEvent('reelforge:vault-description-updated', { detail: payload }));
+    console.info('[HERO_VAULT_STORY_EDIT]', payload);
+}
+
+/**
  * Queue PATCH title when backend is offline (reconcile later).
  * @param {string} reelId
  * @param {string} title
