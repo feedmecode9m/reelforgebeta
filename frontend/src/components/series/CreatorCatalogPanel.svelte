@@ -27,6 +27,7 @@
     } from '../../lib/series/laProductionStudioEnrichment.js';
     import { buildCreatorSeriesPosterCatalog } from '../../lib/series/creatorSeriesPosterCatalog.js';
     import SeriesBrowsePosterCard from './SeriesBrowsePosterCard.svelte';
+    import { dedupeFeedReelsById } from '../../lib/studio/feedPresentation.js';
 
     const dispatch = createEventDispatcher();
 
@@ -237,7 +238,7 @@
         attachReelId = selectedEpisode.reelId || '';
     }
 
-    $: reelOptions = (feedReels || []).filter((r) => r?.id && !r.isPlaceholder);
+    $: reelOptions = dedupeFeedReelsById(feedReels || []);
 
     /** Ready Hero Vault assets only — canonical source (same as public Series). */
     $: readyVaultAssets = getReadyHeroVaultAssets({
@@ -348,12 +349,61 @@
         selectCatalogSeries(String(event?.detail?.seriesId || ''));
     }
 
+    /** @param {string} seriesId */
+    function resolveSeriesVaultEditTarget(seriesId) {
+        const id = String(seriesId || '').trim();
+        if (!id) {
+            return { seriesId: '', mediaAssetId: '', reelId: '', episodeId: '' };
+        }
+        const catalogSeries = getSeriesById(id);
+        if (!catalogSeries?.seasons?.length) {
+            return { seriesId: id, mediaAssetId: '', reelId: '', episodeId: '' };
+        }
+
+        if (selectedSeriesId === id && selectedEpisodeId) {
+            const selected = episodes.find((row) => row.episodeId === selectedEpisodeId);
+            const mediaAssetId = String(selected?.mediaAssetId || selected?.reelId || '').trim();
+            if (mediaAssetId) {
+                return {
+                    seriesId: id,
+                    mediaAssetId,
+                    reelId: String(selected?.reelId || mediaAssetId).trim(),
+                    episodeId: selectedEpisodeId
+                };
+            }
+        }
+
+        const orderedSeasons = [...catalogSeries.seasons].sort(
+            (a, b) => (a.seasonNumber || 0) - (b.seasonNumber || 0)
+        );
+        for (const seasonRow of orderedSeasons) {
+            const orderedEpisodes = [...(seasonRow.episodes || [])].sort((a, b) => {
+                const da = Number(a.displayOrder);
+                const db = Number(b.displayOrder);
+                if (Number.isFinite(da) && Number.isFinite(db) && da !== db) return da - db;
+                return (a.episodeNumber || 0) - (b.episodeNumber || 0);
+            });
+            for (const episode of orderedEpisodes) {
+                const mediaAssetId = String(episode.mediaAssetId || episode.reelId || '').trim();
+                if (!mediaAssetId) continue;
+                return {
+                    seriesId: id,
+                    mediaAssetId,
+                    reelId: String(episode.reelId || mediaAssetId).trim(),
+                    episodeId: episode.episodeId
+                };
+            }
+        }
+
+        return { seriesId: id, mediaAssetId: '', reelId: '', episodeId: '' };
+    }
+
     /** @param {CustomEvent<{ seriesId?: string }>} event */
     function handlePosterEditInVault(event) {
         const seriesId = String(event?.detail?.seriesId || '').trim();
         if (!seriesId) return;
         selectCatalogSeries(seriesId);
-        dispatch('editInVault', { seriesId });
+        dispatch('editInVault', resolveSeriesVaultEditTarget(seriesId));
     }
 
     function handleSeasonChange() {

@@ -39,7 +39,8 @@
   import {
     resolveVaultEditorialPosterState,
     useMp4AsEpisodePoster,
-    featureEpisodeOnOriginalProductions
+    featureEpisodeOnOriginalProductions,
+    unassignEpisodeEditorialPoster
   } from '../../lib/studio/episodePosterAssignment.js';
   import { resolveMediaUrl } from '../../lib/api/reelContract.js';
 
@@ -51,6 +52,8 @@
    * @type {number}
    */
   export let editSignal = 0;
+  /** Explicit poster-editor open (vault card Poster action). */
+  export let posterEditSignal = 0;
   /**
    * Phase 20: parent ack after savePackage (matched by saveToken).
    * @type {{ saveToken?: number; ok?: boolean; shelf?: string; explicit?: boolean; error?: string; savedAt?: number } | null}
@@ -80,6 +83,7 @@
   let draftPrice = '';
   let formError = '';
   let lastEditSignal = 0;
+  let lastPosterEditSignal = 0;
   /** @type {'idle' | 'saving' | 'saved' | 'error'} */
   let packageSaveState = 'idle';
   let packageSaveToken = 0;
@@ -100,6 +104,7 @@
   /** @type {string[]} */
   let selectedSiblingIds = [];
   let posterAssignBusy = false;
+  let posterUnassignBusy = false;
   let posterAssignMessage = '';
   let featureHomeBusy = false;
   let featureHomeMessage = '';
@@ -218,9 +223,16 @@
   $: if (active && model && editSignal !== lastEditSignal) {
     lastEditSignal = editSignal;
     if (editSignal > 0) {
-      openPosterEditor();
+      openPackage();
     } else if (editing) {
       cancelEdit();
+    }
+  }
+
+  $: if (active && model && posterEditSignal !== lastPosterEditSignal) {
+    lastPosterEditSignal = posterEditSignal;
+    if (posterEditSignal > 0) {
+      openPosterEditor();
     }
   }
 
@@ -432,6 +444,44 @@
       });
     } finally {
       posterAssignBusy = false;
+    }
+  }
+
+  async function handleUnassignPoster() {
+    const episodeId = boundEpisodeCtx?.episode?.episodeId;
+    if (!episodeId || !posterState.assigned || posterUnassignBusy || posterAssignBusy) return;
+    posterUnassignBusy = true;
+    posterAssignMessage = '';
+    featureHomeMessage = '';
+    formError = '';
+    try {
+      const result = await unassignEpisodeEditorialPoster(episodeId, {
+        source: posterState.assignSource === 'mp4-still' ? 'mp4-still' : 'thumbnail-vault',
+        expectedThumbnailUrl: posterState.displayUrl
+      });
+      if (!result?.ok) {
+        const reason = String(result?.reason || 'unassign-failed');
+        if (reason === 'already-unassigned') {
+          posterAssignMessage = 'No editorial poster is assigned.';
+        } else if (reason === 'poster-url-mismatch') {
+          posterAssignMessage = 'Poster changed since open — refresh and try again.';
+        } else {
+          posterAssignMessage = 'Could not unassign poster.';
+        }
+        return;
+      }
+      posterAssignMessage = result.localOnly
+        ? 'Poster detached locally (server sync pending). MP4 still preview remains available.'
+        : 'Poster unassigned — episode reverted to unassigned (MP4 still preview only).';
+      dispatch('posterAssigned', {
+        episodeId,
+        thumbnailUrl: '',
+        mediaAssetId: cardMediaAssetId,
+        source: 'unassigned',
+        seriesId: boundEpisodeCtx?.series?.id || ''
+      });
+    } finally {
+      posterUnassignBusy = false;
     }
   }
 
@@ -880,6 +930,16 @@
                 Make poster unavailable — Thumbnail Vault poster is authoritative.
               </p>
             {/if}
+            <button
+              type="button"
+              class="vault-creator-card__btn"
+              data-unassign-poster
+              data-testid="unassign-poster"
+              disabled={posterUnassignBusy || posterAssignBusy || featureHomeBusy || packageSaveState === 'saving'}
+              on:click|stopPropagation|preventDefault={handleUnassignPoster}
+            >
+              {posterUnassignBusy ? 'Unassigning…' : 'Unassign poster'}
+            </button>
           </div>
         {:else if !boundEpisodeCtx?.episode?.episodeId}
           <p class="vault-creator-card__axis-hint" data-editorial-poster-status>

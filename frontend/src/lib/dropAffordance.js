@@ -2,6 +2,7 @@
 
 export const MEDIA_UPLOAD_INTENT_KEY = 'reelforge_media_upload_intent';
 export const STUDIO_SELECT_CONTENT_TAB_EVENT = 'reelforge:studio-select-content-tab';
+export const STUDIO_VAULT_REQUEST_EDIT_EVENT = 'reelforge:vault-request-edit';
 
 /**
  * @param {DragEvent} event
@@ -65,4 +66,24 @@ export function logDropMiss(surface, reason, extra = {}) {
 export function requestStudioContentTab(detail = {}) {
     if (typeof window === 'undefined') return;
     window.dispatchEvent(new CustomEvent(STUDIO_SELECT_CONTENT_TAB_EVENT, { detail }));
+}
+
+/**
+ * Request package metadata editor for a vault asset on the creator Content surface.
+ * @param {{ assetId?: string; mediaAssetId?: string; reelId?: string; source?: string }} [detail]
+ */
+export function requestVaultPackageEdit(detail = {}) {
+    if (typeof window === 'undefined') return;
+    const assetId = String(detail.assetId || detail.mediaAssetId || detail.reelId || '').trim();
+    if (!assetId) return;
+    window.dispatchEvent(
+        new CustomEvent(STUDIO_VAULT_REQUEST_EDIT_EVENT, {
+            detail: {
+                assetId,
+                mediaAssetId: assetId,
+                reelId: String(detail.reelId || assetId).trim(),
+                source: detail.source || 'vault-request-edit'
+            }
+        })
+    );
 }

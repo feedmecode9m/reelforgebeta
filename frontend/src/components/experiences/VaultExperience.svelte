@@ -23,7 +23,7 @@
     logDrag,
     VAULT_SOURCES
   } from '../../lib/drag-drop.js';
-  import { requestStudioContentTab } from '../../lib/dropAffordance.js';
+  import { requestStudioContentTab, STUDIO_VAULT_REQUEST_EDIT_EVENT } from '../../lib/dropAffordance.js';
   import { scrollStudioWorkspaceNavIntoView } from '../../lib/studio/studioWorkspace.js';
   import { pipelineDiag, pipelineCheckpoint } from '../../lib/diagnostics/pipelineDiag.js';
   import { reelResStoreMutation, reelResReelSnapshot } from '../../lib/diagnostics/reelResolutionTrace.js';
@@ -267,6 +267,8 @@
   let lastSoftRemoved = null;
   /** Per-asset edit signal for VaultEpisodeCreatorStatus (no media re-upload). */
   let vaultEditSignals = /** @type {Record<string, number>} */ ({});
+  /** Per-asset poster-editor signal (explicit Poster action). */
+  let vaultPosterEditSignals = /** @type {Record<string, number>} */ ({});
   /**
    * Phase 20: per-asset package save ack for VaultEpisodeCreatorStatus feedback.
    * @type {Record<string, { saveToken?: number; ok?: boolean; shelf?: string; explicit?: boolean; error?: string; savedAt?: number }>}
@@ -842,6 +844,17 @@
       dismissVaultPackageEditor();
     };
     window.addEventListener('reelforge:studio-workspace-tab-change', onWorkspaceTabChange);
+    /** @param {CustomEvent<{ assetId?: string; mediaAssetId?: string; reelId?: string; source?: string }>} event */
+    const onVaultRequestEdit = (event) => {
+      if (surfaceRole !== 'creator') return;
+      const assetId = String(
+        event?.detail?.assetId || event?.detail?.mediaAssetId || event?.detail?.reelId || ''
+      ).trim();
+      if (!assetId) return;
+      requestVaultPackageEditByAssetId(assetId, event?.detail?.source || 'vault-request-edit');
+      void scrollVaultCardIntoView(assetId);
+    };
+    window.addEventListener(STUDIO_VAULT_REQUEST_EDIT_EVENT, onVaultRequestEdit);
     await ensureThumbnailCanonicalization();
     return () => {
       window.removeEventListener('beforeunload', onBeforeUnload);
@@ -850,6 +863,7 @@
       window.removeEventListener('storage', onStorage);
       window.removeEventListener('reelforge:upload-progress', onVaultUploadProgress);
       window.removeEventListener('reelforge:studio-workspace-tab-change', onWorkspaceTabChange);
+      window.removeEventListener(STUDIO_VAULT_REQUEST_EDIT_EVENT, onVaultRequestEdit);
       if (typeof document !== 'undefined') {
         if (vaultDocDragOverHandler) {
           document.removeEventListener('dragover', vaultDocDragOverHandler, true);
@@ -1415,6 +1429,69 @@
   }
 
   /**
+   * @param {Record<string, unknown> | null | undefined} video
+   */
+  function requestVaultPosterEdit(video) {
+    const assetId = String(
+      resolveMediaAssetId(video) || video?.id || video?.assetId || video?.mediaAssetId || ''
+    ).trim();
+    if (!assetId) return;
+    vaultPosterEditSignals = {
+      ...vaultPosterEditSignals,
+      [assetId]: Number(vaultPosterEditSignals[assetId] || 0) + 1
+    };
+    vaultEditingAssetId = assetId;
+    console.info('[VIDEO_VAULT_EDIT]', {
+      action: 'edit-poster',
+      assetId,
+      ts: new Date().toISOString()
+    });
+  }
+
+  /**
+   * @param {string} assetId
+   * @param {string} [source]
+   */
+  function requestVaultPackageEditByAssetId(assetId, source = 'vault-request-edit') {
+    const id = String(assetId || '').trim();
+    if (!id) return;
+    const pools = [
+      ...(Array.isArray(get(personalVideos)) ? get(personalVideos) : []),
+      ...(Array.isArray(vaultDisplayVideos) ? vaultDisplayVideos : [])
+    ];
+    const video =
+      pools.find((row) => {
+        const mid = String(resolveMediaAssetId(row) || row?.id || '').trim();
+        return mid === id || String(row?.id || '').trim() === id;
+      }) || null;
+    if (video) {
+      requestVaultVideoEdit(video);
+    } else {
+      vaultEditSignals = {
+        ...vaultEditSignals,
+        [id]: Number(vaultEditSignals[id] || 0) + 1
+      };
+      vaultEditingAssetId = id;
+    }
+    console.info('[VIDEO_VAULT_EDIT]', {
+      action: 'request-by-asset-id',
+      assetId: id,
+      source,
+      resolvedVideo: Boolean(video),
+      ts: new Date().toISOString()
+    });
+  }
+
+  async function scrollVaultCardIntoView(assetId) {
+    const id = String(assetId || '').trim();
+    if (!id || typeof document === 'undefined') return;
+    await tick();
+    document
+      .querySelector(`[data-vault-asset-id="${id}"]`)
+      ?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+
+  /**
    * Fully dismiss vault package/poster editor (Done / Cancel).
    * Clears edit latch so post-save store refresh cannot reopen the editor.
    * @param {...string} candidateIds
@@ -1424,9 +1501,15 @@
     const ids = [...new Set(candidateIds.map((v) => String(v || '').trim()).filter(Boolean))];
     if (!ids.length) {
       const hasActiveSignals = Object.values(vaultEditSignals).some((value) => Number(value) > 0);
+      const hasPosterSignals = Object.values(vaultPosterEditSignals).some((value) => Number(value) > 0);
       if (hasActiveSignals) {
         vaultEditSignals = Object.fromEntries(
           Object.keys(vaultEditSignals).map((key) => [key, 0])
+        );
+      }
+      if (hasPosterSignals) {
+        vaultPosterEditSignals = Object.fromEntries(
+          Object.keys(vaultPosterEditSignals).map((key) => [key, 0])
         );
       }
       return;
@@ -1436,6 +1519,11 @@
       next[id] = 0;
     }
     vaultEditSignals = next;
+    const nextPoster = { ...vaultPosterEditSignals };
+    for (const id of ids) {
+      nextPoster[id] = 0;
+    }
+    vaultPosterEditSignals = nextPoster;
   }
 
   async function handleVideoDelete(videoId, videoRef = null) {
@@ -4669,6 +4757,17 @@
                   </button>
                   <button
                     type="button"
+                    class="vault-card-action vault-card-action--poster"
+                    data-vault-edit-poster
+                    on:pointerdown={stopVaultCardDragGesture}
+                    on:mousedown={stopVaultCardDragGesture}
+                    on:touchstart={stopVaultCardDragGesture}
+                    on:click|stopPropagation|preventDefault={() => requestVaultPosterEdit(video)}
+                  >
+                    Poster
+                  </button>
+                  <button
+                    type="button"
                     class="vault-card-action vault-card-action--remove"
                     data-vault-soft-remove
                     on:pointerdown={stopVaultCardDragGesture}
@@ -4736,6 +4835,7 @@
                 heroVaultCard={isHeroInjectedVaultCard(video)}
                 active={true}
                 editSignal={vaultEditSignals[cardMediaAssetId] || 0}
+                posterEditSignal={vaultPosterEditSignals[cardMediaAssetId] || 0}
                 packageSaveFeedback={vaultPackageSaveFeedback[cardMediaAssetId] || null}
                 on:confirmIdentity={(event) =>
                   confirmVaultVideoIdentity(event.detail || {}, cardMediaAssetId)}

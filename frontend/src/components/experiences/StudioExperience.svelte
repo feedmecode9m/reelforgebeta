@@ -31,7 +31,8 @@
   import VaultExperience from './VaultExperience.svelte';
   import {
     consumeMediaUploadIntent,
-    requestStudioContentTab
+    requestStudioContentTab,
+    requestVaultPackageEdit
   } from '../../lib/dropAffordance.js';
   import { SYNC_DOMAIN } from '../../lib/viewer/domainSync.js';
   import { appendUploadIdentityToFormData } from '../../lib/api/uploadIdentity.js';
@@ -697,15 +698,29 @@
     }
   }
 
-  /** @param {CustomEvent<{ seriesId?: string }>} event */
+  /** @param {CustomEvent<{ seriesId?: string; mediaAssetId?: string; reelId?: string; episodeId?: string }>} event */
   function handleCreatorCatalogEditInVault(event) {
     const seriesId = String(event?.detail?.seriesId || '').trim();
+    const mediaAssetId = String(
+      event?.detail?.mediaAssetId || event?.detail?.reelId || ''
+    ).trim();
     if (seriesId && studioSelectedSeriesId) {
       studioSelectedSeriesId.set(seriesId);
     }
+    requestStudioContentTab({ source: 'creator-catalog-edit-in-vault' });
     tick().then(() => {
+      if (mediaAssetId) {
+        requestVaultPackageEdit({
+          assetId: mediaAssetId,
+          reelId: event?.detail?.reelId || mediaAssetId,
+          source: 'creator-catalog-edit-in-vault'
+        });
+        return;
+      }
       document
-        .querySelector('[data-workspace-panel-content] .video-vault-grid, [data-workspace-panel-content] .video-vault-drop')
+        .querySelector(
+          '[data-workspace-panel-content] .video-vault-grid, [data-workspace-panel-content] .video-vault-drop'
+        )
         ?.scrollIntoView({ block: 'center', behavior: 'smooth' });
     });
   }
