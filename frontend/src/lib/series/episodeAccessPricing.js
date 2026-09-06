@@ -5,6 +5,7 @@
 
 import { getStoredReelSeriesMetadata } from './seriesMetadataStorage.js';
 import {
+    isEpisodePaywallEnabled,
     PLATFORM_FREE_WATCH_LIMIT,
     resolveDefaultPaidEpisodePrice
 } from './platformAccessPricingFramework.js';
@@ -161,6 +162,9 @@ export function isPaidSeriesAccessMode(value) {
 
 /** @param {{ episodeNumber?: unknown; isFreeOverride?: unknown; accessMode?: unknown; freeEpisodeCount?: unknown }} input */
 export function resolveSeriesEpisodeAccessPricing(input = {}) {
+    if (!isEpisodePaywallEnabled()) {
+        return buildEpisodeAccessPricing('free', '');
+    }
     const episodeNumber = Number(input.episodeNumber);
     if (!Number.isFinite(episodeNumber) || episodeNumber < 1) return null;
     if (input.isFreeOverride === true) return buildEpisodeAccessPricing('free', '');
@@ -214,6 +218,9 @@ export function resolveAccessPriceOnModeChange(mode, currentPrice) {
  * @returns {EpisodeAccessPricing}
  */
 export function resolveEpisodeAccessPricing(input = {}) {
+    if (!isEpisodePaywallEnabled()) {
+        return buildEpisodeAccessPricing('free', '');
+    }
     const episode = input.episode && typeof input.episode === 'object' ? input.episode : null;
     if (episode) {
         const fromEp = readVaultEpisodeAccess(episode);

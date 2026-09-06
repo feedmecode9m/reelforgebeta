@@ -4,6 +4,26 @@
  * Stripe price IDs remain server-side; these are canonical UI/badge amounts.
  */
 
+/**
+ * Temporary kill-switch — all MP4 episodes play free when false (default until pricing review).
+ * Set VITE_EPISODE_PAYWALL_ENABLED=true in build env to restore paid/subscription gating.
+ *
+ * @returns {boolean}
+ */
+export function isEpisodePaywallEnabled() {
+    /** @type {Record<string, string | undefined>} */
+    const env =
+        typeof import.meta !== 'undefined' && import.meta.env
+            ? import.meta.env
+            : typeof process !== 'undefined' && process.env
+              ? process.env
+              : {};
+    const raw = String(env.VITE_EPISODE_PAYWALL_ENABLED ?? '')
+        .trim()
+        .toLowerCase();
+    return raw === 'true' || raw === '1';
+}
+
 /** @type {2} */
 export const PLATFORM_FREE_WATCH_LIMIT = 2;
 

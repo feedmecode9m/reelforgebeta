@@ -5,6 +5,8 @@
 [build.environment]
   # Same-origin API via public/_redirects → Railway (fixes upload CORS on Netlify Drop)
   VITE_USE_SAME_ORIGIN_API = "true"
+  # All MP4 episodes free until pricing/access review (set true to restore paywall)
+  VITE_EPISODE_PAYWALL_ENABLED = "false"
   VITE_ALLOW_UI_PLACEHOLDERS = "false"
   VITE_USE_SIGNED_UPLOADS = "true"
   VITE_DIRECT_UPLOAD_BASE_URL = "https://reelforge-deploy-production.up.railway.app"

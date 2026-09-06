@@ -1,4 +1,5 @@
-import { resolveEpisodeAccessPricing } from './episodeAccessPricing.js';
+import { buildEpisodeAccessPricing, resolveEpisodeAccessPricing } from './episodeAccessPricing.js';
+import { isEpisodePaywallEnabled } from './platformAccessPricingFramework.js';
 import { lookupVicGEpisodeBinding } from './vicGSeriesPackage.js';
 
 /**
@@ -28,6 +29,14 @@ export function buildPaywallGateMessage(episodeNumber, access) {
 export function evaluatePlaybackPaywallGate(reel, options = {}) {
     if (!reel || typeof reel !== 'object') {
         return { blocked: false, access: null, pendingLockedEpisode: null, message: '' };
+    }
+    if (!isEpisodePaywallEnabled()) {
+        return {
+            blocked: false,
+            access: buildEpisodeAccessPricing('free', ''),
+            pendingLockedEpisode: null,
+            message: ''
+        };
     }
     if (options.hasAccessEntitlement) {
         return { blocked: false, access: null, pendingLockedEpisode: null, message: '' };
