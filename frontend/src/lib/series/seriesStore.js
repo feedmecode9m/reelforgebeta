@@ -1603,8 +1603,20 @@ export async function assignEpisodePoster(episodeId, thumbnailUrl, options = {})
             episodeId: eid,
             thumbnailUrl: url,
             reason: persist.reason || 'api-save-failed',
+            localCatalogUpdated: true,
             ts: new Date().toISOString()
         });
+        if (options.source === 'thumbnail-vault' || options.source === 'mp4-still') {
+            cacheSeriesCatalogOffline(get(seriesCatalog), get(reelSeriesMetadata));
+            return {
+                ok: true,
+                localOnly: true,
+                warning: persist.reason || 'api-save-failed',
+                episodeId: eid,
+                reelId: before.episode.reelId || null,
+                thumbnailUrl: updated.episode.thumbnailUrl || url
+            };
+        }
         return { ok: false, reason: persist.reason || 'api-save-failed' };
     }
 

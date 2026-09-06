@@ -118,7 +118,7 @@
 </script>
 
 <script>
-    import { afterUpdate, onMount } from 'svelte';
+    import { afterUpdate, onMount, tick } from 'svelte';
     import MediaRenderer from '../media/MediaRenderer.svelte';
     import MediaThumbnail from '../media/MediaThumbnail.svelte';
     import MediaPoster from '../media/MediaPoster.svelte';
@@ -139,7 +139,12 @@
     } from '../../lib/diagnostics/bg7nPipelineTrace.js';
     import { logBg7pShelfDistribution } from '../../lib/diagnostics/bg7pShelfDistribution.js';
     import { resolveDurableViewerPoster } from '../../lib/viewer/vaultUtils.js';
-    import { resolveVaultCardProjection } from '../../lib/content/vaultCardProjection.js';
+    import {
+        isManufacturedViewerTitle,
+        resolveVaultCardProjection
+    } from '../../lib/content/vaultCardProjection.js';
+    import { isUnsafeHeroFilenameTitle } from '../../lib/hero/heroTitleIntelligence.js';
+    import { normalizePosterCompareUrl } from '../../lib/studio/episodePosterAssignment.js';
     import { logMobilePlayTrace } from '../../lib/device/mobileExperienceDiagnostics.js';
     import { detectMobilePresentation } from '../../lib/device/mobilePresentation.js';
     import ViewerSemanticCard from '../viewer/ViewerSemanticCard.svelte';
@@ -226,6 +231,12 @@
     function selectViewerRailTab(key) {
         activeViewerRailKey = String(key || 'home');
         discoverySearchOpen = false;
+        tick().then(() => {
+            const row = feedSectionRoot?.querySelector('[data-viewer-discovery-row]');
+            if (row instanceof HTMLElement && activeViewerRailKey !== 'home') {
+                row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+        });
     }
 
     function toggleDiscoverySearch() {
@@ -257,6 +268,61 @@
     }
 
     /**
+     * @param {string} reelId
+     * @param {string} [posterUrl]
+     */
+    function findCatalogContextForFeedReel(reelId, posterUrl = '') {
+        const id = String(reelId || '').trim();
+        const posterKey = normalizePosterCompareUrl(posterUrl);
+        for (const series of $seriesCatalog || []) {
+            for (const season of series?.seasons || []) {
+                for (const episode of season?.episodes || []) {
+                    const episodeReelId = String(
+                        episode?.reelId || episode?.mediaAssetId || episode?.heroVaultAssetId || ''
+                    ).trim();
+                    const episodePosterKey = normalizePosterCompareUrl(
+                        episode?.thumbnailUrl || episode?.poster || episode?.artworkUrl || ''
+                    );
+                    if (
+                        (id && episodeReelId === id) ||
+                        (posterKey && episodePosterKey && episodePosterKey === posterKey)
+                    ) {
+                        return { series, season, episode };
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @param {Record<string, unknown>} reel
+     * @param {{ title?: string }} projection
+     * @param {{ series?: { title?: string }; episode?: { title?: string } } | null} catalogCtx
+     */
+    function resolveFeedPosterTitle(reel, projection, catalogCtx) {
+        const fromProjection = String(projection?.title || '').trim();
+        if (fromProjection) return fromProjection;
+        const fromEpisode = String(catalogCtx?.episode?.title || '').trim();
+        if (fromEpisode && !isManufacturedViewerTitle(fromEpisode)) return fromEpisode;
+        const fromSeries = String(catalogCtx?.series?.title || '').trim();
+        if (fromSeries) return fromSeries;
+        for (const candidate of [reel?.title, reel?.name, reel?.fileName]) {
+            const raw = String(candidate || '').trim();
+            if (!raw) continue;
+            const withoutExt = raw.replace(/\.(png|jpe?g|webp|gif)$/i, '').trim();
+            if (
+                withoutExt &&
+                !isManufacturedViewerTitle(withoutExt) &&
+                !isUnsafeHeroFilenameTitle(withoutExt)
+            ) {
+                return withoutExt;
+            }
+        }
+        return '';
+    }
+
+    /**
      * @param {{ reel: Record<string, unknown>; shelf: string; resolvedMedia?: Record<string, unknown> }} item
      */
     function buildFeedPosterBrowseItem(item) {
@@ -267,12 +333,20 @@
             item.resolvedMedia ||
             resolveCardMedia(/** @type {Record<string, unknown>} */ (reel), shelfCategory);
         const posterSrc = resolveShelfPoster(reel, resolved, projection, shelfCategory, 0);
-        const episode = findCatalogEpisodeByReelId(String(reel?.id || ''));
-        const seasonCount = episode ? 1 : 1;
-        const episodeCount = episode ? 1 : 1;
+        const catalogCtx = findCatalogContextForFeedReel(
+            String(reel?.id || ''),
+            String(posterSrc || reel?.thumbnailUrl || reel?.url || '')
+        );
+        const episode = catalogCtx?.episode || findCatalogEpisodeByReelId(String(reel?.id || ''));
+        const seasonCount = catalogCtx?.series?.seasons?.length || (episode ? 1 : 1);
+        const episodeCount =
+            catalogCtx?.series?.seasons?.reduce(
+                (sum, season) => sum + (Array.isArray(season?.episodes) ? season.episodes.length : 0),
+                0
+            ) || (episode ? 1 : 1);
         return {
             seriesId: `feed:${String(reel?.id || '')}`,
-            title: String(projection.title || reel?.title || reel?.name || '').trim(),
+            title: resolveFeedPosterTitle(reel, projection, catalogCtx),
             posterSrc,
             path: '',
             seasonCount,
@@ -678,7 +752,7 @@
 
 {#if section === 'feed'}
     <div class="reelshort-feed-root" bind:this={feedSectionRoot} data-viewer-cinematic-feed>
-    {#if featuredItem}
+    {#if featuredItem && activeViewerRailKey === 'home'}
         {@const featuredReel = featuredItem.reel}
         {@const featuredCategory = featuredItem.shelf}
         {@const featuredResolved = featuredItem.resolvedMedia || resolveCardMedia(
@@ -1032,6 +1106,16 @@
     }
     .viewer-discovery-row {
         padding: 0.35rem 1.25rem 1rem;
+        scroll-margin-top: 4.5rem;
+    }
+    @media (max-width: 640px), (hover: none) and (pointer: coarse) {
+        .viewer-discovery-row {
+            scroll-margin-top: 3.25rem;
+            min-height: 8.5rem;
+        }
+        .viewer-discovery-row__track--posters {
+            grid-auto-columns: clamp(112px, 42vw, 180px);
+        }
     }
     .viewer-discovery-row__heading {
         margin: 0 0 0.75rem;

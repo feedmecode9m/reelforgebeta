@@ -159,7 +159,9 @@
         uploadStatus?.set?.(`❌ ${errorMessage}`);
         return;
       }
-      successMessage = `Poster assigned to ${selectedEpisode?.label || selectedEpisodeId}`;
+      successMessage = result.localOnly
+        ? `Poster assigned locally to ${selectedEpisode?.label || selectedEpisodeId} (server sync pending)`
+        : `Poster assigned to ${selectedEpisode?.label || selectedEpisodeId}`;
       uploadStatus?.set?.(`✅ ${successMessage}`);
       emitCreatorProductionUpdated({
         episodeId: selectedEpisodeId,
